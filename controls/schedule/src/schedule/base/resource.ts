@@ -121,7 +121,8 @@ export class ResourceBase {
                 this.renderedResources[i].className = [cls.RESOURCE_PARENT_CLASS];
             }
             left = (rIndex * this.leftPixel) + 'px';
-            if (resData[i].resourceData.ClassName as string === cls.RESOURCE_PARENT_CLASS) {
+            if (resData[i].resourceData.ClassName as string === cls.RESOURCE_PARENT_CLASS
+                && !isNullOrUndefined(resData[i].resourceData.Count) && (resData[i].resourceData.Count > 0)) {
                 let iconClass: string;
                 if (resData[i].resourceData[resColl[rIndex].expandedField] ||
                     isNullOrUndefined(resData[i].resourceData[resColl[rIndex].expandedField])) {
@@ -198,35 +199,32 @@ export class ResourceBase {
             cancel: false, event: e, groupIndex: index,
             requestType: !target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpand' : 'resourceCollapse',
         };
-        this.parent.trigger(events.actionBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        if (target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS)) {
-            classList(target, [cls.RESOURCE_EXPAND_CLASS], [cls.RESOURCE_COLLAPSE_CLASS]);
-            hide = true;
-        } else {
-            classList(target, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
-            hide = false;
-        }
-
-        let eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
-        for (let i: number = 0; i < eventElements.length; i++) {
-            remove(eventElements[i]);
-        }
-        if (this.parent.virtualScrollModule) {
-            this.updateVirtualContent(index, hide);
-        } else {
-            this.updateContent(index, hide);
-        }
-        let data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
-        this.parent.notify(events.scrollUiUpdate, data);
-        args = {
-            cancel: false, event: e, groupIndex: index,
-            requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
-        };
-        this.parent.notify(events.dataReady, {});
-        this.parent.trigger(events.actionComplete, args);
+        this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
+            if (!actionArgs.cancel) {
+                if (target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS)) {
+                    classList(target, [cls.RESOURCE_EXPAND_CLASS], [cls.RESOURCE_COLLAPSE_CLASS]);
+                    hide = true;
+                } else {
+                    classList(target, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
+                    hide = false;
+                }
+                let eventElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+                eventElements.forEach((node: HTMLElement) => remove(node));
+                if (this.parent.virtualScrollModule) {
+                    this.updateVirtualContent(index, hide);
+                } else {
+                    this.updateContent(index, hide);
+                }
+                let data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
+                this.parent.notify(events.scrollUiUpdate, data);
+                args = {
+                    cancel: false, event: e, groupIndex: index,
+                    requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
+                };
+                this.parent.notify(events.dataReady, {});
+                this.parent.trigger(events.actionComplete, args);
+            }
+        });
     }
 
     public updateContent(index: number, hide: boolean): void {
@@ -252,7 +250,9 @@ export class ResourceBase {
             if (hide) {
                 if (pNode) {
                     let trElem: Element = rowCollection[i].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
-                    classList(trElem, [cls.RESOURCE_EXPAND_CLASS], [cls.RESOURCE_COLLAPSE_CLASS]);
+                    if (trElem) {
+                        classList(trElem, [cls.RESOURCE_EXPAND_CLASS], [cls.RESOURCE_COLLAPSE_CLASS]);
+                    }
                 }
                 if (!rowCollection[i].classList.contains(cls.HIDDEN_CLASS)) {
                     addClass([rowCollection[i], workCellCollection[i], headerRowCollection[i]], cls.HIDDEN_CLASS);
@@ -270,7 +270,9 @@ export class ResourceBase {
                     }
                     if (expanded) {
                         let trElem: Element = rowCollection[i].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
-                        classList(trElem, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
+                        if (trElem) {
+                            classList(trElem, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
+                        }
                     }
                 }
                 if (rowCollection[i].classList.contains(cls.HIDDEN_CLASS)) {
@@ -763,8 +765,7 @@ export class ResourceBase {
 
     private dataManagerFailure(e: { result: Object[] }): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.trigger(events.actionFailure, { error: e });
-        this.parent.hideSpinner();
+        this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
 
     public getResourceData(eventObj: { [key: string]: Object }, index: number, groupEditIndex: number[]): void {

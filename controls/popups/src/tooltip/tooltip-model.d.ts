@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';import { attributes, closest, removeClass, addClass, remove } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { Popup } from '../popup/popup';import { OffsetPosition, calculatePosition } from '../common/position';import { isCollide, fit } from '../common/collision';
+import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';import { attributes, closest, removeClass, addClass, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { Popup } from '../popup/popup';import { OffsetPosition, calculatePosition } from '../common/position';import { isCollide, fit } from '../common/collision';
 import {TooltipAnimationSettings,Position,TipPointerPosition,TooltipEventArgs} from "./tooltip";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -166,6 +166,7 @@ export interface TooltipModel extends ComponentModel{
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/content.html?lang=typescript#dynamic-content-via-ajax)
      *  to know more about this property with demo.
      * @event
+     * @blazorProperty 'OnRender'
      */
     beforeRender?: EmitType<TooltipEventArgs>;
 
@@ -175,42 +176,49 @@ export interface TooltipModel extends ComponentModel{
      * This event is mainly used for the purpose of refreshing the Tooltip positions dynamically or to
      *  set customized styles in it and so on.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `afterOpen` event after the Tooltip Component gets opened.
      * @event
+     * @blazorProperty 'Opened'
      */
     afterOpen?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `beforeClose` event before the Tooltip hides from the screen. If returned false, then the Tooltip is no more hidden.
      * @event
+     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `afterClose` event when the Tooltip Component gets closed.
      * @event
+     * @blazorProperty 'Closed'
      */
     afterClose?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `beforeCollision` event for every collision fit calculation.
      * @event
+     * @blazorProperty 'OnCollision'
      */
     beforeCollision?: EmitType<TooltipEventArgs>;
 
     /**
      * We can trigger `created` event after the Tooltip component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * We can trigger `destroyed` event when the Tooltip component is destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

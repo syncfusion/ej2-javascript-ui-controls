@@ -2,7 +2,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { ITreeData } from '../base/interface';
 import { TreeGrid } from '../base/treegrid';
-import { Sort as GridSort, Grid, SortDirection } from '@syncfusion/ej2-grids';
+import { Sort as GridSort, Grid, SortDirection, getActualProperties } from '@syncfusion/ej2-grids';
 import { getParentData } from '../utils';
 
 /**
@@ -52,17 +52,17 @@ export class Sort {
     this.parent.off('createSort', this.createdSortedRecords);
   }
 
-  private createdSortedRecords(sortParams: { modifiedData: ITreeData[], filteredData: ITreeData, srtQry: Query }) : void {
+  private createdSortedRecords(sortParams: { modifiedData: ITreeData[], filteredData: ITreeData[], srtQry: Query }) : void {
     let data: ITreeData[] = sortParams.modifiedData;
     let srtQry: Query = sortParams.srtQry;
     this.iterateSort(data, srtQry);
     this.storedIndex = -1;
-    this.parent.notify('updateAction', { result: this.flatSortedData });
+    sortParams.modifiedData = this.flatSortedData;
     this.flatSortedData = [];
   }
   private iterateSort(data: ITreeData[], srtQry: Query): void {
     for (let d: number = 0; d < data.length; d++) {
-      if (this.parent.grid.filterSettings.columns.length > 0) {
+      if (this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key !== '') {
         if (!isNullOrUndefined(getParentData(this.parent, data[d].uniqueID, true))) {
           this.storedIndex++;
           this.flatSortedData[this.storedIndex] = data[d];
@@ -99,7 +99,7 @@ export class Sort {
    * @hidden
    */
   private updateModel(): void {
-    this.parent.sortSettings = this.parent.grid.sortSettings;
+    this.parent.setProperties({sortSettings: getActualProperties(this.parent.grid.sortSettings)}, true);
   }
 
   /**  

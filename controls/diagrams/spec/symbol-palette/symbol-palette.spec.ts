@@ -14,7 +14,7 @@ import { UndoRedo } from '../../src/diagram/objects/undo-redo'
 import {
     SymbolPalette, SymbolInfo, PaletteModel,
 } from '../../src/symbol-palette/index';
-import { profile, inMB, getMemoryProfile } from '../common.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
 import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId, UserHandleModel } from '../../src/diagram/index';
@@ -183,6 +183,7 @@ describe('Symbol Palette', () => {
                 margin: { top: 0, bottom: 0, left: 0, right: 0 }
               }]
 
+
             diagram = new Diagram({
                 connectors: connectors, nodes: nodes, pageSettings: { background: { color: 'transparent' } },
                 selectedItems: { constraints: SelectorConstraints.All, userHandles: handle },
@@ -213,8 +214,6 @@ describe('Symbol Palette', () => {
         });
 
         it('Checking default palette rendering', (done: Function) => {
-
-
             setTimeout(() => {
                 //just for coverage
                 let events: MouseEvents = new MouseEvents();
@@ -360,6 +359,7 @@ describe('Symbol Palette', () => {
             console.log(ele);
             expect(ele.childElementCount===1).toBe(true);
             events.mouseUpEvent(diagram.element, 400, 400, false, false);
+
             expect(diagram.nodes.length).toBe(3);
             diagram.undo()
             expect(diagram.nodes.length).toBe(2);
@@ -423,7 +423,7 @@ describe('Symbol Palette', () => {
             done();
         });
         it('drag and drop annotation processes', (done: Function) => {
-
+            
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                 let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
                 let position: PointModel = palette['getMousePosition'](e.sender);
@@ -563,11 +563,11 @@ describe('Symbol Palette', () => {
             expect(Math.round(diagram.connectors[1].wrapper.offsetX) == 180 || Math.round(diagram.connectors[1].wrapper.offsetX) == 176 ||
                 diagram.connectors[1].wrapper.offsetX == 154.5 || diagram.connectors[1].wrapper.offsetX === 304.5 ||
                 diagram.connectors[1].wrapper.offsetX == 309 || Math.round(diagram.connectors[1].wrapper.offsetX) == 303 ||
-                Math.round(diagram.connectors[1].wrapper.offsetX) == 304 || Math.round(diagram.connectors[1].wrapper.offsetX) == 348 ||
+                Math.round(diagram.connectors[1].wrapper.offsetX) == 304 || Math.round(diagram.connectors[1].wrapper.offsetX) == 348 || 
                 Math.round(diagram.connectors[1].wrapper.offsetX) == 347 ||
                 Math.round(diagram.connectors[1].wrapper.offsetX) == 300).toBe(true);
-            expect(diagram.connectors[1].wrapper.offsetY >= 339 && diagram.connectors[1].wrapper.offsetY <= 340).toBe(true);
-            done();
+                expect(diagram.connectors[1].wrapper.offsetY >= 339 && diagram.connectors[1].wrapper.offsetY <= 340).toBe(true);
+                done();
         });
         it('Checking dragging native node', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
@@ -666,17 +666,16 @@ describe('Symbol Palette', () => {
         });
 
         it('checking no search palette', (done: Function) => {
-
             let events: MouseEvents = new MouseEvents();
             let element: HTMLElement = document.getElementById("textEnter");
             element.focus();
             (document.getElementById("textEnter") as HTMLInputElement).value = "";
             let eventName = "keyUp";
-            palette[eventName]({ target: element, key: "Enter", keyCode: 13 });
+            palette[eventName]({ target: element });
             setTimeout(() => {
-                // expect(document.getElementById("SearchPalette").innerHTML === "").toBe(true);
+                expect(document.getElementById("SearchPalette") === null).toBe(true);
                 done();
-            }, 0);
+            }, 500);
         });
 
         it('checking search palette with no items', (done: Function) => {
@@ -708,15 +707,13 @@ describe('Symbol Palette', () => {
         });
 
         it('checking search palette with no items on mouse up icons', (done: Function) => {
-
             let events: MouseEvents = new MouseEvents();
             let element: HTMLElement = document.getElementById("textEnter");
             element.focus();
             (document.getElementById("textEnter") as HTMLInputElement).value = "sr";
             let element1: HTMLElement = document.getElementById("iconSearch");
             events.mouseUpEvent(element1, 100, 100, null, null);
-            console.log(document.getElementById("SearchPalette"));
-            // expect(document.getElementById("SearchPalette").innerHTML === "").toBe(true);
+            expect(document.getElementById("SearchPalette") === null).toBe(true);
             done();
         });
 
@@ -950,7 +947,7 @@ describe('Symbol Palette', () => {
             expect(palette.palettes.length === 1).toBe(true);
             done();
         });
-    });
+        });
     describe('Testing symbol palette', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
@@ -969,7 +966,7 @@ describe('Symbol Palette', () => {
         ];
 
         beforeAll((): void => {
-            ele = createElement('div', { styles: 'width:1000px;height:500px;' });
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
             ele.appendChild(createElement('div', { id: 'symbolpaletteGroupIssue', styles: 'width:25%;float:left;' }));
             ele.appendChild(createElement('div', { id: 'diagramGroupIssue', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
@@ -1014,7 +1011,6 @@ describe('Symbol Palette', () => {
                 expandMode: 'Multiple',
                 symbolHeight: 50, symbolWidth: 50,
                 symbolPreview: { height: 100, width: 100 },
-                enableAnimation: false,
                 enableSearch: true,
                 getNodeDefaults: setPaletteNodeDefaults,
                 symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
@@ -1029,7 +1025,7 @@ describe('Symbol Palette', () => {
             }
             let groupNodes: NodeModel[] = [];
             diagram.drop = (arg) => {
-                arg.cancel = true;
+                    arg.cancel = true;
             };
         });
 
@@ -1040,8 +1036,7 @@ describe('Symbol Palette', () => {
         });
 
         it('Checking default palette rendering', (done: Function) => {
-
-
+            
             setTimeout(function () {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                     let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
@@ -1059,9 +1054,9 @@ describe('Symbol Palette', () => {
                 let events = new MouseEvents();
                 let element = (document.getElementById('group_container').getBoundingClientRect());;
                 let targetNode: NodeModel = diagram.nodes[2];
-                events.mouseDownEvent(palette.element, 100, 100, false, false);
-                events.mouseMoveEvent(palette.element, 100, 100, false, false);
-                events.mouseMoveEvent(palette.element, 100, 100, false, false);
+                events.mouseDownEvent(palette.element, element.left + palette.element.offsetLeft, element.top + palette.element.offsetTop, false, false);
+                events.mouseMoveEvent(palette.element, element.left + 40 + palette.element.offsetLeft, element.top + palette.element.offsetLeft, false, false);
+                events.mouseMoveEvent(palette.element, element.left + 60, element.top, false, false);
                 events.mouseMoveEvent(diagram.element, 400, 50, false, false);
                 events.mouseMoveEvent(diagram.element, 400, 50 - diagram.element.offsetTop, false, false);
                 events.mouseMoveEvent(diagram.element, 400, 50 - 5 - diagram.element.offsetTop, false, false);
@@ -1070,7 +1065,7 @@ describe('Symbol Palette', () => {
                 done();
             }, 1000);
         });
-        it('memory leak', () => {
+        it('memory leak', () => { 
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -1092,7 +1087,7 @@ describe('Symbol Palette', () => {
                 title: 'Basic Shapes',
                 symbols: [
                     {
-                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle' }, height: 100, width: 100
+                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle'}, height: 100, width: 100
                     }
                 ]
             }
@@ -1106,7 +1101,7 @@ describe('Symbol Palette', () => {
             diagram = new Diagram({
                 pageSettings: { background: { color: 'transparent' } },
                 nodes: [
-                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle' } }
+                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle'}}
                 ],
                 width: '74%', height: '600px'
             });
@@ -1243,7 +1238,7 @@ describe('Symbol Palette', () => {
             events.mouseUpEvent(palette.element, 200, 200, false, false);
             done();
         });
-
+  
     });
     describe('Testing symbol palette issue', () => {
         let diagram: Diagram;
@@ -1333,7 +1328,7 @@ describe('Symbol Palette', () => {
                 title: 'Basic Shapes',
                 symbols: [
                     {
-                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle' }, height: 100, width: 100
+                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle'}, height: 100, width: 100
                     }
                 ]
             }
@@ -1347,7 +1342,7 @@ describe('Symbol Palette', () => {
             diagram = new Diagram({
                 pageSettings: { background: { color: 'transparent' } },
                 nodes: [
-                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle' } }
+                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle'}}
                 ],
                 width: '74%', height: '600px'
             });
@@ -1369,9 +1364,9 @@ describe('Symbol Palette', () => {
             ele.remove();
         });
 
-
+        
         it('Checking zindex for symbol palette', (done: Function) => {
-
+            
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                 let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
                 let position: PointModel = palette['getMousePosition'](e.sender);
@@ -1384,7 +1379,7 @@ describe('Symbol Palette', () => {
                 }
                 return clonedElement;
             };
-
+            
             let events: MouseEvents = new MouseEvents();
             events.mouseDownEvent(palette.element, 45, 85, false, false);
             events.mouseMoveEvent(palette.element, 100, 100, false, false);

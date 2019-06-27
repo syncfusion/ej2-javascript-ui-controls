@@ -23,6 +23,13 @@ $ddl-back-icon-margin: -2px 10px 0 -54px !default;
 $ddl-back-icon-padding: 0 !default;
 $ddl-icon-color: rgba($black, .5) !default;
 $ddl-icon-hover-color: rgba($black, .4) !default;
+
+// small size
+$ddl-small-list-font-size: 13px !default;
+
+// touch size
+$ddl-bigger-small-list-font-size: 14px !default;
+
 @include export-module('dropdownlist-bootstrap4') {
   #{&}.e-popup.e-ddl {
     border-radius: 4px;
@@ -145,5 +152,35 @@ $ddl-icon-hover-color: rgba($black, .4) !default;
 
   .e-bigger .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
     font-size: 10px;
+  }
+
+  .e-bigger.e-small .e-ddl#{&}.e-popup {
+    @at-root {
+      & .e-list-item,
+      & .e-list-group-item,
+      & .e-fixed-head {
+        font-size: 14px;
+        line-height: 34px;
+        padding-left: 0;
+        text-indent: 16px;
+      }
+
+      & .e-dd-group .e-list-item {
+        padding-left: 4px;
+      }
+
+      & .e-input-group {
+        padding: 4px 0;
+      }
+
+      & .e-input-group input,
+      & .e-input-group input.e-input {
+        height: 30px;
+      }
+    }
+  }
+
+  .e-bigger.e-small #{&}.e-popup.e-ddl .e-dropdownbase {
+    min-height: 34px;
   }
 }

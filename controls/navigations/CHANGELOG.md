@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### Menu
+
+#### Bug Fixes
+
+- #237136 - Issue with Parent Menu click in mobile mode.
+
+- #236458 - Issue with Menu Item hovering while a page contains multiple menus.
+
+### Sidebar
+
+#### Breaking Changes
+
+- Change event will trigger only after the expand or collapse transition of the Sidebar.
+
 ## 17.1.49 (2019-05-29)
 
 ### TreeView

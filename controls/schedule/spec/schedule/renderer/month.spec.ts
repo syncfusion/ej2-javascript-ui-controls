@@ -1,13 +1,12 @@
 /**
  * Schedule Month view spec 
  */
-import { createElement, remove, EmitType, closest, Browser } from '@syncfusion/ej2-base';
+import { createElement, closest, Browser } from '@syncfusion/ej2-base';
 import {
-    Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs, Day, Week, WorkWeek, Month, Agenda, EJ2Instance,
-    SelectEventArgs, PopupOpenEventArgs
+    Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs,
+    Day, Week, WorkWeek, Month, Agenda, EJ2Instance, SelectEventArgs, PopupOpenEventArgs
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/recurrence-editor';
-import { triggerMouseEvent } from '../util.spec';
 import { resourceData, testData } from '../base/datasource.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { blockData } from '../base/datasource.spec';
@@ -31,17 +30,12 @@ describe('Schedule Month view', () => {
 
     describe('Initial load', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({ currentView: 'Month', selectedDate: new Date(2017, 9, 4) });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 4) };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-month-view')).toBeTruthy();
@@ -117,14 +111,11 @@ describe('Schedule Month view', () => {
     describe('Current Day Highlight testing', () => {
         let schObj: Schedule;
         beforeAll((): void => {
-            document.body.appendChild(createElement('div', { id: 'Schedule' }));
-            schObj = new Schedule({ height: '250px', width: '500px', currentView: 'Month' }, '#Schedule');
+            let model: ScheduleModel = { height: '250px', width: '500px', currentView: 'Month' };
+            schObj = util.createSchedule(model, []);
         });
         afterAll((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
 
         it('checking default current day highlight', () => {
@@ -155,21 +146,16 @@ describe('Schedule Month view', () => {
 
     describe('Dependent properties', () => {
         let schObj: Schedule;
-        beforeEach((): void => {
+        beforeEach(() => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
         });
-        afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+        afterEach(() => {
+            util.destroy(schObj);
         });
 
-        it('width and height', () => {
-            schObj = new Schedule({ height: '250px', width: '500px', currentView: 'Month', selectedDate: new Date(2017, 9, 4) });
-            schObj.appendTo('#Schedule');
+        it('width and height', (done: Function) => {
+            let model: ScheduleModel = { height: '250px', width: '500px', currentView: 'Month', selectedDate: new Date(2017, 9, 4) };
+            schObj = util.createSchedule(model, [], done);
             expect(document.getElementById('Schedule').style.width).toEqual('500px');
             expect(document.getElementById('Schedule').style.height).toEqual('250px');
             expect(document.getElementById('Schedule').offsetWidth).toEqual(500);
@@ -177,11 +163,11 @@ describe('Schedule Month view', () => {
         });
 
         it('start and end hour', () => {
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 currentView: 'Month', selectedDate: new Date(2017, 9, 4),
                 startHour: '04:00', endHour: '11:00',
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(35);
             expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual(0);
             expect(schObj.element.querySelectorAll('.e-work-days').length).toEqual(25);
@@ -195,11 +181,11 @@ describe('Schedule Month view', () => {
         });
 
         it('work hours start and end', () => {
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 currentView: 'Month', selectedDate: new Date(2017, 9, 4),
                 workHours: { highlight: true, start: '10:00', end: '16:00' }
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(35);
             expect(schObj.element.querySelectorAll('.e-work-days').length).toEqual(25);
 
@@ -215,11 +201,8 @@ describe('Schedule Month view', () => {
         });
 
         it('show weekend', () => {
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5),
-                showWeekend: false
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), showWeekend: false };
+            schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(25);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Monday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('2');
@@ -232,7 +215,6 @@ describe('Schedule Month view', () => {
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Monday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('30');
-
             schObj.showWeekend = true;
             schObj.dataBind();
             expect(schObj.getWorkCellElements().length).toEqual(35);
@@ -242,11 +224,8 @@ describe('Schedule Month view', () => {
         });
 
         it('work days', () => {
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5),
-                workDays: [0, 1, 3, 4]
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), workDays: [0, 1, 3, 4] };
+            schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(35);
             expect(schObj.element.querySelectorAll('.e-work-days').length).toEqual(5 * 4);
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
@@ -264,10 +243,8 @@ describe('Schedule Month view', () => {
         });
 
         it('first day of week', () => {
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2 };
+            schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(42);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Tuesday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('26');
@@ -280,31 +257,20 @@ describe('Schedule Month view', () => {
         });
 
         it('date format', () => {
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5),
-                dateFormat: 'y MMM'
-            });
-            schObj.appendTo('#Schedule');
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('2017 Oct');
-
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), dateFormat: 'y MMM' };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('2017 Oct');
             schObj.dateFormat = 'MMM y';
             schObj.dataBind();
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('Oct 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 2017');
         });
 
         // Date header template not applicable in Month view
 
         it('cell template', () => {
-            let templateEle: HTMLElement = createElement('div', {
-                innerHTML: '<span class="custom-element"></span>'
-            });
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5),
-                cellTemplate: templateEle.innerHTML
-            });
-            schObj.appendTo('#Schedule');
+            let templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), cellTemplate: templateEle.innerHTML };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.custom-element').length).toEqual(schObj.getWorkCellElements().length);
             let workCellEle: HTMLElement = createElement('div', {
                 innerHTML: '<div class="e-date-header e-navigate">4</div><span>10/4/17, 12:00 AM</span>'
@@ -315,19 +281,15 @@ describe('Schedule Month view', () => {
         });
 
         it('check current date class', () => {
-            schObj = new Schedule({
-                currentView: 'Month'
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month' };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-current-day').classList).toContain('e-header-cells');
             expect(schObj.element.querySelector('.e-current-date').classList).toContain('e-work-cells');
         });
 
         it('work cell click', () => {
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
+            schObj = util.createSchedule(model, []);
             let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -339,11 +301,8 @@ describe('Schedule Month view', () => {
 
         it('header cell click day view navigation', () => {
             let navFn: jasmine.Spy = jasmine.createSpy('navEvent');
-            schObj = new Schedule({
-                navigating: navFn,
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { navigating: navFn, currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
+            schObj = util.createSchedule(model, []);
             expect(navFn).toHaveBeenCalledTimes(0);
             expect(schObj.element.querySelector('.e-work-cells').innerHTML).toEqual('<div class="e-date-header e-navigate">Oct 1</div>');
             (schObj.element.querySelector('.e-date-header') as HTMLElement).click();
@@ -353,10 +312,8 @@ describe('Schedule Month view', () => {
         });
 
         it('disable header bar', () => {
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5), showHeaderBar: false
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), showHeaderBar: false };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar-container').length).toEqual(0);
         });
     });
@@ -365,14 +322,9 @@ describe('Schedule Month view', () => {
         let schObj: Schedule;
         beforeEach((): void => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
 
         it('events call confirmation', () => {
@@ -383,7 +335,7 @@ describe('Schedule Month view', () => {
             let endFn: jasmine.Spy = jasmine.createSpy('endEvent');
             let navFn: jasmine.Spy = jasmine.createSpy('navEvent');
             let renderFn: jasmine.Spy = jasmine.createSpy('renderEvent');
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 created: createdFn,
                 cellClick: clickFn,
                 cellDoubleClick: dblClickFn,
@@ -392,8 +344,8 @@ describe('Schedule Month view', () => {
                 navigating: navFn,
                 renderCell: renderFn,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             expect(createdFn).toHaveBeenCalledTimes(1);
             expect(beginFn).toHaveBeenCalledTimes(1);
             expect(endFn).toHaveBeenCalledTimes(1);
@@ -411,23 +363,17 @@ describe('Schedule Month view', () => {
             let eventName1: string;
             let eventName2: string;
             let eventName3: string;
-            schObj = new Schedule({
-                select: (args: SelectEventArgs) => {
-                    eventName1 = args.name;
-                },
-                cellClick: (args: CellClickEventArgs) => {
-                    eventName2 = args.name;
-                },
-                popupOpen: (args: PopupOpenEventArgs) => {
-                    eventName3 = args.name;
-                },
+            let model: ScheduleModel = {
+                select: (args: SelectEventArgs) => eventName1 = args.name,
+                cellClick: (args: CellClickEventArgs) => eventName2 = args.name,
+                popupOpen: (args: PopupOpenEventArgs) => eventName3 = args.name,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
-            triggerMouseEvent(workCells[3], 'mousedown');
-            triggerMouseEvent(workCells[3], 'mouseup');
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[3], 'mouseup');
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -440,18 +386,16 @@ describe('Schedule Month view', () => {
 
         it('multi cell select', () => {
             let eventName: string;
-            schObj = new Schedule({
-                select: (args: SelectEventArgs) => {
-                    eventName = args.name;
-                },
+            let model: ScheduleModel = {
+                select: (args: SelectEventArgs) => eventName = args.name,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
-            triggerMouseEvent(workCells[3], 'mousedown');
-            triggerMouseEvent(workCells[5], 'mousemove');
-            triggerMouseEvent(workCells[5], 'mouseup');
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[5], 'mousemove');
+            util.triggerMouseEvent(workCells[5], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -463,15 +407,15 @@ describe('Schedule Month view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 cellClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
                     cellEndTime = args.endTime.getTime();
                     eventName = args.name;
                 },
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
             expect(cellStartTime).toEqual(new Date(2017, 9, 4).getTime());
             expect(cellEndTime).toEqual(new Date(2017, 9, 5).getTime());
@@ -479,13 +423,11 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel cell click', () => {
-            schObj = new Schedule({
-                cellClick: (args: CellClickEventArgs) => {
-                    args.cancel = true;
-                },
+            let model: ScheduleModel = {
+                cellClick: (args: CellClickEventArgs) => args.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             expect(workCell.classList).not.toContain('e-selected-cell');
             expect(workCell.getAttribute('aria-selected')).toEqual('false');
@@ -498,62 +440,48 @@ describe('Schedule Month view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 cellDoubleClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
                     cellEndTime = args.endTime.getTime();
                     eventName = args.name;
                 },
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'click');
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'dblclick');
+            };
+            schObj = util.createSchedule(model, []);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'dblclick');
             expect(cellStartTime).toEqual(new Date(2017, 9, 4).getTime());
             expect(cellEndTime).toEqual(new Date(2017, 9, 5).getTime());
             expect(eventName).toEqual('cellDoubleClick');
         });
 
         it('cancel cell double click', () => {
-            schObj = new Schedule({
-                cellDoubleClick: (args: CellClickEventArgs) => {
-                    args.cancel = true;
-                },
+            let model: ScheduleModel = {
+                cellDoubleClick: (args: CellClickEventArgs) => args.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
-            triggerMouseEvent(workCell, 'click');
-            triggerMouseEvent(workCell, 'dblclick');
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
         });
 
         it('date navigating', () => {
-            let actionBeginArgs: ActionEventArgs = {
-                cancel: false, name: 'actionBegin',
-                requestType: 'dateNavigate'
-            };
-            let actionCompleteArgs: ActionEventArgs = {
-                cancel: false, name: 'actionComplete',
-                requestType: 'dateNavigate'
-            };
+            let actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'dateNavigate' };
+            let actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'dateNavigate' };
             let navArgs: NavigatingEventArgs = {
                 action: 'date', cancel: false, name: 'navigating',
                 currentDate: new Date(2017, 10, 5), previousDate: new Date(2017, 9, 5)
             };
             let args: NavigatingEventArgs; let beginArgs: ActionEventArgs; let completeArgs: ActionEventArgs;
-            schObj = new Schedule({
-                navigating: (e: NavigatingEventArgs) => {
-                    args = e;
-                },
-                actionBegin: (e: ActionEventArgs) => {
-                    beginArgs = e;
-                },
-                actionComplete: (e: ActionEventArgs) => {
-                    completeArgs = e;
-                },
+            let model: ScheduleModel = {
+                navigating: (e: NavigatingEventArgs) => args = e,
+                actionBegin: (e: ActionEventArgs) => beginArgs = e,
+                actionComplete: (e: ActionEventArgs) => completeArgs = e,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             expect(args).toEqual(jasmine.objectContaining(navArgs));
             expect(beginArgs).toEqual(jasmine.objectContaining(actionBeginArgs));
@@ -561,13 +489,11 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel date navigate in action begin', () => {
-            schObj = new Schedule({
-                actionBegin: (e: ActionEventArgs) => {
-                    e.cancel = true;
-                },
+            let model: ScheduleModel = {
+                actionBegin: (e: ActionEventArgs) => e.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('Oct 1');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
@@ -576,13 +502,11 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel date navigating', () => {
-            schObj = new Schedule({
-                navigating: (e: NavigatingEventArgs) => {
-                    e.cancel = true;
-                },
+            let model: ScheduleModel = {
+                navigating: (e: NavigatingEventArgs) => e.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('Oct 1');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
@@ -591,32 +515,20 @@ describe('Schedule Month view', () => {
         });
 
         it('view navigating', () => {
-            let actionBeginArgs: ActionEventArgs = {
-                cancel: false, name: 'actionBegin',
-                requestType: 'viewNavigate'
-            };
-            let actionCompleteArgs: ActionEventArgs = {
-                cancel: false, name: 'actionComplete',
-                requestType: 'viewNavigate'
-            };
+            let actionBeginArgs: ActionEventArgs = { cancel: false, name: 'actionBegin', requestType: 'viewNavigate' };
+            let actionCompleteArgs: ActionEventArgs = { cancel: false, name: 'actionComplete', requestType: 'viewNavigate' };
             let navArgs: NavigatingEventArgs = {
                 action: 'view', cancel: false, name: 'navigating',
                 currentView: 'Week', previousView: 'Month'
             };
             let args: NavigatingEventArgs; let beginArgs: ActionEventArgs; let completeArgs: ActionEventArgs;
-            schObj = new Schedule({
-                navigating: (e: NavigatingEventArgs) => {
-                    args = e;
-                },
-                actionBegin: (e: ActionEventArgs) => {
-                    beginArgs = e;
-                },
-                actionComplete: (e: ActionEventArgs) => {
-                    completeArgs = e;
-                },
+            let model: ScheduleModel = {
+                navigating: (e: NavigatingEventArgs) => args = e,
+                actionBegin: (e: ActionEventArgs) => beginArgs = e,
+                actionComplete: (e: ActionEventArgs) => completeArgs = e,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             (schObj.element.querySelector('.e-schedule-toolbar .e-week') as HTMLElement).click();
             expect(args).toEqual(jasmine.objectContaining(navArgs));
             expect(beginArgs).toEqual(jasmine.objectContaining(actionBeginArgs));
@@ -624,26 +536,22 @@ describe('Schedule Month view', () => {
         });
 
         it('cancel view navigate in action begin', () => {
-            schObj = new Schedule({
-                actionBegin: (e: ActionEventArgs) => {
-                    e.cancel = true;
-                },
+            let model: ScheduleModel = {
+                actionBegin: (e: ActionEventArgs) => e.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
             (schObj.element.querySelector('.e-schedule-toolbar .e-week') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
         });
 
         it('cancel view navigating', () => {
-            schObj = new Schedule({
-                navigating: (e: NavigatingEventArgs) => {
-                    e.cancel = true;
-                },
+            let model: ScheduleModel = {
+                navigating: (e: NavigatingEventArgs) => e.cancel = true,
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
             (schObj.element.querySelector('.e-schedule-toolbar .e-week') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
@@ -652,23 +560,16 @@ describe('Schedule Month view', () => {
 
     describe('Public methods', () => {
         let schObj: Schedule;
-        beforeEach((): void => {
+        beforeEach(() => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
         });
-        afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+        afterEach(() => {
+            util.destroy(schObj);
         });
 
         it('getCellDetails', () => {
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
+            schObj = util.createSchedule(model, []);
             let data: CellClickEventArgs = schObj.getCellDetails(schObj.element.querySelector('.e-work-cells'));
             expect(data.startTime.getTime()).toEqual(new Date(2017, 9, 1).getTime());
             expect(data.endTime.getTime()).toEqual(new Date(2017, 9, 2).getTime());
@@ -680,34 +581,27 @@ describe('Schedule Month view', () => {
         });
 
         it('scrollTo', () => {
-            schObj = new Schedule({
-                currentView: 'Month', selectedDate: new Date(2017, 9, 5), height: 500, width: 500
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 9, 5), height: 500, width: 500 };
+            schObj = util.createSchedule(model, []);
             schObj.scrollTo('06:00');
             let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             expect(contentArea.scrollTop).toEqual(0);
         });
 
         it('interval count', () => {
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 height: '550px', width: '500px', currentView: 'Month',
                 views: [{ option: 'Month', interval: 2 }], selectedDate: new Date(2017, 9, 4)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(63);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('Oct 1');
-            // tslint:disable-next-line:no-any
-            expect(schObj.element.querySelectorAll(('.e-work-cells') as any)[6].innerHTML).
-                toEqual('<div class="e-date-header e-navigate">7</div>');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[6].innerHTML).toEqual('<div class="e-date-header e-navigate">7</div>');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('26');
-            // tslint:disable-next-line:no-any
-            expect(schObj.element.querySelectorAll(('.e-work-cells') as any)[6].innerHTML).
-                toEqual('<div class="e-date-header e-navigate">2</div>');
-
+            expect(schObj.element.querySelectorAll('.e-work-cells')[6].innerHTML).toEqual('<div class="e-date-header e-navigate">2</div>');
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('Oct 1');
@@ -716,49 +610,32 @@ describe('Schedule Month view', () => {
 
     describe('Resource group single level', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px',
-                selectedDate: new Date(2018, 3, 1),
-                currentView: 'Month',
-                group: {
-                    resources: ['Owners']
-                },
-                resources: [
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00', OwnerCss: 'e-nancy' },
-                            { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398', OwnerCss: 'e-steven' },
-                            { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1', OwnerCss: 'e-michael' }
-                        ],
-                        textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId',
-                        colorField: 'OwnerColor', cssClassField: 'OwnerCss'
-                    }
-                ],
-                eventSettings: { dataSource: resourceData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2018, 3, 1),
+                currentView: 'Month', group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00', OwnerCss: 'e-nancy' },
+                        { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398', OwnerCss: 'e-steven' },
+                        { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1', OwnerCss: 'e-michael' }
+                    ],
+                    textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId',
+                    colorField: 'OwnerColor', cssClassField: 'OwnerCss'
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Checking appointment element', () => {
-            let appElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(appElement.length).toBeGreaterThan(0);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toBeGreaterThan(0);
         });
         it('Checking resource grouping setmodel', (done: Function) => {
             schObj.dataBound = () => {
-                let appElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                expect(appElement.length).toBeGreaterThan(0);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toBeGreaterThan(0);
                 done();
             };
             schObj.group.resources = [];
@@ -768,49 +645,32 @@ describe('Schedule Month view', () => {
 
     describe('Resources with group', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
-                currentView: 'Month',
+            let model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Month',
                 selectedDate: new Date(2018, 3, 1),
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'RoomId',
-                        title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
-                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
-                        ],
-                        textField: 'text', idField: 'id', colorField: 'color'
-                    }, {
-                        field: 'OwnerId',
-                        title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
-                            { text: 'Steven', id: 3, groupId: 2, color: '#f8a398' },
-                            { text: 'Michael', id: 5, groupId: 1, color: '#7499e1' }
-                        ],
-                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
-                    }],
-                eventSettings: { dataSource: [] },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                        { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
+                        { text: 'Steven', id: 3, groupId: 2, color: '#f8a398' },
+                        { text: 'Michael', id: 5, groupId: 1, color: '#7499e1' }
+                    ],
+                    textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('header rows count', () => {
@@ -836,49 +696,32 @@ describe('Schedule Month view', () => {
 
     describe('Custom work days of Resources in group', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
-                currentView: 'Month',
+            let model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Month',
                 selectedDate: new Date(2018, 3, 1),
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'RoomId',
-                        title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
-                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
-                        ],
-                        textField: 'text', idField: 'id', colorField: 'color'
-                    }, {
-                        field: 'OwnerId',
-                        title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [1, 2] },
-                            { text: 'Steven', id: 3, groupId: 2, color: '#f8a398' },
-                            { text: 'Michael', id: 5, groupId: 1, color: '#7499e1' }
-                        ],
-                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color', workDaysField: 'workDays'
-                    }],
-                eventSettings: { dataSource: [] },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                        { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [1, 2] },
+                        { text: 'Steven', id: 3, groupId: 2, color: '#f8a398' },
+                        { text: 'Michael', id: 5, groupId: 1, color: '#7499e1' }
+                    ],
+                    textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color', workDaysField: 'workDays'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('header rows count', () => {
@@ -904,40 +747,25 @@ describe('Schedule Month view', () => {
 
     describe('Resource header template of Resources in group', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
-                currentView: 'Month',
+            let model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Month',
                 selectedDate: new Date(2018, 3, 1),
                 resourceHeaderTemplate: '<p>${resourceData.text}</p>',
-                group: {
-                    resources: ['Rooms']
-                },
-                resources: [
-                    {
-                        field: 'RoomId',
-                        title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
-                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
-                        ],
-                        textField: 'text', idField: 'id', colorField: 'color'
-                    }],
-                eventSettings: { dataSource: [] },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Rooms'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                        { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('template text', () => {
@@ -959,50 +787,35 @@ describe('Schedule Month view', () => {
 
     describe('Resources with group by date', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
-                currentView: 'Month',
+            let model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Month',
                 selectedDate: new Date(2018, 3, 1),
                 group: {
                     byDate: true,
                     resources: ['Rooms', 'Owners']
                 },
-                resources: [
-                    {
-                        field: 'RoomId',
-                        title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
-                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
-                        ],
-                        textField: 'text', idField: 'id', colorField: 'color'
-                    }, {
-                        field: 'OwnerId',
-                        title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
-                            { text: 'Steven', id: 3, groupId: 2, color: '#f8a398' },
-                            { text: 'Michael', id: 5, groupId: 1, color: '#7499e1' }
-                        ],
-                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
-                    }],
-                eventSettings: { dataSource: [] },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                        { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
+                        { text: 'Steven', id: 3, groupId: 2, color: '#f8a398' },
+                        { text: 'Michael', id: 5, groupId: 1, color: '#7499e1' }
+                    ],
+                    textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('header rows count', () => {
@@ -1045,8 +858,8 @@ describe('Schedule Month view', () => {
 
         it('add event', (done: Function) => {
             expect(schObj.blockData.length).toEqual(7);
-            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
-            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30);
@@ -1070,7 +883,7 @@ describe('Schedule Month view', () => {
             endRevisedObj.value = new Date(2017, 9, 31);
             endRevisedObj.dataBind();
             saveButton.click();
-            schObj.dataBound = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
                 expect(addedEvent.offsetWidth).toEqual(66);
@@ -1082,8 +895,8 @@ describe('Schedule Month view', () => {
 
         it('edit event', (done: Function) => {
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'click');
-            triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'dblclick');
             let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30);
             startObj.dataBind();
@@ -1106,7 +919,7 @@ describe('Schedule Month view', () => {
             endRevisedObj.value = new Date(2017, 9, 31);
             endRevisedObj.dataBind();
             saveButton.click();
-            schObj.dataBound = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
                 expect(editedEvent.offsetWidth).toEqual(66);
@@ -1116,7 +929,7 @@ describe('Schedule Month view', () => {
             schObj.dataBind();
         });
         it('change through set properties', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(6);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -1126,7 +939,6 @@ describe('Schedule Month view', () => {
                 done();
             };
             schObj.rowAutoHeight = true;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
         it('checking block event with enableAdativeRows property', () => {
@@ -1141,33 +953,25 @@ describe('Schedule Month view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let schOptions: ScheduleModel = {
-                height: '500px',
-                width: '500px',
-                currentView: 'Month',
+                height: '500px', width: '500px', currentView: 'Month',
                 selectedDate: new Date(2017, 10, 1),
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
-                    }, {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
-                        ],
-                        textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ]
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
             };
             schObj = util.createSchedule(schOptions, blockData, done);
         });
@@ -1177,8 +981,8 @@ describe('Schedule Month view', () => {
 
         it('resource add event', (done: Function) => {
             expect(schObj.blockData.length).toEqual(10);
-            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
-            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30);
@@ -1202,7 +1006,7 @@ describe('Schedule Month view', () => {
             endRevisedObj.value = new Date(2017, 9, 31);
             endRevisedObj.dataBind();
             saveButton.click();
-            schObj.dataBound = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
                 expect(addedEvent.offsetWidth).toEqual(31);
@@ -1213,8 +1017,8 @@ describe('Schedule Month view', () => {
         });
 
         it('resource edit event', (done: Function) => {
-            triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement, 'click');
-            triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startObj.value = new Date(2017, 9, 30);
@@ -1238,7 +1042,7 @@ describe('Schedule Month view', () => {
             endRevisedObj.value = new Date(2017, 9, 31);
             endRevisedObj.dataBind();
             saveButton.click();
-            schObj.dataBound = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
                 expect(editedEvent.offsetWidth).toEqual(31);
@@ -1254,10 +1058,8 @@ describe('Schedule Month view', () => {
             let schObj: Schedule;
             beforeAll((done: Function) => {
                 let schOptions: ScheduleModel = {
-                    height: '500px',
-                    selectedDate: new Date(2017, 10, 6),
-                    rowAutoHeight: true,
-                    currentView: 'Month',
+                    height: '500px', selectedDate: new Date(2017, 10, 6),
+                    rowAutoHeight: true, currentView: 'Month'
                 };
                 schObj = util.createSchedule(schOptions, testData, done);
             });
@@ -1274,7 +1076,7 @@ describe('Schedule Month view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
             });
             it('add events', (done: Function) => {
-                let dataBound: (args: Object) => void = (args: Object) => {
+                schObj.dataBound = () => {
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(12);
                     let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
@@ -1282,14 +1084,13 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 expect(schObj.eventsData.length).toEqual(7);
-                schObj.dataBound = dataBound;
                 let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-                triggerMouseEvent(workCells[15], 'click');
+                util.triggerMouseEvent(workCells[15], 'click');
                 let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 (<HTMLElement>cellPopup.querySelector('.e-event-create')).click();
             });
             it('row height update after delete a event', (done: Function) => {
-                let dataBound: () => void = () => {
+                schObj.dataBound = () => {
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(11);
                     let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
@@ -1297,16 +1098,15 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 expect(schObj.eventsData.length).toEqual(8);
-                schObj.dataBound = dataBound;
                 let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                triggerMouseEvent(eventElements[7], 'click');
+                util.triggerMouseEvent(eventElements[7], 'click');
                 let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup).toBeTruthy();
                 (<HTMLElement>eventPopup.querySelector('.e-delete')).click();
                 (<HTMLElement>document.body.querySelector('.e-quick-dialog-delete')).click();
             });
             it('change through set properties', (done: Function) => {
-                let dataBound: (args: Object) => void = (args: Object) => {
+                schObj.dataBound = () => {
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(6);
                     let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -1317,22 +1117,17 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 schObj.rowAutoHeight = false;
-                schObj.dataBound = dataBound;
                 schObj.dataBind();
             });
         });
 
         describe('Mobile view', () => {
             let uA: string = Browser.userAgent;
-            let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
-                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
             let schObj: Schedule;
             beforeAll((done: Function) => {
                 let schOptions: ScheduleModel = {
-                    height: '550px',
-                    selectedDate: new Date(2017, 10, 6),
-                    rowAutoHeight: true,
-                    currentView: 'Month',
+                    height: '550px', selectedDate: new Date(2017, 10, 6),
+                    rowAutoHeight: true, currentView: 'Month',
                 };
                 schObj = util.createSchedule(schOptions, testData, done);
             });
@@ -1351,7 +1146,7 @@ describe('Schedule Month view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
             });
             it('change through set properties', (done: Function) => {
-                let dataBound: (args: Object) => void = (args: Object) => {
+                schObj.dataBound = () => {
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(9);
                     let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -1362,7 +1157,6 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 schObj.rowAutoHeight = false;
-                schObj.dataBound = dataBound;
                 schObj.dataBind();
             });
         });
@@ -1371,11 +1165,8 @@ describe('Schedule Month view', () => {
             let schObj: Schedule;
             beforeAll((done: Function) => {
                 let schOptions: ScheduleModel = {
-                    height: '550px',
-                    selectedDate: new Date(2017, 10, 6),
-                    rowAutoHeight: true,
-                    enableRtl: true,
-                    currentView: 'Month',
+                    height: '550px', selectedDate: new Date(2017, 10, 6), rowAutoHeight: true,
+                    enableRtl: true, currentView: 'Month'
                 };
                 schObj = util.createSchedule(schOptions, testData, done);
             });
@@ -1392,7 +1183,7 @@ describe('Schedule Month view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
             });
             it('add events', (done: Function) => {
-                let dataBound: (args: Object) => void = (args: Object) => {
+                schObj.dataBound = () => {
                     expect(schObj.eventsData.length).toEqual(8);
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(12);
@@ -1401,14 +1192,13 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 expect(schObj.eventsData.length).toEqual(7);
-                schObj.dataBound = dataBound;
                 let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-                triggerMouseEvent(workCells[15], 'click');
+                util.triggerMouseEvent(workCells[15], 'click');
                 let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 (<HTMLElement>cellPopup.querySelector('.e-event-create')).click();
             });
             it('row height update after delete a event', (done: Function) => {
-                let dataBound: () => void = () => {
+                schObj.dataBound = () => {
                     expect(schObj.eventsData.length).toEqual(7);
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(11);
@@ -1417,16 +1207,15 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 expect(schObj.eventsData.length).toEqual(8);
-                schObj.dataBound = dataBound;
                 let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                triggerMouseEvent(eventElements[7], 'click');
+                util.triggerMouseEvent(eventElements[7], 'click');
                 let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup).toBeTruthy();
                 (<HTMLElement>eventPopup.querySelector('.e-delete')).click();
                 (<HTMLElement>document.body.querySelector('.e-quick-dialog-delete')).click();
             });
             it('change through set properties', (done: Function) => {
-                let dataBound: (args: Object) => void = (args: Object) => {
+                schObj.dataBound = () => {
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(9);
                     let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -1437,7 +1226,6 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 schObj.rowAutoHeight = false;
-                schObj.dataBound = dataBound;
                 schObj.dataBind();
             });
         });
@@ -1445,33 +1233,25 @@ describe('Schedule Month view', () => {
             let schObj: Schedule;
             beforeAll((done: Function) => {
                 let schOptions: ScheduleModel = {
-                    height: '500px',
-                    selectedDate: new Date(2018, 3, 1),
-                    rowAutoHeight: true,
-                    currentView: 'Month',
-                    group: {
-                        resources: ['Rooms', 'Owners']
-                    },
-                    resources: [
-                        {
-                            field: 'RoomId', title: 'Room',
-                            name: 'Rooms', allowMultiple: false,
-                            dataSource: [
-                                { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
-                                { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' }
-                            ],
-                            textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
-                        }, {
-                            field: 'OwnerId', title: 'Owner',
-                            name: 'Owners', allowMultiple: true,
-                            dataSource: [
-                                { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                                { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                                { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
-                            ],
-                            textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                        }
-                    ]
+                    height: '500px', selectedDate: new Date(2018, 3, 1),
+                    rowAutoHeight: true, currentView: 'Month',
+                    group: { resources: ['Rooms', 'Owners'] },
+                    resources: [{
+                        field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                    }, {
+                        field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                        ],
+                        textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                    }]
                 };
                 schObj = util.createSchedule(schOptions, resourceData, done);
             });
@@ -1489,7 +1269,7 @@ describe('Schedule Month view', () => {
             });
 
             it('Add event', (done: Function) => {
-                let dataBound: (args: Object) => void = (args: Object) => {
+                schObj.dataBound = () => {
                     expect(schObj.eventsData.length).toEqual(10);
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(15);
@@ -1498,8 +1278,8 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 let workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-                triggerMouseEvent(workCell, 'click');
-                triggerMouseEvent(workCell, 'dblclick');
+                util.triggerMouseEvent(workCell, 'click');
+                util.triggerMouseEvent(workCell, 'dblclick');
                 expect(schObj.eventsData.length).toEqual(9);
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 let recObj: RecurrenceEditor = (dialogElement.querySelector('.e-recurrenceeditor') as EJ2Instance).
@@ -1508,11 +1288,10 @@ describe('Schedule Month view', () => {
                 recObj.dataBind();
                 let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
                 saveButton.click();
-                schObj.dataBound = dataBound;
             });
 
             it('Delete event', (done: Function) => {
-                let dataBound: (args: Object) => void = (args: Object) => {
+                schObj.dataBound = () => {
                     expect(schObj.eventsData.length).toEqual(9);
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(14);
@@ -1521,19 +1300,18 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 let appElement: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]') as HTMLElement;
-                triggerMouseEvent(appElement, 'click');
-                triggerMouseEvent(appElement, 'dblclick');
+                util.triggerMouseEvent(appElement, 'click');
+                util.triggerMouseEvent(appElement, 'dblclick');
                 expect(schObj.eventsData.length).toEqual(10);
                 let quickDialog: Element = document.querySelector('.e-quick-dialog');
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 let deleteButton: HTMLInputElement =
                     <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
                 deleteButton.click();
-                triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
-                schObj.dataBound = dataBound;
+                util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
             });
             it('change through set properties', (done: Function) => {
-                let dataBound: (args: Object) => void = (args: Object) => {
+                schObj.dataBound = () => {
                     let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                     expect(eventElementList.length).toEqual(12);
                     let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -1543,7 +1321,6 @@ describe('Schedule Month view', () => {
                     done();
                 };
                 schObj.rowAutoHeight = false;
-                schObj.dataBound = dataBound;
                 schObj.dataBind();
             });
         });
@@ -1561,4 +1338,3 @@ describe('Schedule Month view', () => {
         // tslint:enable:no-any
     });
 });
-

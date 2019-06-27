@@ -6,13 +6,16 @@ import { WBorders } from '../index';
 import {
     Page, Rect, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
-    TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget
+    TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader } from '../../index';
 import { Layout } from './layout';
 import { LayoutViewer } from './viewer';
-import { HelperMethods } from '../editor/editor-helper';
+// tslint:disable-next-line:max-line-length
+import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from '../index';
+import { SelectionWidgetInfo } from '../selection';
+import { SpellChecker } from '../spell-check/spell-checker';
 
 /** 
  * @private
@@ -22,8 +25,10 @@ export class Renderer {
     private pageLeft: number = 0;
     private pageTop: number = 0;
     private viewer: LayoutViewer;
+    private pageIndex: number = -1;
     private pageCanvasIn: HTMLCanvasElement;
     private isFieldCode: boolean = false;
+    private isspellCheckHandled: boolean = false;
     /**
      * Gets page canvas.
      * @private    
@@ -37,6 +42,13 @@ export class Renderer {
             return this.pageCanvasIn;
         }
         return isNullOrUndefined(this.viewer) ? undefined : this.viewer.containerCanvas;
+    }
+    /**
+     * Gets the spell checker
+     * @private
+     */
+    get spellChecker(): SpellChecker {
+        return this.viewer.owner.spellChecker;
     }
     /**
      * Gets selection canvas.
@@ -95,6 +107,7 @@ export class Renderer {
         this.pageContext.strokeRect(left, top, width, height);
         this.pageLeft = left;
         this.pageTop = top;
+        this.pageIndex = page.index;
         if (this.isPrinting) {
             this.setPageSize(page);
         } else {
@@ -115,8 +128,10 @@ export class Renderer {
         if (this.viewer.owner.enableHeaderAndFooter && !this.isPrinting) {
             this.renderHeaderSeparator(page, this.pageLeft, this.pageTop, page.headerWidget);
         }
-        this.pageLeft = 0;
-        this.pageTop = 0;
+        if (!this.isspellCheckHandled) {
+            this.pageLeft = 0;
+            this.pageTop = 0;
+        }
         this.pageContext.restore();
     }
     /**
@@ -291,12 +306,15 @@ export class Renderer {
         if (isNullOrUndefined(header)) {
             return;
         }
+        //Updated client area for current page
+        page.viewer.updateClientArea(page.bodyWidgets[0].sectionFormat, page);
         let top: number = page.viewer.clientArea.y;
+        let parentTable: TableWidget = header.ownerTable.getSplitWidgets()[0] as TableWidget;
         for (let i: number = 0; i <= header.rowIndex; i++) {
-            if (header.ownerTable.getSplitWidgets()[0].childWidgets.length === 0) {
+            if (parentTable.childWidgets.length === 0) {
                 return;
             }
-            let row: TableRowWidget = (header.ownerTable.getSplitWidgets()[0].childWidgets[0] as TableRowWidget);
+            let row: TableRowWidget = (parentTable.childWidgets[i] as TableRowWidget);
             let headerWidget: TableRowWidget = row.clone();
             headerWidget.containerWidget = row.containerWidget;
             // tslint:disable-next-line:max-line-length
@@ -408,6 +426,17 @@ export class Renderer {
                 }
             }
         }
+        // EditRegion highlight 
+        if (page.viewer.selection && !isNullOrUndefined(page.viewer.selection.editRegionHighlighters)
+            && page.viewer.selection.editRegionHighlighters.containsKey(lineWidget)) {
+            let widgetInfo: SelectionWidgetInfo[] = page.viewer.selection.editRegionHighlighters.get(lineWidget);
+            for (let i: number = 0; i < widgetInfo.length; i++) {
+                this.pageContext.fillStyle = widgetInfo[i].color !== '' ? widgetInfo[i].color : '#add8e6';
+                // tslint:disable-next-line:max-line-length
+                this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
+            }
+        }
+
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
 
@@ -425,6 +454,13 @@ export class Renderer {
                 if (this.getScaledValue(top + elementBox.margin.top, 2) + elementBox.height * this.viewer.zoomFactor < 0 ||
                     this.getScaledValue(top + elementBox.margin.top, 2) > this.viewer.visibleBounds.height) {
                     left += elementBox.width + elementBox.margin.left;
+                    if (elementBox instanceof TextElementBox) {
+                        elementBox.canTrigger = true;
+                        elementBox.isVisible = false;
+                        if (!elementBox.isSpellChecked) {
+                            elementBox.ischangeDetected = true;
+                        }
+                    }
                     continue;
                 }
 
@@ -434,6 +470,7 @@ export class Renderer {
             } else if (elementBox instanceof ImageElementBox) {
                 this.renderImageElementBox(elementBox, left, top, underlineY);
             } else {
+                elementBox.isVisible = true;
                 this.renderTextElementBox(elementBox as TextElementBox, left, top, underlineY);
             }
             left += elementBox.width + elementBox.margin.left;
@@ -594,6 +631,26 @@ export class Renderer {
         text = this.viewer.textHelper.setText(text, isRTL, format.bdo, true);
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
+        // tslint:disable-next-line:max-line-length
+        if ((this.viewer.owner.enableSpellCheck && !this.spellChecker.removeUnderline) && (this.viewer.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.viewer.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))) {
+            elementBox.canTrigger = true;
+            this.isspellCheckHandled = true;
+            let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
+            if (errorDetails.errorFound) {
+                color = '#FF0000';
+                for (let i: number = 0; i < errorDetails.elements.length; i++) {
+                    let currentElement: ErrorTextElementBox = errorDetails.elements[i];
+                    // tslint:disable-next-line:max-line-length
+                    if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
+                        // tslint:disable-next-line:max-line-length
+                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y, underlineY, color, 'Single', format.baselineAlignment);
+                    }
+                }
+            } else if (elementBox.ischangeDetected || this.viewer.triggerElementsOnLoading) {
+                elementBox.ischangeDetected = false;
+                this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
+            }
+        }
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
             // tslint:disable-next-line:max-line-length
             this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, format.baselineAlignment);
@@ -605,6 +662,168 @@ export class Renderer {
             this.pageContext.restore();
         }
     }
+
+    /**
+     * Method to handle spell check for modified or newly added elements
+     * @param {TextElementBox} elementBox 
+     * @param {number} underlineY 
+     * @param {number} left 
+     * @param {number} top 
+     * @param {number} baselineAlignment 
+     */
+    // tslint:disable-next-line:max-line-length
+    private handleChangeDetectedElements(elementBox: TextElementBox, underlineY: number, left: number, top: number, baselineAlignment: BaselineAlignment): void {
+        let checkText: string = elementBox.text.trim();
+        let beforeIndex: number = this.pageIndex;
+        if (!this.spellChecker.checkElementCanBeCombined(elementBox, underlineY, beforeIndex, true)) {
+            /* tslint:disable:no-any */
+            let splittedText: any[] = checkText.split(/[\s]+/);
+            let markindex: number = elementBox.line.getOffset(elementBox, 0);
+            let spaceValue: number = 1;
+            if (splittedText.length > 1) {
+                for (let i: number = 0; i < splittedText.length; i++) {
+                    let currentText: string = splittedText[i];
+                    let retrievedText: string = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);
+                    // tslint:disable-next-line:max-line-length
+                    if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
+                        this.handleUnorderdElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1, beforeIndex);
+                        markindex += currentText.length + spaceValue;
+                    }
+                }
+            } else {
+                let retrievedText: string = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
+                // tslint:disable-next-line:max-line-length
+                if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
+                    let indexInLine: number = elementBox.indexInOwner;
+                    let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
+                    /* tslint:disable:no-any */
+                    // tslint:disable-next-line:max-line-length
+                    this.spellChecker.CallSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
+                        /* tslint:disable:no-any */
+                        let jsonObject: any = JSON.parse(data);
+                        // tslint:disable-next-line:max-line-length
+                        let canUpdate: boolean = (beforeIndex === this.pageIndex || elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+                        // tslint:disable-next-line:max-line-length
+                        this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * Method to handle spell check combine and splitted text elements
+     * @param {string} currentText 
+     * @param {TextElementBox} elementBox 
+     * @param {number} underlineY 
+     * @param {number} iteration 
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    public handleUnorderdElements(currentText: string, elementBox: TextElementBox, underlineY: number, iteration: number, markindex: number, isLastItem?: boolean, beforeIndex?: number): void {
+        let indexInLine: number = elementBox.indexInOwner;
+        let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
+        /* tslint:disable:no-any */
+        // tslint:disable-next-line:max-line-length
+        this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion ).then((data: any) => {
+            /* tslint:disable:no-any */
+            let jsonObject: any = JSON.parse(data);
+            // tslint:disable-next-line:max-line-length
+            let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+            // tslint:disable-next-line:max-line-length
+            this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markindex, isLastItem);
+        });
+    }
+
+    /** 
+     * Render Wavy Line
+     * @param {ElementBox} elementBox 
+     * @param {number} left 
+     * @param {number} top 
+     * @param {number} underlineY 
+     * @param {string} color 
+     * @param {Underline} underline 
+     * @param {BaselineAlignment} baselineAlignment 
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    public renderWavyline(elementBox: TextElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment): void {
+        if (elementBox.text.length > 1) {
+            let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
+            let topMargin: number = elementBox.margin.top;
+            let underlineHeight: number = renderedHeight / 20;
+            const frequencyRange: number = 0.5;
+            const amplitudeRange: number = 1.0;
+            const stepToCover: number = .7;
+            let y: number = 0;
+            if (baselineAlignment === 'Subscript' || elementBox instanceof ListTextElementBox) {
+                y = (renderedHeight - 2 * underlineHeight) + top;
+                topMargin += elementBox.height - renderedHeight;
+                y += topMargin > 0 ? topMargin : 0;
+            } else {
+                y = underlineY + top;
+            }
+            // tslint:disable-next-line:max-line-length
+            let specialCharacter: SpecialCharacterInfo = this.spellChecker.getSpecialCharactersInfo(elementBox.text, elementBox.characterFormat);
+            // tslint:disable-next-line:max-line-length
+            let whiteSpaceData: SpaceCharacterInfo = this.spellChecker.getWhiteSpaceCharacterInfo(elementBox.text, elementBox.characterFormat);
+            // tslint:disable-next-line:max-line-length
+            let x1: number = this.getScaledValue(left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left, 1);
+            let y1: number = this.getScaledValue(y, 2);
+            // tslint:disable-next-line:max-line-length
+            let x2: number = x1 + this.getScaledValue(elementBox.width - (specialCharacter.beginningWidth + specialCharacter.endWidth) - whiteSpaceData.width);
+            let startingPoint: Point = new Point(x1, y1);
+            let endingPoint: Point = new Point(x2, y1);
+
+            this.drawWavy(startingPoint, endingPoint, (x2 - x1) * frequencyRange, amplitudeRange, stepToCover, color, elementBox.height);
+        }
+    }
+
+    /**
+     * Draw wavy line
+     * @param {Point} from
+     * @param {Point} to 
+     * @param {Number} frequency 
+     * @param {Number} amplitude 
+     * @param {Number} step 
+     * @param {string} color 
+     * @param {Number} negative 
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    public drawWavy(from: Point, to: Point, frequency: number, amplitude: number, step: number, color: string, height: number, negative?: number): void {
+        this.pageContext.save();
+        this.pageContext.fillStyle = '#ffffff';
+        this.pageContext.fillRect(from.x, from.y - amplitude, (to.x - from.x), amplitude * 3);
+        this.pageContext.restore();
+        this.pageContext.lineWidth = 1;
+        this.pageContext.lineCap = 'round';
+        this.pageContext.strokeStyle = color;
+        this.pageContext.beginPath();
+        //this.pageContext.save();
+        let cx: number = 0;
+        let cy: number = 0;
+        let fx: number = from.x;
+        let fy: number = from.y;
+        let tx: number = to.x;
+        let ty: number = to.y;
+        let i: number = 0;
+        let waveOffsetLength: number = 0;
+        let ang: number = Math.atan2(ty - fy, tx - fx);
+        let distance: number = Math.sqrt((fx - tx) * (fx - tx) + (fy - ty) * (fy - ty));
+        let a: number = amplitude * 1;
+        let f: number = Math.PI * frequency;
+
+        for (i; i <= distance; i += step) {
+            waveOffsetLength = Math.sin((i / distance) * f) * a;
+            cx = from.x + Math.cos(ang) * i + Math.cos(ang - Math.PI / 2) * waveOffsetLength;
+            cy = from.y + Math.sin(ang) * i + Math.sin(ang - Math.PI / 2) * waveOffsetLength;
+            i > 0 ? this.pageContext.lineTo(cx, cy) : this.pageContext.moveTo(cx, cy);
+        }
+        this.pageContext.stroke();
+        this.pageContext.restore();
+    }
+
     /**
      * Returns tab leader
      */

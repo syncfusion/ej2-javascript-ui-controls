@@ -241,36 +241,42 @@ export interface RangeNavigatorModel extends ComponentModel{
     /**
      * Triggers before the range navigator rendering
      * @event
+     * @deprecated
      */
     load?: EmitType<IRangeLoadedEventArgs>;
 
     /**
      * Triggers after the range navigator rendering
      * @event
+     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<IRangeLoadedEventArgs>;
 
     /**
      * Triggers after the range navigator resized
      * @event
+     * @blazorProperty 'Resized'
      */
     resized?: EmitType<IResizeRangeNavigatorEventArgs>;
 
     /**
      * Triggers before the label rendering
      * @event
+     * @deprecated
      */
     labelRender?: EmitType<ILabelRenderEventsArgs>;
 
     /**
      * Triggers after change the slider.
      * @event
+     * @blazorProperty 'Changed'
      */
     changed?: EmitType<IChangedEventArgs>;
 
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
+     * @deprecated
      */
 
     tooltipRender?: EmitType<IRangeTooltipRenderEventArgs>;
@@ -278,12 +284,14 @@ export interface RangeNavigatorModel extends ComponentModel{
     /**
      * Triggers before the range navigator selector rendering
      * @event
+     * @deprecated
      */
     selectorRender?: EmitType<IRangeSelectorRenderEventArgs>;
 
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;

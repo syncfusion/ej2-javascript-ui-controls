@@ -22,21 +22,21 @@ export namespace Theme {
  */
 export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
     let style: IThemeStyle; let color: string;
-    switch (theme) {
-        case 'MaterialDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
             color = '#303030';
             break;
-        case 'FabricDark':
+        case 'fabricdark':
             color = '#201F1F';
             break;
-        case 'BootstrapDark':
+        case 'bootstrapdark':
             color = '#1A1A1A';
             break;
     }
-    switch (theme) {
-        case 'BootstrapDark':
-        case 'FabricDark':
-        case 'MaterialDark':
+    switch (theme.toLowerCase()) {
+        case 'bootstrapdark':
+        case 'fabricdark':
+        case 'materialdark':
             style = {
                 backgroundColor: color,
                 titleFontColor: '#FFFFFF',
@@ -44,10 +44,11 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#DADADA',
-                legendTextColor: '#DADADA'
+                legendTextColor: '#DADADA',
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
-        case 'HighContrast':
+        case 'highcontrast':
             style = {
                 backgroundColor: '#000000',
                 titleFontColor: '#FFFFFF',
@@ -55,10 +56,11 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#FFFFFF',
-                legendTextColor: '#FFFFFF'
+                legendTextColor: '#FFFFFF',
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
@@ -83,7 +85,8 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#353535',
-                legendTextColor: '#353535'
+                legendTextColor: '#353535',
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
     }

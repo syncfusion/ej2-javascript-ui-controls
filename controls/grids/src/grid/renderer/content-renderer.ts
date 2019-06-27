@@ -1,6 +1,6 @@
 import { Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setStyleAttribute, remove, removeClass } from '@syncfusion/ej2-base';
+import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs } from '../base/interface';
@@ -252,7 +252,8 @@ export class ContentRender implements IRenderer {
                     gObj.notify(events.expandChildGrid, (<HTMLTableRowElement>tr).cells[gObj.groupSettings.columns.length]);
                 }
             } else {
-                let elements: NodeList = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate');
+                let rowTemplateID: string = gObj.element.id + 'rowTemplate';
+                let elements: NodeList = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
                 if ((elements[0] as Element).tagName === 'TBODY') {
                     for (let j: number = 0; j < elements.length; j++) {
                         let isTR: boolean = elements[j].nodeName.toLowerCase() === 'tr';
@@ -275,7 +276,7 @@ export class ContentRender implements IRenderer {
                         trElement = tr.lastElementChild;
                     }
                 }
-                let arg: RowDataBoundEventArgs  = { data: modelData[i].data, row: trElement ? trElement : tr };
+                let arg: RowDataBoundEventArgs = { data: modelData[i].data, row: trElement ? trElement : tr };
                 this.parent.trigger(events.rowDataBound, arg);
             }
             if (modelData[i].isDataRow) {
@@ -322,6 +323,9 @@ export class ContentRender implements IRenderer {
                         (fCont as HTMLElement).style.borderRightWidth = '1px';
                     }
                 } else {
+                    if (gObj.rowTemplate) {
+                        updateBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate');
+                    }
                     this.appendContent(this.tbody, frag, args);
                 }
                 if (frzCols && idx === 0) {
@@ -457,26 +461,23 @@ export class ContentRender implements IRenderer {
         if (!gObj.groupSettings.columns.length && testRow) {
             needFullRefresh = false;
         }
-        let tr: Object = (<Grid>gObj).contentModule.getTable().querySelectorAll('tr');
+        let tr: Object = gObj.getDataRows();
         let args: NotifyArgs = {};
-        let contentrows: Row<Column>[] = this.rows.slice(0);
-        let frozenRows: Object = [];
+        let contentrows: Row<Column>[] = this.rows.filter((row: Row<Column>) => !row.isDetailRow);
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
             let column: Column = columns[c];
             let idx: number = this.parent.getNormalizedColumnIndex(column.uid);
             let displayVal: string = column.visible === true ? '' : 'none';
-            let idxLessThanFrozenCol: boolean;
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
                 if (frzCols) {
                     if (idx < frzCols) {
                         setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
-                        idxLessThanFrozenCol = true;
                         contentrows = this.freezeRows;
                     } else {
                         let mTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
                         idx = idx - frzCols;
                         setStyleAttribute(<HTMLElement>mTable.childNodes[idx], { 'display': displayVal });
-                        tr = (<Grid>gObj).contentModule.getMovableContent().querySelectorAll('tr');
+                        tr = (<Grid>gObj).getMovableDataRows();
                         contentrows = this.movableRows;
                     }
                 } else {
@@ -485,17 +486,6 @@ export class ContentRender implements IRenderer {
             }
             idx = gObj.isDetail() ? idx - 1 : idx;
             if (!needFullRefresh) {
-                if (gObj.frozenRows) {
-                    if (idxLessThanFrozenCol || !frzCols) {
-                        frozenRows = gObj.getHeaderTable().querySelector('tbody').querySelectorAll('tr');
-                    } else {
-                        let frozenContent: Element = gObj.getHeaderContent().querySelector('.e-movableheader');
-                        if (frozenContent) {
-                            frozenRows = frozenContent.querySelector('tbody').querySelectorAll('tr');
-                        }
-                    }
-                    this.setDisplayNone(frozenRows, idx, displayVal, contentrows);
-                }
                 this.setDisplayNone(tr, idx, displayVal, contentrows);
             }
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {

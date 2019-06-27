@@ -132,15 +132,14 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
         if (this.isValidTarget(target, newInst) && this.curTarget !== target &&
             (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true )) {
             this.curTarget = target;
-            let oldIdx: number = this.getIndex(newInst.placeHolderElement, newInst); let isPlaceHolder: boolean = isNullOrUndefined(oldIdx);
-            oldIdx = isPlaceHolder ? this.getIndex(this.target) :
+            let oldIdx: number = this.getIndex(newInst.placeHolderElement, newInst);
+            oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) :
                 this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
             newInst.placeHolderElement = this.getPlaceHolder(target, newInst);
             let newIdx: number = this.getIndex(target, newInst);
-            let idx: number = newInst.element !== this.element && isPlaceHolder ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
+            let idx: number = newInst.element !== this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
             if (newInst.placeHolderElement) {
-                let len: number = newInst.element.childElementCount;
-                if (newInst.element !== this.element && (idx === len - 1 || idx === len) && (isPlaceHolder || idx === len)) {
+                if (newInst.element !== this.element && idx === newInst.element.childElementCount - 1) {
                     newInst.element.appendChild(newInst.placeHolderElement);
                 } else {
                     newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[idx]);
@@ -155,12 +154,8 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
                     target: e.target, helper: newInst.element.lastChild as HTMLElement, droppedElement: this.target, scope: this.scope });
             }
         }
-        if (newInst.element === e.target) {
-            if (!this.isPlaceHolderPresent(newInst)) { newInst.placeHolderElement = this.getPlaceHolder(target, newInst); }
-            if (newInst.placeHolderElement) { newInst.element.appendChild(newInst.placeHolderElement); }
-        }
         newInst = this.getSortableInstance(this.curTarget);
-        if (isNullOrUndefined(target) && newInst.element !== e.target && e.target !== newInst.placeHolderElement) {
+        if (isNullOrUndefined(target) &&  e.target !== newInst.placeHolderElement) {
             if (this.isPlaceHolderPresent(newInst)) { this.removePlaceHolder(newInst); }
         } else {
             let placeHolders: Element[] = [].slice.call(document.getElementsByClassName('e-sortable-placeholder')); let inst: Sortable;
@@ -218,7 +213,6 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
         return closest(element, `.${instance.itemClass}`) as HTMLElement;
     }
     private onDragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
-        this.element.style.touchAction = 'none';
         this.target = this.getSortableElement(e.target);
         this.target.classList.add('e-grabbed');
         this.curTarget =  this.target;
@@ -243,16 +237,13 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
                 target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
             remove(dropInst.placeHolderElement);
         }
-        let newInst: Sortable = this.getSortableInstance(e.target);
-        if (newInst.element === e.target && newInst !== dropInst && this.isPlaceHolderPresent(newInst)) {
-            prevIdx = this.getIndex(this.target); this.updateItemClass(newInst);
-            newInst.element.appendChild(this.target);
-            remove(newInst.placeHolderElement);
-            this.trigger('drop', { event: e.event, element: newInst.element, previousIndex: prevIdx,
-                currentIndex: newInst.element.childElementCount, target: e.target, helper: e.helper,
-                droppedElement: this.target, scopeName: this.scope });
+        dropInst = this.getSortableInstance(e.target);
+        if (dropInst.element === e.target && !dropInst.element.childElementCount) {
+            prevIdx = this.getIndex(this.target); this.updateItemClass(dropInst);
+            dropInst.element.appendChild(this.target);
+            this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: 0,
+                target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
         }
-        this.element.style.touchAction = '';
         this.target.classList.remove('e-grabbed');
         this.target = null;
         this.curTarget = null;

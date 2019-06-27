@@ -33,6 +33,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeArgs>;
@@ -40,6 +41,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;

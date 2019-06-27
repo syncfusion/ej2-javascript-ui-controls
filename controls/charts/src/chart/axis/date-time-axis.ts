@@ -11,7 +11,7 @@ import { DataUtil } from '@syncfusion/ej2-data';
 import { NiceInterval } from '../axis/axis-helper';
 import { extend, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';
-import { RangeNavigator } from '../../range-navigator';
+import { RangeNavigator } from '../../range-navigator/index';
 
 
 /**

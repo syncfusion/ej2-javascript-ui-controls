@@ -4,7 +4,7 @@ import { stringToNumber, GaugeLocation, getLocationFromAngle, getFontStyle } fro
 import { getElement, getTemplateFunction, measureElementRect } from '../utils/helper';
 import { IAnnotationRenderEventArgs } from '../model/interface';
 import { annotationRender } from '../model/constants';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 
 /**
  * Annotation Module handles the Annotation of the axis.
@@ -25,6 +25,7 @@ export class Annotations {
     /**
      * Method to render the annotation for circular gauge.
      */
+    //tslint:disable
     public renderAnnotation(axis: Axis, index: number): void {
         let width: number = this.gauge.availableSize.width;
         let element: HTMLElement = createElement('div', {
@@ -39,6 +40,7 @@ export class Annotations {
         });
         if (parentElement && element.childElementCount) {
             parentElement.appendChild(element);
+            updateBlazorTemplate(element.id + '_ContentTemplate', 'ContentTemplate');
         }
     }
 
@@ -57,26 +59,30 @@ export class Annotations {
             cancel: false, name: annotationRender, content: annotation.content,
             axis: axis, annotation: annotation, textStyle: annotation.textStyle
         };
-        this.gauge.trigger(annotationRender, argsData);
-        let templateFn: Function;
-        let templateElement: HTMLCollection;
-        if (!argsData.cancel) {
-            templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && templateFn(axis).length) {
-                templateElement = Array.prototype.slice.call(templateFn(axis));
-                let length: number = templateElement.length;
-                for (let i: number = 0; i < length; i++) {
-                    childElement.appendChild(templateElement[i]);
+        this.gauge.trigger('annotationRender', argsData, (observedArgs: IAnnotationRenderEventArgs) => {
+            let templateFn: Function;
+            let templateElement: HTMLCollection;
+            let blazor: string = 'Blazor';
+            if (!argsData.cancel) {
+                templateFn = getTemplateFunction(argsData.content);                
+                if (templateFn && (!window[blazor] ? templateFn(axis, null, null, element.id + '_ContentTemplate').length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, element.id + '_ContentTemplate'));
+                    let length: number = templateElement.length;
+                    for (let i: number = 0; i < length; i++) {
+                        childElement.appendChild(templateElement[i]);
+                    }
+                } else {
+                    childElement.appendChild(createElement('div', {
+                        innerHTML: argsData.content,
+                        styles: getFontStyle(argsData.textStyle)
+                    }));
                 }
-            } else {
-                childElement.appendChild(createElement('div', {
-                    innerHTML: argsData.content,
-                    styles: getFontStyle(argsData.textStyle)
-                }));
-            }
-            this.updateLocation(childElement, axis, <Annotation>annotation);
-            element.appendChild(childElement);
-        }
+                this.updateLocation(childElement, axis, <Annotation>annotation);
+                element.appendChild(childElement);
+                } else {
+                    resetBlazorTemplate(element.id + '_ContentTemplate', '_ContentTemplate');
+                }
+        });
     }
 
     /**

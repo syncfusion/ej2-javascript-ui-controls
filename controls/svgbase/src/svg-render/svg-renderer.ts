@@ -75,9 +75,10 @@ export class SvgRenderer {
     /**
      * To draw a path
      * @param {PathAttributes} options - Options to draw a path in SVG
+     * @param {Int32Array} canvasTranslate - Used as dummy variable for canvas rendering
      * @return {Element}
      */
-    public drawPath(options: PathAttributes): Element {
+    public drawPath(options: PathAttributes, canvasTranslate ?: Int32Array): Element {
         let path: Element = document.getElementById(options.id);
         if (path === null) {
             path = document.createElementNS(this.svgLink, 'path');
@@ -105,7 +106,7 @@ export class SvgRenderer {
      * @param {BaseAttibutes} options - Required options to draw a rectangle in SVG
      * @return {Element}
      */
-    public drawRectangle(options: RectAttributes): Element {
+    public drawRectangle(options: RectAttributes, canvasTranslate ?: Int32Array): Element {
         let rectangle: Element = document.getElementById(options.id);
         if (rectangle === null) {
             rectangle = document.createElementNS(this.svgLink, 'rect');
@@ -198,7 +199,7 @@ export class SvgRenderer {
      * @param {TextAttributes} options - Options needed to draw a text in SVG
      * @return {Element}
      */
-    public createText(options: TextAttributes, label: string): Element {
+    public createText(options: TextAttributes, label: string, transX ?: number, transY ?: number): Element {
         let text: Element = document.createElementNS(this.svgLink, 'text');
         text = this.setElementAttributes(options as SVGCanvasAttributes, text);
         if (!isNullOrUndefined(label)) {
@@ -399,7 +400,7 @@ export class SvgRenderer {
      * @param {Element} element - The element to which the attributes need to be set
      * @return {Element}
      */
-    public setElementAttributes(options: SVGCanvasAttributes, element: Element): Element {
+    public setElementAttributes(options: SVGCanvasAttributes, element: Element | HTMLElement): Element | HTMLElement {
         let keys: string[] = Object.keys(options);
         for (let i: number = 0; i < keys.length; i++) {
             element.setAttribute(keys[i], options[keys[i]]);
@@ -407,4 +408,13 @@ export class SvgRenderer {
         return element;
     }
 
+    /**
+     * To create a Html5 canvas element
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options to create canvas
+     * @return {HTMLCanvasElement}
+     */
+    public createCanvas(options: BaseAttibutes): HTMLCanvasElement {
+        return null;
+    }
 }

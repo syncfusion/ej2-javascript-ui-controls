@@ -2,34 +2,36 @@
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';
 import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { Event, EventHandler } from '@syncfusion/ej2-base';
-import { Splitter } from '@syncfusion/ej2-layouts';
+import { Event, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';
+import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';
 import { Dialog, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { createDialog } from '../pop-up/dialog';
+import { createDialog, createExtDialog } from '../pop-up/dialog';
 import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';
 import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';
 import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';
 import { Toolbar } from '../actions/toolbar';
 import { DetailsView } from '../layout/details-view';
 import { LargeIconsView } from '../layout/large-icons-view';
-import { Uploader, UploadingEventArgs, RemovingEventArgs } from '@syncfusion/ej2-inputs';
+import { Uploader, UploadingEventArgs, SelectedEventArgs, FileInfo } from '@syncfusion/ej2-inputs';
 import { UploadSettingsModel } from '../models/upload-settings-model';
 import { UploadSettings } from '../models/upload-settings';
 import * as events from './constant';
 import * as CLS from './classes';
-import { read, paste, Delete, GetDetails } from '../common/operations';
+import { read } from '../common/operations';
 import { FileManagerModel } from './file-manager-model';
-import { IFileManager, ITreeView, IContextMenu, viewType, SortOrder } from './interface';
-import { FileBeforeSendEventArgs, FileOnSuccessEventArgs, FileOnErrorEventArgs, FileBeforeLoadEventArgs } from './interface';
-import { FileOpenEventArgs, FileSelectEventArgs, FileMenuClickEventArgs, FileMenuOpenEventArgs } from './interface';
-import { FileToolbarClickEventArgs } from './interface';
-import { activeElement, removeBlur, refresh, getPathObject, getLocaleText, setNextPath } from '../common/utility';
+import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs } from './interface';
+import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';
+import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';
+import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';
+import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog } from '../common/utility';
+import { hasContentAccess, hasUploadAccess, updateLayout } from '../common/utility';
 import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';
 import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';
 import { ContextMenuSettings } from '../models/contextMenu-settings';
 import { BreadCrumbBar } from '../actions/breadcrumb-bar';
 import { ContextMenu } from '../pop-up/context-menu';
 import { defaultLocale } from '../models/default-locale';
+import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 
 /**
  * The FileManager component allows users to access and manage the file system through the web  browser. It can performs the
@@ -66,6 +68,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     private keyboardModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
     public originalPath: string;
+    public filterPath: string;
     public pathId: string[];
     public expandedId: string;
     public itemData: Object[];
@@ -76,20 +79,25 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public targetPath: string;
     public feParent: Object[];
     public feFiles: Object[];
-    public activeElements: NodeListOf<Element>;
+    public activeElements: Element[];
     public activeModule: string;
+    public targetModule: string;
     public treeObj: BaseTreeView;
     public dialogObj: Dialog;
     public viewerObj: Dialog;
     public extDialogObj: Dialog;
     public selectedNodes: string[] = [];
     public duplicateItems: string[] = [];
+    public duplicateRecords: Object[] = [];
     public previousPath: string[] = [];
     public nextPath: string[] = [];
     public fileAction: string;
+    public pasteNodes: string[];
     public replaceItems: string[];
     public createdItem: { [key: string]: Object; };
+    public layoutSelectedItems: string[] = [];
     public renamedItem: { [key: string]: Object; };
+    public renamedNodeId: string = null;
     public uploadItem: string[] = [];
     public fileLength: number;
     public deleteRecords: string[] = [];
@@ -98,25 +106,45 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public isMobile: Boolean;
     public isBigger: Boolean;
     public isFile: boolean = false;
-    public nodeNames: Object[];
     public sortOrder: SortOrder = 'Ascending';
     public sortBy: string = 'name';
-    public cutNodes: Object[];
-    public pasteNodes: Object[];
+    public actionRecords: Object[];
+    public activeRecords: Object[];
+    public isCut: boolean = false;
+    public isSearchCut: boolean = false;
+    public isSearchDrag: boolean = false;
+    public isPasteError: boolean = false;
+    public folderPath: string = '';
+    public isSameAction: boolean = false;
     public currentItemText: string;
     public renameText: string;
-    public parentPath: string;
     public enablePaste: boolean = false;
     public splitterObj: Splitter;
     public persistData: boolean = false;
-    public singleSelection: string;
     public breadCrumbBarNavigation: HTMLElement;
     public localeObj: L10n;
     public uploadObj: Uploader;
     public uploadDialogObj: Dialog;
+    public retryArgs: RetryArgs[] = [];
     private isOpened: boolean = false;
+    public isRetryOpened: boolean = false;
+    public isPathDrag: boolean = false;
     public searchedItems: { [key: string]: Object; }[] = [];
-
+    public searchWord: string;
+    public retryFiles: FileInfo[] = [];
+    public isApplySame: boolean = false;
+    public uploadEventArgs: BeforeSendEventArgs;
+    public dragData: { [key: string]: Object; }[] = [];
+    public dragNodes: string[] = [];
+    public dragPath: string = '';
+    public dropPath: string = '';
+    public isDragDrop: boolean = false;
+    public virtualDragElement: HTMLElement;
+    public dropData: Object;
+    public treeExpandTimer: number = null;
+    public dragCursorPosition: PositionModel = { left: 44, top: 18 };
+    public isDropEnd: boolean = false;
+    public droppedObjects: Object[] = [];
     /**
      * Specifies the AJAX settings of the file manager.
      * @default {
@@ -130,6 +158,13 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public ajaxSettings: AjaxSettingsModel;
 
     /**
+     * Enables or disables drag-and-drop of files.
+     * @default false
+     */
+    @Property(false)
+    public allowDragAndDrop: boolean;
+
+    /**
      * Enables or disables the multiple files selection of the file manager.
      * @default true
      */
@@ -139,9 +174,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Specifies the context menu settings of the file manager.
      * @default {
-     *  file: ['Open', '|', 'Delete', 'Rename', '|', 'Details'],
-     *  folder: ['Open', '|', 'Delete', 'Rename', '|', 'Details'],
-     *  layout: ['SortBy', 'View', 'Refresh', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'],
+     *  file: ['Open','|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
+     *  folder: ['Open','|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
+     *  layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'],
      *  visible: true,
      * }
      */
@@ -149,7 +184,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public contextMenuSettings: ContextMenuSettingsModel;
 
     /**
-     * Specifies the root CSS class of the file manager that allows to customize the appearance by overriding the styles.
+     * Specifies the root CSS class of the file manager that allows you to customize the appearance by overriding the styles.
      * @default ''
      */
     @Property('')
@@ -158,11 +193,11 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Specifies the details view settings of the file manager.
      * @default {     
-     * Columns: [{
+     * columns: [{
      * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', customAttributes: { class: 'e-fe-grid-name' },
-     * template: '<span class="e-fe-text" title="${name}">${name}</span>'},{field: 'size', headerText: 'Size', 
+     * template: '<span class="e-fe-text">${name}</span>'},{field: 'size', headerText: 'Size', 
      * minWidth: 50, width: '110', template: '<span class="e-fe-size">${size}</span>'},
-     * { field: 'dateModified', headerText: 'DateModified',
+     * { field: '_fm_modified', headerText: 'DateModified',
      * minWidth: 50, width: '190'}
      * ]
      * }
@@ -171,10 +206,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public detailsViewSettings: DetailsViewSettingsModel;
 
     /**
-     * Enables or disables persisting component's state between page reloads. If enabled, following APIs will persist.
-     * 1. `view` - Represents the previous view of the file manager.
-     * 2. `path` - Represents the previous path of the file manager.
-     * 3. `selectedItems` - Represents the previous selected items in the file manager.
+     * Enables or disables persisting component's state between page reloads. If enabled, the following APIs will persist:
+     * 1. `view`: Represents the previous view of the file manager.
+     * 2. `path`: Represents the previous path of the file manager.
+     * 3. `selectedItems`: Represents the previous selected items in the file manager.
      * @default false
      */
     @Property(false)
@@ -189,11 +224,13 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the initial view of the file manager. 
-     * With the help of this property, initial view can be changed to details or largeicons view.
+     * With the help of this property, initial view can be changed to details or largeicons view. The available views are:
+     * * `LargeIcons`
+     * * `Details`
      * @default 'LargeIcons'
      */
     @Property('LargeIcons')
-    public view: viewType;
+    public view: ViewType;
 
     /**
      * Specifies the navigationpane settings of the file manager.
@@ -225,21 +262,21 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public searchSettings: SearchSettingsModel;
 
     /**
-     * Specifies the selected folders and files name of the  file manager 
+     * Specifies the selected folders and files name of the  file manager.
      * @default []
      */
     @Property()
     public selectedItems: string[];
 
     /**
-     * Show or hide the file extension in file manager.
+     * Shows or hides the file extension in file manager.
      * @default true
      */
     @Property(true)
     public showFileExtension: boolean;
 
     /**
-     * Show or hide the files and folders that are marked as hidden.
+     * Shows or hides the files and folders that are marked as hidden.
      * @default false
      */
     @Property(false)
@@ -255,7 +292,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Specifies the group of items aligned horizontally in the toolbar.
      * @default {
-     *  items: ['NewFolder', 'Upload', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'],
+     *  items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete',
+     *  'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'],
      *  visible: true
      * }
      */
@@ -264,7 +302,12 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Specifies the upload settings for the file manager.
-     * @default null
+     * @default {
+     *  autoUpload: true,
+     *  minFileSize: 0,
+     *  maxFileSize: 30000000,
+     *  allowedExtensions: ''
+     * }
      */
     @Complex<UploadSettingsModel>({}, UploadSettings)
     public uploadSettings: UploadSettingsModel;
@@ -279,27 +322,31 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the file/folder is rendered.
      * @event
+     * @blazorproperty 'OnFileLoad'
      */
     @Event()
-    public beforeFileLoad: EmitType<FileBeforeLoadEventArgs>;
+    public fileLoad: EmitType<FileLoadEventArgs>;
 
     /**
      * Triggers before the file/folder is opened.
      * @event
+     * @blazorproperty 'OnFileOpen'
      */
     @Event()
-    public beforeFileOpen: EmitType<FileOpenEventArgs>;
+    public fileOpen: EmitType<FileOpenEventArgs>;
 
     /**
-     * Triggers before the AJAX request send to the server.
+     * Triggers before sending the AJAX request to the server.
      * @event
+     * @blazorproperty 'OnSend'
      */
     @Event()
-    public beforeSend: EmitType<FileBeforeSendEventArgs>;
+    public beforeSend: EmitType<BeforeSendEventArgs>;
 
     /**
      * Triggers when the file manager component is created.
      * @event
+     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -307,13 +354,47 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the file manager component is destroyed.
      * @event
+     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
 
     /**
+     * Triggers when the file/folder dragging is started.
+     * @event
+     * @blazorproperty 'OnFileDragStart'
+     */
+    @Event()
+    public fileDragStart: EmitType<FileDragEventArgs>;
+
+    /**
+     * Triggers while dragging the file/folder.
+     * @event
+     * @blazorproperty 'FileDragging'
+     */
+    @Event()
+    public fileDragging: EmitType<FileDragEventArgs>;
+
+    /**
+     * Triggers when the file/folder is about to be dropped at the target.
+     * @event
+     * @blazorproperty 'OnFileDragStop'
+     */
+    @Event()
+    public fileDragStop: EmitType<FileDragEventArgs>;
+
+    /**
+     * Triggers when the file/folder is dropped.
+     * @event
+     * @blazorproperty 'FileDropped'
+     */
+    @Event()
+    public fileDropped: EmitType<FileDragEventArgs>;
+
+    /**
      * Triggers when the file/folder is selected/unselected.
      * @event
+     * @blazorproperty 'FileSelected'
      */
     @Event()
     public fileSelect: EmitType<FileSelectEventArgs>;
@@ -321,37 +402,58 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when the context menu item is clicked.
      * @event
+     * @blazorproperty 'OnMenuClick'
      */
     @Event()
-    public menuClick: EmitType<FileMenuClickEventArgs>;
+    public menuClick: EmitType<MenuClickEventArgs>;
 
     /**
      * Triggers before the context menu is opened.
      * @event
+     * @blazorproperty 'MenuOpened'
      */
     @Event()
-    public menuOpen: EmitType<FileMenuOpenEventArgs>;
+    public menuOpen: EmitType<MenuOpenEventArgs>;
 
     /**
      * Triggers when the AJAX request is failed.
      * @event
+     * @blazorproperty 'OnError'
      */
     @Event()
-    public onError: EmitType<FileOnErrorEventArgs>;
+    public failure: EmitType<FailureEventArgs>;
 
     /**
      * Triggers when the AJAX request is success.
      * @event
+     * @blazorproperty 'OnSuccess'
      */
     @Event()
-    public onSuccess: EmitType<FileOnSuccessEventArgs>;
+    public success: EmitType<SuccessEventArgs>;
 
     /**
      * Triggers when the toolbar item is clicked.
      * @event
+     * @blazorproperty 'ToolbarItemClicked'
      */
     @Event()
-    public toolbarClick: EmitType<FileToolbarClickEventArgs>;
+    public toolbarClick: EmitType<ToolbarClickEventArgs>;
+
+    /**
+     * Triggers before creating the toolbar.
+     * @event
+     * @blazorproperty 'ToolbarCreated'
+     */
+    @Event()
+    public toolbarCreate: EmitType<ToolbarCreateEventArgs>;
+
+    /**
+     * Triggers before rendering each file item in upload dialog box.
+     * @event
+     * @blazorproperty 'UploadListCreated'
+     */
+    @Event()
+    public uploadListCreate: EmitType<UploadListCreateArgs>;
 
     constructor(options?: FileManagerModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -382,13 +484,15 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         }
         let ele: Element = closest(this.element, '.e-bigger');
         this.isBigger = ele ? true : false;
+        this.activeModule = (this.view === 'LargeIcons') ? 'largeiconsview' : 'detailsview';
         createSpinner({ target: this.element }, createElement);
         this.addWrapper();
         this.keyConfigs = {
             altN: 'alt+n',
             f5: 'f5',
             ctrlShift1: 'ctrl+shift+1',
-            ctrlShift2: 'ctrl+shift+2'
+            ctrlShift2: 'ctrl+shift+2',
+            ctrlU: 'ctrl+u'
         };
         this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
     }
@@ -451,14 +555,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     protected render(): void {
         this.initialize();
-        this.selectedItems = (isNOU(this.selectedItems)) ? [] : this.selectedItems;
+        this.setProperties({ selectedItems: (isNOU(this.selectedItems)) ? [] : this.selectedItems }, true);
         this.fileView = this.view;
         this.setRtl(this.enableRtl);
         this.addEventListeners();
         read(this, (this.path !== this.originalPath) ? events.initialEnd : events.finalizeEnd, this.path);
         this.adjustHeight();
         if (isNOU(this.navigationpaneModule)) {
-            this.splitterObj.collapse(0);
+            this.splitterObj.collapse(this.enableRtl ? 1 : 0);
             let bar: Element = select('.' + CLS.SPLIT_BAR, this.element);
             bar.classList.add(CLS.DISPLAY_NONE);
         }
@@ -499,7 +603,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         let treeWrap: HTMLElement = this.createElement('div', {
             id: this.element.id + CLS.TREE_ID
         });
-        layoutWrap.appendChild(treeWrap);
         let contentWrap: HTMLElement = this.createElement('div', {
             id: this.element.id + CLS.CONTENT_ID, className: CLS.LAYOUT_CONTENT
         });
@@ -519,16 +622,32 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         contentWrap.appendChild(largeiconWrap);
         let overlay: HTMLElement = this.createElement('span', { className: CLS.OVERLAY });
         contentWrap.appendChild(overlay);
-        layoutWrap.appendChild(contentWrap);
-        this.splitterObj = new Splitter({
-            paneSettings: [
+        let paneSettings: PanePropertiesModel[];
+        if (!this.enableRtl) {
+            layoutWrap.appendChild(treeWrap);
+            layoutWrap.appendChild(contentWrap);
+            paneSettings = [
                 {
                     size: '25%', min: this.navigationPaneSettings.minWidth.toString(),
                     max: this.navigationPaneSettings.maxWidth.toString()
                 },
                 { size: '75%', min: '270px' }
-            ],
+            ];
+        } else {
+            layoutWrap.appendChild(contentWrap);
+            layoutWrap.appendChild(treeWrap);
+            paneSettings = [
+                { size: '75%', min: '270px' },
+                {
+                    size: '25%', min: this.navigationPaneSettings.minWidth.toString(),
+                    max: this.navigationPaneSettings.maxWidth.toString()
+                }
+            ];
+        }
+        this.splitterObj = new Splitter({
+            paneSettings: paneSettings,
             width: '100%',
+            enableRtl: false,
             resizing: this.splitterResize.bind(this)
         });
         this.splitterObj.appendTo(layoutWrap);
@@ -558,10 +677,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     private splitterAdjust(): void {
         let bar: Element = select('.' + CLS.SPLIT_BAR, this.element);
         if (this.navigationPaneSettings.visible) {
-            this.splitterObj.expand(0);
+            this.splitterObj.expand(this.enableRtl ? 1 : 0);
             bar.classList.remove(CLS.DISPLAY_NONE);
         } else {
-            this.splitterObj.collapse(0);
+            this.splitterObj.collapse(this.enableRtl ? 1 : 0);
             bar.classList.add(CLS.DISPLAY_NONE);
         }
     }
@@ -636,14 +755,21 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             autoUpload: this.uploadSettings.autoUpload,
             minFileSize: this.uploadSettings.minFileSize,
             maxFileSize: this.uploadSettings.maxFileSize,
+            allowedExtensions: this.uploadSettings.allowedExtensions,
+            fileListRendering: this.onFileListRender.bind(this),
         });
         this.uploadObj.appendTo('#' + this.element.id + CLS.UPLOAD_ID);
+    }
+
+    private onFileListRender(args: UploadListCreateArgs): void {
+        this.trigger('uploadListCreate', args);
     }
 
     private updateUploader(): void {
         this.uploadObj.autoUpload = this.uploadSettings.autoUpload;
         this.uploadObj.minFileSize = this.uploadSettings.minFileSize;
         this.uploadObj.maxFileSize = this.uploadSettings.maxFileSize;
+        this.uploadObj.allowedExtensions = this.uploadSettings.allowedExtensions;
         this.uploadObj.dataBind();
     }
 
@@ -659,15 +785,53 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
     /* istanbul ignore next */
     private onUploading(args: UploadingEventArgs): void {
-        args.customFormData = [{ 'path': this.path }, { 'action': 'Save' }];
+        let action: string = 'save';
+        if ((this.retryArgs.length !== 0)) {
+            for (let i: number = 0; i < this.retryArgs.length; i++) {
+                if (args.fileData.name === this.retryArgs[i].file.name) {
+                    action = this.retryArgs[i].action;
+                    this.retryArgs.splice(i, 1);
+                    i = this.retryArgs.length;
+                }
+            }
+        }
+        let data: string = JSON.stringify(getValue(this.path, this.feParent));
+        args.customFormData = [{ 'path': this.path }, { 'action': action }, { 'data': data }];
+        let uploadUrl: string = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
+        let ajaxSettings: Object = {
+            url: uploadUrl,
+            type: 'POST',
+            mode: true,
+            dataType: null,
+            contentType: null,
+            data: JSON.stringify(args.customFormData),
+            onSuccess: null,
+            onFailure: null,
+            beforeSend: null
+        };
+        this.uploadEventArgs = { action: 'Upload', ajaxSettings: ajaxSettings, cancel: false };
+        this.trigger('beforeSend', this.uploadEventArgs, (uploadEventArgs: BeforeSendEventArgs) => {
+            args.customFormData = JSON.parse(getValue('data', uploadEventArgs.ajaxSettings));
+            args.cancel = uploadEventArgs.cancel;
+            let eventArgs: Object = {
+                cancel: false,
+                httpRequest: args.currentRequest
+            };
+            if (typeof getValue('beforeSend', uploadEventArgs.ajaxSettings) === 'function') {
+                getValue('beforeSend', uploadEventArgs.ajaxSettings)(eventArgs);
+                if (getValue('cancel', eventArgs)) {
+                    args.cancel = getValue('cancel', eventArgs);
+                }
+            }
+        });
     }
-    /* istanbul ignore next */
-    private onRemoving(args: RemovingEventArgs): void {
-        args.customFormData = [{ 'path': this.path }, { 'action': 'Remove' }];
+
+    private onRemoving(): void {
         if (this.uploadObj.getFilesData().length === 1) {
             this.uploadDialogObj.hide();
         }
     }
+
     /* istanbul ignore next */
     private onClearing(): void {
         if (this.isOpened) {
@@ -675,17 +839,39 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         }
     }
     /* istanbul ignore next */
-    private onSelected(): void {
+    private onSelected(args: SelectedEventArgs): void {
+        if (args.filesData.length === 0) { return; }
+        let details: Object = getPathObject(this);
+        if (!hasUploadAccess(details)) {
+            args.cancel = true;
+            createDeniedDialog(this, details);
+            return;
+        }
         this.uploadDialogObj.show();
     }
     /* istanbul ignore next */
     private onUploadSuccess(files: Object): void {
-        this.trigger('onSuccess', { action: 'Upload', result: files });
+        let args: SuccessEventArgs = { action: 'Upload', result: files };
+        this.trigger('success', args);
         read(this, events.pathChanged, this.path);
+        if (typeof getValue('onSuccess', this.uploadEventArgs.ajaxSettings) === 'function') {
+            getValue('onSuccess', this.uploadEventArgs.ajaxSettings)();
+        }
     }
     /* istanbul ignore next */
     private onUploadFailure(files: Object): void {
-        this.trigger('onError', { action: 'Upload', error: files });
+        let response: object = getValue('response', files);
+        let statusText: string = getValue('statusText', response);
+        if (statusText !== '') { setValue('statusText', statusText, files); }
+        let args: FailureEventArgs = { action: 'Upload', error: files };
+        this.trigger('failure', args);
+        if (getValue('statusCode', response) === 400) {
+            this.retryFiles.push(getValue('file', files));
+            if (!this.isRetryOpened) { createExtDialog(this, 'UploadRetry'); }
+        }
+        if (typeof getValue('onFailure', this.uploadEventArgs.ajaxSettings) === 'function') {
+            getValue('onFailure', this.uploadEventArgs.ajaxSettings)();
+        }
     }
 
     private onInitialEnd(): void {
@@ -696,6 +882,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.on(events.beforeRequest, this.showSpinner, this);
         this.on(events.afterRequest, this.hideSpinner, this);
         this.on(events.initialEnd, this.onInitialEnd, this);
+        this.on(events.detailsInit, this.onDetailsInit, this);
         EventHandler.add(this.element, 'contextmenu', this.onContextMenu, this);
     }
     private removeEventListeners(): void {
@@ -703,7 +890,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.off(events.beforeRequest, this.showSpinner);
         this.off(events.afterRequest, this.hideSpinner);
         this.off(events.initialEnd, this.onInitialEnd);
+        this.off(events.detailsInit, this.onDetailsInit);
         EventHandler.remove(this.element, 'contextmenu', this.onContextMenu);
+    }
+
+    private onDetailsInit(): void {
+        if (isNOU(this.activeModule)) {
+            this.itemData = [getValue(this.path, this.feParent)];
+        }
     }
 
     private resizeHandler(): void {
@@ -715,7 +909,11 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             case 'altN':
                 e.preventDefault();
                 this.itemData = [getPathObject(this)];
-                createDialog(this, 'NewFolder');
+                if (!hasContentAccess(this.itemData[0])) {
+                    createDeniedDialog(this, this.itemData[0]);
+                } else {
+                    createDialog(this, 'NewFolder');
+                }
                 break;
             case 'f5':
                 e.preventDefault();
@@ -726,15 +924,21 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 e.preventDefault();
                 this.fileView = 'Details';
                 this.setProperties({ view: 'Details' }, true);
-                read(this, events.layoutChange, '/');
+                updateLayout(this, 'Details');
                 break;
             /* istanbul ignore next */
             case 'ctrlShift2':
                 e.preventDefault();
                 this.fileView = 'LargeIcons';
                 this.setProperties({ view: 'LargeIcons' }, true);
-                read(this, events.layoutChange, '/');
+                updateLayout(this, 'LargeIcons');
                 break;
+            case 'ctrlU':
+                e.preventDefault();
+                let uploadEle: HTMLElement = <HTMLElement>select('#' + this.element.id + CLS.UPLOAD_ID, this.element);
+                uploadEle.click();
+                break;
+
         }
     }
 
@@ -755,6 +959,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     private setPath(): void {
+        this.setProperties({ selectedItems: [] }, true);
         this.ensurePath();
         this.notify(events.clearPathInit, { selectedNode: this.pathId[0] });
         read(this, (this.path !== this.originalPath) ? events.initialEnd : events.finalizeEnd, this.path);
@@ -774,16 +979,15 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 case 'ajaxSettings':
                     this.ajaxSettingSetModel(newProp);
                     break;
+                case 'allowDragAndDrop':
+                    this.allowDragAndDrop = newProp.allowDragAndDrop;
+                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
                 case 'allowMultiSelection':
                     if (this.allowMultiSelection) {
                         addClass([this.element], CLS.CHECK_SELECT);
                     } else {
                         removeClass([this.element], CLS.CHECK_SELECT);
-                    }
-                    if (this.selectedItems.length === 1) {
-                        this.singleSelection = this.selectedItems[0];
-                    } else {
-                        this.singleSelection = null;
                     }
                     this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
                     break;
@@ -795,8 +999,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     this.notify(events.modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
                     break;
                 case 'enableRtl':
-                    this.setRtl(newProp.enableRtl);
-                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    this.enableRtl = newProp.enableRtl;
+                    this.refresh();
                     break;
                 case 'height':
                     let height: string | number = !isNOU(newProp.height) ? formatUnit(newProp.height) : newProp.height;
@@ -862,7 +1066,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 case 'width':
                     let width: string | number = !isNOU(newProp.width) ? formatUnit(newProp.width) : newProp.width;
                     setAttr(this.element, { 'width': width });
-                    this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
                     break;
             }
         }
@@ -952,7 +1156,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Refresh the folder files of the file manager.
+     * Refreshes the folder files of the file manager.
      * @returns void
      */
     public refreshFiles(): void {
@@ -960,67 +1164,12 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To select node names for performing file operations
-     * @public
-     * @hidden
+     * Refreshes the layout of the file manager.
+     * @returns void
      */
-    public fileOperation(nodes: Object[], operation?: string): void {
-        let i: number = 0;
-        let selectNodes: { [key: string]: string }[] = <{ [key: string]: string }[]>nodes;
-        while (i < nodes.length) {
-            (operation !== 'Remove') ? this.selectedNodes.push(selectNodes[i].name) : this.selectedNodes = this.selectedNodes;
-            (operation === 'Remove') ? this.deleteRecords.push(selectNodes[i].name) : this.deleteRecords = this.deleteRecords;
-            i++;
-        }
-    }
-
-    /**
-     * Gets details of file's / folder's
-     * @hidden
-     */
-    /* istanbul ignore next */
-    public getDetails(): void {
-        removeBlur(this as IFileManager);
-        this.targetPath = this.path;
-        if (this.activeElements && this.activeElements.length === 0) {
-            this.activeElements = this.element.querySelectorAll('.' + CLS.ACTIVE);
-        }
-        let items: Object[] = activeElement('FileInfo', null, this as IFileManager);
-        /* istanbul ignore next */
-        items = (items.length !== 0) ? items : activeElement('FileInfo', false, this as IFileManager);
-        this.selectedNodes = [];
-        this.fileOperation(items);
-        if (this.selectedNodes.length === 0 || this.targetPath === '') {
-            this.selectedNodes[0] = '';
-        }
-        GetDetails(this as IFileManager, this.selectedNodes, this.targetPath, 'GetDetails');
-    }
-
-    /**
-     * Performs paste operation
-     * @hidden
-     */
-    public pasteHandler(): void {
-        if (this.selectedNodes.length !== 0) {
-            if ((this.fileAction === 'MoveTo' && this.targetPath !== this.path) || this.fileAction === 'CopyTo') {
-                paste(
-                    // tslint:disable-next-line
-                    this as IFileManager, this.targetPath, this.selectedNodes, this.path, this.fileAction, this.navigationpaneModule, []);
-            } else {
-                removeBlur(this as IFileManager);
-            }
-        }
-    }
-
-    /**
-     * Performs delete operation
-     * @hidden
-     */
-    public deleteHandler(items: Object[]): void {
-        this.deleteRecords = [];
-        this.fileOperation(items, 'Remove');
-        Delete(this as IFileManager, this.deleteRecords, this.targetPath, 'Remove', this.navigationpaneModule);
-        this.deleteRecords = [];
+    public refreshLayout(): void {
+        this.adjustHeight();
+        this.notify(events.layoutRefresh, {});
     }
 
     /**

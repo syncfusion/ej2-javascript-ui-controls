@@ -6,103 +6,103 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export interface TaskFieldsModel {
 
     /**
-     * Defines mapping property to get task id value from data source.
+     * To map id of task from data source.
      * @default null
      */
     id?: string;
 
     /**
-     * Defines mapping property to get task name value from data source.
+     * To map name of task from data source.
      * @default null     
      */
     name?: string;
 
     /**
-     * Defines mapping property to get task's parent id value from data source.
+     * To map parent id of task from data source.
      * @default null     
      */
     parentID?: string;
 
     /**
-     * Defines mapping property to get task name value from data source.
+     * To map start date of task from data source.
      * @default null      
      */
     startDate?: string;
 
     /**
-     * Define end date mapping in Gantt
+     * To map end date of task from data source.
      * @default null     
      */
     endDate?: string;
 
     /**
-     * Define taskDependency mapping in Gantt
+     * To map dependency of task from data source.
      * @default null
      */
     dependency?: string;
 
     /**
-     * Define progress mapping in Gantt
+     * To map progress of task from data source.
      * @default null
      */
     progress?: string;
 
     /**
-     * Define child mapping in Gantt
+     * To map child of task from data source.
      * @default null
      */
     child?: string;
 
     /**
-     * Define Milestone mapping in Gantt
+     * To map milestone of task from data source.
      * @default null
      */
     milestone?: string;
 
     /**
-     * Define Milestone mapping in Gantt
+     * To map duration of task from data source.
      * @default null
      */
     duration?: string;
 
     /**
-     * To map duration unit of task
+     * To map duration unit of task from data source.
      */
     durationUnit?: string;
 
     /**
-     * To map custom css class of task
+     * To map custom css class of task from data source.
      */
     cssClass?: string;
 
     /**
-     * To map baseline start date of task
+     * To map baseline start date of task from data source.
      */
     baselineStartDate?: string;
 
     /**
-     * To map baseline end date of task
+     * To map baseline end date of task from data source.
      */
     baselineEndDate?: string;
 
     /**
-     * To map assigned resources of task
+     * To map assigned resources of task from data source.
      */
     resourceInfo?: string;
 
     /**
-     * To map expand status of parent record
+     * To map expand status of parent record from data source.
      */
     expandState?: string;
 
     /**
-     * Define the Indicators of Gantt
+     * To map indicators of task from data source.
      * @default null      
      */
     indicators?: string;
 
     /**
-     * To map note of task
+     * To map notes value of task from data source.
      * @default null
      */
     notes?: string;

@@ -118,6 +118,80 @@ describe('Toolbar - view html', () => {
         });
     });
 
+    describe('Value null with textarea value testing', () => {
+        /* EJ2-26270 - IE 11 Null is displayed when clicking on code view */
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        let trgEle: HTMLElement;
+
+        it('DIV', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toBe("<p><br></p>");
+            expect(rteObj.value).toBe(null);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea').value === '').toBe(true);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toBe("<p><br></p>");
+            expect(rteObj.value).toBe(null);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea').value === '').toBe(true);
+            ((<any>rteObj).element.querySelector('.e-rte-srctextarea') as HTMLTextAreaElement).value = '<p>datamanager</p>';
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea').value === '<p>datamanager</p>').toBe(true);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toBe("<p>datamanager</p>");
+            expect(rteObj.value).toBe('<p>datamanager</p>');
+        });
+
+        it('IFrame', () => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['SourceCode', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toBe("<p><br></p>");
+            expect(rteObj.value).toBe(null);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea').value === '').toBe(true);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toBe("<p><br></p>");
+            expect(rteObj.value).toBe(null);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea').value === '').toBe(true);
+            ((<any>rteObj).element.querySelector('.e-rte-srctextarea') as HTMLTextAreaElement).value = '<p>datamanager</p>';
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea').value === '<p>datamanager</p>').toBe(true);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toBe("<p>datamanager</p>");
+            expect(rteObj.value).toBe('<p>datamanager</p>');
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('Undo and redo toolbar status', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;

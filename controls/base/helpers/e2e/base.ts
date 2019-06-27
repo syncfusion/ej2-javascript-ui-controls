@@ -1,3 +1,4 @@
+
 /**
  * Base E2E Helper Function
  */
@@ -11,15 +12,15 @@ export abstract class TestHelper {
     }
 
     public setModel(property: string, value: any) {
-        return Mapper.setModel(this.id, this.selector.bind(this), property, value);
+        return Mapper.setModel(this.id, this.selector, property, value);
     }
 
     public getModel(property: string, ) {
-        return Mapper.getModel(this.id, this.selector.bind(this), property);
+        return Mapper.getModel(this.id, this.selector, property);
     }
 
     public invoke(fName: string, args: any[] = []) {
-        return Mapper.invoke(this.id, this.selector.bind(this), fName, args);
+        return Mapper.invoke(this.id, this.selector, fName, args);
     }
 
     public eventHandler(eventName: string, callback: any) {

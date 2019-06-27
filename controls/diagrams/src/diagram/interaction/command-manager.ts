@@ -1,26 +1,22 @@
 import { IElement, ISelectionChangeEventArgs, IConnectionChangeEventArgs, IDragOverEventArgs } from '../objects/interface/IElement';
 import { IDropEventArgs, IExpandStateChangeEventArgs } from '../objects/interface/IElement';
-import { Connector, getBezierPoints, isEmptyVector, BezierSegment } from '../objects/connector';
+import { Connector, getBezierPoints, isEmptyVector, BezierSegment, BpmnFlow } from '../objects/connector';
 import { Node, BpmnShape, BpmnSubEvent, BpmnAnnotation } from '../objects/node';
 import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
 import { MouseEventArgs } from './event-handlers';
 import { PointPortModel } from '../objects/port-model';
-import {
-    ConnectorModel, StraightSegmentModel, OrthogonalSegmentModel, BezierSegmentModel, BpmnFlowModel
-} from '../objects/connector-model';
+import { ConnectorModel, StraightSegmentModel, OrthogonalSegmentModel, BezierSegmentModel } from '../objects/connector-model';
 import { NodeModel, BpmnTransactionSubProcessModel, BpmnAnnotationModel, SwimLaneModel } from '../objects/node-model';
 import { OrthogonalSegment } from '../objects/connector';
 import { Rect } from '../primitives/rect';
 import { Diagram } from '../../diagram/diagram';
 import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './../primitives/matrix';
-import { cloneObject as clone, cloneObject, getBounds } from './../utility/base-util';
-import {
-    completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3,
-    getAnnotationPosition, updatePathElement
-} from './../utility/diagram-util';
+import { cloneObject as clone, cloneObject, getBounds, getFunction } from './../utility/base-util';
+import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition } from './../utility/diagram-util';
+import { updatePathElement } from './../utility/diagram-util';
 import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
 import { SelectorModel } from './selector-model';
 import { Selector } from './selector';
@@ -61,7 +57,6 @@ import { getConnectors, updateConnectorsProperties, findLaneIndex } from './../u
 import { GridPanel } from '../core/containers/grid';
 import { SwimLane } from '../objects/node';
 import { swimLaneSelection, pasteSwimLane, gridSelection } from '../utility/swim-lane-util';
-
 
 /**
  * Defines the behavior of commands
@@ -119,7 +114,9 @@ export class CommandHandler {
     /**
      * @private
      */
-    public showTooltip(node: IElement, position: PointModel, content: string, toolName: string, isTooltipVisible: boolean): void {
+    public showTooltip(
+        node: IElement, position: PointModel, content: string | HTMLElement, toolName: string,
+        isTooltipVisible: boolean): void {
         if (isTooltipVisible) {
             this.diagram.tooltipObject.position = 'BottomCenter';
             this.diagram.tooltipObject.animation = { open: { delay: 0, duration: 0 } };
@@ -127,8 +124,19 @@ export class CommandHandler {
             this.diagram.tooltipObject.openDelay = 0;
             this.diagram.tooltipObject.closeDelay = 0;
         }
+        if (this.diagram.selectedItems.setTooltipTemplate) {
+            let template: string | HTMLElement;
+            let setTooltipTemplate: Function = getFunction(this.diagram.selectedItems.setTooltipTemplate);
+            if (setTooltipTemplate) {
+                template = setTooltipTemplate(node, this.diagram);
+            }
+            if (template instanceof HTMLElement) {
+                content = template.cloneNode(true) as HTMLElement;
+            } else {
+                content = template ? template : content;
+            }
+        }
         this.diagram.tooltipObject.content = content;
-
         let tooltipOffset: PointModel = getTooltipOffset(this.diagram, { x: position.x, y: position.y }, node);
         this.diagram.tooltipObject.offsetX = tooltipOffset.x + (toolName === 'ConnectTool' ? 10 : 0);
         this.diagram.tooltipObject.offsetY = tooltipOffset.y + 10;
@@ -172,7 +180,7 @@ export class CommandHandler {
     /**
      * @private
      */
-    public triggerEvent(event: DiagramEvent, args: Object): void {
+    public triggerEvent(event: DiagramEvent, args: Object, onSuccessCallBack?: Function, onFailureCallback?: Function): void {
         if (event === DiagramEvent.drop || event === DiagramEvent.positionChange ||
             event === DiagramEvent.connectionChange) {
             if (this.diagram.currentSymbol) {
@@ -187,7 +195,7 @@ export class CommandHandler {
             }
         }
 
-        this.diagram.triggerEvent(event, args);
+        this.diagram.triggerEvent(event, args, onSuccessCallBack, onFailureCallback);
     }
 
     /**
@@ -201,6 +209,9 @@ export class CommandHandler {
             this.triggerEvent(DiagramEvent.dragOver, dragOverArg);
         }
     }
+
+
+    private connectionChangeEvent: object = {};
     /**
      * @private
      */
@@ -243,24 +254,36 @@ export class CommandHandler {
                     connector: connector, oldValue: oldChanges,
                     newValue: newChanges, cancel: false, state: 'Changing', connectorEnd: endPoint
                 };
-                this.triggerEvent(DiagramEvent.connectionChange, arg);
-                if (arg.cancel) {
-                    connector.sourceID = oldChanges.sourceID; connector.sourcePortID = oldChanges.sourcePortID;
-                    connector.targetID = oldChanges.targetID; connector.targetPortID = oldChanges.targetPortID;
-                } else {
-                    this.diagram.connectorPropertyChange(connector as Connector, oldChanges, newChanges);
-                    this.diagram.updateDiagramObject(connector);
-                    arg = {
-                        connector: connector, oldValue: oldChanges,
-                        newValue: newChanges, cancel: false, state: 'Changed', connectorEnd: endPoint
-                    };
-                    this.triggerEvent(DiagramEvent.connectionChange, arg);
-                }
+                this.connectionChangeEvent = { connector: connector, oldChanges: oldChanges, newChanges: newChanges, endPoint: endPoint };
+                this.triggerEvent(DiagramEvent.connectionChange, arg, this.successDisconnect.bind(this));
             }
         }
     }
 
+    private successDisconnect(arg: IConnectionChangeEventArgs): void {
+        let conn: string = 'connector';
+        let old: string = 'oldChanges';
+        let char: string = 'newChanges';
+        let end: string = 'endPoint';
+        let connector: Connector = this.connectionChangeEvent[conn];
+        let oldChanges: Connector = this.connectionChangeEvent[old];
+        let newChanges: Connector = this.connectionChangeEvent[char];
+        let endPoint: string = this.connectionChangeEvent[end];
+        if (arg.cancel) {
+            connector.sourceID = oldChanges.sourceID; connector.sourcePortID = oldChanges.sourcePortID;
+            connector.targetID = oldChanges.targetID; connector.targetPortID = oldChanges.targetPortID;
+        } else {
+            this.diagram.connectorPropertyChange(connector as Connector, oldChanges, newChanges);
+            this.diagram.updateDiagramObject(connector);
+            arg = {
+                connector: connector, oldValue: oldChanges,
+                newValue: newChanges, cancel: false, state: 'Changed', connectorEnd: endPoint
+            };
+            this.triggerEvent(DiagramEvent.connectionChange, arg);
+        }
+    }
 
+    private connectionChange: object = {};
     private connectionEventChange(
         connector: Connector, oldChanges: Connector, newChanges: Connector, endPoint: string): void {
         let nodeEndId: string = endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
@@ -270,7 +293,27 @@ export class CommandHandler {
             newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] },
             cancel: false, state: 'Changing', connectorEnd: endPoint
         };
-        this.triggerEvent(DiagramEvent.connectionChange, arg);
+        this.connectionChange = {
+            connector: connector, oldChanges: oldChanges, newChanges: newChanges,
+            endPoint: endPoint, nodeEndId: nodeEndId, portEndId: portEndId
+        };
+        this.triggerEvent(DiagramEvent.connectionChange, arg, this.successConnectionChange.bind(this));
+
+    }
+
+    private successConnectionChange(arg: IConnectionChangeEventArgs): void {
+        let connChar: string = 'connector';
+        let oldChar: string = 'oldChanges';
+        let newChar: string = 'newChanges';
+        let endChar: string = 'endPoint';
+        let nodeChar: string = 'nodeEndId';
+        let portChar: string = 'portEndId';
+        let connector: Connector = this.connectionChange[connChar];
+        let oldChanges: Connector = this.connectionChange[oldChar];
+        let newChanges: Connector = this.connectionChange[newChar];
+        let endPoint: string = this.connectionChange[endChar];
+        let nodeEndId: string = this.connectionChange[nodeChar];
+        let portEndId: string = this.connectionChange[portChar];
         if (arg.cancel) {
             connector[nodeEndId] = oldChanges[nodeEndId];
             connector[portEndId] = oldChanges[portEndId];
@@ -298,7 +341,6 @@ export class CommandHandler {
             if (element && element.id === argsTarget.id + '_content') {
                 return argsTarget;
             }
-
             if (source && argsTarget.shape.type === 'Bpmn' && (argsTarget.shape as BpmnShape).shape === 'Activity') {
                 if ((argsTarget.shape as BpmnShape).activity.subProcess.type === 'Transaction') {
                     let transaction: BpmnTransactionSubProcessModel = (argsTarget.shape as BpmnShape).activity.subProcess.transaction;
@@ -403,6 +445,8 @@ export class CommandHandler {
         }
     }
 
+    private connectionChangeConnect: object = {};
+
     /**
      * @private
      */
@@ -440,24 +484,48 @@ export class CommandHandler {
                 newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] },
                 cancel: false, state: 'Changing', connectorEnd: endPoint
             };
-            this.triggerEvent(DiagramEvent.connectionChange, arg);
-            if (arg.cancel) {
-                connector[nodeEndId] = oldNodeId; connector[portEndId] = oldPortId;
-                newChanges[nodeEndId] = oldNodeId; newChanges[portEndId] = oldPortId;
-            } else {
-                this.diagram.connectorPropertyChange(connector as Connector, oldChanges, newChanges);
-                this.diagram.updateDiagramObject(connector);
-                arg = {
-                    connector: connector, oldValue: { nodeId: oldNodeId, portId: oldPortId },
-                    newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }, cancel: false,
-                    state: 'Changed', connectorEnd: endPoint
-                };
-                this.triggerEvent(DiagramEvent.connectionChange, arg);
-            }
+            this.connectionChangeConnect = {
+                connector: connector, oldChanges: oldChanges, newChanges: newChanges,
+                endPoint: endPoint, oldNodeId: oldNodeId, oldPortId: oldPortId,
+                nodeEndId: nodeEndId, portEndId: portEndId
+            };
+            this.triggerEvent(DiagramEvent.connectionChange, arg, this.successConnect.bind(this));
+
         }
         this.renderHighlighter(args, undefined, endPoint === 'ConnectorSourceEnd');
     }
 
+    private successConnect(arg: IConnectionChangeEventArgs): void {
+        let connSuccess: string = 'connector';
+        let oldSuccess: string = 'oldChanges';
+        let charSuccess: string = 'newChanges';
+        let endSuccess: string = 'endPoint';
+        let nodeEndSuccess: string = 'nodeEndId';
+        let portEndSuccess: string = 'portEndId';
+        let oldNodeSuccess: string = 'oldNodeId';
+        let oldPortSuccess: string = 'oldPortId';
+        let connector: Connector = this.connectionChangeConnect[connSuccess];
+        let oldChanges: Connector = this.connectionChangeConnect[oldSuccess];
+        let newChanges: Connector = this.connectionChangeConnect[charSuccess];
+        let endPoint: string = this.connectionChangeConnect[endSuccess];
+        let nodeEndId: string = this.connectionChangeConnect[nodeEndSuccess];
+        let portEndId: string = this.connectionChangeConnect[portEndSuccess];
+        let oldNodeId: string = this.connectionChangeConnect[oldNodeSuccess];
+        let oldPortId: string = this.connectionChangeConnect[oldPortSuccess];
+        if (arg.cancel) {
+            connector[nodeEndId] = oldNodeId; connector[portEndId] = oldPortId;
+            newChanges[nodeEndId] = oldNodeId; newChanges[portEndId] = oldPortId;
+        } else {
+            this.diagram.connectorPropertyChange(connector as Connector, oldChanges, newChanges);
+            this.diagram.updateDiagramObject(connector);
+            arg = {
+                connector: connector, oldValue: { nodeId: oldNodeId, portId: oldPortId },
+                newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }, cancel: false,
+                state: 'Changed', connectorEnd: endPoint
+            };
+            this.triggerEvent(DiagramEvent.connectionChange, arg);
+        }
+    }
 
     /** @private */
     public cut(): void {
@@ -1114,6 +1182,10 @@ export class CommandHandler {
         let annotation: DiagramElement = this.diagram.findElementUnderMouse(obj, currentPosition);
         this.diagram.startTextEdit(obj, annotation instanceof TextElement ? (annotation.id).split('_')[1] : undefined);
     }
+    /**
+     * @private
+     */
+    private selectObjectParameters: object = {};
 
 
     /** @private */
@@ -1124,9 +1196,19 @@ export class CommandHandler {
             oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
         };
-        let select: boolean = true;
-        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+        this.selectObjectParameters = { oldValue: oldValue, multipleSelection: multipleSelection, obj: obj };
+        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg, this.selectObjectSuccess.bind(this));
+    }
+
+    private selectObjectSuccess(arg: ISelectionChangeEventArgs): void {
         let canDoMultipleSelection: number = canMultiSelect(this.diagram);
+        let select: boolean = true;
+        let objChar: string = 'obj';
+        let multipleSelectionChar: string = 'multipleSelection';
+        let oldValueChar: string = 'oldValue';
+        let obj: (NodeModel | ConnectorModel)[] = this.selectObjectParameters[objChar];
+        let multipleSelection: boolean = this.selectObjectParameters[multipleSelectionChar];
+        let oldValue: (NodeModel | ConnectorModel)[] = this.selectObjectParameters[oldValueChar];
         let canDoSingleSelection: number = canSingleSelect(this.diagram);
         if (canDoSingleSelection || canDoMultipleSelection) {
             if (!canDoMultipleSelection && ((obj.length > 1) || (multipleSelection && obj.length === 1))) {
@@ -1699,10 +1781,12 @@ export class CommandHandler {
 
     }
 
+    private onClearSelectionParameters: object = {};
+
     /** @private */
     public clearSelection(triggerAction?: boolean): void {
         if (hasSelection(this.diagram)) {
-            let selectormodel: SelectorModel = this.diagram.selectedItems;
+            this.onClearSelectionParameters = {};
             let arrayNodes: (NodeModel | ConnectorModel)[] = this.getSelectedObject();
             if (this.diagram.currentSymbol) {
                 this.diagram.previousSelectedObject = arrayNodes;
@@ -1711,30 +1795,43 @@ export class CommandHandler {
                 oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
                 state: 'Changing', type: 'Removal', cancel: false
             };
+            this.onClearSelectionParameters = { arrayNodes: arrayNodes, triggerAction: triggerAction };
             if (triggerAction) {
-                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg, this.onClearSelectionSuccess.bind(this));
+            } else {
+                this.onClearSelectionSuccess(arg);
             }
-            if (!arg.cancel) {
-                selectormodel.offsetX = 0;
-                selectormodel.offsetY = 0;
-                selectormodel.width = 0;
-                selectormodel.height = 0;
-                selectormodel.rotateAngle = 0;
-                selectormodel.nodes = [];
-                selectormodel.connectors = [];
-                selectormodel.wrapper = null;
-                (selectormodel as Selector).annotation = undefined;
-                this.diagram.clearSelectorLayer();
-                if (triggerAction) {
-                    arg = {
-                        oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
-                        state: 'Changed', type: 'Removal', cancel: false
-                    };
-                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-                }
+
+        }
+    }
+    /** @private */
+    private onClearSelectionSuccess(arg: ISelectionChangeEventArgs): void {
+        let selectormodel: SelectorModel = this.diagram.selectedItems;
+        let triggerActionChar: string = 'triggerAction';
+        let triggerAction: boolean = this.onClearSelectionParameters[triggerActionChar];
+        let arrayNodesChar: string = 'arrayNodes';
+        let arrayNodes: (NodeModel | ConnectorModel)[] = this.onClearSelectionParameters[arrayNodesChar];
+        if (!arg.cancel) {
+            selectormodel.offsetX = 0;
+            selectormodel.offsetY = 0;
+            selectormodel.width = 0;
+            selectormodel.height = 0;
+            selectormodel.rotateAngle = 0;
+            selectormodel.nodes = [];
+            selectormodel.connectors = [];
+            selectormodel.wrapper = null;
+            (selectormodel as Selector).annotation = undefined;
+            this.diagram.clearSelectorLayer();
+            if (triggerAction) {
+                arg = {
+                    oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
+                    state: 'Changed', type: 'Removal', cancel: false
+                };
+                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
             }
         }
     }
+
 
     /** @private */
     public clearSelectedItems(): void {
@@ -1989,7 +2086,7 @@ export class CommandHandler {
             if (endPoint === 'ConnectorSourceEnd' && connector.type === 'Orthogonal') {
                 this.changeSegmentLength(connector, target, targetPortId, isDragSource);
             }
-            if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
+            if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlow).sequence === 'Default') {
                 this.updatePathElementOffset(connector);
             }
         }
@@ -2358,7 +2455,7 @@ export class CommandHandler {
                     prev.direction = Point.direction(prev.points[0], prev.points[prev.points.length - 1]) as Direction;
                 }
             }
-            if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
+            if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlow).sequence === 'Default') {
                 this.updatePathElementOffset(connector);
             }
         }
@@ -2467,7 +2564,7 @@ export class CommandHandler {
             rotateMatrix(matrix, angle, pivot.x, pivot.y);
             conn.sourcePoint = transformPointByMatrix(matrix, conn.sourcePoint);
             conn.targetPoint = transformPointByMatrix(matrix, conn.targetPoint);
-            if (conn.shape.type === 'Bpmn' && (conn.shape as BpmnFlowModel).sequence === 'Default') {
+            if (conn.shape.type === 'Bpmn' && (conn.shape as BpmnFlow).sequence === 'Default') {
                 this.updatePathElementOffset(conn);
             }
             let newProp: Connector = { sourcePoint: conn.sourcePoint, targetPoint: conn.targetPoint } as Connector;
@@ -2676,7 +2773,7 @@ export class CommandHandler {
     private scaleConnector(connector: Connector, matrix: Matrix, oldValues: Connector): void {
         connector.sourcePoint = transformPointByMatrix(matrix, connector.sourcePoint);
         connector.targetPoint = transformPointByMatrix(matrix, connector.targetPoint);
-        if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
+        if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlow).sequence === 'Default') {
             this.updatePathElementOffset(connector);
         }
         let newProp: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;

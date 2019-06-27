@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 17.1.51 (2019-06-11)
-
-### DropDownButton
-
-#### Bug Fixes
-
-- Resolved Method and Event name conflict issue.
-
 ## 17.1.50 (2019-06-04)
 
 ### ProgressButton

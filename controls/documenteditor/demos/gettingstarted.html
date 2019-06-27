@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title> Typescript Components</title>   
+    <title> Typescript Components</title>
     <link rel="stylesheet" type="text/css" href="./material.css">
     <link rel="stylesheet" type="text/css" href="./style.css">
     <meta charset="utf-8" />
@@ -66,6 +66,31 @@
                 name: '@syncfusion/ej2-splitbuttons',
                 location: '../node_modules/@syncfusion/ej2-splitbuttons/dist',
                 main: 'ej2-splitbuttons.umd.min.js'
+            },
+            {
+                name: '@syncfusion/ej2-svg-base',
+                location: '../../node_modules/@syncfusion/ej2-svg-base/dist',
+                main: 'ej2-svg-base.umd.min.js'
+            },
+            {
+                name: '@syncfusion/ej2-pdf-export',
+                location: '../../node_modules/@syncfusion/ej2-pdf-export/dist',
+                main: 'ej2-pdf-export.umd.min.js'
+            },
+            {
+                name: '@syncfusion/ej2-calendars',
+                location: '../../node_modules/@syncfusion/ej2-calendars/dist',
+                main: 'ej2-calendars.umd.min.js'
+            },
+            {
+                name: '@syncfusion/ej2-charts',
+                location: '../../node_modules/@syncfusion/ej2-charts/dist',
+                main: 'ej2-charts.umd.min.js'
+            },
+            {
+                name: '@syncfusion/ej2-office-chart',
+                location: '../../node_modules/@syncfusion/ej2-office-chart/dist',
+                main: 'ej2-office-chart.umd.min.js'
             }
             ]
         });
@@ -341,7 +366,8 @@
     </style>
 </head>
 
-<body onkeypress="disableBrowserAction(event)" onkeydown="disableBrowserAction(event)" onclick="showHideToolBarOptions(event)">
+<body onkeypress="disableBrowserAction(event)" onkeydown="disableBrowserAction(event)"
+    onclick="showHideToolBarOptions(event)">
     <input type="file" id="uploadfileButton" style="position:fixed; left:-100em" />
     <input type="file" id="insertImageButton" style="position:fixed; left:-110em" accept=".jpg,.jpeg,.png,.bmp" />
     <input type="color" id="font_color_input" style="position:fixed; left:-100em" />

@@ -309,6 +309,7 @@
               }
 
               .e-pivot-button {
+                background-color: $field-list-button-color;
                 border-bottom: $field-list-border-size $field-list-border-type $field-list-button-border-color;
                 border-left: 0;
                 border-radius: 0;
@@ -324,7 +325,6 @@
                 text-transform: none;
                 width: 100%;
                 @if ($field-list-skin == 'bootstrap4') {
-                  background-color: $field-list-button-color;
                   color: $field-list-button-font-color;
                 }
 
@@ -335,12 +335,20 @@
 
                 &:hover {
                   background-color: $field-list-button-hover-color;
+
+                  .e-content {
+                    background-color: transparent;
+                  }
                 }
 
                 &:focus,
                 &:active {
                   background-color: $field-list-button-focus-color;
                   color: $field-list-button-active-color;
+
+                  .e-content {
+                    background-color: transparent;
+                  }
 
                   .e-sort,
                   .e-pv-filter,
@@ -352,6 +360,7 @@
 
 
                 .e-content {
+                  background-color: transparent;
                   flex: auto;
                   font-size: $field-list-button-font-size;
                   height: 16px;
@@ -1117,6 +1126,11 @@
                 width: 24px;
               }
             }
+          }
+        }
+        .e-draggable-prompt {
+          @if ($field-list-skin == 'bootstrap4') {
+            font-size: 16px;
           }
         }
       }

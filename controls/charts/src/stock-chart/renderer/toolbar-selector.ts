@@ -145,7 +145,7 @@ export class ToolBarSelector {
             this.stockChart.resizeTo = null;
             this.stockChart.zoomChange = false;
             for (let j: number = 0; j < this.stockChart.series.length; j++) {
-                this.stockChart.series[j].dataSource = this.stockChart.tempDataSource[j];
+                this.stockChart.series[j].dataSource = this.stockChart.tempDataSource[j] || this.stockChart.blazorDataSource[j];
             }
             this.stockChart.refresh();
         };
@@ -355,15 +355,19 @@ export class ToolBarSelector {
                     additionalRect = stockChart.svgObject.firstElementChild.getBoundingClientRect();
                     this.stockChart.svgObject.setAttribute('height', (svgHeight.height + additionalRect.height).toString());
                     (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(' + additionalRect.height + 'px)';
-                    (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
-                        // tslint:disable-next-line:align
-                        'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
+                    if (stockChart.enableSelector) {
+                        (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
+                            // tslint:disable-next-line:align
+                            'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
+                    }
                     stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
                     remove(getElement(this.stockChart.element.id + '_additionalExport'));
                     (getElement(stockID + 'chart') as HTMLElement).style.transform = 'translateY(0px)';
-                    (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
-                        // tslint:disable-next-line:align
-                        'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
+                    if (stockChart.enableSelector) {
+                        (getElement(stockID + 'rangeSelector') as HTMLElement).setAttribute('transform',
+                            // tslint:disable-next-line:align
+                            'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
+                    }
                     this.stockChart.svgObject.setAttribute('height', (svgHeight.height).toString());
                 }
             }
@@ -428,7 +432,8 @@ export class ToolBarSelector {
             titlePositionX(new Rect(0, 0, this.stockChart.availableSize.width, 0), this.stockChart.titleStyle),
             0, 'middle', this.stockChart.title, '', 'text-before-edge'
         );
-        textElement(options, this.stockChart.titleStyle, this.stockChart.titleStyle.color, exportElement);
+        textElement(this.stockChart.renderer as SvgRenderer, options, this.stockChart.titleStyle,
+                    this.stockChart.titleStyle.color, exportElement);
         let style: FontModel = { size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' };
         let x: number = measureText('Series: ' + this.selectedSeries, style).width / 2;
         let y: number = titleHeight;
@@ -460,7 +465,7 @@ export class ToolBarSelector {
     private textElementSpan(
         options: TextOption, font: FontModel, color: string,
         parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
-        forceAnimate: boolean = false, animateduration?: number
+        forceAnimate: boolean = false, animateDuration?: number
     ): Element {
         let renderer: SvgRenderer = new SvgRenderer('');
         let renderOptions: Object = {};
@@ -496,7 +501,7 @@ export class ToolBarSelector {
                 htmlObject.appendChild(tspanElement);
             }
         }
-        appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateduration);
+        appendChildElement(false, parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateDuration);
         return htmlObject;
     }
 }

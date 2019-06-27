@@ -1921,6 +1921,51 @@ describe('DDList', () => {
         });
     });
 
+    describe('key actions', () => {
+        describe('without opening popup', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, key: 'a', code: 'KeyA', charCode: 97 };
+            let list: any;
+            let ele: HTMLElement;
+            beforeAll(() => {
+                ele = createElement('input', { id: 'DropDownList' });
+                document.body.appendChild(ele);
+                list = new DropDownList({
+                    dataSource: datasource2, fields: { text: 'text', value: 'id' },
+                    index: 4,
+                    allowFiltering: true,
+                    select: function(e: any) {
+                        e.cancel = true;
+                    },
+                    open: function(e: any){
+                        e.cancel = true;
+                    },
+                    beforeOpen: function(e: any){
+                        e.cancel = true;
+                    },
+                    filtering: function(e: any) {
+                        e.cancel = true;
+                    }
+
+                });
+                list.appendTo(ele);
+            });
+            afterAll((done) => {
+                setTimeout(() => {
+                    list.destroy();
+                    ele.remove();
+                    done();
+                }, 450)
+            });
+            it('Send key value on search function', (done) => {
+                list.onSearch(keyEventArgs);
+                setTimeout(() => {
+                       expect(list.isPopupOpen).toBe(false);
+                    done()
+                }, 450)
+            });
+        });
+    });
+
     describe('with group', () => {
         let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
         let list: any;

@@ -547,7 +547,7 @@ let diagram: Diagram = new Diagram({
         }
     },
     dataSourceSettings: {
-        id: 'Id', parentId: 'ReportingPerson', dataManager: items
+        id: 'Id', parentId: 'ReportingPerson', dataSource: items
     },
 
     getNodeDefaults: (obj: Node, diagram: Diagram) => {

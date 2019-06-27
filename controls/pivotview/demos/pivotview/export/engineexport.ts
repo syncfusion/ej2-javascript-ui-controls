@@ -14,8 +14,8 @@ import { ExcelExport } from '../../../src/pivotview/actions/excel-export';
 //335 or 315
 PivotView.Inject(PDFExport, ExcelExport, FieldList, CalculatedField);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: false,
         enableSorting: true,
         sortSettings: [{ name: 'company', order: 'Descending' }],

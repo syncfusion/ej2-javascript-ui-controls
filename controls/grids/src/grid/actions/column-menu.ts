@@ -111,6 +111,7 @@ export class ColumnMenu implements IAction {
         }
         this.columnMenu.open(pos.top, pos.left);
         e.preventDefault();
+        this.parent.applyBiggerTheme(this.columnMenu.element.parentElement);
     }
 
     private columnMenuHandlerDown(e: Event): void {

@@ -34,4 +34,13 @@ export class PivotUtil {
         }
         return clonedData;
     }
+
+    public static inArray(value: Object, collection: Object[]): number {
+        for (let i: number = 0, cnt: number = collection.length; i < cnt; i++) {
+            if (collection[i] === value) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }

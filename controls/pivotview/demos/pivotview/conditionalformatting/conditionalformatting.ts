@@ -11,8 +11,8 @@ import { Button } from '@syncfusion/ej2-buttons';
 
 PivotView.Inject(ConditionalFormatting);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: true,
         rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
         columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
@@ -56,7 +56,7 @@ let button1: Button = new Button({ isPrimary: true });
 button1.appendTo('#reset');
 
 button1.element.onclick = (): void => {
-    if (pivotGridObj.dataSource.conditionalFormatSettings.length > 0) {
+    if (pivotGridObj.dataSourceSettings.conditionalFormatSettings.length > 0) {
         pivotGridObj.setProperties({ dataSource: { conditionalFormatSettings: [] } }, true);
         pivotGridObj.renderPivotGrid();
     }

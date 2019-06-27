@@ -18,14 +18,14 @@ import { Axis } from '../../../src/chart/axis/axis';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { unbindResizeEvents } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
 import { tool1, tool2, datetimeData, categoryData, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
-import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(ScatterSeries, LineSeries, DateTime, Category, Tooltip, DataLabel, ColumnSeries, AreaSeries, PolarSeries);
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+Chart.Inject(ScatterSeries, LineSeries, DateTime, DataEditing, Category, Tooltip, DataLabel, ColumnSeries, AreaSeries, PolarSeries);
 let data: any = tool1;
 let data2: any = tool2;
 let datetime: any = datetimeData;
@@ -1182,4 +1182,92 @@ describe('Scatter Series Inversed axis', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+        /**
+     * Cheacking point drag and drop with scatter series
+     */
+    describe('Scatter series with drag and drop support', () => {
+        let chartObj: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element1: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element1);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        labelFormat: 'y',
+                        intervalType: 'Years',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 }
+                    },
+
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Scatter',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24  },
+                                { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                                { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                                { x: new Date(2011, 0, 1), y: 70 }
+                            ],
+                            animation: { enable: false },
+                            xName: 'x', marker: {
+                                visible: true,
+                                width: 10,
+                                height: 10
+                            },
+                            yName: 'y', name: 'Germany', dragSettings: { enable: true }
+                        }
+                    ],
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                    //Initializing User Interaction Tooltip
+                    tooltip: {
+                        enable: true
+                    },
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element1.remove();
+        });
+
+        it('Scatter series drag and drop with marker true', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('container_Series_0_Point_2');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + element1.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + element1.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 100);
+                let yValue: number = chartObj.visibleSeries[0].points[2].yValue;
+                expect(yValue == 65.62 || yValue == 65.24).toBe(true);
+                chartObj.loaded = null;
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
     });

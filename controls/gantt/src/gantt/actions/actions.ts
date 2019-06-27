@@ -10,3 +10,4 @@ export * from './dependency';
 export * from './selection';
 export * from './toolbar';
 export * from './day-markers';
+export * from './context-menu';

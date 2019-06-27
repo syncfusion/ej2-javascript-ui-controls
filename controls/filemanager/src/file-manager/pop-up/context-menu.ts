@@ -1,12 +1,13 @@
-import { ContextMenu as Menu, BeforeOpenCloseMenuEventArgs, TreeView, MenuItemModel } from '@syncfusion/ej2-navigations';
-import { IFileManager, FileMenuClickEventArgs, FileMenuOpenEventArgs, NotifyArgs, viewType } from '../base/interface';
-import { isNullOrUndefined, KeyboardEventArgs, createElement, closest, remove, KeyboardEvents } from '@syncfusion/ej2-base';
-import { getValue } from '@syncfusion/ej2-base';
+import { ContextMenu as Menu, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { IFileManager, MenuClickEventArgs, MenuOpenEventArgs, NotifyArgs } from '../base/interface';
+import { isNullOrUndefined as isNOU, KeyboardEventArgs, createElement, closest, KeyboardEvents } from '@syncfusion/ej2-base';
+import { getValue, select } from '@syncfusion/ej2-base';
 import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { Download, read } from './../common/operations';
+import { Download, GetDetails } from './../common/operations';
 import { createDialog } from './dialog';
-import { cutFiles, copyFiles, removeBlur, refresh, getItemObject, getFileObject, getPathObject, getLocaleText } from './../common/utility';
-import { getCssClass, sortbyClickHandler } from './../common/utility';
+import { cutFiles, copyFiles, refresh, getPathObject, getLocaleText, updateLayout } from './../common/utility';
+import { getCssClass, sortbyClickHandler, pasteHandler } from './../common/utility';
+import { createDeniedDialog, hasContentAccess, hasUploadAccess, hasEditAccess, hasDownloadAccess } from './../common/utility';
 import * as events from './../base/constant';
 import * as CLS from '../base/classes';
 
@@ -17,8 +18,11 @@ export class ContextMenu {
     private parent: IFileManager;
     private targetElement: HTMLElement;
     public contextMenu: Menu;
+    public menuTarget: HTMLElement;
     private keyConfigs: { [key: string]: string };
     private keyboardModule: KeyboardEvents;
+    private menuType: string;
+    public menuItemData: object;
     /**
      * Constructor for the ContextMenu module
      * @hidden
@@ -40,6 +44,7 @@ export class ContextMenu {
             beforeItemRender: this.onBeforeItemRender.bind(this),
             select: this.onSelect.bind(this),
             beforeOpen: this.onBeforeOpen.bind(this),
+            beforeClose: this.onBeforeClose.bind(this),
             cssClass: getCssClass(this.parent, CLS.ROOT_POPUP)
         });
         this.contextMenu.appendTo('#' + this.parent.element.id + CLS.CONTEXT_MENU_ID);
@@ -62,32 +67,38 @@ export class ContextMenu {
         }
     }
 
+    public onBeforeClose(): void {
+        this.menuTarget = null;
+    }
+
     /* istanbul ignore next */
     public onBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
-        let select: boolean = false;
+        let selected: boolean = false;
         let uid: string;
         // tslint:disable-next-line
         let data: { [key: string]: Object };
         let treeFolder: boolean = false;
         let target: Element = args.event.target as Element;
+        this.menuTarget = <HTMLElement>target;
         if (target.classList.contains('e-spinner-pane')) {
             target = this.parent.navigationpaneModule.activeNode.getElementsByClassName(CLS.FULLROW)[0];
+            this.menuTarget = <HTMLElement>target;
         }
         if (target.classList.contains(CLS.FULLROW)) {
             this.parent.selectedItems.length = 0;
         }
         this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr') as HTMLElement : target as HTMLElement;
         let view: string = this.getTargetView(target);
+        this.updateActiveModule();
         /* istanbul ignore next */
         if (target.classList.contains(CLS.TREE_VIEW) || closest(target, 'th') ||
-            (closest(target, '#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID))) {
+            (closest(target, '#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID)) ||
+            (closest(target, '#' + this.parent.element.id + CLS.TOOLBAR_ID))) {
             args.cancel = true;
             // tslint:disable-next-line
         } else if (!(this.parent.view === 'LargeIcons') && this.targetElement &&
             this.targetElement.classList.contains('e-emptyrow')) {
             this.setLayoutItem(target);
-            //Paste
-            // this.contextMenu.enableItems([this.getMenuId('Paste')], this.parent.enablePaste, true);
             /* istanbul ignore next */
         } else if (closest(target, '.' + CLS.EMPTY)) {
             this.setLayoutItem(target);
@@ -95,31 +106,31 @@ export class ContextMenu {
         } else if (!target.classList.contains(CLS.MENU_ITEM) && !target.classList.contains(CLS.MENU_ICON) && !target.classList.contains(CLS.SUBMENU_ICON)) {
             /* istanbul ignore next */
             // tslint:disable-next-line
-            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
+            if (this.parent.view === 'LargeIcons' && !isNOU(closest(target, 'li')) && !closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
                 let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
-                data = this.parent.visitedData as { [key: string]: Object };
                 if (!closest(target, 'li').classList.contains('e-active')) {
                     this.parent.largeiconsviewModule.doSelection(target, eveArgs);
                 }
-                select = true;
-            } else if (!isNullOrUndefined(closest(target, 'tr'))) {
+                data = this.parent.visitedData as { [key: string]: Object };
+                selected = true;
+            } else if (!isNOU(closest(target, 'tr'))) {
                 uid = this.targetElement.getAttribute('data-uid');
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data as { [key: string]: Object };
-                if (isNullOrUndefined(this.targetElement.getAttribute('aria-selected'))) {
+                if (isNOU(this.targetElement.getAttribute('aria-selected'))) {
                     /* istanbul ignore next */
                     // tslint:disable-next-line
                     this.parent.detailsviewModule.gridObj.selectRows([parseInt(this.targetElement.getAttribute('aria-rowindex'), 10)])
                 }
-                select = true;
+                selected = true;
                 /* istanbul ignore next */
             } else if (closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
                 uid = closest(target, 'li').getAttribute('data-uid');
                 treeFolder = true;
             }
             /* istanbul ignore next */
-            if (select) {
+            if (selected) {
                 if (getValue('isFile', data) === true) {
-                    this.setFileItem(target);
+                    this.setFileItem();
                 } else {
                     this.setFolderItem(false);
                 }
@@ -127,38 +138,48 @@ export class ContextMenu {
             } else if (treeFolder) {
                 this.setFolderItem(true);
                 if (uid === this.parent.pathId[0]) {
-                    this.contextMenu.enableItems([this.getMenuId('Delete'), this.getMenuId('Rename')], false, true);
+                    this.enableItems(['Delete', 'Rename', 'Cut', 'Copy'], false, true);
                 }
                 /* istanbul ignore next */
                 // tslint:disable-next-line
             } else if (view === 'TreeView' || view === 'GridView' || view === 'LargeIcon') {
                 this.setLayoutItem(target);
-                //Paste
-                // this.contextMenu.enableItems([this.getMenuId('Paste')], this.parent.enablePaste, true);
                 /* istanbul ignore next */
             } else {
                 args.cancel = true;
             }
         }
+        let pasteEle: Element = select('#' + this.getMenuId('Paste'), this.contextMenu.element);
+        if (!args.cancel && !this.parent.enablePaste &&
+            pasteEle && !pasteEle.classList.contains('e-disabled')) {
+            this.enableItems(['Paste'], false, true);
+        }
         if (args.cancel) {
             return;
         }
         this.contextMenu.dataBind();
-        let eventArgs: FileMenuOpenEventArgs = {
-            fileDetails: getFileObject(this.parent),
+        this.menuItemData = this.getMenuItemData();
+        let eventArgs: MenuOpenEventArgs = {
+            fileDetails: [this.menuItemData],
             element: args.element,
             target: target,
             items: this.contextMenu.items,
             menuModule: this.contextMenu,
-            cancel: false
+            cancel: false,
+            menuType: this.menuType
         };
-        this.parent.trigger('menuOpen', eventArgs);
-        args.cancel = eventArgs.cancel;
-        if (args.cancel) {
-            return;
-        }
-
+        this.parent.trigger('menuOpen', eventArgs, (menuOpenArgs: MenuOpenEventArgs) => {
+            args.cancel = menuOpenArgs.cancel;
+        });
     }
+
+    private updateActiveModule(): void {
+        this.parent.activeModule = closest(this.menuTarget, '#' + this.parent.element.id + CLS.TREE_ID) ?
+            'navigationpane' : closest(this.menuTarget, '#' + this.parent.element.id + CLS.GRID_ID) ?
+                'detailsview' : closest(this.menuTarget, '#' + this.parent.element.id + CLS.LARGEICON_ID) ?
+                    'largeiconsview' : this.parent.activeModule;
+    }
+
     /* istanbul ignore next */
     /** @hidden */
     public getTargetView(target: Element): string {
@@ -169,187 +190,199 @@ export class ContextMenu {
                         'LargeIcon' : '';
     }
 
-    private setFolderItem(isTree: boolean): void {
-        this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.folder);
-        this.contextMenu.dataBind();
-        if (isTree) {
-            this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-        } else if (this.parent.selectedItems.length !== 1) {
-            this.contextMenu.enableItems([this.getMenuId('Rename')], false, true);
+    private enableItems(items: string[], enable?: boolean, isUniqueId?: boolean): void {
+        for (let i: number = 0; i < items.length; i++) {
+            if (this.checkValidItem(items[i])) {
+                this.contextMenu.enableItems([this.getMenuId(items[i])], enable, isUniqueId);
+            }
         }
-        //Paste
-        // this.contextMenu.enableItems([this.getMenuId('Paste')], this.parent.enablePaste, true);
     }
 
-    /* istanbul ignore next */
-    private setFileItem(target: Element): void {
-        this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.file);
+    private setFolderItem(isTree: boolean): void {
+        this.menuType = 'folder';
+        this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.folder.map((item: string) => item.trim()));
+        this.contextMenu.dataBind();
+        if (isTree) {
+            this.enableItems(['Open'], false, true);
+        } else if (this.parent.selectedItems.length !== 1) {
+            this.enableItems(['Rename'], false, true);
+        }
+        if (this.parent.selectedNodes.length !== 1) {
+            this.enableItems(['Paste'], false, true);
+        }
+    }
+
+    private setFileItem(): void {
+        this.menuType = 'file';
+        this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.file.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
         if (this.parent.selectedItems.length !== 1) {
-            this.contextMenu.enableItems([this.getMenuId('Rename')], false, true);
+            this.enableItems(['Rename'], false, true);
         }
     }
 
     private setLayoutItem(target: Element): void {
-        this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.layout);
+        this.menuType = 'layout';
+        this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.layout.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
         if ((this.parent.view === 'LargeIcons' &&
             (closest(target, '#' + this.parent.element.id + CLS.LARGEICON_ID).getElementsByClassName(CLS.EMPTY).length !== 0))
             || (this.parent.view === 'Details' &&
                 (closest(target, '#' + this.parent.element.id + CLS.GRID_ID).getElementsByClassName(CLS.EMPTY).length !== 0))) {
-            this.contextMenu.enableItems([this.getMenuId('SelectAll')], false, true);
-            this.contextMenu.dataBind();
+            this.enableItems(['SelectAll'], false, true);
+        }
+        if (this.parent.selectedNodes.length === 0) {
+            this.enableItems(['Paste'], false, true);
+        }
+        this.contextMenu.dataBind();
+    }
+
+    private checkValidItem(nameEle: string): boolean {
+        return !isNOU(select('#' + this.getMenuId(nameEle), this.contextMenu.element));
+    }
+
+    private getMenuItemData(): object {
+        if (this.menuType === 'layout') {
+            return getPathObject(this.parent);
+        } else {
+            let args: { [key: string]: Object; } = { target: this.menuTarget };
+            this.parent.notify(events.menuItemData, args);
+            return this.parent.itemData[0];
         }
     }
 
     /* istanbul ignore next */
     private onSelect(args: MenuEventArgs): void {
-        if (isNullOrUndefined(args.item) || !args.item.id) { return; }
+        if (isNOU(args.item) || !args.item.id) { return; }
         let itemText: string = args.item.id.substr((this.parent.element.id + '_cm_').length);
-        let details: Object;
-        if (itemText === 'refresh' || itemText === 'newfolder') {
-            details = getPathObject(this.parent);
-            this.parent.itemData = [details];
+        let details: Object[];
+        if (itemText === 'refresh' || itemText === 'newfolder' || itemText === 'upload') {
+            details = [getPathObject(this.parent)];
+            this.parent.itemData = details;
         } else {
-            details = getFileObject(this.parent);
+            this.parent.notify(events.selectedData, {});
+            details = this.parent.itemData;
         }
-        let eventArgs: FileMenuClickEventArgs = {
+        let eventArgs: MenuClickEventArgs = {
             cancel: false,
             element: args.element,
             fileDetails: details,
             item: args.item
         };
-        this.parent.trigger('menuClick', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        if (this.parent.selectedItems.length > 0 && (
-            (itemText === 'paste') ||
-            (itemText === 'upload'))) {
-            let path: string;
-            // tslint:disable-next-line
-            let data: { [key: string]: Object };
-            if (this.parent.view === 'Details') {
-                let uid: string = this.targetElement.getAttribute('data-uid');
-                data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data as { [key: string]: Object };
-                /* istanbul ignore next */
-            } else {
-                let elements: Element = this.targetElement.parentElement;
-                data = getItemObject(this.parent, elements) as { [key: string]: Object };
-            }
-            /* istanbul ignore next */
-            if (data.isFile) {
-                path = '';
-            } else {
-                path = data.name + '/';
-                this.parent.navigationpaneModule.treeObj.selectedNodes = [data.id as string];
-            }
-            let newPath: string = this.parent.path + path;
-            this.parent.setProperties({ path: newPath }, true);
-        }
-        // tslint:disable-next-line
-        let items: Object[] = this.parent.selectedItems;
-        switch (itemText) {
-            case 'cut':
-                cutFiles(this.parent as IFileManager);
-                /* istanbul ignore next */
-                if (this.parent.nodeNames) {
-                    this.parent.fileOperation(this.parent.nodeNames);
-                }
-                break;
-            case 'copy':
-                copyFiles(this.parent as IFileManager);
-                /* istanbul ignore next */
-                if (this.parent.nodeNames) {
-                    this.parent.fileOperation(this.parent.nodeNames);
-                }
-                /* istanbul ignore next */
-                if (this.parent.activeModule === 'navigationpane') {
+        this.parent.trigger('menuClick', eventArgs, (menuClickArgs: MenuClickEventArgs) => {
+            if (!menuClickArgs.cancel) {
+                // tslint:disable-next-line
+                switch (itemText) {
+                    case 'cut':
+                        cutFiles(this.parent);
+                        break;
+                    case 'copy':
+                        copyFiles(this.parent);
+                        break;
+                    case 'paste':
+                        if (this.menuType === 'folder') {
+                            if ((this.parent.activeModule === 'largeiconsview') ||
+                                (this.parent.activeModule === 'detailsview')) {
+                                this.parent.folderPath = this.parent.selectedItems[0] + '/';
+                            } else {
+                                this.parent.folderPath = '';
+                            }
+                        } else {
+                            this.parent.folderPath = '';
+                        }
+                        pasteHandler(this.parent);
+                        break;
+                    case 'delete':
+                        for (let j: number = 0; j < details.length; j++) {
+                            if (!hasEditAccess(details[j])) {
+                                createDeniedDialog(this.parent, details[j]);
+                                return;
+                            }
+                        }
+                        createDialog(this.parent, 'Delete');
+                        break;
+                    /* istanbul ignore next */
+                    case 'download':
+                        for (let i: number = 0; i < details.length; i++) {
+                            if (!hasDownloadAccess(details[i])) {
+                                createDeniedDialog(this.parent, details[i]);
+                                return;
+                            }
+                        }
+                        if (this.parent.activeModule === 'navigationpane') {
+                            this.parent.notify(events.downloadInit, {});
+                        } else if (this.parent.selectedItems.length > 0) {
+                            Download(this.parent, this.parent.path, this.parent.selectedItems);
+                        }
+                        break;
+                    case 'rename':
+                        if (!hasEditAccess(details[0])) {
+                            createDeniedDialog(this.parent, details[0]);
+                        } else {
+                            this.parent.notify(events.renameInit, {});
+                            createDialog(this.parent, 'Rename');
+                        }
+                        break;
+                    case 'selectall':
+                        /* istanbul ignore next */
+                        this.parent.notify(events.selectAllInit, {});
+                        break;
+                    case 'refresh':
+                        refresh(this.parent);
+                        break;
+                    case 'open':
+                        if (this.parent.visitedItem) {
+                            this.parent.notify(events.openInit, { target: this.parent.visitedItem });
+                        }
+                        break;
+                    case 'details':
+                        this.parent.notify(events.detailsInit, {});
+                        let sItems: string[] = this.parent.selectedItems;
+                        if (this.parent.activeModule === 'navigationpane') {
+                            sItems = [];
+                        }
+                        GetDetails(this.parent, sItems, this.parent.path, 'details');
+                        break;
+                    case 'newfolder':
+                        if (!hasContentAccess(details[0])) {
+                            createDeniedDialog(this.parent, details[0]);
+                        } else {
+                            createDialog(this.parent, 'NewFolder');
+                        }
+                        break;
+                    case 'upload':
+                        if (!hasUploadAccess(details[0])) {
+                            createDeniedDialog(this.parent, details[0]);
+                        } else {
+                            document.getElementById(this.parent.element.id + '_upload').click();
+                        }
+                        break;
+                    /* istanbul ignore next */
+                    case 'name':
+                    /* istanbul ignore next */
+                    case 'size':
+                    /* istanbul ignore next */
+                    case 'date':
+                    /* istanbul ignore next */
+                    case 'ascending':
+                    /* istanbul ignore next */
+                    case 'descending':
+                        /* istanbul ignore next */
+                        sortbyClickHandler(this.parent, args);
+                        break;
                     // tslint:disable-next-line
-                    this.parent.navigationpaneModule.copyNodes = <{ [key: string]: Object[]; }[]>this.parent.nodeNames;
+                    /* istanbul ignore next */
+                    case 'largeiconsview':
+                        updateLayout(this.parent, 'LargeIcons');
+                        break;
+                    // tslint:disable-next-line
+                    /* istanbul ignore next */
+                    case 'detailsview':
+                        updateLayout(this.parent, 'Details');
+                        break;
                 }
-                break;
-            case 'paste':
-                this.parent.pasteHandler();
-                removeBlur(this.parent as IFileManager);
-                break;
-            case 'delete':
-                createDialog(this.parent, 'Delete');
-                break;
-            /* istanbul ignore next */
-            case 'download':
-                /* istanbul ignore next */
-                if (this.parent.activeModule === 'detailsview') {
-                    items = this.parent.detailsviewModule.gridObj.getSelectedRecords();
-                } else if (this.parent.activeModule === 'largeiconsview') {
-                    let elements: NodeListOf<Element> = this.parent.activeElements;
-                    for (let ele: number = 0; ele < elements.length; ele++) {
-                        items[ele] = getItemObject(this.parent, elements[ele]);
-                    }
-                } else if (this.parent.activeModule === 'navigationpane' && this.parent.selectedItems.length === 0) {
-                    this.parent.notify(events.downloadInit, {});
-                    items = this.parent.itemData;
-                }
-                if (items.length > 0) {
-                    Download(this.parent, items);
-                }
-                break;
-            case 'rename':
-                this.parent.notify(events.renameInit, {});
-                createDialog(this.parent, 'Rename');
-                break;
-            case 'selectall':
-                /* istanbul ignore next */
-                this.parent.notify(events.selectAllInit, {});
-                break;
-            case 'refresh':
-                refresh(this.parent);
-                break;
-            case 'open':
-                if (this.parent.visitedItem) {
-                    this.parent.notify(events.openInit, { target: this.parent.visitedItem });
-                }
-                break;
-            case 'details':
-                this.parent.getDetails();
-                break;
-            case 'newfolder':
-                createDialog(this.parent, 'NewFolder');
-                break;
-            case 'upload':
-                document.getElementById(this.parent.element.id + '_upload').click();
-                break;
-            /* istanbul ignore next */
-            case 'name':
-            /* istanbul ignore next */
-            case 'size':
-            /* istanbul ignore next */
-            case 'date':
-            /* istanbul ignore next */
-            case 'ascending':
-            /* istanbul ignore next */
-            case 'descending':
-                /* istanbul ignore next */
-                sortbyClickHandler(this.parent, args);
-                break;
-            // tslint:disable-next-line
-            /* istanbul ignore next */
-            case 'largeiconsview':
-                this.changeLayout('LargeIcons');
-                break;
-            // tslint:disable-next-line
-            /* istanbul ignore next */
-            case 'detailsview':
-                this.changeLayout('Details');
-                break;
-        }
-    }
-    /* istanbul ignore next */
-    private changeLayout(view: viewType): void {
-        if (this.parent.view !== view) {
-            this.parent.setProperties({ view: view }, true);
-            read(this.parent, events.layoutChange, this.parent.path);
-        }
+            }
+        });
     }
 
     private onPropertyChanged(e: NotifyArgs): void {
@@ -361,9 +394,6 @@ export class ContextMenu {
             switch (prop) {
                 case 'cssClass':
                     this.contextMenu.cssClass = getCssClass(this.parent, CLS.ROOT_POPUP);
-                    break;
-                case 'enableRtl':
-                    this.contextMenu.enableRtl = e.newProp.enableRtl;
                     break;
             }
         }
@@ -403,18 +433,10 @@ export class ContextMenu {
         return 'contextmenu';
     }
 
-    /**
-     * Destroys the ContextMenu module.
-     * @method destroy
-     * @return {void}
-     */
     private destroy(): void {
         if (this.parent.isDestroyed) { return; }
         this.removeEventListener();
         this.contextMenu.destroy();
-        if (document.getElementById(this.parent.element.id + CLS.CONTEXT_MENU_ID)) {
-            remove(document.getElementById(this.parent.element.id + CLS.CONTEXT_MENU_ID));
-        }
     }
     /* istanbul ignore next */
     private getItemData(data: string[]): MenuItemModel[] {
@@ -468,7 +490,7 @@ export class ContextMenu {
                             },
                             {
                                 id: this.getMenuId('Date'), text: getLocaleText(this.parent, 'DateModified'),
-                                iconCss: this.parent.sortBy === 'dateModified' ? CLS.TB_OPTION_DOT : null
+                                iconCss: this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : null
                             },
                             { separator: true },
                             {

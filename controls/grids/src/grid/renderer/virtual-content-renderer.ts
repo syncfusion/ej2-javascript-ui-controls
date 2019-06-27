@@ -74,7 +74,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.parent.scrollPosition = scrollArgs.offset;
         }
         if (this.preventEvent || this.parent.isDestroyed) { this.preventEvent = false; return; }
-        this.isFocused = this.content === closest(document.activeElement, '.e-content') || this.content === document.activeElement;
+        if (isNullOrUndefined(document.activeElement)) {
+            this.isFocused = false;
+        } else {
+            this.isFocused = this.content === closest(document.activeElement, '.e-content') || this.content === document.activeElement;
+        }
         let info: SentinelType = scrollArgs.sentinel;
         let viewInfo: VirtualInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
         if (isGroupAdaptive(this.parent)) {
@@ -419,7 +423,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (!gObj.groupSettings.columns.length && testRow) {
             needFullRefresh = false;
         }
-        let tr: Object = this.getTable().querySelectorAll('tr');
+        let tr: Object = gObj.getDataRows();
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
             let column: Column = columns[c];
             let idx: number = gObj.getNormalizedColumnIndex(column.uid);

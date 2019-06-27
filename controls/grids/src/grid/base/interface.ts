@@ -510,6 +510,7 @@ export interface IGrid extends Component<HTMLElement> {
     isContextMenuOpen(): Boolean;
     goToPage(pageNo: number): void;
     getFrozenColumns(): number;
+    applyBiggerTheme(args: Element): void;
     getVisibleFrozenColumns(): number;
     print(): void;
     /* tslint:disable-next-line:no-any */
@@ -836,6 +837,9 @@ export interface ActionEventArgs {
     requestType?: Action;
     /** Defines the type of event. */
     type?: string;
+    /** Cancel the print action */
+    cancel?: boolean;
+
 }
 
 export interface FailureEventArgs {
@@ -1559,6 +1563,17 @@ export interface CellEditArgs extends CellEditSameArgs, IPrimaryKey {
     foreignKeyData?: Object;
 }
 
+export interface CommandClickEventArgs {
+    /** Defines the current target element. */
+    target?: HTMLElement;
+    /** cancel the CRUD action. */
+    cancel?: boolean;
+    /** Defines the current command column . */
+    commandColumn?: CommandModel;
+    /** returns particular row data */
+    rowData?: Object;
+}
+
 export interface IFilterCreate {
     column?: Column;
     target?: HTMLElement;
@@ -1630,6 +1645,12 @@ export interface CheckBoxChangeEventArgs extends ICancel {
 export interface BeforeCopyEventArgs extends ICancel {
     /** Defines the grid copied data. */
     data?: string;
+}
+
+export interface BeforePasteEventArgs {
+    /** Defines the grid pasted data. */
+    column?: Column;
+    data?: string | number | boolean | Date;
 }
 
 /**

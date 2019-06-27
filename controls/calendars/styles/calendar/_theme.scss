@@ -1,5 +1,6 @@
 @include export-module('calendar-theme') {
-  #{&}.e-calendar {
+  #{&}.e-calendar,
+  .e-bigger.e-small #{&}.e-calendar {
     background-color: $calendar-bg-color;
     border: $calendar-border-style;
     box-shadow: $calendar-box-shadow;& .e-date-icon-prev,
@@ -183,9 +184,18 @@
 }
 }
 
+  .e-small#{&}.e-calendar,
+  .e-small #{&}.e-calendar {
+    & .e-header {
+      & .e-title {
+        color: $calendar-small-title-font-color;
+      }
+    }
+  }
+
   .e-zoomin {
     animation: animatezoom .3s;
-}
+  }
 
   @keyframes animatezoom {
     from {

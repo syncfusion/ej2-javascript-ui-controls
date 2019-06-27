@@ -1,6 +1,5 @@
 $ddl-input-font-size: 14px !default;
 $ddl-zero-value: 0 !default;
-
 $ddl-default-border-color: $grey-300 !default;
 $ddl-input-border: $border-size $border-type !default;
 $ddl-input-font-family: $font-family !default;
@@ -22,6 +21,12 @@ $ddl-filter-background-color: $grey-100 !default;
 $ddl-clear-icon-margin-right: 66px !default;
 $ddl-back-icon-margin: 0 10px 0 -52px !default;
 $ddl-back-icon-padding: 8px 16px !default;
+
+// Small Size
+$ddl-small-list-font-size: 12px !default;
+
+// touch small
+$ddl-bigger-small-list-font-size: 13px !default;
 
 @include export-module('dropdownlist-material') {
   .e-ddl.e-control-wrapper .e-ddl-icon::before {
@@ -104,5 +109,36 @@ $ddl-back-icon-padding: 8px 16px !default;
   .e-ddl.e-ddl-device.e-ddl-device-filter .e-input-group:hover:not(.e-disabled):not(.e-float-icon-left),
   .e-ddl.e-ddl-device.e-ddl-device-filter .e-input-group.e-control-wrapper:hover:not(.e-disabled):not(.e-float-icon-left) {
     border-bottom-width: 0;
+  }
+
+  // small size
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-input-focus.e-small .e-clear-icon,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-input-focus .e-clear-icon {
+    margin: 0;
+  }
+
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small .e-input-filter,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small.e-input-focus .e-input-filter {
+    padding: 5px 5px 5px 12px;
+  }
+
+  // Touch Small
+  .e-bigger.e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group .e-clear-icon,
+  .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-small .e-clear-icon,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-bigger .e-clear-icon,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-input-group.e-bigger.e-small .e-clear-icon {
+    min-height: 18px;
+    min-width: 18px;
+  }
+
+  .e-bigger.e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group .e-input-filter,
+  .e-bigger #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-small .e-input-filter,
+  .e-small #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-bigger .e-input-filter,
+  #{&}.e-popup.e-ddl:not(.e-ddl-device) .e-filter-parent .e-input-group.e-bigger.e-small .e-input-filter {
+    padding: 8px 16px;
   }
 }

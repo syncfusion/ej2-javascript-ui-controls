@@ -18,7 +18,8 @@
 export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Agenda' | 'MonthAgenda' | 'TimelineDay' | 'TimelineWeek' | 'TimelineWorkWeek' |
     'TimelineMonth';
 
-export type CurrentAction = 'Add' | 'Save' | 'Delete' | 'DeleteOccurrence' | 'DeleteSeries' | 'EditOccurrence' | 'EditSeries';
+export type CurrentAction = 'Add' | 'Save' | 'Delete' | 'DeleteOccurrence' | 'DeleteSeries' | 'EditOccurrence'
+    | 'EditSeries' | 'EditFollowingEvents' | 'DeleteFollowingEvents';
 
 export type ReturnType = { result: Object[], count: number, aggregates?: Object };
 

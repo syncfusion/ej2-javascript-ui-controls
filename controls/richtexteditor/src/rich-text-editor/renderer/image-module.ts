@@ -1,4 +1,4 @@
-import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass } from '@syncfusion/ej2-base';
 import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
@@ -7,12 +7,13 @@ import * as classes from '../base/classes';
 import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
 import { Uploader, SelectedEventArgs, MetaData, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { Dialog } from '@syncfusion/ej2-popups';
+import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import { dispatchEvent, parseHtml } from '../base/util';
+import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
 /**
  * `Image` module is used to handle image actions.
@@ -37,11 +38,13 @@ export class Image {
     private imgEle: HTMLImageElement;
     private pageX: number = null;
     private pageY: number = null;
+    private dialogRenderObj: DialogRenderer;
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
         this.i10n = serviceLocator.getService<L10n>('rteLocale');
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
+        this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
     }
 
@@ -159,11 +162,11 @@ export class Image {
                 addClass([this.imgResizeDiv], 'e-mob-span');
             } else {
                 let args: ResizeArgs = { event: e, requestType: 'images' };
-                this.parent.trigger(events.resizeStart, args);
-                if (args.cancel) {
-                    this.cancelResizeAction();
-                    return;
-                }
+                this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
+                    if (resizeStartArgs.cancel) {
+                        this.cancelResizeAction();
+                    }
+                });
             }
             EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
         }
@@ -316,25 +319,26 @@ export class Image {
     }
     private imgDupMouseMove(width: string, height: string, e: PointerEvent | TouchEvent): void {
         let args: ResizeArgs = { event: e, requestType: 'images' };
-        this.parent.trigger(events.onResize, args);
-        if (args.cancel) {
-            this.cancelResizeAction();
-            return;
-        }
-        if ((parseInt(this.parent.insertImageSettings.minWidth as string, 10) >= parseInt(width, 10) ||
-            parseInt(this.parent.insertImageSettings.maxWidth as string, 10) <= parseInt(width, 10))) {
-            return;
-        }
-        if (!this.parent.insertImageSettings.resizeByPercent &&
-            (parseInt(this.parent.insertImageSettings.minHeight as string, 10) >= parseInt(height, 10) ||
-                parseInt(this.parent.insertImageSettings.maxHeight as string, 10) <= parseInt(height, 10))) {
-            return;
-        }
-        this.imgEle.parentElement.style.cursor = 'pointer';
-        this.setAspectRatio(this.imgEle, parseInt(width, 10), parseInt(height, 10));
-        this.resizeImgDupPos(this.imgEle);
-        this.imgResizePos(this.imgEle, this.imgResizeDiv);
-        this.parent.setContentHeight('', false);
+        this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
+            if (resizingArgs.cancel) {
+                this.cancelResizeAction();
+            } else {
+                if ((parseInt(this.parent.insertImageSettings.minWidth as string, 10) >= parseInt(width, 10) ||
+                    parseInt(this.parent.insertImageSettings.maxWidth as string, 10) <= parseInt(width, 10))) {
+                    return;
+                }
+                if (!this.parent.insertImageSettings.resizeByPercent &&
+                    (parseInt(this.parent.insertImageSettings.minHeight as string, 10) >= parseInt(height, 10) ||
+                        parseInt(this.parent.insertImageSettings.maxHeight as string, 10) <= parseInt(height, 10))) {
+                    return;
+                }
+                this.imgEle.parentElement.style.cursor = 'pointer';
+                this.setAspectRatio(this.imgEle, parseInt(width, 10), parseInt(height, 10));
+                this.resizeImgDupPos(this.imgEle);
+                this.imgResizePos(this.imgEle, this.imgResizeDiv);
+                this.parent.setContentHeight('', false);
+            }
+        });
     }
     private resizing(e: PointerEvent | TouchEvent): void {
         let pageX: number = this.getPointX(e);
@@ -432,19 +436,22 @@ export class Image {
         this.insertImgLink(e, inputDetails);
     }
     private removeImgLink(e: NotifyArgs): void {
+        if (Browser.isIE) { (this.contentModule.getEditPanel() as HTMLElement).focus(); }
         e.selection.restore();
-        let insertEle: HTMLElement = (this.contentModule.getEditPanel().contains(this.captionEle) && closest(this.captionEle, 'a')) ?
-            this.captionEle : e.selectNode[0] as HTMLElement;
+        let isCapLink: boolean = (this.contentModule.getEditPanel().contains(this.captionEle) && select('a', this.captionEle)) ?
+            true : false;
+        let selectParent: Node[] = isCapLink ? [this.captionEle] : [e.selectNode[0].parentElement];
         this.parent.formatter.process(
             this.parent, e.args, e.args,
             {
-                insertElement: insertEle, selectParent: e.selectParent,
+                insertElement: e.selectNode[0] as HTMLElement, selectParent: selectParent, selection: e.selection,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
         if (this.quickToolObj && document.body.contains(this.quickToolObj.imageQTBar.element)) {
             this.quickToolObj.imageQTBar.hidePopup();
             if (!isNullOrUndefined(e.selectParent as Node[])) { removeClass([e.selectParent[0] as HTMLElement], 'e-img-focus'); }
         }
+        if (isCapLink) { (select('.e-img-inner', this.captionEle) as HTMLElement).focus(); }
     }
     private onKeyDown(event: NotifyArgs): void {
         let originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
@@ -805,8 +812,10 @@ export class Image {
             proxy.parent, e.args, e.args,
             {
                 url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, selectNode: e.selectNode,
-                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand, selection: e.selection
             });
+        let captionEle: Element = closest(e.selectNode[0], '.e-img-caption');
+        if (captionEle) { (select('.e-img-inner', captionEle) as HTMLElement).focus(); }
         proxy.dialogObj.hide({ returnValue: false } as Event);
     }
     private isUrl(url: string): boolean {
@@ -851,6 +860,10 @@ export class Image {
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Caption';
         if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
             detach(closest(selectNode, '.' + classes.CLS_CAPTION));
+            if (Browser.isIE) {
+                (this.contentModule.getEditPanel() as HTMLElement).focus();
+                e.selection.restore();
+            }
             if (selectNode.parentElement.tagName === 'A') {
                 this.parent.formatter.process(
                     this.parent, e.args, e.args,
@@ -866,7 +879,9 @@ export class Image {
             });
             let imgWrap: HTMLElement = this.parent.createElement('span', { className: 'e-img-wrap' });
             let imgInner: HTMLElement = this.parent.createElement('span', { className: 'e-img-inner', attrs: { contenteditable: 'true' } });
-            imgWrap.appendChild(e.selectNode[0]);
+            let parent: HTMLElement = e.selectNode[0].parentElement;
+            if (parent.tagName === 'A') { parent.setAttribute('contenteditable', 'true'); }
+            imgWrap.appendChild(parent.tagName === 'A' ? parent : e.selectNode[0]);
             imgWrap.appendChild(imgInner);
             let imgCaption: string = this.i10n.getConstant('imageCaption');
             imgInner.innerHTML = imgCaption;
@@ -964,7 +979,7 @@ export class Image {
         let imgHeader: string = this.i10n.getConstant('imageHeader');
         let selection: NodeSelection = e.selection;
         let selectObj: IImageNotifyArgs = { selfImage: this, selection: e.selection, args: e.args, selectParent: e.selectParent };
-        this.dialogObj = new Dialog({
+        let dialogModel: DialogModel = {
             header: imgHeader,
             cssClass: classes.CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
@@ -994,9 +1009,11 @@ export class Image {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
+                this.dialogRenderObj.close(this.dialogObj);
                 this.dialogObj = null;
             },
-        });
+        };
+        this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(imgDialog);
         imgDialog.style.maxHeight = 'inherit';
@@ -1067,10 +1084,10 @@ export class Image {
         if (!isNullOrUndefined(proxy.uploadUrl) && proxy.uploadUrl.url !== '') {
             proxy.uploadUrl.cssClass = (proxy.parent.insertImageSettings.display === 'inline' ?
                 classes.CLS_IMGINLINE : classes.CLS_IMGBREAK);
+            proxy.dialogObj.hide({ returnValue: false } as Event);
             proxy.parent.formatter.process(
                 proxy.parent, (this as IImageNotifyArgs).args,
                 ((this as IImageNotifyArgs).args as ClickEventArgs).originalEvent, proxy.uploadUrl);
-            proxy.dialogObj.hide({ returnValue: false } as Event);
             proxy.uploadUrl.url = '';
         } else if (url !== '') {
             if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
@@ -1312,7 +1329,12 @@ export class Image {
                         maxHeight: proxy.parent.insertImageSettings.maxHeight
                     }
                 };
-                proxy.parent.formatter.process(proxy.parent, { item: { command: 'Images', subCommand: 'Image' } }, args.args, url);
+                if (!isNullOrUndefined(args.callBack)) {
+                    args.callBack(url);
+                    return;
+                } else {
+                    proxy.parent.formatter.process(proxy.parent, { item: { command: 'Images', subCommand: 'Image' } }, args.args, url);
+                }
             });
             reader.readAsDataURL((args as NotifyArgs).file);
         }

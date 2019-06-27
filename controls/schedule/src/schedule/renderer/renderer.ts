@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend, addClass, removeClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, addClass, removeClass, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { View, ReturnType } from '../base/type';
 import { EventTooltip } from '../popups/event-tooltip';
@@ -77,6 +77,7 @@ export class Render {
             }
             throw Error('Inject required modules');
         }
+        this.resetTemplates();
         this.updateLabelText(viewName);
         this.parent.activeView.addEventListener();
         this.parent.activeView.getRenderDates();
@@ -117,6 +118,78 @@ export class Render {
         this.parent.element.setAttribute('aria-label', content);
     }
 
+    private refreshTemplates(): void {
+        if (this.parent.dateHeaderTemplate) {
+            updateBlazorTemplate(this.parent.element.id + 'dateHeaderTemplate', 'DateHeaderTemplate');
+        }
+        if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
+            updateBlazorTemplate(this.parent.element.id + 'majorSlotTemplate', 'MajorSlotTemplate');
+        }
+        if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
+            updateBlazorTemplate(this.parent.element.id + 'minorSlotTemplate', 'MinorSlotTemplate');
+        }
+        if (this.parent.cellTemplate) {
+            updateBlazorTemplate(this.parent.element.id + 'cellTemplate', 'CellTemplate');
+        }
+        if (this.parent.activeViewOptions.eventTemplate) {
+            updateBlazorTemplate(this.parent.element.id + 'eventTemplate', 'EventTemplate');
+        }
+        if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
+            updateBlazorTemplate(this.parent.element.id + 'headerTooltipTemplate', 'HeaderTooltipTemplate');
+        }
+        if (this.parent.eventSettings.tooltipTemplate) {
+            updateBlazorTemplate(this.parent.element.id + 'tooltipTemplate', 'TooltipTemplate');
+        }
+        if (this.parent.quickInfoTemplates.header) {
+            updateBlazorTemplate(this.parent.element.id + 'header', 'Header');
+        }
+        if (this.parent.quickInfoTemplates.content) {
+            updateBlazorTemplate(this.parent.element.id + 'content', 'Content');
+        }
+        if (this.parent.quickInfoTemplates.footer) {
+            updateBlazorTemplate(this.parent.element.id + 'footer', 'Footer');
+        }
+        if (this.parent.activeViewOptions.resourceHeaderTemplate) {
+            updateBlazorTemplate(this.parent.element.id + 'resourceHeaderTemplate', 'ResourceHeaderTemplate');
+        }
+    }
+
+    private resetTemplates(): void {
+        if (this.parent.dateHeaderTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'dateHeaderTemplate', 'DateHeaderTemplate');
+        }
+        if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'majorSlotTemplate', 'MajorSlotTemplate');
+        }
+        if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'minorSlotTemplate', 'MinorSlotTemplate');
+        }
+        if (this.parent.cellTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'cellTemplate', 'CellTemplate');
+        }
+        if (this.parent.activeViewOptions.eventTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'eventTemplate', 'EventTemplate');
+        }
+        if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'headerTooltipTemplate', 'HeaderTooltipTemplate');
+        }
+        if (this.parent.eventSettings.tooltipTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'tooltipTemplate', 'TooltipTemplate');
+        }
+        if (this.parent.quickInfoTemplates.header) {
+            resetBlazorTemplate(this.parent.element.id + 'header', 'Header');
+        }
+        if (this.parent.quickInfoTemplates.content) {
+            resetBlazorTemplate(this.parent.element.id + 'content', 'Content');
+        }
+        if (this.parent.quickInfoTemplates.footer) {
+            resetBlazorTemplate(this.parent.element.id + 'footer', 'Footer');
+        }
+        if (this.parent.activeViewOptions.resourceHeaderTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'resourceHeaderTemplate', 'ResourceHeaderTemplate');
+        }
+    }
+
     public refreshDataManager(): void {
         let start: Date = this.parent.activeView.startDate();
         let end: Date = this.parent.activeView.endDate();
@@ -126,22 +199,22 @@ export class Render {
 
     private dataManagerSuccess(e: ReturnType): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.trigger(events.dataBinding, e);
-        let resultData: Object[] = <Object[]>extend([], e.result, null, true);
-        this.parent.eventsData = resultData.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
-        this.parent.blockData = resultData.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
-        let processed: Object[] = this.parent.eventBase.processData(resultData as { [key: string]: Object }[]);
-        this.parent.notify(events.dataReady, { processedData: processed });
-        if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
-            this.parent.dragAndDropModule.navigationWrapper();
-        }
-        this.parent.trigger(events.dataBound);
-        this.parent.hideSpinner();
+        this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
+            let resultData: Object[] = <Object[]>extend([], args.result, null, true);
+            this.parent.eventsData = resultData.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
+            this.parent.blockData = resultData.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
+            let processed: Object[] = this.parent.eventBase.processData(resultData as { [key: string]: Object }[]);
+            this.parent.notify(events.dataReady, { processedData: processed });
+            if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
+                this.parent.dragAndDropModule.navigationWrapper();
+            }
+            this.refreshTemplates();
+            this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
+        });
     }
 
     private dataManagerFailure(e: { result: Object[] }): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.trigger(events.actionFailure, { error: e });
-        this.parent.hideSpinner();
+        this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
 }

@@ -11,7 +11,6 @@ import { TimelineHeaderRow } from './timeline-header-row';
  * timeline view
  */
 export class TimelineViews extends VerticalView {
-    public dateHeaderTemplate: string = '<span class="e-header-date e-navigate">${getTimelineDate(date)}</span>';
     constructor(parent: Schedule) {
         super(parent);
         this.baseCssClass = 'e-timeline-view';
@@ -82,7 +81,7 @@ export class TimelineViews extends VerticalView {
         if (this.parent.isDestroyed) { return; }
         this.removeCurrentTimeIndicatorElements();
         let currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
-        let left: number = this.getLeftFromDateTime(currentDateIndex, new Date());
+        let left: number = this.getLeftFromDateTime(currentDateIndex, this.parent.getCurrentTime());
         let height: number = (this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement).offsetHeight;
         let headerWrap: Element = this.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS);
         let contentWrap: Element = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
@@ -98,7 +97,7 @@ export class TimelineViews extends VerticalView {
             });
         }
         let currentTimeEle: HTMLElement = createElement('div', {
-            innerHTML: this.parent.getTimeString(new Date()),
+            innerHTML: this.parent.getTimeString(this.parent.getCurrentTime()),
             className: cls.CURRENT_TIME_CLASS
         });
         headerWrap.appendChild(currentTimeEle);
@@ -137,7 +136,7 @@ export class TimelineViews extends VerticalView {
     }
     public getCurrentTimeIndicatorIndex(): number[] {
         let currentDateIndex: number[] = [];
-        let index: number = this.parent.getIndexOfDate(this.renderDates, resetTime(new Date()));
+        let index: number = this.parent.getIndexOfDate(this.renderDates, resetTime(this.parent.getCurrentTime()));
         if (index >= 0) {
             currentDateIndex.push(index);
         }

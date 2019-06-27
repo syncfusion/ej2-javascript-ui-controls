@@ -109,10 +109,53 @@ $ddl-close-rtl-icon-left: 30px !default;
 $ddl-chip-close-rtl-left: -10px !default;
 $ddl-delim-font-color: $neutral-light-font !default;
 $ddl-close-icon-color: $neutral-light-font !default;
+$ddl-multiselect-group-list-item-rtl-padding-right: 18px !default;
+$ddl-bigger-multiselect-group-list-item-rtl-padding-right: 5px !default;
+$ddl-multiselect-group-list-group-item-padding-left: 16px !default;
+$ddl-multiselect-group-checkbox-wrapper-padding-left: 14px !default;
+$ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: 20px !default;
+$ddl-multiselect-group-list-group-item-rtl-padding-right: 10px !default;
+// Small size
+$ddl-select-all-height-small: 26px !default;
+$ddl-small-chip-height: 20px !default;
+$ddl-chip-small-font-size: 12px !default;
+$ddl-small-chip-close-square: 22px !default;
+$ddl-small-chip-close-font: 8px !default;
+$ddl-control-small-height: 24px !default;
+$ddl-small-input-height: 24px !default;
+$ddl-delim-small-font-size: 13px !default;
+$ddl-small-closer-margin-top: -2.8em !default;
+$ddl-chip-close-hooker-small-left: 7px !default;
+$ddl-delimviewheight-small: 26px !default;
+// Touch Small size
+$ddl-select-all-height-bigger-small: 40px !default;
+$ddl-bigger-small-chip-height: 26px !default;
+$ddl-chip-bigger-small-font-size: 12px !default;
+$ddl-bigger-small-chip-close-square: 26px !default;
+$ddl-bigger-small-chip-close-font: 10px !default;
+$ddl-control-bigger-small-height: 26px !default;
+$ddl-bigger-small-input-height: 34px !default;
+$ddl-delim-bigger-small-font-size: 14px !default;
+$ddl-delimviewheight-bigger-small: 34px !default;
+$ddl-closer-margin-top-bigger-small: -3.2em !default;
 
 @include export-module('multiselect-fabric') {
   .e-multi-select-wrapper.e-down-icon .e-input-group-icon.e-ddl-icon {
     height: 30px;
     width: 30px;
+  }
+
+  .e-small .e-multi-select-wrapper .e-chips,
+  .e-small.e-bigger .e-multi-select-wrapper .e-chips {
+    padding: 0;
+  }
+
+  .e-small .e-multi-select-wrapper .e-chips>.e-chipcontent,
+  .e-small.e-bigger .e-multi-select-wrapper .e-chips>.e-chipcontent {
+    padding: 0 8px;
+  }
+
+  .e-small .e-multi-select-wrapper .e-chips {
+    margin: 2px 2px 2px 0;
   }
 }

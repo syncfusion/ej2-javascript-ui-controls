@@ -50,6 +50,7 @@ export interface ButtonModelPropsModel {
     /**
    * Specifies the click event binding of action buttons created within Toast.
    * @event
+   * @blazorProperty 'OnClick'
    */
     click?: EmitType<Event>;
 
@@ -218,36 +219,42 @@ export interface ToastModel extends ComponentModel{
     /**
      * Triggers the event after the Toast gets created.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 
     /**
      * Triggers the event after the Toast gets destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Event>;
 
     /**
      * Triggers the event after the Toast shown on the target container.
      * @event
+     * @blazorProperty 'Opened'
      */
     open?: EmitType<ToastOpenArgs>;
 
     /**
      * Triggers the event before the toast shown.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<ToastBeforeOpenArgs>;
 
     /**
      * Trigger the event after the Toast hides.
      * @event
+     * @blazorProperty 'Closed'
      */
     close?: EmitType<ToastCloseArgs>;
 
     /**
      * The event will be fired while clicking on the Toast.
      * @event
+     * @blazorProperty 'OnClick'
      */
     click?: EmitType<ToastClickEventArgs>;
 

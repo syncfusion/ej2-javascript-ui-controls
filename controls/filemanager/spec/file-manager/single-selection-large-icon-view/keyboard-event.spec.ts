@@ -2,11 +2,11 @@
  * FileManager spec document
  */
 import { FileManager } from '../../../src/file-manager/base/file-manager';
-import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
-import {DetailsView} from '../../../src/file-manager/layout/details-view';
+import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
+import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
-import { createElement, Browser, Instance } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, data3, data4, data5, data10, data11, data12 } from '../data';
+import { createElement } from '@syncfusion/ej2-base';
+import { data1, data12, accessData1, accessData5, accessDetails1, accessData2 } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -30,7 +30,8 @@ describe('FileManager control single selection LargeIcons view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -39,10 +40,10 @@ describe('FileManager control single selection LargeIcons view', () => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             keyboardEventArgs = {
-                preventDefault: (): void => {},
+                preventDefault: (): void => { },
                 action: null,
                 target: null,
-                stopImmediatePropagation: (): void => {},
+                stopImmediatePropagation: (): void => { },
             };
             mouseEventArgs = {
                 preventDefault: (): void => { },
@@ -129,7 +130,8 @@ describe('FileManager control single selection LargeIcons view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -138,11 +140,11 @@ describe('FileManager control single selection LargeIcons view', () => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             keyboardEventArgs = {
-                preventDefault: (): void => {},
+                preventDefault: (): void => { },
                 action: null,
                 target: null,
-                stopImmediatePropagation: (): void => {},
-            };            
+                stopImmediatePropagation: (): void => { },
+            };
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 done();
@@ -159,6 +161,9 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
+            expect(document.getElementById('file_largeicons').getAttribute('tabindex')).toBe('0');
             keyboardEventArgs.action = 'end';
             keyboardEventArgs.target = li[0];
             feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
@@ -166,12 +171,17 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[8].classList.contains('e-active')).toBe(true);
             expect(nli[8].classList.contains('e-focus')).toBe(true);
             expect(nli[8].querySelector('.e-frame')).toBe(null);
+            expect(nli[8].getAttribute('aria-selected')).toBe('true');
+            expect(nli[8].getAttribute('tabindex')).toBe('0');
+            expect(document.getElementById('file_largeicons').getAttribute('tabindex')).toBe('-1');
         });
         it('ctrl + end key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'ctrlEnd';
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.target = li[0];
@@ -180,12 +190,16 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[8].classList.contains('e-active')).toBe(true);
             expect(nli[8].classList.contains('e-focus')).toBe(true);
             expect(nli[8].querySelector('.e-frame')).toBe(null);
+            expect(nli[8].getAttribute('aria-selected')).toBe('true');
+            expect(nli[8].getAttribute('tabindex')).toBe('0');
         });
         it('shift + end key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'shiftEnd';
             keyboardEventArgs.shiftKey = true;
             keyboardEventArgs.target = li[0];
@@ -194,12 +208,16 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[8].classList.contains('e-active')).toBe(true);
             expect(nli[8].classList.contains('e-focus')).toBe(true);
             expect(nli[8].querySelector('.e-frame')).toBe(null);
+            expect(nli[8].getAttribute('aria-selected')).toBe('true');
+            expect(nli[8].getAttribute('tabindex')).toBe('0');
         });
         it('ctrl + shift + end key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'csEnd';
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.shiftKey = true;
@@ -209,12 +227,16 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[8].classList.contains('e-active')).toBe(true);
             expect(nli[8].classList.contains('e-focus')).toBe(true);
             expect(nli[8].querySelector('.e-frame')).toBe(null);
+            expect(nli[8].getAttribute('aria-selected')).toBe('true');
+            expect(nli[8].getAttribute('tabindex')).toBe('0');
         });
         it('home key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'home';
             keyboardEventArgs.target = li[0];
             feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
@@ -222,12 +244,16 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[0].classList.contains('e-active')).toBe(true);
             expect(nli[0].classList.contains('e-focus')).toBe(true);
             expect(nli[0].querySelector('.e-frame')).toBe(null);
+            expect(nli[0].getAttribute('aria-selected')).toBe('true');
+            expect(nli[0].getAttribute('tabindex')).toBe('0');
         });
         it('ctrl + home key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'ctrlHome';
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.target = li[0];
@@ -236,12 +262,16 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[0].classList.contains('e-active')).toBe(true);
             expect(nli[0].classList.contains('e-focus')).toBe(true);
             expect(nli[0].querySelector('.e-frame')).toBe(null);
+            expect(nli[0].getAttribute('aria-selected')).toBe('true');
+            expect(nli[0].getAttribute('tabindex')).toBe('0');
         });
         it('shift + home key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'shiftHome';
             keyboardEventArgs.shiftKey = true;
             keyboardEventArgs.target = li[0];
@@ -250,12 +280,16 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[0].classList.contains('e-active')).toBe(true);
             expect(nli[0].classList.contains('e-focus')).toBe(true);
             expect(nli[0].querySelector('.e-frame')).toBe(null);
+            expect(nli[0].getAttribute('aria-selected')).toBe('true');
+            expect(nli[0].getAttribute('tabindex')).toBe('0');
         });
         it('ctrl + shift + home key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'csHome';
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.shiftKey = true;
@@ -265,12 +299,16 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[0].classList.contains('e-active')).toBe(true);
             expect(nli[0].classList.contains('e-focus')).toBe(true);
             expect(nli[0].querySelector('.e-frame')).toBe(null);
+            expect(nli[0].getAttribute('aria-selected')).toBe('true');
+            expect(nli[0].getAttribute('tabindex')).toBe('0');
         });
         it('down arrow key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'moveDown';
             keyboardEventArgs.target = li[0];
             feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
@@ -278,6 +316,8 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[0].classList.contains('e-active')).toBe(true);
             expect(nli[0].classList.contains('e-focus')).toBe(true);
             expect(nli[0].querySelector('.e-frame')).toBe(null);
+            expect(nli[0].getAttribute('aria-selected')).toBe('true');
+            expect(nli[0].getAttribute('tabindex')).toBe('0');
             keyboardEventArgs.action = 'moveDown';
             keyboardEventArgs.target = li[0];
             feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
@@ -285,9 +325,13 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(neli[0].classList.contains('e-active')).toBe(false);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
             expect(neli[0].querySelector('.e-frame')).toBe(null);
+            expect(neli[0].getAttribute('aria-selected')).toBe(null);
+            expect(neli[0].getAttribute('tabindex')).toBe(null);
             expect(neli[7].classList.contains('e-active')).toBe(true);
             expect(neli[7].classList.contains('e-focus')).toBe(true);
             expect(neli[7].querySelector('.e-frame')).toBe(null);
+            expect(neli[7].getAttribute('aria-selected')).toBe('true');
+            expect(neli[7].getAttribute('tabindex')).toBe('0');
             keyboardEventArgs.action = 'moveDown';
             keyboardEventArgs.target = li[0];
             feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
@@ -295,15 +339,21 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(newli[0].classList.contains('e-active')).toBe(false);
             expect(newli[0].classList.contains('e-focus')).toBe(false);
             expect(newli[0].querySelector('.e-frame')).toBe(null);
+            expect(newli[0].getAttribute('aria-selected')).toBe(null);
+            expect(newli[0].getAttribute('tabindex')).toBe(null);
             expect(newli[7].classList.contains('e-active')).toBe(true);
             expect(newli[7].classList.contains('e-focus')).toBe(true);
             expect(newli[7].querySelector('.e-frame')).toBe(null);
+            expect(newli[7].getAttribute('aria-selected')).toBe('true');
+            expect(newli[7].getAttribute('tabindex')).toBe('0');
         });
         it('ctrl + down arrow key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);
             expect(li[0].querySelector('.e-frame')).toBe(null);
+            expect(li[0].getAttribute('aria-selected')).toBe(null);
+            expect(li[0].getAttribute('tabindex')).toBe(null);
             keyboardEventArgs.action = 'ctrlDown';
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.target = li[0];
@@ -312,6 +362,8 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(nli[0].classList.contains('e-active')).toBe(true);
             expect(nli[0].classList.contains('e-focus')).toBe(true);
             expect(nli[0].querySelector('.e-frame')).toBe(null);
+            expect(nli[0].getAttribute('aria-selected')).toBe('true');
+            expect(nli[0].getAttribute('tabindex')).toBe('0');
             keyboardEventArgs.action = 'ctrlDown';
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.target = li[0];
@@ -320,9 +372,15 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(neli[0].classList.contains('e-active')).toBe(false);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
             expect(neli[0].querySelector('.e-frame')).toBe(null);
+            expect(neli[0].getAttribute('aria-selected')).toBe(null);
+            expect(neli[0].getAttribute('tabindex')).toBe(null);
+            expect(neli[0].getAttribute('aria-selected')).toBe(null);
+            expect(neli[0].getAttribute('tabindex')).toBe(null);
             expect(neli[7].classList.contains('e-active')).toBe(true);
             expect(neli[7].classList.contains('e-focus')).toBe(true);
             expect(neli[7].querySelector('.e-frame')).toBe(null);
+            expect(neli[7].getAttribute('aria-selected')).toBe('true');
+            expect(neli[7].getAttribute('tabindex')).toBe('0');
             keyboardEventArgs.action = 'ctrlDown';
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.target = li[0];
@@ -331,9 +389,13 @@ describe('FileManager control single selection LargeIcons view', () => {
             expect(newli[0].classList.contains('e-active')).toBe(false);
             expect(newli[0].classList.contains('e-focus')).toBe(false);
             expect(newli[0].querySelector('.e-frame')).toBe(null);
+            expect(newli[0].getAttribute('aria-selected')).toBe(null);
+            expect(newli[0].getAttribute('tabindex')).toBe(null);
             expect(newli[7].classList.contains('e-active')).toBe(true);
             expect(newli[7].classList.contains('e-focus')).toBe(true);
             expect(newli[7].querySelector('.e-frame')).toBe(null);
+            expect(newli[7].getAttribute('aria-selected')).toBe('true');
+            expect(newli[7].getAttribute('tabindex')).toBe('0');
         });
         it('shift + down arrow key testing', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
@@ -1033,7 +1095,7 @@ describe('FileManager control single selection LargeIcons view', () => {
             let neli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(neli[0].classList.contains('e-active')).toBe(false);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
-            expect(neli[0].querySelector('.e-frame')).toBe(null);            
+            expect(neli[0].querySelector('.e-frame')).toBe(null);
             expect(neli[1].classList.contains('e-active')).toBe(true);
             expect(neli[1].classList.contains('e-focus')).toBe(true);
             expect(neli[1].querySelector('.e-frame')).toBe(null);
@@ -1079,7 +1141,7 @@ describe('FileManager control single selection LargeIcons view', () => {
             let neli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(neli[0].classList.contains('e-active')).toBe(false);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
-            expect(neli[0].querySelector('.e-frame')).toBe(null);            
+            expect(neli[0].querySelector('.e-frame')).toBe(null);
             expect(neli[1].classList.contains('e-active')).toBe(true);
             expect(neli[1].classList.contains('e-focus')).toBe(true);
             expect(neli[1].querySelector('.e-frame')).toBe(null);
@@ -1125,7 +1187,7 @@ describe('FileManager control single selection LargeIcons view', () => {
             let neli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(neli[0].classList.contains('e-active')).toBe(false);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
-            expect(neli[0].querySelector('.e-frame')).toBe(null);            
+            expect(neli[0].querySelector('.e-frame')).toBe(null);
             expect(neli[1].classList.contains('e-active')).toBe(true);
             expect(neli[1].classList.contains('e-focus')).toBe(true);
             expect(neli[1].querySelector('.e-frame')).toBe(null);
@@ -1173,7 +1235,7 @@ describe('FileManager control single selection LargeIcons view', () => {
             let neli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(neli[0].classList.contains('e-active')).toBe(false);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
-            expect(neli[0].querySelector('.e-frame')).toBe(null);            
+            expect(neli[0].querySelector('.e-frame')).toBe(null);
             expect(neli[1].classList.contains('e-active')).toBe(true);
             expect(neli[1].classList.contains('e-focus')).toBe(true);
             expect(neli[1].querySelector('.e-frame')).toBe(null);
@@ -1269,6 +1331,613 @@ describe('FileManager control single selection LargeIcons view', () => {
                 expect((li4[0] as Element).classList.contains('e-active')).toBe(false);
                 expect((li4[1] as Element).classList.contains('e-active')).toBe(true);
                 done();
+            }, 500);
+        });
+    });
+    describe('access control keyboard event testing', () => {
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        let mouseEventArgs: any, tapEvent: any, keyboardEventArgs: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
+            };
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('key pressed for new folder testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                keyboardEventArgs.action = 'altN';
+                feObj.keyActionHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                let treeLi1: any = treeObj.element.querySelectorAll('li');
+                let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi1.length).toEqual(5);
+                expect(largeLi1.length).toEqual(9);
+                let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi1.length).toEqual(2);
+                expect(aLargeLi1.length).toEqual(4);
+                expect(treeLi1[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi1[1].classList.contains('e-fe-hidden')).toBe(true);
+                done();
+            }, 500);
+        });
+        it('key pressed for new folder testing with access', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData5)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                keyboardEventArgs.action = 'altN';
+                feObj.keyActionHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Folder");
+                done();
+            }, 500);
+        });
+        it('key pressed for refresh testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                keyboardEventArgs.action = 'f5';
+                feObj.keyActionHandler(keyboardEventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(accessData1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let treeLi1: any = treeObj.element.querySelectorAll('li');
+                    let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                    expect(treeLi1.length).toEqual(5);
+                    expect(largeLi1.length).toEqual(9);
+                    let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                    let aLargeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                    expect(aTreeLi1.length).toEqual(2);
+                    expect(aLargeLi1.length).toEqual(4);
+                    expect(treeLi1[2].classList.contains('e-fe-hidden')).toBe(true);
+                    expect(largeLi1[1].classList.contains('e-fe-hidden')).toBe(true);
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('key pressed for rename testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'f2';
+                keyboardEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                done();
+            }, 500);
+        });
+        it('key pressed for rename testing with access', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[2];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'f2';
+                keyboardEventArgs.target = largeLi[2];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Rename");
+                done();
+            }, 500);
+        });
+        it('key pressed for delete testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'del';
+                keyboardEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                let treeLi1: any = treeObj.element.querySelectorAll('li');
+                let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi1.length).toEqual(5);
+                expect(largeLi1.length).toEqual(9);
+                let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi1.length).toEqual(2);
+                expect(aLargeLi1.length).toEqual(4);
+                expect(treeLi1[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi1[1].classList.contains('e-fe-hidden')).toBe(true);
+                done();
+            }, 500);
+        });
+        it('key pressed for delete testing with access', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[2];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'del';
+                keyboardEventArgs.target = largeLi[2];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete File");
+                done();
+            }, 500);
+        });
+        it('key pressed for details testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'altEnter';
+                keyboardEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(accessDetails1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                    expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Downloads");
+                    expect(dialogObj.element.querySelectorAll('td')[8].innerHTML).toEqual("Permission");
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('key pressed for delete testing with two items selected', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[0];
+                mouseEventArgs.ctrlKey = true;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                mouseEventArgs.target = largeLi[1];
+                mouseEventArgs.ctrlKey = true;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'del';
+                keyboardEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                let treeLi1: any = treeObj.element.querySelectorAll('li');
+                let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi1.length).toEqual(5);
+                expect(largeLi1.length).toEqual(9);
+                let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi1.length).toEqual(2);
+                expect(aLargeLi1.length).toEqual(4);
+                expect(treeLi1[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi1[1].classList.contains('e-fe-hidden')).toBe(true);
+                done();
+            }, 500);
+        });
+        it('key pressed for details testing with two items selected', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[0];
+                mouseEventArgs.ctrlKey = true;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                mouseEventArgs.target = largeLi[1];
+                mouseEventArgs.ctrlKey = true;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'altEnter';
+                keyboardEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(accessDetails1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                    expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Downloads");
+                    expect(dialogObj.element.querySelectorAll('td')[8].innerHTML).toEqual("Permission");
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('key pressed for open folder testing with non access folder/files', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'enter';
+                keyboardEventArgs.target = largeLi[1];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                dialogObj.element.querySelector('.e-primary').click();
+                mouseEventArgs.target = largeLi[7];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'enter';
+                keyboardEventArgs.target = largeLi[7];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                done();
+            }, 500);
+        });
+        it('key pressed for open folder testing with access folder/files', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                mouseEventArgs.target = largeLi[0];
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                keyboardEventArgs.action = 'enter';
+                keyboardEventArgs.target = largeLi[0];
+                feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(accessData2)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let treeLi1: any = treeObj.element.querySelectorAll('li');
+                    let largeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                    expect(treeLi1.length).toEqual(7);
+                    expect(largeLi1.length).toEqual(12);
+                    let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                    let aLargeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                    expect(aTreeLi1.length).toEqual(2);
+                    expect(aLargeLi1.length).toEqual(5);
+                    expect(treeLi1[2].classList.contains('e-fe-hidden')).toBe(false);
+                    expect(largeLi1[2].classList.contains('e-fe-hidden')).toBe(true);
+                    mouseEventArgs.target = largeLi1[2];
+                    feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                    keyboardEventArgs.action = 'enter';
+                    keyboardEventArgs.target = largeLi1[2];
+                    feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                    let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                    expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");
+                    dialogObj.element.querySelector('.e-primary').click();
+                    mouseEventArgs.target = largeLi1[7];
+                    feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                    keyboardEventArgs.action = 'enter';
+                    keyboardEventArgs.target = largeLi1[7];
+                    feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+                    let dialogObj1: any = (document.getElementById("file_img_dialog") as any).ej2_instances[0];
+                    expect(dialogObj1.element.querySelector('.e-dlg-header').innerHTML).toEqual("4.jpg");
+                    done();
+                }, 500);
             }, 500);
         });
     });

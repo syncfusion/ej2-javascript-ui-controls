@@ -1,4 +1,4 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler } from '@syncfusion/ej2-base';import { Draggable } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { createResize, removeResize, setMinHeight } from '../common/resize';
+import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler, updateBlazorTemplate } from '@syncfusion/ej2-base';import { Draggable } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { createResize, removeResize, setMinHeight } from '../common/resize';
 import {ButtonType,DialogEffect,BeforeOpenEventArgs,BeforeCloseEventArgs} from "./dialog";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -23,6 +23,7 @@ export interface ButtonPropsModel {
     /**
      * Event triggers when `click` the dialog button.
      * @event
+     * @blazorProperty 'OnClick'
      */
     click?: EmitType<Object>;
 
@@ -108,7 +109,7 @@ export interface DialogModel extends ComponentModel{
      * This is optional property and the dialog can be displayed without header, if the header property is null.
      * @default ''
      */
-    header?: string;
+    header?: string | HTMLElement;
 
     /**
      * Specifies the value that represents whether the dialog component is visible.
@@ -144,6 +145,7 @@ export interface DialogModel extends ComponentModel{
 
     /**
      * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
+     * @default 1000
      */
     zIndex?: number;
 
@@ -222,12 +224,14 @@ export interface DialogModel extends ComponentModel{
     /**
      * Event triggers when the dialog is created.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Event triggers when a dialog is opened.
      * @event
+     * @blazorProperty 'Opened'
      */
     open?: EmitType<Object>;
 
@@ -236,12 +240,14 @@ export interface DialogModel extends ComponentModel{
      * If you cancel this event, the dialog remains closed.
      * Set the cancel argument to true to cancel the open of a dialog. 
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<BeforeOpenEventArgs>;
 
     /**
      * Event triggers after the dialog has been closed.
      * @event
+     * @blazorProperty 'Closed'
      */
     close?: EmitType<Object>;
 
@@ -250,48 +256,56 @@ export interface DialogModel extends ComponentModel{
      * If you cancel this event, the dialog remains opened.
      * Set the cancel argument to true to cancel the closure of a dialog. 
      * @event
+     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<BeforeCloseEventArgs>;
 
     /**
      * Event triggers when the user begins dragging the dialog.
      * @event
+     * @blazorProperty 'OnDragStart'
      */
     dragStart?: EmitType<Object>;
 
     /**
      * Event triggers when the user stop dragging the dialog.
      * @event
+     * @blazorProperty 'OnDragStop'
      */
     dragStop?: EmitType<Object>;
 
     /**
      * Event triggers when the user drags the dialog.
      * @event
+     * @blazorProperty 'OnDrag'
      */
     drag?: EmitType<Object>;
 
     /**
      * Event triggers when the overlay of dialog is clicked.
      * @event
+     * @blazorProperty 'OnOverlayClick'
      */
     overlayClick?: EmitType<Object>;
 
     /**
      * Event triggers when the user begins to resize a dialog.
      * @event
+     * @blazorProperty 'OnResizeStart'
      */
     resizeStart?: EmitType<Object>;
 
     /**
      * Event triggers when the user resize the dialog.
      * @event
+     * @blazorProperty 'Resizing'
      */
     resizing?: EmitType<Object>;
 
     /**
      * Event triggers when the user stop to resize a dialog.
      * @event
+     * @blazorProperty 'OnResizeStop'
      */
     resizeStop?: EmitType<Object>;
 

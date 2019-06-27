@@ -355,6 +355,9 @@ export class WUniqueFormat {
         if (property === 'bidi') {
             return 10;
         }
+        if (property === 'contextualSpacing') {
+            return 11;
+        }
         return 0;
     }
     private static getSectionFormatType(property: string): number {
@@ -501,6 +504,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 3)) {
+            return false;
+        }
+        if (this.isNotEqual('contextualSpacing', source, modifiedProperty, modifiedValue, 3)) {
             return false;
         }
         return true;

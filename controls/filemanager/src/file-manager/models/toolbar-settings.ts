@@ -1,6 +1,6 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 
-export const toolbarItems: string[] = ['NewFolder', 'Upload', 'Delete', 'Download', 'Rename',
+export const toolbarItems: string[] = ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download', 'Rename',
     'SortBy', 'Refresh', 'Selection', 'View', 'Details'];
 
 /**
@@ -15,7 +15,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     public items: string[];
 
     /**
-     * Enable or disable the toolbar rendering in the file manager component
+     * Enables or disables the toolbar rendering in the file manager component.
      * @default true
      */
     @Property(true)

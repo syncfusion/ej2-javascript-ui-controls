@@ -11,6 +11,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { IStockEventRenderArgs } from '../model/base';
 import { stockEventRender } from '../../common/model/constants';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 /**
  * @private 
  */
@@ -126,6 +127,7 @@ export class StockEvents extends BaseTooltip {
                     )
                 );
                 textElement(
+                    this.stockChart.renderer as unknown as SvgRenderer,
                     new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2,
                                    (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'),
                     stockEve.textStyle, stockEve.textStyle.color, stockEventElement
@@ -152,6 +154,7 @@ export class StockEvents extends BaseTooltip {
                     )
                 );
                 textElement(
+                    this.stockChart.renderer as unknown as SvgRenderer,
                     new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'),
                     stockEve.textStyle, stockEve.textStyle.color, stockEventElement
                 );
@@ -168,6 +171,7 @@ export class StockEvents extends BaseTooltip {
                 pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
                 stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
                 textElement(
+                    this.stockChart.renderer as unknown as SvgRenderer,
                     new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'),
                     stockEve.textStyle, stockEve.textStyle.color, stockEventElement
                 );
@@ -183,6 +187,7 @@ export class StockEvents extends BaseTooltip {
                 stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
                 //append text element
                 textElement(
+                    this.stockChart.renderer as unknown as SvgRenderer,
                     new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'),
                     stockEve.textStyle, stockEve.textStyle.color, stockEventElement
                 );

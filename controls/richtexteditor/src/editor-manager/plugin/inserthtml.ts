@@ -2,7 +2,7 @@ import { NodeSelection } from './../../selection/index';
 
 import { NodeCutter } from './nodecutter';
 import * as CONSTANT from './../base/constant';
-import { detach } from '@syncfusion/ej2-base';
+import { detach, Browser } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
 
 /**
@@ -78,7 +78,13 @@ export class InsertHtml {
             }
         } else {
             range.deleteContents();
-            range.insertNode(node);
+            if (Browser.isIE) {
+                let frag: DocumentFragment = docElement.createDocumentFragment();
+                frag.appendChild(node);
+                range.insertNode(frag);
+            } else {
+                range.insertNode(node);
+            }
             if (node.nodeType !== 3 && node.childNodes.length > 0) {
                 nodeSelection.setSelectionText(docElement, node, node, 1, 1);
             } else if (node.nodeType !== 3) {

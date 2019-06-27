@@ -26,12 +26,14 @@ describe('FileManager control Grid view', () => {
             document.body.appendChild(ele);
             feObj = new FileManager({
                 view: 'Details',
+                searchSettings: { allowSearchOnTyping: false },
                 ajaxSettings: {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -115,7 +117,7 @@ describe('FileManager control Grid view', () => {
             searchEle.value = 'doc';
             searchObj.value = 'doc';
             let eventArgs: any = { value: 'doc', container: searchEle };
-            searchObj.input(eventArgs);
+            searchObj.change(eventArgs);
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -128,7 +130,7 @@ describe('FileManager control Grid view', () => {
                 searchEle.value = '';
                 searchObj.value = '';
                 eventArgs = { value: '', container: searchEle };
-                searchObj.input(eventArgs);
+                searchObj.change(eventArgs);
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
@@ -150,7 +152,7 @@ describe('FileManager control Grid view', () => {
             searchEle.value = 'doc';
             searchObj.value = 'doc';
             let eventArgs: any = { value: 'doc', container: searchEle };
-            searchObj.input(eventArgs);
+            searchObj.change(eventArgs);
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -160,7 +162,7 @@ describe('FileManager control Grid view', () => {
             setTimeout(function () {
                 let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                 expect(gridLi.length).toEqual(3);
-                let args = { rowData: { "name": "docs", "size": 0, "dateModified": "2019-03-14T09:27:45.346Z", "dateCreated": "2019-03-13T07:28:06.117Z", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\docs", "iconClass": "e-fe-folder" }, rowIndex: 0 };
+                let args = { rowData: { "name": "docs", "size": 0, "dateModified": "2019-03-14T09:27:45.346Z", "dateCreated": "2019-03-13T07:28:06.117Z", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\docs", "_fm_iconClass": "e-fe-folder" }, rowIndex: 0 };
                 feObj.detailsviewModule.gridObj.recordDoubleClick(args);
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({

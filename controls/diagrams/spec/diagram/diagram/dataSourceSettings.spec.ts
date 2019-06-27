@@ -34,7 +34,7 @@ describe('Diagram Control', () => {
             let data: DataManager = new DataManager();
             diagram = new Diagram({
                 width: 1000, height: 1000,
-                dataSourceSettings: { dataManager: data },
+                dataSourceSettings: { dataSource: data },
                 layout: { type: 'HierarchicalTree' }
             });
             diagram.appendTo('#diagram');
@@ -80,9 +80,9 @@ describe('Diagram Control', () => {
                 dataSourceSettings: {
                     id: 'Name',
                     parentId: 'ReportingPerson',
-                    dataManager: items,
-                    doBinding: (node: NodeModel, dataManager: object, diagram: Diagram) => {
-                        node.annotations = [{ content: dataManager['Name'] }];
+                    dataSource: items,
+                    doBinding: (node: NodeModel, dataSource: object, diagram: Diagram) => {
+                        node.annotations = [{ content: dataSource['Name'] }];
                     }
                 },
                 getNodeDefaults: (node: Node) => {
@@ -143,9 +143,9 @@ describe('Diagram Control', () => {
                 dataSourceSettings: {
                     id: 'Name',
                     parentId: 'ReportingPerson',
-                    dataManager: items,
-                    doBinding: (node: NodeModel, dataManager: object, diagram: Diagram) => {
-                        node.annotations = [{ content: dataManager['Name'] }];
+                    dataSource: items,
+                    doBinding: (node: NodeModel, dataSource: object, diagram: Diagram) => {
+                        node.annotations = [{ content: dataSource['Name'] }];
                     }
                 },
                 getNodeDefaults: 'getNodeDefaults',
@@ -200,7 +200,7 @@ describe('Diagram Control', () => {
             let i: number = 1;
             diagram = new Diagram({
                 width: 1500, height: 1500,
-                dataSourceSettings: { id: 'EmployeeID', parentId: 'ReportsTo', dataManager: items },
+                dataSourceSettings: { id: 'EmployeeID', parentId: 'ReportsTo', dataSource: items },
                 getNodeDefaults: (node: Node) => {
                     let obj: NodeModel = {};
                     obj.width = 100; obj.height = 50; obj.offsetX = i * 100;
@@ -225,7 +225,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking remote data binding', (done: Function) => {
-            done()
+            done();
             diagram.dataLoaded = (args: IDataLoadedEventArgs) => {
                 expect(diagram.nodes.length === 10 && diagram.connectors.length === 8).toBe(true);
                 done();
@@ -267,7 +267,7 @@ describe('Diagram Control', () => {
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
             let i: number = 1;
             diagram = new Diagram({
-                width: 3500, height: 3500, dataSourceSettings: { id: 'Name', parentId: 'ReportingPerson', dataManager: items },
+                width: 3500, height: 3500, dataSourceSettings: { id: 'Name', parentId: 'ReportingPerson', dataSource: items },
                 getNodeDefaults: (node: Node) => {
                     let obj: NodeModel = {};
                     obj.width = 100; obj.height = 50; obj.offsetX = i * 100;
@@ -316,7 +316,7 @@ describe('Diagram Control', () => {
             let items: DataManager = new DataManager(data as JSON[], new Query().take(4));
             let i: number = 1;
             diagram = new Diagram({
-                width: 1000, height: 1000, dataSourceSettings: { id: 'Name', parentId: 'ReportingPerson', dataManager: items },
+                width: 1000, height: 1000, dataSourceSettings: { id: 'Name', parentId: 'ReportingPerson', dataSource: items },
                 getNodeDefaults: (node: Node) => {
                     let obj: NodeModel = {};
                     obj.width = 100; obj.height = 50; obj.offsetX = i * 100;
@@ -364,7 +364,7 @@ describe('Diagram Control', () => {
             let i: number = 1;
             diagram = new Diagram({
                 width: 1000, height: 1000, dataSourceSettings: {
-                    id: 'Id', parentId: 'Designation', root: 'E2', dataManager: items
+                    id: 'Id', parentId: 'Designation', root: 'E2', dataSource: items
                 },
                 getNodeDefaults: (node: Node) => {
                     let obj: NodeModel = {};
@@ -413,8 +413,8 @@ describe('Diagram Control', () => {
             { 'Name': 'Testing engineer', 'ReportingPerson': 'TeamLead' },
             { 'Name': 'Software Developer', 'ReportingPerson': 'Manager' },
             { 'Name': 'Testing engineer', 'ReportingPerson': 'Manager' }];
-
             let data:DataManager =  new DataManager(data1 as JSON[], new Query().take(7));
+
 
             let i: number = 1;
 
@@ -422,9 +422,9 @@ describe('Diagram Control', () => {
                 width: 1000, height: 1000,
                 dataSourceSettings: {
                     id: 'Name',
-                    dataManager: data,
-                    doBinding: (node: NodeModel, dataManager: object, diagram: Diagram) => {
-                        node.annotations = [{ content: dataManager['Name'] }];
+                    dataSource: data,
+                    doBinding: (node: NodeModel, dataSource: object, diagram: Diagram) => {
+                        node.annotations = [{ content: dataSource['Name'] }];
                     }
                 },
                 getNodeDefaults: (node: Node) => {
@@ -483,10 +483,10 @@ describe('Diagram Control', () => {
                 width: 1000, height: 1000,
                 dataSourceSettings: {
                     id: 'Name',
-                    dataManager: items,
+                    dataSource: items,
                     doBinding: 'doBinding'
-                    // doBinding: (node: NodeModel, dataManager: object, diagram: Diagram) => {
-                    //     node.annotations = [{ content: dataManager['Name'] }];
+                    // doBinding: (node: NodeModel, dataSource: object, diagram: Diagram) => {
+                    //     node.annotations = [{ content: dataSource['Name'] }];
                     // }
                 },
                 getNodeDefaults: (node: Node) => {
@@ -508,8 +508,8 @@ describe('Diagram Control', () => {
 
             diagram.appendTo('#diagramko');
         });
-        window['doBinding'] = function (node: NodeModel, dataManager: object, diagram: Diagram) {
-            node.annotations = [{ content: dataManager['Name'] }];
+        window['doBinding'] = function (node: NodeModel, dataSource: object, diagram: Diagram) {
+            node.annotations = [{ content: dataSource['Name'] }];
         }
         afterAll((): void => {
             diagram.destroy();

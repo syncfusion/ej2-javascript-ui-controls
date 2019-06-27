@@ -2283,6 +2283,196 @@ describe('TimePicker', () => {
             expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
         });
     });
+    describe('HTML attributes at inline element testing', () => {
+        let timeObj: any;
+        beforeEach((): void => {
+            timeObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'time' });
+            ele.setAttribute('placeholder','Enter a date');
+            ele.setAttribute('readonly', '');
+            ele.setAttribute('disabled', '');
+            ele.setAttribute('value', '5:00 AM');
+            ele.setAttribute('min', '1:00 AM');
+            ele.setAttribute('max', '10:00 AM');
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (timeObj) {
+                timeObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Inline element testing', () => {
+            timeObj = new TimePicker();
+            timeObj.appendTo('#time');
+            expect(timeObj.placeholder).toBe("Enter a date");
+            expect(timeObj.element.hasAttribute('readonly')).toBe(true);
+            expect(timeObj.element.hasAttribute('enabled')).toBe(false);
+            expect(timeObj.element.getAttribute('min')).toBe('1:00 AM');
+            expect(timeObj.element.getAttribute('max')).toBe('10:00 AM');
+        });
+        it('Inline and API testing', () => {
+            timeObj = new TimePicker({placeholder:"Select a date", readonly: false, enabled: true, value: new Date("7/4/2016 6:00 AM"), min: new Date("7/4/2016 2:00 AM"), max: new Date("7/4/2016 9:00 AM")});
+            timeObj.appendTo('#time');
+            expect(timeObj.placeholder).toBe("Select a date");
+            expect(timeObj.element.hasAttribute('readonly')).toBe(false);
+            expect(timeObj.element.hasAttribute('disabled')).toBe(false);
+            expect(timeObj.element.value).toBe('6:00 AM');
+            expect(timeObj.getValue(timeObj.initMin)).toBe('2:00 AM');
+            expect(timeObj.getValue(timeObj.initMax)).toBe('9:00 AM');
+        });
+        it('Inline and html attributes API testing', () => {
+            timeObj = new TimePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false", disabled: "false", value: '7.00 AM', min: '3:00 AM', max: '8:00 AM'}});
+            timeObj.appendTo('#time');
+            expect(timeObj.placeholder).toBe("Choose a date");
+            expect(timeObj.element.hasAttribute('readonly')).toBe(false);
+            expect(timeObj.element.hasAttribute('disabled')).toBe(false);
+            expect(timeObj.element.getAttribute('min')).toBe('3:00 AM');
+            expect(timeObj.element.getAttribute('max')).toBe('8:00 AM');
+        });
+        it('Inline, API and html attributes API testing', () => {
+            timeObj = new TimePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: "", value: "7:00 AM", min: '3:00 AM', max: '8:00 AM'}, placeholder: "Select a date", readonly: false, enabled: true, value: new Date("7/4/2016 6:00 AM"), min: new Date("7/4/2016 2:00 AM"), max: new Date("7/4/2016 9:00 AM")});
+            timeObj.appendTo('#time');
+            expect(timeObj.placeholder).toBe("Select a date");
+            expect(timeObj.element.hasAttribute('readonly')).toBe(false);
+            expect(timeObj.element.hasAttribute('enabled')).toBe(false);
+            expect(timeObj.element.value).toBe('6:00 AM');
+            expect(timeObj.getValue(timeObj.initMin)).toBe('2:00 AM');
+            expect(timeObj.getValue(timeObj.initMax)).toBe('9:00 AM');
+        });
+    });
+    
+    describe('HTML attribute API testing', () => {
+        let timeObj: any;
+        beforeEach((): void => {
+            timeObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'time' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (timeObj) {
+                timeObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('API testing', () => {
+            timeObj = new TimePicker({placeholder:"Select a date", readonly: false, enabled: true, value: new Date("7/4/2016 3:00 AM")});
+            timeObj.appendTo('#time');
+            expect(timeObj.placeholder).toBe("Select a date");
+            expect(timeObj.element.hasAttribute('readonly')).toBe(false);
+            expect(timeObj.element.hasAttribute('disabled')).toBe(false);
+            expect(timeObj.element.value).toBe('3:00 AM');
+        });
+        it('HTML attributes API testing', () => {
+            timeObj = new TimePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false", disabled: "false", value: "5.00 AM"}});
+            timeObj.appendTo('#time');
+            expect(timeObj.placeholder).toBe("Choose a date");
+            expect(timeObj.element.hasAttribute('disabled')).toBe(false);
+            expect(timeObj.element.hasAttribute('readonly')).toBe(false);
+        });
+        it('API and HTML attributes API testing', () => {
+            timeObj = new TimePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: "", value: "5.00 AM"}, placeholder: "Select a date", readonly: false, enabled: true, value: new Date("7/4/2016 3:00 AM")});
+            timeObj.appendTo('#time');
+            expect(timeObj.placeholder).toBe("Select a date");
+            expect(timeObj.element.hasAttribute('readonly')).toBe(false);
+            expect(timeObj.element.hasAttribute('enabled')).toBe(false);
+            expect(timeObj.element.value).toBe('3:00 AM');
+        });
+        it('Other attribute testing with htmlAttributes API', () => {
+            timeObj = new TimePicker({ htmlAttributes:{name:"picker", title:"sample"}});
+            timeObj.appendTo('#time');
+            expect(timeObj.element.getAttribute('name')).toBe('picker');
+            expect(timeObj.inputWrapper.container.getAttribute('title')).toBe('sample');
+        });
+    });
+
+    describe('HTML attribute API dynamic testing', () => {
+        let timeObj: any;
+        beforeEach((): void => {
+            timeObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'time' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (timeObj) {
+                timeObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            timeObj = new TimePicker({ htmlAttributes:{placeholder:"Enter a date", readonly: "true", disabled: "true", value: "2/2/2018 6:00 AM", max: " 2/2/2018 9:00 AM", min: "2/2/2018 2:00 AM", title:"sample", style: 'background-color:yellow'}});
+            timeObj.appendTo('#time');
+            expect(timeObj.element.getAttribute('placeholder')).toBe('Enter a date');
+            expect(timeObj.element.hasAttribute('readonly')).toBe(true);
+            expect(timeObj.element.hasAttribute('disabled')).toBe(true);
+            expect(timeObj.element.value).toBe('6:00 AM');
+            expect(timeObj.getValue(timeObj.initMin)).toBe('2:00 AM');
+            expect(timeObj.getValue(timeObj.initMax)).toBe('9:00 AM');
+            expect(timeObj.inputWrapper.container.getAttribute('title')).toBe('sample');
+            expect(timeObj.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+            timeObj.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "2/2/2018 7:00 AM", max: "2/2/2018 10:00 AM", min: "2/2/2018 3:00 AM", title:"heading", style: 'background-color:red'};
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe('choose a date');
+            expect(timeObj.element.hasAttribute('readonly')).toBe(false);
+            expect(timeObj.element.value).toBe('7:00 AM');
+            expect(timeObj.getValue(timeObj.initMin)).toBe('3:00 AM');
+            expect(timeObj.getValue(timeObj.initMax)).toBe('10:00 AM');
+            expect(timeObj.inputWrapper.container.getAttribute('title')).toBe('heading');
+            expect(timeObj.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
+        });
+        it('Placeholder testing in auto case', () => {
+            timeObj = new TimePicker({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
+            timeObj.appendTo('#time');
+            expect(timeObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            timeObj.htmlAttributes = { placeholder:"choose a date"};
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            timeObj.floatLabelType = "Always";
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            timeObj.floatLabelType = "Never";
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in always case', () => {
+            timeObj = new TimePicker({ floatLabelType: "Always", htmlAttributes:{placeholder:"Enter a name" }});
+            timeObj.appendTo('#time');
+            expect(timeObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            timeObj.htmlAttributes = { placeholder:"choose a date"};
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            timeObj.floatLabelType = "Auto";
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            timeObj.floatLabelType = "Never";
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in never case', () => {
+            timeObj = new TimePicker({ floatLabelType: "Never", htmlAttributes:{placeholder:"Enter a name" }});
+            timeObj.appendTo('#time');
+            expect(timeObj.element.getAttribute('placeholder')).toBe('Enter a name');
+            timeObj.htmlAttributes = { placeholder:"choose a date"};
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe('choose a date');
+            timeObj.floatLabelType = "Always";
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            timeObj.floatLabelType = "Auto";
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+        });
+    });
+    
+
     describe('mobile layout testing', () => {
         let ele: HTMLElement = createElement('input', { id: 'timepicker31' });
         let ua = Browser.userAgent;

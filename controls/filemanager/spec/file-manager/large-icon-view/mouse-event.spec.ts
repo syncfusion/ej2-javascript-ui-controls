@@ -2,8 +2,8 @@
  * FileManager spec document
  */
 import { FileManager } from '../../../src/file-manager/base/file-manager';
-import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
-import {DetailsView} from '../../../src/file-manager/layout/details-view';
+import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
+import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19 } from '../data';
@@ -38,7 +38,8 @@ describe('FileManager control LargeIcons view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -70,23 +71,39 @@ describe('FileManager control LargeIcons view', () => {
             ele.remove();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
+        it('title attribute testing', () => {
+            let Li: any = feObj.navigationpaneModule.treeObj.element.querySelectorAll('li');
+            for (let i: number = 0; i < Li.length; i++) {
+                expect(Li[i].getAttribute('title')).toBe(Li[i].querySelector('.e-list-text').textContent);
+            }
+        });
         it('mouse click on file', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            let ali: any = document.getElementById('file_largeicons').querySelectorAll("li[aria-level='0']");
+            expect(ali.length).toBe(0);
             expect(li[4].classList.contains('e-active')).toBe(false);
             expect(li[4].classList.contains('e-focus')).toBe(false);
             expect(li[4].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+            expect(li[4].getAttribute('aria-selected')).toBe(null);
+            expect(li[4].getAttribute('tabindex')).toBe(null);
+            expect(document.getElementById('file_largeicons').getAttribute('tabindex')).toBe('0');
             mouseEventArgs.target = li[4];
             feObj.largeiconsviewModule.clickObj.tap(tapEvent);
             let nli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(nli[4].classList.contains('e-active')).toBe(true);
             expect(nli[4].classList.contains('e-focus')).toBe(true);
             expect(nli[4].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            expect(nli[4].getAttribute('aria-selected')).toBe('true');
+            expect(nli[4].getAttribute('tabindex')).toBe('0');
+            expect(document.getElementById('file_largeicons').getAttribute('tabindex')).toBe('-1');
         });
         it('mouse double click on file', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[4].classList.contains('e-active')).toBe(false);
             expect(li[4].classList.contains('e-focus')).toBe(false);
             expect(li[4].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+            expect(li[4].getAttribute('aria-selected')).toBe(null);
+            expect(li[4].getAttribute('tabindex')).toBe(null);
             mouseEventArgs.target = li[4];
             feObj.largeiconsviewModule.clickObj.tap(tapEvent);
             tapEvent.tapCount = 2;
@@ -95,6 +112,8 @@ describe('FileManager control LargeIcons view', () => {
             expect(nli[4].classList.contains('e-active')).toBe(true);
             expect(nli[4].classList.contains('e-focus')).toBe(true);
             expect(nli[4].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            expect(nli[4].getAttribute('aria-selected')).toBe('true');
+            expect(nli[4].getAttribute('tabindex')).toBe('0');
         });
         it('mouse click on folder', () => {
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
@@ -527,7 +546,7 @@ describe('FileManager control LargeIcons view', () => {
             let sortbyObj: any = feObj.toolbarModule.toolbarObj.element.querySelector('#' + feObj.element.id + '_tb_sortby');
             sortbyObj.click();
             setTimeout(function () {
-                sortbyObj.ej2_instances[0].dropDown.element.querySelectorAll('.e-item')[5].click();done();
+                sortbyObj.ej2_instances[0].dropDown.element.querySelectorAll('.e-item')[5].click(); done();
             }, 200);
         });
         it('SortBy Ascending', (done) => {
@@ -536,7 +555,7 @@ describe('FileManager control LargeIcons view', () => {
             let sortbyObj: any = feObj.toolbarModule.toolbarObj.element.querySelector('#' + feObj.element.id + '_tb_sortby');
             sortbyObj.click();
             setTimeout(function () {
-                sortbyObj.ej2_instances[0].dropDown.element.querySelectorAll('.e-item')[4].click();done();
+                sortbyObj.ej2_instances[0].dropDown.element.querySelectorAll('.e-item')[4].click(); done();
             }, 200);
         });
 
@@ -564,18 +583,18 @@ describe('FileManager control LargeIcons view', () => {
                 }, 500);
             }, 500);
         });
-        it('mouse click on the layout switch icon', (done: Function) => {            
+        it('mouse click on the layout switch icon', (done: Function) => {
             let grid: HTMLElement = document.getElementById('file_grid');
             let largeIcons: HTMLElement = document.getElementById('file_largeicons');
-            let icon: any = document.getElementById('file_view');
+            let icon: any = document.getElementById('file_tb_view');
             icon.click();
             let layoutObj: any = icon.ej2_instances[0];
             setTimeout(function () {
                 layoutObj.dropDown.element.querySelectorAll('.e-item')[0].click();
-                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>largeIcons.querySelectorAll('li');                
+                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>largeIcons.querySelectorAll('li');
                 expect(li.length).toBe(9);
                 expect(largeIcons.classList.contains('e-display-none')).toBe(false);
-                document.getElementById('file_view').click();
+                document.getElementById('file_tb_view').click();
                 setTimeout(function () {
                     layoutObj.dropDown.element.querySelectorAll('.e-item')[1].click();
                     this.request = jasmine.Ajax.requests.mostRecent();
@@ -614,11 +633,11 @@ describe('FileManager control LargeIcons view', () => {
                 feObj.allowMultiSelection = false;
                 feObj.dataBind();
                 this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify(data1)
-                    });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     var firstElement = document.getElementById('file_largeicons').querySelectorAll('li')[0];
                     mouseEventArgs.target = firstElement;
@@ -632,164 +651,6 @@ describe('FileManager control LargeIcons view', () => {
                     expect(firstElement.classList.contains('e-active')).toBe(false);
                     expect(secondElement.classList.contains('e-active')).toBe(false);
                     expect(thirdElement.classList.contains('e-active')).toBe(true);
-                    done();
-                }, 500);
-            }, 500);
-        });
-    });
-    describe('mouse event testing', () => {
-        let mouseEventArgs: any, tapEvent: any;
-        let feObj: any;
-        let ele: HTMLElement;
-        let originalTimeout: any;
-        beforeEach((done: Function): void => {
-            jasmine.Ajax.install();
-            feObj = undefined;
-            ele = createElement('div', { id: 'file' });
-            document.body.appendChild(ele);
-            feObj = new FileManager({
-                view: 'LargeIcons',
-                ajaxSettings: {
-                    url: '/FileOperations',
-                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
-                },
-                showThumbnail: false,
-                toolbarSettings: {
-                    visible: true,
-                    items: toolbarItems3
-                },
-            }, '#file');
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data1)
-            });
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
-                done();
-            }, 500);
-            mouseEventArgs = {
-                preventDefault: (): void => { },
-                stopImmediatePropagation: (): void => { },
-                target: null,
-                type: null,
-                shiftKey: false,
-                ctrlKey: false,
-                originalEvent: { target: null }
-            };
-            tapEvent = {
-                originalEvent: mouseEventArgs,
-                tapCount: 1
-            };
-        });
-        afterEach((): void => {
-            jasmine.Ajax.uninstall();
-            if (feObj) feObj.destroy();
-            ele.remove();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-        });
-        it('Search file testing', (done: Function) => {
-            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-            let treeLi: any = treeObj.element.querySelectorAll('li');
-            let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
-            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-            expect(treeLi.length).toEqual(5);
-            expect(largeLi.length).toEqual(5);
-            let searchEle: any = feObj.element.querySelector("#file_search");
-            let searchObj: any = searchEle.ej2_instances[0];
-            searchEle.value = 'doc';
-            searchObj.value = 'doc';
-            let eventArgs: any = { value: 'doc', container: searchEle };
-            searchObj.input(eventArgs);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data18)
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
-                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                let treeLi: any = treeObj.element.querySelectorAll('li');
-                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
-                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-                expect(treeLi.length).toEqual(5);
-                expect(largeLi.length).toEqual(3);
-                searchEle.value = '';
-                searchObj.value = '';
-                eventArgs = { value: '', container: searchEle };
-                searchObj.input(eventArgs);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data1)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(function () {
-                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                    let treeLi: any = treeObj.element.querySelectorAll('li');
-                    let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
-                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-                    expect(treeLi.length).toEqual(5);
-                    expect(largeLi.length).toEqual(5);
-                    done();
-                }, 500);
-            }, 500);
-        });
-        it('Search folder navigation', (done: Function) => {
-            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-            let treeLi: any = treeObj.element.querySelectorAll('li');
-            let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
-            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-            expect(treeLi.length).toEqual(5);
-            expect(largeLi.length).toEqual(5);
-            let searchEle: any = feObj.element.querySelector("#file_search");
-            let searchObj: any = searchEle.ej2_instances[0];
-            searchEle.value = 'doc';
-            searchObj.value = 'doc';
-            let eventArgs: any = { value: 'doc', container: searchEle };
-            searchObj.input(eventArgs);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data18)
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
-                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                let treeLi: any = treeObj.element.querySelectorAll('li');
-                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
-                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-                expect(treeLi.length).toEqual(5);
-                expect(largeLi.length).toEqual(3);
-                mouseEventArgs.target = largeLi[0];
-                tapEvent.tapCount = 2;
-                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data1)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data17)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data19)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(function () {
-                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                    let treeLi: any = treeObj.element.querySelectorAll('li');
-                    let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
-                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree_0_0");
-                    expect(treeLi.length).toEqual(6);
-                    expect(largeLi.length).toEqual(1);
                     done();
                 }, 500);
             }, 500);

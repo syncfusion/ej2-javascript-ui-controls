@@ -106,6 +106,7 @@ export class ComboBox extends DropDownList {
      * Triggers on set a 
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      * @event
+     * @blazorProperty 'CustomValueSpecifier'
      */
     @Event()
     public customValueSpecifier: EmitType<CustomValueSpecifierEventArgs>;
@@ -114,6 +115,7 @@ export class ComboBox extends DropDownList {
      * Triggers on typing a character in the component.
      * > For more details about the filtering refer to [`Filtering`](../../combo-box/filtering) documentation.
      * @event
+     * @blazorProperty 'Filtering'
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -587,40 +589,51 @@ export class ComboBox extends DropDownList {
             let previousValue: string | number | boolean = this.value;
             if (isNullOrUndefined(value)) {
                 let value: string | Object = this.inputElement.value === '' ? null : this.inputElement.value;
-                let fields: FieldSettingsModel = this.fields;
                 let eventArgs: { [key: string]: Object | string | number };
                 eventArgs = <{ [key: string]: Object | string | number }>{ text: value, item: {} };
                 if (!this.initial) {
-                    this.trigger('customValueSpecifier', eventArgs);
-                }
-                let item: { [key: string]: string | Object } = <{ [key: string]: string | Object }>eventArgs.item;
-                let dataItem: { [key: string]: string | Object } = {};
-                if (item && getValue(fields.text, item) && getValue(fields.value, item)) {
-                    dataItem = item;
+                    this.trigger('customValueSpecifier', eventArgs, (eventArgs: { [key: string]: Object | string | number }) => {
+                        this.updateCustomValueCallback(value, eventArgs, previousValue);
+                    });
                 } else {
-                    setValue(fields.text, value, dataItem);
-                    setValue(fields.value, value, dataItem);
+                    this.updateCustomValueCallback(value, eventArgs, previousValue);
                 }
-                this.itemData = <{ [key: string]: Object }>dataItem;
-                let changeData: { [key: string]: Object } = {
-                    text: getValue(fields.text, this.itemData),
-                    value: getValue(fields.value, this.itemData),
-                    index: null
-                };
-                this.setProperties(changeData, true);
-                this.setSelection(null, null);
-                this.isSelectCustom = true;
             } else {
                 this.isSelectCustom = false;
                 this.setProperties({ value: value });
-            }
-            if (previousValue !== this.value) {
-                this.onChangeEvent(null);
+                if (previousValue !== this.value) {
+                    this.onChangeEvent(null);
+                }
             }
         } else if (this.allowCustom) {
             this.isSelectCustom = true;
         }
-
+    }
+    private updateCustomValueCallback(
+        value: string | Object,
+        eventArgs: { [key: string]: Object | string | number },
+        previousValue: string | number | boolean): void {
+        let fields: FieldSettingsModel = this.fields;
+        let item: { [key: string]: string | Object } = <{ [key: string]: string | Object }>eventArgs.item;
+        let dataItem: { [key: string]: string | Object } = {};
+        if (item && getValue(fields.text, item) && getValue(fields.value, item)) {
+            dataItem = item;
+        } else {
+            setValue(fields.text, value, dataItem);
+            setValue(fields.value, value, dataItem);
+        }
+        this.itemData = <{ [key: string]: Object }>dataItem;
+        let changeData: { [key: string]: Object } = {
+            text: getValue(fields.text, this.itemData),
+            value: getValue(fields.value, this.itemData),
+            index: null
+        };
+        this.setProperties(changeData, true);
+        this.setSelection(null, null);
+        this.isSelectCustom = true;
+        if (previousValue !== this.value) {
+            this.onChangeEvent(null);
+        }
     }
     /**
      * Dynamically change the value of properties.

@@ -1,5 +1,5 @@
 /**
- * Tooltip Spec file
+ * Tooltip Spec
  */
 
 import { EmitType, remove,createElement }  from '@syncfusion/ej2-base';
@@ -60,6 +60,7 @@ describe('SVG Tooltip', () => {
             palette: ['red'],
             shapes : ['Circle'],
             offset: 10,
+            isCanvas: true,
             areaBounds : {height : 500, width : 500, x : 7}
         }, '#tooltipcontainer');
     });

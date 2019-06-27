@@ -38,7 +38,7 @@ export class ConnectorLine {
      * @return {void}
      * @private
      */
-    private initPublicProp(): void {
+    public initPublicProp(): void {
         this.lineColor = this.parent.connectorLineBackground;
         this.lineStroke = (this.parent.connectorLineWidth) > 4 ? 4 : this.parent.connectorLineWidth;
         this.createConnectorLineTooltipTable();
@@ -333,10 +333,14 @@ export class ConnectorLine {
         let connectorContainer: string = '';
         if (this.getParentPosition(data)) {
             connectorContainer = '<div id="ConnectorLine' + data.connectorLineId + '" style="background-color=black">';
-            let div: string = '<div class="' + cls.connectorLineContainer + '" style="';
-            let eLine: string = '<div class="' + cls.connectorLine + '" style="';
-            let rightArrow: string = '<div class="' + cls.connectorLineRightArrow + '" style="';
-            let leftArrow: string = '<div class="' + cls.connectorLineLeftArrow + '" style="';
+            let div: string = '<div class="' + cls.connectorLineContainer +
+                '" tabindex="-1" aria-label="' + this.generateAriaLabel(data) + '" style="';
+            let eLine: string = '<div class="' + cls.connectorLine + '" style="' +
+                (!isNullOrUndefined(this.lineColor) ? 'outline-color:' + this.lineColor + ';' : '');
+            let rightArrow: string = '<div class="' + cls.connectorLineRightArrow + '" style="' +
+                (!isNullOrUndefined(this.lineColor) ? 'outline-color:' + this.lineColor + ';' : '');
+            let leftArrow: string = '<div class="' + cls.connectorLineLeftArrow + '" style="' +
+                (!isNullOrUndefined(this.lineColor) ? 'outline-color:' + this.lineColor + ';' : '');
             let duplicateStingOne: string = leftArrow + (isMilestone ? 'left:0px;' : '') +
                 this.getBorderStyles('right', 10) +
                 'top:' + (-5 - this.lineStroke + (this.lineStroke - 1)) + 'px;border-bottom-width:' + (5 + this.lineStroke) + 'px;' +
@@ -842,5 +846,27 @@ export class ConnectorLine {
         innerTd = innerTd + '<tr id="toPredecessor"><td>' + this.parent.localeObj.getConstant('to') + '</td><td> ' + toTaskName;
         innerTd = innerTd + ' </td><td> ' + this.parent.localeObj.getConstant(toPredecessorText) + ' </td></tr></tbody><table>';
         return innerTd;
+    }
+    /**
+     * Generate aria-label for connectorline
+     */
+    private generateAriaLabel(data: IConnectorLineObject): string {
+        let type: string = data.type;
+        let updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        let fromName: string = updatedRecords[data.parentIndex].ganttProperties.taskName;
+        let toName: string = updatedRecords[data.childIndex].ganttProperties.taskName;
+        let start: string = this.parent.localeObj.getConstant('start');
+        let finish: string = this.parent.localeObj.getConstant('finish');
+        let value: string = '';
+        if (type === 'FS') {
+            value = fromName + ' ' + finish + ' to ' + toName + ' ' + start;
+        } else if (type === 'FF') {
+            value = fromName + ' ' + finish + ' to ' + toName + ' ' + finish;
+        } else if (type === 'SS') {
+            value = fromName + ' ' + start + ' to ' + toName + ' ' + start;
+        } else {
+            value = fromName + ' ' + start + ' to ' + toName + ' ' + finish;
+        }
+        return value;
     }
 }

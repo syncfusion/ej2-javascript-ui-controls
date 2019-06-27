@@ -1,5 +1,5 @@
-import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isNullOrUndefined, merge, removeClass, setValue } from '@syncfusion/ej2-base';
-import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, Edit, ExcelExport, Filter, Grid, Page, PdfExport, Predicate, Print, Reorder, Resize, Sort, TextWrapSettings, Toolbar, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
+import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isNullOrUndefined, merge, removeClass, resetBlazorTemplate, setValue } from '@syncfusion/ej2-base';
+import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Grid, InterSectionObserver, Page, PdfExport, Predicate, Print, RenderType, Reorder, Resize, Sort, TextWrapSettings, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -207,11 +207,21 @@ var updateData = 'update-data';
 /** @hidden */
 var doubleTap = 'double-tap';
 /** @hidden */
+var virtualColumnIndex = 'virtualColumnIndex';
+/** @hidden */
+var virtualActionArgs = 'virtual-action-args';
+/** @hidden */
+var dataListener = 'data-listener';
+/** @hidden */
+var indexModifier = 'index-modifier';
+/** @hidden */
 var beforeStartEdit = 'edit-form';
 /** @hidden */
 var beforeBatchCancel = 'before-batch-cancel';
 /** @hidden */
 var batchEditFormRendered = 'batcheditform-rendered';
+/** @hidden */
+var detailDataBound = 'detailDataBound';
 
 function isRemoteData(parent) {
     if (parent.dataSource instanceof DataManager) {
@@ -355,7 +365,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         return 'selection';
     };
     Selection.prototype.addEventListener = function () {
-        this.parent.on('headerCheckbox', this.headerCheckbox, this);
+        this.parent.on('dataBoundArg', this.headerCheckbox, this);
         this.parent.on('columnCheckbox', this.columnCheckbox, this);
         this.parent.on('updateGridActions', this.updateGridActions, this);
         this.parent.on('checkboxSelection', this.checkboxSelection, this);
@@ -364,10 +374,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off('renderHeaderCheckbox', this.headerCheckbox);
-        this.parent.off('renderCheckbox', this.columnCheckbox);
+        this.parent.off('dataBoundArg', this.headerCheckbox);
+        this.parent.off('columnCheckbox', this.columnCheckbox);
         this.parent.off('checkboxSelection', this.checkboxSelection);
-        this.parent.off('updateCheckboxes', this.updateGridActions);
+        this.parent.off('updateGridActions', this.updateGridActions);
     };
     /**
      * To destroy the Selection
@@ -383,13 +393,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var checkBox;
         if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
-            var rowIndex = void 0;
-            rowIndex = [];
-            rowIndex.push(target.closest('tr').rowIndex);
-            var checkBoxargs = this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
-            if (!checkBoxargs.cancel) {
-                this.selectCheckboxes(rowIndex);
-            }
+            this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
         }
         else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
             var checkBoxvalue = !checkWrap.querySelector('.e-frame').classList.contains('e-check')
@@ -398,11 +402,18 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.triggerChkChangeEvent = function (checkBox, checkState, rowElement) {
+        var _this = this;
+        var rowIndex;
+        rowIndex = [];
+        rowIndex.push(rowElement.rowIndex);
         var data = this.parent.getCurrentViewRecords()[rowElement.rowIndex];
         var args = { checked: checkState, target: checkBox, cancel: false, rowElement: rowElement,
             rowData: data };
-        this.parent.trigger(checkboxChange, args);
-        return args;
+        this.parent.trigger(checkboxChange, args, function (checkBoxArgs) {
+            if (!checkBoxArgs.cancel) {
+                _this.selectCheckboxes(rowIndex);
+            }
+        });
     };
     Selection.prototype.getCheckboxcolumnIndex = function () {
         var mappingUid;
@@ -431,6 +442,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             var rowChkBox = this.parent.createElement('input', { className: 'e-treeselectall', attrs: { 'type': 'checkbox' } });
             checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
             checkWrap.classList.add('e-hierarchycheckbox');
+            checkWrap.querySelector('.e-frame').style.width = '18px';
             checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
             if (!isNullOrUndefined(headerElement)) {
                 headerElement.insertBefore(checkWrap, headerElement.firstChild);
@@ -447,6 +459,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var value = (isNullOrUndefined(data.checkboxState) || data.checkboxState === 'uncheck') ? false : true;
         checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
         checkWrap.classList.add('e-hierarchycheckbox');
+        checkWrap.querySelector('.e-frame').style.width = '18px';
         if (data.checkboxState === 'indeterminate') {
             var checkbox = checkWrap.querySelectorAll('.e-frame')[0];
             removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
@@ -821,8 +834,8 @@ var SearchSettings = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], SearchSettings.prototype, "ignoreCase", void 0);
     __decorate$2([
-        Property()
-    ], SearchSettings.prototype, "operators", void 0);
+        Property('contains')
+    ], SearchSettings.prototype, "operator", void 0);
     __decorate$2([
         Property()
     ], SearchSettings.prototype, "key", void 0);
@@ -890,6 +903,8 @@ var Render = /** @__PURE__ @class */ (function () {
      */
     function Render(parent) {
         this.parent = parent;
+        this.templateResult = null;
+        this.parent.grid.on('template-result', this.columnTemplateResult, this);
     }
     /**
      * Updated row elements for TreeGrid
@@ -1002,7 +1017,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 totalIconsWidth += 7;
                 container.appendChild(emptyExpandIcon.cloneNode());
             }
-            else if (pad) {
+            else if (pad || !pad && !data.level) {
                 // icons width
                 totalIconsWidth += 20;
                 container.appendChild(emptyExpandIcon.cloneNode());
@@ -1021,6 +1036,11 @@ var Render = /** @__PURE__ @class */ (function () {
             var textContent = args.cell.querySelector('.e-treecell') != null ?
                 args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
             cellElement.innerHTML = textContent;
+            if (typeof (args.column.template) === 'object' && this.templateResult) {
+                cellElement.innerHTML = '';
+                appendChildren(cellElement, this.templateResult);
+                this.templateResult = null;
+            }
             container.appendChild(cellElement);
             args.cell.innerHTML = '';
             args.cell.appendChild(container);
@@ -1043,6 +1063,12 @@ var Render = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(this.parent.rowTemplate)) {
             this.parent.trigger(queryCellInfo, args);
         }
+    };
+    Render.prototype.columnTemplateResult = function (args) {
+        this.templateResult = args.template;
+    };
+    Render.prototype.destroy = function () {
+        this.parent.grid.off('template-result', this.columnTemplateResult);
     };
     return Render;
 }());
@@ -1090,12 +1116,12 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
         var srtQry = sortParams.srtQry;
         this.iterateSort(data, srtQry);
         this.storedIndex = -1;
-        this.parent.notify('updateAction', { result: this.flatSortedData });
+        sortParams.modifiedData = this.flatSortedData;
         this.flatSortedData = [];
     };
     Sort$$1.prototype.iterateSort = function (data, srtQry) {
         for (var d = 0; d < data.length; d++) {
-            if (this.parent.grid.filterSettings.columns.length > 0) {
+            if (this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key !== '') {
                 if (!isNullOrUndefined(getParentData(this.parent, data[d].uniqueID, true))) {
                     this.storedIndex++;
                     this.flatSortedData[this.storedIndex] = data[d];
@@ -1130,7 +1156,7 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Sort$$1.prototype.updateModel = function () {
-        this.parent.sortSettings = this.parent.grid.sortSettings;
+        this.parent.setProperties({ sortSettings: getActualProperties(this.parent.grid.sortSettings) }, true);
     };
     /**
      * Clears all the sorted columns of the TreeGrid.
@@ -1259,7 +1285,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             this.taskIds = [];
             for (var i = 0; i < Object.keys(data).length; i++) {
                 var tempData = data[i];
-                this.hierarchyData.push(extend({}, tempData));
+                this.hierarchyData.push(extend({}, tempData, true));
                 if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
                     this.taskIds.push(tempData[this.parent.idMapping]);
                 }
@@ -1359,6 +1385,9 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             rowDetails.record.expanded = true;
             for (var i = 0; i < rowDetails.rows.length; i++) {
                 rowDetails.rows[i].style.display = 'table-row';
+                if (!isNullOrUndefined(rowDetails.detailrows[i])) {
+                    rowDetails.detailrows[i].style.display = 'table-row';
+                }
             }
             this.parent.trigger(expanded, args);
         }
@@ -1499,8 +1528,10 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 if (isNullOrUndefined(gridQuery)) {
                     gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
                 }
-                var summaryQuery = query.queries.filter(function (q) { return q.fn === 'onAggregates'; });
-                results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results, true);
+                if (!isNullOrUndefined(query)) {
+                    var summaryQuery = query.queries.filter(function (q) { return q.fn === 'onAggregates'; });
+                    results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results, true);
+                }
             }
         }
         if (this.parent.grid.aggregates.length && this.parent.grid.sortSettings.columns.length === 0
@@ -1527,12 +1558,13 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
             }
             var modifiedData = new DataManager(parentData).executeLocal(srtQry);
-            this.parent.notify('createSort', { modifiedData: modifiedData, filteredData: results, srtQry: srtQry });
-            results = this.dataResults.result;
+            var sortArgs = { modifiedData: modifiedData, filteredData: results, srtQry: srtQry };
+            this.parent.notify('createSort', sortArgs);
+            results = sortArgs.modifiedData;
             this.dataResults.result = null;
             this.sortedData = results;
             this.parent.notify('updateModel', {});
-            if (this.parent.grid.aggregates.length > 0) {
+            if (this.parent.grid.aggregates.length > 0 && !isNullOrUndefined(query)) {
                 var isSort = false;
                 var query_1 = getObject('query', args);
                 var summaryQuery = query_1.queries.filter(function (q) { return q.fn === 'onAggregates'; });
@@ -1540,14 +1572,26 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             }
         }
         count = results.length;
+        var temp = this.paging(results, count, isExport, exportType, args);
+        results = temp.result;
+        count = temp.count;
+        args.result = results;
+        args.count = count;
+        this.parent.notify('updateResults', args);
+    };
+    DataManipulation.prototype.paging = function (results, count, isExport, exportType, args) {
         if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')) {
             this.parent.notify(pagingActions, { result: results, count: count });
             results = this.dataResults.result;
             count = this.dataResults.count;
         }
-        args.result = results;
-        args.count = count;
-        this.parent.notify('updateResults', args);
+        else if (this.parent.enableVirtualization && (!isExport || exportType === 'CurrentPage')) {
+            this.parent.notify(pagingActions, { result: results, count: count, actionArgs: getValue('actionArgs', args) });
+            results = this.dataResults.result;
+            count = this.dataResults.count;
+        }
+        var value = { result: results, count: count };
+        return value;
     };
     /**
      * update for datasource
@@ -2013,7 +2057,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Searches TreeGrid records using the given key.
      * You can customize the default search option by using the
-     * [`searchSettings`](#searchsettings).
+     * [`searchSettings`](./api-searchSettings.html).
      * @param  {string} searchString - Defines the key.
      * @return {void}
      */
@@ -2061,7 +2105,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * By default, prints all the pages of the TreeGrid and hides the pager.
      * > You can customize print options using the
-     * [`printMode`](#printmode).
+     * [`printMode`](./api-treegrid.html#printmode-string).
      * @return {void}
      */
     TreeGrid.prototype.print = function () {
@@ -2222,15 +2266,19 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 args: [this]
             });
         }
-        if (this.allowResizing) {
-            modules.push({
-                member: 'resize',
-                args: [this]
-            });
-        }
+        modules.push({
+            member: 'resize',
+            args: [this]
+        });
         if (this.allowExcelExport) {
             modules.push({
                 member: 'ExcelExport',
+                args: [this]
+            });
+        }
+        if (this.detailTemplate) {
+            modules.push({
+                member: 'detailRow',
                 args: [this]
             });
         }
@@ -2261,6 +2309,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         if (this.allowSelection) {
             modules.push({
                 member: 'selection',
+                args: [this]
+            });
+        }
+        if (this.enableVirtualization) {
+            modules.push({
+                member: 'virtualScroll',
                 args: [this]
             });
         }
@@ -2341,6 +2395,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData : this.dataSource;
         this.grid.enableRtl = this.enableRtl;
         this.grid.allowKeyboard = this.allowKeyboard;
+        this.grid.enablePersistence = this.enablePersistence;
         this.grid.columns = this.getGridColumns(this.columns);
         this.grid.allowExcelExport = this.allowExcelExport;
         this.grid.allowPdfExport = this.allowPdfExport;
@@ -2352,6 +2407,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.showColumnMenu = this.showColumnMenu;
         this.grid.allowSorting = this.allowSorting;
         this.grid.allowFiltering = this.allowFiltering;
+        this.grid.enableVirtualization = this.enableVirtualization;
         this.grid.width = this.width;
         this.grid.height = this.height;
         this.grid.enableAltRow = this.enableAltRow;
@@ -2377,6 +2433,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
         this.grid.editSettings = this.getGridEditSettings();
         this.grid.rowTemplate = getActualProperties(this.rowTemplate);
+        this.grid.detailTemplate = getActualProperties(this.detailTemplate);
     };
     TreeGrid.prototype.triggerEvents = function (args) {
         this.trigger(getObject('name', args), args);
@@ -2444,7 +2501,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.treeColumnRowTemplate(args);
             _this.updateColumnModel();
             _this.updateAltRow(_this.getRows());
-            _this.notify('headerCheckbox', {});
+            _this.notify('dataBoundArg', args);
             _this.trigger(dataBound, args);
             if (isRemoteData(_this) && !isOffline(_this) && !_this.hasChildMapping) {
                 var req = getObject('dataSource.requests', _this).filter(function (e) {
@@ -2467,8 +2524,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             if (!isRemoteData(treeGrid)) {
                 treeGrid.notify('dataProcessor', args);
+                //args = this.dataModule.dataProcessor(args);
             }
-            //args = this.dataModule.dataProcessor(args);
             extend(args, treeGrid.dataResults);
             // this.notify(events.beforeDataBound, args);
             if (!this.isPrinting) {
@@ -2530,9 +2587,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.trigger(recordDoubleClick, args);
             _this.notify(recordDoubleClick, args);
         };
+        this.grid.detailDataBound = function (args) {
+            _this.notify('detaildataBound', args);
+            _this.trigger(detailDataBound, args);
+        };
         this.grid.actionBegin = function (args) {
             var requestType = getObject('requestType', args);
-            var target = getObject('target', args);
             if (requestType === 'reorder') {
                 _this.notify('getColumnIndex', {});
             }
@@ -2541,15 +2601,13 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 _this.notify('clearFilters', { flatData: _this.grid.dataSource });
                 _this.grid.dataSource = _this.dataResults.result;
             }
-            if (!isNullOrUndefined(target) && requestType === 'sorting' && target.parentElement.classList.contains('e-hierarchycheckbox')) {
-                setValue('cancel', true, args);
-                return;
-            }
             _this.trigger(actionBegin, args);
             _this.notify(beginEdit, args);
         };
         this.grid.actionComplete = function (args) {
+            _this.notify('actioncomplete', args);
             _this.updateColumnModel();
+            _this.updateTreeGridModel();
             if (args.requestType === 'reorder') {
                 _this.notify('setColumnIndex', {});
             }
@@ -2767,6 +2825,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     this.grid.pageSettings = getActualProperties(this.pageSettings);
                     requireRefresh = true;
                     break;
+                case 'enableVirtualization':
+                    this.grid.enableVirtualization = this.enableVirtualization;
+                    break;
                 case 'toolbar':
                     this.grid.toolbar = this.getGridToolbar();
                     break;
@@ -2846,6 +2907,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     }
                     this.grid.width = this.width;
                     break;
+                case 'locale':
+                    this.grid.locale = this.locale;
+                    break;
+                case 'selectedRowIndex':
+                    this.grid.selectedRowIndex = this.selectedRowIndex;
+                    break;
                 case 'enableAltRow':
                     this.grid.enableAltRow = this.enableAltRow;
                     break;
@@ -2872,9 +2939,13 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'allowTextWrap':
                     this.grid.allowTextWrap = getActualProperties(this.allowTextWrap);
+                    this.refresh();
                     break;
                 case 'contextMenuItems':
                     this.grid.contextMenuItems = this.getContextMenu();
+                    break;
+                case 'detailTemplate':
+                    this.grid.detailTemplate = getActualProperties(this.detailTemplate);
                     break;
                 case 'columnMenuItems':
                     this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
@@ -2905,8 +2976,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.dataModule.destroy();
         var modules = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule',
             'excelExportModule', 'pdfExportModule', 'toolbarModule', 'summaryModule', 'reorderModule', 'resizeModule',
-            'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule',
-            'selectionModule'];
+            'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule', 'virtualScrollModule',
+            'selectionModule', 'detailRow'];
         for (var i = 0; i < modules.length; i++) {
             if (this[modules[i]]) {
                 this[modules[i]] = null;
@@ -3028,6 +3099,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.editModule.startEdit();
     };
     /**
+     * To edit any particular cell using row index and cell index.
+     * @param {number} rowIndex - Defines row index to edit a particular cell.
+     * @param {string} field - Defines the field name of the column to perform cell edit.
+     */
+    TreeGrid.prototype.editCell = function (rowIndex, field) {
+        this.editModule.editCell(rowIndex, field);
+    };
+    /**
      * If TreeGrid is in editable state, you can save a record by invoking endEdit.
      */
     TreeGrid.prototype.endEdit = function () {
@@ -3073,6 +3152,16 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.goToPage = function (pageNo) {
         this.grid.pagerModule.goToPage(pageNo);
+    };
+    /**
+     * Defines the text of external message.
+     * @param  {string} message - Defines the message to update.
+     * @return {void}
+     */
+    TreeGrid.prototype.updateExternalMessage = function (message) {
+        if (this.pagerModule) {
+            this.grid.pagerModule.updateExternalMessage(message);
+        }
     };
     /**
      * Gets a cell by row and column index.
@@ -3208,7 +3297,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             this.columnModel.push(new Column(gridColumn));
         }
+        var merge$$1 = 'deepMerge';
+        this[merge$$1] = ['columns']; // Workaround for blazor updateModel 
         this.setProperties({ columns: this.columnModel }, true);
+        this[merge$$1] = undefined; // Workaround for blazor updateModel
         return this.columnModel;
     };
     /**
@@ -3217,6 +3309,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.getContent = function () {
         return this.grid.getContent();
+    };
+    TreeGrid.prototype.updateTreeGridModel = function () {
+        this.setProperties({ filterSettings: getObject('properties', this.grid.filterSettings) }, true);
+        this.setProperties({ pageSettings: getObject('properties', this.grid.pageSettings) }, true);
+        this.setProperties({ searchSettings: getObject('properties', this.grid.searchSettings) }, true);
+        this.setProperties({ sortSettings: getObject('properties', this.grid.sortSettings) }, true);
     };
     /**
      * Gets the content table of the TreeGrid.
@@ -3357,13 +3455,25 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     TreeGrid.prototype.expandCollapseRequest = function (target) {
-        var rowInfo = target.closest('.e-treerowcell').parentElement;
-        var record = this.getCurrentViewRecords()[rowInfo.rowIndex];
-        if (target.classList.contains('e-treegridexpand')) {
-            this.collapseRow(rowInfo, record);
+        if (this.rowTemplate) {
+            var rowInfo = target.closest('.e-treerowcell').parentElement;
+            var record = this.getCurrentViewRecords()[rowInfo.rowIndex];
+            if (target.classList.contains('e-treegridexpand')) {
+                this.collapseRow(rowInfo, record);
+            }
+            else {
+                this.expandRow(rowInfo, record);
+            }
         }
         else {
-            this.expandRow(rowInfo, record);
+            var rowInfo = this.grid.getRowInfo(target);
+            var record = rowInfo.rowData;
+            if (target.classList.contains('e-treegridexpand')) {
+                this.collapseRow(rowInfo.row, record);
+            }
+            else {
+                this.expandRow(rowInfo.row, record);
+            }
         }
     };
     /**
@@ -3371,17 +3481,19 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     TreeGrid.prototype.expandRow = function (row, record) {
+        var _this = this;
         record = this.getCollapseExpandRecords(row, record);
         var args = { data: record, row: row, cancel: false };
-        this.trigger(expanding, args);
-        if (args.cancel) {
-            return;
-        }
-        this.expandCollapse('expand', row, record);
-        if (!(isRemoteData(this) && !isOffline(this))) {
-            var collapseArgs = { data: record, row: row };
-            this.trigger(expanded, collapseArgs);
-        }
+        this.trigger(expanding, args, function (expandingArgs) {
+            if (!expandingArgs.cancel) {
+                _this.resetTemplates();
+                _this.expandCollapse('expand', row, record);
+                if (!(isRemoteData(_this) && !isOffline(_this))) {
+                    var collapseArgs = { data: record, row: row };
+                    _this.trigger(expanded, collapseArgs);
+                }
+            }
+        });
     };
     TreeGrid.prototype.getCollapseExpandRecords = function (row, record) {
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && this.isExpandAll && isNullOrUndefined(record)) {
@@ -3399,22 +3511,34 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     TreeGrid.prototype.collapseRow = function (row, record) {
+        var _this = this;
         record = this.getCollapseExpandRecords(row, record);
         var args = { data: record, row: row, cancel: false };
-        this.trigger(collapsing, args);
-        if (args.cancel) {
-            return;
+        this.trigger(collapsing, args, function (collapsingArgs) {
+            if (!collapsingArgs.cancel) {
+                _this.resetTemplates();
+                _this.expandCollapse('collapse', row, record);
+                var collapseArgs = { data: record, row: row };
+                _this.trigger(collapsed, collapseArgs);
+            }
+        });
+    };
+    TreeGrid.prototype.resetTemplates = function () {
+        for (var i = 0; i < this.columns.length; i++) {
+            if (this.columns[i].template) {
+                resetBlazorTemplate(this.grid.element.id + this.columns[i].uid, 'Template');
+            }
+            if (this.columns[i].headerTemplate) {
+                resetBlazorTemplate(this.grid.element.id + this.columns[i].uid + 'headerTemplate', 'HeaderTemplate');
+            }
         }
-        this.expandCollapse('collapse', row, record);
-        var collapseArgs = { data: record, row: row };
-        this.trigger(collapsed, collapseArgs);
     };
     /**
      * Expands the records at specific hierarchical level
      * @return {void}
      */
     TreeGrid.prototype.expandAtLevel = function (level) {
-        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+        if ((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) {
             var rec = this.grid.dataSource.filter(function (e) {
                 if (e.hasChildRecords && e.level === level) {
                     e.expanded = true;
@@ -3446,7 +3570,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     TreeGrid.prototype.collapseAtLevel = function (level) {
-        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+        if ((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) {
             var record = this.grid.dataSource.filter(function (e) {
                 if (e.hasChildRecords && e.level === level) {
                     e.expanded = false;
@@ -3483,7 +3607,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             return e.querySelector('.e-treegrid' + (action === 'expand' ? 'collapse' : 'expand'));
         });
         this.isExpandAll = true;
-        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+        if ((this.allowPaging && this.pageSettings.pageSizeMode === 'All')
+            || this.enableVirtualization) {
             this.flatData.filter(function (e) {
                 if (e.hasChildRecords) {
                     e.expanded = action === 'collapse' ? false : true;
@@ -3515,7 +3640,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(row)) {
             row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
         }
-        if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && !isRemoteData(this)) {
+        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)) {
             this.notify(localPagedExpandCollapse, { action: action, row: row, record: record });
         }
         else {
@@ -3531,6 +3656,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 }
                 addClass([targetEle], 'e-treegridexpand');
                 removeClass([targetEle], 'e-treegridcollapse');
+                this.notify('rowExpand', { row: row });
             }
             else {
                 displayAction = 'none';
@@ -3549,11 +3675,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 var rows = gridRows.filter(function (r) {
                     return r.classList.contains('e-gridrowindex' + record.index + 'level' + (record.level + 1));
                 });
+                var detailrows = gridRows.filter(function (r) {
+                    return r.classList.contains('e-griddetailrowindex' + record.index + 'level' + (record.level + 1));
+                });
                 if (action === 'expand') {
-                    this.notify(remoteExpand, { record: record, rows: rows, parentRow: row });
+                    this.notify(remoteExpand, { record: record, rows: rows, parentRow: row, detailrows: detailrows });
                 }
                 else {
-                    this.collapseRemoteChild(rows);
+                    this.collapseRemoteChild(rows, detailrows);
                     this.trigger(collapsed, args);
                 }
             }
@@ -3565,13 +3694,18 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 var rows = gridRows.filter(function (r) {
                     return r.classList.contains('e-gridrowindex' + record.index + 'level' + (record.level + 1));
                 });
+                var detailrows = gridRows.filter(function (detailRowes) {
+                    return detailRowes.classList.contains('e-griddetailrowindex' + record.index + 'level' + (record.level + 1));
+                });
                 for (var i = 0; i < rows.length; i++) {
                     rows[i].style.display = displayAction;
+                    this.notify('childRowExpand', { row: rows[i] });
                     if (!isNullOrUndefined(childRecords[i].childRecords) && (action !== 'expand' ||
                         isNullOrUndefined(childRecords[i].expanded) || childRecords[i].expanded)) {
                         this.expandCollapse(action, rows[i], childRecords[i], true);
                     }
                 }
+                this.notify('rowExpandCollapse', { detailrows: detailrows, action: displayAction });
             }
             this.updateAltRow(gridRows);
         }
@@ -3608,24 +3742,31 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    TreeGrid.prototype.collapseRemoteChild = function (rows) {
-        var _loop_1 = function (i) {
-            var rData = this_1.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
+    TreeGrid.prototype.collapseRemoteChild = function (rows, detailrows) {
+        for (var i = 0; i < rows.length; i++) {
+            var rData = this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
             rData.expanded = false;
             rows[i].style.display = 'none';
-            if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
-                var targetEle = rows[i].getElementsByClassName('e-treegridexpand')[0];
-                removeClass([targetEle], 'e-treegridexpand');
-                addClass([targetEle], 'e-treegridcollapse');
-                var cRow = this_1.getRows().filter(function (r) {
-                    return r.classList.contains('e-gridrowindex' + rData.index + 'level' + (rData.level + 1));
-                });
-                this_1.collapseRemoteChild(cRow);
+            if (!isNullOrUndefined(detailrows[i])) {
+                detailrows[i].style.display = 'none';
             }
-        };
-        var this_1 = this;
-        for (var i = 0; i < rows.length; i++) {
-            _loop_1(i);
+            if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
+                var expandElement = rows[i].querySelector('.e-treecolumn-container .e-treegridexpand');
+                removeClass([expandElement], 'e-treegridexpand');
+                addClass([expandElement], 'e-treegridcollapse');
+                var cRow = [];
+                var detailRows = [];
+                var eRows = this.getRows();
+                for (var i_1 = 0; i_1 < eRows.length; i_1++) {
+                    if (eRows[i_1].classList.contains('e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
+                        cRow.push(eRows[i_1]);
+                    }
+                    else if (eRows[i_1].classList.contains('e-griddetailrowindex' + rData.index + 'level' + (rData.level + 1))) {
+                        detailRows.push(eRows[i_1]);
+                    }
+                }
+                this.collapseRemoteChild(cRow, detailRows);
+            }
         }
     };
     /**
@@ -3831,6 +3972,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], TreeGrid.prototype, "allowFiltering", void 0);
     __decorate([
+        Property()
+    ], TreeGrid.prototype, "detailTemplate", void 0);
+    __decorate([
         Complex({}, FilterSettings)
     ], TreeGrid.prototype, "filterSettings", void 0);
     __decorate([
@@ -3864,7 +4008,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], TreeGrid.prototype, "allowKeyboard", void 0);
     __decorate([
-        Property(true)
+        Property(false)
     ], TreeGrid.prototype, "enableHover", void 0);
     __decorate([
         Property('auto')
@@ -3872,6 +4016,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('auto')
     ], TreeGrid.prototype, "width", void 0);
+    __decorate([
+        Property(false)
+    ], TreeGrid.prototype, "enableVirtualization", void 0);
     __decorate([
         Property('All')
     ], TreeGrid.prototype, "columnQueryMode", void 0);
@@ -3893,6 +4040,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], TreeGrid.prototype, "collapsed", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "cellSave", void 0);
     __decorate([
         Event()
     ], TreeGrid.prototype, "actionBegin", void 0);
@@ -3923,6 +4073,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], TreeGrid.prototype, "rowDataBound", void 0);
+    __decorate([
+        Event()
+    ], TreeGrid.prototype, "detailDataBound", void 0);
     __decorate([
         Event()
     ], TreeGrid.prototype, "queryCellInfo", void 0);
@@ -4149,6 +4302,56 @@ var Resize$1 = /** @__PURE__ @class */ (function () {
  * Models export
  */
 
+var __extends$8 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * RowModelGenerator is used to generate grid data rows.
+ * @hidden
+ */
+var TreeVirtualRowModelGenerator = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(TreeVirtualRowModelGenerator, _super);
+    function TreeVirtualRowModelGenerator(parent) {
+        var _this = _super.call(this, parent) || this;
+        _this.addEventListener();
+        return _this;
+    }
+    TreeVirtualRowModelGenerator.prototype.addEventListener = function () {
+        this.parent.on(dataListener, this.getDatas, this);
+    };
+    TreeVirtualRowModelGenerator.prototype.getDatas = function (args) {
+        this.visualData = args.data;
+    };
+    TreeVirtualRowModelGenerator.prototype.generateRows = function (data, notifyArgs) {
+        var rows = _super.prototype.generateRows.call(this, data, notifyArgs);
+        for (var r = 0; r < rows.length; r++) {
+            rows[r].index = (this.visualData).indexOf(rows[r].data);
+        }
+        return rows;
+    };
+    TreeVirtualRowModelGenerator.prototype.checkAndResetCache = function (action) {
+        var clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'virtualscroll', 'reorder',
+            'save', 'delete'].some(function (value) { return action === value; });
+        if (clear) {
+            this.cache = {};
+            this.data = {};
+            this.groups = {};
+        }
+        return clear;
+    };
+    return TreeVirtualRowModelGenerator;
+}(VirtualRowModelGenerator));
+
 /**
  * Renderer export
  */
@@ -4292,9 +4495,12 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
             var ischild = childRec[count].childRecords;
             if ((this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'Both') ||
                 (this.parent.searchSettings.hierarchyMode === 'Child' || this.parent.searchSettings.hierarchyMode === 'Both')) {
-                this.filteredResult.push(childRec[count]);
-                setValue('uniqueIDFilterCollection.' + childRec[count].uniqueID, childRec[count], this.parent);
-                isExist = true;
+                var uniqueIDValue = getValue('uniqueIDFilterCollection', this.parent);
+                if (!uniqueIDValue.hasOwnProperty(childRec[count].uniqueID)) {
+                    this.filteredResult.push(childRec[count]);
+                    setValue('uniqueIDFilterCollection.' + childRec[count].uniqueID, childRec[count], this.parent);
+                    isExist = true;
+                }
             }
             if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
                 if (this.flatFilteredData.indexOf(childRec[count] !== -1)) {
@@ -4728,6 +4934,11 @@ var Page$1 = /** @__PURE__ @class */ (function () {
             var query = new Query();
             var size = this.parent.grid.pageSettings.pageSize;
             var current = this.parent.grid.pageSettings.currentPage;
+            if (visualData.length < (current * size)) {
+                current = (Math.floor(visualData.length / size)) + ((visualData.length % size) ? 1 : 0);
+                current = current ? current : 1;
+                this.parent.grid.setProperties({ pageSettings: { currentPage: current } }, true);
+            }
             var skip = size * (current - 1);
             query = query.skip(skip).take(size);
             dm_1.dataSource.json = visualData;
@@ -5389,7 +5600,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.trigger(actionBegin, args);
     };
     Edit$$1.prototype.beforeBatchCancel = function (args) {
-        args.type = 'cancel';
         this.parent.trigger(actionComplete, args);
     };
     /*private batchEditFormRendered(args: Object):void {
@@ -5434,7 +5644,10 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.recordDoubleClick = function (args) {
         var target = args.target;
         this.doubleClickTarget = target;
-        var column = this.parent.grid.getColumnByIndex(+target.closest('td').getAttribute('aria-colindex'));
+        if (isNullOrUndefined(target.closest('td.e-rowcell'))) {
+            return;
+        }
+        var column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
             column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
             target.classList.contains('e-treegridcollapse'))) {
@@ -5543,13 +5756,13 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 });
             }
             else {
-                rowIndex_1 = row.rowIndex;
+                rowIndex_1 = this.parent.getDataRows().indexOf(row);
             }
             var arg = {};
             extend(arg, args);
             arg.cancel = false;
             arg.type = 'save';
-            row = this.parent.grid.getRows()[rowIndex_1];
+            row = this.parent.grid.getRows()[row.rowIndex];
             this.parent.trigger(actionBegin, arg);
             if (!arg.cancel) {
                 this.updateCell(args, rowIndex_1);
@@ -5564,7 +5777,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 this.enableToolbarItems('save');
                 removeClass([row], ['e-editedrow', 'e-batchrow']);
                 removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-                editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName, this.addRowRecord);
+                editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
                 var saveArgs = {
                     type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
                     previousData: args.previousValue, row: row, target: args.cell
@@ -5597,7 +5810,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Edit$$1.prototype.updateIndex = function (data, rows, records) {
-        for (var j = 0; j < this.parent.getRows().length; j++) {
+        for (var j = 0; j < this.parent.getDataRows().length; j++) {
             var data1 = records[j];
             var index = getValue('uniqueIDCollection.' + data1.uniqueID + '.index', this.parent);
             data1.index = index;
@@ -5606,8 +5819,12 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 data1.parentItem.index = parentIndex;
             }
         }
+        var count = -1;
         for (var k = 0; k < this.parent.getRows().length; k++) {
-            var data2 = records[k];
+            if (!rows[k].classList.contains('e-detailrow')) {
+                count++;
+            }
+            var data2 = records[count];
             var index = data2.index;
             var level = data2.level;
             var row = rows[k];
@@ -5617,12 +5834,22 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             for (var l = 0; l < row.classList.length; l++) {
                 var value = row.classList[l];
                 var remove = /e-gridrowindex/i;
+                var removed = /e-griddetailrowindex/i;
                 var result = value.match(remove);
+                var results = value.match(removed);
                 if (result != null) {
                     removeClass([row], value);
                 }
+                if (results != null) {
+                    removeClass([row], value);
+                }
             }
-            addClass([row], 'e-gridrowindex' + index + 'level' + level);
+            if (!rows[k].classList.contains('e-detailrow')) {
+                addClass([row], 'e-gridrowindex' + index + 'level' + level);
+            }
+            else {
+                addClass([row], 'e-griddetailrowindex' + index + 'level' + level);
+            }
         }
     };
     Edit$$1.prototype.beginAdd = function (args) {
@@ -5807,6 +6034,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                     args.index = dataSource.length;
                 }
             }
+            if (isNullOrUndefined(value.level)) {
+                value.level = level;
+            }
             // this.addedIndex = args.index;
             value.hasChildRecords = false;
             value.childRecords = [];
@@ -5857,6 +6087,17 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             this.updateIndex(this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
         }
     };
+    /**
+     * If the row index and field is given, edits the particular cell in a row.
+     * @return {void}
+     */
+    Edit$$1.prototype.editCell = function (rowIndex, field) {
+        if (this.parent.editSettings.mode === 'Cell') {
+            this.isOnBatch = true;
+            this.updateGridEditMode('Batch');
+            this.parent.grid.editModule.editCell(rowIndex, field);
+        }
+    };
     return Edit$$1;
 }());
 
@@ -5888,6 +6129,474 @@ var CommandColumn$1 = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * TreeGrid Detail Row module
+ * @hidden
+ */
+var DetailRow$1 = /** @__PURE__ @class */ (function () {
+    function DetailRow$$1(parent) {
+        Grid.Inject(DetailRow);
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * @hidden
+     */
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    DetailRow$$1.prototype.getModuleName = function () {
+        return 'detailRow';
+    };
+    DetailRow$$1.prototype.addEventListener = function () {
+        this.parent.on('dataBoundArg', this.dataBoundArg, this);
+        this.parent.on('detaildataBound', this.detaildataBound, this);
+        this.parent.on('childRowExpand', this.childRowExpand, this);
+        this.parent.on('rowExpandCollapse', this.rowExpandCollapse, this);
+        this.parent.on('actioncomplete', this.actioncomplete, this);
+    };
+    /**
+     * @hidden
+     */
+    DetailRow$$1.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off('dataBoundArg', this.dataBoundArg);
+        this.parent.off('detaildataBound', this.detaildataBound);
+        this.parent.off('childRowExpand', this.childRowExpand);
+        this.parent.off('rowExpandCollapse', this.rowExpandCollapse);
+        this.parent.off('actioncomplete', this.actioncomplete);
+    };
+    DetailRow$$1.prototype.dataBoundArg = function () {
+        var detailele = this.parent.getRows().filter(function (e) {
+            return !e.classList.contains('e-detailrow');
+        });
+        for (var i = 0; i < detailele.length; i++) {
+            var elements = detailele[i].getElementsByClassName('e-detailrowcollapse');
+            var detailData = this.parent.grid.getRowObjectFromUID(detailele[i].getAttribute('data-Uid'));
+            var parentItem = getObject('parentItem', this.parent.grid.getCurrentViewRecords()[i]);
+            if (isNullOrUndefined(parentItem) || !isNullOrUndefined(parentItem) &&
+                getExpandStatus(this.parent, detailData.data, this.parent.grid.getCurrentViewRecords())) {
+                this.parent.grid.detailRowModule.expand(elements[0]);
+            }
+        }
+    };
+    DetailRow$$1.prototype.childRowExpand = function (args) {
+        var detailRowElement = args.row.getElementsByClassName('e-detailrowcollapse');
+        if (!isNullOrUndefined(detailRowElement[0])) {
+            this.parent.grid.detailRowModule.expand(detailRowElement[0]);
+        }
+    };
+    DetailRow$$1.prototype.rowExpandCollapse = function (args) {
+        for (var i = 0; i < args.detailrows.length; i++) {
+            args.detailrows[i].style.display = args.action;
+        }
+    };
+    DetailRow$$1.prototype.detaildataBound = function (args) {
+        var data = args.data;
+        var gridClas = [].slice.call(args.detailElement.parentElement.previousSibling.classList).filter(function (gridclass) { return (gridclass !== 'e-row' && gridclass !== 'e-altrow'); });
+        var newNo = gridClas[0].length;
+        var slicedclas = gridClas.toString().slice(6, newNo);
+        var detailClass = 'e-griddetail' + slicedclas;
+        addClass([args.detailElement.parentElement], detailClass);
+    };
+    
+    DetailRow$$1.prototype.actioncomplete = function (args) {
+        if (args.requestType === 'beginEdit' || args.requestType === 'add') {
+            var spann = (args.row.querySelectorAll('.e-editcell')[0].getAttribute('colSpan'));
+            var colum = parseInt(spann, 10) - 1;
+            var updtdcolum = colum.toString();
+            args.row.querySelectorAll('.e-editcell')[0].setAttribute('colSpan', updtdcolum);
+        }
+        var focusElement = this.parent.grid.contentModule.getRows();
+        for (var i = 0; i < focusElement.length; i++) {
+            focusElement[i].cells[0].visible = false;
+        }
+        var focusModule = getObject('focusModule', this.parent.grid);
+        var matrix = 'refreshMatrix';
+        focusModule[matrix](true)({ rows: this.parent.grid.contentModule.getRows() });
+    };
+    /**
+     * Destroys the DetailModule.
+     * @method destroy
+     * @return {void}
+     */
+    DetailRow$$1.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    return DetailRow$$1;
+}());
+
+var __extends$10 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * Content renderer for TreeGrid
+ */
+var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
+    __extends$10(VirtualTreeContentRenderer, _super);
+    function VirtualTreeContentRenderer(parent, locator) {
+        var _this = _super.call(this, parent, locator) || this;
+        _this.isExpandCollapse = false;
+        _this.translateY = 0;
+        _this.maxiPage = 0;
+        _this.startIndex = -1;
+        _this.endIndex = -1;
+        _this.addEventListener();
+        return _this;
+    }
+    VirtualTreeContentRenderer.prototype.getModelGenerator = function () {
+        return new TreeVirtualRowModelGenerator(this.parent);
+    };
+    VirtualTreeContentRenderer.prototype.getRowByIndex = function (index) {
+        return this.parent.getDataRows().filter(function (e) { return parseInt(e.getAttribute('aria-rowindex'), 0) === index; })[0];
+    };
+    VirtualTreeContentRenderer.prototype.addEventListener = function () {
+        this.parent.on(virtualActionArgs, this.virtualOtherAction, this);
+        this.parent.on(indexModifier, this.indexModifier, this);
+    };
+    VirtualTreeContentRenderer.prototype.virtualOtherAction = function (args) {
+        if (args.setTop) {
+            this.translateY = 0;
+            this.startIndex = 0;
+            this.endIndex = this.parent.pageSettings.pageSize - 1;
+        }
+        else if (args.isExpandCollapse) {
+            this.isExpandCollapse = true;
+        }
+    };
+    VirtualTreeContentRenderer.prototype.indexModifier = function (args) {
+        args.startIndex = this.startIndex;
+        args.endIndex = this.endIndex;
+    };
+    VirtualTreeContentRenderer.prototype.eventListener = function (action) {
+        var _this = this;
+        this.parent[action]('data-ready', this.onDataReady, this);
+        //this.parent[action]('refresh-virtual-block', this.refreshContentRows, this);
+        var fn = function () {
+            _this.observers.observes(function (scrollArgs) { return _this.scrollListeners(scrollArgs); });
+            _this.parent.off('content-ready', fn);
+        };
+        this.parent.on('content-ready', fn, this);
+    };
+    VirtualTreeContentRenderer.prototype.onDataReady = function (e) {
+        _super.prototype.onDataReady.call(this, e);
+        if (!isNullOrUndefined(e.count)) {
+            this.totalRecords = e.count;
+            getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
+             // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
+        }
+    };
+    VirtualTreeContentRenderer.prototype.renderTable = function () {
+        _super.prototype.renderTable.call(this);
+        getValue('observer', this).options.debounceEvent = false;
+        this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
+        this.contents = this.getPanel().firstChild;
+    };
+    VirtualTreeContentRenderer.prototype.scrollListeners = function (scrollArgs) {
+        var info = scrollArgs.sentinel;
+        var outBuffer = 10; //this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
+        var content = this.parent.getContent().querySelector('.e-content');
+        var scrollHeight = outBuffer * this.parent.getRowHeight();
+        var upScroll = (scrollArgs.offset.top - this.translateY) < 0;
+        var downScroll = (scrollArgs.offset.top - this.translateY) > scrollHeight;
+        if (upScroll) {
+            var vHeight = +(this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
+                this.parent.element.getBoundingClientRect().height);
+            var index = (~~(content.scrollTop / this.parent.getRowHeight())
+                + Math.ceil(vHeight / this.parent.getRowHeight()))
+                - this.parent.getRows().length;
+            index = (index > 0) ? index : 0;
+            this.startIndex = index;
+            this.endIndex = index + this.parent.getRows().length;
+            if (this.endIndex > this.totalRecords) {
+                var lastInx = this.totalRecords - 1;
+                var remains = this.endIndex % lastInx;
+                this.endIndex = lastInx;
+                this.startIndex = this.startIndex - remains;
+            }
+            //var firsttdinx = parseInt(this.parent.getContent().querySelector('.e-content td').getAttribute('index'), 0);
+            var rowPt = Math.ceil(scrollArgs.offset.top / this.parent.getRowHeight());
+            rowPt = rowPt % this.parent.pageSettings.pageSize;
+            var firsttdinx = 0;
+            if (!isNullOrUndefined(this.parent.getRows()[rowPt])) {
+                var attr = this.parent.getContent().querySelectorAll('.e-content tr')[rowPt]
+                    .querySelector('td').getAttribute('index');
+                firsttdinx = +attr; // this.parent.getContent().querySelector('.e-content tr').getAttribute('aria-rowindex');
+            }
+            if (firsttdinx === 0) {
+                this.translateY = scrollArgs.offset.top;
+            }
+            else {
+                var height = this.parent.getRowHeight();
+                this.translateY = (scrollArgs.offset.top - (outBuffer * height) > 0) ?
+                    scrollArgs.offset.top - (outBuffer * height) + 10 : 0;
+            }
+        }
+        else if (downScroll) {
+            var nextSetResIndex = ~~(content.scrollTop / this.parent.getRowHeight());
+            var lastIndex = nextSetResIndex + this.parent.getRows().length;
+            if (lastIndex > this.totalRecords) {
+                lastIndex = nextSetResIndex +
+                    (this.totalRecords - nextSetResIndex);
+            }
+            this.startIndex = lastIndex - this.parent.getRows().length;
+            this.endIndex = lastIndex;
+            this.translateY = scrollArgs.offset.top;
+        }
+        if (((downScroll && (scrollArgs.offset.top +
+            (outBuffer * this.parent.getRowHeight())) < (this.parent.getRowHeight() * this.totalRecords))
+            || (upScroll))) {
+            var viewInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
+            this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
+        }
+    };
+    VirtualTreeContentRenderer.prototype.appendContent = function (target, newChild, e) {
+        var info = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' && getValue('currentInfo', this).page &&
+            getValue('currentInfo', this).page !== e.virtualInfo.page ? getValue('currentInfo', this) : e.virtualInfo;
+        var cBlock = (info.columnIndexes[0]) - 1;
+        var cOffset = this.getColumnOffset(cBlock);
+        //this.virtualEle.setWrapperWidth(width, ( Browser.isIE || Browser.info.name === 'edge') as boolean);
+        target = this.parent.createElement('tbody');
+        target.appendChild(newChild);
+        var replace = 'replaceWith';
+        this.getTable().querySelector('tbody')[replace](target);
+        if (!this.isExpandCollapse) {
+            getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
+        }
+        else {
+            this.isExpandCollapse = false;
+        }
+        setValue('prevInfo', info, this);
+    };
+    return VirtualTreeContentRenderer;
+}(VirtualContentRenderer));
+var TreeInterSectionObserver = /** @__PURE__ @class */ (function (_super) {
+    __extends$10(TreeInterSectionObserver, _super);
+    function TreeInterSectionObserver() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.isWheeling = false;
+        _this.newPos = 0;
+        _this.lastPos = 0;
+        _this.timer = 0;
+        return _this;
+    }
+    TreeInterSectionObserver.prototype.observes = function (callback) {
+        setValue('containerRect', getValue('options', this).container.getBoundingClientRect(), this);
+        EventHandler.add(getValue('options', this).container, 'scroll', this.virtualScrollHandlers(callback), this);
+    };
+    TreeInterSectionObserver.prototype.clear = function () {
+        this.lastPos = null;
+    };
+    TreeInterSectionObserver.prototype.virtualScrollHandlers = function (callback) {
+        var _this = this;
+        var prevTop = 0;
+        var prevLeft = 0;
+        return function (e) {
+            var scrollTop = e.target.scrollTop;
+            var scrollLeft = e.target.scrollLeft;
+            var direction = prevTop < scrollTop ? 'down' : 'up';
+            direction = prevLeft === scrollLeft ? direction : prevLeft < scrollLeft ? 'right' : 'left';
+            prevTop = scrollTop;
+            prevLeft = scrollLeft;
+            var current = getValue('sentinelInfo', _this)[direction];
+            var delta = 0;
+            _this.newPos = scrollTop;
+            if (_this.lastPos != null) { // && newPos < maxScroll 
+                delta = _this.newPos - _this.lastPos;
+            }
+            _this.lastPos = _this.newPos;
+            if (_this.timer) {
+                clearTimeout(_this.timer);
+            }
+            _this.timer = setTimeout(_this.clear, 0);
+            /*if (this.options.axes.indexOf(current.axis) === -1) {
+                return;
+            }*/
+            /*if(delta > 45 || delta < -45){
+              this.isWheeling = true;
+            }*/
+            if ((delta > 100 || delta < -100) && (e && e.preventDefault)) {
+                e.returnValue = false;
+                e.preventDefault();
+            }
+            callback({ direction: direction, isWheel: _this.isWheeling,
+                sentinel: current, offset: { top: scrollTop, left: scrollLeft },
+                focusElement: document.activeElement });
+        };
+    };
+    return TreeInterSectionObserver;
+}(InterSectionObserver));
+
+var __extends$9 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * TreeGrid Virtual Scroll module will handle Virtualization
+ * @hidden
+ */
+var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for VirtualScroll module
+     */
+    function VirtualScroll$$1(parent) {
+        this.prevstartIndex = -1;
+        this.prevendIndex = -1;
+        this.parent = parent;
+        Grid.Inject(TreeVirtual);
+        this.addEventListener();
+    }
+    VirtualScroll$$1.prototype.returnVisualData = function (args) {
+        args.data = this.visualData;
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    VirtualScroll$$1.prototype.getModuleName = function () {
+        return 'virtualScroll';
+    };
+    /**
+     * @hidden
+     */
+    VirtualScroll$$1.prototype.addEventListener = function () {
+        this.parent.on(localPagedExpandCollapse, this.collapseExpandVirtualchilds, this);
+        this.parent.on(pagingActions, this.virtualPageAction, this);
+    };
+    /**
+     * @hidden
+     */
+    VirtualScroll$$1.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(localPagedExpandCollapse, this.collapseExpandVirtualchilds);
+        this.parent.off(pagingActions, this.virtualPageAction);
+    };
+    VirtualScroll$$1.prototype.collapseExpandVirtualchilds = function (row) {
+        this.parent.grid.notify(virtualActionArgs, { isExpandCollapse: true });
+        this.expandCollapseRec = row.record;
+        row.record.expanded = row.action === 'collapse' ? false : true;
+        var ret = {
+            result: this.parent.flatData,
+            row: row.row,
+            action: row.action,
+            record: row.record,
+            count: this.parent.flatData.length
+        };
+        getValue('grid.renderModule', this.parent).dataManagerSuccess(ret, { requestType: 'refresh' });
+    };
+    VirtualScroll$$1.prototype.virtualPageAction = function (pageingDetails) {
+        var _this = this;
+        var dm = new DataManager(pageingDetails.result);
+        var expanded$$1 = new Predicate$1('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
+        var parents = dm.executeLocal(new Query().where(expanded$$1));
+        var visualData = parents.filter(function (e) {
+            return getExpandStatus(_this.parent, e, parents);
+        });
+        this.visualData = visualData;
+        this.parent.grid.notify(dataListener, { data: visualData });
+        var counts = { startIndex: -1, endIndex: -1 };
+        this.parent.grid.notify(indexModifier, counts);
+        var startIndex = counts.startIndex;
+        var endIndex = counts.endIndex;
+        pageingDetails.count = visualData.length;
+        if (startIndex === -1 && endIndex === -1) {
+            var query = new Query();
+            var size = this.parent.grid.pageSettings.pageSize;
+            var current = this.parent.grid.pageSettings.currentPage;
+            var skip = size * (current - 1);
+            query = query.skip(skip).take(size);
+            dm.dataSource.json = visualData;
+            pageingDetails.result = dm.executeLocal(query);
+        }
+        else {
+            var requestType = pageingDetails.actionArgs.requestType;
+            if (requestType === 'filtering') {
+                startIndex = 0;
+                endIndex = this.parent.grid.pageSettings.pageSize - 1;
+                this.parent.grid.notify(virtualActionArgs, { setTop: true });
+            }
+            //if ((this.prevendIndex !== -1 && this.prevstartIndex !== -1) && 
+            //this.prevendIndex === endIndex && this.prevstartIndex === startIndex) {
+            if (!isNullOrUndefined(this.expandCollapseRec)) {
+                var resourceCount = this.parent.getRows();
+                var sIndex = visualData.indexOf(this.expandCollapseRec);
+                var tempdata = visualData.slice(sIndex, sIndex + resourceCount.length);
+                if (tempdata.length < resourceCount.length) {
+                    sIndex = visualData.length - resourceCount.length;
+                    sIndex = sIndex > 0 ? sIndex : 0;
+                    startIndex = sIndex;
+                    endIndex = visualData.length;
+                }
+                this.expandCollapseRec = null;
+            }
+            //}
+            pageingDetails.result = visualData.slice(startIndex, endIndex);
+            this.prevstartIndex = startIndex;
+            this.prevendIndex = endIndex;
+        }
+        this.parent.notify('updateAction', pageingDetails);
+    };
+    /**
+     * To destroy the virtualScroll module
+     * @return {void}
+     * @hidden
+     */
+    VirtualScroll$$1.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    return VirtualScroll$$1;
+}());
+var TreeVirtual = /** @__PURE__ @class */ (function (_super) {
+    __extends$9(TreeVirtual, _super);
+    function TreeVirtual(parent, locator) {
+        var _this = _super.call(this, parent, locator) || this;
+        getValue('parent', _this).off('initial-load', getValue('instantiateRenderer', _this), _this);
+        getValue('parent', _this).on('initial-load', _this.instantiateRenderers, _this);
+        return _this;
+    }
+    TreeVirtual.prototype.instantiateRenderers = function () {
+        getValue('parent', this).log(['limitation', 'virtual_height'], 'virtualization');
+        var renderer = getValue('locator', this).getService('rendererFactory');
+        getValue('addRenderer', renderer)
+            .apply(renderer, [RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this))]);
+        //renderer.addRenderer(RenderType.Content, new VirtualTreeContentRenderer(getValue('parent', this), getValue('locator', this)));
+        this.ensurePageSize();
+    };
+    TreeVirtual.prototype.ensurePageSize = function () {
+        var parentGrid = getValue('parent', this);
+        var rowHeight = parentGrid.getRowHeight();
+        var vHeight = parentGrid.height.toString().indexOf('%') < 0 ? parentGrid.height :
+            parentGrid.element.getBoundingClientRect().height;
+        var blockSize = ~~(vHeight / rowHeight);
+        parentGrid.setProperties({ pageSettings: { pageSize: blockSize + 10 } }, true);
+    };
+    return TreeVirtual;
+}(VirtualScroll));
+
+/**
  * actions export
  */
 
@@ -5899,5 +6608,5 @@ var CommandColumn$1 = /** @__PURE__ @class */ (function () {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual };
 //# sourceMappingURL=ej2-treegrid.es5.js.map

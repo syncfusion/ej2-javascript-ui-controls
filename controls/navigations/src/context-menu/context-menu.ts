@@ -1,5 +1,5 @@
 /// <reference path='../common/menu-base-model.d.ts'/>
-import { attributes, Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
+import { attributes, getUniqueID, Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 import { ContextMenuModel } from './context-menu-model';
 import { MenuBase, MenuItem } from '../common/menu-base';
@@ -55,6 +55,7 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
      */
     protected preRender(): void {
         this.isMenu = false;
+        this.element.id = this.element.id || getUniqueID('ej2-contextmenu');
         super.preRender();
     }
 

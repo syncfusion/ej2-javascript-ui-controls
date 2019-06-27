@@ -1,4 +1,4 @@
-import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';import { remove, extend, isNullOrUndefined } from '@syncfusion/ej2-base';import { Font, Margin, Border, TooltipSettings, Indexes } from '../common/model/base';import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';import { AccumulationType, AccumulationSelectionMode } from './model/enum';import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs, IAccTooltipRenderEventArgs } from './model/pie-interface';import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs } from './model/pie-interface';import { Theme, getThemeColor } from '../common/model/theme';import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';import {  IAnnotationRenderEventArgs } from '../chart/model/chart-interface';import { load, seriesRender, legendRender, textRender, tooltipRender, pointClick } from '../common/model/constants';import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';import { chartMouseLeave, chartMouseMove, chartMouseUp, resized } from '../common/model/constants';import { FontModel, MarginModel, BorderModel, IndexesModel, TooltipSettingsModel } from '../common/model/base-model';import { AccumulationSeriesModel, PieCenterModel} from './model/acc-base-model';import { LegendSettings } from '../common/legend/legend';import { AccumulationLegend } from './renderer/legend';import { LegendSettingsModel } from '../common/legend/legend-model';import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement } from '../common/utils/helper';import { RectOption, showTooltip } from '../common/utils/helper';import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase } from '../common/utils/helper';import { getElement, titlePositionX } from '../common/utils/helper';import { Rect, Size, measureText, TextOption, SvgRenderer } from '@syncfusion/ej2-svg-base';import { Data } from '../common/model/data';import { AccumulationTooltip } from './user-interaction/tooltip';import { AccumulationBase } from './renderer/accumulation-base';import { PieSeries } from './renderer/pie-series';import { AccumulationDataLabel } from './renderer/dataLabel';import { FunnelSeries } from './renderer/funnel-series';import { PyramidSeries } from './renderer/pyramid-series';import { AccumulationSelection } from './user-interaction/selection';import { AccumulationTheme } from './model/enum';import { AccumulationAnnotationSettingsModel } from './model/acc-base-model';import { AccumulationAnnotationSettings } from './model/acc-base';import { AccumulationAnnotation } from './annotation/annotation';import { IPrintEventArgs } from '../chart/model/chart-interface';import { Alignment } from '../common/utils/enum';import { getTitle } from '../common/utils/helper';import {Index} from '../common/model/base';import { IThemeStyle } from '../index';import { IAccResizeEventArgs } from './model/pie-interface';import { DataManager } from '@syncfusion/ej2-data';import { Export } from '../chart/print-export/export';import { ExportUtils } from '../common/utils/export';
+import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';import { remove, extend, isNullOrUndefined } from '@syncfusion/ej2-base';import { Font, Margin, Border, TooltipSettings, Indexes } from '../common/model/base';import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';import { AccumulationType, AccumulationSelectionMode } from './model/enum';import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs, IAccTooltipRenderEventArgs } from './model/pie-interface';import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs } from './model/pie-interface';import { Theme, getThemeColor } from '../common/model/theme';import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';import {  IAnnotationRenderEventArgs } from '../chart/model/chart-interface';import { load, seriesRender, legendRender, textRender, tooltipRender, pointClick } from '../common/model/constants';import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';import { chartMouseLeave, chartMouseMove, chartMouseUp, resized } from '../common/model/constants';import { FontModel, MarginModel, BorderModel, IndexesModel, TooltipSettingsModel } from '../common/model/base-model';import { AccumulationSeriesModel, PieCenterModel} from './model/acc-base-model';import { LegendSettings } from '../common/legend/legend';import { AccumulationLegend } from './renderer/legend';import { LegendSettingsModel } from '../common/legend/legend-model';import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset } from '../common/utils/helper';import { RectOption, showTooltip } from '../common/utils/helper';import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase } from '../common/utils/helper';import { getElement, titlePositionX } from '../common/utils/helper';import { Rect, Size, measureText, TextOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Data } from '../common/model/data';import { AccumulationTooltip } from './user-interaction/tooltip';import { AccumulationBase } from './renderer/accumulation-base';import { PieSeries } from './renderer/pie-series';import { AccumulationDataLabel } from './renderer/dataLabel';import { FunnelSeries } from './renderer/funnel-series';import { PyramidSeries } from './renderer/pyramid-series';import { AccumulationSelection } from './user-interaction/selection';import { AccumulationTheme } from './model/enum';import { AccumulationAnnotationSettingsModel } from './model/acc-base-model';import { AccumulationAnnotationSettings } from './model/acc-base';import { AccumulationAnnotation } from './annotation/annotation';import { IPrintEventArgs } from '../chart/model/chart-interface';import { Alignment } from '../common/utils/enum';import { getTitle } from '../common/utils/helper';import {Index} from '../common/model/base';import { IThemeStyle } from '../index';import { IAccResizeEventArgs } from './model/pie-interface';import { DataManager } from '@syncfusion/ej2-data';import { Export } from '../chart/print-export/export';import { ExportUtils } from '../common/utils/export';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -170,6 +170,12 @@ export interface AccumulationChartModel extends ComponentModel{
     theme?: AccumulationTheme;
 
     /**
+     * Specifies whether a grouping separator should be used for a number.
+     * @default false
+     */
+    useGroupingSeparator?: boolean;
+
+    /**
      * To enable export feature in chart.
      * @default true
      */
@@ -178,42 +184,49 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers after accumulation chart loaded.
      * @event
+     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<IAccLoadedEventArgs>;
 
     /**
      * Triggers before accumulation chart load.
      * @event
+     * @deprecated
      */
     load?: EmitType<IAccLoadedEventArgs>;
 
     /**
      * Triggers before the series gets rendered.
      * @event
+     * @deprecated
      */
     seriesRender?: EmitType<IAccSeriesRenderEventArgs>;
 
     /**
      * Triggers before the legend gets rendered.
      * @event
+     * @deprecated
      */
     legendRender?: EmitType<ILegendRenderEventArgs>;
 
     /**
      * Triggers before the data label for series gets rendered.
      * @event
+     * @deprecated
      */
     textRender?: EmitType<IAccTextRenderEventArgs>;
 
     /**
      * Triggers before the tooltip for series gets rendered.
      * @event
+     * @deprecated
      */
     tooltipRender?: EmitType<IAccTooltipRenderEventArgs>;
 
     /**
      * Triggers before each points for series gets rendered.
      * @event
+     * @deprecated
      */
 
     pointRender?: EmitType<IAccPointRenderEventArgs>;
@@ -221,6 +234,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers before the annotation gets rendered.
      * @event
+     * @deprecated
      */
 
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
@@ -228,6 +242,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;
@@ -235,6 +250,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on hovering the accumulation chart.
      * @event
+     * @blazorProperty 'OnChartMouseMove'
      */
 
     chartMouseMove?: EmitType<IMouseEventArgs>;
@@ -242,6 +258,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on clicking the accumulation chart.
      * @event
+     * @blazorProperty 'OnChartMouseClick'
      */
 
     chartMouseClick?: EmitType<IMouseEventArgs>;
@@ -249,6 +266,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on point click.
      * @event
+     * @blazorProperty 'OnPointClick'
      */
 
     pointClick?: EmitType<IPointEventArgs>;
@@ -256,6 +274,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on point move.
      * @event
+     * @blazorProperty 'PointMoved'
      */
 
     pointMove?: EmitType<IPointEventArgs>;
@@ -263,12 +282,14 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers after animation gets completed for series.
      * @event
+     * @blazorProperty 'OnAnimationComplete'
      */
     animationComplete?: EmitType<IAccAnimationCompleteEventArgs>;
 
     /**
      * Triggers on mouse down.
      * @event
+     * @blazorProperty 'OnChartMouseDown'
      */
 
     chartMouseDown?: EmitType<IMouseEventArgs>;
@@ -276,6 +297,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers while cursor leaves the accumulation chart.
      * @event
+     * @blazorProperty 'OnChartMouseLeave'
      */
 
     chartMouseLeave?: EmitType<IMouseEventArgs>;
@@ -283,6 +305,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers on mouse up.
      * @event
+     * @blazorProperty 'OnChartMouseUp'
      */
 
     chartMouseUp?: EmitType<IMouseEventArgs>;
@@ -290,6 +313,7 @@ export interface AccumulationChartModel extends ComponentModel{
     /**
      * Triggers after window resize.
      * @event
+     * @blazorProperty 'Resized'
      */
 
     resized?: EmitType<IAccResizeEventArgs>;

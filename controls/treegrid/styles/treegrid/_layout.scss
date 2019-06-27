@@ -24,11 +24,6 @@
       vertical-align: middle;
     }
 
-    .e-treegridexpand:hover::before,
-    .e-treegridcollapse:hover::before {
-      color: $treegrid-right-arrow-hover-color;
-    }
-
     .e-rowcell.e-treerowcell {
       padding-left: $treegrid-treecell-padding;
     }
@@ -91,6 +86,14 @@
       opacity: 0;
       position: absolute;
       width: 0;
+    }.e-detailheadercell,
+    .e-headercontent .e-table  .e-detail-intent,
+    .e-gridcontent .e-table  .e-detail-intent,
+    .e-table .e-detailrow .e-detailindentcell,
+    .e-table .e-detailrowexpand,
+    .e-table .e-detailrowcollapse,
+    .e-filterbarcell.e-mastercell {
+      display: none;
     }
   }
 }

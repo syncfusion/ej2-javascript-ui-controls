@@ -120,42 +120,54 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after gauge loaded.
      * @event
+     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before gauge load.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers after animation gets completed for pointers.
      * @event
+     * @blazorProperty 'AnimationCompleted'
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
     /**
      * Triggers before each axis label gets rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'AxisLabelRendering'
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before the radius gets rendered
      * @event
+     * @deprecated
+     * @blazorProperty 'OnRadiusCalculate'
      */
     radiusCalculate?: EmitType<IRadiusCalculateEventArgs>;
 
     /**
      * Triggers before each annotation gets rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'AnnotationRendering'
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
 
     /**
      * Triggers before the tooltip for pointer gets rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'TooltipRendering'
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -163,6 +175,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers before the pointer is dragged.
      * @event
+     * @blazorProperty 'OnDragStart'
      */
 
     dragStart?: EmitType<IPointerDragEventArgs>;
@@ -170,6 +183,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers while dragging the pointers.
      * @event
+     * @blazorProperty 'OnDragMove'
      */
 
     dragMove?: EmitType<IPointerDragEventArgs>;
@@ -177,6 +191,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after the pointer is dragged.
      * @event
+     * @blazorProperty 'OnDragEnd'
      */
 
     dragEnd?: EmitType<IPointerDragEventArgs>;
@@ -184,6 +199,8 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers on hovering the circular gauge.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnGaugeMouseMove'
      */
 
     gaugeMouseMove?: EmitType<IMouseEventArgs>;
@@ -191,6 +208,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers while cursor leaves the circular gauge.
      * @event
+     * @blazorProperty 'OnGaugeMouseLeave'
      */
 
     gaugeMouseLeave?: EmitType<IMouseEventArgs>;
@@ -198,6 +216,8 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers on mouse down.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnGaugeMouseDown'
      */
 
     gaugeMouseDown?: EmitType<IMouseEventArgs>;
@@ -205,6 +225,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers on mouse up.
      * @event
+     * @blazorProperty 'OnGaugeMouseUp'
      */
 
     gaugeMouseUp?: EmitType<IMouseEventArgs>;
@@ -212,6 +233,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after window resize.
      * @event
+     * @blazorProperty 'Resizing'
      */
 
     resized?: EmitType<IResizeEventArgs>;

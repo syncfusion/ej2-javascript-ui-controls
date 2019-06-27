@@ -1900,10 +1900,11 @@ let ChipList = class ChipList extends Component {
                 if (deleteElement && this.enableDelete) {
                     chipData.cancel = false;
                     let deletedItemArgs = chipData;
-                    this.trigger('delete', deletedItemArgs);
-                    if (!deletedItemArgs.cancel) {
-                        this.deleteHandler(chipData.element, chipData.index);
-                    }
+                    this.trigger('delete', deletedItemArgs, (observedArgs) => {
+                        if (!observedArgs.cancel) {
+                            this.deleteHandler(chipData.element, chipData.index);
+                        }
+                    });
                 }
                 else if (this.selection !== 'None') {
                     this.selectionHandler(chipWrapper);

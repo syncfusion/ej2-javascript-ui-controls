@@ -9,7 +9,6 @@ import { generate } from '../../recurrence-editor/date-generator';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
 import * as event from '../base/constant';
-import { PredicateData } from '../base/interface';
 /**
  * EventBase for appointment rendering
  */
@@ -187,41 +186,20 @@ export class EventBase {
     }
 
     public filterEventsByResource(resourceTdData: TdData, appointments: Object[] = this.parent.eventsProcessed): Object[] {
+        let predicate: { [key: string]: number | string } = {};
         let resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
-        let resourceData: PredicateData[] = [];
-        let events: { [key: string]: Object }[] = appointments as { [key: string]: Object }[];
         for (let level: number = 0; level < resourceCollection.length; level++) {
-            let operator: Function = this.parent.activeViewOptions.group.allowGroupEdit && resourceCollection[level].allowMultiple ?
-                contains : equal;
-            let resource: PredicateData = {
-                field: resourceCollection[level].field,
-                operator: operator,
-                value: resourceTdData.groupOrder[level]
-            };
-            resourceData.push(resource);
+            predicate[resourceCollection[level].field] = resourceTdData.groupOrder[level];
         }
-        let app: { [key: string]: Object }[] = [];
-        for (let i: number = 0; i < appointments.length; i++) {
-            let isResourceMatched: boolean = true;
-            for (let j: number = 0; j < resourceData.length; j++) {
-                isResourceMatched = resourceData[j].operator(events[i][resourceData[j].field], resourceData[j].value as string);
-                if (!isResourceMatched) {
-                    break;
-                }
+        let keys: string[] = Object.keys(predicate);
+        let filteredCollection: Object[] = appointments.filter((eventObj: { [key: string]: Object }) => keys.every((key: string) => {
+            if (eventObj[key] instanceof Array) {
+                return (<(string | number)[]>eventObj[key]).indexOf(predicate[key]) > -1;
+            } else {
+                return eventObj[key] === predicate[key];
             }
-            if (isResourceMatched) {
-                app.push(events[i]);
-            }
-        }
-        function equal(field: string, fieldValue: string): boolean {
-            return field === fieldValue;
-        }
-        function contains(field: string[] | string | number, fieldValue: string): boolean {
-            let resourceField: (string[] | string) = <string[] | string>((field instanceof Array) ?
-                field : isNullOrUndefined(field) ? '' : field.toString());
-            return resourceField.indexOf(fieldValue) > -1;
-        }
-        return app;
+        }));
+        return filteredCollection;
     }
 
     public sortByTime(appointments: Object[]): Object[] {
@@ -650,7 +628,11 @@ export class EventBase {
     public getEventByGuid(guid: string): Object {
         return new DataManager({ json: this.parent.eventsProcessed }).executeLocal(new Query().where('Guid', 'equal', guid))[0];
     }
-
+    public getEventById(id: number | string): { [key: string]: Object } {
+        let eventFields: EventFieldsMapping = this.parent.eventFields;
+        return new DataManager({ json: this.parent.eventsData }).executeLocal(new Query()
+            .where(eventFields.id, 'equal', id))[0] as { [key: string]: Object };
+    }
     public generateGuid(): string {
         return 'xyxxxxyx-xxxy-yxxx-xyxx-xxyxxxxyyxxx'.replace(/[xy]/g, (c: string) => {
             const r: number = Math.random() * 16 | 0;
@@ -747,6 +729,24 @@ export class EventBase {
         return parentApp[0];
     }
 
+    public getParentEvent(event: { [key: string]: Object }): { [key: string]: Object } {
+        let fields: EventFieldsMapping = this.parent.eventFields;
+        let parentEvent: { [key: string]: Object };
+        let parentEventQuery: Predicate;
+        let followingId: string = event[fields.followingID] as string;
+        let recurrenceID: string = event[fields.recurrenceID] === event[fields.id] ? null : event[fields.recurrenceID] as string;
+        let futureEvents: { [key: string]: Object }[];
+        do {
+            parentEventQuery = (new Predicate(fields.id, 'equal', followingId).or(new Predicate(fields.id, 'equal', recurrenceID)));
+            futureEvents = this.getFilterEventsList(this.parent.eventsData, parentEventQuery);
+            parentEvent = futureEvents.slice(-1)[0];
+            followingId = parentEvent[fields.followingID] as string;
+            recurrenceID = parentEvent[fields.recurrenceID] as string;
+        } while (futureEvents.length === 1 && (!isNullOrUndefined(followingId) || !isNullOrUndefined(recurrenceID)));
+
+        return parentEvent;
+    }
+
     public getOccurrencesByID(id: number | string): Object[] {
         let fields: EventFieldsMapping = this.parent.eventFields;
         let occurrenceCollection: Object[] = [];
@@ -803,7 +803,8 @@ export class EventBase {
         });
         let templateElement: HTMLElement[];
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            templateElement = this.parent.getAppointmentTemplate()(record);
+            let templateId: string = this.parent.element.id + 'headerTooltipTemplate';
+            templateElement = this.parent.getHeaderTooltipTemplate()(record, this.parent, 'headerTooltipTemplate', templateId);
         } else {
             let appointmentSubject: HTMLElement = createElement('div', {
                 className: cls.SUBJECT_CLASS, innerHTML: eventSubject
@@ -851,5 +852,51 @@ export class EventBase {
         });
         this.parent.uiStateValues.isBlock = isBlockAlert;
         return isBlockAlert;
+    }
+
+    public getFilterEventsList(dataSource: Object[], query: Predicate): { [key: string]: Object }[] {
+        return new DataManager(dataSource).executeLocal(new Query().where(query)) as { [key: string]: Object }[];
+    }
+
+    public getSeriesEvents(parentEvent: { [key: string]: Object }, startTime?: string): { [key: string]: Object }[] {
+        let fields: EventFieldsMapping = this.parent.eventFields;
+        startTime = isNullOrUndefined(startTime) ? parentEvent[fields.startTime] as string : startTime;
+        let deleteFutureEditEvents: { [key: string]: Object };
+        let futureEvents: { [key: string]: Object }[];
+        let deleteFutureEditEventList: { [key: string]: Object }[] = [];
+        let delId: string = parentEvent[fields.id] as string;
+        let followingId: string = parentEvent[fields.followingID] as string;
+        let deleteFutureEvent: Predicate;
+        let startTimeQuery: string = this.parent.currentAction === 'EditSeries' ? 'greaterthan' : 'greaterthanorequal';
+        do {
+            deleteFutureEvent = ((new Predicate(fields.followingID, 'equal', delId))).
+                and(new Predicate(fields.startTime, startTimeQuery, startTime));
+            futureEvents = this.getFilterEventsList(this.parent.eventsData, deleteFutureEvent);
+            deleteFutureEditEvents = futureEvents.slice(-1)[0];
+            if (!isNullOrUndefined(deleteFutureEditEvents) && deleteFutureEditEvents[fields.id] !== followingId) {
+                deleteFutureEditEventList.push(deleteFutureEditEvents);
+                delId = deleteFutureEditEvents[fields.id] as string;
+                followingId = deleteFutureEditEvents[fields.followingID] as string;
+            } else { followingId = null; }
+        } while (futureEvents.length === 1 && !isNullOrUndefined(deleteFutureEditEvents[fields.followingID]));
+        return deleteFutureEditEventList;
+    }
+
+    public getEditedOccurrences(deleteFutureEditEventList: { [key: string]: Object }[], startTime?: string)
+        : { [key: string]: Object }[] {
+        let fields: EventFieldsMapping = this.parent.eventFields;
+        let deleteRecurrenceEventList: { [key: string]: Object }[] = [];
+        let delEditedEvents: { [key: string]: Object }[];
+        for (let event of deleteFutureEditEventList) {
+            let delEventQuery: Predicate = new Predicate(fields.recurrenceID, 'equal', event[fields.id] as string).
+                or(new Predicate(fields.recurrenceID, 'equal', event[fields.followingID] as string).
+                    and(new Predicate(fields.recurrenceID, 'notequal', undefined)));
+            if (this.parent.currentAction === 'EditFollowingEvents' || this.parent.currentAction === 'DeleteFollowingEvents') {
+                delEventQuery = delEventQuery.and(new Predicate(fields.startTime, 'greaterthanorequal', startTime));
+            }
+            delEditedEvents = this.getFilterEventsList(this.parent.eventsData, delEventQuery);
+            deleteRecurrenceEventList = deleteRecurrenceEventList.concat(delEditedEvents);
+        }
+        return deleteRecurrenceEventList;
     }
 }

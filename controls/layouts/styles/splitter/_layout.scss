@@ -398,4 +398,15 @@
       }
     }
   }
+
+  .e-content-placeholder.e-splitter.e-placeholder-splitter {
+    background-size: 100px 110px;
+    min-height: 110px;
+  }
+
+  .e-bigger .e-content-placeholder.e-splitter.e-placeholder-splitter,
+  .e-bigger.e-content-placeholder.e-splitter.e-placeholder-splitter {
+    background-size: 100px 110px;
+    min-height: 110px;
+  }
 }

@@ -1,6 +1,5 @@
-
 /*! component's default definitions and variables */
-$card-skin-name: 'material' !default;
+$skin-name: 'material' !default;
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: $border-radius !default;
 $card-box-shadow: $shadow-color !default;
@@ -115,6 +114,8 @@ $card-action-btn-pressed-border: 0 !default;
 $card-action-btn-pressed-font: $default-font-color !default;
 $card-font-color: $default-font-color !default;
 $card-action-btn-icon-color: $default-font-color !default;
+/*! component's theme wise override material-definitions and variables */
+$skin-name: 'material' !default;
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: 2px !default;
 $card-action-btn-txt-transform: uppercase !default;

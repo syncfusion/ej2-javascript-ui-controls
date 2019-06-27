@@ -56,6 +56,38 @@
     .e-nexttimespan::before {
       content: '\e85f';
     }
+
+    .e-zoomin::before {
+      content: '\e349';
+    }
+
+    .e-zoomout::before {
+      content: '\e351';
+    }
+
+    .e-zoomtofit::before {
+      content: '\e657';
+    }
+
+    .e-add-above::before {
+      content: '\e658';
+    }
+
+    .e-add-below::before {
+      content: '\e659';
+    }
   }
+
+  #{&}.e-gantt.e-device {
+    .e-backarrowspan::before,
+    .e-icon-dlg-close::before {
+      content: '\e85b';
+      }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\e903';
+      }
+   }
 }
   

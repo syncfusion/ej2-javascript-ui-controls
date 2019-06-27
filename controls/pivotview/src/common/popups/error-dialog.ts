@@ -55,6 +55,7 @@ export class ErrorDialog {
             close: this.removeErrorDialog.bind(this)
         });
         this.errorPopUp.appendTo(errorDialog);
+        this.errorPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
     private closeErrorDialog(): void {
         this.errorPopUp.close();

@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### Maps
+
+#### New Features
+
+- #I227277 - Support has been provided to get geo location when clicking on maps.
+- #I217458 - Support has been provided to hide and cluster a marker when it intersects with other markers.
+
 ## 17.1.51 (2019-06-11)
 
 ### Maps
@@ -23,7 +32,7 @@
 #### Bug Fixes
 
 - #I237138 - The issue with maintaining zoom factor when the mouse wheel and pinch zoom on maps with call "refresh()" method has been fixed.
-- #I237041 - The issue with the re-rendering of the second sub-layer on zoom or panning has been resolved.
+- #I237041 - The issue with the re-rendering of the second sub-layer on zoom or panning has been resolved.
 
 ### Maps
 
@@ -74,7 +83,7 @@
 
 #### Bug Fixes
 
-- #F143717 - The issue "When setting high zoom factor to OpenStreetMap, sub layer is not placed properly" has been fixed".
+- #F143717 - The issue "When setting high zoom factor to OpenStreetMap, sub layer is not placed properly" has been fixed".
 
 ## 17.1.32-beta (2019-03-13)
 

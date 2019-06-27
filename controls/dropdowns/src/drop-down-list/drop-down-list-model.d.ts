@@ -172,11 +172,12 @@ export interface DropDownListModel extends DropDownBaseModel{
 
     /**
      * Triggers on typing a character in the filter bar when the 
-     * [`allowFiltering`](./allowfiltering) 
+     * [`allowFiltering`](./#allowfiltering) 
      * is enabled.
      * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      * 
      * @event
+     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<FilteringEventArgs>;
 
@@ -185,36 +186,42 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Use change event to 
      * [`Configure the Cascading DropDownList`](../../drop-down-list/how-to/cascading)
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when the popup before opens.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<Object>;
 
     /**
      * Triggers when the popup opens.
      * @event
+     * @blazorProperty 'Opened'
      */
     open?: EmitType<PopupEventArgs>;
 
     /**
      * Triggers when the popup is closed.
      * @event
+     * @blazorProperty 'OnClose'
      */
     close?: EmitType<PopupEventArgs>;
 
     /**
      * Triggers when focus moves out from the component.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<Object>;
 
     /**
      * Triggers when the component is focused.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<Object>;
 

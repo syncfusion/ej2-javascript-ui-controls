@@ -10,46 +10,38 @@
     <link href="../../themes/material.css" rel="stylesheet" />
     <script data-main="default.js" src="../../../node_modules/requirejs/require.js"></script>
     <script src="../../require.config.js"></script>
+    <style>
+        .e-richtexteditor textarea.e-content {
+            float: left;
+        }
+        .e-richtexteditor .e-rte-content {
+            overflow: hidden;
+        }
+        .e-icon-btn.e-active .e-md-preview::before {
+            content: '\e350';
+        }
+        .e-icon-btn .e-md-preview::before {
+            content: '\e345';
+        }
+    </style>
 </head>
 
 <body>
-    <div class="sample-container">
-        <div class="default-section">
-            <h2 class="title"> Rendering with
-                <span class="render-type"> DIV </span>
-            </h2>
-            <div id="defaultRTE">
+    <div class="control-section">
+        <div class="sample-container">
+            <div class="default-section">
+                <div id="defaultRTE"> 
+The sample is added to showcase **markdown editing**.
+
+Type or edit the content and apply formatting to view markdown formatted content.
+
+We can add our own custom formation syntax for the Markdown formation, [sample link](https://ej2.syncfusion.com/home/).
+
+The third-party library <b>Marked</b> is used in this sample to convert markdown into HTML content.
+                </div>
             </div>
         </div>
-
     </div>
-
-    <style>
-        /* Control styles */
-
-        #defaultRTE {
-            height: 400px;
-            margin: 0 auto;
-        }
-
-        /* Sample styles */
-
-        .default-section {
-            margin-bottom: 200px;
-        }
-
-        .title {
-            margin-bottom: 50px;
-        }
-
-        .render-type {
-            color: blue;
-        }
-
-        body .e-content {
-            font-size: 17px;
-        }
-    </style>
 </body>
 
 </html>

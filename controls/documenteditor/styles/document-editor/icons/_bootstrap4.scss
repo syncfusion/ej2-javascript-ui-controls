@@ -24,7 +24,7 @@
       font-size: $de-op-icon-font-size;
     }
 
-    .e-de-op-close-icon {
+    .e-de-op .e-de-op-close-icon {
       font-size: $de-op-close-icon-size;
       height: $de-op-close-icon-width;
       margin-left: $de-op-close-icon-margin-left;
@@ -47,10 +47,15 @@
     content: '\e73f';
   }
 
+  .e-menu-item .e-de-spellcheck::before {
+    content: '\e686';
+  }
+
   .e-menu-item .e-de-copy::before {
     content: '\e77b';
   }
 
+  .e-icon-btn .e-de-paste::before,
   .e-menu-item .e-de-paste::before {
     content: '\e739';
   }
@@ -434,4 +439,15 @@
     font-size: $de-tablecell-alignment-font-size;
   }
 
+  .e-item .e-de-paste-text::before {
+    content: '\e685';
+  }
+
+  .e-item .e-de-paste-source::before {
+    content: '\e684';
+  }
+
+  .e-item .e-de-paste-merge::before {
+    content: '\e687';
+  }
 }

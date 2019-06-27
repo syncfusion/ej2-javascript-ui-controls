@@ -139,10 +139,19 @@
 
       @if $treeview-skin-name == 'bootstrap4' {
 
+        .e-text-content {
+          padding-left:  $treeview-big-drag-item-text-padding-left;
+        }
+
         .e-icon-collapsible,
         .e-icon-expandable {
           font-size: $treeview-big-drag-icon-font-size;
-          padding: $treeview-big-drag-icon-padding;
+          margin: $treeview-big-drag-icon-margin;
+        }
+
+        .e-icon-collapsible::before,
+        .e-icon-expandable::before {
+          padding: $treeview-big-drag-before-icon-padding;
         }
 
         .e-drop-count {
@@ -439,6 +448,9 @@
       .e-icon-expandable::before {
         font-size: $treeview-drag-icon-font-size;
         padding: $treeview-drag-icon-padding;
+        @if $treeview-skin-name == 'bootstrap4' {
+          padding-right: $treeview-drag-icon-padding-right;
+        }
       }
 
       .e-drop-count {

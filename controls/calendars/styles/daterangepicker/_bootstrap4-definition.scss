@@ -10,6 +10,7 @@ $range-icon-active-bg-color: darken($gray-600, 10%);
 $range-active-border-color: darken($gray-600, 10%);
 $range-active-state-icon-color: $white !default;
 $range-control-border-right: 0 !default;
+$range-lg-day-header-format-width: 100% !default;
 $range-hover-color: $gray-200 !default;
 $range-hover-content-color: darken($gray-100, 2%) !default;
 $range-today-color: $gray-200 !default;
@@ -175,3 +176,19 @@ $range-calendar-today-start-color: 1px solid $primary !default;
 $range-calendar-other-normal-border: none !default;
 $range-calendar-bigger-max: 292px !default;
 $range-active-font-color: $primary-font !default;
+// Mouse small size
+$range-small-header-label-size: 16px !default;
+$range-small-font-size: 12px !default;
+$range-start-end-container-small-height: 32px !default;
+$range-calendar-mouse-small-font-size: 12px !default;
+$range-indicator-small-margin: 0 0 10px 0 !default;
+$range-control-small-header-margin: 10px 0 !default;
+$range-separator-small-margin: 0 !default;
+$range-small-footer-margin: 10px 10px 10px 8px !default;
+$range-preset-small-list-height: 26px !default;
+$range-presets-small-list-font-size: 12px !default;
+$calendar-bigger-small-max-width: 262px !default;
+// mouse small icon
+$range-small-icon-font-size: 12px !default;
+// touch small icon
+$range-bigger-small-icon-font-size: 15px !default;

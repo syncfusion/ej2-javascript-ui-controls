@@ -5,8 +5,8 @@ import { FileManager } from '../../../src/file-manager/base/file-manager';
 import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
-import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19 } from '../data';
+import { createElement, Browser, EventHandler, isNullOrUndefined, select, closest } from '@syncfusion/ej2-base';
+import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19, doubleClickEmpty } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -25,6 +25,7 @@ describe('FileManager control Grid view', () => {
         let mouseEventArgs: any, tapEvent: any;
         let feObj: FileManager;
         let ele: HTMLElement;
+        let dblclickevent: MouseEvent;
         let originalTimeout: any;
         beforeEach((done: Function): void => {
             jasmine.Ajax.install();
@@ -42,7 +43,8 @@ describe('FileManager control Grid view', () => {
                     visible: true,
                     items: toolbarItems3
                 },
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -66,6 +68,11 @@ describe('FileManager control Grid view', () => {
                 originalEvent: mouseEventArgs,
                 tapCount: 1
             };
+            dblclickevent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
         });
         afterEach((): void => {
             jasmine.Ajax.uninstall();
@@ -73,6 +80,34 @@ describe('FileManager control Grid view', () => {
             ele.remove();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
+
+        //Spec added to check the script error which occured when clicked in empty folder of grid view
+        it('mouse click on empty folder', (done) => {
+            feObj.detailsviewModule.gridObj.selectRows([2]);
+            feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[2].firstElementChild.dispatchEvent(dblclickevent);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(doubleClickEmpty)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            setTimeout(function () {
+                expect(feObj.activeModule).toBe('detailsview');
+                (<HTMLElement>(<any>feObj.detailsviewModule.gridObj.contentModule).contentPanel.firstElementChild).click();
+                (<any>feObj.detailsviewModule.gridObj).focusModule.onFocus();
+                done();
+            }, 500)
+        });
+
+        it('mouse click on grid element with row selection', () => {
+            var gridObj: any = (document.getElementById("file") as any).ej2_instances[0];
+            feObj.detailsviewModule.gridObj.selectRows([2]);
+            mouseEventArgs.target = (<HTMLElement>(<any>feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-content')[0]));
+            gridObj.detailsviewModule.clickObj.tap(tapEvent);
+            expect(feObj.detailsviewModule.gridObj.getSelectedRowCellIndexes().length).toBe(0);
+            expect(feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[2].classList.contains('e-focused')).toBe(true)
+        });
+
         it('mouse click on TreeView text', (done: Function) => {
             var treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
@@ -154,7 +189,7 @@ describe('FileManager control Grid view', () => {
             }, 500);
         });
         it('mouse click on Rename button', (done: Function) => {
-            //rename operation
+            //rename item operation
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
             setTimeout(function () {
                 feObj.detailsviewModule.gridObj.selectRows([0]);
@@ -194,7 +229,6 @@ describe('FileManager control Grid view', () => {
                                 status: 200,
                                 responseText: JSON.stringify(renameExist)
                             });
-
                             jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
                             setTimeout(function () {
                                 expect(document.getElementById('file_dialog').querySelector('.e-dlg-content').textContent).toBe("Cannot create a file when that file already exists");
@@ -556,223 +590,15 @@ describe('FileManager control Grid view', () => {
             sortbyObj.click();
             setTimeout(function () {
                 sortbyObj.ej2_instances[0].dropDown.element.querySelectorAll('.e-item')[2].click();
-                expect(feObj.detailsviewModule.gridObj.sortSettings.columns[0].field).toBe('dateModified');
+                expect(feObj.detailsviewModule.gridObj.sortSettings.columns[0].field).toBe('_fm_modified');
                 expect(feObj.detailsviewModule.gridObj.sortSettings.columns[0].direction).toBe('Ascending');
                 done();
             }, 200);
         });
-        it('Search file testing', (done: Function) => {
-            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-            let treeLi: any = treeObj.element.querySelectorAll('li');
-            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-            expect(treeLi.length).toEqual(5);
-            expect(gridLi.length).toEqual(5);
-            let searchEle: any = feObj.element.querySelector("#file_search");
-            let searchObj: any = searchEle.ej2_instances[0];
-            searchEle.value = 'doc';
-            searchObj.value = 'doc';
-            let eventArgs: any = { value: 'doc', container: searchEle };
-            searchObj.input(eventArgs);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data18)
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
-                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                let treeLi: any = treeObj.element.querySelectorAll('li');
-                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-                expect(treeLi.length).toEqual(5);
-                expect(gridLi.length).toEqual(3);
-                searchEle.value = '';
-                searchObj.value = '';
-                eventArgs = { value: '', container: searchEle };
-                searchObj.input(eventArgs);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data1)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(function () {
-                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                    let treeLi: any = treeObj.element.querySelectorAll('li');
-                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-                    expect(treeLi.length).toEqual(5);
-                    expect(gridLi.length).toEqual(5);
-                    done();
-                }, 500);
-            }, 500);
-        });
-        it('Search folder navigation', (done: Function) => {
-            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-            let treeLi: any = treeObj.element.querySelectorAll('li');
-            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-            expect(treeLi.length).toEqual(5);
-            expect(gridLi.length).toEqual(5);
-            let searchEle: any = feObj.element.querySelector("#file_search");
-            let searchObj: any = searchEle.ej2_instances[0];
-            searchEle.value = 'doc';
-            searchObj.value = 'doc';
-            let eventArgs: any = { value: 'doc', container: searchEle };
-            searchObj.input(eventArgs);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data18)
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
-                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                let treeLi: any = treeObj.element.querySelectorAll('li');
-                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
-                expect(treeLi.length).toEqual(5);
-                expect(gridLi.length).toEqual(3);
-                let args = { rowData: { "name": "docs", "size": 0, "dateModified": "2019-03-14T09:27:45.346Z", "dateCreated": "2019-03-13T07:28:06.117Z", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\docs", "iconClass": "e-fe-folder" }, rowIndex: 0 };
-                feObj.detailsviewModule.gridObj.recordDoubleClick(args);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data1)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data17)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data19)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(function () {
-                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                    let treeLi: any = treeObj.element.querySelectorAll('li');
-                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree_0_0");
-                    expect(treeLi.length).toEqual(6);
-                    expect(gridLi.length).toEqual(1);
-                    done();
-                }, 500);
-            }, 500);
-        });
-        it('Search field with value test case', (done) => {
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                searchObj.ej2_instances[0].value = 'doc';
-                searchObj.ej2_instances[0].element.value = 'doc';
-                let eventArgs: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].input(eventArgs);
-                searchObj.ej2_instances[0].value = '';
-                searchObj.ej2_instances[0].element.value = '';
-                eventArgs = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].input(eventArgs);
-                done();
-            }.bind(searchObj), 500);
-        });
-        it('Search file testing with change event', (done) => {
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                feObj.searchSettings.allowSearchOnTyping = false;
-                feObj.dataBind();
-                searchObj.ej2_instances[0].value = 'doc';
-                let eventArgs: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].change(eventArgs)
-                searchObj.ej2_instances[0].value = '';
-                eventArgs = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].change(eventArgs);
-                done();
-            }.bind(searchObj), 500);
-        });
-        it('Search file testing with filter type as startWith', (done) => {
-            feObj.searchSettings.filterType = 'startWith';
-            feObj.dataBind();
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                feObj.searchSettings.allowSearchOnTyping = true;
-                feObj.dataBind();
-                searchObj.ej2_instances[0].value = 'doc';
-                let eventArgs: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].input(eventArgs);
-                searchObj.ej2_instances[0].value = '';
-                eventArgs = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].input(eventArgs);
-                done();
-            }.bind(searchObj), 500);
-        });
-        it('Search file testing with filter type as endsWith', (done) => {
-            feObj.searchSettings.filterType = 'endsWith';
-            feObj.dataBind();
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                feObj.searchSettings.allowSearchOnTyping = true;
-                feObj.dataBind();
-                searchObj.ej2_instances[0].value = 'doc';
-                let eventArgs: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].input(eventArgs);
-                searchObj.ej2_instances[0].value = '';
-                eventArgs = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].input(eventArgs);
-                done();
-            }.bind(searchObj), 500);
-        });
-        it('Search file testing with filter type as startWith', (done) => {
-            feObj.searchSettings.filterType = 'startWith';
-            feObj.dataBind();
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                feObj.searchSettings.allowSearchOnTyping = false;
-                feObj.dataBind();
-                searchObj.ej2_instances[0].value = 'doc';
-                let eventArgs: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].change(eventArgs);
-                searchObj.ej2_instances[0].value = '';
-                eventArgs = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].change(eventArgs);
-                done();
-            }.bind(searchObj), 500);
-        });
-        it('Search file testing with filter type as endsWith', (done) => {
-            feObj.searchSettings.filterType = 'endsWith';
-            feObj.dataBind();
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                feObj.searchSettings.allowSearchOnTyping = false;
-                feObj.dataBind();
-                searchObj.ej2_instances[0].value = 'doc';
-                let eventArgs: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].change(eventArgs);
-                searchObj.ej2_instances[0].value = '';
-                eventArgs = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].change(eventArgs);
-                done();
-            }.bind(searchObj), 500);
-        });
         it('mouse click on the layout switch icon', (done: Function) => {
             let grid: HTMLElement = document.getElementById('file_grid');
             let largeIcons: HTMLElement = document.getElementById('file_largeicons');
-            let icon: any = document.getElementById('file_view');
+            let icon: any = document.getElementById('file_tb_view');
             icon.click();
             let layoutObj: any = icon.ej2_instances[0];
             setTimeout(function () {
@@ -780,7 +606,7 @@ describe('FileManager control Grid view', () => {
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>grid.querySelectorAll('.e-row');
                 expect(li.length).toBe(5);
                 expect(grid.classList.contains('e-display-none')).toBe(false);
-                document.getElementById('file_view').click();
+                document.getElementById('file_tb_view').click();
                 setTimeout(function () {
                     layoutObj.dropDown.element.querySelectorAll('.e-item')[0].click();
                     this.request = jasmine.Ajax.requests.mostRecent();
@@ -824,7 +650,8 @@ describe('FileManager control Grid view', () => {
                     { field: 'hasChild', headerText: 'Has Children', minWidth: 8, width: '200', textAlign: 'Right' },
                     ]
                 },
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -879,7 +706,8 @@ describe('FileManager control Grid view', () => {
                     visible: true,
                     items: toolbarItems3
                 },
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -910,84 +738,17 @@ describe('FileManager control Grid view', () => {
             ele.remove();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
-        it('enter multiple charcters in search textbox ', (done) => {
-            feObj.searchSettings.filterType = 'startWith';
-            feObj.dataBind();
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                feObj.searchSettings.allowSearchOnTyping = true;
-                feObj.dataBind();
-                searchObj.ej2_instances[0].value = 'doc';
-                let event: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].input(event);
-                searchObj.ej2_instances[0].value = '';
-                event = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].input(event);
-                searchObj.ej2_instances[0].value = 'tes';
-                event = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].input(event);
-                done();
-            }.bind(searchObj), 500);
-        });
-        it('clear search value when navigate the path', (done) => {
-            feObj.searchSettings.filterType = 'startWith';
-            feObj.dataBind();
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                feObj.searchSettings.allowSearchOnTyping = true;
-                feObj.dataBind();
-                searchObj.ej2_instances[0].value = 'doc';
-                let event: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].input(event);
-                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-                let li: any = feObj.navigationpaneModule.treeObj.element.querySelectorAll("li")[1];
-                mouseEventArgs.target = li.querySelector('.e-fullrow');
-                tapEvent.tapCount = 1;
-                treeObj.touchClickObj.tap(tapEvent);
-                feObj.searchSettings.filterType = 'startWith';
-                feObj.dataBind();
-                let searchObj1: any = feObj.element.querySelector("#file_search");
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                setTimeout(function () {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                    feObj.searchSettings.allowSearchOnTyping = true;
-                    feObj.dataBind();
-                    searchObj1.ej2_instances[0].value = '';
-                    event = { value: '', container: searchObj };
-                    searchObj1.ej2_instances[0].input(event);
-                    expect(searchObj1.ej2_instances[0].value).toBe('');
-                    done();
-                }.bind(searchObj1), 500);
-            }.bind(searchObj), 500);
-        });
-        it('Search file testing with clear icon', (done) => {
-            feObj.searchSettings.filterType = 'startWith';
-            feObj.dataBind();
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-            setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                feObj.searchSettings.allowSearchOnTyping = true;
-                feObj.dataBind();
-                searchObj.focus();
-                searchObj.ej2_instances[0].value = 'doc';
-                let event: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].input(event);
-                setTimeout(function () {
-                    expect(searchObj.ej2_instances[0].value).toBe('doc');
-                    var clear = searchObj.nextElementSibling;
-                    clear.click();
-                    setTimeout(function () {
-                        var searchObj1: HTMLInputElement = <HTMLInputElement>feObj.breadCrumbBarNavigation.querySelector("#file_search");
-                        expect(searchObj1.value).toBe("");
-                        done();
-                    }, 500);
-                }, 500);
-            }.bind(searchObj), 500);
+        it('title attribute testing', () => {
+            let li: Element[] = feObj.detailsviewModule.gridObj.getRows();
+            for (let i: number = 0; i < li.length; i++) {
+                let ele: Element = li[i].querySelector('.e-fe-text');
+                expect(ele.getAttribute('title')).toBe(null);
+                expect(closest(ele, 'td').getAttribute('title')).toBe(ele.textContent);
+            }
+            let Li :any = feObj.navigationpaneModule.treeObj.element.querySelectorAll('li');
+            for (let i: number = 0; i < Li.length; i++) {
+                expect(Li[i].getAttribute('title')).toBe(Li[i].querySelector('.e-list-text').textContent);
+            }
         });
         it('select item maintain by sortby testing', (done: Function) => {
             feObj.detailsviewModule.gridObj.selectRows([0]);
@@ -1003,36 +764,6 @@ describe('FileManager control Grid view', () => {
             done();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
         });
-        it('seleted items maintained in paste operation ', (done: Function) => {
-            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-            feObj.detailsviewModule.gridObj.selectRows([0]);
-            let li: any = feObj.detailsviewModule.gridObj.getRowByIndex(0).getElementsByTagName('td')[2];
-            expect(li.querySelector('.e-fe-text').textContent).toBe('Documents');
-            let items: any = document.getElementById('file_tb_copy');
-            items.click();
-            let li1: any = feObj.navigationpaneModule.treeObj.element.querySelectorAll("li")[1];
-            mouseEventArgs.target = li1.querySelector('.e-fullrow');
-            tapEvent.tapCount = 1;
-            treeObj.touchClickObj.tap(tapEvent);
-            expect(li1.textContent).toBe('Documents');
-            let items1: any = document.getElementById('file_tb_paste');
-            items1.click();
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(paste1)
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(pastesuccess)
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-            let li2: any = document.getElementById('file_grid').querySelectorAll('.e-active')[2];
-            expect(li2.querySelector('.e-fe-text').textContent).toBe('Documents');
-            done();
-        }, 500);
     });
 });
 describe('Default functionality testing', () => {
@@ -1065,7 +796,8 @@ describe('Default functionality testing', () => {
         };
         ele = createElement('div', { id: 'file' });
         document.body.appendChild(ele);
-        feObj = new FileManager({ view: 'Details', ajaxSettings: { url: '/FileOperations' }, showThumbnail: false, }, '#file');
+        feObj = new FileManager({ view: 'Details', ajaxSettings: { url: '/FileOperations' }, showThumbnail: false, });
+        feObj.appendTo('#file');
         this.request = jasmine.Ajax.requests.mostRecent();
         this.request.respondWith({
             status: 200,
@@ -1076,67 +808,6 @@ describe('Default functionality testing', () => {
         jasmine.Ajax.uninstall();
         if (feObj) feObj.destroy();
         ele.remove();
-    });
-    it('Cut operation', (done: Function) => {
-        var treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-        let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
-        mouseEventArgs.target = li[1].querySelector('.e-fullrow');
-        treeObj.touchClickObj.tap(tapEvent);
-        keyboardEventArgs.action = 'ctrlX';
-        keyboardEventArgs.ctrlKey = true;
-        keyboardEventArgs.target = li[1];
-        (feObj.navigationpaneModule as any).keyDown(keyboardEventArgs);
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
-        setTimeout(function () {
-            expect(li[1].classList.contains('e-blur')).toBe(true);
-            mouseEventArgs.target = li[2].querySelector('.e-fullrow');
-            treeObj.touchClickObj.tap(tapEvent);
-            keyboardEventArgs.action = 'ctrlV';
-            keyboardEventArgs.ctrlKey = true;
-            keyboardEventArgs.target = li[2];
-            (feObj.navigationpaneModule as any).keyDown(keyboardEventArgs);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data7)
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
-                let activeLi: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
-                expect(activeLi[2].textContent).toBe("Documents");
-                done();
-            }, 500);
-        }, 500);
-    });
-    it('Copy operation', (done: Function) => {
-        var treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-        let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
-        mouseEventArgs.target = li[1].querySelector('.e-fullrow');
-        treeObj.touchClickObj.tap(tapEvent);
-        keyboardEventArgs.action = 'ctrlC';
-        keyboardEventArgs.ctrlKey = true;
-        keyboardEventArgs.target = li[1];
-        (feObj.navigationpaneModule as any).keyDown(keyboardEventArgs);
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
-        setTimeout(function () {
-            mouseEventArgs.target = li[2].querySelector('.e-fullrow');
-            treeObj.touchClickObj.tap(tapEvent);
-            keyboardEventArgs.action = 'ctrlV';
-            keyboardEventArgs.ctrlKey = true;
-            keyboardEventArgs.target = li[2];
-            (feObj.navigationpaneModule as any).keyDown(keyboardEventArgs);
-            this.request = jasmine.Ajax.requests.mostRecent();
-            this.request.respondWith({
-                status: 200,
-                responseText: JSON.stringify(data7)
-            });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
-                let activeLi: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
-                expect(activeLi[3].textContent).toBe("Documents");
-                done();
-            }, 500);
-        }, 500);
     });
     // it('Get details operation on tree nodes', (done: Function) => {
     //     var treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];

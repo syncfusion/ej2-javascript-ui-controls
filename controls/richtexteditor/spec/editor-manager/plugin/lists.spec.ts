@@ -1365,6 +1365,110 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+        
+        
+        describe('Space key press testing', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><p>one node</p><p class='space-two-node'>1.two node</p><p><br></p>
+            <p>three node</p><p class='space-four-node'>*four node</p><p><br></p>
+            <p class='space-five-node'>*five node</p><p class='space-six-node'>1.six node</p>
+            <p><br></p><p class='space-seven-node'>a.seven node</p>
+            <p><br></p><p class='space-eight-node'>i.eight node</p><div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
 
+            it(' space key press after 1.', () => {
+                startNode = editNode.querySelector('.space-two-node');
+                expect(startNode.querySelector('ol')).toBeNull();
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 2);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.space-two-node').tagName).toBe('OL');
+            });
+
+            it(' space key press after *', () => {
+                startNode = editNode.querySelector('.space-four-node');
+                expect(startNode.querySelector('ol')).toBeNull();
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 1);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.space-four-node').tagName).toBe('UL');
+            });
+
+            it(' space key press after 1. when previous element starting with *', () => {
+                startNode = editNode.querySelector('.space-six-node');
+                expect(startNode.querySelector('ol')).toBeNull();
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 2);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.space-six-node').tagName).not.toBe('OL');
+                expect(editNode.querySelector('.space-six-node').tagName).toBe('P');
+            });
+
+            it(' space key press after * when previous element starting with *', () => {
+                startNode = editNode.querySelector('.space-five-node');
+                expect(startNode.querySelector('ol')).toBeNull();
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 1);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.space-five-node').tagName).not.toBe('OL');
+                expect(editNode.querySelector('.space-five-node').tagName).toBe('P');
+            });
+
+            it(' space key press after a.', () => {
+                startNode = editNode.querySelector('.space-seven-node');
+                expect(startNode.querySelector('ol')).toBeNull();
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 2);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.space-seven-node').tagName).toBe('OL');
+            });
+
+            it(' space key press after i.', () => {
+                startNode = editNode.querySelector('.space-eight-node');
+                expect(startNode.querySelector('ol')).toBeNull();
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 2);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.space-eight-node').tagName).toBe('OL');
+            });
+
+            afterAll(() => {
+                detach(elem);
+            });
+        });
     });
 });

@@ -47,7 +47,7 @@ describe('Diagram Control', () => {
                 width: 1000, height: 1000,
                 layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 40, verticalSpacing: 40, orientation: 'TopToBottom' },
                 dataSourceSettings: {
-                    id: 'Name', parentId: 'ReportingPerson', dataManager: items
+                    id: 'Name', parentId: 'ReportingPerson', dataSource: items
                 },
                 getNodeDefaults: (node: NodeModel, diagram: Diagram) => {
                     let obj: NodeModel = {};
@@ -128,7 +128,7 @@ describe('Diagram Control', () => {
                 width: 1000, height: 1000,
                 layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 40, verticalSpacing: 40 },
                 dataSourceSettings: {
-                    id: 'Name', parentId: 'ReportingPerson', dataManager: items1, root: 'a'
+                    id: 'Name', parentId: 'ReportingPerson', dataSource: items1, root: 'a'
                 },
                 getNodeDefaults: (node: NodeModel, diagram: Diagram) => {
                     let obj: NodeModel = {};
@@ -544,7 +544,7 @@ describe('Diagram Control', () => {
             }
             diagram = new Diagram({
                 width: '1000px', height: '500px', dataSourceSettings: {
-                    id: 'id', parentId: 'parent', dataManager: new DataManager(data),
+                    id: 'id', parentId: 'parent', dataSource: new DataManager(data),
                 },
                 layout: {
                     type: 'ComplexHierarchicalTree', horizontalSpacing: 20, verticalSpacing: 20,
@@ -586,9 +586,7 @@ let hierarchicalTree: object[] = [
             '</g>'
     }
 ];
-export interface EmployeeInfo {
-    Name: string;
-}
+
 describe('Diagram Control', () => {
     describe('Update Datasource without using layout issue fix', () => {
         let diagram: Diagram;
@@ -603,7 +601,7 @@ describe('Diagram Control', () => {
                 //layout: { type: 'HierarchicalTree' },
                 dataSourceSettings: {
                     // sets the fields to bind
-                    dataManager: new DataManager(hierarchicalTree as JSON[]), // binds the data with the nodess
+                    dataSource: new DataManager(hierarchicalTree as JSON[]), // binds the data with the nodess
                     doBinding: (
                         nodeModel: NodeModel,
                         data: object,
@@ -641,7 +639,7 @@ describe('Diagram Control', () => {
                     '</g>'
                 }
               ];
-            diagram.dataSourceSettings.dataManager =    new DataManager(hierarchicalTree as JSON[]);
+            diagram.dataSourceSettings.dataSource =    new DataManager(hierarchicalTree as JSON[]);
             diagram.dataBind();
             var element = document.getElementById('node1111_content_groupElement')
             var child = element.children[0]
@@ -659,6 +657,9 @@ describe('Diagram Control', () => {
         })
     });
 });
+export interface EmployeeInfo {
+    Name: string;
+}
 describe('Diagram Control', () => {
     describe('connector bridging module enable - decorator isse', () => {
         let diagram: Diagram;
@@ -678,7 +679,7 @@ describe('Diagram Control', () => {
         let data: Object = {
             //sets the fields to bind
             id: 'Name', parentId: 'Category',
-            dataManager: new DataManager(hierarchicalTree),
+            dataSource: new DataManager(hierarchicalTree),
             //binds the data with the nodes
             doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
                 nodeModel.shape = { type: 'Text', content: (data as EmployeeInfo).Name };
@@ -737,10 +738,12 @@ describe('Diagram Control', () => {
             var node =  diagram.nodes[1]
             diagram.drag(node,-50,-50)
             var pathelement = document.getElementById('diagram_diagramLayer')
+            console.log('decorator isse')
+            console.log(pathelement.children[2].children[1].children[0].getAttribute('d'))
+            console.log(pathelement.children[2].children[3].children[0].getAttribute('d'))
             expect((pathelement.children[2].children[1].children[0].getAttribute('d')==="M93.34,40 L93.34,59.4 Q93.34,64.4,88.34,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.34,0 Q43.34,0,43.34,5 L43.34,19.6 " ||
             pathelement.children[2].children[1].children[0].getAttribute('d')=== "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,19.6 ")&&
             (pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z " || pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z ")).toBe(true)
-
             done();
         });
         it('memory leak', () => {

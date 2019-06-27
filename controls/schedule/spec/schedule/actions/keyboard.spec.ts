@@ -1,11 +1,10 @@
 /**
  * Schedule keyboard interaction spec 
  */
-import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
-import { defaultData, timelineData, timelineResourceData, cloneDataSource } from '../base/datasource.spec';
-import { triggerMouseEvent, disableScheduleAnimation } from '../util.spec';
-import { createSchedule, destroy } from '../util.spec';
+import { defaultData, timelineData, timelineResourceData } from '../base/datasource.spec';
+import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
@@ -31,10 +30,7 @@ describe('Keyboard interaction', () => {
             document.body.appendChild(elem);
         });
         afterEach(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('disable', () => {
             schObj = new Schedule({ allowKeyboardInteraction: false, selectedDate: new Date(2017, 9, 4) });
@@ -71,19 +67,14 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
-        beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4) });
-            schObj.appendTo('#Schedule');
+        beforeAll((done: Function) => {
+            let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+            schObj = util.createSchedule(schOptions, [], done, elem);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('ensure module name', () => {
             expect(keyModule.getModuleName()).toEqual('keyboard');
@@ -164,24 +155,14 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                selectedDate: new Date(2017, 10, 2),
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Tab key work cell to appointment selection', () => {
             let allDayRowCells: HTMLElement[] = [].slice.call(schObj.element.querySelector('.e-all-day-row').children);
@@ -215,7 +196,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
         });
         it('Enter key', () => {
-            triggerMouseEvent(schObj.element.querySelector('.e-appointment'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-appointment'), 'click');
             keyModule.keyActionHandler({ action: 'escape' });
             let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
@@ -299,9 +280,9 @@ describe('Keyboard interaction', () => {
         it('multiple event selection via ctrl plus click', () => {
             let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             firstWorkCell[0].click();
-            triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
-            triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             keyModule.keyActionHandler({ action: 'escape' });
         });
@@ -416,25 +397,14 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                currentView: 'Month',
-                selectedDate: new Date(2017, 10, 2),
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            let schOptions: ScheduleModel = { currentView: 'Month', selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Escape key', () => {
             let moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
@@ -514,27 +484,14 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                width: '100%',
-                height: '500px',
-                currentView: 'Agenda',
-                selectedDate: new Date(2017, 10, 2),
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            let schOptions: ScheduleModel = { width: '100%', height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('ensure module name', () => {
             expect(keyModule.getModuleName()).toEqual('keyboard');
@@ -571,24 +528,18 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4) });
-            schObj.appendTo('#Schedule');
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+            schObj = util.createSchedule(schOptions, [], done);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('multiple cell selection via shift plus click', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[2];
-            triggerMouseEvent(workCells[17], 'click', 0, 0, true);
+            util.triggerMouseEvent(workCells[17], 'click', 0, 0, true);
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(53);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -600,9 +551,9 @@ describe('Keyboard interaction', () => {
         });
         it('multiple work cells selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[2], 'mousedown');
-            triggerMouseEvent(workCells[17], 'mousemove');
-            triggerMouseEvent(workCells[17], 'mouseup');
+            util.triggerMouseEvent(workCells[2], 'mousedown');
+            util.triggerMouseEvent(workCells[17], 'mousemove');
+            util.triggerMouseEvent(workCells[17], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(53);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -614,9 +565,9 @@ describe('Keyboard interaction', () => {
         });
         it('multiple allday cells selection via mouse', () => {
             let alldayCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells'));
-            triggerMouseEvent(alldayCells[2], 'mousedown');
-            triggerMouseEvent(alldayCells[4], 'mousemove');
-            triggerMouseEvent(alldayCells[4], 'mouseup');
+            util.triggerMouseEvent(alldayCells[2], 'mousedown');
+            util.triggerMouseEvent(alldayCells[4], 'mousemove');
+            util.triggerMouseEvent(alldayCells[4], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -628,10 +579,10 @@ describe('Keyboard interaction', () => {
         });
         it('mouse move out of schedule while selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[2], 'mousedown');
-            triggerMouseEvent(schObj.element.querySelector('.e-time-cells') as HTMLElement, 'mousemove');
-            triggerMouseEvent(workCells[29], 'mousemove');
-            triggerMouseEvent(workCells[29], 'mouseup');
+            util.triggerMouseEvent(workCells[2], 'mousedown');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-time-cells') as HTMLElement, 'mousemove');
+            util.triggerMouseEvent(workCells[29], 'mousemove');
+            util.triggerMouseEvent(workCells[29], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(45);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -760,11 +711,9 @@ describe('Keyboard interaction', () => {
             let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 08 - 14, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -777,11 +726,9 @@ describe('Keyboard interaction', () => {
             let target: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[6] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 08 - 14, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 15 - 21, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 15 - 21, 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -820,11 +767,9 @@ describe('Keyboard interaction', () => {
             let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 15 - 21, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 15 - 21, 2017');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 08 - 14, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -837,11 +782,9 @@ describe('Keyboard interaction', () => {
             let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-date-header-container .e-all-day-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 08 - 14, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -995,11 +938,9 @@ describe('Keyboard interaction', () => {
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1013,11 +954,9 @@ describe('Keyboard interaction', () => {
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1061,11 +1000,9 @@ describe('Keyboard interaction', () => {
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1079,11 +1016,9 @@ describe('Keyboard interaction', () => {
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 01 - 07, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1126,25 +1061,19 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), currentView: 'Month' });
-            schObj.appendTo('#Schedule');
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4), currentView: 'Month' };
+            schObj = util.createSchedule(schOptions, [], done);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('multiple cell selection via shift plus click', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[2];
-            triggerMouseEvent(workCells[12], 'mousedown', 0, 0, true);
-            triggerMouseEvent(workCells[12], 'click', 0, 0, true);
+            util.triggerMouseEvent(workCells[12], 'mousedown', 0, 0, true);
+            util.triggerMouseEvent(workCells[12], 'click', 0, 0, true);
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(11);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1157,9 +1086,9 @@ describe('Keyboard interaction', () => {
         });
         it('multiple work cells selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[3], 'mousedown');
-            triggerMouseEvent(workCells[18], 'mousemove');
-            triggerMouseEvent(workCells[18], 'mouseup');
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[18], 'mousemove');
+            util.triggerMouseEvent(workCells[18], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1255,11 +1184,9 @@ describe('Keyboard interaction', () => {
             let target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('November 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('November 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1299,11 +1226,9 @@ describe('Keyboard interaction', () => {
             let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('November 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('November 2017');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1361,11 +1286,9 @@ describe('Keyboard interaction', () => {
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1395,11 +1318,9 @@ describe('Keyboard interaction', () => {
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 2017');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -1414,50 +1335,38 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => {
-                keyModule = schObj.keyboardInteractionModule;
-                done();
-            };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
+            let schOptions: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 currentView: 'Month',
                 selectedDate: new Date(2017, 9, 4),
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                    }, {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+                dataBound: () => {
+                    keyModule = schObj.keyboardInteractionModule;
+                    done();
+                }
+            };
+            schObj = util.createSchedule(schOptions, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('shiftRight arrow', () => {
             let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[6] as HTMLElement;
@@ -1481,9 +1390,9 @@ describe('Keyboard interaction', () => {
         });
         it('multiple work cells right selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[6], 'mousedown');
-            triggerMouseEvent(workCells[28], 'mousemove');
-            triggerMouseEvent(workCells[28], 'mouseup');
+            util.triggerMouseEvent(workCells[6], 'mousedown');
+            util.triggerMouseEvent(workCells[28], 'mousemove');
+            util.triggerMouseEvent(workCells[28], 'mouseup');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(8);
             expect(workCells[6].getAttribute('data-group-index')).toEqual('0');
             let lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
@@ -1492,9 +1401,9 @@ describe('Keyboard interaction', () => {
         });
         it('multiple work cells left selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[28], 'mousedown');
-            triggerMouseEvent(workCells[6], 'mousemove');
-            triggerMouseEvent(workCells[6], 'mouseup');
+            util.triggerMouseEvent(workCells[28], 'mousedown');
+            util.triggerMouseEvent(workCells[6], 'mousemove');
+            util.triggerMouseEvent(workCells[6], 'mouseup');
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(8);
             expect(workCells[28].getAttribute('data-group-index')).toEqual('1');
             let lastCell: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
@@ -1507,26 +1416,16 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                width: '100%',
-                height: '500px',
-                currentView: 'MonthAgenda', selectedDate: new Date(2017, 10, 5), views: ['MonthAgenda'],
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let schOptions: ScheduleModel = {
+                width: '100%', height: '500px', currentView: 'MonthAgenda',
+                selectedDate: new Date(2017, 10, 5), views: ['MonthAgenda']
+            };
+            schObj = util.createSchedule(schOptions, defaultData, done);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('work cell click', () => {
             let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement;
@@ -1537,14 +1436,14 @@ describe('Keyboard interaction', () => {
         });
         it('multiple event selection via ctrl plus click', () => {
             let appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            triggerMouseEvent(appointment[0], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(appointment[0], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
-            triggerMouseEvent(appointment[1], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(appointment[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
             let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(selectedElement[0].classList).toContain('e-appointment-border');
             expect(selectedElement[0].getAttribute('aria-selected')).toEqual('true');
-            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-delete')).click();
@@ -1553,99 +1452,23 @@ describe('Keyboard interaction', () => {
         });
     });
 
-    // describe('vertical mobile week', () => {
-    //     let schObj: Schedule;
-    //     // tslint:disable-next-line:no-any
-    //     let keyModule: any;
-    //     let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-    //     beforeEach(() => {
-    //         document.body.appendChild(elem);
-    //         schObj = new Schedule({
-    //             selectedDate: new Date(2017, 9, 4), width: 300,
-    //             views: ['day', 'weekAgenda', 'workWeek', 'month'], currentView: 'weekAgenda'
-    //         });
-    //         schObj.appendTo('#Schedule');
-    //         keyModule = schObj.keyboardInteractionModule;
-    //     });
-    //     afterEach(() => {
-    //         if (schObj) {
-    //             schObj.destroy();
-    //         }
-    //         remove(elem);
-    //     });
-    //     it('multiple cell selection via shift plus click', () => {
-    //         let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-    //         keyModule.initialTarget = workCells[0];
-    //         triggerMouseEvent(workCells[0], 'mousedown');
-    //         triggerMouseEvent(workCells[0], 'mouseup');
-    //         triggerMouseEvent(workCells[3], 'click', 0, 0, true);
-    //         let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
-    //         expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(4);
-    //         expect(focuesdEle.classList).toContain('e-selected-cell');
-    //         expect(focuesdEle.classList).toContain('e-work-cells');
-    //         expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
-    //         expect(focuesdEle.cellIndex).toEqual(1);
-    //         expect((focuesdEle.parentNode as HTMLTableRowElement).rowIndex).toEqual(1);
-    //         keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
-    //     });
-    //     it('multiple work cells selection via mouse', () => {
-    //         let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-    //         triggerMouseEvent(workCells[0], 'mousedown');
-    //         triggerMouseEvent(workCells[2], 'mousemove');
-    //         triggerMouseEvent(workCells[2], 'mouseup');
-    //         let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
-    //         expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
-    //         expect(focuesdEle.classList).toContain('e-selected-cell');
-    //         expect(focuesdEle.classList).toContain('e-work-cells');
-    //         expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
-    //         expect(focuesdEle.cellIndex).toEqual(0);
-    //         expect((focuesdEle.parentNode as HTMLTableRowElement).rowIndex).toEqual(1);
-    //         keyModule.keyActionHandler({ action: 'enter', target: focuesdEle });
-    //     });
-    //     it('home and arrow keys', () => {
-    //         keyModule.keyActionHandler({ action: 'home' });
-    //         let firstEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
-    //         expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
-    //         expect(firstEle.classList).toContain('e-selected-cell');
-    //         expect(firstEle.getAttribute('aria-selected')).toEqual('true');
-    //         expect(firstEle.cellIndex).toEqual(0);
-    //         expect((firstEle.parentNode as HTMLTableRowElement).rowIndex).toEqual(0);
-    //         let targetCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-    //         keyModule.keyActionHandler({ action: 'downArrow', target: targetCell });
-    //         let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
-    //         expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
-    //         expect(focuesdEle.classList).toContain('e-selected-cell');
-    //         expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
-    //         expect(focuesdEle.cellIndex).toEqual(0);
-    //         expect((focuesdEle.parentNode as HTMLTableRowElement).rowIndex).toEqual(1);
-    //     });
-    // });
     describe('View navigation', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => {
-                keyModule = schObj.keyboardInteractionModule;
-                done();
-            };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
+            let schOptions: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 views: ['Day', 'Week', 'Agenda'],
                 currentView: 'Day',
-                selectedDate: new Date(2017, 9, 4),
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                selectedDate: new Date(2017, 9, 4)
+            };
+            schObj = util.createSchedule(schOptions, [], done);
+            keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Negative case for view navigation', () => {
             schObj.element.focus();
@@ -1674,34 +1497,25 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => {
-                keyModule = schObj.keyboardInteractionModule;
-                done();
-            };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 width: '600px',
                 height: '550px',
                 views: ['Day', 'Week'],
                 currentView: 'Week',
-                selectedDate: new Date(2017, 9, 4),
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                selectedDate: new Date(2017, 9, 4)
+            };
+            schObj = util.createSchedule(model, [], done);
+            keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('mouse up', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[17], 'mousedown');
-            triggerMouseEvent(workCells[2], 'mousemove', 280, 137);
-            triggerMouseEvent(workCells[2], 'mouseup');
+            util.triggerMouseEvent(workCells[17], 'mousedown');
+            util.triggerMouseEvent(workCells[2], 'mousemove', 280, 137);
+            util.triggerMouseEvent(workCells[2], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.classList).toContain('e-work-cells');
@@ -1715,52 +1529,38 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let eventDatas: Object[] = [{
+            Id: 10,
+            Subject: 'rec_appointment',
+            StartTime: new Date(2017, 9, 2, 9, 0),
+            EndTime: new Date(2017, 9, 2, 10, 0),
+            AllDay: false,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
+        }, {
+            Id: 16,
+            Subject: 'normal_appointment',
+            StartTime: new Date(2017, 9, 3, 10, 30),
+            EndTime: new Date(2017, 9, 3, 11, 0),
+            IsAllDay: false,
+        }];
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
-                selectedDate: new Date(2017, 9, 2),
-                eventSettings: {
-                    dataSource: [{
-                        Id: 10,
-                        Subject: 'rec_appointment',
-                        StartTime: new Date(2017, 9, 2, 9, 0),
-                        EndTime: new Date(2017, 9, 2, 10, 0),
-                        AllDay: false,
-                        RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=2',
-                    }, {
-                        Id: 16,
-                        Subject: 'normal_appointment',
-                        StartTime: new Date(2017, 9, 3, 10, 30),
-                        EndTime: new Date(2017, 9, 3, 11, 0),
-                        IsAllDay: false,
-                    }]
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let schOptions: ScheduleModel = { width: '100%', height: '550px', selectedDate: new Date(2017, 9, 2) };
+            schObj = util.createSchedule(schOptions, eventDatas, done);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('deleting normal and recurrence appointment simultaneously', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = (args: Object) => {
                 let appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(appointment.length).toEqual(0);
                 done();
             };
             let appointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            triggerMouseEvent(appointment[0], 'click', 0, 0, false, true);
-            triggerMouseEvent(appointment[1], 'click', 0, 0, false, true);
-            triggerMouseEvent(appointment[2], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(appointment[0], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(appointment[1], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(appointment[2], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(3);
             let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
@@ -1769,7 +1569,6 @@ describe('Keyboard interaction', () => {
                 .toEqual('Delete Multiple Events');
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-delete')).click();
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
-            schObj.dataBound = dataBound;
         });
     });
     describe('Timeline view', () => {
@@ -1782,11 +1581,11 @@ describe('Keyboard interaction', () => {
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(model, [], done);
+            schObj = util.createSchedule(model, [], done);
             keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('ensure module name', () => {
             expect(keyModule.getModuleName()).toEqual('keyboard');
@@ -1828,22 +1627,22 @@ describe('Keyboard interaction', () => {
             schObj.showHeaderBar = true;
             schObj.dataBind();
         });
-        it('alt one day view', () => {
+        it('alt one timeline day view', () => {
             schObj.element.focus();
             keyModule.keyActionHandler({ action: 'altOne', key: '1' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
         });
-        it('alt two week view', () => {
+        it('alt two timeline week view', () => {
             schObj.element.focus();
             keyModule.keyActionHandler({ action: 'altTwo', key: '2' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-week');
         });
-        it('alt three work week view', () => {
+        it('alt three timeline work week view', () => {
             schObj.element.focus();
             keyModule.keyActionHandler({ action: 'altThree', key: '3' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-work-week');
         });
-        it('alt four month view', () => {
+        it('alt four timeline month view', () => {
             schObj.element.focus();
             keyModule.keyActionHandler({ action: 'altFour', key: '4' });
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-month');
@@ -1862,6 +1661,46 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-agenda');
         });
     });
+
+    describe('View changes', () => {
+        let schObj: Schedule;
+        // tslint:disable-next-line:no-any
+        let keyModule: any;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                currentView: 'TimelineWeek',
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'TimelineDay', 'TimelineWeek',
+                'TimelineWorkWeek', 'TimelineMonth'],
+                selectedDate: new Date(2018, 4, 1)
+            };
+            schObj = util.createSchedule(model, [], done);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('alt six timeline day view', () => {
+            schObj.element.focus();
+            keyModule.keyActionHandler({ action: 'altSix', key: '6' });
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
+        });
+        it('alt seven timeline week view', () => {
+            schObj.element.focus();
+            keyModule.keyActionHandler({ action: 'altSeven', key: '7' });
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-week');
+        });
+        it('alt eight timeline work week view', () => {
+            schObj.element.focus();
+            keyModule.keyActionHandler({ action: 'altEight', key: '8' });
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-work-week');
+        });
+        it('alt nine timeline month view', () => {
+            schObj.element.focus();
+            keyModule.keyActionHandler({ action: 'altNine', key: '9' });
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-month');
+        });
+    });
+
     describe('Timeline view with appointments', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
@@ -1872,11 +1711,11 @@ describe('Keyboard interaction', () => {
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(model, timelineData, done);
+            schObj = util.createSchedule(model, timelineData, done);
             keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('Tab key work cell to appointment selection', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
@@ -1911,7 +1750,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
         });
         it('Enter key', () => {
-            triggerMouseEvent(schObj.element.querySelector('.e-appointment'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-appointment'), 'click');
             keyModule.keyActionHandler({ action: 'escape' });
             let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
             expect(firstWorkCell[0].classList).toContain('e-appointment-border');
@@ -1981,8 +1820,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
         });
         it('ShiftTab key work cell to appoitnment selection', () => {
-            let workCells: HTMLElement[] =
-                [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-wrapper'));
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-event-table .e-appointment-wrapper'));
             (workCells[0].children[0] as HTMLElement).click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.keyActionHandler({
@@ -1994,9 +1832,9 @@ describe('Keyboard interaction', () => {
         it('multiple event selection via ctrl plus click', () => {
             let firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             firstWorkCell[0].click();
-            triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(2);
-            triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
+            util.triggerMouseEvent(firstWorkCell[1], 'click', 0, 0, false, true);
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
             keyModule.keyActionHandler({ action: 'escape' });
         });
@@ -2109,18 +1947,17 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
         beforeAll((done: Function) => {
             let model: ScheduleModel = {
                 currentView: 'TimelineMonth',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(model, timelineData, done);
+            schObj = util.createSchedule(model, timelineData, done);
             keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('Escape key', () => {
             let moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
@@ -2203,16 +2040,16 @@ describe('Keyboard interaction', () => {
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(model, [], done);
+            schObj = util.createSchedule(model, [], done);
             keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('multiple cell selection via shift plus click', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[2];
-            triggerMouseEvent(workCells[17], 'click', 0, 0, true);
+            util.triggerMouseEvent(workCells[17], 'click', 0, 0, true);
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2224,9 +2061,9 @@ describe('Keyboard interaction', () => {
         });
         it('multiple work cells selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[2], 'mousedown');
-            triggerMouseEvent(workCells[17], 'mousemove');
-            triggerMouseEvent(workCells[17], 'mouseup');
+            util.triggerMouseEvent(workCells[2], 'mousedown');
+            util.triggerMouseEvent(workCells[17], 'mousemove');
+            util.triggerMouseEvent(workCells[17], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2238,10 +2075,10 @@ describe('Keyboard interaction', () => {
         });
         it('mouse move out of schedule while selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[2], 'mousedown');
-            triggerMouseEvent(schObj.element.querySelector('.e-time-cells') as HTMLElement, 'mousemove');
-            triggerMouseEvent(workCells[29], 'mousemove');
-            triggerMouseEvent(workCells[29], 'mouseup');
+            util.triggerMouseEvent(workCells[2], 'mousedown');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-time-cells') as HTMLElement, 'mousemove');
+            util.triggerMouseEvent(workCells[29], 'mousemove');
+            util.triggerMouseEvent(workCells[29], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(28);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2344,11 +2181,9 @@ describe('Keyboard interaction', () => {
             let target: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[335] as HTMLElement;
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('Apr 29 - May 05, 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 06 - 12, 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 06 - 12, 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2374,11 +2209,9 @@ describe('Keyboard interaction', () => {
             let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 06 - 12, 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 06 - 12, 2018');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('Apr 29 - May 05, 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2491,11 +2324,9 @@ describe('Keyboard interaction', () => {
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('Apr 29 - May 05, 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('Apr 29 - May 05, 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2525,11 +2356,9 @@ describe('Keyboard interaction', () => {
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('Apr 29 - May 05, 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('Apr 29 - May 05, 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Apr 29 - May 05, 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2563,17 +2392,17 @@ describe('Keyboard interaction', () => {
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(model, [], done);
+            schObj = util.createSchedule(model, [], done);
             keyModule = schObj.keyboardInteractionModule;
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('multiple cell selection via shift plus click', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[2];
-            triggerMouseEvent(workCells[12], 'mousedown', 0, 0, true);
-            triggerMouseEvent(workCells[12], 'click', 0, 0, true);
+            util.triggerMouseEvent(workCells[12], 'mousedown', 0, 0, true);
+            util.triggerMouseEvent(workCells[12], 'click', 0, 0, true);
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(11);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2586,9 +2415,9 @@ describe('Keyboard interaction', () => {
         });
         it('multiple work cells selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[3], 'mousedown');
-            triggerMouseEvent(workCells[18], 'mousemove');
-            triggerMouseEvent(workCells[18], 'mouseup');
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[18], 'mousemove');
+            util.triggerMouseEvent(workCells[18], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(16);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2684,11 +2513,9 @@ describe('Keyboard interaction', () => {
             let target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2728,11 +2555,9 @@ describe('Keyboard interaction', () => {
             let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2790,11 +2615,9 @@ describe('Keyboard interaction', () => {
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2824,11 +2647,9 @@ describe('Keyboard interaction', () => {
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2842,80 +2663,59 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => {
-                keyModule = schObj.keyboardInteractionModule;
-                done();
-            };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
+            let schOptions: ScheduleModel = {
                 height: '580px',
                 currentView: 'TimelineMonth',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth', 'Agenda'],
                 selectedDate: new Date(2018, 4, 1),
-                group: {
-                    resources: ['Floors', 'Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'FId', title: 'Floor',
-                        name: 'Floors', allowMultiple: false,
-                        dataSource: [
-                            { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2', Expand: false },
-                            { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
-                        ],
-                        textField: 'FloorText', idField: 'Id', colorField: 'FloorColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2', Expand: false },
-                            { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00', Expand: false },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398', Expand: false },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1', Expand: false },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 3, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 2, OwnerColor: '#7499e1' }
-                        ],
-                        textField: 'OwnerText', idField: 'Id',
-                        groupIDField: 'OwnerGroupId', colorField: 'OwnerColor', expandedField: 'Expand'
-                    }
-                ],
-                eventSettings: {
-                    dataSource: cloneDataSource(timelineResourceData)
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Floors', 'Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'FId', title: 'Floor', name: 'Floors', allowMultiple: false,
+                    dataSource: [
+                        { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2', Expand: false },
+                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
+                    ],
+                    textField: 'FloorText', idField: 'Id', colorField: 'FloorColor', expandedField: 'Expand'
+                }, {
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2', Expand: false },
+                        { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor', expandedField: 'Expand'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00', Expand: false },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398', Expand: false },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1', Expand: false },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 3, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 2, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor', expandedField: 'Expand'
+                    }],
+                dataBound: () => {
+                    keyModule = schObj.keyboardInteractionModule;
+                    done();
+                }
+            }
+            schObj = util.createSchedule(schOptions, timelineResourceData);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('home key', () => {
             let firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
@@ -2938,8 +2738,8 @@ describe('Keyboard interaction', () => {
         it('multiple cell selection via shift plus click', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[403];
-            triggerMouseEvent(workCells[420], 'mousedown', 0, 0, true);
-            triggerMouseEvent(workCells[420], 'click', 0, 0, true);
+            util.triggerMouseEvent(workCells[420], 'mousedown', 0, 0, true);
+            util.triggerMouseEvent(workCells[420], 'click', 0, 0, true);
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(18);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -2954,9 +2754,9 @@ describe('Keyboard interaction', () => {
         });
         it('multiple work cells selection via mouse', () => {
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[403], 'mousedown');
-            triggerMouseEvent(workCells[420], 'mousemove');
-            triggerMouseEvent(workCells[420], 'mouseup');
+            util.triggerMouseEvent(workCells[403], 'mousedown');
+            util.triggerMouseEvent(workCells[420], 'mousemove');
+            util.triggerMouseEvent(workCells[420], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(18);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -3066,11 +2866,9 @@ describe('Keyboard interaction', () => {
             let target: HTMLElement = workCell[workCell.length - 1];
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('May 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2018');
             keyModule.keyActionHandler({ action: 'rightArrow', target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -3101,11 +2899,9 @@ describe('Keyboard interaction', () => {
             let targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[403] as HTMLElement;
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             keyModule.keyActionHandler({ action: 'leftArrow', target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -3171,11 +2967,9 @@ describe('Keyboard interaction', () => {
             target.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = target;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             keyModule.keyActionHandler({ action: 'shiftRightArrow', shiftKey: true, target: target });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -3209,11 +3003,9 @@ describe('Keyboard interaction', () => {
             targetCell.click();
             keyModule.keyActionHandler({ action: 'escape' });
             keyModule.initialTarget = targetCell;
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             keyModule.keyActionHandler({ action: 'shiftLeftArrow', shiftKey: true, target: targetCell });
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('June 2018');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2018');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(2);
             expect(focuesdEle.classList).toContain('e-selected-cell');

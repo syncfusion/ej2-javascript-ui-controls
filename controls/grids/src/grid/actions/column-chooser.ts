@@ -479,7 +479,9 @@ export class ColumnChooser implements IAction {
             let column: Column[] =  this.parent.getColumns();
             if (columnUid === 'grid-selectAll') {
                 column.forEach((col: Column ) => {
-                    this.checkstatecolumn(checkstate, col.uid);
+                    if (col.showInColumnChooser) {
+                        this.checkstatecolumn(checkstate, col.uid);
+                    }
                 });
             } else {
                 this.checkstatecolumn(checkstate, columnUid);

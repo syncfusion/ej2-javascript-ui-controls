@@ -45,11 +45,12 @@ export class AxisFields {
     }
     private createPivotButtons(): void {
         let fields: IFieldOptions[][] =
-            [this.parent.dataSource.rows, this.parent.dataSource.columns, this.parent.dataSource.values, this.parent.dataSource.filters];
+            [this.parent.dataSourceSettings.rows, this.parent.dataSourceSettings.columns,
+            this.parent.dataSourceSettings.values, this.parent.dataSourceSettings.filters];
         for (let element of this.parent.element.querySelectorAll(
             '.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.'
             + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS) as any) {
-            if (this.parent.dataSource.values.length > 0 ? !element.classList.contains(cls.GROUP_CHART_VALUE) : true) {
+            if (this.parent.dataSourceSettings.values.length > 0 ? !element.classList.contains(cls.GROUP_CHART_VALUE) : true) {
                 element.innerHTML = '';
             }
         }

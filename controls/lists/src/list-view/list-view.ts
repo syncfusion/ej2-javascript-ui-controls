@@ -1,5 +1,5 @@
 ﻿import { Virtualization } from './virtualization';
-import { merge, formatUnit, isNullOrUndefined, classList, append, detach, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';
 import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
@@ -9,6 +9,8 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';
 import { ListViewModel, FieldSettingsModel } from './list-view-model';
+import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+
 // Effect Configuration Effect[] =  [fromViewBackward,fromViewForward,toViewBackward,toviewForward];
 const effectsConfig: { [key: string]: Effect[] } = {
     'None': [],
@@ -58,6 +60,10 @@ export const classNames: ClassNames = {
     listviewCheckbox: 'e-listview-checkbox',
     itemCheckList: 'e-checklist'
 };
+
+const LISTVIEW_TEMPLATE_PROPERTY: string = 'Template';
+const LISTVIEW_GROUPTEMPLATE_PROPERTY: string = 'GroupTemplate';
+const LISTVIEW_HEADERTEMPLATE_PROPERTY: string = 'HeaderTemplate';
 
 export interface Fields {
     /**
@@ -110,7 +116,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     public iconCss: string;
     /**
      * This property used for nested navigation of list-items.
-     * Refer the documentation [here](../../listview/nested-list/)
+     * Refer the documentation [here](./listview/nested-list)
      *  to know more about this property with demo.
      */
     @Property('child')
@@ -123,7 +129,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](../../listview/grouping/)
+     * Refer the documentation [here](./listview/grouping)
      *  to know more about this property with demo.
      */
     @Property('groupBy')
@@ -221,6 +227,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private isWindow: boolean;
     private selectedItems: SelectedItem;
     private aniObj: Animation;
+    private LISTVIEW_TEMPLATE_ID: string;
+    private LISTVIEW_GROUPTEMPLATE_ID: string;
+    private LISTVIEW_HEADERTEMPLATE_ID: string;
     /**
      * This cssClass property helps to use custom skinning option for ListView component,
      *  by adding the mentioned class name into root element of ListView.
@@ -358,7 +367,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](../../listview/customizing-templates/)
+     * Refer the documentation [here](./listview/customizing-templates)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
@@ -394,6 +403,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * We can trigger the `select` event when we select the list item in the component.
      * @event
+     * @blazorProperty 'Selected'
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
@@ -401,6 +411,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * We can trigger `actionBegin` event before every ListView action starts.
      * @event
+     * @blazorProperty 'OnActionBegin'
      */
     @Event()
     public actionBegin: EmitType<Object>;
@@ -409,6 +420,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * We can trigger `actionComplete` event for every ListView action success event
      *  with the dataSource parameter.
      * @event
+     * @blazorProperty 'OnActionComplete'
      */
     @Event()
     public actionComplete: EmitType<Object>;
@@ -417,6 +429,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * We can trigger `actionFailure` event for every ListView action failure event
      *  with the dataSource parameter.
      * @event
+     * @blazorProperty 'OnActionFailure'
      */
     @Event()
     public actionFailure: EmitType<Object>;
@@ -466,7 +479,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'enableVirtualization':
                     if (!isNullOrUndefined(this.contentContainer)) {
-                    detach(this.contentContainer);
+                        detach(this.contentContainer);
                     }
                     this.refresh();
                     break;
@@ -558,8 +571,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.headerTemplate) {
                 let compiledString: Function = compile(this.headerTemplate);
                 let headerTemplateEle: HTMLElement = this.createElement('div', { className: classNames.headerTemplateText });
-                append(compiledString({}), headerTemplateEle);
+                append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                 append([headerTemplateEle], this.headerEle);
+                this.updateBlazorTemplates(false, true);
             }
             if (this.headerTemplate && this.headerTitle) {
                 textEle.classList.add('header');
@@ -645,7 +659,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 groupItemRole: 'group', wrapperRole: 'presentation'
             },
             fields: (this.fields as ListViewModel & { properties: Object }).properties, sortOrder: this.sortOrder, showIcon: this.showIcon,
-            itemCreated: this.renderCheckbox.bind(this)
+            itemCreated: this.renderCheckbox.bind(this),
+            templateID: `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`,
+            groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`
         };
         this.initialization();
     }
@@ -658,8 +674,12 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.isNestedList = false;
         this.selectedData = [];
         this.selectedId = [];
+        this.LISTVIEW_TEMPLATE_ID = `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`;
+        this.LISTVIEW_GROUPTEMPLATE_ID = `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`;
+        this.LISTVIEW_HEADERTEMPLATE_ID = `${this.element.id}${LISTVIEW_HEADERTEMPLATE_PROPERTY}`;
         this.aniObj = new Animation(this.animateOptions);
     }
+
     private renderCheckbox(args: ItemCreatedArgs): void {
         if (args.item.classList.contains(classNames.hasChild)) {
             this.isNestedList = true;
@@ -922,6 +942,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private arrowKeyHandler(e: KeyboardEventArgs, prev?: boolean): void {
+        e.preventDefault();
         if (Object.keys(this.dataSource).length && this.curUL) {
             let siblingLI: Element = this.onArrowKeyDown(e, prev);
             let elementTop: number = this.element.getBoundingClientRect().top;
@@ -940,14 +961,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     heightDiff = this.isWindow ? (siblingTop + siblingHeight) :
                         ((siblingTop - elementTop) + siblingHeight);
                     if (heightDiff > height) {
-                        this.isWindow ? window.scrollTo(0, pageYOffset + (heightDiff - height)) :
-                            this.element.scrollTo(0, this.element.scrollTop + (heightDiff - height));
+                        this.isWindow ? window.scroll(0, pageYOffset + (heightDiff - height)) :
+                            this.element.scrollTop = this.element.scrollTop + (heightDiff - height);
                     }
                 } else {
                     heightDiff = this.isWindow ? siblingTop : (siblingTop - elementTop);
                     if (heightDiff < 0) {
-                        this.isWindow ? window.scrollTo(0, pageYOffset + heightDiff) :
-                            this.element.scrollTo(0, this.element.scrollTop + heightDiff);
+                        this.isWindow ? window.scroll(0, pageYOffset + heightDiff) :
+                            this.element.scrollTop = this.element.scrollTop + heightDiff;
                     }
                 }
             } else if (this.enableVirtualization && prev && this.virtualizationModule.uiFirstIndex) {
@@ -956,20 +977,20 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     this.onUIScrolled = undefined;
                 };
                 heightDiff = this.virtualizationModule.listItemHeight;
-                this.isWindow ? window.scrollTo(0, pageYOffset - heightDiff) :
-                    this.element.scrollTo(0, this.element.scrollTop - heightDiff);
+                this.isWindow ? window.scroll(0, pageYOffset - heightDiff) :
+                    this.element.scrollTop = this.element.scrollTop - heightDiff;
             } else if (prev) {
                 if (this.showHeader && this.headerEle) {
                     let topHeight: number = groupItemBounds ? groupItemBounds.top : firstItemBounds.top;
                     let headerBounds: ClientRect = this.headerEle.getBoundingClientRect();
                     heightDiff = headerBounds.top < 0 ? (headerBounds.height - topHeight) : 0;
-                    this.isWindow ? window.scrollTo(0, pageYOffset - heightDiff)
-                        : this.element.scrollTo(0, 0);
+                    this.isWindow ? window.scroll(0, pageYOffset - heightDiff)
+                        : this.element.scrollTop = 0;
                 } else if (this.fields.groupBy) {
                     heightDiff = this.isWindow ? (groupItemBounds.top < 0 ? groupItemBounds.top : 0) :
                         (elementTop - firstItemBounds.top) + groupItemBounds.height;
-                    this.isWindow ? window.scrollTo(0, pageYOffset + heightDiff) :
-                        this.element.scrollTo(0, this.element.scrollTop - heightDiff);
+                    this.isWindow ? window.scroll(0, pageYOffset + heightDiff) :
+                        this.element.scrollTop = this.element.scrollTop - heightDiff;
                 }
             }
         }
@@ -1028,9 +1049,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 this.back();
                 break;
-            case 9:
-                this.tabFocus(e);
-                break;
             case 32:
                 this.spaceKeyHandler(e);
                 break;
@@ -1079,31 +1097,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
         this.touchModule.destroy();
-    }
-
-    private tabFocus(e: KeyboardEventArgs): void {
-        if (this.curUL && ((!this.curUL.querySelector('.' + classNames.focused) && this.showCheckBox) ||
-            (!this.curUL.querySelector('.' + classNames.selected) && !this.showCheckBox &&
-                !this.curUL.querySelector('.' + classNames.hasChild)) ||
-            (this.curUL.querySelector('.' + classNames.hasChild) &&
-                !this.curUL.querySelector('.' + classNames.focused) &&
-                !this.curUL.querySelector('.' + classNames.selected)))) {
-            e.preventDefault();
-        }
-        if (Object.keys(this.dataSource).length && this.curUL) {
-            let selectedList: Element = this.curUL.querySelector('.' + classNames.selected);
-            if ((!selectedList && this.curUL) || this.showCheckBox) {
-                let li: Element = selectedList || this.curUL.querySelector('.' + classNames.listItem);
-                if (li.classList.contains(classNames.hasChild) || this.showCheckBox) {
-                    let focusedElement: Element = this.curUL.querySelector('.' + classNames.focused);
-                    if (isNullOrUndefined(focusedElement)) {
-                        li.classList.add(classNames.focused);
-                    }
-                } else {
-                    this.setSelectLI(li, e);
-                }
-            }
-        }
     }
 
     private removeFocus(): void {
@@ -1381,6 +1374,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private reRender(): void {
+        this.resetBlazorTemplates();
         this.element.innerHTML = '';
         this.headerEle = this.ulElement = this.liCollection = undefined;
         this.setLocalData();
@@ -1388,6 +1382,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private resetCurrentList(): void {
+        this.resetBlazorTemplates();
         this.setViewDataSource(this.curViewDS as { [key: string]: Object; }[]);
         this.contentContainer.innerHTML = '';
         this.createList();
@@ -1400,6 +1395,45 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.ulElement = this.curUL = ListBase.createList(
             this.createElement, this.curViewDS as { [key: string]: Object; }[], this.listBaseOption);
         this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
+        this.updateBlazorTemplates(true);
+    }
+
+    private resetBlazorTemplates(): void {
+        if (this.template) {
+            resetBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
+        }
+        if (this.groupTemplate) {
+            resetBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
+        }
+        if (this.headerTemplate) {
+            resetBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
+        }
+    }
+
+    private updateBlazorTemplates(
+        template: boolean = false,
+        headerTemplate: boolean = false): void {
+        if (this.template && template) {
+            setTimeout(
+                () => {
+                    updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
+                },
+                0);
+        }
+        if (this.groupTemplate && template) {
+            setTimeout(
+                () => {
+                    updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
+                },
+                0);
+        }
+        if (this.headerTemplate && headerTemplate) {
+            setTimeout(
+                () => {
+                    updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
+                },
+                0);
+        }
     }
 
     private renderSubList(li: Element): void {
@@ -1411,10 +1445,12 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 let data: { [key: string]: Object; }[] = this.curViewDS as { [key: string]: Object; }[];
+                this.resetBlazorTemplates();
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
                 ele.setAttribute('pID', <string>uID);
                 (ele as HTMLElement).style.display = 'none';
                 this.renderIntoDom(ele);
+                this.updateBlazorTemplates(true);
             }
             this.switchView(<HTMLElement>ul, <HTMLElement>ele);
             this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
@@ -1433,7 +1469,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private renderList(data?: { [key: string]: Object; }[]): void {
         this.setViewDataSource(data);
-        if (this.enableVirtualization ) {
+        if (this.enableVirtualization) {
             if (Object.keys(this.dataSource).length) {
                 if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
                     this.listBaseOption.template = null;
@@ -1479,11 +1515,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         });
     }
 
-
     /**
      * It is used to destroy the ListView component.
      */
     public destroy(): void {
+        this.resetBlazorTemplates();
         this.unWireEvents();
         let classAr: string[] = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css: string) => css));
@@ -1614,7 +1650,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to get the currently [here](./selectedItem)
+     * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
      */
     public getSelectedItems(): SelectedItem | SelectedCollection | UISelectedItem | NestedListData {
@@ -1783,6 +1819,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     child = child.concat(data);
                     if (ds instanceof Array) {
+                        this.resetBlazorTemplates();
                         data.forEach((dataSource: { [key: string]: Object; }) => {
                             (this.dataSource as { [key: string]: Object; }[]).push(dataSource);
                             this.setViewDataSource(this.dataSource as { [key: string]: Object; }[]);
@@ -1797,6 +1834,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                                 this.reRender();
                             }
                         });
+                        if (this.ulElement) {
+                            this.updateBlazorTemplates(true);
+                        }
                         this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
                     } else {
                         ds[this.fields.child] = child;
@@ -1823,7 +1863,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.enableVirtualization) {
                 this.virtualizationModule.removeItem(obj);
             } else {
+                this.resetBlazorTemplates();
                 this.removeItemFromList(obj);
+                this.updateBlazorTemplates(true);
             }
         }
     }
@@ -1868,6 +1910,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public removeMultipleItems(obj: HTMLElement[] | Element[] | Fields[]): void {
         if (!(this.dataSource instanceof DataManager)) {
             if (obj.length) {
+                this.resetBlazorTemplates();
                 for (let i: number = 0; i < obj.length; i++) {
                     if (this.enableVirtualization) {
                         this.removeItem(obj[i]);
@@ -1875,6 +1918,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                         this.removeItemFromList(obj[i]);
                     }
                 }
+                this.updateBlazorTemplates(true);
             }
         }
     }

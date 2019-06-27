@@ -1581,7 +1581,7 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M15,10 L15,22 L5,16Z')
             done();
         });
-    });
+    });   
     describe('Connector padding', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1658,18 +1658,18 @@ describe('Diagram Control', () => {
             done();
         });
         it('checking connector style updation', function (done) {
-            let path:string=(diagram.connectors[0].wrapper.children[0] as any).pathData;
-            diagram.connectors[0].targetDecorator.style.fill="green";
+            let path: string = (diagram.connectors[0].wrapper.children[0] as any).pathData;
+            diagram.connectors[0].targetDecorator.style.fill = "green";
             diagram.dataBind;
-            diagram.connectors[0].targetDecorator.style.fill="black";
+            diagram.connectors[0].targetDecorator.style.fill = "black";
             diagram.dataBind;
-            diagram.connectors[0].targetDecorator.style.fill="green";
+            diagram.connectors[0].targetDecorator.style.fill = "green";
             diagram.dataBind;
-            diagram.connectors[0].targetDecorator.style.fill="black";
+            diagram.connectors[0].targetDecorator.style.fill = "black";
             diagram.dataBind;
-            diagram.connectors[0].targetDecorator.style.fill="green";
+            diagram.connectors[0].targetDecorator.style.fill = "green";
             diagram.dataBind;
-            diagram.connectors[0].targetDecorator.style.fill="black";
+            diagram.connectors[0].targetDecorator.style.fill = "black";
             diagram.dataBind;
             expect((diagram.connectors[0].wrapper.children[0] as any).pathData === path);
             done();

@@ -31,9 +31,9 @@ let gauge: LinearGauge = new LinearGauge({
                 height: 13,
                 width: 13,
                 roundedCornerRadius: 5,
-                type: 'Bar',
                 color: '#f02828',
-                border: { color: 'yellow', width: 2 }
+                border: { color: 'yellow', width: 2 },
+                markerType:'Arrow'
             }
         ]
     }]

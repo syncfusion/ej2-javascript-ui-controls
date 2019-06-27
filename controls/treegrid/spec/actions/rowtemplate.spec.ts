@@ -319,7 +319,7 @@ describe('Contextmenu in row template', () => {
             allowResizing: true,
             allowSorting: true,
             sortSettings: { columns: [{ field: 'EmployeeID', direction: 'Ascending' }] },
-            contextMenuItems: ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending','Edit',                     'Delete', 'Save', 'Cancel', 'PdfExport', 'ExcelExport', 'CsvExport',                              'FirstPage', 'PrevPage', 'LastPage', 'NextPage'],
+            contextMenuItems: ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending','Edit', 'Delete', 'Save', 'Cancel', 'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage', 'LastPage', 'NextPage'],
             pageSettings: {pageSize: 7, pageSizes: true},
             treeColumnIndex: 0,
             columns: [

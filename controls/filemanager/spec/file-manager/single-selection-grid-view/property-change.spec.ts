@@ -34,7 +34,8 @@ describe('FileManager control single selection Gid view', () => {
                 },
                 showThumbnail: false,
                 cssClass: 'custom'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -67,7 +68,8 @@ describe('FileManager control single selection Gid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -101,7 +103,8 @@ describe('FileManager control single selection Gid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -139,7 +142,8 @@ describe('FileManager control single selection Gid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -174,7 +178,8 @@ describe('FileManager control single selection Gid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 enableRtl: true
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -211,7 +216,8 @@ describe('FileManager control single selection Gid view', () => {
                 },
                 showThumbnail: false,
                 navigationPaneSettings: { visible: false }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -247,7 +253,8 @@ describe('FileManager control single selection Gid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 path: 'Employees/'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,

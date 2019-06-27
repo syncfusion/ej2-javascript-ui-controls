@@ -9,8 +9,8 @@ import {
     valueToCoefficient, textElement, RectOption,
     appendChildElement, appendClipElement, withIn, getElement
 } from '../../common/utils/helper';
-import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { ZIndex, Anchor, sizeType } from '../utils/enum';
+import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { ZIndex, Anchor, SizeType } from '../utils/enum';
 /**
  * `StripLine` module is used to render the stripLine in chart.
  */
@@ -99,7 +99,7 @@ export class StripLine {
     private getToValue(
         to: number, from: number, size: number, axis: Axis, end: number, stripline: StripLineSettingsModel
     ): number {
-        let sizeType: sizeType = stripline.sizeType;
+        let sizeType: SizeType = stripline.sizeType;
         let isEnd: boolean = (end === null);
         if (axis.valueType === 'DateTime') {
             let fromValue: Date = new Date(from);
@@ -166,7 +166,7 @@ export class StripLine {
             'clip-path': 'url(#' + id + 'ClipRect' + ')'
         });
         striplineGroup.appendChild(
-            appendClipElement(chart.redraw, options, chart.renderer)
+            appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer)
         );
         for (let axis of axes) {
             let count: number = 0;
@@ -207,7 +207,7 @@ export class StripLine {
                 }
             }
         }
-        appendChildElement(chart.svgObject, striplineGroup, chart.redraw);
+        appendChildElement(chart.enableCanvas, chart.svgObject, striplineGroup, chart.redraw);
     }
     /**
      * To draw the single line strip line
@@ -227,7 +227,7 @@ export class StripLine {
             + ' ' + rect.y) :
             ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + rect.x + ' ' + (rect.y + rect.height));
         appendChildElement(
-            parent, chart.renderer.drawPath(
+            chart.enableCanvas, parent, chart.renderer.drawPath(
                 new PathOption(
                     id, '', stripline.size, stripline.color, stripline.opacity, stripline.dashArray, d
                 )
@@ -252,7 +252,7 @@ export class StripLine {
             +element.getAttribute('width'), +element.getAttribute('height')
         ) : null;
         appendChildElement(
-            parent, chart.renderer.drawRectangle(
+            chart.enableCanvas, parent, chart.renderer.drawRectangle(
                 new RectOption(
                     id, stripline.color, stripline.border, stripline.opacity,
                     rect, 0, 0, '', stripline.dashArray
@@ -297,6 +297,7 @@ export class StripLine {
             anchor = stripline.horizontalAlignment;
         }
         textElement(
+            chart.renderer,
             new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'),
             stripline.textStyle, stripline.textStyle.color, parent);
     }

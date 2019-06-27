@@ -930,6 +930,23 @@ describe('Dialog Control', () => {
             document.body.innerHTML = '';
         });
 
+        it('Property change testing for header as HTML element and string', () => {
+            let ele: HTMLElement = createElement('div', { id: 'dialogHeader' });
+            document.body.appendChild(ele);
+            let headerTemplateContent: HTMLElement = createElement('div', {id: 'test'});
+            headerTemplateContent.innerHTML = 'Header Template content';
+            document.body.appendChild(headerTemplateContent);
+            dialog = new Dialog({ header: "New Dialog",content: "New content updated successfully" }, '#dialogHeader');
+            dialog.header = document.getElementById('test');
+            dialog.dataBind();
+            expect(document.getElementById('dialogHeader').querySelectorAll('.e-dlg-header-content').length).toBe(1);
+            dialog.header = "Header template content";
+            dialog.dataBind();
+            expect(document.getElementById('dialogHeader').querySelectorAll('.e-dlg-header-content').length).toBe(1);
+            dialog.destroy();
+            document.body.innerHTML = '';
+        });
+
         it('notify property changes testing combination of showCloseIcon and cssClass property', () => {
             let ele: HTMLElement = createElement('div', { id: 'dialogCtrl7' });
             document.body.appendChild(ele);
@@ -1921,6 +1938,13 @@ describe('Dynamically change', () => {
         dialog.dataBind();
         expect(isNullOrUndefined(document.querySelector('.e-dlg-header-content'))).toBe(false);
     });
+    it('Change isModal and showCloseIcon', function () {
+        dialog.isModal=true;
+        dialog.showCloseIcon=true;
+        dialog.dataBind();
+        expect(document.getElementsByClassName('e-dlg-modal').length).toBe(1);
+        expect(document.getElementsByClassName('e-dlg-modal').length).toBe(1);
+    });
 });
 
 describe('Position for modal dialog', () => {
@@ -2516,4 +2540,6 @@ describe('Testing resizing option', () => {
             done();
         });
     });
+    
+    
 });

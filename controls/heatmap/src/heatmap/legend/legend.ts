@@ -12,7 +12,7 @@ import { Theme } from '../model/theme';
 import { LegendSettingsModel } from './legend-model';
 import { CurrentRect } from '../utils/helper';
 import { Tooltip as tool } from '@syncfusion/ej2-svg-base';
-
+import { ILegendRenderEventArgs } from '../model/interface';
 /**
  * Configures the Legend
  */
@@ -77,21 +77,21 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      * Specifies the type of label display for smart legend.
      * * All:  All labels are displayed.
      * * Edge: Labels will be displayed only at the edges of the legend.
-     * * None: No labels are displayed. 
+     * * None: No labels are displayed.
      * @default 'All'
      */
     @Property('All')
     public labelDisplayType: LabelDisplayType;
 
     /**
-     * Specifies the legend label style. 
+     * Specifies the legend label style.
      * @default ''
      */
     @Complex<FontModel>(Theme.legendLabelFont, Font)
     public textStyle: FontModel;
 
     /**
-     * Specifies the formatting options for the legend label. 
+     * Specifies the formatting options for the legend label.
      * @default ''
      */
 
@@ -107,7 +107,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 }
 
 /**
- * 
+ *
  * The `Legend` module is used to render legend for the heatmap.
  */
 export class Legend {
@@ -127,6 +127,7 @@ export class Legend {
     private segmentCollections: number[] = [];
     private textWrapCollections: number[] = [];
     public labelCollections: string[] = [];
+    public labelCollection: string[] = [];
     private legendMinValue: number;
     private legendMaxValue: number;
     private legendSize: number = 10;
@@ -352,12 +353,9 @@ export class Legend {
         if (heatMap.legendSettings.showLabel && (heatMap.paletteSettings.type === 'Gradient' ||
             (heatMap.paletteSettings.type === 'Fixed' && heatMap.legendSettings.labelDisplayType !== 'None'))) {
             let anchor: string; let dominantBaseline: string;
-            let legendLabel: Element;
-            let textWrapWidth: number = 0;
-            let text: string[];
-            this.legendLabelTooltip = [];
-            let elementSize: Size;
-            let colorCollection: ColorCollection[] = heatMap.legendColorCollection;
+            let legendLabel: Element; let textWrapWidth: number = 0;
+            let text: string[]; this.legendLabelTooltip = [];
+            let elementSize: Size; let colorCollection: ColorCollection[] = heatMap.legendColorCollection;
             if (heatMap.enableCanvasRendering) {
                 let ctx: CanvasRenderingContext2D = heatMap.canvasRenderer.ctx;
                 ctx.rect(this.legendGroup.x, this.legendGroup.y, this.legendGroup.width, this.legendGroup.height);
@@ -369,21 +367,27 @@ export class Legend {
             }
             let labelX: number; let labelY: number;
             for (let i: number = 0; i < colorCollection.length; i++) {
-                let value: number = ((colorCollection[i].value - this.legendMinValue) /
-                    (this.legendMaxValue - this.legendMinValue)) * 100;
+                let value: number = ((colorCollection[i].value - (Math.round(this.legendMinValue * 100) / 100)) /
+                ((Math.round(this.legendMaxValue * 100) / 100) - (Math.round(this.legendMinValue * 100) / 100))) * 100;
                 if (heatMap.horizontalGradient) {
                     labelX = this.segmentCollections[i];
                     labelY = rect.y + rect.height + this.labelPadding;
-                    anchor = (value === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'start' :
-                        (heatMap.dataSourceMaxValue === colorCollection[i].value) || (heatMap.legendSettings.enableSmartLegend &&
-                            heatMap.legendSettings.labelDisplayType === 'Edge') ? 'end' : 'middle';
+                    anchor = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'start' :
+                        (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
+                            (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
+                            heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
+                                heatMap.paletteSettings.type === 'Fixed' &&
+                                heatMap.legendSettings.labelDisplayType === 'Edge') ? 'end' : 'middle';
                     dominantBaseline = 'hanging';
                 } else {
                     labelX = rect.x + rect.width + this.labelPadding;
                     labelY = this.segmentCollections[i];
-                    dominantBaseline = (value === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'hanging' :
-                        (heatMap.dataSourceMaxValue === colorCollection[i].value) || (heatMap.legendSettings.enableSmartLegend &&
-                            heatMap.legendSettings.labelDisplayType === 'Edge') ? 'baseline' : 'middle';
+                    dominantBaseline = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ?
+                        'hanging' : (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
+                            (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
+                            heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
+                                heatMap.legendSettings.labelDisplayType === 'Edge' &&
+                                heatMap.paletteSettings.type === 'Fixed') ? 'baseline' : 'middle';
                 }
                 textWrapWidth = heatMap.horizontalGradient ? this.textWrapCollections[i] : this.width - (this.legendRectScale.width +
                     this.labelPadding + this.legendRectPadding);
@@ -536,6 +540,7 @@ export class Legend {
         let legendSettings: LegendSettingsModel = heatMap.legendSettings;
         let colorCollection: LegendColorCollection[] = heatMap.legendColorCollection;
         this.labelCollections = [];
+        this.labelCollection = [];
         if (legendSettings.position !== 'Bottom' && legendSettings.position !== 'Top' &&
             legendSettings.position !== 'Right' && legendSettings.position !== 'Left') {
             legendSettings.position = 'Right';
@@ -554,9 +559,22 @@ export class Legend {
             for (let i: number = 0; i < colorCollection.length; i++) {
                 let label: string = colorCollection[i].label ? colorCollection[i].label :
                     formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
-                if (heatMap.legendSettings.enableSmartLegend && heatMap.legendSettings.labelDisplayType === 'Edge'
-                    && i > 0 && i < colorCollection.length - 1) {
-                    this.labelCollections.push('');
+                let legendEventArg: ILegendRenderEventArgs = {
+                    cancel: false , text: label, name: 'legendRender',
+                };
+                this.labelCollection.push(label);
+                this.heatMap.trigger('legendRender', legendEventArg);
+                if (heatMap.legendRender) {
+                    if (heatMap.legendSettings.enableSmartLegend && heatMap.legendSettings.labelDisplayType === 'Edge'
+                        && i > 0 && i < colorCollection.length - 1) {
+                        this.labelCollections.push('');
+                    } else {
+                        if (!legendEventArg.cancel) {
+                            this.labelCollections.push(legendEventArg.text);
+                        } else {
+                            this.labelCollections.push('');
+                        }
+                    }
                 } else {
                     this.labelCollections.push(label);
                 }
@@ -565,7 +583,23 @@ export class Legend {
             for (let i: number = 0; i < colorCollection.length; i++) {
                 let label: string = colorCollection[i].isHidden ? '' : colorCollection[i].label ?
                     colorCollection[i].label : formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
-                this.labelCollections.push(label);
+                let legendEventArg: ILegendRenderEventArgs = {
+                    cancel: false,
+                    text: label,
+                    name: 'legendRender',
+                };
+                if (!colorCollection[i].isHidden) {
+                    this.heatMap.trigger('legendRender', legendEventArg);
+                }
+                if (heatMap.legendRender) {
+                    if (!legendEventArg.cancel) {
+                        this.labelCollections.push(legendEventArg.text);
+                    } else {
+                        this.labelCollections.push('');
+                    }
+                } else {
+                    this.labelCollections.push(label);
+                }
             }
         }
         if (heatMap.paletteSettings.type === 'Gradient' || (heatMap.paletteSettings.type === 'Fixed' &&
@@ -924,9 +958,7 @@ export class Legend {
     /**
      * @private
      */
-    public renderLegendLabelTooltip(e: PointerEvent): void {
-        let x: number = this.heatMap.mouseX;
-        let y: number = this.heatMap.mouseY;
+    public renderLegendLabelTooltip(e: PointerEvent, pageX: number, pageY: number): void {
         if ((<Element>e.target).id.indexOf('_Legend_Label') !== -1 && (<HTMLElement>e.target).textContent.indexOf('...') > -1) {
             let targetId: string[] = (<HTMLElement>e.target).id.split(this.heatMap.element.id + '_Legend_Label');
             if (targetId.length === 2) {
@@ -937,7 +969,7 @@ export class Legend {
                     index = parseInt(targetId[1].substring(0, targetId[1].length - 1), 10);
                 }
                 showTooltip(
-                    this.labelCollections[index], x, y, this.heatMap.element.offsetWidth,
+                    this.labelCollections[index], pageX, pageY, this.heatMap.element.offsetWidth,
                     this.heatMap.element.id + '_LegendLabel_Tooltip',
                     getElement(this.heatMap.element.id + '_Secondary_Element'), null, this.heatMap);
                 document.getElementById(this.heatMap.element.id + '_LegendLabel_Tooltip').style.visibility = 'visible';
@@ -1000,8 +1032,7 @@ export class Legend {
         let heatMap: HeatMap = this.heatMap;
         let legendSize: number = 10;
         let tempBorder: BorderModel = {
-            color: 'transparent',
-            width: 0,
+            color: 'transparent', width: 0,
         };
         let padding: number = 5; // padding for legend label from top
         this.legendLabelTooltip = [];
@@ -1027,6 +1058,9 @@ export class Legend {
                 let text: string = this.labelCollections[i];
                 size = measureText(text, heatMap.legendSettings.textStyle);
             }
+            let legendEventArgs: ILegendRenderEventArgs = {
+                cancel: false, text: this.labelCollection[i], name: 'legendRender',
+            };
             if (heatMap.horizontalGradient) {
                 legendX = this.legendXCollections[i];
                 legendY = this.legendYCollections[i];
@@ -1035,12 +1069,18 @@ export class Legend {
             }
             labelX = legendX + this.legendSize + this.labelPadding;
             labelY = legendY + padding;
+            this.heatMap.trigger('legendRender', legendEventArgs);
             if (translate && heatMap.rendering && this.legendRange.length <= heatMap.colorCollection.length) {
                 let rectPosition: LegendRange = new LegendRange(
-                    legendX, legendY, legendSize,
-                    legendSize, heatMap.colorCollection[i].value, true, this.currentPage);
+                    legendX, legendY, legendSize, legendSize, heatMap.colorCollection[i].value, true, this.currentPage);
                 rectPosition.visible = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
-                this.legendRange.push(rectPosition);
+                if (!legendEventArgs.cancel) {
+                    this.legendRange.push(rectPosition);
+                } else {
+                    let rectPosition: LegendRange = new LegendRange(
+                        legendX, legendY, 0, 0, heatMap.colorCollection[i].value, true, this.currentPage);
+                    this.legendRange.push(rectPosition);
+                }
                 if (heatMap.legendSettings.showLabel) {
                     let textPosition: LegendRange = new LegendRange(
                         labelX, (labelY - size.height / 2), size.width, size.height,
@@ -1049,12 +1089,12 @@ export class Legend {
                     this.legendTextRange.push(textPosition);
                 }
             }
+            if (!legendEventArgs.cancel) {
             if (heatMap.legendSettings.showLabel) {
                 let text: string[] = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, textWrapWidth);
                 if (text[0].indexOf('...') !== -1 && heatMap.enableCanvasRendering) {
                     this.legendLabelTooltip.push(new CanvasTooltip(
-                        this.labelCollections[i],
-                        new Rect(labelX, labelY, size.width, size.height)));
+                        this.labelCollections[i], new Rect(labelX, labelY, size.width, size.height)));
                 }
                 let textBasic: TextBasic = new TextBasic(labelX, labelY, 'start', text, 0, 'translate(0,0)', 'middle');
                 let options: TextOption = new TextOption(
@@ -1066,17 +1106,16 @@ export class Legend {
                     (this.translategroup.lastChild as Element).setAttribute('dy', '0.6ex');
                 }
             }
-
             listRect = new Rect(legendX, legendY, legendSize, legendSize);
             let listColor: string = heatMap.legendOnLoad ? heatMap.colorCollection[i].color :
                 this.legendRange[i].visible ? heatMap.colorCollection[i].color : '#D3D3D3';
             let rectItems: RectOption = new RectOption(
-                heatMap.element.id + '_legend_list' + i,
-                listColor, tempBorder, 1, listRect);
+                heatMap.element.id + '_legend_list' + i, listColor, tempBorder, 1, listRect);
             this.drawSvgCanvas.drawRectangle(rectItems, this.translategroup);
             heatMap.horizontalGradient ? legendX = legendX + this.legendSize + this.labelPadding + size.width + this.listInterval :
                 legendY += this.legendSize + this.listInterval;
-        }
+            }
+            }
         if (!heatMap.enableCanvasRendering) {
             this.legendGroup.height = this.legendGroup.height > 0 ? this.legendGroup.height : 0;
             this.legendGroup.width = this.legendGroup.width > 0 ? this.legendGroup.width : 0;
@@ -1138,7 +1177,7 @@ export class Legend {
 
     /**
      * To create div container for tooltip which appears on hovering the smart legend.
-     * @param heatmap 
+     * @param heatmap
      * @private
      */
     public createTooltipDiv(heatMap: HeatMap): void {

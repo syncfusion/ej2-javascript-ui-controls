@@ -40,6 +40,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -47,6 +48,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;

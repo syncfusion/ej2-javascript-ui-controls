@@ -132,6 +132,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected keyConfigure: { [key: string]: string };
     protected isCustomFilter: boolean;
     private isSecondClick: boolean;
+    private filterVal: boolean;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -298,11 +299,12 @@ export class DropDownList extends DropDownBase implements IInput {
     public showClearButton: boolean;
     /**
      * Triggers on typing a character in the filter bar when the 
-     * [`allowFiltering`](./allowfiltering) 
+     * [`allowFiltering`](./#allowfiltering) 
      * is enabled.
      * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      * 
      * @event
+     * @blazorProperty 'Filtering'
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -312,36 +314,42 @@ export class DropDownList extends DropDownBase implements IInput {
      * Use change event to 
      * [`Configure the Cascading DropDownList`](../../drop-down-list/how-to/cascading)
      * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /**
      * Triggers when the popup before opens.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<Object>;
     /**
      * Triggers when the popup opens.
      * @event
+     * @blazorProperty 'Opened'
      */
     @Event()
     public open: EmitType<PopupEventArgs>;
     /**
      * Triggers when the popup is closed.
      * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public close: EmitType<PopupEventArgs>;
     /**
      * Triggers when focus moves out from the component.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<Object>;
     /**
      * Triggers when the component is focused.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<Object>;
@@ -390,6 +398,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.preventAltUp = false;
         this.isCustomFilter = false;
         this.isSecondClick = false;
+        this.filterVal = false;
         this.keyConfigure = {
             tab: 'tab',
             enter: '13',
@@ -510,13 +519,13 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.inputWrapper.container.setAttribute('style', this.htmlAttributes[htmlAttr]);
                 } else {
                     let defaultAttr: string[] = ['title', 'id', 'placeholder', 'aria-placeholder',
-                    'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck'];
+                    'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck', 'minlength', 'maxlength'];
                     let validateAttr: string[] = ['name', 'required'];
                     if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                     } else if (defaultAttr.indexOf(htmlAttr) > -1) {
                         htmlAttr === 'placeholder' ? Input.setPlaceholder(this.htmlAttributes[htmlAttr], this.inputElement) :
-                            this.element.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
+                            this.inputElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                     } else {
                         this.inputWrapper.container.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
                     }
@@ -587,12 +596,22 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected getElementByText(text: string): Element {
+        let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
+        if (formElement && this.filterVal) {
+            this.listData = this.actionCompleteData.list;
+        }
         return this.getElementByValue(this.getValueByText(text));
     }
 
     protected getElementByValue(value: string | number | boolean): Element {
         let item: Element;
-        let listItems: Element[] = this.getItems();
+        let listItems: Element[];
+        let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
+        if (formElement && this.filterVal) {
+            listItems = <NodeListOf<Element> & Element[]>this.actionCompleteData.ulElement.childNodes;
+        } else {
+            listItems = this.getItems();
+        }
         for (let liItem of listItems) {
             if (this.getFormattedValue(liItem.getAttribute('data-value')) === value) {
                 item = liItem;
@@ -792,6 +811,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.isValidLI(li)) {
             return;
         }
+        this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
         this.setSelection(li, e);
         if (Browser.isDevice && this.isFilterLayout()) {
             history.back();
@@ -1091,7 +1111,11 @@ export class DropDownList extends DropDownBase implements IInput {
             }
         }
     }
-    protected updateSelectedItem(li: Element, e: MouseEvent | KeyboardEvent | TouchEvent, preventSelect?: boolean): boolean {
+    protected updateSelectedItem(
+        li: Element,
+        e: MouseEvent | KeyboardEvent | TouchEvent,
+        preventSelect?: boolean,
+        isSelection?: boolean): void {
         this.removeSelection();
         li.classList.add(dropDownBaseClasses.selected);
         this.removeHover();
@@ -1109,12 +1133,26 @@ export class DropDownList extends DropDownBase implements IInput {
                 isInteracted: e ? true : false,
                 cancel: false
             };
-            this.trigger('select', eventArgs);
-            if (eventArgs.cancel) {
-                li.classList.remove(dropDownBaseClasses.selected);
-                return true;
-            }
+            this.trigger('select', eventArgs, (eventArgs: SelectEventArgs) => {
+                if (eventArgs.cancel) {
+                    li.classList.remove(dropDownBaseClasses.selected);
+                } else {
+                    this.selectEventCallback(li, e, preventSelect, selectedData, value);
+                    if (isSelection) { this.setSelectOptions(li, e); }
+                }
+            });
+        } else {
+            this.selectEventCallback(li, e, preventSelect, selectedData, value);
+            if (isSelection) { this.setSelectOptions(li, e); }
         }
+    }
+
+    private selectEventCallback(
+        li: Element,
+        e: MouseEvent | KeyboardEvent | TouchEvent,
+        preventSelect?: boolean,
+        selectedData?: string | number | boolean | { [key: string]: Object },
+        value?: string | number | boolean): void {
         this.previousItemData = (!isNullOrUndefined(this.itemData)) ? this.itemData : null;
         this.item = li as HTMLLIElement;
         this.itemData = selectedData;
@@ -1122,7 +1160,6 @@ export class DropDownList extends DropDownBase implements IInput {
         if (focusedItem) { removeClass([focusedItem], dropDownBaseClasses.focus); }
         li.setAttribute('aria-selected', 'true');
         this.activeIndex = this.getIndexByValue(value);
-        return false;
     }
 
     protected activeItem(li: Element): void {
@@ -1162,9 +1199,12 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected setSelection(li: Element, e: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         if (this.isValidLI(li) && !li.classList.contains(dropDownBaseClasses.selected)) {
-            let argsCancel: boolean = this.updateSelectedItem(li, e, false);
-            if (argsCancel) { return; }
+            this.updateSelectedItem(li, e, false, true);
+        } else {
+            this.setSelectOptions(li, e);
         }
+    }
+    private setSelectOptions(li: Element, e?: MouseEvent | KeyboardEventArgs | KeyboardEvent | TouchEvent): void {
         if (this.list) {
             this.removeHover();
         }
@@ -1198,9 +1238,10 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.valueTempElement.innerHTML = '';
         compiledString = compile(this.valueTemplate);
-        for (let item of compiledString(this.itemData)) {
+        for (let item of compiledString(this.itemData, null, null, this.valueTemplateId)) {
             this.valueTempElement.appendChild(item);
         }
+        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
     }
 
     protected removeSelection(): void {
@@ -1407,20 +1448,24 @@ export class DropDownList extends DropDownBase implements IInput {
                 baseEventArgs: e,
                 cancel: false
             };
-            this.trigger('filtering', eventArgs);
-            if (eventArgs.cancel) { return; }
-            if (!this.isCustomFilter && !eventArgs.preventDefaultAction) {
-                let filterQuery: Query = this.query ? this.query.clone() : new Query();
-                let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
-                if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
-                    filterQuery.where('', 'startswith', this.filterInput.value, true, this.ignoreAccent);
-                } else {
-                    let fields: FieldSettingsModel = this.fields;
-                    filterQuery.where(
-                        !isNullOrUndefined(fields.text) ? fields.text : '', 'startswith', this.filterInput.value, true, this.ignoreAccent);
+            this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+                if (!eventArgs.cancel && !this.isCustomFilter && !eventArgs.preventDefaultAction) {
+                    let filterQuery: Query = this.query ? this.query.clone() : new Query();
+                    let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
+                    if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
+                        filterQuery.where('', 'startswith', this.filterInput.value, true, this.ignoreAccent);
+                    } else {
+                        let fields: FieldSettingsModel = this.fields;
+                        filterQuery.where(
+                            !isNullOrUndefined(fields.text) ? fields.text : '',
+                            'startswith',
+                            this.filterInput.value,
+                            true,
+                            this.ignoreAccent);
+                    }
+                    this.filteringAction(this.dataSource, filterQuery, this.fields);
                 }
-                this.filteringAction(this.dataSource, filterQuery, this.fields);
-            }
+            });
         }
     }
     private filteringAction(
@@ -1428,6 +1473,9 @@ export class DropDownList extends DropDownBase implements IInput {
         query?: Query, fields?: FieldSettingsModel): void {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
+            if (this.filterInput.value.trim() !== '') {
+                this.filterVal = true;
+            }
             if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
@@ -1639,99 +1687,97 @@ export class DropDownList extends DropDownBase implements IInput {
             return;
         }
         let args: { [key: string]: boolean } = { cancel: false };
-        this.trigger('beforeOpen', args);
-        if (args.cancel) {
-            return;
-        }
-        let popupEle: HTMLElement = this.createElement('div', {
-            id: this.element.id + '_popup', className: 'e-ddl e-popup ' + (this.cssClass != null ? this.cssClass : '')
-        });
-        let searchBox: InputObject = this.setSearchBox(popupEle);
-        this.listHeight = formatUnit(this.popupHeight);
-        if (this.headerTemplate) {
-            this.setHeaderTemplate(popupEle);
-        }
-        append([this.list], popupEle);
-        if (this.footerTemplate) {
-            this.setFooterTemplate(popupEle);
-        }
-        document.body.appendChild(popupEle);
-        popupEle.style.visibility = 'hidden';
-        if (this.popupHeight !== 'auto') {
-            this.searchBoxHeight = 0;
-            if (!isNullOrUndefined(searchBox.container)) {
-                this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
-                this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
-            }
+        this.trigger('beforeOpen', args, (args: { [key: string]: boolean }) => {
+            let popupEle: HTMLElement = this.createElement('div', {
+                id: this.element.id + '_popup', className: 'e-ddl e-popup ' + (this.cssClass != null ? this.cssClass : '')
+            });
+            let searchBox: InputObject = this.setSearchBox(popupEle);
+            this.listHeight = formatUnit(this.popupHeight);
             if (this.headerTemplate) {
-                let height: number = Math.round(this.header.getBoundingClientRect().height);
-                this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                this.setHeaderTemplate(popupEle);
             }
+            append([this.list], popupEle);
             if (this.footerTemplate) {
-                let height: number = Math.round(this.footer.getBoundingClientRect().height);
-                this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                this.setFooterTemplate(popupEle);
             }
-            this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
-            popupEle.style.maxHeight = formatUnit(this.popupHeight);
-        } else {
-            popupEle.style.height = 'auto';
-        }
-        let offsetValue: number = 0;
-        let left: number;
-        if (!isNullOrUndefined(this.selectedLI) && (!isNullOrUndefined(this.activeIndex) && this.activeIndex >= 0)) {
-            this.setScrollPosition();
-        } else {
-            this.list.scrollTop = 0;
-        }
-        if (Browser.isDevice && (!this.allowFiltering && (this.getModuleName() === 'dropdownlist' ||
-            (this.isDropDownClick && this.getModuleName() === 'combobox')))) {
-            offsetValue = this.getOffsetValue(popupEle);
-            let firstItem: HTMLElement = this.isEmptyList() ? this.list : this.liCollections[0];
-            left = -(parseInt(getComputedStyle(firstItem).textIndent, 10) -
-                parseInt(getComputedStyle(this.inputElement).paddingLeft, 10) +
-                parseInt(getComputedStyle(this.inputElement.parentElement).borderLeftWidth, 10));
-        }
-        this.getFocusElement();
-        this.createPopup(popupEle, offsetValue, left);
-        this.checkCollision(popupEle);
-        if (Browser.isDevice) {
-            this.popupObj.element.classList.add(dropDownListClasses.device);
-            if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
-                && !this.allowFiltering && this.isDropDownClick)) {
-                this.popupObj.collision = { X: 'fit', Y: 'fit' };
+            document.body.appendChild(popupEle);
+            popupEle.style.visibility = 'hidden';
+            if (this.popupHeight !== 'auto') {
+                this.searchBoxHeight = 0;
+                if (!isNullOrUndefined(searchBox.container)) {
+                    this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
+                    this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
+                }
+                if (this.headerTemplate) {
+                    let height: number = Math.round(this.header.getBoundingClientRect().height);
+                    this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                }
+                if (this.footerTemplate) {
+                    let height: number = Math.round(this.footer.getBoundingClientRect().height);
+                    this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                }
+                this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
+                popupEle.style.maxHeight = formatUnit(this.popupHeight);
+            } else {
+                popupEle.style.height = 'auto';
             }
-            if (this.isFilterLayout()) {
-                this.popupObj.element.classList.add(dropDownListClasses.mobileFilter);
-                this.popupObj.position = { X: 0, Y: 0 };
-                this.popupObj.dataBind();
-                attributes(this.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
-                addClass([document.body, this.popupObj.element], dropDownListClasses.popupFullScreen);
-                this.setSearchBoxPosition();
-                this.backIconElement = searchBox.container.querySelector('.e-back-icon');
-                this.clearIconElement = searchBox.container.querySelector('.' + dropDownListClasses.clearIcon);
-                EventHandler.add(this.backIconElement, 'click', this.clickOnBackIcon, this);
-                EventHandler.add(this.clearIconElement, 'click', this.clearText, this);
+            let offsetValue: number = 0;
+            let left: number;
+            if (!isNullOrUndefined(this.selectedLI) && (!isNullOrUndefined(this.activeIndex) && this.activeIndex >= 0)) {
+                this.setScrollPosition();
+            } else {
+                this.list.scrollTop = 0;
             }
-        }
-        popupEle.style.visibility = 'visible';
-        addClass([popupEle], 'e-popup-close');
-        let scrollParentElements: HTMLElement[] = this.popupObj.getScrollableParent(this.inputWrapper.container);
-        for (let element of scrollParentElements) { EventHandler.add(element, 'scroll', this.scrollHandler, this); }
-        if (Browser.isDevice && this.isFilterLayout()) {
-            EventHandler.add(this.list, 'scroll', this.listScroll, this);
-        }
-        attributes(this.targetElement(), { 'aria-expanded': 'true' });
-        let inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
-        addClass([inputParent], [dropDownListClasses.inputFocus]);
-        let animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
-        this.beforePopupOpen = true;
-        let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
-        this.trigger('open', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
-        this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
+            if (Browser.isDevice && (!this.allowFiltering && (this.getModuleName() === 'dropdownlist' ||
+                (this.isDropDownClick && this.getModuleName() === 'combobox')))) {
+                offsetValue = this.getOffsetValue(popupEle);
+                let firstItem: HTMLElement = this.isEmptyList() ? this.list : this.liCollections[0];
+                left = -(parseInt(getComputedStyle(firstItem).textIndent, 10) -
+                    parseInt(getComputedStyle(this.inputElement).paddingLeft, 10) +
+                    parseInt(getComputedStyle(this.inputElement.parentElement).borderLeftWidth, 10));
+            }
+            this.getFocusElement();
+            this.createPopup(popupEle, offsetValue, left);
+            this.checkCollision(popupEle);
+            if (Browser.isDevice) {
+                this.popupObj.element.classList.add(dropDownListClasses.device);
+                if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
+                    && !this.allowFiltering && this.isDropDownClick)) {
+                    this.popupObj.collision = { X: 'fit', Y: 'fit' };
+                }
+                if (this.isFilterLayout()) {
+                    this.popupObj.element.classList.add(dropDownListClasses.mobileFilter);
+                    this.popupObj.position = { X: 0, Y: 0 };
+                    this.popupObj.dataBind();
+                    attributes(this.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
+                    addClass([document.body, this.popupObj.element], dropDownListClasses.popupFullScreen);
+                    this.setSearchBoxPosition();
+                    this.backIconElement = searchBox.container.querySelector('.e-back-icon');
+                    this.clearIconElement = searchBox.container.querySelector('.' + dropDownListClasses.clearIcon);
+                    EventHandler.add(this.backIconElement, 'click', this.clickOnBackIcon, this);
+                    EventHandler.add(this.clearIconElement, 'click', this.clearText, this);
+                }
+            }
+            popupEle.style.visibility = 'visible';
+            addClass([popupEle], 'e-popup-close');
+            let scrollParentElements: HTMLElement[] = this.popupObj.getScrollableParent(this.inputWrapper.container);
+            for (let element of scrollParentElements) { EventHandler.add(element, 'scroll', this.scrollHandler, this); }
+            if (Browser.isDevice && this.isFilterLayout()) {
+                EventHandler.add(this.list, 'scroll', this.listScroll, this);
+            }
+            attributes(this.targetElement(), { 'aria-expanded': 'true' });
+            let inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
+            addClass([inputParent], [dropDownListClasses.inputFocus]);
+            let animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
+            this.beforePopupOpen = true;
+            let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+            this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
+                if (!eventArgs.cancel) {
+                    addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
+                    this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
+                }
+            });
+        });
     }
     private checkCollision(popupEle: HTMLElement): void {
         if (!Browser.isDevice || (Browser.isDevice && !(this.getModuleName() === 'dropdownlist' || this.isDropDownClick))) {
@@ -1851,33 +1897,37 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private scrollBottom(isInitial?: boolean): void {
-        let currentOffset: number = this.list.offsetHeight;
-        let nextBottom: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
-        let nextOffset: number = this.list.scrollTop + nextBottom - currentOffset;
-        nextOffset = isInitial ? nextOffset + parseInt(getComputedStyle(this.list).paddingTop, 10) * 2 : nextOffset;
-        let boxRange: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
-        boxRange = this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
-            boxRange - this.fixedHeaderElement.offsetHeight : boxRange;
-        if (this.activeIndex === 0) {
-            this.list.scrollTop = 0;
-        } else if (nextBottom > currentOffset || !(boxRange > 0 && this.list.offsetHeight > boxRange)) {
-            this.list.scrollTop = nextOffset;
+        if (!isNullOrUndefined(this.selectedLI)) {
+            let currentOffset: number = this.list.offsetHeight;
+            let nextBottom: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
+            let nextOffset: number = this.list.scrollTop + nextBottom - currentOffset;
+            nextOffset = isInitial ? nextOffset + parseInt(getComputedStyle(this.list).paddingTop, 10) * 2 : nextOffset;
+            let boxRange: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
+            boxRange = this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
+                boxRange - this.fixedHeaderElement.offsetHeight : boxRange;
+            if (this.activeIndex === 0) {
+                this.list.scrollTop = 0;
+            } else if (nextBottom > currentOffset || !(boxRange > 0 && this.list.offsetHeight > boxRange)) {
+                this.list.scrollTop = nextOffset;
+            }
         }
     }
 
     private scrollTop(): void {
-        let nextOffset: number = this.selectedLI.offsetTop - this.list.scrollTop;
-        let nextBottom: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
-        nextOffset = this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
-            nextOffset - this.fixedHeaderElement.offsetHeight : nextOffset;
-        let boxRange: number = (this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop);
-        if (this.activeIndex === 0) {
-            this.list.scrollTop = 0;
-        } else if (nextOffset < 0) {
-            this.list.scrollTop = this.list.scrollTop + nextOffset;
-        } else if (!(boxRange > 0 && this.list.offsetHeight > boxRange)) {
-            this.list.scrollTop = this.selectedLI.offsetTop - (this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
-                this.fixedHeaderElement.offsetHeight : 0);
+        if (!isNullOrUndefined(this.selectedLI)) {
+            let nextOffset: number = this.selectedLI.offsetTop - this.list.scrollTop;
+            let nextBottom: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
+            nextOffset = this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
+                nextOffset - this.fixedHeaderElement.offsetHeight : nextOffset;
+            let boxRange: number = (this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop);
+            if (this.activeIndex === 0) {
+                this.list.scrollTop = 0;
+            } else if (nextOffset < 0) {
+                this.list.scrollTop = this.list.scrollTop + nextOffset;
+            } else if (!(boxRange > 0 && this.list.offsetHeight > boxRange)) {
+                this.list.scrollTop = this.selectedLI.offsetTop - (this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement) ?
+                    this.fixedHeaderElement.offsetHeight : 0);
+            }
         }
     }
     protected isEditTextBox(): boolean {
@@ -1963,16 +2013,18 @@ export class DropDownList extends DropDownBase implements IInput {
             delay: delay ? delay : 0
         };
         let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
-        this.trigger('close', eventArgs);
-        if (eventArgs.cancel) { return; }
-        if (this.getModuleName() === 'autocomplete') {
-            this.rippleFun();
-        }
-        if (this.isPopupOpen) {
-            this.popupObj.hide(new Animation(eventArgs.animation));
-        } else {
-            this.destroyPopup();
-        }
+        this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
+            if (!eventArgs.cancel) {
+                if (this.getModuleName() === 'autocomplete') {
+                    this.rippleFun();
+                }
+                if (this.isPopupOpen) {
+                    this.popupObj.hide(new Animation(eventArgs.animation));
+                } else {
+                    this.destroyPopup();
+                }
+            }
+        });
     }
 
     private destroyPopup(): void {
@@ -2079,9 +2131,10 @@ export class DropDownList extends DropDownBase implements IInput {
             addClass([this.footer], dropDownListClasses.footer);
         }
         compiledString = compile(this.footerTemplate);
-        for (let item of compiledString({})) {
+        for (let item of compiledString({}, null, null, this.footerTemplateId)) {
             this.footer.appendChild(item);
         }
+        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         append([this.footer], popupEle);
     }
 
@@ -2094,9 +2147,10 @@ export class DropDownList extends DropDownBase implements IInput {
             addClass([this.header], dropDownListClasses.header);
         }
         compiledString = compile(this.headerTemplate);
-        for (let item of compiledString({})) {
+        for (let item of compiledString({}, null, null, this.headerTemplateId)) {
             this.header.appendChild(item);
         }
+        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         let contentEle: Element = popupEle.querySelector('div.e-content');
         popupEle.insertBefore(this.header, contentEle);
     }
@@ -2161,17 +2215,14 @@ export class DropDownList extends DropDownBase implements IInput {
                     break;
                 case 'htmlAttributes': this.setHTMLAttributes();
                     break;
-                case 'width': setStyleAttribute(this.inputWrapper.container, { 'width': formatUnit(newProp.width) });
-                    break;
-                case 'placeholder': Input.setPlaceholder(newProp.placeholder, this.inputElement as HTMLInputElement);
-                    break;
+                case 'width': setStyleAttribute(this.inputWrapper.container, { 'width': formatUnit(newProp.width) }); break;
+                case 'placeholder': Input.setPlaceholder(newProp.placeholder, this.inputElement as HTMLInputElement); break;
                 case 'filterBarPlaceholder':
                     if (this.filterInput) { Input.setPlaceholder(newProp.filterBarPlaceholder, this.filterInput as HTMLInputElement); }
                     break;
                 case 'readonly':
                     if (this.getModuleName() !== 'dropdownlist') {
-                        Input.setReadonly(newProp.readonly, this.inputElement as HTMLInputElement);
-                    }
+                        Input.setReadonly(newProp.readonly, this.inputElement as HTMLInputElement); }
                     break;
                 case 'cssClass': this.setCssClass(newProp, oldProp); break;
                 case 'enableRtl': this.setEnableRtl(); break;
@@ -2182,7 +2233,9 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.renderList();
                     }
                     if (!this.initRemoteRender) {
+                        let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
                         let li: Element = this.getElementByText(newProp.text);
+                        if (formElement && this.filterVal) { li.classList.remove('e-active'); }
                         if (!this.checkValidLi(li)) {
                             if (this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
@@ -2225,12 +2278,14 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.updateInputFields();
                     }
                     break;
-                case 'footerTemplate': if (this.popupObj) { this.setFooterTemplate(this.popupObj.element); }
-                    break;
-                case 'headerTemplate': if (this.popupObj) { this.setHeaderTemplate(this.popupObj.element); }
-                    break;
+                case 'footerTemplate': if (this.popupObj) { this.setFooterTemplate(this.popupObj.element); } break;
+                case 'headerTemplate': if (this.popupObj) { this.setHeaderTemplate(this.popupObj.element); } break;
                 case 'valueTemplate':
-                    if (!isNullOrUndefined(this.itemData) && this.valueTemplate != null) { this.setValueTemplate(); }
+                    if (!isNullOrUndefined(this.itemData) && this.valueTemplate != null) { this.setValueTemplate(); } break;
+                case 'allowFiltering':
+                    if (this.allowFiltering) {
+                        this.actionCompleteData = { ulElement: this.ulElement,
+                        list: this.listData as { [key: string]: Object }[], isUpdated: true }; }
                     break;
                 case 'floatLabelType':
                     Input.removeFloating(this.inputWrapper);
@@ -2303,6 +2358,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @returns void.
      */
     public showPopup(): void {
+        this.filterVal = false;
         if (!this.enabled) {
             return;
         }
@@ -2335,6 +2391,8 @@ export class DropDownList extends DropDownBase implements IInput {
      * @returns void.
      */
     public hidePopup(): void {
+        let isResetItem: boolean = (this.getModuleName() === 'autocomplete') ? true : false;
+        this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
         if (this.isEscapeKey && this.getModuleName() === 'dropdownlist') {
             Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
             this.isEscapeKey = false;

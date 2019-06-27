@@ -52,7 +52,7 @@ export class StepAreaSeries extends LineBase {
                     currentPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, prevPoint.yValue, xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' +
-                        (currentPoint.x) + ' ' + (secondPoint.y) + 'L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+                        (currentPoint.x) + ' ' + (secondPoint.y) + ' L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
                 } else if (series.emptyPointSettings.mode === 'Gap') {
                     currentPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ';
@@ -79,6 +79,7 @@ export class StepAreaSeries extends LineBase {
         } else {
             direction = '';
         }
+
         options = new PathOption(
             series.chart.element.id + '_Series_' + series.index, series.interior,
             series.border.width, series.border.color, series.opacity, series.dashArray, direction

@@ -1,11 +1,12 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
-import { remove, extend } from '@syncfusion/ej2-base';
+import { remove, extend, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
 import { appendChildren } from '../base/util';
+
 
 /**
  * Edit render module is used to render grid edit row.
@@ -74,6 +75,7 @@ export class DialogEditRender {
             gObj.editSettings.dialog.params
         ));
         this.dialogObj.appendTo(this.dialog);
+        this.parent.applyBiggerTheme(this.dialogObj.element.parentElement);
     }
 
     private btnClick(e: MouseEvent): void {
@@ -90,6 +92,8 @@ export class DialogEditRender {
     }
 
     private destroy(args?: { requestType: string }): void {
+        let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
+        resetBlazorTemplate(editTemplateID, 'Template');
         this.parent.notify(events.destroyForm, {});
         this.parent.isEdit = false;
         this.parent.notify(events.toolbarRefresh, {});
@@ -105,8 +109,10 @@ export class DialogEditRender {
         let form: HTMLFormElement = args.form =
         this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
         if (this.parent.editSettings.template) {
-            let dummyData: Object = extend({}, args.rowData, {isAdd: !this.isEdit}, true);
-            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate'));
+            let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
+            let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
+            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+            updateBlazorTemplate(editTemplateID, 'Template');
             div.appendChild(form);
             return div;
         }

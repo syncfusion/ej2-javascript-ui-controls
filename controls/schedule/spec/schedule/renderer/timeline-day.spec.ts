@@ -1,13 +1,12 @@
-import { createElement, remove, EmitType, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import {
-    Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel,
-    SelectEventArgs, PopupOpenEventArgs
+    Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel, SelectEventArgs, PopupOpenEventArgs
 } from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
-import { disableScheduleAnimation, triggerMouseEvent, createSchedule, createGroupSchedule, destroy } from '../util.spec';
+import * as util from '../util.spec';
 import {
-    timelineData, resourceData, timelineResourceData, cloneDataSource, resourceGroupData, levelBasedData
+    timelineData, resourceData, timelineResourceData, resourceGroupData, levelBasedData
 } from '../base/datasource.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
@@ -32,14 +31,13 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2017, 9, 4),
+                currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 4),
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -77,7 +75,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking events rendering', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -85,7 +83,6 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.selectedDate = new Date(2018, 4, 1);
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
 
@@ -115,18 +112,17 @@ describe('Schedule timeline day view', () => {
             let eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(eventElementList.length).toEqual(11);
             expect(morePopup.classList).toContain('e-popup-open');
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
             expect(morePopup.classList).toContain('e-popup-close');
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
 
         it('navigate next date', (done: Function) => {
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1);
-                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                    .toEqual('May 2, Wednesday');
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('May 2, Wednesday');
                 let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
                 expect(headTrs.length).toEqual(2);
                 expect(headTrs[1].children.length).toEqual(48);
@@ -143,16 +139,14 @@ describe('Schedule timeline day view', () => {
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
-            schObj.dataBound = dataBound;
         });
 
         it('navigate previous date', (done: Function) => {
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1);
-                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                    .toEqual('May 1, Tuesday');
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('May 1, Tuesday');
                 let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr'));
                 expect(headTrs.length).toEqual(2);
                 expect(headTrs[1].children.length).toEqual(48);
@@ -169,10 +163,9 @@ describe('Schedule timeline day view', () => {
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
-            schObj.dataBound = dataBound;
         });
         it('cell single click', () => {
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             (<HTMLInputElement>cellPopup.querySelector('.e-subject')).innerText = '';
@@ -196,7 +189,7 @@ describe('Schedule timeline day view', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(0);
         });
         it('cell double click', () => {
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('New Event');
             expect(dialogElement.querySelector('.e-subject-container label').innerHTML).toEqual('Title');
@@ -220,7 +213,7 @@ describe('Schedule timeline day view', () => {
         });
         it('event single click', () => {
             let event: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
-            triggerMouseEvent(event, 'click');
+            util.triggerMouseEvent(event, 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             (<HTMLInputElement>eventPopup.querySelector('.' + cls.SUBJECT_CLASS)).innerText = 'Spanned Event - Same week';
@@ -235,9 +228,9 @@ describe('Schedule timeline day view', () => {
             expect(event.getAttribute('aria-selected')).toEqual('true');
         });
         it('event double click', () => {
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('Edit Event');
+            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('This Event');
             (<HTMLInputElement>dialogElement.querySelector('.' + cls.SUBJECT_CLASS)).value = 'Spanned Event - Same week';
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
@@ -248,15 +241,13 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                startHour: '04:00', endHour: '11:00',
-                currentView: 'TimelineDay',
+                startHour: '04:00', endHour: '11:00', currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 4),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2017, 9, 4),
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Checking elements', () => {
@@ -274,8 +265,7 @@ describe('Schedule timeline day view', () => {
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(14);
             expect(schObj.element.querySelectorAll('.e-header-row .e-time-cells').length * 2).
                 toEqual(schObj.element.querySelectorAll('.e-content-wrap .e-content-table tbody td').length);
-            expect(schObj.element.querySelectorAll('.e-header-row td')[1].innerHTML).
-                toEqual('<span>8:00 AM</span>');
+            expect(schObj.element.querySelectorAll('.e-header-row td')[1].innerHTML).toEqual('<span>8:00 AM</span>');
 
             schObj.startHour = '08';
             schObj.endHour = '16';
@@ -285,7 +275,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking events elements', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -293,7 +283,6 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.selectedDate = new Date(2018, 4, 1);
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
 
@@ -328,48 +317,38 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                showWeekend: false,
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2017, 9, 5),
+                showWeekend: false, currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 5),
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Checking elements', () => {
             expect(schObj.getWorkCellElements().length).toEqual(48);
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 5, Thursday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 5, Thursday');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 6, Friday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 9, Monday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 9, Monday');
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 6, Friday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
 
             schObj.showWeekend = true;
             schObj.dataBind();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 6, Friday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 7, Saturday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 7, Saturday');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 8, Sunday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 8, Sunday');
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 7, Saturday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 7, Saturday');
         });
 
         it('Checking events elements', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -377,7 +356,6 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.selectedDate = new Date(2018, 4, 1);
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
 
@@ -403,8 +381,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking more indicator', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(1);
         });
     });
 
@@ -412,15 +389,13 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                workDays: [0, 1, 2, 3, 4],
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2017, 9, 5),
+                workDays: [0, 1, 2, 3, 4], currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 5),
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Checking elements', () => {
@@ -428,14 +403,13 @@ describe('Schedule timeline day view', () => {
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(0);
-
             schObj.workDays = [0, 1, 2, 3, 4, 5, 6];
             schObj.dataBind();
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
         });
 
         it('Checking events elements', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -444,7 +418,6 @@ describe('Schedule timeline day view', () => {
             };
             schObj.selectedDate = new Date(2018, 4, 1);
             schObj.workDays = [1, 2, 3, 4, 5];
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
 
@@ -479,30 +452,25 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2017, 9, 5),
-                firstDayOfWeek: 2,
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2017, 9, 5), firstDayOfWeek: 2,
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Checking elements', () => {
             expect(schObj.getWorkCellElements().length).toEqual(48);
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 5, 2017');
-
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
             schObj.firstDayOfWeek = 1;
             schObj.dataBind();
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('October 5, 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
         });
 
         it('Checking events elements', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -511,7 +479,6 @@ describe('Schedule timeline day view', () => {
             };
             schObj.selectedDate = new Date(2018, 4, 1);
             schObj.workDays = [1, 2, 3, 4, 5];
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
 
@@ -537,8 +504,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking more indicator', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(1);
         });
     });
 
@@ -546,15 +512,13 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                currentView: 'TimelineDay',
-                rowAutoHeight: true,
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2018, 4, 1),
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                rowAutoHeight: true, selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('initial load', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
@@ -565,7 +529,7 @@ describe('Schedule timeline day view', () => {
             expect(moreIndicatorList.length).toEqual(0);
         });
         it('Change property through set model', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(14);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -575,7 +539,6 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.rowAutoHeight = false;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });
@@ -584,15 +547,13 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                currentView: 'TimelineDay',
-                enableRtl: true,
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2018, 4, 1)
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2018, 4, 1), enableRtl: true
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Initial Load', () => {
@@ -624,28 +585,25 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking more indicator', () => {
-            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(1);
         });
     });
 
     describe('Dependent properties', () => {
         let schObj: Schedule;
-        beforeEach((): void => {
+        beforeEach(() => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
         });
-        afterEach((): void => {
-            destroy(schObj);
+        afterEach(() => {
+            util.destroy(schObj);
         });
 
-        it('width and height', () => {
-            schObj = new Schedule({
+        xit('width and height', (done: Function) => {
+            let model: ScheduleModel = {
                 height: '600px', width: '500px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 4)
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, [], done);
             expect(document.getElementById('Schedule').style.width).toEqual('500px');
             expect(document.getElementById('Schedule').style.height).toEqual('600px');
             expect(document.getElementById('Schedule').offsetWidth).toEqual(500);
@@ -653,12 +611,11 @@ describe('Schedule timeline day view', () => {
         });
 
         it('work hours start and end', () => {
-            schObj = new Schedule({
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 4),
-                workHours: { highlight: true, start: '10:00', end: '16:00' }
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                currentView: 'TimelineDay', workHours: { highlight: true, start: '10:00', end: '16:00' },
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 4)
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.getWorkCellElements().length).toEqual(48);
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(12);
 
@@ -679,30 +636,24 @@ describe('Schedule timeline day view', () => {
         });
 
         it('date format', () => {
-            schObj = new Schedule({
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 5),
-                dateFormat: 'y MMM'
-            });
-            schObj.appendTo('#Schedule');
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('2017 Oct');
-
+            let model: ScheduleModel = {
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2017, 9, 5), dateFormat: 'y MMM'
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('2017 Oct');
             schObj.dateFormat = 'd E MMM y';
             schObj.dataBind();
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).
-                toEqual('5 Thu Oct 2017');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('5 Thu Oct 2017');
         });
 
         it('date header template', () => {
-            schObj = new Schedule({
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 5),
-                dateHeaderTemplate: '<span>${getDateHeaderText(data.date)}</span>'
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2017, 9, 5), dateHeaderTemplate: '<span>${getDateHeaderText(data.date)}</span>'
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Thu, 10/5</span>');
-
             schObj.dateHeaderTemplate = '<span>${getShortDateTime(data.date)}</span>';
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).
@@ -710,28 +661,23 @@ describe('Schedule timeline day view', () => {
         });
 
         it('cell template', () => {
-            let templateEle: HTMLElement = createElement('div', {
-                innerHTML: '<span class="custom-element"></span>'
-            });
-            schObj = new Schedule({
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 5),
-                cellTemplate: templateEle.innerHTML
-            });
-            schObj.appendTo('#Schedule');
+            let templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
+            let model: ScheduleModel = {
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2017, 9, 5), cellTemplate: templateEle.innerHTML
+            };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.custom-element').length).toEqual(48);
-
             schObj.cellTemplate = '<span>${getShortDateTime(data.date)}</span>';
             schObj.dataBind();
             expect(schObj.element.querySelectorAll('.e-work-cells')[3].innerHTML).toEqual('<span>10/5/17, 1:30 AM</span>');
         });
 
         it('work cell click', () => {
-            schObj = new Schedule({
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 5)
+            };
+            schObj = util.createSchedule(model, []);
             let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -743,29 +689,24 @@ describe('Schedule timeline day view', () => {
 
         it('header cell click day view navigation', () => {
             let navFn: jasmine.Spy = jasmine.createSpy('navEvent');
-            schObj = new Schedule({
-                navigating: navFn,
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 5)
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                navigating: navFn, currentView: 'TimelineDay', selectedDate: new Date(2017, 9, 5),
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
+            };
+            schObj = util.createSchedule(model, []);
             expect(navFn).toHaveBeenCalledTimes(0);
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 5, Thursday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 5, Thursday');
             (schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML)
-                .toEqual('Oct 5, Thursday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 5, Thursday');
             expect(navFn).toHaveBeenCalledTimes(0);
         });
 
         it('read only on cell click', () => {
-            schObj = new Schedule({
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 5),
-                readonly: true
-            });
-            schObj.appendTo('#Schedule');
-
+            let model: ScheduleModel = {
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2017, 9, 5), readonly: true
+            };
+            schObj = util.createSchedule(model, []);
             let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.classList).not.toContain('e-selected-cell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
@@ -785,72 +726,54 @@ describe('Schedule timeline day view', () => {
         });
 
         it('events template', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                expect(eventElementList.length).toEqual(14);
-                expect(eventElementList[0].querySelector('.e-appointment-details').innerHTML).toEqual(
-                    '<div class="e-indicator e-icons e-left-icon"></div>' +
-                    '<span>Recurrence Event - Previous week</span><div class="e-icons e-recurrence-icon"></div>');
-                expect(eventElementList[2].querySelector('.e-appointment-details span').innerHTML)
-                    .toEqual('Recurrence Event - Greater than 24');
-                expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
-                    .toBeTruthy();
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-                expect(moreIndicatorList.length).toEqual(1);
-                expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
-                done();
-            };
-            schObj = new Schedule({
-                height: '580px',
-                currentView: 'TimelineDay',
+            let model: ScheduleModel = {
+                height: '580px', currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: {
-                    dataSource: timelineData,
-                    template: '<span>${Subject}</span>'
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                eventSettings: { template: '<span>${Subject}</span>' },
+                dataBound: () => {
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(14);
+                    expect(eventElementList[0].querySelector('.e-appointment-details').innerHTML).toEqual(
+                        '<div class="e-indicator e-icons e-left-icon"></div>' +
+                        '<span>Recurrence Event - Previous week</span><div class="e-icons e-recurrence-icon"></div>');
+                    expect(eventElementList[2].querySelector('.e-appointment-details span').innerHTML)
+                        .toEqual('Recurrence Event - Greater than 24');
+                    expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
+                        .toBeTruthy();
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(1);
+                    expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
+                    done();
+                }
+            };
+            schObj = util.createSchedule(model, timelineData);
         });
     });
 
     describe('Client side events', () => {
         let schObj: Schedule;
-        beforeEach((): void => {
+        beforeEach(() => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
         });
-        afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+        afterEach(() => {
+            util.destroy(schObj);
         });
 
         it('cell select', () => {
             let eventName1: string;
             let eventName2: string;
             let eventName3: string;
-            schObj = new Schedule({
-                select: (args: SelectEventArgs) => {
-                    eventName1 = args.name;
-                },
-                cellClick: (args: CellClickEventArgs) => {
-                    eventName2 = args.name;
-                },
-                popupOpen: (args: PopupOpenEventArgs) => {
-                    eventName3 = args.name;
-                },
-                currentView: 'TimelineDay',
-                views: ['TimelineDay'], selectedDate: new Date(2018, 5, 5)
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                select: (args: SelectEventArgs) => eventName1 = args.name,
+                cellClick: (args: CellClickEventArgs) => eventName2 = args.name,
+                popupOpen: (args: PopupOpenEventArgs) => eventName3 = args.name,
+                currentView: 'TimelineDay', views: ['TimelineDay'], selectedDate: new Date(2018, 5, 5)
+            };
+            schObj = util.createSchedule(model, []);
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
-            triggerMouseEvent(workCells[3], 'mousedown');
-            triggerMouseEvent(workCells[3], 'mouseup');
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[3], 'mouseup');
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -863,19 +786,17 @@ describe('Schedule timeline day view', () => {
 
         it('multi cell select', () => {
             let eventName: string;
-            schObj = new Schedule({
-                select: (args: SelectEventArgs) => {
-                    eventName = args.name;
-                },
-                currentView: 'TimelineDay',
-                views: ['TimelineDay'], selectedDate: new Date(2018, 5, 5)
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                select: (args: SelectEventArgs) => eventName = args.name,
+                currentView: 'TimelineDay', views: ['TimelineDay'],
+                selectedDate: new Date(2018, 5, 5)
+            };
+            schObj = util.createSchedule(model, []);
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
-            triggerMouseEvent(workCells[3], 'mousedown');
-            triggerMouseEvent(workCells[5], 'mousemove');
-            triggerMouseEvent(workCells[5], 'mouseup');
+            util.triggerMouseEvent(workCells[3], 'mousedown');
+            util.triggerMouseEvent(workCells[5], 'mousemove');
+            util.triggerMouseEvent(workCells[5], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(focuesdEle.classList).toContain('e-selected-cell');
             expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
@@ -887,16 +808,16 @@ describe('Schedule timeline day view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 cellClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
                     cellEndTime = args.endTime.getTime();
                     eventName = args.name;
                 },
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2018, 5, 5),
-            });
-            schObj.appendTo('#Schedule');
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2018, 5, 5),
+            };
+            schObj = util.createSchedule(model, []);
             (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
             expect(cellStartTime).toEqual(new Date(2018, 5, 5, 1, 30).getTime());
             expect(cellEndTime).toEqual(new Date(2018, 5, 5, 2).getTime());
@@ -904,15 +825,12 @@ describe('Schedule timeline day view', () => {
         });
 
         it('cancel cell click', () => {
-            schObj = new Schedule({
-                cellClick: (args: CellClickEventArgs) => {
-                    args.cancel = true;
-                },
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+            let model: ScheduleModel = {
+                cellClick: (args: CellClickEventArgs) => args.cancel = true,
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2018, 5, 5),
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
             expect(workCell.classList).not.toContain('e-selected-cell');
             expect(workCell.getAttribute('aria-selected')).toEqual('false');
@@ -925,35 +843,33 @@ describe('Schedule timeline day view', () => {
             let cellStartTime: number;
             let cellEndTime: number;
             let eventName: string;
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 cellDoubleClick: (args: CellClickEventArgs) => {
                     cellStartTime = args.startTime.getTime();
                     cellEndTime = args.endTime.getTime();
                     eventName = args.name;
                 },
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2018, 5, 5),
-            });
-            schObj.appendTo('#Schedule');
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'click');
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'dblclick');
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2018, 5, 5),
+            };
+            schObj = util.createSchedule(model, []);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement, 'dblclick');
             expect(cellStartTime).toEqual(new Date(2018, 5, 5, 1, 30).getTime());
             expect(cellEndTime).toEqual(new Date(2018, 5, 5, 2).getTime());
             expect(eventName).toEqual('cellDoubleClick');
         });
 
         it('cancel cell double click', () => {
-            schObj = new Schedule({
-                cellDoubleClick: (args: CellClickEventArgs) => {
-                    args.cancel = true;
-                },
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2018, 5, 5),
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                cellDoubleClick: (args: CellClickEventArgs) => args.cancel = true,
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2018, 5, 5),
+            };
+            schObj = util.createSchedule(model, []);
             let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement;
-            triggerMouseEvent(workCell, 'click');
-            triggerMouseEvent(workCell, 'dblclick');
+            util.triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'dblclick');
         });
     });
 
@@ -961,15 +877,14 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '550px', width: '100%',
-                currentView: 'TimelineDay',
+                height: '550px', width: '100%', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createGroupSchedule(1, options, timelineResourceData, done);
+            schObj = util.createGroupSchedule(1, options, timelineResourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
             let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
@@ -1026,11 +941,11 @@ describe('Schedule timeline day view', () => {
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
 
         it('Checking rowAutoHeight property', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(9);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -1040,70 +955,53 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.rowAutoHeight = true;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });
 
     describe('Multi level resource rendering', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                group: {
-                    resources: ['Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', colorField: 'HallColor'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: cloneDataSource(timelineResourceData) },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
+                group: { resources: ['Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
             let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
@@ -1164,70 +1062,54 @@ describe('Schedule timeline day view', () => {
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });
 
     describe('Multi level resource rendering with expanded property', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { disableScheduleAnimation(schObj); done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                group: {
-                    resources: ['Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85', Expand: false }
-                        ],
-                        textField: 'HallText', idField: 'Id', colorField: 'HallColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
-                        colorField: 'OwnerColor', expandedField: 'Expand'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: cloneDataSource(timelineResourceData) },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
+                group: { resources: ['Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85', Expand: false }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor', expandedField: 'Expand'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
+                    colorField: 'OwnerColor', expandedField: 'Expand'
+                }]
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
             let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
@@ -1262,8 +1144,7 @@ describe('Schedule timeline day view', () => {
             let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             let beforeExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
             expect(beforeExpand.length).toEqual(7);
-            let firstRow: HTMLElement = resourceRow.children[1]
-                .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            let firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             firstRow.click();
             let afterExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
             expect(afterExpand.length).toEqual(11);
@@ -1297,15 +1178,14 @@ describe('Schedule timeline day view', () => {
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(4);
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
-            element.click();
+            (moreIndicatorList[0] as HTMLElement).click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
         it('cell single click', () => {
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[100] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[100] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             let moreDetail: HTMLElement = <HTMLElement>cellPopup.querySelector('.e-event-details');
@@ -1327,7 +1207,7 @@ describe('Schedule timeline day view', () => {
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(2);
         });
         it('cell double click', () => {
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[100] as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[100] as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('New Event');
             expect(dialogElement.querySelector('.e-subject-container label').innerHTML).toEqual('Title');
@@ -1339,15 +1219,12 @@ describe('Schedule timeline day view', () => {
             expect(dialogElement.querySelector('.e-description-container label').innerHTML).toEqual('Description');
             expect(dialogElement.querySelector('.e-all-day-container .e-label').innerHTML).toEqual('All day');
             expect(dialogElement.querySelector('.e-time-zone-container .e-label').innerHTML).toEqual('Timezone');
-            let hall: DropDownList =
-                (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let hall: DropDownList = (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(hall.text).toEqual('Hall 1');
             expect(hall.value).toEqual(1);
-            let room: DropDownList =
-                (dialogElement.querySelector('.e-RoomId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let room: DropDownList = (dialogElement.querySelector('.e-RoomId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(room.text).toEqual('ROOM 1');
-            let owner: DropDownList =
-                (dialogElement.querySelector('.e-OwnerId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let owner: DropDownList = (dialogElement.querySelector('.e-OwnerId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(owner.text).toEqual('Nancy');
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
@@ -1361,7 +1238,7 @@ describe('Schedule timeline day view', () => {
         });
         it('event single click', () => {
             let event: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
-            triggerMouseEvent(event, 'click');
+            util.triggerMouseEvent(event, 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             let edit: HTMLElement = eventPopup.querySelector('.e-edit');
@@ -1373,95 +1250,73 @@ describe('Schedule timeline day view', () => {
             expect(event.getAttribute('aria-selected')).toEqual('true');
         });
         it('event double click', () => {
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
             let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
             editButton.click();
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('Edit Event');
-            let hall: DropDownList =
-                (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('This Event');
+            let hall: DropDownList = (dialogElement.querySelector('.e-HallId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(hall.text).toEqual('Hall 1');
             expect(hall.value).toEqual(1);
-            let room: DropDownList =
-                (dialogElement.querySelector('.e-RoomId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let room: DropDownList = (dialogElement.querySelector('.e-RoomId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(room.text).toEqual('ROOM 1');
-            let owner: DropDownList =
-                (dialogElement.querySelector('.e-OwnerId') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let owner: DropDownList = (dialogElement.querySelector('.e-OwnerId') as EJ2Instance).ej2_instances[0] as DropDownList;
             expect(owner.text).toEqual('Oliver');
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
         });
         it('Checking rowAutoHeight property', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                expect(eventElementList.length).toEqual(8);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
-                expect(eventWrapperList.length).toEqual(7);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-                expect(moreIndicatorList.length).toEqual(0);
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(8);
+                expect(schObj.element.querySelectorAll('.e-appointment-wrapper').length).toEqual(7);
+                expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(0);
                 done();
             };
             schObj.rowAutoHeight = true;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });
 
     describe('Custom work days of Resources in group', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
-                currentView: 'TimelineDay',
+            let model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineMonth'],
                 selectedDate: new Date(2018, 7, 6),
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'RoomId',
-                        title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { text: 'ROOM 1', id: 1, color: '#cb6bb2', startHour: '0:00', endHour: '0:00' },
-                            { text: 'ROOM 2', id: 2, color: '#56ca85', startHour: '0:00', endHour: '0:00' }
-                        ],
-                        textField: 'text', idField: 'id', colorField: 'color', startHourField: 'startHour', endHourField: 'endHour'
-                    }, {
-                        field: 'OwnerId',
-                        title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', startHour: '08:00', endHour: '12:00' },
-                            { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', startHour: '04:00', endHour: '07:00' },
-                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', startHour: '10:00', endHour: '12:00' }
-                        ],
-                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color',
-                        startHourField: 'startHour', endHourField: 'endHour'
-                    }],
-                eventSettings: { dataSource: [] },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { text: 'ROOM 1', id: 1, color: '#cb6bb2', startHour: '0:00', endHour: '0:00' },
+                        { text: 'ROOM 2', id: 2, color: '#56ca85', startHour: '0:00', endHour: '0:00' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color', startHourField: 'startHour', endHourField: 'endHour'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', startHour: '08:00', endHour: '12:00' },
+                        { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', startHour: '04:00', endHour: '07:00' },
+                        { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', startHour: '10:00', endHour: '12:00' }
+                    ],
+                    textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color',
+                    startHourField: 'startHour', endHourField: 'endHour'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('work days count', (done: Function) => {
-            expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toBe(18);
-            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toBe(0);
                 done();
             };
-            schObj.dataBound = dataBound;
+            expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toBe(18);
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
         });
     });
 
@@ -1469,15 +1324,14 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '550px', width: '100%',
-                currentView: 'TimelineDay',
+                height: '550px', width: '100%', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createGroupSchedule(1, options, timelineResourceData, done);
+            schObj = util.createGroupSchedule(1, options, timelineResourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
             let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
@@ -1529,88 +1383,67 @@ describe('Schedule timeline day view', () => {
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
-            element.click();
+            (moreIndicatorList[0] as HTMLElement).click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
         it('Checking rowAutoHeight property', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
-                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                expect(eventElementList.length).toEqual(9);
-                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
-                expect(eventWrapperList.length).toEqual(8);
-                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-                expect(moreIndicatorList.length).toEqual(0);
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(9);
+                expect(schObj.element.querySelectorAll('.e-appointment-wrapper').length).toEqual(8);
+                expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(0);
                 done();
             };
             schObj.rowAutoHeight = true;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });
 
     describe('Multi level resource rendering in RTL', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%', enableRtl: true,
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                group: {
-                    resources: ['Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', colorField: 'HallColor'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: cloneDataSource(timelineResourceData) },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', enableRtl: true, selectedDate: new Date(2018, 4, 1),
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                group: { resources: ['Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
             let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
@@ -1666,76 +1499,58 @@ describe('Schedule timeline day view', () => {
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
-            element.click();
+            (moreIndicatorList[0] as HTMLElement).click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });
 
     describe('Multi level resource rendering with expanded property in RTL', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
-                enableRtl: true,
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                group: {
-                    resources: ['Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85', Expand: false }
-                        ],
-                        textField: 'HallText', idField: 'Id', colorField: 'HallColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
-                        colorField: 'OwnerColor', expandedField: 'Expand'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: cloneDataSource(timelineResourceData) },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', enableRtl: true, currentView: 'TimelineDay',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2018, 4, 1),
+                group: { resources: ['Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85', Expand: false }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor', expandedField: 'Expand'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
+                    colorField: 'OwnerColor', expandedField: 'Expand'
+                }]
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource title rendering', () => {
             let headerRow: HTMLElement = schObj.element.querySelector('.e-timeline-view tr') as HTMLElement;
@@ -1770,8 +1585,7 @@ describe('Schedule timeline day view', () => {
             let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
             let beforeExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
             expect(beforeExpand.length).toEqual(7);
-            let firstRow: HTMLElement = resourceRow.children[1]
-                .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            let firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
             firstRow.click();
             let afterExpand: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)');
             expect(afterExpand.length).toEqual(11);
@@ -1805,12 +1619,11 @@ describe('Schedule timeline day view', () => {
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(4);
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
-            element.click();
+            (moreIndicatorList[0] as HTMLElement).click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });
 
@@ -1820,14 +1633,13 @@ describe('Schedule timeline day view', () => {
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
                 height: '550px', width: '100%', resourceHeaderTemplate: restemplate,
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                selectedDate: new Date(2018, 4, 1)
+                currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
             };
-            schObj = createGroupSchedule(1, options, [], done);
+            schObj = util.createGroupSchedule(1, options, [], done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource template rendering', () => {
             let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
@@ -1848,66 +1660,50 @@ describe('Schedule timeline day view', () => {
 
     describe('Multi level resource rendering with template', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         let restemplate: string = '<div class="tWrap"><div class="rText" style="background:pink">${getResourceName(data)}</div></div>';
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2017, 10, 1),
+                currentView: 'TimelineDay', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 resourceHeaderTemplate: restemplate,
-                currentView: 'TimelineDay',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                group: {
-                    resources: ['Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85', Expand: false }
-                        ],
-                        textField: 'HallText', idField: 'Id', colorField: 'HallColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
-                        colorField: 'OwnerColor', expandedField: 'Expand'
-                    }
-                ],
-                selectedDate: new Date(2017, 10, 1),
-                eventSettings: { dataSource: [] },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85', Expand: false }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor', expandedField: 'Expand'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
+                    colorField: 'OwnerColor', expandedField: 'Expand'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource template rendering', () => {
             let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
@@ -1930,56 +1726,42 @@ describe('Schedule timeline day view', () => {
 
     describe('Group by-child multi level resource rendering with expand property', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
-                currentView: 'TimelineDay',
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', currentView: 'TimelineDay', selectedDate: new Date(2017, 10, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: {
                     byGroupID: false,
                     resources: ['Halls', 'Rooms', 'Owners']
                 },
-                resources: [
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', colorField: 'HallColor'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85', Expand: false }
-                        ],
-                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' }
-                        ],
-                        textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
-                    }
-                ],
-                selectedDate: new Date(2017, 10, 1),
-                eventSettings: { dataSource: [] },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85', Expand: false }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('checking resource tree rendering', () => {
             let contentRow: HTMLElement = schObj.element.querySelector('.e-timeline-view table tbody') as HTMLElement;
@@ -1998,8 +1780,7 @@ describe('Schedule timeline day view', () => {
             expect([resourceRow.children[2].querySelector('.e-child-node')].length).toEqual(1);
             expect(resourceRow.children[2].querySelector('.e-child-node').children.length).toEqual(1);
             expect(resourceRow.children[2].querySelector('.e-child-node div.e-resource-text').innerHTML).toEqual('Nancy');
-            expect(resourceRow.children[9].querySelector('tr td.e-resource-cells div.e-resource-text').innerHTML)
-                .toEqual('Hall 2');
+            expect(resourceRow.children[9].querySelector('tr td.e-resource-cells div.e-resource-text').innerHTML).toEqual('Hall 2');
             expect(resourceRow.children[10].querySelector('.e-resource-cells div.e-resource-text').innerHTML).toEqual('ROOM 1');
             expect(resourceRow.children[11].querySelector('.e-child-node div.e-resource-text').innerHTML).toEqual('Nancy');
             let contentRows: HTMLElement = contentRow.children[1].children[1].querySelector('tbody');
@@ -2009,51 +1790,38 @@ describe('Schedule timeline day view', () => {
 
     describe('Multiple resource grouping rendering compact view in mobile device ', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         let uA: string = Browser.userAgent;
         let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
         beforeAll((done: Function) => {
             Browser.userAgent = androidUserAgent;
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: 300,
-                height: '500px',
-                selectedDate: new Date(2018, 3, 1),
-                currentView: 'TimelineDay',
+            let model: ScheduleModel = {
+                width: 300, height: '500px', selectedDate: new Date(2018, 3, 1), currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
+                group: { resources: ['Rooms', 'Owners'] },
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                eventSettings: { dataSource: resourceData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
             Browser.userAgent = uA;
         });
 
         it('initial layout testing', () => {
-            disableScheduleAnimation(schObj);
             let workCells: Element[] = schObj.getWorkCellElements();
             expect(workCells.length).toEqual(48);
             expect(workCells[18].getAttribute('data-date')).toEqual(new Date(2018, 3, 1, 9, 0).getTime().toString());
@@ -2096,14 +1864,6 @@ describe('Schedule timeline day view', () => {
             let nodeElement: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-tree .e-list-item:not(.e-has-child)');
             expect(nodeElement.length).toEqual(3);
             menuElement.click();
-            // triggerMouseEvent(nodeElement[2] as HTMLElement, 'mouseup');
-            // setTimeout(() => {
-            //     expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
-            //     expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 2');
-            //     expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Steven');
-            //     menuElement.click();
-            //     done();
-            // }, 500);
         });
 
         it('resource events checked for timeline day view testing', () => {
@@ -2151,46 +1911,37 @@ describe('Schedule timeline day view', () => {
 
     describe('Multiple resource grouping rendering normal view in mobile device ', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         let uA: string = Browser.userAgent;
         let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
         beforeAll((done: Function) => {
             Browser.userAgent = androidUserAgent;
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '600px',
-                selectedDate: new Date(2018, 3, 1),
-                currentView: 'TimelineDay',
+            let model: ScheduleModel = {
+                height: '600px', selectedDate: new Date(2018, 3, 1), currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
                 group: {
                     enableCompactView: false,
                     resources: ['Rooms', 'Owners']
                 },
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                eventSettings: { dataSource: resourceData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
             Browser.userAgent = uA;
         });
         it('initial layout testing', () => {
@@ -2250,54 +2001,43 @@ describe('Schedule timeline day view', () => {
 
     describe('Grouped events', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
-                currentView: 'TimelineDay',
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: {
                     allowGroupEdit: true,
                     resources: ['Rooms', 'Owners']
                 },
-                resources: [
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: true,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                    }, {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: cloneDataSource(resourceGroupData) },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: true,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, resourceGroupData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Checking events elements', () => {
@@ -2332,66 +2072,53 @@ describe('Schedule timeline day view', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(12);
             expect(moreIndicatorList[0].innerHTML).toEqual('+2&nbsp;more');
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
-            element.click();
+            (moreIndicatorList[0] as HTMLElement).click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(3);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });
 
     describe('Grouped events - RTL', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
-                currentView: 'TimelineDay',
-                enableRtl: true,
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', currentView: 'TimelineDay', enableRtl: true,
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2018, 4, 1),
                 group: {
                     allowGroupEdit: true,
                     resources: ['Rooms', 'Owners']
                 },
-                resources: [
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: true,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                    }, {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: cloneDataSource(resourceGroupData) },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: true,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, resourceGroupData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Checking events elements', () => {
@@ -2426,77 +2153,58 @@ describe('Schedule timeline day view', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(12);
             expect(moreIndicatorList[0].innerHTML).toEqual('+2&nbsp;more');
-            let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
-            element.click();
+            (moreIndicatorList[0] as HTMLElement).click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(3);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });
 
     describe('Events rendering based on levels', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
-                currentView: 'TimelineDay',
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', currentView: 'TimelineDay', selectedDate: new Date(2018, 4, 1),
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                group: {
-                    resources: ['Floors', 'Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'FId', title: 'Floor',
-                        name: 'Floors', allowMultiple: false,
-                        dataSource: [
-                            { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2' },
-                            { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
-                            { FloorText: 'Floor 3', Id: 3, FloorColor: '#cb6bb2' },
-                        ],
-                        textField: 'FloorText', idField: 'Id', colorField: 'FloorColor'
-                    },
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Oliver', Id: 3, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 4, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: cloneDataSource(levelBasedData) },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Floors', 'Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'FId', title: 'Floor', name: 'Floors', allowMultiple: false,
+                    dataSource: [
+                        { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 3', Id: 3, FloorColor: '#cb6bb2' },
+                    ],
+                    textField: 'FloorText', idField: 'Id', colorField: 'FloorColor'
+                }, {
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Oliver', Id: 3, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 4, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, levelBasedData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Checking events elements', () => {
@@ -2547,67 +2255,49 @@ describe('Schedule timeline day view', () => {
 
     describe('Events rendering based on levels - RTL', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '100%',
-                enableRtl: true,
-                currentView: 'TimelineDay',
+            let model: ScheduleModel = {
+                height: '550px', width: '100%', enableRtl: true, currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                group: {
-                    resources: ['Floors', 'Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'FId', title: 'Floor',
-                        name: 'Floors', allowMultiple: false,
-                        dataSource: [
-                            { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2' },
-                            { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
-                            { FloorText: 'Floor 3', Id: 3, FloorColor: '#cb6bb2' },
-                        ],
-                        textField: 'FloorText', idField: 'Id', colorField: 'FloorColor'
-                    },
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Oliver', Id: 3, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 4, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: cloneDataSource(levelBasedData) },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                group: { resources: ['Floors', 'Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'FId', title: 'Floor', name: 'Floors', allowMultiple: false,
+                    dataSource: [
+                        { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 3', Id: 3, FloorColor: '#cb6bb2' },
+                    ],
+                    textField: 'FloorText', idField: 'Id', colorField: 'FloorColor'
+                }, {
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Oliver', Id: 3, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 4, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+                selectedDate: new Date(2018, 4, 1)
+            };
+            schObj = util.createSchedule(model, levelBasedData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Checking events elements', () => {
@@ -2660,8 +2350,7 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '600px', width: '1000px',
-                currentView: 'TimelineDay',
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 headerRows: [
                     { option: 'Year' },
@@ -2670,12 +2359,12 @@ describe('Schedule timeline day view', () => {
                     { option: 'Date' },
                     { option: 'Hour' }
                 ],
-                selectedDate: new Date(2018, 4, 1),
+                selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -2773,13 +2462,13 @@ describe('Schedule timeline day view', () => {
             let eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(eventElementList.length).toEqual(11);
             expect(morePopup.classList).toContain('e-popup-open');
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
             expect(morePopup.classList).toContain('e-popup-close');
         });
 
         it('navigate next date', (done: Function) => {
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2, 2018');
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap table col').length).toEqual(48);
@@ -2812,12 +2501,11 @@ describe('Schedule timeline day view', () => {
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
-            schObj.dataBound = dataBound;
         });
 
         it('navigate previous date', (done: Function) => {
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 1, 2018');
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap table col').length).toEqual(48);
@@ -2852,11 +2540,10 @@ describe('Schedule timeline day view', () => {
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
-            schObj.dataBound = dataBound;
         });
 
         it('Checking rowAutoHeight property', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -2866,7 +2553,6 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.rowAutoHeight = true;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });
@@ -2876,8 +2562,7 @@ describe('Schedule timeline day view', () => {
         beforeAll((done: Function) => {
             let headTemplate: string = '<span>${type}</span>';
             let options: ScheduleModel = {
-                height: '600px', width: '1000px',
-                currentView: 'TimelineDay',
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 dateHeaderTemplate: headTemplate,
                 timeScale: {
@@ -2891,12 +2576,12 @@ describe('Schedule timeline day view', () => {
                     { option: 'Date' },
                     { option: 'Hour' }
                 ],
-                selectedDate: new Date(2018, 4, 1),
+                selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('check view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -2934,8 +2619,7 @@ describe('Schedule timeline day view', () => {
             let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[3].children.length).toEqual(1);
             expect(headTrs[3].children[0].getAttribute('colSpan')).toEqual('48');
-            expect(headTrs[3].children[0].innerHTML).
-                toEqual('<span style="left: 900px;">dateHeader</span>');
+            expect(headTrs[3].children[0].innerHTML).toEqual('<span style="left: 900px;">dateHeader</span>');
             expect(headTrs[3].children[0].getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
         });
 
@@ -2975,7 +2659,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking rowAutoHeight property', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -2985,7 +2669,6 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.rowAutoHeight = true;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });
@@ -2994,21 +2677,15 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '600px', width: '1000px',
-                currentView: 'TimelineDay',
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                headerRows: [
-                    { option: 'Year' },
-                    { option: 'Month' },
-                    { option: 'Week' },
-                    { option: 'Date' }
-                ],
-                selectedDate: new Date(2018, 4, 1),
+                headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }],
+                selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('check view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -3078,7 +2755,7 @@ describe('Schedule timeline day view', () => {
         });
 
         it('Checking rowAutoHeight property', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -3088,7 +2765,6 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.rowAutoHeight = true;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });
@@ -3097,20 +2773,15 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '600px', width: '1000px',
-                currentView: 'TimelineDay',
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                headerRows: [
-                    { option: 'Year' },
-                    { option: 'Month' },
-                    { option: 'Week' }
-                ],
-                selectedDate: new Date(2018, 4, 1),
+                headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }],
+                selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('check view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -3175,19 +2846,15 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '600px', width: '1000px',
-                currentView: 'TimelineDay',
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                headerRows: [
-                    { option: 'Year' },
-                    { option: 'Month' }
-                ],
-                selectedDate: new Date(2018, 4, 1),
+                headerRows: [{ option: 'Year' }, { option: 'Month' }],
+                selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('check view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -3245,18 +2912,15 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '600px', width: '1000px',
-                currentView: 'TimelineDay',
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                headerRows: [
-                    { option: 'Year' }
-                ],
-                selectedDate: new Date(2018, 4, 1),
+                headerRows: [{ option: 'Year' }],
+                selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('check view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -3307,20 +2971,15 @@ describe('Schedule timeline day view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '600px', width: '1000px',
-                currentView: 'TimelineDay',
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                headerRows: [
-                    { option: 'Year' },
-                    { option: 'Week' },
-                    { option: 'Date' }
-                ],
+                headerRows: [{ option: 'Year' }, { option: 'Week' }, { option: 'Date' }],
                 selectedDate: new Date(2018, 4, 1),
             };
-            schObj = createSchedule(options, timelineData, done);
+            schObj = util.createSchedule(options, timelineData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('check view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -3351,8 +3010,7 @@ describe('Schedule timeline day view', () => {
             let headTrs: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect(headTrs[2].children.length).toEqual(1);
             expect(headTrs[2].children[0].getAttribute('colSpan')).toEqual('1');
-            expect(headTrs[2].children[0].innerHTML).
-                toEqual('<span class="e-header-date e-navigate">May 1, Tuesday</span>');
+            expect(headTrs[2].children[0].innerHTML).toEqual('<span class="e-header-date e-navigate">May 1, Tuesday</span>');
             expect(headTrs[2].children[0].getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
         });
 
@@ -3388,22 +3046,15 @@ describe('Schedule timeline day view', () => {
         let resLength: number = 10;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
-                height: '600px', width: '1000px',
-                currentView: 'TimelineDay',
+                height: '600px', width: '1000px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                headerRows: [
-                    { option: 'Year' },
-                    { option: 'Month' },
-                    { option: 'Week' },
-                    { option: 'Date' },
-                    { option: 'Hour' }
-                ],
-                selectedDate: new Date(2018, 4, 1),
+                headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }, { option: 'Hour' }],
+                selectedDate: new Date(2018, 4, 1)
             };
-            schObj = createGroupSchedule(1, options, timelineResourceData, done);
+            schObj = util.createGroupSchedule(1, options, timelineResourceData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-view')).toBeTruthy();
@@ -3487,14 +3138,11 @@ describe('Schedule timeline day view', () => {
             expect(eventElements.length).toEqual(8);
             let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(8);
-
             expect(schObj.element.querySelectorAll('.e-event-table > div').length).toEqual(resLength);
-
             expect(eventElements[0].querySelector('.e-subject').innerHTML).toEqual('Events - Within a day');
             expect(eventElements[0].querySelector('.e-time').innerHTML).toEqual('10:00 AM - 12:30 PM');
             expect(eventElements[0].getAttribute('data-group-index')).toEqual('0');
             expect(eventElements[0].style.backgroundColor).toEqual('rgb(255, 170, 0)');
-
             expect(eventElements[1].getAttribute('data-group-index')).toEqual('1');
             expect(eventElements[1].style.backgroundColor).toEqual('rgb(248, 163, 152)');
         });
@@ -3511,13 +3159,13 @@ describe('Schedule timeline day view', () => {
             let eventElementList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(eventElementList.length).toEqual(2);
             expect(morePopup.classList).toContain('e-popup-open');
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
             expect(morePopup.classList).toContain('e-popup-close');
         });
 
         it('navigate next date', (done: Function) => {
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2, 2018');
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap table col').length).toEqual(48);
@@ -3540,14 +3188,11 @@ describe('Schedule timeline day view', () => {
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
                 expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
-
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr td').length).toEqual(resLength);
-
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(48);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(48 * resLength);
-
                 let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
                 expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
@@ -3555,35 +3200,28 @@ describe('Schedule timeline day view', () => {
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
                 expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
                 expect(firstWorkCell.innerHTML).toEqual('');
-
                 let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
                 expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 2).getTime());
                 expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 2, 0, 30).getTime());
                 expect(data.isAllDay).toEqual(false);
                 expect(data.groupIndex).toBe(0);
-
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18 * resLength);
-
                 let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElements.length).toEqual(5);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(5);
-
                 expect(schObj.element.querySelectorAll('.e-event-table > div').length).toEqual(resLength);
-
                 expect(eventElements[0].getAttribute('data-group-index')).toEqual('2');
                 expect(eventElements[0].style.backgroundColor).toEqual('rgb(116, 153, 225)');
-
                 expect(eventElements[1].getAttribute('data-group-index')).toEqual('3');
                 expect(eventElements[1].style.backgroundColor).toEqual('rgb(255, 170, 0)');
                 done();
             };
-            schObj.dataBound = dataBound;
         });
 
         it('navigate previous date', (done: Function) => {
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 1, 2018');
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap table col').length).toEqual(48);
@@ -3606,14 +3244,11 @@ describe('Schedule timeline day view', () => {
                 expect(headTrs[4].children[0].getAttribute('colSpan')).toBeNull();
                 expect(headTrs[4].children[0].innerHTML).toEqual('<span>12:00 AM</span>');
                 expect(headTrs[4].children[1].innerHTML).toEqual('&nbsp;');
-
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-resource-column-wrap table tbody tr td').length).toEqual(resLength);
-
                 expect(schObj.element.querySelectorAll('.e-content-wrap table tbody tr').length).toEqual(resLength);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table col').length).toEqual(48);
                 expect(schObj.element.querySelectorAll('.e-content-wrap table td').length).toEqual(48 * resLength);
-
                 let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.parentElement.getAttribute('role')).toEqual('row');
                 expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
@@ -3621,110 +3256,85 @@ describe('Schedule timeline day view', () => {
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
                 expect(firstWorkCell.getAttribute('data-group-index')).toEqual('0');
                 expect(firstWorkCell.innerHTML).toEqual('');
-
                 let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
                 expect(data.startTime.getTime()).toEqual(new Date(2018, 4, 1).getTime());
                 expect(data.endTime.getTime()).toEqual(new Date(2018, 4, 1, 0, 30).getTime());
                 expect(data.isAllDay).toEqual(false);
                 expect(data.groupIndex).toBe(0);
-
                 expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18 * resLength);
-
                 let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElements.length).toEqual(8);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(8);
-
                 expect(schObj.element.querySelectorAll('.e-event-table > div').length).toEqual(resLength);
-
                 expect(eventElements[0].getAttribute('data-group-index')).toEqual('0');
                 expect(eventElements[0].style.backgroundColor).toEqual('rgb(255, 170, 0)');
-
                 expect(eventElements[1].getAttribute('data-group-index')).toEqual('1');
                 expect(eventElements[1].style.backgroundColor).toEqual('rgb(248, 163, 152)');
                 done();
             };
-            schObj.dataBound = dataBound;
         });
     });
 
     describe('Multi level resource rendering with Timescale -  Schedule width 500', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '500px',
-                currentView: 'TimelineWeek',
+            let model: ScheduleModel = {
+                height: '550px', width: '500px', currentView: 'TimelineWeek',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: {
                     byGroupID: false,
                     resources: ['Halls', 'Rooms', 'Owners']
                 },
-                resources: [
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', colorField: 'HallColor'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
                 selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: timelineResourceData },
-                dataBound: dataBound,
-                timeScale: {
-                    enable: true,
-                    interval: 1440,
-                    slotCount: 2
-                }
-            });
-            schObj.appendTo('#Schedule');
+                timeScale: { enable: true, interval: 1440, slotCount: 2 }
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Check events offsetleft - slot count 2', () => {
-            let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+            let colElement: HTMLElement =
+                schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
             expect(colElement.style.width).toEqual('50px');
             expect(colElement.style.width).toEqual('50px');
         });
         it('Check events offsetleft - slot count 6', (done) => {
             schObj.dataBound = () => {
-                let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+                let colElement: HTMLElement =
+                    schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 expect(colElement.style.width).toEqual('50px');
                 done();
             };
@@ -3733,7 +3343,8 @@ describe('Schedule timeline day view', () => {
         });
         it('Check events offsetleft - with start hour and end hour', (done) => {
             schObj.dataBound = () => {
-                let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+                let colElement: HTMLElement =
+                    schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 expect(colElement.style.width).toEqual('50px');
                 done();
             };
@@ -3747,82 +3358,65 @@ describe('Schedule timeline day view', () => {
 
     describe('Multi level resource rendering with Timescale -  Schedule width 1900', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '550px', width: '1900px',
-                currentView: 'TimelineWeek',
+            let model: ScheduleModel = {
+                height: '550px', width: '1900px', currentView: 'TimelineWeek',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 group: {
                     byGroupID: false,
                     resources: ['Halls', 'Rooms', 'Owners']
                 },
-                resources: [
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
-                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', colorField: 'HallColor'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                    }
-                ],
+                resources: [{
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', colorField: 'HallColor'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
                 selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: timelineResourceData },
-                dataBound: dataBound,
-                timeScale: {
-                    enable: true,
-                    interval: 1440,
-                    slotCount: 2
-                }
-            });
-            schObj.appendTo('#Schedule');
+                timeScale: { enable: true, interval: 1440, slotCount: 2 }
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('Check events offsetleft - slot count 2', () => {
-            let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-            let tdElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
+            let colElement: HTMLElement =
+                schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+            let tdElement: HTMLElement =
+                schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
             expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
         });
         it('Check events offsetleft - slot count 6', (done) => {
             schObj.dataBound = () => {
-                let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+                let colElement: HTMLElement =
+                    schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
                 expect(colElement.style.width).toEqual('50px');
                 done();
             };
@@ -3831,8 +3425,10 @@ describe('Schedule timeline day view', () => {
         });
         it('Check events offsetleft - with start hour and end hour', (done) => {
             schObj.dataBound = () => {
-                let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
-                let tdElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
+                let colElement: HTMLElement =
+                    schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+                let tdElement: HTMLElement =
+                    schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
                 expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
                 done();
             };

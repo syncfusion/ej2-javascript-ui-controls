@@ -43,7 +43,7 @@ describe('Numerictextbox Control', () => {
             document.body.appendChild(divElement);
             numerictextbox1 = new NumericTextBox({ floatLabelType: 'Never' });
             numerictextbox1.appendTo('#divElement');
-            expect(document.getElementById('divElement').classList.contains('e-input')).toEqual(true);
+            expect(numerictextbox1.element.classList.contains('e-input')).toEqual(true);
         });
         it('Control class testing without options', () => {
             numerictextbox = new NumericTextBox();
@@ -516,6 +516,28 @@ describe('Numerictextbox Control', () => {
             expect(numerictextbox.inputWrapper.container.parentElement.hasAttribute('name')).toBe(false);
             expect(numerictextbox.element.hasAttribute('name')).toBe(false);
             expect(numerictextbox.hiddenInput.getAttribute('name')).toBe('sample');
+        });
+    });
+
+    describe('Checking ID attribute in wrapper for angular platform', () => {
+        let numerictextbox: any;
+        beforeEach((): void => {
+            numerictextbox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('EJS-NUMERICTEXTBOX', { id: 'Numeric' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Check id attribute in wrapper and element', () => {
+            numerictextbox = new NumericTextBox();
+            numerictextbox.appendTo('#Numeric');
+            expect(numerictextbox.inputWrapper.container.parentElement.getAttribute('id')).toBe('Numeric');
+            expect(numerictextbox.element.hasAttribute('id')).toBe(false);
+            expect(numerictextbox.hiddenInput.hasAttribute('id')).toBe(false);
         });
     });
 
@@ -4496,6 +4518,228 @@ describe('Change Event testing', () => {
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('35.00');
         });
 
+    });
+
+    describe('HTML attributes at inline element testing', () => {
+        let numerictextbox: any;
+        beforeEach((): void => {
+            numerictextbox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumeric' });
+            ele.setAttribute('placeholder','Enter a number');
+            ele.setAttribute('readonly', '');
+            ele.setAttribute('disabled', '');
+            ele.setAttribute('value', '50');
+            ele.setAttribute('min', '40');
+            ele.setAttribute('max', '90');
+            ele.setAttribute('step' , '2');
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Inline element testing', () => {
+            numerictextbox = new NumericTextBox();
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.placeholder).toBe("Enter a number");
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(true);
+            expect(numerictextbox.element.hasAttribute('enabled')).toBe(false);
+            expect(numerictextbox.element.getAttribute('value')).toBe('50.00');
+            expect(numerictextbox.element.getAttribute('min')).toBe('40');
+            expect(numerictextbox.element.getAttribute('max')).toBe('90');
+            expect(numerictextbox.element.getAttribute('step')).toBe('2');
+        });
+        it('Inline and API testing', () => {
+            numerictextbox = new NumericTextBox({placeholder:"Enter your mark", readonly: false, enabled: true, value: 70, min:30, max:80, step:5});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.placeholder).toBe("Enter your mark");
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(false);
+            expect(numerictextbox.element.hasAttribute('disabled')).toBe(false);
+            expect(numerictextbox.element.getAttribute('value')).toBe('70.00');
+            expect(numerictextbox.min).toBe(30);
+            expect(numerictextbox.max).toBe(80);
+            expect(numerictextbox.step).toBe(5);
+        });
+        it('Inline and html attributes API testing', () => {
+            numerictextbox = new NumericTextBox({ htmlAttributes:{placeholder:"Number of states", readonly: "false", disabled: "false", value: "100", min: "30", max: "110", step: "7"}});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.placeholder).toBe("Number of states");
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(false);
+            expect(numerictextbox.element.hasAttribute('disabled')).toBe(false);
+            expect(numerictextbox.element.getAttribute('value')).toBe('100.00');
+            expect(numerictextbox.element.min).toBe('30');
+            expect(numerictextbox.element.max).toBe('110');
+            expect(numerictextbox.step).toBe(7);
+        });
+        it('Inline, API and html attributes API testing', () => {
+            numerictextbox = new NumericTextBox({ htmlAttributes:{placeholder:"Number of states", readonly: "true", disabled: "", value: "100", min: "30", max: "110", step: "7"}, placeholder: "Enter your mark", readonly: false, enabled: true, value: 70, min:30, max:80, step:5});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.placeholder).toBe("Enter your mark");
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(false);
+            expect(numerictextbox.element.hasAttribute('enabled')).toBe(false);
+            expect(numerictextbox.element.getAttribute('value')).toBe('70.00');
+            expect(numerictextbox.min).toBe(30);
+            expect(numerictextbox.max).toBe(80);
+            expect(numerictextbox.step).toBe(5);
+        });
+    });
+    
+    describe('HTML attribute API testing', () => {
+        let numerictextbox: any;
+        beforeEach((): void => {
+            numerictextbox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumeric' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Inline and API testing', () => {
+            numerictextbox = new NumericTextBox({placeholder:"Enter your mark", readonly: false, enabled: true, value: 70, min:30, max: 80, step: 5});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.placeholder).toBe("Enter your mark");
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(false);
+            expect(numerictextbox.element.hasAttribute('disabled')).toBe(false);
+            expect(numerictextbox.element.getAttribute('value')).toBe('70.00');
+            expect(numerictextbox.min).toBe(30);
+            expect(numerictextbox.max).toBe(80);
+            expect(numerictextbox.step).toBe(5);
+        });
+        it('Inline and html attributes API testing', () => {
+            numerictextbox = new NumericTextBox({ htmlAttributes:{placeholder:"Number of states", readonly: "false", disabled: "false", value: "100", min: "30", max: "110", step: "7"}});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.placeholder).toBe("Number of states");
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(false);
+            expect(numerictextbox.element.hasAttribute('disabled')).toBe(false);
+            expect(numerictextbox.element.getAttribute('value')).toBe('100.00');
+            expect(numerictextbox.element.min).toBe('30');
+            expect(numerictextbox.element.max).toBe('110');
+            expect(numerictextbox.step).toBe(7);
+        });
+        it('Inline, API and html attributes API testing', () => {
+            numerictextbox = new NumericTextBox({ htmlAttributes:{placeholder:"Number of states", readonly: "true", disabled: "", value: "100", step: "7"}, placeholder: "Enter your mark", readonly: false, enabled: true, value: 70, step: 5});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.placeholder).toBe("Enter your mark");
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(false);
+            expect(numerictextbox.element.hasAttribute('enabled')).toBe(false);
+            expect(numerictextbox.element.getAttribute('value')).toBe('70.00');
+            expect(numerictextbox.step).toBe(5);
+        });
+        it('Other attribute testing with htmlAttributes API', () => {
+            numerictextbox = new NumericTextBox({ htmlAttributes:{ class:"test", name:"numeric", title:"sample", style: 'background-color:yellow'}});
+            numerictextbox.appendTo('#tsNumeric');
+            numerictextbox.updateHTMLAttrToWrapper();
+            expect(numerictextbox.hiddenInput.getAttribute('name')).toBe('numeric');
+            expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('sample');
+            expect(numerictextbox.inputWrapper.container.getAttribute('class')).toBe('test');
+            expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            numerictextbox = new NumericTextBox({});
+            numerictextbox.appendTo('#tsNumeric');
+            numerictextbox.htmlAttributes = {  class:"test", title: 'sample', disabled: 'disabled', readonly: 'readonly', placeholder: "Number of states", style: 'background-color:yellow'};
+            numerictextbox.dataBind();
+            numerictextbox.updateHTMLAttrToElement();
+            numerictextbox.updateHTMLAttrToWrapper();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe('Number of states');
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(true);
+            expect(numerictextbox.element.hasAttribute('disabled')).toBe(true);
+            expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('sample');
+            expect(numerictextbox.inputWrapper.container.getAttribute('class')).toBe('test');
+            expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+        });
+    });
+
+    describe('HTML attribute API dynamic testing', () => {
+        let numerictextbox: any;
+        beforeEach((): void => {
+            numerictextbox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumeric' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            numerictextbox = new NumericTextBox({ htmlAttributes:{placeholder:"Enter a name", readonly: "true", disabled: "true", value: "100", max: "50", min: "10", class: "test", title:"sample", style: 'background-color:yellow'}});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe('Enter a name');
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(true);
+            expect(numerictextbox.element.hasAttribute('disabled')).toBe(true);
+            expect(numerictextbox.element.getAttribute('value')).toBe('50.00');
+            expect(numerictextbox.element.min).toBe('10');
+            expect(numerictextbox.element.max).toBe('50');
+            expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('sample');
+            expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+            numerictextbox.htmlAttributes = { placeholder:"Enter a number", readonly: "false", disabled: "false", value: "50", type: "number", max: "60", min: "5", class: "multiple", title:"heading", style: 'background-color:red'};
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe('Enter a number');
+            expect(numerictextbox.element.hasAttribute('readonly')).toBe(false);
+            expect(numerictextbox.element.hasAttribute('disabled')).toBe(false);
+            expect(numerictextbox.element.getAttribute('value')).toBe('50');
+            expect(numerictextbox.element.min).toBe('5');
+            expect(numerictextbox.element.max).toBe('60');
+            expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('heading');
+            expect(numerictextbox.inputWrapper.container.getAttribute('class')).toBe('multiple');
+            expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
+        });
+        it('Placeholder testing in auto case', () => {
+            numerictextbox = new NumericTextBox({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            numerictextbox.htmlAttributes = { placeholder:"choose a date"};
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            numerictextbox.floatLabelType = "Always";
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            numerictextbox.floatLabelType = "Never";
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in always case', () => {
+            numerictextbox = new NumericTextBox({ floatLabelType: "Always", htmlAttributes:{placeholder:"Enter a name" }});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            numerictextbox.htmlAttributes = { placeholder:"choose a date"};
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            numerictextbox.floatLabelType = "Always";
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            numerictextbox.floatLabelType = "Never";
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in never case', () => {
+            numerictextbox = new NumericTextBox({ floatLabelType: "Never", htmlAttributes:{placeholder:"Enter a name" }});
+            numerictextbox.appendTo('#tsNumeric');
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe('Enter a name');
+            numerictextbox.htmlAttributes = { placeholder:"choose a date"};
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe('choose a date');
+            numerictextbox.floatLabelType = "Always";
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            numerictextbox.floatLabelType = "Never";
+            numerictextbox.dataBind();
+            expect(numerictextbox.element.getAttribute('placeholder')).toBe('choose a date');
+        });
     });
 
     describe('Keyboard navigation key validation', () => {

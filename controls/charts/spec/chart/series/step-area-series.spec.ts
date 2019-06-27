@@ -15,6 +15,7 @@ import { DataLabel } from '../../../src/chart/series/data-label';
 import { unbindResizeEvents } from '../base/data.spec';
 import { tooltipData1,negativeDataPoint, categoryData,datetimeData,tooltipData2, rotateData1, rotateData2 } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
+import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { Selection } from '../../../src/chart/user-interaction/selection';
@@ -24,8 +25,8 @@ import { Axis } from '../../../src/chart/axis/axis';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
-Chart.Inject(StepAreaSeries,Category,Legend,DateTime,Tooltip,Logarithmic,DataLabel,Legend,Crosshair);
+import {IAnimationCompleteEventArgs } from '../../../src/chart/model/chart-interface';
+Chart.Inject(StepAreaSeries, Category, DataEditing, Legend, DateTime, Tooltip, Logarithmic, DataLabel, Legend, Crosshair);
 let data: any = tooltipData1;
 let data2:any=tooltipData2;
 let negativPoint: any = negativeDataPoint;
@@ -740,6 +741,95 @@ describe('Chart Control', () => {
             chart.series[0].animation.enable = true;
             chart.series[1].animation.enable = true;
             chart.refresh();
+        });
+    });
+
+        /**
+     * Cheacking point drag and drop with step area series
+     */
+    describe('Step area series with drag and drop support', () => {
+        let chartObj: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element1: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element1);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        labelFormat: 'y',
+                        intervalType: 'Years',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 }
+                    },
+                
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'StepArea',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24 },
+                                { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                                { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                                { x: new Date(2011, 0, 1), y: 70 }
+                            ],
+                            animation: { enable: false },
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 20,
+                                height: 20
+                            },
+                            yName: 'y', name: 'Germany', dragSettings: { enable: true }
+                        }
+                    ],
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                    //Initializing User Interaction Tooltip
+                    tooltip: {
+                        enable: true
+                    },
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element1.remove();
+        });
+
+        it('Step area series drag and drop with marker true', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('container_Series_0_Point_3_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + element1.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + element1.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 208);
+                let yValue: number = chartObj.visibleSeries[0].points[3].yValue;
+                expect(yValue == 100 || yValue == 99.12).toBe(true);
+                chartObj.loaded = null;
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
         });
     });
     it('memory leak', () => {

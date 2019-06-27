@@ -3,6 +3,7 @@ import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardE
 import { attributes, Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
 import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
@@ -51,6 +52,7 @@ const RTL: string = 'e-rtl';
 
 const POPUP: string = 'e-menu-popup';
 
+const TEMPLATE_PROPERTY: string = 'Template';
 /**
  * Menu animation effects
  */
@@ -208,10 +210,25 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected hamburgerMode: boolean;
     protected title: string;
     private rippleFn: Function;
-
+    private uList: HTMLElement;
+    private lItem: Element;
+    private popupObj: Popup;
+    private popupWrapper: HTMLElement;
+    private isNestedOrVertical: boolean;
+    private top: number;
+    private left: number;
+    private keyType: string;
+    private showSubMenu: boolean;
+    private action: string;
+    private cli: Element;
+    private cliIdx: number;
+    private isClosed: boolean;
+    private liTrgt: Element;
+    private isMenusClosed: boolean;
     /**
      * Triggers while rendering each menu item.
      * @event
+     * @blazorProperty 'OnItemRender'
      */
     @Event()
     public beforeItemRender: EmitType<MenuEventArgs>;
@@ -219,6 +236,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers before opening the menu item.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -226,6 +244,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers while opening the menu item.
      * @event
+     * @blazorProperty 'Opened'
      */
     @Event()
     public onOpen: EmitType<OpenCloseMenuEventArgs>;
@@ -233,6 +252,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers before closing the menu.
      * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -240,6 +260,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers while closing the menu.
      * @event
+     * @blazorProperty 'Closed'
      */
     @Event()
     public onClose: EmitType<OpenCloseMenuEventArgs>;
@@ -247,6 +268,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers while selecting menu item.
      * @event
+     * @blazorProperty 'ItemSelected'
      */
     @Event()
     public select: EmitType<MenuEventArgs>;
@@ -254,6 +276,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -392,6 +415,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected render(): void {
         this.initialize();
         this.renderItems();
+        if (this.isMenu && this.template) {
+            let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
+            resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+            setTimeout(
+                () => {
+                    updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+                },
+                500);
+        }
         this.wireEvents();
     }
 
@@ -623,21 +655,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let item: MenuItemModel = this.getItem(navIdx);
             if (item.items.length) {
                 this.navIdx.push(fliIdx);
+                this.keyType = 'right';
+                this.action = e.action;
                 this.openMenu(fli, item, null, null, e);
-                fli.classList.remove(FOCUSED);
-                if (this.isMenu && this.navIdx.length === 1) {
-                    this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
-                }
-                fli.classList.add(SELECTED);
-                if (e.action === ENTER) {
-                    eventArgs = { element: fli as HTMLElement, item: item, event: e };
-                    this.trigger('select', eventArgs);
-                }
-                (fli as HTMLElement).focus();
-                cul = this.getUlByNavIdx();
-                index = this.isValidLI(cul.children[0], 0, e.action);
-                cul.children[index].classList.add(FOCUSED);
-                (cul.children[index] as HTMLElement).focus();
             } else {
                 if (e.action === ENTER) {
                     if (this.isMenu && this.navIdx.length === 0) {
@@ -652,19 +672,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
         }
-        }
+    }
 
     private leftEscKeyHandler(e: KeyboardEventArgs): void {
         if (this.navIdx.length) {
+            this.keyType = 'left';
             this.closeMenu(this.navIdx.length, e);
-            let cul: Element = this.getUlByNavIdx();
-            let sli: Element = this.getLIByClass(cul, SELECTED);
-            if (sli) {
-                sli.setAttribute('aria-expanded', 'false');
-                sli.classList.remove(SELECTED);
-                sli.classList.add(FOCUSED);
-                (sli as HTMLElement).focus();
-            }
         } else {
             if (e.action === ESCAPE) {
                 this.closeMenu(null, e);
@@ -695,53 +708,79 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     protected closeMenu(ulIndex: number = 0, e: MouseEvent | KeyboardEvent = null): void {
         if (this.isMenuVisible()) {
-            let ul: HTMLElement;
             let sli: Element;
+            let ul: HTMLElement;
             let item: MenuItemModel;
             let items: MenuItemModel[];
-            let closeArgs: OpenCloseMenuEventArgs;
             let beforeCloseArgs: BeforeOpenCloseMenuEventArgs;
-            let popupEle: HTMLElement;
-            let popupObj: Popup;
             let wrapper: Element = this.getWrapper();
             let popups: Element[] = this.getPopups();
-            for (let cnt: number = this.isMenu ? popups.length + 1 : wrapper.childElementCount; cnt > ulIndex; cnt--) {
-                ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2]) as HTMLElement
-                    : selectAll('.e-menu-parent', wrapper)[cnt - 1] as HTMLElement;
-                if (this.isMenu && ul.classList.contains('e-menu')) {
-                    sli = this.getLIByClass(ul, SELECTED);
-                    if (sli) {
-                        sli.classList.remove(SELECTED);
-                    }
-                    break;
+            let isClose: boolean = false;
+            let cnt: number = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
+            ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2]) as HTMLElement
+                : selectAll('.e-menu-parent', wrapper)[cnt - 1] as HTMLElement;
+            if (this.isMenu && ul.classList.contains('e-menu')) {
+                sli = this.getLIByClass(ul, SELECTED);
+                if (sli) {
+                    sli.classList.remove(SELECTED);
                 }
+                isClose = true;
+            }
+            if (!isClose) {
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items = item ? item.items : this.items as objColl;
                 beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
-                this.trigger('beforeClose', beforeCloseArgs);
-                if (!beforeCloseArgs.cancel) {
-                    if (this.isMenu) {
-                        popupEle = closest(ul, '.' + POPUP) as HTMLElement;
-                        if (this.hamburgerMode) {
-                            popupEle.parentElement.style.minHeight = '';
+                this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
+                    let popupEle: HTMLElement;
+                    let closeArgs: OpenCloseMenuEventArgs;
+                    let popupObj: Popup;
+                    if (!observedCloseArgs.cancel) {
+                        if (this.isMenu) {
+                            popupEle = closest(ul, '.' + POPUP) as HTMLElement;
+                            if (this.hamburgerMode) {
+                                popupEle.parentElement.style.minHeight = '';
+                            }
+                            this.unWireKeyboardEvent(popupEle);
+                            this.destroyScrollObj(
+                                getInstance(popupEle.children[0] as HTMLElement, VScroll) as VScroll, popupEle.children[0]);
+                            popupObj = getInstance(popupEle, Popup) as Popup;
+                            popupObj.hide();
+                            popupObj.destroy();
+                            detach(popupEle);
+                        } else {
+                            this.toggleAnimation(ul, false);
                         }
-                        this.unWireKeyboardEvent(popupEle);
-                        this.destroyScrollObj(getInstance(popupEle.children[0] as HTMLElement, VScroll) as VScroll, popupEle.children[0]);
-                        popupObj = getInstance(popupEle, Popup) as Popup;
-                        popupObj.hide();
-                        popupObj.destroy();
-                        detach(popupEle);
-                    } else {
-                        this.toggleAnimation(ul, false);
+                        closeArgs = { element: ul, parentItem: item, items: items };
+                        this.trigger('onClose', closeArgs);
                     }
-                    this.navIdx.length = ulIndex ? ulIndex - 1 : ulIndex;
-                    closeArgs = { element: ul, parentItem: item, items: items };
-                    this.trigger('onClose', closeArgs);
-                }
+                    this.navIdx.pop();
+                    if (!ulIndex && this.navIdx.length) {
+                        this.closeMenu(null, e);
+                    } else if (!this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
+                        this.isMenusClosed = true;
+                        this.closeMenu(0, e);
+                    } else if (this.isMenu && e && e.target &&
+                        this.navIdx.length !== 0 && closest(e.target as Element, '.e-menu-parent.e-control')) {
+                        this.closeMenu(0, e);
+                    } else {
+                        if (this.keyType === 'right') {
+                            this.afterCloseMenu(e as MouseEvent);
+                        } else {
+                            let cul: Element = this.getUlByNavIdx();
+                            let sli: Element = this.getLIByClass(cul, SELECTED);
+                            if (sli) {
+                                sli.setAttribute('aria-expanded', 'false');
+                                sli.classList.remove(SELECTED);
+                                sli.classList.add(FOCUSED);
+                                (sli as HTMLElement).focus();
+                            }
+                        }
+                    }
+                    this.removeStateWrapper();
+                });
             }
         }
     }
-
     private destroyScrollObj(scrollObj: VScroll | HScroll, scrollEle: Element): void {
         if (scrollObj) {
             scrollObj.destroy();
@@ -782,100 +821,49 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected openMenu(
         li: Element, item: MenuItemModel | { [key: string]: Object }, top: number = 0, left: number = 0,
         e: MouseEvent | KeyboardEvent = null, target: HTMLElement = this.targetElement): void {
-        let ul: HTMLElement; let popupObj: Popup; let popupWrapper: HTMLElement; let eventArgs: BeforeOpenCloseMenuEventArgs;
-        let wrapper: Element = this.getWrapper();
+        let eventArgs: BeforeOpenCloseMenuEventArgs; let wrapper: Element = this.getWrapper();
+        this.lItem = li; let elemId: string = this.element.id !== '' ? this.element.id : 'menu';
+        this.isMenusClosed = false;
         if (li) {
-            ul = this.createItems((<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl);
+            this.uList = this.createItems((<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl);
             if (!this.isMenu && Browser.isDevice) {
                 (wrapper.lastChild as HTMLElement).style.display = 'none';
                 let data: { [key: string]: string } = {
                     text: (<obj>item)[this.getField('text')].toString(), iconCss: ICONS + ' e-previous'
                 };
-                let hdata: MenuItem = new MenuItem(this.items[0] as MenuItem, null, data, true);
+                let hdata: MenuItem = new MenuItem(this.items[0] as MenuItem, 'items', data, true);
                 let hli: Element = this.createItems([hdata] as MenuItemModel[]).children[0];
                 hli.classList.add(HEADER);
-                ul.insertBefore(hli, ul.children[0]);
+                this.uList.insertBefore(hli, this.uList.children[0]);
             }
             if (this.isMenu) {
-                popupWrapper = this.createElement('div', {
-                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-menu-popup' });
+                this.popupWrapper = this.createElement('div', {
+                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-' + elemId + '-popup' });
                 if (this.hamburgerMode) {
                     top = (li as HTMLElement).offsetHeight;
-                    li.appendChild(popupWrapper);
+                    li.appendChild(this.popupWrapper);
                 } else {
-                    document.body.appendChild(popupWrapper);
+                    document.body.appendChild(this.popupWrapper);
                 }
-                let isNestedOrVerticalMenu: boolean = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
-                popupObj = this.generatePopup(popupWrapper, ul, li as HTMLElement, isNestedOrVerticalMenu);
+                this.isNestedOrVertical = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
+                this.popupObj = this.generatePopup(this.popupWrapper, this.uList, li as HTMLElement, this.isNestedOrVertical);
                 if (this.hamburgerMode) {
-                    this.calculateIndentSize(ul, li);
+                    this.calculateIndentSize(this.uList, li);
                 } else {
                     if (this.cssClass) {
-                        addClass([popupWrapper], this.cssClass.split(' '));
+                        addClass([this.popupWrapper], this.cssClass.split(' '));
                     }
-                    popupObj.hide();
+                    this.popupObj.hide();
                 }
-                eventArgs = this.triggerBeforeOpen(li, ul, item, e, 0, 0);
-                if (!this.hamburgerMode) { top = eventArgs.top; left = eventArgs.left; }
-                popupWrapper.style.display = 'block';
-                if (!this.hamburgerMode) {
-                    popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
-                    this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
-                    this.checkScrollOffset(e);
-                }
-                let collide: string[];
-                if (!this.hamburgerMode && !left && !top) {
-                    popupObj.refreshPosition(li as HTMLElement, true);
-                    left = parseInt(popupWrapper.style.left, 10); top = parseInt(popupWrapper.style.top, 10);
-                    if (this.enableRtl) {
-                        left = isNestedOrVerticalMenu ? left - popupWrapper.offsetWidth - li.parentElement.offsetWidth
-                            : left - popupWrapper.offsetWidth + (li as HTMLElement).offsetWidth;
-                    }
-                    collide = isCollide(popupWrapper, null, left, top);
-                    if ((isNestedOrVerticalMenu || this.enableRtl) && (collide.indexOf('right') > -1 || collide.indexOf('left') > -1)) {
-                        popupObj.collision.X = 'none';
-                        left = this.enableRtl ? calculatePosition(li, isNestedOrVerticalMenu ? 'right' : 'left', 'top').left : left -
-                            popupWrapper.offsetWidth - (closest(li, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement).offsetWidth;
-                    }
-                    collide = isCollide(popupWrapper, null, left, top);
-                    if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
-                        left = this.callFit(popupWrapper, true, false, top, left).left;
-                    }
-                    popupWrapper.style.left = left + 'px';
-                } else {
-                    popupObj.collision = { X: 'none', Y: 'none' };
-                }
-                popupWrapper.style.display = '';
+                this.triggerBeforeOpen(li, this.uList, item, e, 0, 0, 'menu');
             } else {
-                ul.style.zIndex = this.element.style.zIndex; wrapper.appendChild(ul);
-                eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
-                top = eventArgs.top; left = eventArgs.left;
+                this.uList.style.zIndex = this.element.style.zIndex; wrapper.appendChild(this.uList);
+                this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
             }
         } else {
-            ul = this.element;
-            ul.style.zIndex = getZindexPartial(target ? target : this.element).toString();
-            eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
-            top = eventArgs.top; left = eventArgs.left;
-        }
-        if (eventArgs.cancel) {
-            if (this.isMenu) { popupObj.destroy(); detach(popupWrapper); }
-            this.navIdx.pop();
-        } else {
-            if (this.isMenu) {
-                if (this.hamburgerMode) {
-                    popupWrapper.style.top = top + 'px'; popupWrapper.style.left = 0 + 'px';
-                    this.toggleAnimation(popupWrapper);
-                } else {
-                    this.wireKeyboardEvent(popupWrapper);
-                    rippleEffect(popupWrapper, { selector: '.' + ITEM });
-                    popupWrapper.style.left = left + 'px'; popupWrapper.style.top = top + 'px';
-                    let animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
-                        name: this.animationSettings.effect, duration: this.animationSettings.duration,
-                        timingFunction: this.animationSettings.easing
-                    } : null;
-                    popupObj.show(animationOptions, li as HTMLElement);
-                }
-            } else { this.setPosition(li, ul, top, left); this.toggleAnimation(ul); }
+            this.uList = this.element;
+            this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
+            this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
         }
     }
 
@@ -898,13 +886,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private generatePopup(
-        popupWrapper: HTMLElement, ul: HTMLElement, li: HTMLElement, isNestedOrVerticalMenu: boolean): Popup {
+        popupWrapper: HTMLElement, ul: HTMLElement, li: HTMLElement, isNestedOrVertical: boolean): Popup {
         let popupObj: Popup = new Popup(popupWrapper, {
             actionOnScroll: this.hamburgerMode ? 'none' : 'reposition',
             relateTo: li,
-            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVerticalMenu ||
+            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVertical ||
                 this.enableRtl ? 'none' : 'flip', Y: 'fit' },
-            position: (isNestedOrVerticalMenu && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
+            position: (isNestedOrVertical && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
             targetType: 'relative',
             enableRtl: this.enableRtl,
             content: ul,
@@ -938,11 +926,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected openHamburgerMenu(e?: MouseEvent | KeyboardEvent) : void {
         if (this.hamburgerMode) {
             let eventArgs: BeforeOpenCloseMenuEventArgs;
-            eventArgs = this.triggerBeforeOpen(null, this.element, null, e, 0, 0);
-            if (!eventArgs.cancel) {
-                this.element.classList.remove('e-hide-menu');
-                this.triggerOpen(this.element);
-            }
+            this.triggerBeforeOpen(null, this.element, null, e, 0, 0, 'hamburger');
         }
     }
 
@@ -950,12 +934,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.hamburgerMode) {
             let beforeCloseArgs: BeforeOpenCloseMenuEventArgs;
             beforeCloseArgs = { element: this.element, parentItem: null, event: e, items: this.items, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs);
-            if (!beforeCloseArgs.cancel) {
-                this.closeMenu(null, e);
-                this.element.classList.add('e-hide-menu');
-                this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
-            }
+            this.trigger('beforeClose', beforeCloseArgs, (observedHamburgerCloseArgs: BeforeOpenCloseMenuEventArgs) => {
+                if (!observedHamburgerCloseArgs.cancel) {
+                    this.closeMenu(null, e);
+                    this.element.classList.add('e-hide-menu');
+                    this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
+                }
+            });
         }
     }
 
@@ -965,14 +950,105 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private triggerBeforeOpen(
         li: Element, ul: HTMLElement, item: MenuItemModel, e: MouseEvent | KeyboardEvent,
-        top: number, left: number): BeforeOpenCloseMenuEventArgs {
+        top: number, left: number, type: string): void {
         let navIdx: number[] = this.getIndex(li ? li.id : null, true);
         let items: MenuItemModel[] = li ? (<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl : this.items as objColl;
         let eventArgs: BeforeOpenCloseMenuEventArgs = {
             element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
         };
-        this.trigger('beforeOpen', eventArgs);
-        return eventArgs;
+        let menuType: string = type;
+        this.trigger('beforeOpen', eventArgs, (observedOpenArgs: BeforeOpenCloseMenuEventArgs) => {
+            switch (menuType) {
+                case 'menu':
+                    if (!this.hamburgerMode) {
+                        this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;
+                    }
+                    this.popupWrapper.style.display = 'block';
+                    if (!this.hamburgerMode) {
+                        this.popupWrapper.style.maxHeight = this.popupWrapper.getBoundingClientRect().height + 'px';
+                        this.addScrolling(
+                            this.popupWrapper, this.uList, 'vscroll', this.popupWrapper.offsetHeight, this.uList.offsetHeight);
+                        this.checkScrollOffset(e);
+                    }
+                    let collide: string[];
+                    if (!this.hamburgerMode && !this.left && !this.top) {
+                        this.popupObj.refreshPosition(this.lItem as HTMLElement, true);
+                        this.left = parseInt(this.popupWrapper.style.left, 10); this.top = parseInt(this.popupWrapper.style.top, 10);
+                        if (this.enableRtl) {
+                            this.left =
+                            this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth
+                                : this.left - this.popupWrapper.offsetWidth + (this.lItem as HTMLElement).offsetWidth;
+                        }
+                        collide = isCollide(this.popupWrapper, null, this.left, this.top);
+                        if ((this.isNestedOrVertical || this.enableRtl) && (collide.indexOf('right') > -1
+                        || collide.indexOf('left') > -1)) {
+                            this.popupObj.collision.X = 'none';
+                            let offWidth: number =
+                            (closest(this.lItem, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement).offsetWidth;
+                            this.left =
+                            this.enableRtl ? calculatePosition(this.lItem, this.isNestedOrVertical ? 'right' : 'left', 'top').left
+                            : this.left - this.popupWrapper.offsetWidth - offWidth;
+                        }
+                        collide = isCollide(this.popupWrapper, null, this.left, this.top);
+                        if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
+                            this.left = this.callFit(this.popupWrapper, true, false, this.top, this.left).left;
+                        }
+                        this.popupWrapper.style.left = this.left + 'px';
+                    } else {
+                        this.popupObj.collision = { X: 'none', Y: 'none' };
+                    }
+                    this.popupWrapper.style.display = '';
+                    break;
+                case 'none':
+                    this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;
+                    break;
+                case 'hamburger':
+                    if (!observedOpenArgs.cancel) {
+                        this.element.classList.remove('e-hide-menu');
+                        this.triggerOpen(this.element);
+                    }
+                    break;
+            }
+            if (menuType !== 'hamburger') {
+                if (observedOpenArgs.cancel) {
+                    if (this.isMenu) { this.popupObj.destroy(); detach(this.popupWrapper); }
+                    this.navIdx.pop();
+                } else {
+                    if (this.isMenu) {
+                        if (this.hamburgerMode) {
+                            this.popupWrapper.style.top = this.top + 'px'; this.popupWrapper.style.left = 0 + 'px';
+                            this.toggleAnimation(this.popupWrapper);
+                        } else {
+                            this.wireKeyboardEvent(this.popupWrapper);
+                            rippleEffect(this.popupWrapper, { selector: '.' + ITEM });
+                            this.popupWrapper.style.left = this.left + 'px'; this.popupWrapper.style.top = this.top + 'px';
+                            let animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
+                                name: this.animationSettings.effect, duration: this.animationSettings.duration,
+                                timingFunction: this.animationSettings.easing
+                            } : null;
+                            this.popupObj.show(animationOptions, this.lItem as HTMLElement);
+                        }
+                    } else {
+                        this.setPosition(this.lItem, this.uList, this.top, this.left); this.toggleAnimation(this.uList);
+                    }
+                }
+            }
+            if (this.keyType === 'right') {
+                let cul: Element = this.getUlByNavIdx(); li.classList.remove(FOCUSED);
+                if (this.isMenu && this.navIdx.length === 1) {
+                    this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
+                }
+                li.classList.add(SELECTED);
+                if (this.action === ENTER) {
+                    let eventArgs: MenuEventArgs = { element: li as HTMLElement, item: item, event: e };
+                    this.trigger('select', eventArgs);
+                }
+                (li as HTMLElement).focus(); cul = this.getUlByNavIdx();
+                let index: number = this.isValidLI(cul.children[0], 0, this.action);
+                cul.children[index].classList.add(FOCUSED);
+                (cul.children[index] as HTMLElement).focus();
+            }
+        });
     }
 
     private checkScrollOffset(e: MouseEvent | KeyboardEvent): void {
@@ -1114,6 +1190,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         };
         this.setProperties({'items': this.items}, true);
+        if (this.isMenu) {
+            listBaseOptions.templateID = this.element.id + TEMPLATE_PROPERTY;
+        }
+
         let ul: HTMLElement = ListBase.createList(
             this.createElement, items as objColl, listBaseOptions, !this.template);
         ul.setAttribute('tabindex', '0');
@@ -1124,11 +1204,30 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private moverHandler(e: MouseEvent): void {
-        let wrapper: Element = this.getWrapper();
         let trgt: Element = e.target as Element;
+        this.liTrgt = trgt;
         let cli: Element = this.getLI(trgt);
-        if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper')) {
+        let wrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
+        let hdrWrapper: Element = this.getWrapper(); let regex: RegExp = new RegExp('-(.*)-popup'); let ulId: string;
+        let isDifferentElem: boolean = false;
+        if (!wrapper) {
+            return;
+        }
+        if (wrapper.id !== '') {
+            ulId = regex.exec(wrapper.id)[1];
+        } else {
+            ulId = wrapper.querySelector('ul').id;
+        }
+        if (ulId !== this.element.id) {
+            if (this.navIdx.length) {
+                isDifferentElem = true;
+            } else {
+                return;
+            }
+        }
+        if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper') && !isDifferentElem) {
             this.removeLIStateByClass([FOCUSED], this.isMenu ? [wrapper].concat(this.getPopups()) : [wrapper]);
+            this.removeLIStateByClass([FOCUSED], this.isMenu ? [hdrWrapper].concat(this.getPopups()) : [hdrWrapper]);
             cli.classList.add(FOCUSED);
             if (!this.showItemOnClick) {
                 this.clickHandler(e);
@@ -1139,11 +1238,26 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
+                    this.isClosed = true;
+                    this.closeMenu(null, e);
+                }
+            } else if (isDifferentElem) {
+                if (this.navIdx.length) {
+                    this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
+                    this.isClosed = true;
                     this.closeMenu(null, e);
                 }
             }
-            wrapper = closest(trgt, '.e-menu-vscroll');
-            if (trgt.tagName === 'DIV' && wrapper) {
+            if (!this.isClosed) {
+                this.removeStateWrapper();
+            }
+            this.isClosed = false;
+        }
+    }
+    private removeStateWrapper(): void {
+        if (this.liTrgt) {
+            let wrapper: Element = closest(this.liTrgt, '.e-menu-vscroll');
+            if (this.liTrgt.tagName === 'DIV' && wrapper) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
             }
         }
@@ -1198,7 +1312,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         } else {
             let wrapper: Element = this.getWrapper();
             let trgt: Element = e.target as Element;
-            let cli: Element = this.getLI(trgt);
+            let cli: Element = this.cli = this.getLI(trgt);
             let cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
             let isInstLI: boolean = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
@@ -1222,41 +1336,30 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     this.navIdx.pop();
                 } else {
                     if (!cli.classList.contains(SEPARATOR)) {
-                        let showSubMenu: boolean = true;
+                        this.showSubMenu = true;
                         let cul: Element = cli.parentNode as Element;
-                        let cliIdx: number = this.getIdx(cul, cli);
+                        this.cliIdx = this.getIdx(cul, cli);
                         if (this.isMenu || !Browser.isDevice) {
                             let culIdx: number = this.isMenu ? Array.prototype.indexOf.call(
                                 [wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
                                 : this.getIdx(wrapper, cul);
-                            if (this.navIdx[culIdx] === cliIdx) {
-                                showSubMenu = false;
+                            if (this.navIdx[culIdx] === this.cliIdx) {
+                                this.showSubMenu = false;
                             }
-                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || showSubMenu)) {
+                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || this.showSubMenu)) {
                                 let sli: Element = this.getLIByClass(cul, SELECTED);
                                 if (sli) {
                                     sli.classList.remove(SELECTED);
                                 }
+                                this.isClosed = true;
+                                this.keyType = 'right';
                                 this.closeMenu(culIdx + 1, e);
                             }
                         }
-                        if (showSubMenu) {
-                            let idx: number[] = this.navIdx.concat(cliIdx);
-                            let item: MenuItemModel = this.getItem(idx);
-                            if ((<objColl>(<obj>item)[this.getField('children', idx.length - 1)]) &&
-                                (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]).length) {
-                                if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
-                                    this.setLISelected(cli);
-                                }
-                                cli.setAttribute('aria-expanded', 'true');
-                                this.navIdx.push(cliIdx);
-                                this.openMenu(cli, item, null, null, e);
-                            } else {
-                                if (e.type !== 'mouseover') {
-                                    this.closeMenu(null, e);
-                                }
-                            }
+                        if (!this.isClosed) {
+                            this.afterCloseMenu(e);
                         }
+                        this.isClosed = false;
                     }
                 }
             } else {
@@ -1280,7 +1383,26 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         }
     }
-
+    private afterCloseMenu(e: MouseEvent): void {
+        if (this.showSubMenu) {
+            let idx: number[] = this.navIdx.concat(this.cliIdx);
+            let item: MenuItemModel = this.getItem(idx);
+            if ((<objColl>(<obj>item)[this.getField('children', idx.length - 1)]) &&
+                (<objColl>(<obj>item)[this.getField('children', idx.length - 1)]).length) {
+                if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
+                    this.setLISelected(this.cli);
+                }
+                this.cli.setAttribute('aria-expanded', 'true');
+                this.navIdx.push(this.cliIdx);
+                this.openMenu(this.cli, item, null, null, e);
+            } else {
+                if (e.type !== 'mouseover') {
+                    this.closeMenu(null, e);
+                }
+            }
+        }
+        this.keyType = '';
+    }
     private setLISelected(li: Element): void {
         let sli: Element = this.getLIByClass(li.parentElement, SELECTED);
         if (sli) {
@@ -1860,5 +1982,3 @@ export interface OpenCloseMenuEventArgs extends BaseEventArgs {
     items: MenuItemModel[] | { [key: string]: Object }[];
     parentItem: MenuItemModel;
 }
-
-

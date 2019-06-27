@@ -220,6 +220,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers after creating the splitter component with its panes.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -227,6 +228,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when the split pane is started to resize.
      * @event
+     * @blazorProperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeEventArgs>;
@@ -234,6 +236,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when a split pane is being resized.
      * @event
+     * @blazorProperty 'Resizing'
      */
     @Event()
     public resizing: EmitType<ResizingEventArgs>;
@@ -241,6 +244,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when the resizing of split pane is stopped.
      * @event
+     * @blazorProperty 'OnResizeStop'
      */
     @Event()
     public resizeStop: EmitType<ResizingEventArgs>;
@@ -248,6 +252,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when before panes get collapsed.
      * @event 
+     * @blazorProperty 'OnCollapse'
      */
     @Event()
     public beforeCollapse: EmitType<BeforeExpandEventArgs>;
@@ -255,6 +260,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when before panes get expanded.
      * @event 
+     * @blazorProperty 'OnExpand'
      */
     @Event()
     public beforeExpand: EmitType<BeforeExpandEventArgs>;
@@ -262,6 +268,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when after panes get collapsed.
      * @event 
+     * @blazorProperty 'Collapsed'
      */
     @Event()
     public collapsed: EmitType<ExpandedEventArgs>;
@@ -269,6 +276,7 @@ export class Splitter extends Component<HTMLElement> {
     /**
      * Triggers when after panes get expanded.
      * @event 
+     * @blazorProperty 'Expanded'
      */
     @Event()
     public expanded: EmitType<ExpandedEventArgs>;
@@ -852,6 +860,8 @@ export class Splitter extends Component<HTMLElement> {
 
     private clickHandler(e: Event): void {
         if (!(<HTMLElement>e.target).classList.contains(NAVIGATE_ARROW)) {
+            let hoverBars: HTMLElement[] = selectAll('.' + ROOT + ' > .' + SPLIT_BAR + '.' + SPLIT_BAR_HOVER);
+            if (hoverBars.length > 0) { removeClass(hoverBars, SPLIT_BAR_HOVER); }
             (<HTMLElement>e.target).classList.add(SPLIT_BAR_HOVER);
         }
         let icon: HTMLElement = (<HTMLElement>e.target);
@@ -867,26 +877,28 @@ export class Splitter extends Component<HTMLElement> {
         this.splitterDetails(e);
         let collapseClass: string[] = [COLLAPSE_PANE, PANE_HIDDEN];
         let eventArgs: BeforeExpandEventArgs = this.beforeAction(e);
-        this.trigger('beforeExpand', eventArgs);
-        if (eventArgs.cancel) { return; }
-        this.previousPane.style.flexGrow = '1';
-        this.nextPane.style.flexGrow = '0';
-        if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
-            removeClass([this.nextPane], EXPAND_PANE);
-            removeClass([this.previousPane], collapseClass);
-            addClass([this.previousPane], EXPAND_PANE);
-            addClass([this.nextPane], collapseClass);
-        } else {
-            (this.currentBarIndex !== 0) ?
-            (this.previousPane.previousElementSibling as HTMLElement).style.flexGrow = '' : this.nextPane.style.flexGrow = '';
-            removeClass([this.previousPane], collapseClass);
-            removeClass([this.nextPane], EXPAND_PANE);
-        }
-        this.updateIconsOnExpand(e);
-        this.previousPane.setAttribute('aria-expanded', 'true');
-        this.nextPane.setAttribute('aria-expanded', 'false');
-        let expandEventArgs: ExpandedEventArgs = this.afterAction(e);
-        this.trigger('expanded', expandEventArgs);
+        this.trigger('beforeExpand', eventArgs, (beforeExpandArgs: BeforeExpandEventArgs) => {
+            if (!beforeExpandArgs.cancel) {
+                this.previousPane.style.flexGrow = '1';
+                this.nextPane.style.flexGrow = '0';
+                if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+                    removeClass([this.nextPane], EXPAND_PANE);
+                    removeClass([this.previousPane], collapseClass);
+                    addClass([this.previousPane], EXPAND_PANE);
+                    addClass([this.nextPane], collapseClass);
+                } else {
+                    (this.currentBarIndex !== 0) ?
+                    (this.previousPane.previousElementSibling as HTMLElement).style.flexGrow = '' : this.nextPane.style.flexGrow = '';
+                    removeClass([this.previousPane], collapseClass);
+                    removeClass([this.nextPane], EXPAND_PANE);
+                }
+                this.updateIconsOnExpand(e);
+                this.previousPane.setAttribute('aria-expanded', 'true');
+                this.nextPane.setAttribute('aria-expanded', 'false');
+                let expandEventArgs: ExpandedEventArgs = this.afterAction(e);
+                this.trigger('expanded', expandEventArgs);
+            }
+        });
     }
 
     private hideTargetBarIcon(targetBar: HTMLElement, targetArrow: string): void {
@@ -936,22 +948,24 @@ export class Splitter extends Component<HTMLElement> {
         this.previousPane.style.flexGrow = '0';
         this.nextPane.style.flexGrow = '1';
         let eventArgs: BeforeExpandEventArgs = this.beforeAction(e);
-        this.trigger('beforeCollapse', eventArgs);
-        if (eventArgs.cancel) { return; }
-        if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
-            removeClass([this.previousPane], EXPAND_PANE);
-            removeClass([this.nextPane], collapseClass);
-        } else {
-            removeClass([this.previousPane], EXPAND_PANE);
-            removeClass([this.nextPane], collapseClass);
-            addClass([this.nextPane], EXPAND_PANE);
-            addClass([this.previousPane], collapseClass);
-        }
-        this.updateIconsOnCollapse(e);
-        this.previousPane.setAttribute('aria-expanded', 'false');
-        this.nextPane.setAttribute('aria-expanded', 'true');
-        let collapseEventArgs: ExpandedEventArgs = this.afterAction(e);
-        this.trigger('collapsed', collapseEventArgs);
+        this.trigger('beforeCollapse', eventArgs, (beforeCollapseArgs: BeforeExpandEventArgs) => {
+            if (!beforeCollapseArgs.cancel) {
+                if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                    removeClass([this.previousPane], EXPAND_PANE);
+                    removeClass([this.nextPane], collapseClass);
+                } else {
+                    removeClass([this.previousPane], EXPAND_PANE);
+                    removeClass([this.nextPane], collapseClass);
+                    addClass([this.nextPane], EXPAND_PANE);
+                    addClass([this.previousPane], collapseClass);
+                }
+                this.updateIconsOnCollapse(e);
+                this.previousPane.setAttribute('aria-expanded', 'false');
+                this.nextPane.setAttribute('aria-expanded', 'true');
+                let collapseEventArgs: ExpandedEventArgs = this.afterAction(e);
+                this.trigger('collapsed', collapseEventArgs);
+            }
+        });
     }
 
     private beforeAction(e: Event): BeforeExpandEventArgs {
@@ -1089,18 +1103,20 @@ export class Splitter extends Component<HTMLElement> {
             separator: this.currentSeparator,
             cancel: false
         };
-        this.trigger('resizeStart', eventArgs);
-        if (eventArgs.cancel) { return; }
-        this.wireResizeEvents();
-        if (this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0) {
-            let previousFlexBasis: number = this.updatePaneFlexBasis(this.previousPane);
-            let nextFlexBasis: number = this.updatePaneFlexBasis(this.nextPane);
-            this.totalPercent = previousFlexBasis + nextFlexBasis;
-            this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
-        } else {
-            this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
-                this.previousPane.offsetHeight + this.nextPane.offsetHeight;
-        }
+        this.trigger('resizeStart', eventArgs, (resizeStartArgs: ResizeEventArgs) => {
+            if (!resizeStartArgs.cancel) {
+                this.wireResizeEvents();
+                if (this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0) {
+                    let previousFlexBasis: number = this.updatePaneFlexBasis(this.previousPane);
+                    let nextFlexBasis: number = this.updatePaneFlexBasis(this.nextPane);
+                    this.totalPercent = previousFlexBasis + nextFlexBasis;
+                    this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
+                } else {
+                    this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
+                        this.previousPane.offsetHeight + this.nextPane.offsetHeight;
+                }
+            }
+        });
     }
 
     private updatePaneFlexBasis( pane: HTMLElement ): number {

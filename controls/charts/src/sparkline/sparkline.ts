@@ -207,6 +207,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers after sparkline rendered.
      * @event
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ISparklineLoadedEventArgs>;
@@ -214,6 +215,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline render.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ISparklineLoadEventArgs>;
@@ -221,6 +224,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline tooltip render.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnTooltipInitialize'
      */
     @Event()
     public tooltipInitialize: EmitType<ITooltipRenderingEventArgs>;
@@ -228,6 +233,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline series render.
      * @event
+     * @deprecated
+     * @blazorProperty 'SeriesRendering'
      */
     @Event()
     public seriesRendering: EmitType<ISeriesRenderingEventArgs>;
@@ -235,6 +242,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline axis render.
      * @event
+     * @deprecated
+     * @blazorProperty 'AxisRendering'
      */
     @Event()
     public axisRendering: EmitType<IAxisRenderingEventArgs>;
@@ -242,6 +251,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline points render.
      * @event
+     * @blazorProperty 'PointRendering'
      */
     @Event()
     public pointRendering: EmitType<ISparklinePointEventArgs>;
@@ -249,6 +259,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse move on the sparkline point region.
      * @event
+     * @blazorProperty 'OnPointRegionMouseMove'
      */
     @Event()
     public pointRegionMouseMove: EmitType<IPointRegionEventArgs>;
@@ -256,6 +267,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse click on the sparkline point region.
      * @event
+     * @blazorProperty 'OnPointRegionMouseClick'
      */
     @Event()
     public pointRegionMouseClick: EmitType<IPointRegionEventArgs>;
@@ -263,6 +275,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse move on the sparkline container.
      * @event
+     * @blazorProperty 'OnSparklineMouseMove'
      */
     @Event()
     public sparklineMouseMove: EmitType<ISparklineMouseEventArgs>;
@@ -270,6 +283,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while mouse click on the sparkline container.
      * @event
+     * @blazorProperty 'OnSparklineMouseClick'
      */
     @Event()
     public sparklineMouseClick: EmitType<ISparklineMouseEventArgs>;
@@ -277,6 +291,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the sparkline datalabel render.
      * @event
+     * @deprecated
+     * @blazorProperty 'DataLabelRendering'
      */
     @Event()
     public dataLabelRendering: EmitType<IDataLabelRenderingEventArgs>;
@@ -284,12 +300,15 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before the sparkline marker render.
      * @event
+     * @deprecated
+     * @blazorProperty 'MarkerRendering'
      */
     @Event()
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
     /**
      * Triggers on resizing the sparkline.
      * @event
+     * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<ISparklineResizeEventArgs>;

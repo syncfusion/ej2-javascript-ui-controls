@@ -1,6 +1,6 @@
 import { TreeMap } from '../treemap';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
-import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, createElement, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Location, getMousePosition, textFormatter, formatValue } from '../utils/helper';
 import { TooltipSettingsModel } from '../model/base-model';
 import { ITreeMapTooltipRenderEventArgs } from '../model/interface';
@@ -69,8 +69,7 @@ export class TreeMapTooltip {
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
-                this.tooltipSettings.textStyle.fontFamily = this.treemap.theme === 'Bootstrap4' ? 'HelveticaNeue-Medium'
-                    : this.tooltipSettings.textStyle.fontFamily;
+                this.tooltipSettings.textStyle.fontFamily = this.treemap.themeStyle.fontFamily;
                 this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
                     || this.tooltipSettings.textStyle.color;
                 this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
@@ -85,28 +84,32 @@ export class TreeMapTooltip {
                     treemap: this.treemap,
                     element: target, eventArgs: e
                 };
-                this.treemap.trigger(tooltipRendering, tootipArgs);
-                if (!tootipArgs.cancel) {
-                    this.svgTooltip = new Tooltip({
-                        enable: true,
-                        header: '',
-                        data: tootipArgs.options['data'],
-                        template: tootipArgs.options['template'],
-                        content: tootipArgs.options['text'],
-                        shapes: [],
-                        location: tootipArgs.options['location'],
-                        palette: [markerFill],
-                        areaBounds: this.treemap.areaRect,
-                        textStyle: tootipArgs.options['textStyle']
-                    });
-                    this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                    this.svgTooltip.appendTo(tooltipEle);
-                } else {
-                    this.removeTooltip();
-                }
+                this.treemap.trigger(tooltipRendering, tootipArgs, (observedArgs: ITreeMapTooltipRenderEventArgs) => {
+                    if (!observedArgs.cancel) {
+                        this.svgTooltip = new Tooltip({
+                            enable: true,
+                            header: '',
+                            data: observedArgs.options['data'],
+                            template: observedArgs.options['template'],
+                            content: observedArgs.options['text'],
+                            shapes: [],
+                            location: observedArgs.options['location'],
+                            palette: [markerFill],
+                            areaBounds: this.treemap.areaRect,
+                            textStyle: observedArgs.options['textStyle']
+                        });
+                        this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                        this.svgTooltip.appendTo(tooltipEle);
+                        updateBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
+                    } else {
+                        this.removeTooltip();
+                        resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
+                    }
+                });
             }
         } else {
             this.removeTooltip();
+            resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
         }
     }
 

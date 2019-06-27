@@ -557,7 +557,7 @@ export class ContentFocus implements IFocus {
     public selector(row: Row<Column>, cell: Cell<Column>, isRowTemplate?: boolean): boolean {
         let types: CellType[] = [CellType.Expand, CellType.GroupCaption, CellType.CaptionSummary, CellType.GroupSummary];
         return ((row.isDataRow && cell.visible && (cell.isDataCell || cell.isTemplate))
-            || (row.isDataRow && cell.cellType === CellType.DetailExpand)
+            || (row.isDataRow && cell.cellType === CellType.DetailExpand && isNullOrUndefined(cell.visible))
             || (!row.isDataRow && types.indexOf(cell.cellType) > -1)
             || (cell.column && cell.column.type === 'checkbox')
             || (cell.cellType === CellType.CommandColumn)

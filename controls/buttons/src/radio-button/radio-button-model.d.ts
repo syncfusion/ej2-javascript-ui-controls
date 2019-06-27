@@ -10,12 +10,14 @@ export interface RadioButtonModel extends ComponentModel{
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

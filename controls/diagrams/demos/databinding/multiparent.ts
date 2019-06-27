@@ -35,7 +35,7 @@ let diagram: Diagram = new Diagram({
     width: 1500, height: 2500,
     layout: { type: 'HierarchicalTree', verticalSpacing: 40 },
     dataSourceSettings: {
-        id: 'Name', parentId: 'ReportingPerson', dataManager: items,
+        id: 'Name', parentId: 'ReportingPerson', dataSource: items,
         doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
             nodeModel.annotations = [{
                 content: data['Name'], margin: { top: 10 }

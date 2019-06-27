@@ -1,6 +1,6 @@
 import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement } from '../../common/utils/helper';
-import { findlElement, drawSymbol, markerAnimate, CircleOption,  } from '../../common/utils/helper';
-import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes } from '@syncfusion/ej2-svg-base';
+import { findlElement, drawSymbol, markerAnimate, CircleOption, } from '../../common/utils/helper';
+import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BorderModel } from '../../common/model/base-model';
@@ -106,7 +106,7 @@ export class Marker extends MarkerExplode {
                 argsData.border.color,
                 marker.opacity, null
             );
-            if (parentElement !== undefined && parentElement !== null) {
+            if ((parentElement !== undefined && parentElement !== null) || this.chart.enableCanvas) {
                 if (redraw && getElement(shapeOption.id)) {
                     markerElement = getElement(shapeOption.id);
                     circlePath = argsData.shape === 'Circle' ? 'c' : '';
@@ -119,10 +119,10 @@ export class Marker extends MarkerExplode {
                     location, argsData.shape,
                     new Size(argsData.width, argsData.height),
                     marker.imageUrl, shapeOption,
-                    point.x.toString() + ':' + y.toString()
+                    point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect
                 );
                 appendChildElement(
-                    parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y',
+                    this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y',
                     previousLocation, previousPath, false, false, null, series.chart.duration
                 );
             }
@@ -147,7 +147,7 @@ export class Marker extends MarkerExplode {
         let marker: MarkerSettingsModel = series.marker;
         // 8 for extend border value 5 for extend size value
         let explodeValue: number = marker.border.width + 8 + 5;
-        let render: SvgRenderer = series.chart.renderer;
+        let render: SvgRenderer | CanvasRenderer = series.chart.svgRenderer;
         let transform: string;
         let index: number | string = series.index === undefined ? series.category : series.index;
         let options: RectOption | CircleOption | BaseAttibutes;
@@ -161,14 +161,14 @@ export class Marker extends MarkerExplode {
                     width: series.clipRect.width + markerWidth * 2,
                     height: series.clipRect.height + markerHeight * 2
                 });
-                markerClipRect = appendClipElement(redraw, options, render);
+                markerClipRect = appendClipElement(redraw, options, render as SvgRenderer);
             } else {
                 options = new CircleOption(
                     this.elementId + '_ChartMarkerClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1,
                     series.clipRect.width / 2 + series.clipRect.x, series.clipRect.height / 2 + series.clipRect.y,
                     series.chart.radius + Math.max(markerHeight, markerWidth)
                 );
-                markerClipRect = appendClipElement(redraw, options, render, 'drawCircularClipPath');
+                markerClipRect = appendClipElement(redraw, options, render as SvgRenderer, 'drawCircularClipPath');
             }
             options = {
                 'id': this.elementId + 'SymbolGroup' + index,
@@ -177,6 +177,10 @@ export class Marker extends MarkerExplode {
             };
             series.symbolElement = render.createGroup(options);
             series.symbolElement.appendChild(markerClipRect);
+            if (this.chart.enableCanvas) {
+                let element: HTMLElement = document.getElementById(this.chart.element.id + '_tooltip_svg');
+                element.appendChild(series.symbolElement);
+            }
         }
     }
 

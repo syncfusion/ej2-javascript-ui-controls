@@ -30,6 +30,7 @@ import { IToolbarStatus } from '../../common/interface';
 import { KeyboardEvents } from '../actions/keyboard';
 import { ViewSource } from '../renderer/view-source';
 import { PasteCleanup } from '../actions/paste-clean-up';
+import { Popup } from '@syncfusion/ej2-popups';
 /**
  * Specifies RichTextEditor interfaces.
  * @hidden
@@ -91,6 +92,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     formatter?: IFormatter;
     inputElement?: HTMLElement;
     toolbarModule?: Toolbar;
+    tableModule?: Table;
     sourceCodeModule?: ViewSource;
     getToolbarElement?(): Element;
     fullScreenModule?: FullScreen;
@@ -136,6 +138,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     preventDefaultResize?(e?: FocusEvent | MouseEvent): void;
     autoResize?(): void;
     executeCommand?(commandName: CommandName, value?: string | HTMLElement): void;
+    serializeValue?(value: string): string;
+    sanitizeHtml?(value: string): string;
 }
 export interface IRenderer {
     linkQTBar?: BaseQuickToolbar;
@@ -181,10 +185,11 @@ export interface NotifyArgs {
     range?: Range;
     /** Defines the action. */
     action?: string;
-    callBack?(args?: string): void;
+    callBack?(args?: string | IImageCommandsArgs): void;
     file?: Blob;
     insertElement?: Element;
     touchData?: ITouchData;
+    allowedStylePropertiesArray?: string[];
 }
 
 export interface ITouchData {
@@ -212,6 +217,7 @@ export interface IColorPickerEventArgs extends ColorPickerEventArgs {
 export interface IDropDownItem extends ItemModel {
     command?: string;
     subCommand?: string;
+    controlParent?: DropDownButton;
 }
 
 export interface IDropDownClickArgs extends ClickEventArgs {
@@ -252,6 +258,15 @@ export interface IImageCommandsArgs {
     selectParent?: Node[];
     cssClass?: string;
     selectNode?: Node[];
+}
+
+export interface ILinkCommandsArgs {
+    url?: string;
+    selection?: NodeSelection;
+    title?: string;
+    text?: string;
+    target?: Element;
+    selectParent?: Node[];
 }
 
 export interface ITableArgs {
@@ -431,6 +446,12 @@ export interface IQuickToolbarOptions {
     toolbarItems: (string | IToolbarItems)[];
 }
 
+export interface BeforeQuickToolbarOpenArgs {
+    popup: Popup;
+    cancel: boolean;
+    targetElement: Element;
+}
+
 export interface IAdapterProcess {
     text: string;
     range: Range;
@@ -503,6 +524,33 @@ export interface ResizeArgs {
     cancel?: boolean;
 }
 
+export interface BeforeSanitizeHtmlArgs {
+    /** Illustrates whether the current action needs to be prevented or not. */
+    cancel?: boolean;
+    /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
+     * @function
+     * @param {string} value - Returns the value.
+     * @returns {string}
+     */
+    helper?: Function;
+    /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
+     *  Also possible to modify the block list in this event.
+     */
+    selectors?: SanitizeSelectors;
+}
+
+export interface SanitizeSelectors {
+    /** Returns the tags. */
+    tags?: string[];
+    /** Returns the attributes. */
+    attributes?: SanitizeRemoveAttrs[];
+}
+
+export interface SanitizeRemoveAttrs {
+    attribute?: string;
+    selector?: string;
+}
+
 export interface ISetToolbarStatusArgs {
     args: IToolbarStatus;
     parent: IRichTextEditor;
@@ -530,42 +578,42 @@ export interface IExecutionGroup {
 /** @hidden  */
 export const executeGroup: { [key: string]: IExecutionGroup } = {
     'bold': {
-        command: 'style',
-        subCommand: 'bold',
+        command: 'Style',
+        subCommand: 'Bold',
         value: 'strong'
     },
     'italic': {
-        command: 'style',
-        subCommand: 'italic',
+        command: 'Style',
+        subCommand: 'Italic',
         value: 'em'
     },
     'underline': {
-        command: 'style',
-        subCommand: 'underline',
+        command: 'Style',
+        subCommand: 'Underline',
         value: 'span'
     },
     'strikeThrough': {
-        command: 'style',
-        subCommand: 'strikeThrough',
+        command: 'Style',
+        subCommand: 'StrikeThrough',
         value: 'span'
     },
     'superscript': {
-        command: 'effects',
-        subCommand: 'superscript',
+        command: 'Effects',
+        subCommand: 'SuperScript',
         value: 'sup'
     },
     'subscript': {
-        command: 'effects',
-        subCommand: 'subscript',
+        command: 'Effects',
+        subCommand: 'SubScript',
         value: 'sub'
     },
     'uppercase': {
-        command: 'casing',
-        subCommand: 'uppercase'
+        command: 'Casing',
+        subCommand: 'UpperCase'
     },
     'lowercase': {
-        command: 'casing',
-        subCommand: 'lowercase'
+        command: 'Casing',
+        subCommand: 'LowerCase'
     },
     'fontColor': {
         command: 'font',
@@ -613,7 +661,7 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
     },
     'createLink': {
         command: 'Links',
-        subCommand: 'Links'
+        subCommand: 'createLink'
     },
     'createImage': {
         command: 'Images',
@@ -651,9 +699,8 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         value: '<hr/>'
     },
     'insertImage': {
-        command: 'InsertHTML',
-        subCommand: 'InsertHTML',
-        value: '<img/>'
+        command: 'Images',
+        subCommand: 'Image',
     },
     'insertBrOnReturn': {
         command: 'InsertHTML',

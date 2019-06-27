@@ -54,7 +54,13 @@ export type ToolbarItem =
     /** Move HScroll to PrevTimeSpan */
     'PrevTimeSpan' |
     /** Move HScroll to nextTimeSpan */
-    'NextTimeSpan';
+    'NextTimeSpan' |
+     /** To perform Zoom in action on Gantt timeline */
+    'ZoomIn'|
+     /** To perform zoom out action on Gantt timeline */
+    'ZoomOut'|
+     /** To show all project task in available chart width */
+     'ZoomToFit';
 
 /** 
  * Defines the schedule header mode. They are
@@ -157,9 +163,9 @@ export type SearchHierarchyMode =
 export type SplitterView =
     /** Shows grid side and side of Gantt */
     'Default' |
-     /** Shows grid side alone in Gantt */
+    /** Shows grid side alone in Gantt */
     'Grid' |
-     /** Shows chart side alone in Gantt */
+    /** Shows chart side alone in Gantt */
     'Chart';
 /**
  * To define new position for add action
@@ -185,6 +191,59 @@ export type SortDirection =
     'Ascending' |
     /**  Defines SortDirection as Descending */
     'Descending';
+
+/**
+ * Defines predefined contextmenu items.
+ * @hidden
+ */
+export type ContextMenuItem =
+    /** Defines Auto fit the size of all columns. */
+    'AutoFitAll' |
+    /** Defines Auto fit the current column. */
+    'AutoFit' |
+    /** Defines SortDirection as Ascending  */
+    'SortAscending' |
+    /** Defines SortDirection as Descending */
+    'SortDescending' |
+    /** Defines the Task details */
+    'TaskInformation' |
+    /** Defines the new record on add action */
+    'Add' |
+    /** Defines the save the modified values */
+    'Save' |
+    /** Defines the cancel the modified values */
+    'Cancel' |
+    /** Defines the delete task */
+    'DeleteTask' |
+    /** Defines the delete dependency task */
+    'DeleteDependency' |
+    /** Defines the convert to task or milestone */
+    'Convert';
+
+/**
+ * Defines contextmenu types.
+ * @hidden
+ */
+export type ContextMenuType =
+    /** Defines the header type context menu */
+    'Header' |
+    /** Defines the content type context menu */
+    'Content';
+
+/**
+ * @hidden
+ */
+export enum TemplateName {
+    Parent = 'ParentTaskbarTemplate',
+    Child = 'TaskbarTemplate',
+    Milestone = 'MilestoneTemplate',
+    LeftLabel = 'LeftLabelTemplate',
+    RightLabel = 'RightLabelTemplate',
+    TaskbarTooltip = 'TooltipTaskbarTemplate',
+    BaselineTooltip = 'TooltipBaselineTemplate',
+    ConnectorLineTooltip = 'TooltipConnectorLineTemplate',
+    EditingTooltip = 'TooltipEditingTemplate'
+}
 
 /**
  * @hidden

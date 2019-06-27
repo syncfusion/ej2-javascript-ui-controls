@@ -1,9 +1,8 @@
 import { Popup } from '@syncfusion/ej2-popups';
 import { CLS_QUICK_POP } from '../base/classes';
-import { popupOpen } from '../base/constant';
 import { IRenderer, IRichTextEditor } from '../base/interface';
 import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
-
+import * as events from '../base/constant';
 /**
  * `Popup renderer` module is used to render popup in RichTextEditor.
  * @hidden
@@ -20,8 +19,8 @@ export class PopupRenderer implements IRenderer {
         this.parent = parent;
     }
 
-    private popupOpen(): void {
-        this.parent.notify(popupOpen, this);
+    private quickToolbarOpen(): void {
+        this.parent.trigger(events.quickToolbarOpen, this.popupObj);
     }
 
     public renderPopup(args: BaseQuickToolbar): void {
@@ -30,7 +29,7 @@ export class PopupRenderer implements IRenderer {
         args.popupObj = new Popup(args.element, {
             targetType: 'relative',
             relateTo: this.parent.element,
-            open: this.popupOpen.bind(this)
+            open: this.quickToolbarOpen.bind(this)
         });
         this.popupObj = args.popupObj;
         args.popupObj.hide();

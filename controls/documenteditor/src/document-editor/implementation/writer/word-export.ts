@@ -5,6 +5,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LayoutViewer, ImageInfo, HelperMethods } from '../index';
 import { Dictionary, TabJustification, TabLeader } from '../../index';
 import { WCharacterFormat, WParagraphFormat, WTabStop } from '../index';
+import { ProtectionType } from '../../base';
 
 /** 
  * Exports the document to Word format.
@@ -17,6 +18,7 @@ export class WordExport {
     //Part path
     private documentPath: string = 'word/document.xml';
     private stylePath: string = 'word/styles.xml';
+    private chartPath: string = 'word/charts';
     private numberingPath: string = 'word/numbering.xml';
     private settingsPath: string = 'word/settings.xml';
     private headerPath: string = 'word/header';
@@ -31,7 +33,7 @@ export class WordExport {
     // private FontTablePath: string = 'word/fontTable.xml';
     private contentTypesPath: string = '[Content_Types].xml';
     // private ChartsPath: string = 'word/charts/';
-    // private DefaultEmbeddingPath: string = 'word/embeddings/';
+    private defaultEmbeddingPath: string = 'word/embeddings/';
     // private EmbeddingPath:string = 'word\embeddings\';
     // private DrawingPath:string = 'word\drawings\';
     // private ThemePath: string = 'word/theme/theme1.xml';
@@ -47,6 +49,7 @@ export class WordExport {
     //Relationship path
     private generalRelationPath: string = '_rels/.rels';
     private wordRelationPath: string = 'word/_rels/document.xml.rels';
+    private excelRelationPath: string = 'xl/_rels/workbook.xml.rels';
     // private FontRelationPath: string = 'word/_rels/fontTable.xml.rels';
     // private CommentsRelationPath: string = 'word/_rels/comments.xml.rels';
     // private FootnotesRelationPath: string = 'word/_rels/footnotes.xml.rels';
@@ -82,14 +85,14 @@ export class WordExport {
     // private DiagramData: string = 'application/vnd.openxmlformats-officedocument.drawingml.diagramData+xml';
     // private DiagramLayout: string = 'application/vnd.openxmlformats-officedocument.drawingml.diagramLayout+xml';
     // private DiagramStyle: string = 'application/vnd.openxmlformats-officedocument.drawingml.diagramStyle+xml';
-    // private ChartsContentType: string = 'application/vnd.openxmlformats-officedocument.drawingml.chart+xml';
+    private chartsContentType: string = 'application/vnd.openxmlformats-officedocument.drawingml.chart+xml';
     // private ThemeContentType: string = 'application/vnd.openxmlformats-officedocument.theme+xml';
     // private ChartDrawingContentType: string = 'application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml';
     // private ActiveXContentType: string = 'application/vnd.ms-office.activeX+xml';
     // private ActiveXBinContentType: string = 'application/vnd.ms-office.activeX';
     private tableStyleContentType: string = 'application/vnd.openxmlformats-officedocument.presentationml.tableStyles+xml';
     // private ChartStyleContentType: string = 'application/vnd.ms-office.chartstyle+xml';
-    // private ChartColorStyleContentType: string = 'application/vnd.ms-office.chartcolorstyle+xml';
+    private chartColorStyleContentType: string = 'application/vnd.ms-office.chartcolorstyle+xml';
     // private VbaProjectContentType: string = 'application/vnd.ms-office.vbaProject';
     // private VbaDataContentType: string = 'application/vnd.ms-word.vbaData+xml';
     // private MacroDocumentContentType: string = 'application/vnd.ms-word.document.macroEnabled.main+xml';
@@ -109,7 +112,7 @@ export class WordExport {
     private numberingRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering';
     private stylesRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles';
     // private OleObjectRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject';
-    // private ChartRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart';
+    private chartRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart';
     // private ThemeRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme';
     private fontRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/font';
     private tableStyleRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/tableStyles';
@@ -125,7 +128,7 @@ export class WordExport {
     private customXmlRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml';
     private customUIRelType: string = 'http://schemas.microsoft.com/office/2006/relationships/ui/extensibility';
     private attachedTemplateRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate';
-    // private ChartColorStyleRelType: string = 'http://schemas.microsoft.com/office/2011/relationships/chartColorStyle';
+    private chartColorStyleRelType: string = 'http://schemas.microsoft.com/office/2011/relationships/chartColorStyle';
     // private ChartStyleRelType: string = 'http://schemas.microsoft.com/office/2011/relationships/chartStyle';
     // private ChartUserShapesRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartUserShapes';
     // private ChartContentType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/package';
@@ -174,6 +177,13 @@ export class WordExport {
     private eNamespace: string = 'http://schemas.microsoft.com/office/2006/encryption';
     private pNamespace: string = 'http://schemas.microsoft.com/office/2006/keyEncryptor/password';
     private certNamespace: string = 'http://schemas.microsoft.com/office/2006/keyEncryptor/certificate';
+    // chart
+    private c15Namespace: string = 'http://schemas.microsoft.com/office/drawing/2015/06/chart';
+    private c7Namespace: string = 'http://schemas.microsoft.com/office/drawing/2007/8/2/chart';
+    private csNamespace: string = 'http://schemas.microsoft.com/office/drawing/2012/chartStyle';
+    // worksheet
+    private spreadSheetNamespace: string = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+    private spreadSheet9: string = 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/main';
 
     // Dls xml tags
     private cRelationshipsTag: string = 'Relationships';
@@ -264,16 +274,30 @@ export class WordExport {
     private defParagraphFormat: any;
     private defaultTabWidthValue: number;
     private mRelationShipID: number = 0;
+    private cRelationShipId: number = 0;
+    private eRelationShipId: number = 0;
     private mDocPrID: number = 0;
+    private chartCount: number = 0;
+    private seriesCount: number = 0;
+    private chartStringCount: number = 0;
+    private chart: any;
     private mDifferentFirstPage: boolean = false;
     private mHeaderFooterColl: Dictionary<any, Dictionary<string, any>>;
     private mVerticalMerge: Dictionary<number, number>;
     private mGridSpans: Dictionary<number, number>;
     private mDocumentImages: Dictionary<string, any>;
+    private mDocumentCharts: Dictionary<string, any>;
     private mExternalLinkImages: Dictionary<string, string>;
     private mHeaderFooterImages: Dictionary<string, Dictionary<string, any>>;
     private mArchive: ZipArchive;
+    private mArchiveExcel: ZipArchive;
     private mBookmarks: string[] = undefined;
+    private formatting: boolean;
+    private enforcement: boolean;
+    private hashValue: string;
+    private saltValue: string;
+    private protectionType: ProtectionType;
+    private fileName: string;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -302,6 +326,13 @@ export class WordExport {
         }
         return this.mHeaderFooterImages;
     }
+    // Gets the collection of charts present in the document body
+    private get documentCharts(): Dictionary<string, any> {
+        if (this.mDocumentCharts === undefined) {
+            this.mDocumentCharts = new Dictionary<string, any>();
+        }
+        return this.mDocumentCharts;
+    }
     /// Gets the HeaderFooter Collection
     private get headersFooters(): Dictionary<any, Dictionary<string, any>> {
         if (this.mHeaderFooterColl === undefined) {
@@ -313,6 +344,7 @@ export class WordExport {
      * @private
      */
     public save(viewer: LayoutViewer, fileName: string): void {
+        this.fileName = fileName;
         this.serialize(viewer);
         this.mArchive.save(fileName + '.docx').then((mArchive: ZipArchive): void => {
             mArchive.destroy();
@@ -335,14 +367,39 @@ export class WordExport {
     /**
      * @private
      */
+    public saveExcel(): Promise<Blob> {
+        let xlsxPath: string = this.defaultEmbeddingPath + 'Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
+        let promise: Promise<Blob>;
+        let blobData: Blob;
+        return promise = new Promise((resolve: Function, reject: Function) => {
+            this.mArchiveExcel.saveAsBlob().then((blob: Blob) => {
+                blobData = blob;
+                let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(blob, xlsxPath);
+                this.mArchive.addItem(zipArchiveItem);
+                this.mArchive.save(this.fileName + '.docx').then((mArchive: ZipArchive): void => {
+                    mArchive.destroy();
+                });
+            });
+            resolve(blobData);
+            this.mArchiveExcel = undefined;
+        });
+    }
+    /**
+     * @private
+     */
     public destroy(): void {
         this.clearDocument();
         this.mRelationShipID = undefined;
         this.mDocPrID = undefined;
         this.mDifferentFirstPage = undefined;
+        this.fileName = undefined;
         if (this.mArchive) {
             this.mArchive.destroy();
             this.mArchive = undefined;
+        }
+        if (this.mArchiveExcel) {
+            this.mArchiveExcel.destroy();
+            this.mArchiveExcel = undefined;
         }
     }
     // Saves the word document in the stream
@@ -421,6 +478,11 @@ export class WordExport {
         this.defParagraphFormat = document.paragraphFormat;
         this.defaultTabWidthValue = document.defaultTabWidth;
         this.mStyles = document.styles;
+        this.formatting = document.formatting;
+        this.enforcement = document.enforcement;
+        this.hashValue = document.hashValue;
+        this.saltValue = document.saltValue;
+        this.protectionType = document.protectionType;
     }
     // Clears the document
     private clearDocument(): void {
@@ -441,7 +503,10 @@ export class WordExport {
         this.defParagraphFormat = undefined;
         this.defaultTabWidthValue = undefined;
         this.mRelationShipID = 0;
+        this.eRelationShipId = 0;
+        this.cRelationShipId = 0;
         this.mDocPrID = 0;
+        this.chartCount = 0;
         this.mDifferentFirstPage = false;
         if (this.mHeaderFooterColl) {
             this.mHeaderFooterColl.destroy();
@@ -466,6 +531,10 @@ export class WordExport {
         if (this.mHeaderFooterImages) {
             this.mHeaderFooterImages.destroy();
             this.mHeaderFooterImages = undefined;
+        }
+        if (this.mDocumentCharts) {
+            this.mDocumentCharts.destroy();
+            this.mDocumentCharts = undefined;
         }
     }
     // Serializes the document elements (document.xml)
@@ -852,6 +921,13 @@ export class WordExport {
                 this.serializePicture(writer, item);
             } else if (item.hasOwnProperty('bookmarkType')) {
                 this.serializeBookMark(writer, item);
+            } else if (item.hasOwnProperty('editRangeId')) {
+                this.serializeEditRange(writer, item);
+            } else if (item.hasOwnProperty('chartType')) {
+                this.chart = item;
+                this.serializeChart(writer, item);
+                // chart.xml
+                this.serializeChartStructure();
             } else {
                 this.serializeTextRange(writer, item, previousNode);
             }
@@ -865,6 +941,29 @@ export class WordExport {
     private serializeBiDirectionalOverride(writer: any, characterFormat: any): void {
         writer.writeStartElement(undefined, 'bdo', this.wNamespace);
         writer.writeAttributeString(undefined, 'val', this.wNamespace, characterFormat.bdo.toLowerCase());
+    }
+    // Serialize Document Protection
+    //<w:permStart w:id="627587516" w:edGrp="everyone" />
+    private serializeEditRange(writer: XmlWriter, editElement: any): void {
+        if (editElement.hasOwnProperty('editRangeStart')) {
+            writer.writeStartElement('w', 'permEnd', this.wNamespace);
+        } else {
+            writer.writeStartElement('w', 'permStart', this.wNamespace);
+            if (editElement.user && editElement.user !== '') {
+                writer.writeAttributeString('w', 'ed', this.wNamespace, editElement.user);
+            }
+            if (editElement.group && editElement.group !== '') {
+                writer.writeAttributeString('w', 'edGrp', this.wNamespace, editElement.group.toLowerCase());
+            }
+            if (editElement.columnFirst && editElement.columnFirst !== -1) {
+                writer.writeAttributeString('w', 'colFirst', this.wNamespace, editElement.columnFirst.toString());
+            }
+            if (editElement.columnLast && editElement.columnLast !== -1) {
+                writer.writeAttributeString('w', 'colLast', this.wNamespace, editElement.columnLast.toString());
+            }
+        }
+        writer.writeAttributeString('w', 'id', this.wNamespace, editElement.editRangeId);
+        writer.writeEndElement();
     }
     // Serialize the book mark
     private serializeBookMark(writer: XmlWriter, bookmark: any): void {
@@ -897,9 +996,13 @@ export class WordExport {
         }
     }
     // Serialize the drawing element.
-    private serializeDrawing(writer: XmlWriter, image: any): void {
+    private serializeDrawing(writer: XmlWriter, draw: any): void {
         writer.writeStartElement(undefined, 'drawing', this.wNamespace);
-        this.serializeInlinePicture(writer, image);
+        if (draw.hasOwnProperty('chartType')) {
+            this.serializeInlineCharts(writer, draw);
+        } else {
+            this.serializeInlinePicture(writer, draw);
+        }
         writer.writeEndElement();
     }
     // Serialize the inline picture.
@@ -926,6 +1029,1454 @@ export class WordExport {
 
         this.serializeDrawingGraphics(writer, image);
         writer.writeEndElement();
+    }
+    // serialize inline chart
+    private serializeInlineCharts(writer: XmlWriter, item: any): void {
+        writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'distT', undefined, '0');
+        writer.writeAttributeString(undefined, 'distB', undefined, '0');
+        writer.writeAttributeString(undefined, 'distL', undefined, '0');
+        writer.writeAttributeString(undefined, 'distR', undefined, '0');
+        writer.writeStartElement(undefined, 'extent', this.wpNamespace);
+        let cx: number = Math.round(item.width * this.emusPerPoint);
+        writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
+        let cy: number = Math.round(item.height * this.emusPerPoint);
+        writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
+        writer.writeEndElement(); // end of wp:extend
+        writer.writeStartElement(undefined, 'effectExtent', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'l', undefined, '0');
+        writer.writeAttributeString(undefined, 't', undefined, '0');
+        writer.writeAttributeString(undefined, 'r', undefined, '0');
+        writer.writeAttributeString(undefined, 'b', undefined, '0');
+        writer.writeEndElement(); // end of wp: effectExtent
+        this.serializeDrawingGraphicsChart(writer, item);
+        writer.writeEndElement(); // end of inline
+    }
+    // Serialize the graphics element for chart.
+    private serializeDrawingGraphicsChart(writer: XmlWriter, chart: any): void {
+        let id: string = '';
+
+        id = this.updatechartId(chart);
+        // Processing chart
+        writer.writeStartElement('wp', 'docPr', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
+        writer.writeAttributeString(undefined, 'name', undefined, this.getNextChartName());
+        writer.writeEndElement(); // end of wp docPr
+        writer.writeStartElement('wp', 'cNvGraphicFramePr', this.wpNamespace);
+        writer.writeEndElement(); // end of cNvGraphicFramePr
+
+        writer.writeStartElement('a', 'graphic', this.aNamespace);
+        writer.writeStartElement('a', 'graphicData', this.aNamespace);
+        writer.writeAttributeString(undefined, 'uri', undefined, this.chartNamespace);
+
+        writer.writeStartElement('c', 'chart', this.chartNamespace);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('r', 'id', undefined, id);
+        writer.writeEndElement(); // end of chart
+
+
+        writer.writeEndElement(); // end of graphic data
+        writer.writeEndElement(); // end of graphic
+    }
+    private getNextChartName(): string {
+        return 'Chart' + (++this.chartCount);
+    }
+    // serialize chart
+    private serializeChart(writer: XmlWriter, chart: any): void {
+        writer.writeStartElement('w', 'r', this.wNamespace);
+        this.serializeCharacterFormat(writer, chart.characterFormat);
+        this.serializeDrawing(writer, chart);
+        writer.writeEndElement();
+    }
+    private serializeChartStructure(): void {
+        this.serializeChartXML();
+        this.serializeChartColors();
+        this.serializeChartExcelData();
+        this.serializeChartRelations();
+        this.chart = undefined;
+        this.saveExcel();
+    }
+    // serialize Chart.xml
+    private serializeChartXML(): void {
+        let chartPath: string = '';
+        let writer: XmlWriter = new XmlWriter();
+        writer.writeStartElement('c', 'chartSpace', this.chartNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('xmlns', 'c16r2', undefined, this.c15Namespace);
+
+        this.serializeChartData(writer, this.chart);
+        writer.writeStartElement('c', 'externalData', this.chartNamespace);
+        writer.writeAttributeString('r', 'id', undefined, 'rId1');
+        writer.writeStartElement('c', 'autoUpdate', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of autoUpdate
+        writer.writeEndElement(); // end of externalData
+        writer.writeEndElement(); // end of chartSpace
+        chartPath = this.chartPath + '/chart' + this.chartCount + '.xml';
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, chartPath);
+        this.mArchive.addItem(zipArchiveItem);
+    }
+    // serialize chart colors.xml
+    private serializeChartColors(): void {
+        let writer: XmlWriter = new XmlWriter();
+        let colorPath: string = '';
+        writer.writeStartElement('cs', 'colorStyle', this.csNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeAttributeString(undefined, 'meth', undefined, 'cycle');
+        writer.writeAttributeString(undefined, 'id', undefined, '10');
+
+        this.serializeChartColor(writer, this.chart);
+        colorPath = this.chartPath + '/colors' + this.chartCount + '.xml';
+
+        writer.writeEndElement(); // end of cs:colorStyle chart color
+
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, colorPath);
+        this.mArchive.addItem(zipArchiveItem);
+        colorPath = '';
+    }
+    private serializeChartColor(writer: XmlWriter, chart: any): void {
+        for (let i: number = 1; i <= 6; i++) {
+            writer.writeStartElement('a', 'schemeClr', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'accent' + i);
+            writer.writeEndElement(); // end of a:schemeClr
+        }
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '60000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '80000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeStartElement('a', 'lumOff', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '20000');
+        writer.writeEndElement(); // end of lumoff
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '80000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '60000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeStartElement('a', 'lumOff', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '40000');
+        writer.writeEndElement(); // end of lumoff
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '50000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '70000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeStartElement('a', 'lumOff', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '30000');
+        writer.writeEndElement(); // end of lumoff
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '70000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '50000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeStartElement('a', 'lumOff', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '50000');
+        writer.writeEndElement(); // end of lumoff
+        writer.writeEndElement(); // end of cs:variation
+    }
+    // serialize chart Excel Data
+    private serializeChartExcelData(): void {
+        this.mArchiveExcel = new ZipArchive();
+        this.mArchiveExcel.compressionLevel = 'Normal';
+        let type: string = this.chart.chartType;
+        let isScatterType: boolean = (type === 'Scatter_Markers' || type === 'Bubble');
+        this.serializeWorkBook();
+        this.serializeSharedString(isScatterType);
+        this.serializeExcelContentTypes();
+        this.serializeExcelData(isScatterType);
+        this.serializeExcelStyles();
+        this.serializeExcelRelation();
+        this.serializeExcelGeneralRelations();
+        this.chartStringCount = 0;
+    }
+
+    private serializeWorkBook(): void {
+        let writer: XmlWriter = new XmlWriter();
+        let workbookPath: string = 'xl/workbook.xml';
+        this.resetExcelRelationShipId();
+        writer.writeStartElement(undefined, 'workbook', undefined);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
+        writer.writeStartElement(undefined, 'sheets', undefined);
+        writer.writeStartElement(undefined, 'sheet', undefined);
+        writer.writeAttributeString(undefined, 'name', undefined, 'Sheet1');
+        writer.writeAttributeString(undefined, 'sheetId', undefined, '1');
+        writer.writeAttributeString('r', 'id', undefined, this.getNextExcelRelationShipID());
+        writer.writeEndElement(); // end of sheet
+        writer.writeEndElement(); // end of sheets
+        writer.writeEndElement(); // end of workbook
+
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, workbookPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    }
+
+    private serializeExcelStyles(): void {
+        let writer: XmlWriter = new XmlWriter();
+        let stylePath: string = 'xl/styles.xml';
+        writer.writeStartElement(undefined, 'styleSheet', undefined);
+        writer.writeAttributeString('xmlns', 'mc', undefined, this.veNamespace);
+        writer.writeAttributeString('mc', 'Ignorable', undefined, 'x14ac');
+        writer.writeAttributeString('xmlns', 'x14ac', undefined, 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac');
+        writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
+        writer.writeEndElement(); // end of styleSheet
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, stylePath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    }
+
+    private serializeExcelData(isScatterType: boolean): void {
+        // excel data
+        let sheetPath: string = '';
+        let writer: XmlWriter = new XmlWriter();
+        writer.writeStartElement(undefined, 'worksheet', undefined);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('xmlns', 'x14', undefined, this.spreadSheet9);
+        writer.writeAttributeString('xmlns', 'mc', undefined, this.veNamespace);
+        writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
+        this.serializeExcelSheet(writer, isScatterType);
+
+        writer.writeEndElement(); // end of worksheet
+        sheetPath = 'xl/worksheets' + '/sheet1.xml';
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, sheetPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    }
+    private serializeSharedString(isScatterType: boolean): void {
+        let chart: any = this.chart;
+        let writer: XmlWriter = new XmlWriter();
+        let sharedStringPath: string = '';
+        let chartSharedString: string[] = [];
+        let type: string = this.chart.chartType;
+        let seriesLength: number = chart.chartSeries.length;
+        for (let column: number = 0; column < seriesLength; column++) {
+            let series: any = chart.chartSeries[column];
+            let seriesName: string = series.seriesName;
+            let isString: RegExpMatchArray = seriesName.match(/[a-z]/i);
+            if (isScatterType && column === 0) {
+                chartSharedString.push('X-Values');
+            }
+            if (isString) {
+                chartSharedString.push(series.seriesName);
+                this.chartStringCount++;
+            }
+        }
+        if (type === 'Bubble') {
+            chartSharedString.push('Size');
+        }
+        for (let row: number = 0; row < chart.chartCategory.length; row++) {
+            let category: any = chart.chartCategory[row];
+            let format: string = chart.chartPrimaryCategoryAxis.numberFormat;
+            let categoryName: string = category.categoryXName;
+            let isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
+            if (isString || format === 'm/d/yyyy') {
+                chartSharedString.push(category.categoryXName);
+                this.chartStringCount++;
+            }
+        }
+        let uniqueCount: number = this.chartStringCount + 1;
+        writer.writeStartElement(undefined, 'sst', undefined);
+        writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
+        writer.writeAttributeString(undefined, 'count', undefined, uniqueCount.toString());
+        writer.writeAttributeString(undefined, 'uniqueCount', undefined, uniqueCount.toString());
+        for (let i: number = 0; i <= chartSharedString.length; i++) {
+            writer.writeStartElement(undefined, 'si', undefined);
+            writer.writeStartElement(undefined, 't', undefined);
+            if (i !== chartSharedString.length) {
+                writer.writeString(chartSharedString[i]);
+            } else if (!isScatterType) {
+                writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
+                writer.writeString(' ');
+            }
+            writer.writeEndElement(); // end of t
+            writer.writeEndElement(); // end of si
+        }
+        writer.writeEndElement(); // end of sst
+        sharedStringPath = 'xl/sharedStrings' + '.xml';
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, sharedStringPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    }
+    // excel sheet data
+    private serializeExcelSheet(writer: XmlWriter, isScatterType: boolean): void {
+        let chart: any = this.chart;
+        let type: string = 's';
+        let isBubbleType: boolean = (chart.chartType === 'Bubble');
+        let bubbleLength: number;
+        let categoryLength: number = chart.chartCategory.length + 1;
+        let format: string = chart.chartPrimaryCategoryAxis.numberFormat;
+        let seriesLength: number = chart.chartSeries.length + 1;
+        if (isBubbleType) {
+            bubbleLength = seriesLength;
+            seriesLength = seriesLength + 1;
+        }
+        let category: any = undefined;
+        let series: any = undefined;
+        let count: number = 0;
+        writer.writeStartElement(undefined, 'sheetData', undefined);
+        for (let row: number = 0; row < categoryLength; row++) {
+            writer.writeStartElement(undefined, 'row', undefined);
+            writer.writeAttributeString(undefined, 'r', undefined, (row + 1).toString());
+            for (let column: number = 0; column < seriesLength; column++) {
+                let alphaNumeric: string = String.fromCharCode('A'.charCodeAt(0) + column) + (row + 1).toString();
+                writer.writeStartElement(undefined, 'c', undefined);
+                writer.writeAttributeString(undefined, 'r', undefined, alphaNumeric);
+                if (row !== 0 && column === 0) {
+                    category = chart.chartCategory[row - 1];
+                    let categoryName: string = category.categoryXName;
+                    let isString: RegExpMatchArray = categoryName.match(/[a-z]/i);
+                    if (isNullOrUndefined(isString) && format === 'm/d/yyyy') {
+                        type = 's';
+                    } else if ((!isString && !isNullOrUndefined(isString)) || isScatterType) {
+                        type = 'n';
+                    } else {
+                        type = 's';
+                    }
+                } else if (row === 0 && column !== 0 && column !== (bubbleLength)) {
+                    series = chart.chartSeries[column - 1];
+                    let seriesName: string = series.seriesName;
+                    let isString: RegExpMatchArray = seriesName.match(/[a-z]/i);
+                    if (!isString) {
+                        type = 'n';
+                    } else {
+                        type = 's';
+                    }
+                } else if (row === 0 && isBubbleType && column === (bubbleLength)) {
+                    type = 's';
+                } else if (row === 0 && column === 0) {
+                    type = 's';
+                } else {
+                    type = 'n';
+                }
+                writer.writeAttributeString(undefined, 't', undefined, type);
+                writer.writeStartElement(undefined, 'v', undefined);
+                if (row === 0 && column === 0 && !isScatterType) {
+                    writer.writeString(this.chartStringCount.toString());
+                } else if (type === 's') {
+                    writer.writeString(count.toString());
+                    count++;
+                } else if (row !== 0 && type !== 's' && column === 0 && column !== (bubbleLength)) {
+                    writer.writeString(category.categoryXName);
+                } else if (column !== 0 && type !== 's' && row === 0 && column !== (bubbleLength)) {
+                    writer.writeString(series.seriesName);
+                } else if (column !== 0 && column !== (bubbleLength)) {
+                    let data: any = category.chartData[column - 1];
+                    let yValue: any = data.yValue;
+                    writer.writeString(yValue.toString());
+                } else if (isBubbleType && column === (bubbleLength)) {
+                    let data: any = category.chartData[column - 2];
+                    let size: any = data.size;
+                    writer.writeString(size.toString());
+                }
+                writer.writeEndElement(); // end of v[value]
+                writer.writeEndElement(); // end of c[column]
+                type = '';
+            }
+            writer.writeEndElement(); // end of row
+        }
+        writer.writeEndElement(); // end of sheetData
+    }
+    // excel content types
+    private serializeExcelContentTypes(): void {
+        let writer: XmlWriter = new XmlWriter();
+        writer.writeStartElement(undefined, 'Types', 'http://schemas.openxmlformats.org/package/2006/content-types');
+        this.serializeDefaultContentType(writer, 'xml', this.xmlContentType);
+        this.serializeDefaultContentType(writer, 'rels', this.relationContentType);
+        // tslint:disable-next-line:max-line-length
+        this.serializeOverrideContentType(writer, 'xl/styles.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml');
+        this.serializeOverrideContentType(writer, 'xl/workbook.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml');
+        // tslint:disable-next-line:max-line-length
+        // this.serializeOverrideContentType(writer, '/docProps/app.xml', 'application/vnd.openxmlformats-officedocument.extended-properties+xml');
+        // this.serializeOverrideContentType(writer, '/docProps/core.xml', 'application/vnd.openxmlformats-package.core-properties+xml');
+        // tslint:disable-next-line:max-line-length
+        this.serializeOverrideContentType(writer, 'xl/sharedStrings.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml');
+        this.serializeOverrideContentType(writer, 'xl/worksheets/sheet1.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml');
+        writer.writeEndElement(); // end of types tag
+
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.contentTypesPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    }
+
+    private serializeExcelRelation(): void {
+        let writer: XmlWriter = new XmlWriter();
+        this.resetExcelRelationShipId();
+        let worksheetType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet';
+        let sharedStringType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings';
+        writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
+        this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), worksheetType, 'worksheets/sheet1.xml');
+        this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), this.stylesRelType, 'styles.xml');
+        this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), sharedStringType, 'sharedStrings.xml');
+        writer.writeEndElement(); // end of relationships
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.excelRelationPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    }
+
+    private serializeExcelGeneralRelations(): void {
+        let writer: XmlWriter = new XmlWriter();
+        this.resetExcelRelationShipId();
+        writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
+        this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), this.documentRelType, 'xl/workbook.xml');
+        writer.writeEndElement(); // end of relationships
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.generalRelationPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    }
+
+    // get the next Excel relationship ID
+    private getNextExcelRelationShipID(): string {
+        return 'rId' + (++this.eRelationShipId);
+    }
+
+    // get the next Chart relationship ID
+    private getNextChartRelationShipID(): string {
+        return 'rId' + (++this.cRelationShipId);
+    }
+
+    //  chart data
+    private serializeChartData(writer: XmlWriter, chart: any): void {
+        writer.writeStartElement('c', 'date1904', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement();
+        writer.writeStartElement('c', 'lang', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'en-US');
+        writer.writeEndElement();
+        writer.writeStartElement('c', 'roundedCorners', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement();
+
+        writer.writeStartElement('mc', 'AlternateContent', this.veNamespace);
+        writer.writeStartElement('mc', 'Choice', this.veNamespace);
+        writer.writeAttributeString('xmlns', 'c14', undefined, this.c7Namespace);
+        writer.writeAttributeString(undefined, 'Requires', undefined, 'c14');
+        writer.writeStartElement('c14', 'style', undefined);
+        writer.writeAttributeString(undefined, 'val', undefined, '102');
+        writer.writeEndElement(); // c14 style end
+        writer.writeEndElement(); // mc:choice ened
+        writer.writeStartElement('mc', 'Fallback', this.veNamespace);
+        writer.writeStartElement('c', 'style', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '2');
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement(); // end tag of mc alternate content
+
+        writer.writeStartElement('c', 'chart', this.chartNamespace);
+        if (!isNullOrUndefined(this.chart.chartTitle)) {
+            writer.writeStartElement('c', 'title', this.chartNamespace);
+            this.serializeTextProperties(writer, this.chart.chartTitleArea, this.chart.chartTitle);
+            writer.writeEndElement(); // end tag of title
+        }
+        // serialize plot area
+        this.serializeChartPlotArea(writer, chart);
+        writer.writeEndElement(); // end tag of chart
+
+        this.serializeShapeProperties(writer, 'D9D9D9', true);
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeAttributeString('xmlns', 'c', undefined, this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeEndElement(); // end tag of bodyPr
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeEndElement(); // end of a:lstStyle
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeStartElement('a', 'pPr', this.aNamespace);
+        writer.writeStartElement('a', 'defRPr', this.aNamespace);
+        writer.writeEndElement(); // end tag of defRPr
+        writer.writeEndElement(); // end tag of pPr
+        writer.writeStartElement('a', 'endParaRPr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
+        writer.writeEndElement(); // end of a:endParaRPr
+        writer.writeEndElement(); // end tag of p
+        writer.writeEndElement(); // end tag of txPr
+    }
+    //  chart plot area
+    // tslint:disable:max-func-body-length
+    private serializeChartPlotArea(writer: XmlWriter, chart: any): void {
+        writer.writeStartElement('c', 'autoTitleDeleted', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of autoTitleDeleted
+        writer.writeStartElement('c', 'plotArea', this.chartNamespace);
+        writer.writeStartElement('c', 'layout', this.chartNamespace);
+        writer.writeEndElement();
+        // chart Type
+        let serializationChartType: string = this.chartType(chart);
+        let isPieTypeSerialization: boolean = (serializationChartType === 'pieChart' || serializationChartType === 'doughnutChart');
+        let isScatterType: boolean = (serializationChartType === 'scatterChart' || serializationChartType === 'bubbleChart');
+        writer.writeStartElement('c', serializationChartType, this.chartNamespace);
+        if (serializationChartType === 'barChart') {
+            let barDiv: string = '';
+            if (chart.chartType === 'Column_Clustered' || chart.chartType === 'Column_Stacked'
+                || chart.chartType === 'Column_Stacked_100') {
+                barDiv = 'col';
+            } else {
+                barDiv = 'bar';
+            }
+            writer.writeStartElement('c', 'barDir', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, barDiv);
+            writer.writeEndElement(); // end of barDir
+        }
+        if (!isPieTypeSerialization && !isScatterType) {
+            let grouping: string = this.chartGrouping(chart.chartType);
+            writer.writeStartElement('c', 'grouping', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, grouping);
+            writer.writeEndElement(); // end of grouping
+        }
+        if (serializationChartType === 'scatterChart') {
+            writer.writeStartElement('c', 'scatterStyle', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'marker');
+            writer.writeEndElement(); // end of scatterStyle
+        }
+        writer.writeStartElement('c', 'varyColors', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c:varyColors
+        let valueSheet: string = '';
+        for (let i: number = 0; i < chart.chartSeries.length; i++) {
+            let series: any = chart.chartSeries[i];
+            this.seriesCount = i;
+            writer.writeStartElement('c', 'ser', this.chartNamespace);
+            writer.writeStartElement('c', 'idx', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, i.toString());
+            writer.writeEndElement(); // end of c:idx
+            writer.writeStartElement('c', 'order', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, i.toString());
+            writer.writeEndElement(); // end of c:order
+            writer.writeStartElement('c', 'tx', this.chartNamespace);
+            writer.writeStartElement('c', 'strRef', this.chartNamespace);
+            writer.writeStartElement('c', 'f', this.chartNamespace);
+            let alphaNumeric: string = String.fromCharCode('B'.charCodeAt(0) + i);
+            valueSheet = 'Sheet1!$' + alphaNumeric;
+            writer.writeString(valueSheet + '$1');
+            valueSheet = valueSheet + '$2:$' + alphaNumeric + '$';
+            writer.writeEndElement(); // end of c:f
+            writer.writeStartElement('c', 'strCache', this.chartNamespace);
+            writer.writeStartElement('c', 'ptCount', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '1');
+            writer.writeEndElement(); // end of ptCount
+            writer.writeStartElement('c', 'pt', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'idx', undefined, '0');
+            writer.writeStartElement('c', 'v', this.chartNamespace);
+            writer.writeString(series.seriesName);
+            writer.writeEndElement(); // end of c:v
+            writer.writeEndElement(); // end of pt
+            writer.writeEndElement(); // end of strCache
+            writer.writeEndElement(); // end of strRef
+            writer.writeEndElement(); // end of tx
+            if (chart.chartType === 'Pie' || chart.chartType === 'Doughnut') {
+                this.parseChartDataPoint(writer, series);
+                writer.writeStartElement('c', 'explosion', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, '0');
+                writer.writeEndElement(); // end of explosion
+            } else if (!isScatterType) {
+                this.parseChartSeriesColor(writer, series.dataPoints, serializationChartType);
+            }
+            if (serializationChartType === 'scatterChart') {
+                let fillColor: string = series.dataPoints[0].fill.foreColor;
+                writer.writeStartElement('c', 'marker', this.chartNamespace);
+                writer.writeStartElement('c', 'symbol', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, 'circle');
+                writer.writeEndElement(); // end of a: symbol
+                writer.writeStartElement('c', 'size', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, '5');
+                writer.writeEndElement(); // end of a: size
+                this.serializeShapeProperties(writer, fillColor, false);
+                writer.writeEndElement(); // end of a: marker
+            }
+            if (series.dataLabel) {
+                this.parseChartDataLabels(writer, series.dataLabel);
+            }
+            if (series.trendLines) {
+                this.parseChartTrendLines(writer, series);
+            }
+            if (series.errorBar) {
+                this.serializeChartErrorBar(writer, series);
+            }
+            if (serializationChartType === 'scatterChart') {
+                this.serializeDefaultShapeProperties(writer);
+            } else if (serializationChartType === 'bubbleChart') {
+                this.serializeShapeProperties(writer, series.dataPoints[i].fill.foreColor, false);
+            }
+            let categoryType: string = 'cat';
+            let categoryRef: string = 'strRef';
+            let cacheType: string = 'strCache';
+            if (isScatterType) {
+                categoryType = 'xVal';
+                categoryRef = 'numRef';
+                cacheType = 'numCache';
+            }
+            writer.writeStartElement('c', categoryType, this.chartNamespace);
+            writer.writeStartElement('c', categoryRef, this.chartNamespace);
+            this.serializeChartCategory(writer, chart, cacheType); // serialize chart yvalue
+            writer.writeEndElement(); // end of categoryRef
+            writer.writeEndElement(); // end of cat
+            this.serializeChartValue(writer, valueSheet, serializationChartType);
+            writer.writeEndElement(); // end of c:ser
+        }
+
+        writer.writeStartElement('c', 'dLbls', this.chartNamespace);
+        if (isPieTypeSerialization) {
+            writer.writeStartElement('c', 'dLblPos', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'bestFit');
+            writer.writeEndElement(); // end of dLblPos
+        }
+        writer.writeStartElement('c', 'showLegendKey', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showLegendKey
+        writer.writeStartElement('c', 'showVal', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showVal
+        writer.writeStartElement('c', 'showCatName', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showCatName
+        writer.writeStartElement('c', 'showSerName', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showSerName
+        writer.writeStartElement('c', 'showPercent', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showPercent
+        writer.writeStartElement('c', 'showBubbleSize', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showBubbleSize
+        writer.writeStartElement('c', 'showLeaderLines', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '1');
+        writer.writeEndElement(); // end of c: showLeaderLines
+        writer.writeEndElement(); // end of c: dLbls
+        if (isPieTypeSerialization) {
+            let series: any = this.chart.chartSeries[0];
+            let sliceAngle: number = 0;
+            let holeSize: number = 0;
+            if (series.hasOwnProperty('firstSliceAngle')) {
+                sliceAngle = series.firstSliceAngle;
+            }
+            writer.writeStartElement('c', 'firstSliceAng', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, sliceAngle.toString());
+            writer.writeEndElement(); // end of c: firstSliceAng
+            if (chart.chartType === 'Doughnut') {
+                holeSize = series.holeSize;
+                writer.writeStartElement('c', 'holeSize', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, holeSize.toString());
+                writer.writeEndElement(); // end of c: holeSize
+            }
+        }
+        if (serializationChartType !== 'lineChart' && !isScatterType) {
+            writer.writeStartElement('c', 'gapWidth', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, this.chart.gapWidth.toString());
+            writer.writeEndElement(); // end of gapWidth
+            writer.writeStartElement('c', 'overlap', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, this.chart.overlap.toString());
+            writer.writeEndElement(); // end of overlap
+        } else if (serializationChartType !== 'bubbleChart') {
+            writer.writeStartElement('c', 'smooth', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '0');
+            writer.writeEndElement(); // end of smooth
+        }
+        if (serializationChartType === 'bubbleChart') {
+            writer.writeStartElement('c', 'sizeRepresents', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'area');
+            writer.writeEndElement(); // end of smooth
+        }
+        let type: string = this.chart.chartType;
+        if (!isPieTypeSerialization) {
+            writer.writeStartElement('c', 'axId', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '335265000');
+            writer.writeEndElement(); // end of axId
+            writer.writeStartElement('c', 'axId', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '335263360');
+            writer.writeEndElement(); // end of axId
+        }
+        writer.writeEndElement(); // end of chart type
+        let isStackedPercentage: boolean = (type === 'Column_Stacked_100' || type === 'Area_Stacked_100' ||
+            type === 'Bar_Stacked_100' || type === 'Line_Stacked_100' || type === 'Line_Markers_Stacked_100');
+        let format: string = this.chart.chartPrimaryCategoryAxis.categoryType;
+        if (!isPieTypeSerialization) {
+            this.serializeCategoryAxis(writer, format, isStackedPercentage);
+            this.serializeValueAxis(writer, format, isStackedPercentage);
+        }
+        if (this.chart.hasOwnProperty('chartDataTable')) {
+            let dataTable: any = this.chart.chartDataTable;
+            let showHorzBorder: number = 0;
+            let showVertBorder: number = 0;
+            let showOutline: number = 0;
+            let showKeys: number = 0;
+            if (dataTable.showSeriesKeys) {
+                showKeys = 1;
+            }
+            if (dataTable.hasHorzBorder) {
+                showHorzBorder = 1;
+            }
+            if (dataTable.hasVertBorder) {
+                showVertBorder = 1;
+            }
+            if (dataTable.hasBorders) {
+                showOutline = 1;
+            }
+            writer.writeStartElement('c', 'dTable', this.chartNamespace);
+            writer.writeStartElement('c', 'showHorzBorder', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, showHorzBorder.toString());
+            writer.writeEndElement(); // end of showHorzBorder
+            writer.writeStartElement('c', 'showVertBorder', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, showVertBorder.toString());
+            writer.writeEndElement(); // end of showVertBorder
+            writer.writeStartElement('c', 'showOutline', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, showOutline.toString());
+            writer.writeEndElement(); // end of showOutline
+            writer.writeStartElement('c', 'showKeys', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, showKeys.toString());
+            writer.writeEndElement(); // end of showKeys
+            writer.writeEndElement(); // end of dTable
+        }
+
+        this.serializeDefaultShapeProperties(writer);
+
+
+        writer.writeEndElement(); // end of plot area
+
+        // legend
+        if (!isNullOrUndefined(this.chart.chartLegend.position)) {
+            this.serializeChartLegend(writer);
+        }
+
+        writer.writeStartElement('c', 'plotVisOnly', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '1');
+        writer.writeEndElement(); // end of c: plotVisOnly
+        writer.writeStartElement('c', 'dispBlanksAs', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'gap');
+        writer.writeEndElement(); // end of c: dispBlanksAs
+    }
+    private serializeChartLegend(writer: XmlWriter): void {
+        let legendPosition: string = this.chartLegendPosition(this.chart.chartLegend);
+        let title: any = this.chart.chartLegend.chartTitleArea;
+        let fill: any = title.dataFormat.fill.foreColor;
+        writer.writeStartElement('c', 'legend', this.chartNamespace);
+        writer.writeStartElement('c', 'legendPos', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, legendPosition);
+        writer.writeEndElement();
+        writer.writeStartElement('c', 'overlay', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement();
+        this.serializeDefaultShapeProperties(writer);
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+    }
+    private serializeChartErrorBar(writer: XmlWriter, series: any): void {
+        let errorBar: any = series.errorBar;
+        let errorBarValueType: string = this.errorBarValueType(errorBar.type);
+        let endStyle: number = 0;
+        if (errorBar.endStyle !== 'Cap') {
+            endStyle = 1;
+        }
+        writer.writeStartElement('c', 'errBars', this.chartNamespace);
+        writer.writeStartElement('c', 'errBarType', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, errorBar.direction.toLowerCase());
+        writer.writeEndElement(); // end of c: errBarType
+        writer.writeStartElement('c', 'errValType', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, errorBarValueType);
+        writer.writeEndElement(); // end of c: errValType
+        writer.writeStartElement('c', 'noEndCap', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, endStyle.toString());
+        writer.writeEndElement(); // end of c: noEndCap
+        writer.writeStartElement('c', 'val', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, errorBar.numberValue.toString());
+        writer.writeEndElement(); // end of c: val
+        this.serializeShapeProperties(writer, '595959', true);
+
+        writer.writeEndElement(); // end of c: errBars
+    }
+    private errorBarValueType(type: string): string {
+        let valueType: string = '';
+        switch (type) {
+            case 'StandardError':
+                valueType = 'stdErr';
+                break;
+            case 'StandardDeviation':
+                valueType = 'stdDev';
+                break;
+            case 'Percentage':
+                valueType = 'percentage';
+                break;
+            case 'Fixed':
+                valueType = 'fixedVal';
+                break;
+            default:
+                valueType = 'stdErr';
+                break;
+        }
+        return valueType;
+    }
+    private serializeCategoryAxis(writer: XmlWriter, format: string, isStackedPercentage: boolean): void {
+        // serialize category axis
+        let axisType: string = 'catAx';
+        let formatCode: string = this.chart.chartPrimaryCategoryAxis.numberFormat;
+        let type: string = this.chart.chartType;
+        let isScatterType: boolean = (type === 'Scatter_Markers' || type === 'Bubble');
+        if (format === 'Time') {
+            axisType = 'dateAx';
+        }
+        if (isScatterType) {
+            axisType = 'valAx';
+        }
+        writer.writeStartElement('c', axisType, this.chartNamespace);
+        writer.writeStartElement('c', 'axId', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '335265000');
+        writer.writeEndElement(); // end of axId
+        this.serializeAxis(writer, '335263360', this.chart.chartPrimaryCategoryAxis, formatCode, isStackedPercentage);
+        if (!isScatterType) {
+            writer.writeStartElement('c', 'auto', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '1');
+            writer.writeEndElement(); // end of auto
+            writer.writeStartElement('c', 'lblAlgn', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'ctr');
+            writer.writeEndElement(); // end of lblAlgn
+            writer.writeStartElement('c', 'lblOffset', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '100');
+            writer.writeEndElement(); // end of lblOffset
+        }
+        if (format === 'Time') {
+            writer.writeStartElement('c', 'baseTimeUnit', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'days');
+            writer.writeEndElement(); // end of baseTimeUnit
+        } else if (this.chart.chartType !== 'Bubble') {
+            writer.writeStartElement('c', 'noMultiLvlLbl', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '0');
+            writer.writeEndElement(); // end of noMultiLvlLbl
+        }
+        writer.writeEndElement(); // end of catAx
+    }
+    private serializeValueAxis(writer: XmlWriter, format: string, isStackedPercentage: boolean): void {
+        // serialize category axis
+        let valueAxis: any = this.chart.chartPrimaryValueAxis;
+        let crossBetween: string = 'between';
+        if (format === 'Time') {
+            crossBetween = 'midCat';
+        }
+        writer.writeStartElement('c', 'valAx', this.chartNamespace);
+        writer.writeStartElement('c', 'axId', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '335263360');
+        writer.writeEndElement(); // end of axId
+        this.serializeAxis(writer, '335265000', valueAxis, 'General', isStackedPercentage);
+        writer.writeStartElement('c', 'crossBetween', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, crossBetween);
+        writer.writeEndElement(); // end of crossBetween
+        if (valueAxis.majorUnit !== 0 && !isStackedPercentage) {
+            writer.writeStartElement('c', 'majorUnit', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, valueAxis.majorUnit.toString());
+            writer.writeEndElement(); // end of majorUnit
+        }
+        writer.writeEndElement(); // end of valAx
+    }
+    private serializeAxis(writer: XmlWriter, axisID: string, axis: any, formatCode: string, isStackedPercentage: boolean): void {
+        let majorTickMark: string = 'none';
+        let minorTickMark: string = 'none';
+        let tickLabelPosition: string = 'nextTo';
+        writer.writeStartElement('c', 'scaling', this.chartNamespace);
+        writer.writeStartElement('c', 'orientation', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'minMax');
+        writer.writeEndElement(); // end of orientation
+        if (axis.maximumValue !== 0 && !isStackedPercentage) {
+            writer.writeStartElement('c', 'max', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, axis.maximumValue.toString());
+            writer.writeEndElement(); // end of max
+            writer.writeStartElement('c', 'min', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, axis.minimumValue.toString());
+            writer.writeEndElement(); // end of min
+        }
+        writer.writeEndElement(); // end of scaling
+        writer.writeStartElement('c', 'delete', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of delete
+        writer.writeStartElement('c', 'axPos', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'l');
+        writer.writeEndElement(); // end of axPos
+        if (axis.hasMajorGridLines) {
+            writer.writeStartElement('c', 'majorGridlines', this.chartNamespace);
+            this.serializeShapeProperties(writer, 'D9D9D9', true);
+            writer.writeEndElement(); // end of majorGridlines
+        }
+        if (axis.hasMinorGridLines) {
+            writer.writeStartElement('c', 'minorGridlines', this.chartNamespace);
+            this.serializeShapeProperties(writer, 'F2F2F2', true);
+            writer.writeEndElement(); // end of minorGridlines
+        }
+        if (axis.chartTitle) {
+            writer.writeStartElement('c', 'title', this.chartNamespace);
+            this.serializeTextProperties(writer, axis.chartTitleArea, axis.chartTitle);
+            writer.writeEndElement(); // end tag of title
+        }
+        writer.writeStartElement('c', 'numFmt', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'formatCode', undefined, formatCode);
+        writer.writeAttributeString(undefined, 'sourceLinked', undefined, '1');
+        writer.writeEndElement(); // end of numFmt
+        writer.writeStartElement('c', 'majorTickMark', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, majorTickMark);
+        writer.writeEndElement(); // end of majorTickMark
+        writer.writeStartElement('c', 'minorTickMark', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, minorTickMark);
+        writer.writeEndElement(); // end of minorTickMark
+        writer.writeStartElement('c', 'tickLblPos', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, tickLabelPosition);
+        writer.writeEndElement(); // end of tickLblPos
+        if (this.chart.chartType === 'Bubble') {
+            this.serializeShapeProperties(writer, 'BFBFBF', true);
+        } else {
+            this.serializeDefaultShapeProperties(writer);
+        }
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeEndElement(); // end of bodyPr
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        this.serializeChartTitleFont(writer, axis.fontSize, '595959', axis.fontName);
+        writer.writeEndElement(); // end of a: p
+        writer.writeEndElement(); // end of c: txPr
+        writer.writeStartElement('c', 'crossAx', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, axisID);
+        writer.writeEndElement(); // end of crossAx
+        writer.writeStartElement('c', 'crosses', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'autoZero');
+        writer.writeEndElement(); // end of crosses
+    }
+    private parseChartTrendLines(writer: XmlWriter, series: any): void {
+        for (let i: number = 0; i < series.trendLines.length; i++) {
+            let data: any = series.trendLines[i];
+            let type: string = this.chartTrendLineType(data.type);
+            let dispRSqr: number = 0;
+            let dispEq: number = 0;
+            if (data.isDisplayEquation) {
+                dispEq = 1;
+            } else if (data.isDisplayRSquared) {
+                dispRSqr = 1;
+            }
+            let solidFill: any = series.dataPoints[i];
+            writer.writeStartElement('c', 'trendline', this.chartNamespace);
+            writer.writeStartElement('c', 'spPr', this.chartNamespace);
+            writer.writeStartElement('a', 'ln', this.aNamespace);
+            writer.writeAttributeString(undefined, 'w', undefined, '19050');
+            this.serializeChartSolidFill(writer, solidFill.fill.foreColor, false);
+            writer.writeStartElement('a', 'prstDash', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'sysDot');
+            writer.writeEndElement(); // end of a: prstDash
+            writer.writeStartElement('a', 'round', this.aNamespace);
+            writer.writeEndElement(); // end of a: round
+            writer.writeEndElement(); // end of a: ln
+            writer.writeEndElement(); // end of c: spPr
+            writer.writeStartElement('c', 'trendlineType', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, type);
+            writer.writeEndElement(); // end of c: trendlineType
+            writer.writeStartElement('c', 'forward', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, data.forward.toString());
+            writer.writeEndElement(); // end of c: forward
+            writer.writeStartElement('c', 'backward', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, data.backward.toString());
+            writer.writeEndElement(); // end of c: backward
+            if (data.intercept !== 'NaN') {
+                writer.writeStartElement('c', 'intercept', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, data.intercept.toString());
+                writer.writeEndElement(); // end of c: intercept
+            }
+            writer.writeStartElement('c', 'dispRSqr', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, dispRSqr.toString());
+            writer.writeEndElement(); // end of c: dispRSqr
+            writer.writeStartElement('c', 'dispEq', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, dispEq.toString());
+            writer.writeEndElement(); // end of c: dispEq
+            writer.writeEndElement(); // end of c: trendline
+        }
+    }
+    private chartTrendLineType(type: string): string {
+        let trendlineType: string = '';
+        switch (type) {
+            case 'Linear':
+                trendlineType = 'linear';
+                break;
+            case 'Exponential':
+                trendlineType = 'exp';
+                break;
+        }
+        return trendlineType;
+    }
+    private parseChartDataLabels(writer: XmlWriter, dataLabels: any): void {
+        let position: string = '';
+        let dataLabelPosition: string = dataLabels.position;
+        let isLegendKey: number = 0;
+        let isBubbleSize: number = 0;
+        let isCategoryName: number = 0;
+        let isSeriesName: number = 0;
+        let isValue: number = 0;
+        let isPercentage: number = 0;
+        let isLeaderLines: number = 0;
+        switch (dataLabelPosition) {
+            case 'Center':
+                position = 'ctr';
+                break;
+            case 'Left':
+                position = 'l';
+                break;
+            case 'Right':
+                position = 'r';
+                break;
+            case 'Outside':
+                position = 'outEnd';
+                break;
+            case 'BestFit':
+                position = 'bestFit';
+                break;
+            case 'Bottom':
+            case 'OutsideBase':
+                position = 'inBase';
+                break;
+            case 'Inside':
+                position = 'inEnd';
+                break;
+            case 'Above':
+                position = 't';
+                break;
+            case 'Below':
+                position = 'b';
+                break;
+            default:
+                position = 'Automatic';
+                break;
+        }
+        writer.writeStartElement('c', 'dLbls', this.chartNamespace);
+        this.serializeDefaultShapeProperties(writer);
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeEndElement(); //end of a:bodyPr.
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeEndElement(); //end of a:lstStyle.
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        this.serializeChartTitleFont(writer, dataLabels.fontSize, dataLabels.fontColor, dataLabels.fontName);
+        writer.writeEndElement(); //end of a:p.
+        writer.writeEndElement(); //end of c:txPr.
+        if (dataLabels.isLegendKey) {
+            isLegendKey = 1;
+        } else if (dataLabels.isBubbleSize) {
+            isBubbleSize = 1;
+        } else if (dataLabels.isCategoryName) {
+            isCategoryName = 1;
+        } else if (dataLabels.isSeriesName) {
+            isSeriesName = 1;
+        } else if (dataLabels.isValue) {
+            isValue = 1;
+        } else if (dataLabels.isPercentage) {
+            isPercentage = 1;
+        } else if (dataLabels.isLeaderLines) {
+            isLeaderLines = 1;
+        }
+        if (position !== 'Automatic') {
+            writer.writeStartElement('c', 'dLblPos', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, position);
+            writer.writeEndElement(); // end of dLblPos
+        }
+        writer.writeStartElement('c', 'showLegendKey', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isLegendKey.toString());
+        writer.writeEndElement(); // end of showLegendKey
+        writer.writeStartElement('c', 'showVal', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isValue.toString());
+        writer.writeEndElement(); // end of showVal
+        writer.writeStartElement('c', 'showCatName', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isCategoryName.toString());
+        writer.writeEndElement(); // end of showCatName
+        writer.writeStartElement('c', 'showSerName', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isSeriesName.toString());
+        writer.writeEndElement(); // end of showSerName
+        writer.writeStartElement('c', 'showPercent', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isPercentage.toString());
+        writer.writeEndElement(); // end of showPercent
+        writer.writeStartElement('c', 'showBubbleSize', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isBubbleSize.toString());
+        writer.writeEndElement(); // end of showBubbleSize
+        writer.writeStartElement('c', 'showLeaderLines', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isLeaderLines.toString());
+        writer.writeEndElement(); // end of showBubbleSize
+        writer.writeEndElement(); // end of dLbls
+    }
+    private serializeShapeProperties(writer: XmlWriter, color: string, isLine: boolean): void {
+        let chartType: string = this.chart.chartType;
+        let isScatterType: boolean = (chartType === 'Scatter_Markers' || chartType === 'Bubble');
+        // serialize shape
+        writer.writeStartElement('c', 'spPr', this.chartNamespace);
+        if (!isScatterType || isLine) {
+            writer.writeStartElement('a', 'ln', this.aNamespace);
+            writer.writeAttributeString(undefined, 'w', undefined, '9525');
+            this.serializeChartSolidFill(writer, color, false);
+            writer.writeStartElement('a', 'prstDash', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'solid');
+            writer.writeEndElement(); // end of prstDash
+            writer.writeStartElement('a', 'round', this.aNamespace);
+            writer.writeEndElement(); // end tag of round
+            writer.writeEndElement(); // end tag of ln
+        } else if (chartType === 'Scatter_Markers') {
+            this.serializeChartSolidFill(writer, color, false);
+            this.serializeDefaultLineProperties(writer);
+        } else if (chartType === 'Bubble') {
+            this.serializeChartSolidFill(writer, color, true);
+            this.serializeDefaultLineProperties(writer);
+        }
+        writer.writeStartElement('a', 'effectLst', this.aNamespace);
+        writer.writeEndElement(); // end of a: effectLst
+        writer.writeEndElement(); // end tag of spPr
+    }
+    private serializeDefaultShapeProperties(writer: XmlWriter): void {
+        writer.writeStartElement('c', 'spPr', this.chartNamespace);
+        writer.writeStartElement('a', 'noFill', this.aNamespace);
+        writer.writeEndElement(); // end of a: noFill
+        this.serializeDefaultLineProperties(writer);
+        writer.writeStartElement('a', 'effectLst', this.aNamespace);
+        writer.writeEndElement(); // end of a: effectLst
+        writer.writeEndElement(); // end of c: spPr
+    }
+    private serializeDefaultLineProperties(writer: XmlWriter): void {
+        writer.writeStartElement('a', 'ln', this.aNamespace);
+        writer.writeStartElement('a', 'noFill', this.aNamespace);
+        writer.writeEndElement(); // end of a: noFill
+        writer.writeStartElement('a', 'round', this.aNamespace);
+        writer.writeEndElement(); // end of a: round
+        writer.writeEndElement(); // end of a: ln
+    }
+    private serializeTextProperties(writer: XmlWriter, title: any, chartTitleName: string): void {
+        let fill: string = title.dataFormat.fill.foreColor;
+        let fontSize: number = title.fontSize * 100;
+        writer.writeStartElement('c', 'tx', this.chartNamespace);
+        writer.writeStartElement('c', 'rich', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'rot', undefined, '0');
+        writer.writeAttributeString(undefined, 'vert', undefined, 'horz');
+        writer.writeEndElement(); // end of a: bodyPr
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeEndElement(); // end of a:lstStyle
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        writer.writeStartElement('a', 'r', this.aNamespace);
+        writer.writeStartElement('a', 'rPr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
+        writer.writeAttributeString(undefined, 'b', undefined, '0');
+        writer.writeAttributeString(undefined, 'sz', undefined, fontSize.toString());
+        writer.writeAttributeString(undefined, 'baseline', undefined, '0');
+        this.serializeChartSolidFill(writer, fill, false);
+        this.serializeFont(writer, title.fontName);
+        writer.writeEndElement(); // end of a: rPr
+        writer.writeStartElement('a', 't', this.aNamespace);
+        writer.writeString(chartTitleName);
+        writer.writeEndElement(); // end of a:t
+        writer.writeEndElement(); // end of a: r
+        writer.writeEndElement(); // end of a: p
+        writer.writeEndElement(); // end of c: rich
+        writer.writeEndElement(); // end of c: tx
+        writer.writeStartElement('c', 'layout', this.chartNamespace);
+        // writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: layout
+        writer.writeStartElement('c', 'overlay', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: overlay
+        this.serializeDefaultShapeProperties(writer);
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeEndElement(); // end of a: bodyPr
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeEndElement(); // end of a: lstStyle
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        writer.writeEndElement(); // end of a: p
+        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        writer.writeEndElement(); // end of c: txPr
+    }
+    private serializeChartTitleFont(writer: XmlWriter, fontSize: number, fill: string, fontName: string): void {
+        let fontSizeCalc: number = fontSize * 100;
+        writer.writeStartElement('a', 'pPr', this.aNamespace);
+        writer.writeStartElement('a', 'defRPr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
+        writer.writeAttributeString(undefined, 'b', undefined, '0');
+        writer.writeAttributeString(undefined, 'sz', undefined, fontSizeCalc.toString());
+        writer.writeAttributeString(undefined, 'baseline', undefined, '0');
+        this.serializeChartSolidFill(writer, fill, false);
+        this.serializeFont(writer, fontName);
+        writer.writeEndElement(); // end of defRPr
+        writer.writeEndElement(); // end of a: pPr
+    }
+    private serializeChartSolidFill(writer: XmlWriter, fill: string, isSeriesFill: boolean): void {
+        writer.writeStartElement('a', 'solidFill', this.aNamespace);
+        writer.writeStartElement('a', 'srgbClr', this.aNamespace);
+        if (fill !== '000000') {
+            writer.writeAttributeString(undefined, 'val', undefined, fill);
+        } else {
+            writer.writeAttributeString(undefined, 'val', undefined, '595959');
+        }
+        if (this.chart.chartType === 'Bubble' && isSeriesFill) {
+            writer.writeStartElement('a', 'alpha', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '75000');
+            writer.writeEndElement(); // end of alpha
+        }
+        writer.writeEndElement(); // end of srgbClr
+        writer.writeEndElement(); // end of solidFill
+    }
+    private serializeFont(writer: XmlWriter, fontName: string): void {
+        writer.writeStartElement('a', 'latin', this.aNamespace);
+        writer.writeAttributeString(undefined, 'typeface', undefined, fontName);
+        writer.writeEndElement(); // end of a:latin
+        writer.writeStartElement('a', 'ea', this.aNamespace);
+        writer.writeAttributeString(undefined, 'typeface', undefined, fontName);
+        writer.writeEndElement(); // end of a:ea
+        writer.writeStartElement('a', 'cs', this.aNamespace);
+        writer.writeAttributeString(undefined, 'typeface', undefined, fontName);
+        writer.writeEndElement(); // end of a:cs
+    }
+    private parseChartSeriesColor(writer: XmlWriter, dataPoints: any, chartType: string): void {
+        for (let i: number = 0; i < dataPoints.length; i++) {
+            let data: any = dataPoints[i];
+            writer.writeStartElement('c', 'spPr', this.chartNamespace);
+            if (chartType === 'lineChart') {
+                writer.writeStartElement('a', 'ln', this.aNamespace);
+                writer.writeAttributeString(undefined, 'w', undefined, '28575');
+                writer.writeAttributeString(undefined, 'cap', undefined, 'rnd');
+            }
+            if (chartType !== 'lineChart') {
+                this.serializeChartSolidFill(writer, data.fill.foreColor, true);
+            } else {
+                this.serializeChartSolidFill(writer, data.line.color, true);
+            }
+            if (chartType !== 'lineChart') {
+                writer.writeStartElement('a', 'ln', this.aNamespace);
+                writer.writeStartElement('a', 'noFill', this.aNamespace);
+                writer.writeEndElement(); // end of a: noFill
+            }
+            writer.writeStartElement('a', 'round', this.aNamespace);
+            writer.writeEndElement(); // end of a: round
+            writer.writeEndElement(); // end of a: ln
+            writer.writeStartElement('a', 'effectLst', this.aNamespace);
+            writer.writeEndElement(); // end of a: effectLst
+            writer.writeEndElement(); // end of c: spPr
+            if (chartType === 'lineChart') {
+                let symbolType: string = 'none';
+                let size: number = 0;
+                if (this.chart.chartSeries[i].hasOwnProperty('seriesFormat')) {
+                    symbolType = this.chart.chartSeries[i].seriesFormat.markerStyle;
+                    size = this.chart.chartSeries[i].seriesFormat.markerSize;
+                }
+                writer.writeStartElement('c', 'marker', this.chartNamespace);
+                writer.writeStartElement('c', 'symbol', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, symbolType.toLowerCase());
+                writer.writeEndElement(); // end of a: symbol
+                if (this.chart.chartSeries[i].hasOwnProperty('seriesFormat')) {
+                    writer.writeStartElement('c', 'size', this.chartNamespace);
+                    writer.writeAttributeString(undefined, 'val', undefined, size.toString());
+                    writer.writeEndElement(); // end of a: size
+                }
+                writer.writeEndElement(); // end of a: marker
+            }
+        }
+    }
+    private parseChartDataPoint(writer: XmlWriter, series: any): void {
+        // data point
+        let dataPoints: any = series.dataPoints;
+        let points: any[] = [];
+        for (let j: number = 0; j < dataPoints.length; j++) {
+            points.push(dataPoints[j]);
+            writer.writeStartElement('c', 'dPt', this.chartNamespace);
+            writer.writeStartElement('c', 'idx', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, j.toString());
+            writer.writeEndElement(); // end of c:idx
+            writer.writeStartElement('c', 'bubble3D', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '0');
+            writer.writeEndElement(); // end of c:bubble3D
+            this.parseChartSeriesColor(writer, points, this.chart.chartType);
+            writer.writeEndElement(); // end of c:dPt
+            points = [];
+        }
+    }
+    // chart data value
+    private serializeChartCategory(writer: XmlWriter, chart: any, cacheType: string): void {
+        let chartCategory: any = chart.chartCategory;
+        let chartCategoryCount: number = chartCategory.length;
+        writer.writeStartElement('c', 'f', this.chartNamespace);
+        writer.writeString('Sheet1!$A$2:$A$' + (chartCategoryCount + 1).toString());
+        writer.writeEndElement(); // end of f
+        writer.writeStartElement('c', cacheType, this.chartNamespace);
+        if (cacheType === 'numCache') {
+            writer.writeStartElement('c', 'formatCode', this.chartNamespace);
+            writer.writeString('General');
+            writer.writeEndElement(); // end of formatCode
+        }
+        writer.writeStartElement('c', 'ptCount', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, chartCategoryCount.toString());
+        writer.writeEndElement(); // end of ptCount
+        for (let i: number = 0; i < chartCategory.length; i++) {
+            let category: any = chartCategory[i];
+            writer.writeStartElement('c', 'pt', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'idx', undefined, i.toString());
+            writer.writeStartElement('c', 'v', this.chartNamespace);
+            if (category.categoryXName !== '') {
+                writer.writeString(category.categoryXName);
+            }
+            writer.writeEndElement(); // end of v
+            writer.writeEndElement(); // end of pt
+        }
+        writer.writeEndElement(); // end of cacheType
+    }
+    // chart value
+    private serializeChartValue(writer: XmlWriter, valueSheet: string, chartType: string): void {
+        let isScatterType: boolean = (chartType === 'scatterChart' || chartType === 'bubbleChart');
+        let valueType: string = 'val';
+        if (isScatterType) {
+            valueType = 'yVal';
+        }
+        this.serializeChartYValue(writer, valueType, valueSheet);
+        if (chartType === 'bubbleChart') {
+            valueType = 'bubbleSize';
+            valueSheet = 'Sheet1!$C$2:$C$';
+            this.serializeChartYValue(writer, valueType, valueSheet);
+        }
+        if (chartType === 'lineChart' || chartType === 'scatterChart') {
+            writer.writeStartElement('c', 'smooth', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '0');
+            writer.writeEndElement(); // end of smooth
+        }
+    }
+    private serializeChartYValue(writer: XmlWriter, valueType: string, valueSheet: string): void {
+        let chart: any = this.chart;
+        let chartCategory: any = chart.chartCategory;
+        let chartCategoryCount: number = chartCategory.length;
+        writer.writeStartElement('c', valueType, this.chartNamespace);
+        writer.writeStartElement('c', 'numRef', this.chartNamespace);
+        writer.writeStartElement('c', 'f', this.chartNamespace);
+        writer.writeString(valueSheet + (chartCategoryCount + 1).toString());
+        writer.writeEndElement(); // end of f
+        writer.writeStartElement('c', 'numCache', this.chartNamespace);
+        writer.writeStartElement('c', 'formatCode', this.chartNamespace);
+        writer.writeString('General');
+        writer.writeEndElement(); // end of formatCode
+        writer.writeStartElement('c', 'ptCount', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, chartCategoryCount.toString());
+        writer.writeEndElement(); // end of ptCount
+        for (let j: number = 0; j < chartCategoryCount; j++) {
+            let category: any = chartCategory[j];
+            for (let k: number = 0; k < category.chartData.length; k++) {
+                if (k === this.seriesCount) {
+                    let chartData: any = category.chartData[this.seriesCount];
+                    writer.writeStartElement('c', 'pt', this.chartNamespace);
+                    writer.writeAttributeString(undefined, 'idx', undefined, j.toString());
+                    writer.writeStartElement('c', 'v', this.chartNamespace);
+                    if (valueType !== 'bubbleSize') {
+                        writer.writeString(chartData.yValue.toString());
+                    } else {
+                        writer.writeString(chartData.size.toString());
+                    }
+                    writer.writeEndElement(); // end of v
+                    writer.writeEndElement(); // end of pt
+                }
+            }
+        }
+        writer.writeEndElement(); // end of numCache
+        writer.writeEndElement(); // end of numRef
+        writer.writeEndElement(); // end of val
+    }
+    // chart type
+    private chartType(chart: any): string {
+        let chartType: string = chart.chartType;
+        switch (chartType) {
+            case 'Pie':
+                chartType = 'pieChart';
+                break;
+            case 'Doughnut':
+                chartType = 'doughnutChart';
+                break;
+            case 'Scatter_Markers':
+                chartType = 'scatterChart';
+                break;
+            case 'Bubble':
+                chartType = 'bubbleChart';
+                break;
+        }
+        if (chartType === 'Area' || chartType === 'Area_Stacked' || chartType === 'Area_Stacked_100') {
+            chartType = 'areaChart';
+        }
+        if (chartType === 'Bar_Stacked_100' || chartType === 'Bar_Stacked' || chartType === 'Bar_Clustered' ||
+            chartType === 'Column_Clustered' || chartType === 'Column_Stacked' || chartType === 'Column_Stacked_100') {
+            chartType = 'barChart';
+        }
+        if (chartType === 'Line' || chartType === 'Line_Markers' || chartType === 'Line_Markers_Stacked' || chartType === 'Line_Stacked'
+            || chartType === 'Line_Markers_Stacked_100' || chartType === 'Line_Stacked_100') {
+            chartType = 'lineChart';
+        }
+        return chartType;
+    }
+    // chart group
+    private chartGrouping(type: string): string {
+        let grouping: string = 'standard';
+        if (type === 'Bar_Stacked' || type === 'Column_Stacked' || type === 'Area_Stacked'
+            || type === 'Line_Stacked' || type === 'Line_Markers_Stacked') {
+            grouping = 'stacked';
+        } else if (type === 'Bar_Stacked_100' || type === 'Column_Stacked_100' ||
+            type === 'Area_Stacked_100' || type === 'Line_Stacked_100' ||
+            type === 'Line_Markers_Stacked_100') {
+            grouping = 'percentStacked';
+        } else if (type === 'Bar_Clustered' || type === 'Column_Clustered') {
+            grouping = 'clustered';
+        }
+        return grouping;
+    }
+    // chart legend position
+    private chartLegendPosition(chart: any): string {
+        let legendPosition: string = chart.position;
+        switch (legendPosition) {
+            case 'Top':
+                legendPosition = 't';
+                break;
+            case 'Bottom':
+                legendPosition = 'b';
+                break;
+            case 'Left':
+                legendPosition = 'l';
+                break;
+            case 'Right':
+                legendPosition = 'r';
+                break;
+            case 'Corner':
+                legendPosition = 'tr';
+                break;
+            default:
+                legendPosition = 'b';
+                break;
+        }
+        return legendPosition;
+    }
+    // update the chard id
+    private updatechartId(chart: any): string {
+        let id: string = '';
+        if (id === '') {
+            id = this.addChartRelation(this.documentCharts, chart);
+        }
+        return id;
+    }
+    // adds the chart relation.
+    private addChartRelation(chartCollection: Dictionary<string, any>, chart: any): string {
+        let relationId: string = '';
+        relationId = this.getNextRelationShipID();
+        chartCollection.add(relationId, chart);
+        return relationId;
     }
     private startsWith(sourceString: string, startString: string): boolean {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
@@ -1883,6 +3434,14 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'fldCharType', this.wNamespace, type);
         writer.writeEndElement();
         writer.writeEndElement();
+        if (field.fieldType === 0 && field.fieldCodeType === 'FieldFormTextInput') {
+            writer.writeStartElement('w', 'r', this.wNamespace);
+            writer.writeStartElement(undefined, 'instrText', this.wNamespace);
+            writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
+            writer.writeString('FORMTEXT');
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
     }
     // Serialize the text range.
     private serializeTextRange(writer: XmlWriter, span: any, previousNode: any): void {
@@ -1921,6 +3480,10 @@ export class WordExport {
         }
         if (paragraphFormat.bidi) {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
+            writer.writeEndElement();
+        }
+        if (paragraphFormat.contextualSpacing) {
+            writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
             writer.writeEndElement();
         }
         this.serializeParagraphSpacing(writer, paragraphFormat);
@@ -2713,6 +4276,31 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'val', this.wNamespace, fc);
         writer.writeEndElement();
     }
+    private serializeDocumentProtectionSettings(writer: XmlWriter): void {
+        writer.writeStartElement('w', 'documentProtection', this.wNamespace);
+        if (this.formatting) {
+            writer.writeAttributeString('w', 'formatting', this.wNamespace, '1');
+        }
+        if (this.protectionType && this.protectionType === 'ReadOnly') {
+            writer.writeAttributeString('w', 'edit', this.wNamespace, 'readOnly');
+        }
+        writer.writeAttributeString('w', 'cryptProviderType', this.wNamespace, 'rsaAES');
+        writer.writeAttributeString('w', 'cryptAlgorithmClass', this.wNamespace, 'hash');
+        writer.writeAttributeString('w', 'cryptAlgorithmType', this.wNamespace, 'typeAny');
+        writer.writeAttributeString('w', 'cryptAlgorithmSid', this.wNamespace, '14');
+        writer.writeAttributeString('w', 'cryptSpinCount', this.wNamespace, '100000');
+        if (this.enforcement) {
+            writer.writeAttributeString('w', 'enforcement', this.wNamespace, '1');
+        }
+        if (this.hashValue) {
+            writer.writeAttributeString('w', 'hash', this.wNamespace, this.hashValue);
+        }
+        if (this.saltValue) {
+            writer.writeAttributeString('w', 'salt', this.wNamespace, this.saltValue);
+        }
+
+        writer.writeEndElement();
+    }
     private serializeSettings(): void {
         let writer: XmlWriter = new XmlWriter();
         writer.writeStartElement('w', 'settings', this.wNamespace);
@@ -2730,12 +4318,7 @@ export class WordExport {
 
 
         // //w:writeProtection - Write Protection
-        // if (m_document.WriteProtected)
-        // {
-        //     writer.writeStartElement('w', 'writeProtection', this.wNamespace);
-        //     writer.writeAttributeString('recommended', this.wNamespace, '1');
-        //     writer.writeEndElement();
-        // }
+        this.serializeDocumentProtectionSettings(writer);
         //w:view - Document View Setting
         // if (this.mDocument.ViewSetup.DocumentViewType !== DocumentViewType.PrintLayout &&
         //   m_document.ViewSetup.DocumentViewType !== DocumentViewType.NormalLayout)
@@ -2965,6 +4548,9 @@ export class WordExport {
         // SerializeIncludePictureUrlRelations(docRelstream, InclPicFieldUrl);
         // //// Creating relationships for every hyperlink and image containing in the document
         this.serializeImagesRelations(this.documentImages, writer);
+
+        // serialize chart relations
+        this.serializeChartDocumentRelations(this.documentCharts, writer);
         // SerializeSvgImageRelation();
         //this.serializeExternalLinkImages(writer);
 
@@ -2979,6 +4565,29 @@ export class WordExport {
         let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.wordRelationPath);
         this.mArchive.addItem(zipArchiveItem);
         this.headerFooter = undefined;
+    }
+    // serialize chart relations
+    private serializeChartDocumentRelations(charts: Dictionary<string, any>, writer: XmlWriter): void {
+        if (charts.length > 0) {
+            let keys: string[] = charts.keys;
+            for (let i: number = 1; i <= keys.length; i++) {
+                this.serializeRelationShip(writer, keys[i - 1], this.chartRelType, 'charts/chart' + i + '.xml');
+            }
+        }
+    }
+    private serializeChartRelations(): void {
+        let writer: XmlWriter = new XmlWriter();
+        this.resetChartRelationShipId();
+        writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
+        let chartColorPath: string = 'colors' + this.chartCount + '.xml';
+        let chartRelationPath: string = this.chartPath + '/_rels/chart' + this.chartCount + '.xml.rels';
+        let chartExcelPath: string = '../embeddings/Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
+        // tslint:disable-next-line:max-line-length
+        this.serializeRelationShip(writer, this.getNextChartRelationShipID(), this.packageRelType, chartExcelPath);
+        this.serializeRelationShip(writer, this.getNextChartRelationShipID(), this.chartColorStyleRelType, chartColorPath);
+        writer.writeEndElement(); // end of relationships
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, chartRelationPath);
+        this.mArchive.addItem(zipArchiveItem);
     }
     // Serializes the image relations
     private serializeImagesRelations(images: Dictionary<string, any>, writer: XmlWriter): void {
@@ -3027,11 +4636,11 @@ export class WordExport {
         let chr1: number;
         let chr2: number;
         let chr3: number;
-        let enc1: number;
-        let enc2: number;
-        let enc3: number;
-        let enc4: number;
-        let i: number = 0;
+        let encode1: number;
+        let encode2: number;
+        let encode3: number;
+        let encode4: number;
+        let count: number = 0;
         let resultIndex: number = 0;
 
         /*let dataUrlPrefix: string = 'data:';*/
@@ -3058,23 +4667,23 @@ export class WordExport {
 
         let output: Uint8Array = new Uint8Array(totalLength | 0);
 
-        while (i < input.length) {
+        while (count < input.length) {
 
-            enc1 = keyStr.indexOf(input.charAt(i++));
-            enc2 = keyStr.indexOf(input.charAt(i++));
-            enc3 = keyStr.indexOf(input.charAt(i++));
-            enc4 = keyStr.indexOf(input.charAt(i++));
+            encode1 = keyStr.indexOf(input.charAt(count++));
+            encode2 = keyStr.indexOf(input.charAt(count++));
+            encode3 = keyStr.indexOf(input.charAt(count++));
+            encode4 = keyStr.indexOf(input.charAt(count++));
 
-            chr1 = (enc1 << 2) | (enc2 >> 4);
-            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-            chr3 = ((enc3 & 3) << 6) | enc4;
+            chr1 = (encode1 << 2) | (encode2 >> 4);
+            chr2 = ((encode2 & 15) << 4) | (encode3 >> 2);
+            chr3 = ((encode3 & 3) << 6) | encode4;
 
             output[resultIndex++] = chr1;
 
-            if (enc3 !== 64) {
+            if (encode3 !== 64) {
                 output[resultIndex++] = chr2;
             }
-            if (enc4 !== 64) {
+            if (encode4 !== 64) {
                 output[resultIndex++] = chr3;
             }
         }
@@ -3233,6 +4842,16 @@ export class WordExport {
         this.serializeOverrideContentType(writer, this.stylePath, this.stylesContentType);
         //settings.xml
         this.serializeOverrideContentType(writer, this.settingsPath, this.settingsContentType);
+        //charts.xml
+        if (this.chartCount > 0) {
+            let count: number = 1;
+            this.serializeDefaultContentType(writer, 'xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            while (count <= this.chartCount) {
+                this.serializeOverrideContentType(writer, 'word/charts/chart' + count + '.xml', this.chartsContentType);
+                this.serializeOverrideContentType(writer, 'word/charts/colors' + count + '.xml', this.chartColorStyleContentType);
+                count++;
+            }
+        }
 
         //             //core.xml
         //             SerializeOverrideContentType(contentStream, this.corePath, this.CoreContentType);
@@ -3307,6 +4926,12 @@ export class WordExport {
     // Reset the relationship id counter
     private resetRelationShipID(): void {
         this.mRelationShipID = 0;
+    }
+    private resetExcelRelationShipId(): void {
+        this.eRelationShipId = 0;
+    }
+    private resetChartRelationShipId(): void {
+        this.cRelationShipId = 0;
     }
     private close(): void {
         //Implement

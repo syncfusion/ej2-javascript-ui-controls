@@ -1,4 +1,4 @@
-import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';import { FocusEventArgs, BlurEventArgs } from '../calendar/calendar';import { Popup } from '@syncfusion/ej2-popups';import { Button } from '@syncfusion/ej2-buttons';import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
+import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';import { Popup } from '@syncfusion/ej2-popups';import { Button } from '@syncfusion/ej2-buttons';import { BlurEventArgs, FocusEventArgs } from '../calendar/calendar';import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 import {DateRange,RangeEventArgs,RangeFormatObject} from "./daterangepicker";
 import {CalendarBaseModel} from "../calendar/calendar-model";
 
@@ -90,31 +90,36 @@ export interface DateRangePickerModel extends CalendarBaseModel{
 
     /**
      * Triggers when Calendar is created.
-     * @event 
+     * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when Calendar is destroyed.
-     * @event 
+     * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the Calendar value is changed.
      * @event  
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<RangeEventArgs>;
 
     /**
      * Triggers when the Calendar is navigated to another view or within the same level of view.
      * @event
+     * @blazorProperty 'Navigated'
      */
     navigated?: EmitType<NavigatedEventArgs>;
 
     /**
      * Triggers when each day cell of the Calendar is rendered.
      * @event
+     * @blazorProperty 'OnRenderDayCell'
      */
     renderDayCell?: EmitType<RenderDayCellEventArgs>;
 
@@ -269,32 +274,44 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     placeholder?: string;
 
     /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string; };
+
+    /**
      * Triggers when the DateRangePicker is opened.
      * @event 
+     * @blazorProperty 'OnOpen'
      */
     open?: EmitType<Object>;
 
     /**
      * Triggers when the DateRangePicker is closed.
-     * @event 
+     * @event
+     * @blazorProperty 'OnClose'
      */
     close?: EmitType<Object>;
 
     /**
      * Triggers on selecting the start and end date.
      * @event 
+     * @blazorProperty 'RangeSelected'
      */
     select?: EmitType<Object>;
 
     /**
      *  Triggers when the control gets focus.
      * @event 
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<FocusEventArgs>;
 
     /**
      * Triggers when the control loses the focus.
      * @event 
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<BlurEventArgs>;
 

@@ -125,7 +125,11 @@ export class QuickToolbar {
         if (this.inlineQTBar && !hasClass(this.inlineQTBar.element, 'e-popup-close')) { this.inlineQTBar.hidePopup(); }
     }
 
-    private hideQuickToolbars(): void {
+    /**
+     * Method for hidding the quick toolbar
+     * @hidden
+     */
+    public hideQuickToolbars(): void {
         if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close')) { this.linkQTBar.hidePopup(); }
         if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) { this.textQTBar.hidePopup(); }
         if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) { this.imageQTBar.hidePopup(); }
@@ -189,10 +193,6 @@ export class QuickToolbar {
         }
     }
 
-    public getInlineBaseToolbar(): BaseToolbar {
-        return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
-    }
-
     private selectionChangeHandler(e: Event): void {
         clearTimeout(this.deBouncer);
         this.deBouncer = window.setTimeout(() => { this.onSelectionChange(e); }, 1000);
@@ -202,6 +202,10 @@ export class QuickToolbar {
         if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) { return; }
         let selection: Selection = this.contentRenderer.getDocument().getSelection();
         if (!selection.isCollapsed) { this.mouseUpHandler({ args: e as MouseEvent }); }
+    }
+
+    public getInlineBaseToolbar(): BaseToolbar {
+        return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
     }
 
     /**

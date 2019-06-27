@@ -528,6 +528,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * We can trigger created event when the Slider is created.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -536,6 +537,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * We can trigger change event whenever Slider value is changed.
      *  In other term, this event will be triggered while drag the slider thumb.
      * @event
+     * @blazorProperty 'OnChange'
      */
     @Event()
     public change: EmitType<SliderChangeEventArgs>;
@@ -544,6 +546,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * We can trigger changed event when Slider component action is completed while we change the Slider value.
      *  In other term, this event will be triggered, while drag the slider thumb completed.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public changed: EmitType<SliderChangeEventArgs>;
@@ -551,7 +554,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * We can trigger renderingTicks event when the ticks rendered on Slider,
      *  which is used to customize the ticks labels dynamically.
+     * @deprecated
      * @event
+     * @blazorProperty 'TicksRendering'
      */
     @Event()
     public renderingTicks: EmitType<SliderTickEventArgs>;
@@ -559,13 +564,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * We can trigger renderedTicks event when the ticks are rendered on the Slider.
      * @event
+     * @blazorProperty 'TicksRendered'
      */
     @Event()
     public renderedTicks: EmitType<SliderTickRenderedEventArgs>;
 
     /**
      * We can trigger tooltipChange event when we change the Sider tooltip value.
+     * @deprecated
      * @event
+     * @blazorProperty 'OnTooltipChange'
      */
     @Event()
     public tooltipChange: EmitType<SliderTooltipEventArgs>;
@@ -1005,16 +1013,17 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         };
         this.setTooltipContent();
         args.text = text = this.tooltipObj.content as string;
-        this.trigger('tooltipChange', args);
-        this.addTooltipClass(args.text);
-        if (text !== args.text) {
-            this.customAriaText = args.text;
-            this.tooltipObj.content = args.text;
-            this.setAriaAttrValue(this.firstHandle);
-            if (this.type === 'Range') {
-                this.setAriaAttrValue(this.secondHandle);
+        this.trigger('tooltipChange', args, (observedArgs: SliderChangeEventArgs) => {
+            this.addTooltipClass(observedArgs.text);
+            if (text !== observedArgs.text) {
+                this.customAriaText = observedArgs.text;
+                this.tooltipObj.content = observedArgs.text;
+                this.setAriaAttrValue(this.firstHandle);
+                if (this.type === 'Range') {
+                    this.setAriaAttrValue(this.secondHandle);
+                }
             }
-        }
+        });
     }
 
     private setTooltipContent(): void {
@@ -1501,17 +1510,24 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
         });
         li.appendChild(span);
-        span.innerHTML = isNullOrUndefined(this.customValues) ? this.formatTicksValue(li, <number>start) : <string>start;
+        if (isNullOrUndefined(this.customValues)) {
+            this.formatTicksValue(li, <number>start, span);
+        } else {
+            span.innerHTML = start.toString();
+        }
     }
 
-    private formatTicksValue(li: HTMLElement, start: number): string {
-        let tickText: string = this.formatNumber(start);
-        let text: string = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
+    private formatTicksValue(li: HTMLElement, start: number, spanElement?: HTMLElement): void {
+        const tickText: string = this.formatNumber(start);
+        const text: string = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
             this.formatString(start, this.ticksFormatInfo).formatString : tickText;
-        let eventArgs: SliderTickEventArgs = { value: start, text: text, tickElement: li };
-        this.trigger('renderingTicks', eventArgs);
-        li.setAttribute('title', eventArgs.text.toString());
-        return eventArgs.text.toString();
+        const eventArgs: SliderTickEventArgs = { value: start, text: text, tickElement: li };
+        this.trigger('renderingTicks', eventArgs, (observedArgs: SliderTickEventArgs) => {
+            li.setAttribute('title', observedArgs.text.toString());
+            if (spanElement) {
+                spanElement.innerHTML = observedArgs.text.toString();
+            }
+        });
     }
 
     private scaleAlignment(): void {

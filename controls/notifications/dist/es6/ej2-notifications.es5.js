@@ -544,27 +544,29 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Toast.prototype.appendToTarget = function () {
+        var _this = this;
         var toastBeforeOpen = {
             toastObj: this,
             element: this.toastEle,
             cancel: false
         };
-        this.trigger('beforeOpen', toastBeforeOpen);
-        if (toastBeforeOpen.cancel) {
-            return;
-        }
-        this.toastEle.style.display = 'none';
-        if (this.newestOnTop && this.toastContainer.childElementCount !== 0) {
-            this.toastContainer.insertBefore(this.toastEle, this.toastContainer.children[0]);
-        }
-        else {
-            this.toastContainer.appendChild(this.toastEle);
-        }
-        EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
-        this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
-        this.displayToast(this.toastEle);
+        this.trigger('beforeOpen', toastBeforeOpen, function (toastBeforeOpenArgs) {
+            if (!toastBeforeOpenArgs.cancel) {
+                _this.toastEle.style.display = 'none';
+                if (_this.newestOnTop && _this.toastContainer.childElementCount !== 0) {
+                    _this.toastContainer.insertBefore(_this.toastEle, _this.toastContainer.children[0]);
+                }
+                else {
+                    _this.toastContainer.appendChild(_this.toastEle);
+                }
+                EventHandler.add(_this.toastEle, 'click', _this.clickHandler, _this);
+                _this.toastContainer.style.zIndex = getZindexPartial(_this.toastContainer) + '';
+                _this.displayToast(_this.toastEle);
+            }
+        });
     };
     Toast.prototype.clickHandler = function (e) {
+        var _this = this;
         e.stopPropagation();
         var target = e.target;
         var toastEle = closest(target, '.' + ROOT);
@@ -572,10 +574,11 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this
         };
         var isCloseIcon = target.classList.contains(CLOSEBTN);
-        this.trigger('click', clickArgs);
-        if ((isCloseIcon && !clickArgs.cancel) || clickArgs.clickToClose) {
-            this.destroyToast(toastEle);
-        }
+        this.trigger('click', clickArgs, function (toastClickArgs) {
+            if ((isCloseIcon && !toastClickArgs.cancel) || toastClickArgs.clickToClose) {
+                _this.destroyToast(toastEle);
+            }
+        });
     };
     Toast.prototype.displayToast = function (toastEle) {
         var _this = this;

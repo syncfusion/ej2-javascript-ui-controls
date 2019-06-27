@@ -117,8 +117,16 @@
       content: '\ebca';
     }
 
+    .e-pv-annotation-stroke-icon::before {
+      content: '\e668';
+    }
+
     .e-pv-annotation-opacity-icon::before {
       content: '\ebcc';
+    }
+
+    .e-pv-annotation-thickness-icon::before {
+      content: '\ebd7';
     }
 
     .e-pv-annotation-delete-icon::before {
@@ -155,6 +163,10 @@
       background-size: $pv-corrupted-notification-background-size;
       height: $pv-corrupted-notification-height;
     }
+
+    .e-pv-annotation-calibrate-icon::before {
+      content: '\e678';
+    }
   }
 
   .e-pv-download-document-icon.e-menu-icon::before {
@@ -183,5 +195,141 @@
   .e-pv-copy-icon::before {
     content: '\e70a';
     font-family: 'e-icons';
+  }
+
+  .e-pv-stamp-icon::before {
+    content: '\ebda';
+  }
+
+  .e-pv-shape-line-icon::before {
+    content: '\e668';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-arrow-icon::before {
+    content: '\e669';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-rectangle-icon::before {
+    content: '\e670';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-circle-icon::before {
+    content: '\e671';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-pentagon-icon::before {
+    content: '\e672';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-shape-icon::before {
+    content: '\ebd5';
+  }
+
+  .e-pv-cut-icon::before {
+    content: '\e604';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-paste-icon::before {
+    content: '\e684';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-delete-icon::before {
+    content: '\ebcd';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-properties-fill-color-icon::before {
+    content: '\ebca';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-properties-stroke-color-icon::before {
+    content: '\e668';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-comment-icon::before {
+    content: '\e680';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-comment-selection-icon::before {
+    color: $pv-thumbnail-icon-selection-color;
+    content: '\e680';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-accepted-icon::before {
+    color: $pv-status-icon-color;
+    content: '\e682';
+    font-family: 'e-icons';
+    font-size: $pv-status-icon-font-size;
+    padding-left: $pv-status-icon-padding-left;
+  }
+
+  .e-pv-rejected-icon::before {
+    color: $pv-status-icon-color;
+    content: '\e683';
+    font-family: 'e-icons';
+    font-size: $pv-status-icon-font-size;
+    padding-left: $pv-status-icon-padding-left;
+  }
+
+  .e-pv-completed-icon::before {
+    color: $pv-status-icon-color;
+    content: '\e614';
+    font-family: 'e-icons';
+    font-size: $pv-status-icon-font-size;
+    padding-left: $pv-status-icon-padding-left;
+  }
+
+  .e-pv-cancelled-icon::before {
+    color: $pv-status-icon-color;
+    content: '\e60a';
+    font-family: 'e-icons';
+    font-size: $pv-status-icon-font-size;
+    padding-left: $pv-status-icon-padding-left;
+  }
+
+  .e-pv-scale-ratio-icon::before {
+    content: '\e678';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-distance-icon::before {
+    content: '\e673';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-perimeter-icon::before {
+    content: '\e674';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-area-icon::before {
+    content: '\e675';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-radius-icon::before {
+    content: '\e676';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-volume-icon::before {
+    content: '\e677';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret::before {
+    content: '\e969';
+    font-size: 8px;
   }
 }

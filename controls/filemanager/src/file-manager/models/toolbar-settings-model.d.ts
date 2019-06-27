@@ -12,7 +12,7 @@ export interface ToolbarSettingsModel {
     items?: string[];
 
     /**
-     * Enable or disable the toolbar rendering in the file manager component
+     * Enables or disables the toolbar rendering in the file manager component.
      * @default true
      */
     visible?: boolean;

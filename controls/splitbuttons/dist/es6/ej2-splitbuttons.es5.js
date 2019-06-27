@@ -433,41 +433,47 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownButton.prototype.openPopUp = function (e) {
+        var _this = this;
         if (e === void 0) { e = null; }
         if (!this.target) {
             this.getPopUpElement().appendChild(this.createItems(this.items));
         }
         var ul = this.getULElement();
         var beforeOpenArgs = { element: ul, items: this.items, event: e, cancel: false };
-        this.trigger('beforeOpen', beforeOpenArgs);
-        if (!beforeOpenArgs.cancel) {
-            this.dropDown.show(null, this.element);
-            addClass([this.element], 'e-active');
-            this.element.setAttribute('aria-expanded', 'true');
-            ul.focus();
-            var openArgs = { element: ul, items: this.items };
-            this.trigger('open', openArgs);
-        }
+        this.trigger('beforeOpen', beforeOpenArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                var ul_1 = _this.getULElement();
+                _this.dropDown.show(null, _this.element);
+                addClass([_this.element], 'e-active');
+                _this.element.setAttribute('aria-expanded', 'true');
+                ul_1.focus();
+                var openArgs = { element: ul_1, items: _this.items };
+                _this.trigger('open', openArgs);
+            }
+        });
     };
     DropDownButton.prototype.closePopup = function (e, focusEle) {
+        var _this = this;
         if (e === void 0) { e = null; }
         var ul = this.getULElement();
         var beforeCloseArgs = { element: ul, items: this.items, event: e, cancel: false };
-        this.trigger('beforeClose', beforeCloseArgs);
-        if (!beforeCloseArgs.cancel) {
-            this.removeCustomSelection();
-            this.dropDown.hide();
-            removeClass(this.activeElem, 'e-active');
-            this.element.setAttribute('aria-expanded', 'false');
-            if (focusEle) {
-                focusEle.focus();
+        this.trigger('beforeClose', beforeCloseArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                var ul_2 = _this.getULElement();
+                _this.removeCustomSelection();
+                _this.dropDown.hide();
+                removeClass(_this.activeElem, 'e-active');
+                _this.element.setAttribute('aria-expanded', 'false');
+                if (focusEle) {
+                    focusEle.focus();
+                }
+                var closeArgs = { element: ul_2, items: _this.items };
+                _this.trigger('close', closeArgs);
+                if (!_this.target && ul_2) {
+                    detach(ul_2);
+                }
             }
-            var closeArgs = { element: ul, items: this.items };
-            this.trigger('close', closeArgs);
-            if (!this.target && ul) {
-                detach(ul);
-            }
-        }
+        });
     };
     DropDownButton.prototype.unWireEvents = function () {
         EventHandler.remove(document, 'mousedown touchstart', this.delegateMousedownHandler);
@@ -719,10 +725,14 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
                 _this.trigger('beforeItemRender', args);
             },
             beforeOpen: function (args) {
-                _this.trigger('beforeOpen', args);
+                _this.trigger('beforeOpen', args, function (observedArgs) {
+                    args = observedArgs;
+                });
             },
             beforeClose: function (args) {
-                _this.trigger('beforeClose', args);
+                _this.trigger('beforeClose', args, function (observedArgs) {
+                    args = observedArgs;
+                });
             },
             open: function (args) {
                 _this.trigger('open', args);
@@ -1198,62 +1208,79 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
     ProgressButton.prototype.startAnimate = function (timestamp, progressTime, prevTime, percent, prevPercent, step, prevProgressTime, isVertical) {
         var _this = this;
         try {
-            var args_1;
+            var args = void 0;
             var timeDiff = timestamp - prevTime;
             var stepTime = this.duration * step / 100;
-            var timeDiffBuffer = timeDiff ? (timeDiff < stepTime ? timeDiff - stepTime : timeDiff % stepTime) : 0;
-            this.progressTime = progressTime = progressTime + timeDiff - timeDiffBuffer;
-            prevTime = timestamp - timeDiffBuffer;
-            percent = percent + (timeDiff - timeDiffBuffer) / this.duration * 100;
+            var timeDiffBuffer_1 = timeDiff ? (timeDiff < stepTime ? timeDiff - stepTime : timeDiff % stepTime) : 0;
+            this.progressTime = progressTime = progressTime + timeDiff - timeDiffBuffer_1;
+            prevTime = timestamp - timeDiffBuffer_1;
+            percent = percent + (timeDiff - timeDiffBuffer_1) / this.duration * 100;
             prevPercent = ((progressTime - prevProgressTime) % stepTime === 0 || percent === 100) ? percent : prevPercent;
-            args_1 = { percent: prevPercent, currentDuration: progressTime, step: step };
+            args = { percent: prevPercent, currentDuration: progressTime, step: step };
+            this.eIsVertical = isVertical;
             if (percent === 0) {
-                this.trigger('begin', args_1);
+                this.trigger('begin', args, function (observedArgs) {
+                    _this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer_1, prevTime);
+                });
             }
             else if (percent === 100 || progressTime === this.duration) {
-                this.trigger('end', args_1);
+                this.trigger('end', args, function (observedArgs) {
+                    _this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer_1, prevTime);
+                });
             }
             else {
-                this.trigger('progress', args_1);
-            }
-            if (percent !== args_1.percent && args_1.percent !== prevPercent) {
-                percent = args_1.percent;
-            }
-            this.percent = percent;
-            this.step = args_1.step;
-            if ((progressTime - prevProgressTime) % (this.duration * args_1.step / 100) === 0 || percent === 100) {
-                this.timerId = requestAnimationFrame(function () {
-                    if (_this.enableProgress) {
-                        _this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
-                    }
-                    _this.element.setAttribute('aria-valuenow', percent.toString());
+                this.trigger('progress', args, function (observedArgs) {
+                    _this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer_1, prevTime);
                 });
-                prevPercent = percent;
-                prevProgressTime = progressTime;
-            }
-            if (!this.isPaused) {
-                if (progressTime < this.duration && percent < 100) {
-                    this.interval = window.setTimeout(function () {
-                        _this.startAnimate(Date.now(), progressTime, prevTime, percent, prevPercent, args_1.step, prevProgressTime, isVertical);
-                        // tslint:disable-next-line
-                    }, (this.duration / 100) - timeDiffBuffer);
-                }
-                else {
-                    this.interval = window.setTimeout(function () {
-                        _this.progressTime = _this.percent = 0;
-                        if (_this.enableProgress) {
-                            _this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
-                        }
-                        _this.element.setAttribute('aria-valuenow', '0');
-                        _this.hideSpin();
-                        // tslint:disable-next-line
-                    }, 100);
-                }
             }
         }
         catch (e) {
             cancelAnimationFrame(this.timerId);
             this.trigger('fail', e);
+        }
+    };
+    ProgressButton.prototype.successCallback = function (args, perc, pPerc, prgTim, pPrgTim, timDif, pTim) {
+        var _this = this;
+        var percent = perc;
+        var prevPercent = pPerc;
+        var timeDiffBuffer = timDif;
+        var progressTime = prgTim;
+        var prevProgressTime = pPrgTim;
+        var prevTime = pTim;
+        var isVertical = this.eIsVertical;
+        if (percent !== args.percent && args.percent !== prevPercent) {
+            percent = args.percent;
+        }
+        this.percent = percent;
+        this.step = args.step;
+        if ((progressTime - prevProgressTime) % (this.duration * args.step / 100) === 0 || percent === 100) {
+            this.timerId = requestAnimationFrame(function () {
+                if (_this.enableProgress) {
+                    _this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
+                }
+                _this.element.setAttribute('aria-valuenow', percent.toString());
+            });
+            prevPercent = percent;
+            prevProgressTime = progressTime;
+        }
+        if (!this.isPaused) {
+            if (progressTime < this.duration && percent < 100) {
+                this.interval = window.setTimeout(function () {
+                    _this.startAnimate(Date.now(), progressTime, prevTime, percent, prevPercent, args.step, prevProgressTime, isVertical);
+                    // tslint:disable-next-line
+                }, (this.duration / 100) - timeDiffBuffer);
+            }
+            else {
+                this.interval = window.setTimeout(function () {
+                    _this.progressTime = _this.percent = 0;
+                    if (_this.enableProgress) {
+                        _this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
+                    }
+                    _this.element.setAttribute('aria-valuenow', '0');
+                    _this.hideSpin();
+                    // tslint:disable-next-line
+                }, 100);
+            }
         }
     };
     ProgressButton.prototype.startContAnimate = function () {

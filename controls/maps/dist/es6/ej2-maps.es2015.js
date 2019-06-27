@@ -1,4 +1,4 @@
-import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -493,6 +493,174 @@ function convertElementFromLabel(element, labelId, data, index, mapObj) {
         innerHTML: templateHtml,
         styles: 'position: absolute'
     });
+}
+/* tslint:disable:no-string-literal */
+//tslint:disable
+function drawSymbols(shape, imageUrl, location, markerID, shapeCustom, markerCollection, maps) {
+    let markerEle;
+    let x;
+    let y;
+    let size = shapeCustom['size'];
+    let borderColor = shapeCustom['borderColor'];
+    let borderWidth = parseFloat(shapeCustom['borderWidth']);
+    let fill = shapeCustom['fill'];
+    let dashArray = shapeCustom['dashArray'];
+    let border = { color: borderColor, width: borderWidth };
+    let opacity = shapeCustom['opacity'];
+    let circleOptions;
+    let pathOptions;
+    let rectOptions;
+    pathOptions = new PathOption(markerID, fill, borderWidth, borderColor, opacity, dashArray, '');
+    if (shape === 'Circle') {
+        let radius = (size.width + size.height) / 4;
+        circleOptions = new CircleOption(markerID, fill, border, opacity, location.x, location.y, radius, dashArray);
+        markerEle = maps.renderer.drawCircle(circleOptions);
+    }
+    else if (shape === 'Rectangle') {
+        x = location.x - (size.width / 2);
+        y = location.y - (size.height / 2);
+        rectOptions = new RectOption(markerID, fill, border, opacity, new Rect(x, y, size.width, size.height), null, null, '', dashArray);
+        markerEle = maps.renderer.drawRectangle(rectOptions);
+    }
+    else if (shape === 'Image') {
+        x = location.x - (size.width / 2);
+        y = location.y - (size.height / 2);
+        merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
+        markerEle = maps.renderer.drawImage(pathOptions);
+    }
+    else {
+        markerEle = calculateShapes(maps, shape, pathOptions, size, location, markerCollection);
+    }
+    return markerEle;
+}
+//tslint:disable
+function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerCollection) {
+    let bounds = [];
+    let colloideBounds = [];
+    let tempX = 0;
+    let tempY = 0;
+    let data;
+    let style = currentLayer.markerClusterSettings.labelStyle;
+    let options;
+    let textElement;
+    let postionY = (15 / 4);
+    let m = 0;
+    for (let n = 0; n < markerTemplate.childElementCount; n++) {
+        let tempElement = markerTemplate.childNodes[n];
+        bounds.push(tempElement.getBoundingClientRect());
+    }
+    for (let o = 0; o < bounds.length; o++) {
+        if (!isNullOrUndefined(bounds[o])) {
+            for (let p = o + 1; p < bounds.length; p++) {
+                if (!isNullOrUndefined(bounds[p])) {
+                    if (bounds[o].left > bounds[p].right || bounds[o].right < bounds[p].left
+                        || bounds[o].top > bounds[p].bottom || bounds[o].bottom < bounds[p].top) {
+                    }
+                    else {
+                        colloideBounds.push(bounds[p]);
+                    }
+                }
+            }
+            tempX = bounds[o].x;
+            tempY = bounds[o].y;
+            for (let q = 0; q < colloideBounds.length; q++) {
+                for (let k = 0; k < bounds.length; k++) {
+                    if (!isNullOrUndefined(bounds[k])) {
+                        if (colloideBounds[q]['x'] === bounds[k]['x']) {
+                            delete bounds[k];
+                            for (let r = 0; r < markerTemplate.childElementCount; r++) {
+                                let tempElement = markerTemplate.childNodes[r];
+                                if (colloideBounds[q]['x'] === tempElement.getBoundingClientRect()['x']) {
+                                    markerTemplate.childNodes[r]['style']['visibility'] = "hidden";
+                                    markerTemplate.childNodes[o]['style']['visibility'] = "hidden";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (colloideBounds.length > 0) {
+                let padding = 10;
+                let container = maps.element.getBoundingClientRect();
+                tempX = Math.abs(container['x'] - tempX) + padding;
+                tempY = Math.abs(container['y'] - tempY) + padding;
+                let translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
+                let transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
+                    maps.translatePoint : translate['location'];
+                let dataIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                let markerIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                let clusters = currentLayer.markerClusterSettings;
+                let shapeCustom = {
+                    size: new Size(clusters.width, clusters.height),
+                    fill: clusters.fill, borderColor: clusters.border.color,
+                    borderWidth: clusters.border.width, opacity: clusters.opacity,
+                    dashArray: clusters.dashArray
+                };
+                let eventArg = {
+                    cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
+                    width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
+                    data: data, maps: maps, cluster: clusters, border: clusters.border
+                };
+                shapeCustom['fill'] = eventArg.fill;
+                shapeCustom['size']['width'] = eventArg.width;
+                shapeCustom['size']['height'] = eventArg.height;
+                shapeCustom['imageUrl'] = eventArg.imageUrl;
+                shapeCustom['shape'] = eventArg.shape;
+                shapeCustom['borderColor'] = eventArg.border.color;
+                shapeCustom['borderWidth'] = eventArg.border.width;
+                maps.trigger('markerClusterRendering', eventArg, (clusterargs) => {
+                    tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
+                    tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
+                    let clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m++);
+                    let labelID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
+                    let ele = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: 0 }, clusterID, shapeCustom, markerCollection, maps);
+                    ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                    options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
+                    textElement = renderTextElement(options, style, style.color, markerCollection);
+                    textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                    markerCollection.appendChild(ele);
+                    markerCollection.appendChild(textElement);
+                });
+            }
+        }
+        colloideBounds = [];
+    }
+    return markerTemplate;
+}
+function marker(eventArgs, markerSettings, markerData, dataIndex, location, transPoint, markerID, offset, scale, maps, markerCollection) {
+    let shapeCustom = {
+        size: new Size(eventArgs.width, eventArgs.height),
+        fill: eventArgs.fill, borderColor: eventArgs.border.color,
+        borderWidth: eventArgs.border.width, opacity: markerSettings.opacity,
+        dashArray: markerSettings.dashArray
+    };
+    let ele = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps);
+    let x = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
+    let y = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
+    ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
+    markerCollection.appendChild(ele);
+    let element = (markerData.length - 1) === dataIndex ? 'marker' : null;
+    let markerPoint = new Point(x, y);
+    if (markerSettings.animationDuration > 0) {
+        elementAnimate(ele, markerSettings.animationDelay, markerSettings.animationDuration, markerPoint, maps, element);
+    }
+    return markerCollection;
+}
+function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplate, location, scale, offset, maps) {
+    templateFn = getTemplateFunction(eventArgs.template);
+    if (templateFn && templateFn(maps).length) {
+        let templateElement = templateFn(maps);
+        let markerElement = convertElement(templateElement, markerID, data, markerIndex, maps);
+        for (let i = 0; i < markerElement.children.length; i++) {
+            markerElement.children[i].style.pointerEvents = 'none';
+        }
+        markerElement.style.left = ((maps.isTileMap ? location.x :
+            ((Math.abs(maps.baseMapRectBounds['min']['x'] - location.x)) * scale)) + offset.x) + 'px';
+        markerElement.style.top = ((maps.isTileMap ? location.y :
+            ((Math.abs(maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
+        markerTemplate.appendChild(markerElement);
+    }
+    return markerTemplate;
 }
 /**
  * Internal use of append shape element
@@ -1863,21 +2031,21 @@ var DarkTheme;
 function getThemeStyle(theme) {
     let style;
     let color;
-    switch (theme) {
-        case 'MaterialDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
             color = '#303030';
             break;
-        case 'FabricDark':
+        case 'fabricdark':
             color = '#201F1F';
             break;
-        case 'BootstrapDark':
+        case 'bootstrapdark':
             color = '#1A1A1A';
             break;
     }
-    switch (theme) {
-        case 'MaterialDark':
-        case 'FabricDark':
-        case 'BootstrapDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
+        case 'fabricdark':
+        case 'bootstrapdark':
             style = {
                 backgroundColor: color,
                 areaBackgroundColor: color,
@@ -1888,10 +2056,11 @@ function getThemeStyle(theme) {
                 dataLabelFontColor: '#DADADA',
                 tooltipFontColor: '#ffffff',
                 tooltipFillColor: '#363F4C',
-                zoomFillColor: '#FFFFFF'
+                zoomFillColor: '#FFFFFF',
+                labelFontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
-        case 'HighContrast':
+        case 'highcontrast':
             style = {
                 backgroundColor: '#000000',
                 areaBackgroundColor: '#000000',
@@ -1902,10 +2071,11 @@ function getThemeStyle(theme) {
                 dataLabelFontColor: '#000000',
                 tooltipFontColor: '#000000',
                 tooltipFillColor: '#ffffff',
-                zoomFillColor: '#FFFFFF'
+                zoomFillColor: '#FFFFFF',
+                labelFontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 backgroundColor: '#FFFFFF',
                 areaBackgroundColor: '#FFFFFF',
@@ -1922,7 +2092,7 @@ function getThemeStyle(theme) {
                 legendFontSize: '14px',
                 tooltipFillOpacity: 1,
                 tooltipTextOpacity: 0.9,
-                labelFontFamily: 'HelveticaNeue'
+                labelFontFamily: 'HelveticaNeue-Medium'
             };
             break;
         default:
@@ -1936,7 +2106,8 @@ function getThemeStyle(theme) {
                 dataLabelFontColor: '#000000',
                 tooltipFontColor: '#ffffff',
                 tooltipFillColor: '#000000',
-                zoomFillColor: '#737373'
+                zoomFillColor: '#737373',
+                labelFontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
     }
@@ -2080,6 +2251,44 @@ __decorate$1([
 __decorate$1([
     Property(10)
 ], Margin.prototype, "bottom", void 0);
+/**
+ * To configure cluster in marker
+ */
+class MarkerClusterSettings extends ChildProperty {
+}
+__decorate$1([
+    Property(false)
+], MarkerClusterSettings.prototype, "allowClustering", void 0);
+__decorate$1([
+    Complex({ color: 'transparent', width: 1 }, Border)
+], MarkerClusterSettings.prototype, "border", void 0);
+__decorate$1([
+    Property('#D2691E')
+], MarkerClusterSettings.prototype, "fill", void 0);
+__decorate$1([
+    Property(1)
+], MarkerClusterSettings.prototype, "opacity", void 0);
+__decorate$1([
+    Property('Rectangle')
+], MarkerClusterSettings.prototype, "shape", void 0);
+__decorate$1([
+    Property(12)
+], MarkerClusterSettings.prototype, "width", void 0);
+__decorate$1([
+    Property(12)
+], MarkerClusterSettings.prototype, "height", void 0);
+__decorate$1([
+    Property(new Point(0, 0))
+], MarkerClusterSettings.prototype, "offset", void 0);
+__decorate$1([
+    Property('')
+], MarkerClusterSettings.prototype, "imageUrl", void 0);
+__decorate$1([
+    Property('')
+], MarkerClusterSettings.prototype, "dashArray", void 0);
+__decorate$1([
+    Complex({}, Font)
+], MarkerClusterSettings.prototype, "labelStyle", void 0);
 /**
  * To configure ColorMapping in Maps
  */
@@ -2605,6 +2814,9 @@ __decorate$1([
     Collection([], MarkerSettings)
 ], LayerSettings.prototype, "markerSettings", void 0);
 __decorate$1([
+    Complex({}, MarkerClusterSettings)
+], LayerSettings.prototype, "markerClusterSettings", void 0);
+__decorate$1([
     Complex({}, DataLabelSettings)
 ], LayerSettings.prototype, "dataLabelSettings", void 0);
 __decorate$1([
@@ -2664,9 +2876,6 @@ class Marker {
             id: this.maps.element.id + '_Markers_Group',
             style: 'pointer-events: auto;'
         });
-        if (document.getElementById(this.markerSVGObject.id)) {
-            document.getElementById(this.markerSVGObject.id).remove();
-        }
         let markerTemplateEle = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
             className: 'template',
@@ -2676,9 +2885,7 @@ class Marker {
                 'height:' + this.maps.mapAreaRect.height + 'px;' +
                 'width:' + this.maps.mapAreaRect.width + 'px;'
         });
-        if (document.getElementById(markerTemplateEle.id)) {
-            document.getElementById(markerTemplateEle.id).remove();
-        }
+        //tslint:disable
         currentLayer.markerSettings.map((markerSettings, markerIndex) => {
             let markerData = markerSettings.dataSource;
             markerData.forEach((data, dataIndex) => {
@@ -2688,107 +2895,54 @@ class Marker {
                     template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
                     border: markerSettings.border
                 };
-                this.maps.trigger(markerRendering, eventArgs);
-                let lng = data['longitude'];
-                let lat = data['latitude'];
-                let offset = markerSettings.offset;
-                if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
-                    let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
-                        + markerIndex + '_dataIndex_' + dataIndex;
-                    let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
-                    let animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                    let translate = (this.maps.isTileMap) ? new Object() :
-                        !isNullOrUndefined(this.maps.zoomModule) && this.maps.zoomSettings.zoomFactor > 1 ?
-                            getZoomTranslate(this.maps, currentLayer, animate$$1) :
-                            getTranslate(this.maps, currentLayer, animate$$1);
-                    let scale = type === 'AddMarker' ? this.maps.scale : translate['scale'];
-                    let transPoint = type === 'AddMarker' ? this.maps.translatePoint : translate['location'];
-                    if (eventArgs.template) {
-                        templateFn = getTemplateFunction(eventArgs.template);
-                        if (templateFn && templateFn(this.maps).length) {
-                            let templateElement = templateFn(this.maps);
-                            let markerElement = convertElement(templateElement, markerID, data, markerIndex, this.maps);
-                            for (let i = 0; i < markerElement.children.length; i++) {
-                                markerElement.children[i].style.pointerEvents = 'none';
-                            }
-                            markerElement.style.left = ((this.maps.isTileMap ? location.x :
-                                ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location.x)) * scale)) + offset.x) + 'px';
-                            markerElement.style.top = ((this.maps.isTileMap ? location.y :
-                                ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
-                            markerTemplateEle.appendChild(markerElement);
+                this.maps.trigger('markerRendering', eventArgs, (MarkerArgs) => {
+                    let lng = data['longitude'];
+                    let lat = data['latitude'];
+                    let offset = markerSettings.offset;
+                    if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
+                        let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                            + markerIndex + '_dataIndex_' + dataIndex;
+                        let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
+                        let animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                        let translate = (this.maps.isTileMap) ? new Object() :
+                            !isNullOrUndefined(this.maps.zoomModule) && this.maps.zoomSettings.zoomFactor > 1 ?
+                                getZoomTranslate(this.maps, currentLayer, animate$$1) :
+                                getTranslate(this.maps, currentLayer, animate$$1);
+                        let scale = type === 'AddMarker' ? this.maps.scale : translate['scale'];
+                        let transPoint = type === 'AddMarker' ? this.maps.translatePoint : translate['location'];
+                        if (eventArgs.template) {
+                            markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location, scale, offset, this.maps);
+                        }
+                        else {
+                            marker(eventArgs, markerSettings, markerData, dataIndex, location, transPoint, markerID, offset, scale, this.maps, this.markerSVGObject);
                         }
                     }
-                    else {
-                        let shapeCustom = {
-                            size: new Size(eventArgs.width, eventArgs.height),
-                            fill: eventArgs.fill, borderColor: eventArgs.border.color,
-                            borderWidth: eventArgs.border.width, opacity: markerSettings.opacity,
-                            dashArray: markerSettings.dashArray
-                        };
-                        let ele = this.drawSymbol(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom);
-                        let x = (this.maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
-                        let y = (this.maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
-                        ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
-                        this.markerSVGObject.appendChild(ele);
-                        let element = (markerData.length - 1) === dataIndex ? 'marker' : null;
-                        let markerPoint = new Point(x, y);
-                        if (markerSettings.animationDuration > 0) {
-                            elementAnimate(ele, markerSettings.animationDelay, markerSettings.animationDuration, markerPoint, this.maps, element);
-                        }
-                    }
-                }
+                });
             });
         });
         if (this.markerSVGObject.childElementCount > 0) {
             layerElement.appendChild(this.markerSVGObject);
+            if (currentLayer.markerClusterSettings.allowClustering) {
+                this.maps.svgObject.appendChild(this.markerSVGObject);
+                this.maps.element.appendChild(this.maps.svgObject);
+                this.markerSVGObject = clusterTemplate(currentLayer, this.markerSVGObject, this.maps, layerIndex, this.markerSVGObject);
+                layerElement.appendChild(this.markerSVGObject);
+            }
         }
         if (markerTemplateEle.childElementCount > 0 && getElementByID(this.maps.element.id + '_Secondary_Element')) {
             getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+            if (currentLayer.markerClusterSettings.allowClustering) {
+                markerTemplateEle = clusterTemplate(currentLayer, markerTemplateEle, this.maps, layerIndex, this.markerSVGObject);
+                getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+            }
         }
-    }
-    drawSymbol(shape, imageUrl, location, markerID, shapeCustom) {
-        let markerEle;
-        let x;
-        let y;
-        let size = shapeCustom['size'];
-        let borderColor = shapeCustom['borderColor'];
-        let borderWidth = parseFloat(shapeCustom['borderWidth']);
-        let fill = shapeCustom['fill'];
-        let dashArray = shapeCustom['dashArray'];
-        let border = { color: borderColor, width: borderWidth };
-        let opacity = shapeCustom['opacity'];
-        let circleOptions;
-        let pathOptions;
-        let rectOptions;
-        pathOptions = new PathOption(markerID, fill, borderWidth, borderColor, opacity, dashArray, '');
-        if (shape === 'Circle') {
-            let radius = (size.width + size.height) / 4;
-            circleOptions = new CircleOption(markerID, fill, border, opacity, location.x, location.y, radius, dashArray);
-            markerEle = this.maps.renderer.drawCircle(circleOptions);
-        }
-        else if (shape === 'Rectangle') {
-            x = location.x - (size.width / 2);
-            y = location.y - (size.height / 2);
-            rectOptions = new RectOption(markerID, fill, border, opacity, new Rect(x, y, size.width, size.height), null, null, '', dashArray);
-            markerEle = this.maps.renderer.drawRectangle(rectOptions);
-        }
-        else if (shape === 'Image') {
-            x = location.x - (size.width / 2);
-            y = location.y - (size.height / 2);
-            merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
-            markerEle = this.maps.renderer.drawImage(pathOptions);
-        }
-        else {
-            markerEle = calculateShapes(this.maps, shape, pathOptions, size, location, this.markerSVGObject);
-        }
-        return markerEle;
     }
     /**
      * To check and trigger marker click event
      */
     markerClick(e) {
         let target = e.target.id;
-        if (target.indexOf('_LayerIndex_') === -1) {
+        if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') > 0) {
             return;
         }
         let options = this.getMarker(target);
@@ -2802,6 +2956,24 @@ class Marker {
         this.maps.trigger(markerClick, eventArgs);
     }
     /**
+     * To check and trigger Cluster click event
+     */
+    markerClusterClick(e) {
+        let target = e.target.id;
+        if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') === -1) {
+            return;
+        }
+        let options = this.getMarker(target);
+        if (isNullOrUndefined(options)) {
+            return;
+        }
+        let eventArgs = {
+            cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
+            target: target, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(markerClusterClick, eventArgs);
+    }
+    /**
      * To get marker from target id
      */
     getMarker(target) {
@@ -2809,14 +2981,14 @@ class Marker {
         let index = parseInt(id[1].split('_')[0], 10);
         let layer = this.maps.layers[index];
         let data;
-        let marker;
+        let marker$$1;
         if (target.indexOf('_MarkerIndex_') > -1) {
             let markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
             let dataIndex = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
-            marker = layer.markerSettings[markerIndex];
+            marker$$1 = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
-                data = marker.dataSource[dataIndex];
-                return { marker: marker, data: data };
+                data = marker$$1.dataSource[dataIndex];
+                return { marker: marker$$1, data: data };
             }
         }
         return null;
@@ -2826,7 +2998,7 @@ class Marker {
      */
     markerMove(e) {
         let targetId = e.target.id;
-        if (targetId.indexOf('_LayerIndex_') === -1) {
+        if (targetId.indexOf('_LayerIndex_') === -1 || targetId.indexOf('_cluster_') > 0) {
             return;
         }
         let options = this.getMarker(targetId);
@@ -2838,6 +3010,24 @@ class Marker {
             target: targetId, x: e.clientX, y: e.clientY
         };
         this.maps.trigger(markerMouseMove, eventArgs);
+    }
+    /**
+     * To check and trigger cluster move event
+     */
+    markerClusterMouseMove(e) {
+        let targetId = e.target.id;
+        if (targetId.indexOf('_LayerIndex_') === -1 || targetId.indexOf('_cluster_') === -1) {
+            return;
+        }
+        let options = this.getMarker(targetId);
+        if (isNullOrUndefined(options)) {
+            return;
+        }
+        let eventArgs = {
+            cancel: false, name: markerClusterMouseMove, data: options.data, maps: this.maps,
+            target: targetId, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(markerClusterMouseMove, eventArgs);
     }
     /**
      * Get module name.
@@ -2933,15 +3123,30 @@ const shapeRendering = 'shapeRendering';
  */
 const markerRendering = 'markerRendering';
 /**
+ * Specifies maps clusterRendering event name.
+ * @private
+ */
+const markerClusterRendering = 'markerClusterRendering';
+/**
  * Specifies maps markerClick event name.
  * @private
  */
 const markerClick = 'markerClick';
 /**
+ * Specifies maps clusterClick event name.
+ * @private
+ */
+const markerClusterClick = 'markerClusterClick';
+/**
  * Specifies maps markerMouseMove event name.
  * @private
  */
 const markerMouseMove = 'markerMouseMove';
+/**
+ * Specifies maps clusterMouseMove event name.
+ * @private
+ */
+const markerClusterMouseMove = 'markerClusterMouseMove';
 /**
  * Specifies maps dataLabelRendering event name.
  * @private
@@ -3307,69 +3512,70 @@ class LayerPanel {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject
         };
-        this.mapObject.trigger(layerRendering, eventArgs);
-        if (!eventArgs.cancel) {
-            if (layer.layerType !== 'Geometry') {
-                if (layer.layerType !== 'Bing' || this.bing) {
-                    this.renderTileLayer(this, layer, layerIndex);
+        this.mapObject.trigger('layerRendering', eventArgs, (observedArgs) => {
+            if (!eventArgs.cancel) {
+                if (layer.layerType !== 'Geometry') {
+                    if (layer.layerType !== 'Bing' || this.bing) {
+                        this.renderTileLayer(this, layer, layerIndex);
+                    }
+                    else if (layer.key && layer.key.length > 1) {
+                        let proxy = this;
+                        let bing = new BingMap(this.mapObject);
+                        let url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
+                        let ajax = new Ajax({
+                            url: url + '?output=json&include=ImageryProviders&key=' + layer.key
+                        });
+                        ajax.onSuccess = (json) => {
+                            let jsonObject = JSON.parse(json);
+                            let resource = jsonObject['resourceSets'][0]['resources'][0];
+                            let imageUrl = resource['imageUrl'];
+                            let subDomains = resource['imageUrlSubdomains'];
+                            let maxZoom = resource['zoomMax'];
+                            if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
+                                bing.imageUrl = imageUrl;
+                            }
+                            if (subDomains !== null && subDomains !== undefined && subDomains !== bing.subDomains) {
+                                bing.subDomains = subDomains;
+                            }
+                            if (maxZoom !== null && maxZoom !== undefined && maxZoom !== bing.maxZoom) {
+                                bing.maxZoom = maxZoom;
+                            }
+                            proxy.mapObject['bingMap'] = bing;
+                            proxy.renderTileLayer(proxy, layer, layerIndex, bing);
+                        };
+                        ajax.send();
+                    }
                 }
-                else if (layer.key && layer.key.length > 1) {
-                    let proxy = this;
-                    let bing = new BingMap(this.mapObject);
-                    let url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
-                    let ajax = new Ajax({
-                        url: url + '?output=json&include=ImageryProviders&key=' + layer.key
-                    });
-                    ajax.onSuccess = (json) => {
-                        let jsonObject = JSON.parse(json);
-                        let resource = jsonObject['resourceSets'][0]['resources'][0];
-                        let imageUrl = resource['imageUrl'];
-                        let subDomains = resource['imageUrlSubdomains'];
-                        let maxZoom = resource['zoomMax'];
-                        if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
-                            bing.imageUrl = imageUrl;
+                else {
+                    if (!isNullOrUndefined(layer.shapeData) && (!isNullOrUndefined(layer.shapeData['geometries']) ||
+                        !isNullOrUndefined(layer.shapeData['features']))) {
+                        let featureData = (!isNullOrUndefined(layer.shapeData['geometries']) &&
+                            layer.shapeData['geometries'].length > 0 ? layer.shapeData['geometries'] :
+                            layer.shapeData['features']);
+                        layer.layerData = [];
+                        let bbox = layer.shapeData['bbox'];
+                        if (!isNullOrUndefined(bbox) && layer.isBaseLayer) {
+                            this.mapObject.baseMapBounds = new GeoLocation({ min: bbox[0][1], max: bbox[1][1] }, { min: bbox[0][0], max: bbox[1][0] });
                         }
-                        if (subDomains !== null && subDomains !== undefined && subDomains !== bing.subDomains) {
-                            bing.subDomains = subDomains;
+                        else if (isNullOrUndefined(this.mapObject.baseMapBounds) && !isCustomPath(featureData)) {
+                            this.calculateRectBounds(featureData);
+                            // if (isNullOrUndefined(this.mapObject.baseSize)) {
+                            //     let minSize: Point = convertGeoToPoint(
+                            //         this.mapObject.baseMapBounds.latitude.min,
+                            //         this.mapObject.baseMapBounds.longitude.min, this.calculateFactor(layer), layer, this.mapObject
+                            //     );
+                            //     let maxSize: Point = convertGeoToPoint(
+                            //         this.mapObject.baseMapBounds.latitude.max,
+                            //         this.mapObject.baseMapBounds.longitude.max, this.calculateFactor(layer), layer, this.mapObject
+                            //     );
+                            //     this.mapObject.baseSize = new Size(Math.abs(minSize.x - maxSize.x), Math.abs(minSize.y - maxSize.y));
+                            // }
                         }
-                        if (maxZoom !== null && maxZoom !== undefined && maxZoom !== bing.maxZoom) {
-                            bing.maxZoom = maxZoom;
-                        }
-                        proxy.mapObject['bingMap'] = bing;
-                        proxy.renderTileLayer(proxy, layer, layerIndex, bing);
-                    };
-                    ajax.send();
+                        this.calculatePathCollection(layerIndex, featureData);
+                    }
                 }
             }
-            else {
-                if (!isNullOrUndefined(layer.shapeData) && (!isNullOrUndefined(layer.shapeData['geometries']) ||
-                    !isNullOrUndefined(layer.shapeData['features']))) {
-                    let featureData = (!isNullOrUndefined(layer.shapeData['geometries']) &&
-                        layer.shapeData['geometries'].length > 0 ? layer.shapeData['geometries'] :
-                        layer.shapeData['features']);
-                    layer.layerData = [];
-                    let bbox = layer.shapeData['bbox'];
-                    if (!isNullOrUndefined(bbox) && layer.isBaseLayer) {
-                        this.mapObject.baseMapBounds = new GeoLocation({ min: bbox[0][1], max: bbox[1][1] }, { min: bbox[0][0], max: bbox[1][0] });
-                    }
-                    else if (isNullOrUndefined(this.mapObject.baseMapBounds) && !isCustomPath(featureData)) {
-                        this.calculateRectBounds(featureData);
-                        // if (isNullOrUndefined(this.mapObject.baseSize)) {
-                        //     let minSize: Point = convertGeoToPoint(
-                        //         this.mapObject.baseMapBounds.latitude.min,
-                        //         this.mapObject.baseMapBounds.longitude.min, this.calculateFactor(layer), layer, this.mapObject
-                        //     );
-                        //     let maxSize: Point = convertGeoToPoint(
-                        //         this.mapObject.baseMapBounds.latitude.max,
-                        //         this.mapObject.baseMapBounds.longitude.max, this.calculateFactor(layer), layer, this.mapObject
-                        //     );
-                        //     this.mapObject.baseSize = new Size(Math.abs(minSize.x - maxSize.x), Math.abs(minSize.y - maxSize.y));
-                        // }
-                    }
-                    this.calculatePathCollection(layerIndex, featureData);
-                }
-            }
-        }
+        });
         if (!this.mapObject.isTileMap) {
             this.mapObject.svgObject.appendChild(this.layerGroup);
         }
@@ -3464,84 +3670,85 @@ class LayerPanel {
                 data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null, maps: this.mapObject,
                 shape: shapeSettings, fill: fill, border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
             };
-            this.mapObject.trigger(shapeRendering, eventArgs);
-            let drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
-                ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
-            drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
-            if (this.groupElements.length < 1) {
-                groupElement = this.mapObject.renderer.createGroup({
-                    id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
-                });
-                this.groupElements.push(groupElement);
-            }
-            else {
-                for (let i = 0; i < this.groupElements.length; i++) {
-                    let ele = this.groupElements[i];
-                    if (ele.id.indexOf(drawingType) > -1) {
-                        groupElement = ele;
-                        break;
-                    }
-                    else if (i >= this.groupElements.length - 1) {
-                        groupElement = this.mapObject.renderer.createGroup({
-                            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group'
-                        });
-                        this.groupElements.push(groupElement);
-                        break;
+            this.mapObject.trigger('shapeRendering', eventArgs, (shapeArgs) => {
+                let drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
+                    ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
+                drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
+                if (this.groupElements.length < 1) {
+                    groupElement = this.mapObject.renderer.createGroup({
+                        id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
+                    });
+                    this.groupElements.push(groupElement);
+                }
+                else {
+                    for (let i = 0; i < this.groupElements.length; i++) {
+                        let ele = this.groupElements[i];
+                        if (ele.id.indexOf(drawingType) > -1) {
+                            groupElement = ele;
+                            break;
+                        }
+                        else if (i >= this.groupElements.length - 1) {
+                            groupElement = this.mapObject.renderer.createGroup({
+                                id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group'
+                            });
+                            this.groupElements.push(groupElement);
+                            break;
+                        }
                     }
                 }
-            }
-            let pathEle;
-            switch (drawingType) {
-                case 'Polygon':
-                    if (!currentShapeData['_isMultiPolygon']) {
-                        path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
-                        currentShapeData.map((shapeData) => {
-                            path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
+                let pathEle;
+                switch (drawingType) {
+                    case 'Polygon':
+                        if (!currentShapeData['_isMultiPolygon']) {
+                            path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
+                            currentShapeData.map((shapeData) => {
+                                path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
+                            });
+                        }
+                        else {
+                            path = this.generateMultiPolygonPath(currentShapeData);
+                        }
+                        path += ' z ';
+                        if (path.length > 3) {
+                            pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
+                            pathEle = this.mapObject.renderer.drawPath(pathOptions);
+                        }
+                        break;
+                    case 'LineString':
+                        currentShapeData.map((lineData) => {
+                            points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
                         });
-                    }
-                    else {
-                        path = this.generateMultiPolygonPath(currentShapeData);
-                    }
-                    path += ' z ';
-                    if (path.length > 3) {
+                        polyLineOptions = new PolylineOption(shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray);
+                        pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions);
+                        break;
+                    case 'Point':
+                        let pointData = currentShapeData['point'];
+                        circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                        pathEle = this.mapObject.renderer.drawCircle(circleOptions);
+                        break;
+                    case 'Path':
+                        path = currentShapeData['point'];
                         pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
                         pathEle = this.mapObject.renderer.drawPath(pathOptions);
-                    }
-                    break;
-                case 'LineString':
-                    currentShapeData.map((lineData) => {
-                        points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
-                    });
-                    polyLineOptions = new PolylineOption(shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray);
-                    pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions);
-                    break;
-                case 'Point':
-                    let pointData = currentShapeData['point'];
-                    circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
-                    pathEle = this.mapObject.renderer.drawCircle(circleOptions);
-                    break;
-                case 'Path':
-                    path = currentShapeData['point'];
-                    pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
-                    pathEle = this.mapObject.renderer.drawPath(pathOptions);
-                    break;
-            }
-            if (!isNullOrUndefined(pathEle)) {
-                let property = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
-                    this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]);
-                // tslint:disable-next-line:align
-                let properties;
-                for (let j = 0; j < property.length; j++) {
-                    if (!isNullOrUndefined(currentShapeData['property'])) {
-                        properties = property[j];
                         break;
-                    }
                 }
-                pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
-                    (currentShapeData['property'][properties]) : ''));
-                pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
-                groupElement.appendChild(pathEle);
-            }
+                if (!isNullOrUndefined(pathEle)) {
+                    let property = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
+                        this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]);
+                    // tslint:disable-next-line:align
+                    let properties;
+                    for (let j = 0; j < property.length; j++) {
+                        if (!isNullOrUndefined(currentShapeData['property'])) {
+                            properties = property[j];
+                            break;
+                        }
+                    }
+                    pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
+                        (currentShapeData['property'][properties]) : ''));
+                    pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
+                    groupElement.appendChild(pathEle);
+                }
+            });
         }
         let bubbleG;
         if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
@@ -3896,9 +4103,11 @@ class LayerPanel {
     }
     templateCompiler(tiles) {
         let tileElment = '';
+        let id = 0;
         for (let tile of tiles) {
-            tileElment += '<div><div style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top + 'px;height: ' + tile.height +
-                'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
+            tileElment += '<div><div id="tile' + id + '" style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top +
+                'px;height: ' + tile.height + 'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
+            id++;
         }
         return tileElment;
     }
@@ -3914,6 +4123,14 @@ class LayerPanel {
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
+        if (!isNullOrUndefined(this.mapObject.tileTranslatePoint)) {
+            if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x) {
+                x = this.mapObject.tileTranslatePoint.x;
+            }
+            if (this.mapObject.tileTranslatePoint.y !== 0 && this.mapObject.tileTranslatePoint.y !== y) {
+                y = this.mapObject.tileTranslatePoint.y;
+            }
+        }
         this.mapObject.translatePoint = new Point((x - (0.01 * this.mapObject.scale)) / this.mapObject.scale, (y - (0.01 * this.mapObject.scale)) / this.mapObject.scale);
         return new Point(x, y);
     }
@@ -3959,20 +4176,21 @@ class Annotations {
             cancel: false, name: annotationRendering, content: annotation.content,
             annotation: annotation
         };
-        this.map.trigger(annotationRendering, argsData);
-        templateFn = getTemplateFunction(argsData.content);
-        if (templateFn && templateFn(this.map).length) {
-            templateElement = Array.prototype.slice.call(templateFn(this.map));
-            let length = templateElement.length;
-            for (let i = 0; i < length; i++) {
-                childElement.appendChild(templateElement[i]);
+        this.map.trigger(annotationRendering, argsData, (annotationArgs) => {
+            templateFn = getTemplateFunction(argsData.content);
+            if (templateFn && templateFn(this.map).length) {
+                templateElement = Array.prototype.slice.call(templateFn(this.map));
+                let length = templateElement.length;
+                for (let i = 0; i < length; i++) {
+                    childElement.appendChild(templateElement[i]);
+                }
             }
-        }
-        else {
-            childElement.appendChild(createElement('div', {
-                innerHTML: argsData.content
-            }));
-        }
+            else {
+                childElement.appendChild(createElement('div', {
+                    innerHTML: argsData.content
+                }));
+            }
+        });
         let offset = getElementOffset(childElement.cloneNode(true), map.element);
         let elementRect = map.element.getBoundingClientRect();
         let bounds = map.svgObject.getBoundingClientRect();
@@ -4048,10 +4266,11 @@ class ExportUtils {
         let argsData = {
             cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
         };
-        this.control.trigger(beforePrint, argsData);
-        if (!argsData.cancel) {
-            print(argsData.htmlContent, this.printWindow);
-        }
+        this.control.trigger('beforePrint', argsData, (beforePrintArgs) => {
+            if (!argsData.cancel) {
+                print(argsData.htmlContent, this.printWindow);
+            }
+        });
     }
     /**
      * To get the html string of the Maps
@@ -4191,6 +4410,8 @@ let Maps = class Maps extends Component {
         this.isDevice = false;
         /** @public */
         this.dataLabelShape = [];
+        this.mouseDownEvent = { x: null, y: null };
+        this.mouseClickEvent = { x: null, y: null };
     }
     /**
      * Gets the localized label by locale keyword.
@@ -4619,23 +4840,44 @@ let Maps = class Maps extends Component {
     mapsOnClick(e) {
         let targetEle = e.target;
         let targetId = targetEle.id;
+        let layerIndex = 0;
+        let latLongValue;
+        let latitude = null;
+        let longitude = null;
+        this.mouseClickEvent = { x: e.x, y: e.y };
+        if (targetEle.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
+            && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
+            layerIndex = parseFloat(targetEle.id.split('_LayerIndex_')[1].split('_')[0]);
+            latLongValue = this.getGeoLocation(layerIndex, e);
+            latitude = latLongValue['latitude'];
+            longitude = latLongValue['longitude'];
+        }
+        else if (this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
+            && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
+            latLongValue = this.getTileGeoLocation(e);
+            latitude = latLongValue['latitude'];
+            longitude = latLongValue['longitude'];
+        }
         let eventArgs = {
-            cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY
+            cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
+            latitude: latitude, longitude: longitude
         };
-        this.trigger(click, eventArgs);
-        if (targetEle.id.indexOf('shapeIndex') !== -1) {
-            let layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
-        }
-        if (this.markerModule) {
-            this.markerModule.markerClick(e);
-        }
-        if (this.bubbleModule) {
-            this.bubbleModule.bubbleClick(e);
-        }
-        if (!eventArgs.cancel) {
-            this.notify(click, targetEle);
-        }
+        this.trigger('click', eventArgs, (mouseArgs) => {
+            if (targetEle.id.indexOf('shapeIndex') !== -1) {
+                let layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
+            }
+            if (this.markerModule) {
+                this.markerModule.markerClick(e);
+                this.markerModule.markerClusterClick(e);
+            }
+            if (this.bubbleModule) {
+                this.bubbleModule.bubbleClick(e);
+            }
+            if (!eventArgs.cancel) {
+                this.notify(click, targetEle);
+            }
+        });
     }
     /**
      *
@@ -4677,6 +4919,7 @@ let Maps = class Maps extends Component {
      *
      */
     mouseDownOnMap(e) {
+        this.mouseDownEvent = { x: e.x, y: e.y };
         let rect = this.element.getBoundingClientRect();
         let element = e.target;
         this.notify(Browser.touchStartEvent, e);
@@ -4700,6 +4943,7 @@ let Maps = class Maps extends Component {
         // }
         if (this.markerModule) {
             this.markerModule.markerMove(e);
+            this.markerModule.markerClusterMouseMove(e);
         }
         if (this.bubbleModule) {
             this.bubbleModule.bubbleMove(e);
@@ -5084,11 +5328,11 @@ let Maps = class Maps extends Component {
                         isHighlight = navigation.selectionSettings.enable || isHighlight;
                     }
                 }
-                for (let marker of markers) {
-                    if (marker.visible) {
-                        istooltipVisible = marker.tooltipSettings.visible || istooltipVisible;
-                        isSelection = marker.selectionSettings.enable || isSelection;
-                        isHighlight = marker.highlightSettings.enable || isHighlight;
+                for (let marker$$1 of markers) {
+                    if (marker$$1.visible) {
+                        istooltipVisible = marker$$1.tooltipSettings.visible || istooltipVisible;
+                        isSelection = marker$$1.selectionSettings.enable || isSelection;
+                        isHighlight = marker$$1.highlightSettings.enable || isHighlight;
                     }
                     if (istooltipVisible) {
                         break;
@@ -5116,6 +5360,55 @@ let Maps = class Maps extends Component {
             layer: isLayerVisible, bubble: isBubblevisible, tooltip: istooltipVisible,
             selection: isSelection, highlight: isHighlight
         };
+    }
+    /**
+     * To get the geo location
+     * @param {number} layerIndex
+     * @param {PointerEvent} location
+     * @return GeoPosition
+     */
+    getGeoLocation(layerIndex, location) {
+        let container = document.getElementById(this.element.id);
+        let pageX = location.layerX - container.offsetLeft;
+        let pageY = location.layerY - container.offsetTop;
+        let currentLayer = this.layersCollection[layerIndex];
+        let translate = getTranslate(this, currentLayer, false);
+        let translatePoint = translate['location'];
+        let translatePointX = translatePoint.x * this.scale;
+        let translatePointY = translatePoint.y * this.scale;
+        let mapSize = (Math.min(this.mapAreaRect.height, this.mapAreaRect.width)
+            * this.mapLayerPanel['currentFactor']) * this.scale;
+        let xx = (this.clip(pageX - translatePointX, 0, mapSize - 1) / mapSize) - 0.5;
+        let yy = 0.5 - (this.clip(pageY - translatePointY, 0, mapSize - 1) / mapSize);
+        let lat = 90 - 360 * Math.atan(Math.exp(-yy * 2 * Math.PI)) / Math.PI;
+        let long = 360 * xx;
+        return { latitude: lat, longitude: long };
+    }
+    clip(value, minVal, maxVal) {
+        return Math.min(Math.max(value, minVal), maxVal);
+    }
+    /**
+     * To get the geo location
+     * @param {PointerEvent}
+     * @return GeoPosition
+     */
+    getTileGeoLocation(location) {
+        let container = document.getElementById(this.element.id);
+        let latLong;
+        let ele = document.getElementById(this.element.id + '_tile_parent');
+        let lastTile = this.mapLayerPanel.tiles[this.mapLayerPanel.tiles.length - 1];
+        let tile0 = this.mapLayerPanel.tiles[0];
+        latLong = this.pointToLatLong(location.layerX - (ele.offsetLeft - container.offsetLeft), location.layerY - (ele.offsetTop - container.offsetTop));
+        return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
+    }
+    pointToLatLong(pageX, pageY) {
+        pageY = (this.zoomSettings.enable) ? pageY + 10 : pageY;
+        let mapSize = 256 * Math.pow(2, this.tileZoomLevel);
+        let x1 = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
+        let y1 = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
+        let lat = 90 - 360 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
+        let long = 360 * x1;
+        return { latitude: lat, longitude: long };
     }
 };
 __decorate([
@@ -5222,7 +5515,16 @@ __decorate([
 ], Maps.prototype, "markerRendering", void 0);
 __decorate([
     Event()
+], Maps.prototype, "markerClusterRendering", void 0);
+__decorate([
+    Event()
 ], Maps.prototype, "markerClick", void 0);
+__decorate([
+    Event()
+], Maps.prototype, "markerClusterClick", void 0);
+__decorate([
+    Event()
+], Maps.prototype, "markerClusterMouseMove", void 0);
 __decorate([
     Event()
 ], Maps.prototype, "markerMouseMove", void 0);
@@ -5328,52 +5630,53 @@ class Bubble {
                 cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor, maps: this.maps,
                 radius: radius
             };
-            this.maps.trigger(bubbleRendering, eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
-            let bubbleElement;
-            if (bubbleSettings.bubbleType === 'Circle') {
-                let circle = new CircleOption(this.id, eventArgs.fill, eventArgs.border, opacity, 0, 0, eventArgs.radius, null);
-                bubbleElement = drawCircle(this.maps, circle, group);
-            }
-            else {
-                let y = this.maps.projectionType === 'Mercator' ? (eventArgs.cy - radius) : (eventArgs.cy + radius);
-                let rectangle = new RectOption(this.id, eventArgs.fill, eventArgs.border, opacity, new Rect(0, 0, radius * 2, radius * 2), 2, 2);
-                eventArgs.cx -= radius;
-                eventArgs.cy = y;
-                bubbleElement = drawRectangle(this.maps, rectangle, group);
-            }
-            this.bubbleCollection.push({
-                LayerIndex: layerIndex,
-                BubbleIndex: bubbleIndex,
-                DataIndex: dataIndex,
-                element: bubbleElement,
-                center: { x: eventArgs.cx, y: eventArgs.cy }
+            this.maps.trigger('bubbleRendering', eventArgs, (bubbleArgs) => {
+                if (eventArgs.cancel) {
+                    return;
+                }
+                let bubbleElement;
+                if (bubbleSettings.bubbleType === 'Circle') {
+                    let circle = new CircleOption(this.id, eventArgs.fill, eventArgs.border, opacity, 0, 0, eventArgs.radius, null);
+                    bubbleElement = drawCircle(this.maps, circle, group);
+                }
+                else {
+                    let y = this.maps.projectionType === 'Mercator' ? (eventArgs.cy - radius) : (eventArgs.cy + radius);
+                    let rectangle = new RectOption(this.id, eventArgs.fill, eventArgs.border, opacity, new Rect(0, 0, radius * 2, radius * 2), 2, 2);
+                    eventArgs.cx -= radius;
+                    eventArgs.cy = y;
+                    bubbleElement = drawRectangle(this.maps, rectangle, group);
+                }
+                this.bubbleCollection.push({
+                    LayerIndex: layerIndex,
+                    BubbleIndex: bubbleIndex,
+                    DataIndex: dataIndex,
+                    element: bubbleElement,
+                    center: { x: eventArgs.cx, y: eventArgs.cy }
+                });
+                let translate;
+                let animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule)) {
+                    translate = getZoomTranslate(this.maps, layer, animate$$1);
+                }
+                else {
+                    translate = getTranslate(this.maps, layer, animate$$1);
+                }
+                let scale = translate['scale'];
+                let transPoint = translate['location'];
+                let position = new MapLocation((this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)), (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));
+                bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
+                let bubble = (bubbleSettings.dataSource.length - 1) === dataIndex ? 'bubble' : null;
+                if (bubbleSettings.bubbleType === 'Square') {
+                    position.x += radius;
+                    position.y += radius * (this.maps.projectionType === 'Mercator' ? 1 : -1);
+                }
+                else {
+                    radius = 0;
+                }
+                if (bubbleSettings.animationDuration > 0) {
+                    elementAnimate(bubbleElement, bubbleSettings.animationDelay, bubbleSettings.animationDuration, position, this.maps, bubble, radius);
+                }
             });
-            let translate;
-            let animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-            if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule)) {
-                translate = getZoomTranslate(this.maps, layer, animate$$1);
-            }
-            else {
-                translate = getTranslate(this.maps, layer, animate$$1);
-            }
-            let scale = translate['scale'];
-            let transPoint = translate['location'];
-            let position = new MapLocation((this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)), (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));
-            bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
-            let bubble = (bubbleSettings.dataSource.length - 1) === dataIndex ? 'bubble' : null;
-            if (bubbleSettings.bubbleType === 'Square') {
-                position.x += radius;
-                position.y += radius * (this.maps.projectionType === 'Mercator' ? 1 : -1);
-            }
-            else {
-                radius = 0;
-            }
-            if (bubbleSettings.animationDuration > 0) {
-                elementAnimate(bubbleElement, bubbleSettings.animationDelay, bubbleSettings.animationDuration, position, this.maps, bubble, radius);
-            }
         }
     }
     getPoints(shape, points) {
@@ -5513,7 +5816,7 @@ class DataLabel {
         let textLocation = new Point(0, 0);
         /* tslint:disable:no-string-literal */
         let shapes = layerData[index];
-        style.fontFamily = this.maps.theme === 'Bootstrap4' ? 'HelveticaNeue-Medium' : style.fontFamily;
+        style.fontFamily = this.maps.themeStyle.labelFontFamily;
         shape = shapes['property'];
         let properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]);
@@ -5565,138 +5868,140 @@ class DataLabel {
                 name: dataLabelRendering, maps: this.maps, cancel: false, border: dataLabel.border, datalabel: dataLabel,
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
-            this.maps.trigger(dataLabelRendering, eventargs);
-            let position = [];
-            let width = location['rightMax']['x'] - location['leftMax']['x'];
-            if (!isNullOrUndefined(this.maps.dataLabelShape)) {
-                this.maps.dataLabelShape.push(width);
-            }
-            let textSize = measureText(text, style);
-            let trimmedLable = textTrim(width, text, style);
-            let elementSize = measureText(trimmedLable, style);
-            let startY = location['y'] - textSize['height'] / 4;
-            let endY = location['y'] + textSize['height'] / 4;
-            let start = location['y'] - textSize['height'] / 4;
-            let end = location['y'] + textSize['height'] / 4;
-            position = filter(shapePoint[midIndex], startY, endY);
-            if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
-                (shapeData['type'] !== 'MultiPolygon')) {
-                let location1 = findMidPointOfPolygon(position, projectionType);
-                location['x'] = location1['x'];
-                width = location1['rightMax']['x'] - location1['leftMax']['x'];
-            }
-            let xpositionEnds = location['x'] + textSize['width'] / 2;
-            let xpositionStart = location['x'] - textSize['width'] / 2;
-            trimmedLable = textTrim(width, text, style);
-            elementSize = measureText(trimmedLable, style);
-            this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
-            let animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-            let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
-            let scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
-            let transPoint = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'];
-            let labelElement;
-            if (eventargs.template !== '') {
-                templateFn = getTemplateFunction(eventargs.template);
-                let templateElement = templateFn(this.maps);
-                labelElement = convertElementFromLabel(templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
-                labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
-                labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + 'px';
-                labelTemplateElement.appendChild(labelElement);
-                let labelWidth = labelElement.offsetWidth;
-                let labelHeight = labelElement.offsetHeight;
-            }
-            else {
-                if (dataLabelSettings.smartLabelMode === 'Trim') {
-                    options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
+            this.maps.trigger('dataLabelRendering', eventargs, (labelArgs) => {
+                let position = [];
+                let width = location['rightMax']['x'] - location['leftMax']['x'];
+                if (!isNullOrUndefined(this.maps.dataLabelShape)) {
+                    this.maps.dataLabelShape.push(width);
                 }
-                if (dataLabelSettings.smartLabelMode === 'None') {
-                    options = new TextOption(labelId, (textLocation.x), textLocation.y, 'middle', text, '', '');
+                let textSize = measureText(text, style);
+                let trimmedLable = textTrim(width, text, style);
+                let elementSize = measureText(trimmedLable, style);
+                let startY = location['y'] - textSize['height'] / 4;
+                let endY = location['y'] + textSize['height'] / 4;
+                let start = location['y'] - textSize['height'] / 4;
+                let end = location['y'] + textSize['height'] / 4;
+                position = filter(shapePoint[midIndex], startY, endY);
+                if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
+                    (shapeData['type'] !== 'MultiPolygon')) {
+                    let location1 = findMidPointOfPolygon(position, projectionType);
+                    location['x'] = location1['x'];
+                    width = location1['rightMax']['x'] - location1['leftMax']['x'];
                 }
-                if (dataLabelSettings.smartLabelMode === 'Hide') {
-                    text = (width >= textSize['width']) ? text : '';
-                    options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
+                let xpositionEnds = location['x'] + textSize['width'] / 2;
+                let xpositionStart = location['x'] - textSize['width'] / 2;
+                trimmedLable = textTrim(width, text, style);
+                elementSize = measureText(trimmedLable, style);
+                this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
+                let animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
+                let scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
+                let transPoint = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'];
+                let labelElement;
+                if (eventargs.template !== '') {
+                    templateFn = getTemplateFunction(eventargs.template);
+                    let templateElement = templateFn({}, null, null, labelId + '_DatalabelTemplate');
+                    labelElement = convertElementFromLabel(templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
+                    labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
+                    labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + 'px';
+                    labelTemplateElement.appendChild(labelElement);
+                    let labelWidth = labelElement.offsetWidth;
+                    let labelHeight = labelElement.offsetHeight;
                 }
-                text = options['text'];
-                if (dataLabelSettings.intersectionAction === 'Hide' && this.maps.scale < 2) {
-                    for (let i = 0; i < intersect.length; i++) {
-                        if (!isNullOrUndefined(intersect[i])) {
-                            if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
-                                || this.value[index]['rightWidth'] < intersect[i]['leftWidth']
-                                || this.value[index]['heightTop'] > intersect[i]['heightBottom']
-                                || this.value[index]['heightBottom'] < intersect[i]['heightTop']) {
-                                text = text;
-                            }
-                            else {
-                                text = '';
-                                break;
-                            }
-                        }
+                else {
+                    if (dataLabelSettings.smartLabelMode === 'Trim') {
+                        options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
                     }
-                    intersect.push(this.value[index]);
-                    options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', text, '', '');
-                }
-                let difference;
-                if (dataLabelSettings.intersectionAction === 'Trim') {
-                    for (let j = 0; j < intersect.length; j++) {
-                        if (!isNullOrUndefined(intersect[j])) {
-                            if (intersect[j]['rightWidth'] < this.value[index]['leftWidth']
-                                || intersect[j]['leftWidth'] > this.value[index]['rightWidth']
-                                || intersect[j]['heightBottom'] < this.value[index]['heightTop']
-                                || intersect[j]['heightTop'] > this.value[index]['heightBottom']) {
-                                trimmedLable = text;
-                                difference = 0;
-                            }
-                            else {
-                                if (this.value[index]['leftWidth'] > intersect[j]['leftWidth']) {
-                                    width = intersect[j]['rightWidth'] - this.value[index]['leftWidth'];
-                                    difference = width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']);
-                                    trimmedLable = textTrim(difference, text, style);
-                                    break;
+                    if (dataLabelSettings.smartLabelMode === 'None') {
+                        options = new TextOption(labelId, (textLocation.x), textLocation.y, 'middle', text, '', '');
+                    }
+                    if (dataLabelSettings.smartLabelMode === 'Hide') {
+                        text = (width >= textSize['width']) ? text : '';
+                        options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
+                    }
+                    text = options['text'];
+                    if (dataLabelSettings.intersectionAction === 'Hide' && this.maps.scale < 2) {
+                        for (let i = 0; i < intersect.length; i++) {
+                            if (!isNullOrUndefined(intersect[i])) {
+                                if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
+                                    || this.value[index]['rightWidth'] < intersect[i]['leftWidth']
+                                    || this.value[index]['heightTop'] > intersect[i]['heightBottom']
+                                    || this.value[index]['heightBottom'] < intersect[i]['heightTop']) {
+                                    text = text;
                                 }
-                                if (this.value[index]['leftWidth'] < intersect[j]['leftWidth']) {
-                                    width = this.value[index]['rightWidth'] - intersect[j]['leftWidth'];
-                                    difference = Math.abs(width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']));
-                                    trimmedLable = textTrim(difference, text, style);
+                                else {
+                                    text = '';
                                     break;
                                 }
                             }
                         }
+                        intersect.push(this.value[index]);
+                        options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', text, '', '');
                     }
-                    intersect.push(this.value[index]);
-                    options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
-                }
-                if (dataLabelSettings.intersectionAction === 'None') {
-                    options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
-                }
-                if (trimmedLable.length > 1) {
-                    let border = eventargs.border;
-                    if (border['width'] > 1) {
-                        let fill = eventargs.fill;
-                        let opacity = dataLabelSettings.opacity;
-                        let rx = dataLabelSettings.rx;
-                        let ry = dataLabelSettings.ry;
-                        let x = location['x'] - textSize['width'] / 2;
-                        let y = location['y'] - textSize['height'] / 2;
-                        let rectOptions = new RectOption(this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index, fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry);
-                        let rect = this.maps.renderer.drawRectangle(rectOptions);
-                        group.appendChild(rect);
+                    let difference;
+                    if (dataLabelSettings.intersectionAction === 'Trim') {
+                        for (let j = 0; j < intersect.length; j++) {
+                            if (!isNullOrUndefined(intersect[j])) {
+                                if (intersect[j]['rightWidth'] < this.value[index]['leftWidth']
+                                    || intersect[j]['leftWidth'] > this.value[index]['rightWidth']
+                                    || intersect[j]['heightBottom'] < this.value[index]['heightTop']
+                                    || intersect[j]['heightTop'] > this.value[index]['heightBottom']) {
+                                    trimmedLable = text;
+                                    difference = 0;
+                                }
+                                else {
+                                    if (this.value[index]['leftWidth'] > intersect[j]['leftWidth']) {
+                                        width = intersect[j]['rightWidth'] - this.value[index]['leftWidth'];
+                                        difference = width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']);
+                                        trimmedLable = textTrim(difference, text, style);
+                                        break;
+                                    }
+                                    if (this.value[index]['leftWidth'] < intersect[j]['leftWidth']) {
+                                        width = this.value[index]['rightWidth'] - intersect[j]['leftWidth'];
+                                        difference = Math.abs(width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']));
+                                        trimmedLable = textTrim(difference, text, style);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        intersect.push(this.value[index]);
+                        options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
                     }
+                    if (dataLabelSettings.intersectionAction === 'None') {
+                        options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
+                    }
+                    if (trimmedLable.length > 1) {
+                        let border = eventargs.border;
+                        if (border['width'] > 1) {
+                            let fill = eventargs.fill;
+                            let opacity = dataLabelSettings.opacity;
+                            let rx = dataLabelSettings.rx;
+                            let ry = dataLabelSettings.ry;
+                            let x = location['x'] - textSize['width'] / 2;
+                            let y = location['y'] - textSize['height'] / 2;
+                            let rectOptions = new RectOption(this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index, fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry);
+                            let rect = this.maps.renderer.drawRectangle(rectOptions);
+                            group.appendChild(rect);
+                        }
+                    }
+                    element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
+                    element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
+                        + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
+                    group.appendChild(element);
                 }
-                element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
-                element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
-                    + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
-                group.appendChild(element);
-            }
-            this.dataLabelCollections.push({
-                location: { x: location['x'], y: (location['y'] + elementSize.height / 4) },
-                element: isNullOrUndefined(labelElement) ? element : labelElement,
-                layerIndex: layerIndex,
-                shapeIndex: index,
-                labelIndex: index,
-                dataLabelText: dataLabelText
+                this.dataLabelCollections.push({
+                    location: { x: location['x'], y: (location['y'] + elementSize.height / 4) },
+                    element: isNullOrUndefined(labelElement) ? element : labelElement,
+                    layerIndex: layerIndex,
+                    shapeIndex: index,
+                    labelIndex: index,
+                    dataLabelText: dataLabelText
+                });
             });
             if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+                updateBlazorTemplate(labelId + '_DatalabelTemplate', 'DatalabelTemplate');
             }
         }
     }
@@ -6654,18 +6959,18 @@ class Legend {
         return new Point(x, y);
     }
     getMarkersLegendCollections(layerIndex, markers) {
-        markers.forEach((marker, markerIndex) => {
-            let dataSource = marker.dataSource;
-            let field = marker.legendText;
+        markers.forEach((marker$$1, markerIndex) => {
+            let dataSource = marker$$1.dataSource;
+            let field = marker$$1.legendText;
             let templateFn;
             let isDuplicate;
             dataSource.forEach((data, dataIndex) => {
                 let imageSrc = null;
                 let showLegend = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
                     data[this.maps.legendSettings.showLegendPath];
-                if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
-                    if (marker.template) {
-                        templateFn = getTemplateFunction(marker.template);
+                if (marker$$1.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
+                    if (marker$$1.template) {
+                        templateFn = getTemplateFunction(marker$$1.template);
                         let templateElement = templateFn(this.maps);
                         let markerEle = isNullOrUndefined(templateElement.childElementCount) ? templateElement[0] :
                             templateElement;
@@ -6677,7 +6982,7 @@ class Legend {
                     if (!isDuplicate) {
                         this.legendCollection.push({
                             layerIndex: layerIndex, markerIndex: markerIndex, dataIndex: dataIndex,
-                            fill: marker.fill, text: text, imageSrc: imageSrc
+                            fill: marker$$1.fill, text: text, imageSrc: imageSrc
                         });
                     }
                 }
@@ -7180,10 +7485,10 @@ class Highlight {
                 this.highlightSettings = this.maps.layers[layerIndex].bubbleSettings[bubble].highlightSettings;
             }
             else if (targetEle.id.indexOf('MarkerIndex') > -1) {
-                let marker = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+                let marker$$1 = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
-                data = this.maps.layers[layerIndex].markerSettings[marker].dataSource[dataIndex];
-                this.highlightSettings = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings;
+                data = this.maps.layers[layerIndex].markerSettings[marker$$1].dataSource[dataIndex];
+                this.highlightSettings = this.maps.layers[layerIndex].markerSettings[marker$$1].highlightSettings;
             }
             else {
                 let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
@@ -7412,38 +7717,41 @@ class Selection {
             shapeData: shapeData,
             data: data
         };
-        this.maps.trigger(itemSelection, eventArgs);
-        // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility && this.maps.legendSettings.legendSelection) {
-        //     this.removeLegendSelection(this.maps.legendModule.legendCollection, targetEle);
-        // }
-        if (targetEle.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
-            removeClass(targetEle);
-            if (targetEle.id.indexOf('NavigationIndex') > -1) {
-                let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                let layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
-            }
-        }
-        else {
-            if (!this.selectionsettings.enableMultiSelect && getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
-                let ele = getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
-                removeClass(ele);
-                if (ele.id.indexOf('NavigationIndex') > -1) {
+        this.maps.trigger('itemSelection', eventArgs, (observedArgs) => {
+            // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility
+            // && this.maps.legendSettings.legendSelection) {
+            //     this.removeLegendSelection(this.maps.legendModule.legendCollection, targetEle);
+            // }
+            if (targetEle.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
+                removeClass(targetEle);
+                if (targetEle.id.indexOf('NavigationIndex') > -1) {
                     let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                     let layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                    ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                    targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
+                    targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }
             }
-            if (!getElement(this.selectionType + 'selectionMap')) {
-                document.body.appendChild(createStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs));
-            }
             else {
-                customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
+                if (!this.selectionsettings.enableMultiSelect
+                    && getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
+                    let ele = getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
+                    removeClass(ele);
+                    if (ele.id.indexOf('NavigationIndex') > -1) {
+                        let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                        let layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                        ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
+                        ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                    }
+                }
+                if (!getElement(this.selectionType + 'selectionMap')) {
+                    document.body.appendChild(createStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs));
+                }
+                else {
+                    customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
+                }
+                targetEle.setAttribute('class', this.selectionType + 'selectionMapStyle');
             }
-            targetEle.setAttribute('class', this.selectionType + 'selectionMapStyle');
-        }
+        });
     }
     /**
      * Remove legend selection
@@ -7552,15 +7860,15 @@ class MapsTooltip {
             else if (targetId.indexOf('_MarkerIndex_') > -1) {
                 let markerIdex = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
                 let dataIndex = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[2], 10);
-                let marker = layer.markerSettings[markerIdex];
-                option = marker.tooltipSettings;
-                templateData = marker.dataSource[dataIndex];
+                let marker$$1 = layer.markerSettings[markerIdex];
+                option = marker$$1.tooltipSettings;
+                templateData = marker$$1.dataSource[dataIndex];
                 if (option.visible && !isNaN(markerIdex)) {
-                    if (marker.tooltipSettings.format) {
-                        currentData = this.formatter(marker.tooltipSettings.format, marker.dataSource[dataIndex]);
+                    if (marker$$1.tooltipSettings.format) {
+                        currentData = this.formatter(marker$$1.tooltipSettings.format, marker$$1.dataSource[dataIndex]);
                     }
                     else {
-                        currentData = this.formatValue(marker.dataSource[dataIndex][marker.tooltipSettings.valuePath], this.maps);
+                        currentData = this.formatValue(marker$$1.dataSource[dataIndex][marker$$1.tooltipSettings.valuePath], this.maps);
                     }
                 }
                 //location.y = this.template(option, location);
@@ -7607,29 +7915,33 @@ class MapsTooltip {
                 maps: this.maps,
                 element: target, eventArgs: e
             };
-            this.maps.trigger(tooltipRender, tootipArgs);
-            if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData)) {
-                tootipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
-                    || tootipArgs.options['textStyle']['color'];
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    header: '',
-                    data: tootipArgs.options['data'],
-                    template: tootipArgs.options['template'],
-                    content: [currentData.toString()],
-                    shapes: [],
-                    location: tootipArgs.options['location'],
-                    palette: [markerFill],
-                    areaBounds: this.maps.mapAreaRect,
-                    textStyle: tootipArgs.options['textStyle'],
-                    fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
-                });
-                this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(tooltipEle);
-            }
-            else {
-                this.removeTooltip();
-            }
+            this.maps.trigger('tooltipRender', tootipArgs, (observedArgs) => {
+                if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
+                    (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                    this.maps['isProtectedOnChange'] = true;
+                    tootipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
+                        || tootipArgs.options['textStyle']['color'];
+                    this.svgTooltip = new Tooltip({
+                        enable: true,
+                        header: '',
+                        data: tootipArgs.options['data'],
+                        template: tootipArgs.options['template'],
+                        content: [currentData.toString()],
+                        shapes: [],
+                        location: tootipArgs.options['location'],
+                        palette: [markerFill],
+                        areaBounds: this.maps.mapAreaRect,
+                        textStyle: tootipArgs.options['textStyle'],
+                        availableSize: this.maps.availableSize,
+                        fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
+                    });
+                    this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                    this.svgTooltip.appendTo(tooltipEle);
+                }
+                else {
+                    this.removeTooltip();
+                }
+            });
         }
         else {
             this.removeTooltip();
@@ -7978,6 +8290,8 @@ class Zoom {
                             }
                         }
                         else if (currentEle.id.indexOf('_Markers_Group') > -1) {
+                            this.markerTranslates(currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate$$1);
+                            currentEle = layerElement.childNodes[j];
                             for (let k = 0; k < currentEle.childElementCount; k++) {
                                 this.markerTranslate(currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate$$1);
                             }
@@ -8025,6 +8339,79 @@ class Zoom {
             }
         }
     }
+    //tslint:disable
+    markerTranslates(element, factor, x, y, scale, type, layerElement, animate$$1 = false) {
+        let markerSVGObject;
+        let templateFn;
+        let layerIndex = parseInt(element.id.split('_LayerIndex_')[1].split('_')[0], 10);
+        markerSVGObject = this.maps.renderer.createGroup({
+            id: this.maps.element.id + '_Markers_Group',
+            style: 'pointer-events: auto;'
+        });
+        if (document.getElementById(markerSVGObject.id)) {
+            document.getElementById(markerSVGObject.id).remove();
+        }
+        let markerTemplateEle = createElement('div', {
+            id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
+            className: 'template',
+            styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
+                'top:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.y) + 'px;' +
+                'left:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.x) + 'px;' +
+                'height:' + this.maps.mapAreaRect.height + 'px;' +
+                'width:' + this.maps.mapAreaRect.width + 'px;'
+        });
+        if (document.getElementById(markerTemplateEle.id)) {
+            document.getElementById(markerTemplateEle.id).remove();
+        }
+        let markerIndex = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+        let currentLayer = this.maps.layersCollection[layerIndex];
+        currentLayer.markerSettings.map((markerSettings, markerIndex) => {
+            let markerDatas = markerSettings.dataSource;
+            markerDatas.forEach((data, dataIndex) => {
+                let eventArgs = {
+                    template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
+                    cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
+                    width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
+                    border: markerSettings.border
+                };
+                this.maps.trigger('markerRendering', eventArgs, (MarkerArgs) => {
+                    let long = data['longitude'];
+                    let lati = data['latitude'];
+                    let offset = markerSettings.offset;
+                    if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
+                        let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                            + markerIndex + '_dataIndex_' + dataIndex;
+                        let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(long, lati), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lati, long, factor, currentLayer, this.maps);
+                        let animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                        let transPoint = { x: x, y: y };
+                        if (eventArgs.template) {
+                            markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location, scale, offset, this.maps);
+                        }
+                        else {
+                            marker(eventArgs, markerSettings, markerDatas, dataIndex, location, transPoint, markerID, offset, scale, this.maps, markerSVGObject);
+                        }
+                    }
+                });
+            });
+        });
+        if (markerSVGObject.childElementCount > 0 && (type !== 'Template')) {
+            layerElement.appendChild(markerSVGObject);
+            if (currentLayer.markerClusterSettings.allowClustering) {
+                this.maps.svgObject.appendChild(markerSVGObject);
+                this.maps.element.appendChild(this.maps.svgObject);
+                clusterTemplate(currentLayer, markerSVGObject, this.maps, layerIndex, markerSVGObject);
+                layerElement.appendChild(markerSVGObject);
+            }
+        }
+        if (markerTemplateEle.childElementCount > 0 && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+            getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+            if (currentLayer.markerClusterSettings.allowClustering) {
+                clusterTemplate(currentLayer, markerTemplateEle, this.maps, layerIndex, markerSVGObject);
+                getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+            }
+        }
+    }
+    ;
     /**
      * To translate the layer template elements
      * @private
@@ -8188,12 +8575,13 @@ class Zoom {
         let markerIndex = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
         let dataIndex = parseInt(element.id.split('_dataIndex_')[1].split('_')[0], 10);
         let layer = this.maps.layersCollection[layerIndex];
-        let marker = layer.markerSettings[markerIndex];
-        if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
-            let lng = marker.dataSource[dataIndex]['longitude'];
-            let lat = marker.dataSource[dataIndex]['latitude'];
+        let marker$$1 = layer.markerSettings[markerIndex];
+        if (!isNullOrUndefined(marker$$1) && !isNullOrUndefined(marker$$1.dataSource) && !isNullOrUndefined(marker$$1.dataSource[dataIndex])) {
+            let lng = marker$$1.dataSource[dataIndex]['longitude'];
+            let lat = marker$$1.dataSource[dataIndex]['latitude'];
             let duration = this.currentLayer.animationDuration;
             let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
+            location.y = (this.maps.zoomSettings.enable && this.maps.isTileMap) ? location.y - 10 : location.y;
             if (this.maps.isTileMap) {
                 if (type === 'Template') {
                     let templateOffset = element.getBoundingClientRect();
@@ -8212,13 +8600,13 @@ class Zoom {
                     let layerOffset = getElementByID(this.maps.element.id + '_Layer_Collections').getBoundingClientRect();
                     let elementOffset = element.parentElement.getBoundingClientRect();
                     element.style.left = (((location.x) + (layerOffset.left - elementOffset.left) -
-                        (templateOffset.width / 2)) + marker.offset.x) + 'px';
+                        (templateOffset.width / 2)) + marker$$1.offset.x) + 'px';
                     element.style.top = (((location.y) + (layerOffset.top - elementOffset.top)
-                        - (templateOffset.height / 2)) + marker.offset.y) + 'px';
+                        - (templateOffset.height / 2)) + marker$$1.offset.y) + 'px';
                 }
                 else {
-                    location.x = (((location.x + x) * scale) + marker.offset.x);
-                    location.y = (((location.y + y) * scale) + marker.offset.y);
+                    location.x = (((location.x + x) * scale) + marker$$1.offset.x);
+                    location.y = (((location.y + y) * scale) + marker$$1.offset.y);
                     if (!animate$$1 || duration === 0) {
                         element.setAttribute('transform', 'translate( ' + location.x + ' ' + location.y + ' )');
                     }
@@ -8691,7 +9079,7 @@ class Zoom {
         this.touchMoveList = [];
         this.lastScale = 1;
         this.maps.element.style.cursor = 'auto';
-        if (!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) {
+        if ((!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) && this.currentLayer.type === 'SubLayer') {
             this.toAlignSublayer();
             this.distanceX = this.distanceY = null;
         }
@@ -8800,5 +9188,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, MarkerClusterSettings, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es2015.js.map

@@ -166,6 +166,13 @@ export class WParagraphFormat {
         }
         this.setPropertyValue('bidi', value);
     }
+    get contextualSpacing(): boolean {
+        return this.getPropertyValue('contextualSpacing') as boolean;
+    }
+
+    set contextualSpacing(value: boolean) {
+        this.setPropertyValue('contextualSpacing', value);
+    }
     constructor(node?: Object) {
         this.ownerBase = node;
         this.listFormat = new WListFormat(this);
@@ -267,6 +274,7 @@ export class WParagraphFormat {
         this.addUniqueParaFormat('lineSpacingType', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('outlineLevel', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('bidi', property, propValue, uniqueParaFormatTemp);
+        this.addUniqueParaFormat('contextualSpacing', property, propValue, uniqueParaFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueParagraphFormat = WParagraphFormat.uniqueParagraphFormats.addUniqueFormat(uniqueParaFormatTemp, WParagraphFormat.uniqueFormatType);
     }
@@ -312,6 +320,9 @@ export class WParagraphFormat {
                 value = 'BodyText';
                 break;
             case 'bidi':
+                value = false;
+                break;
+            case 'contextualSpacing':
                 value = false;
                 break;
         }
@@ -443,6 +454,9 @@ export class WParagraphFormat {
         }
         if (!isStyle && isNullOrUndefined(this.getValue('bidi'))) {
             this.bidi = format.getValue('bidi') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('contextualSpacing'))) {
+            this.contextualSpacing = format.getValue('contextualSpacing') as boolean;
         }
         if (isNullOrUndefined(this.listFormat)) {
             this.listFormat.mergeFormat(format.listFormat);

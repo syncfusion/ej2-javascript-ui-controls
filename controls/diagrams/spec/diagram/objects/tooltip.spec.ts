@@ -1069,6 +1069,16 @@ describe('Tool Tip mouse', () => {
             }, 1);
         }, 1);
     });
+    it('Checking tooltip shown after delete issue -fix', (done: Function) => {
+        diagram.select([diagram.nodes[0]]);
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 100, false, false);
+        let obj = diagram.nameTable[diagram.selectedItems.nodes[0].id];
+        diagram.remove(obj);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done()
+    });
     it('memory leak', () => { 
         profile.sample();
         let average: any = inMB(profile.averageChange)

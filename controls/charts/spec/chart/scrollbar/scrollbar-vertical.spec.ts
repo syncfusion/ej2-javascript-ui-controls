@@ -271,7 +271,7 @@ describe('Scrollbar Chart', () => {
                 chartObj.loaded = null;
                 trigger.draganddropEvent(ele, 200, 250, 350, 400);
                 let border: string = document.getElementById('container_BorderLine_1').getAttribute('d').split('M ')[1];
-                expect(border === '57.5 411 L 29.5 411 L 29.5 364 ' || border === '26.5 423.5 L 26.5 386 ').toBe(true);
+                expect(border === '57.5 411 L 29.5 411 L 29.5 364 ' || border === '26.5 423.5 L 26.5 386 ' || border === '26.5 423.5 L 26.5 386.87749565972206 ').toBe(true);
                 done();
             };
             chartObj.primaryYAxis.labelPosition = 'Outside';
@@ -288,7 +288,7 @@ describe('Scrollbar Chart', () => {
                 trigger.draganddropEvent(ele, 200, 250, 350, 400);
                 let border: string = document.getElementById('container_BorderLine_1').getAttribute('d').split('M ')[1];
                 expect(border === '75.5 420.5 L 75.5 381 ' || border === '76.5 420.5 L 76.5 381 ' ||
-                    border === '72.5 423.5 L 72.5 379 ').toBe(true);
+                    border === '72.5 423.5 L 72.5 379 ' || border === '72.5 423.5 L 72.5 379.1809285481767 ').toBe(true);
                 done();
 
             };
@@ -403,7 +403,7 @@ describe('Scrollbar Chart', () => {
                 chartObj.loaded = null;
                 trigger.draganddropEvent(ele, 150, 150, 400, 400);
                 let mulitiLevelLabel: Element = document.getElementById('container1_Axis_MultiLevelLabel_Level_0_Text_0');
-                let border: string = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0').getAttribute('d').split('M')[1];
+                let border: string = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0_0').getAttribute('d').split('M')[1];
                 expect(mulitiLevelLabel.getAttribute('x') === '59.5' || mulitiLevelLabel.getAttribute('x') === '55.5').toBe(true);
                 expect(mulitiLevelLabel.getAttribute('y') === '321.6769318181818' || mulitiLevelLabel.getAttribute('y') === '325.3315625').toBe(true);
                 expect(border === ' 84.5 293.7359090909091 L 34.5 293.7359090909091 ' || border === ' 79.5 296.90625 L 31.5 296.90625 ').toBe(true)
@@ -416,7 +416,7 @@ describe('Scrollbar Chart', () => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
                 let mulitiLevelLabel: Element = document.getElementById('container1_Axis_MultiLevelLabel_Level_0_Text_0');
-                let border: string = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0').getAttribute('d').split('M')[1];
+                let border: string = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0_0').getAttribute('d').split('M')[1];
                 expect(mulitiLevelLabel.getAttribute('x') === '82.5' || mulitiLevelLabel.getAttribute('x') === '77.5').toBe(true);
                 expect(mulitiLevelLabel.getAttribute('y') === '321.6769318181818' || mulitiLevelLabel.getAttribute('y') === '325.3315625').toBe(true);
                 expect(border === ' 57.5 293.7359090909091 L 107.5 293.7359090909091 ' ||

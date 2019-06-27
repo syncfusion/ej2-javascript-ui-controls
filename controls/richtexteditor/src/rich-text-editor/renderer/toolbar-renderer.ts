@@ -9,7 +9,6 @@ import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE
         CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE,
         CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER } from '../base/classes';
 import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs } from '../base/interface';
-import { isIDevice } from '../base/util';
 import { ColorPicker, PaletteTileEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 
 /**
@@ -319,15 +318,13 @@ export class ToolbarRenderer implements IRenderer {
                 args.element.classList.add(CLS_COLOR_PALETTE);
             },
             change: (colorPickerArgs: IColorPickerEventArgs): void => {
-                if (isIDevice()) { proxy.parent.notify(events.selectionRestore, {}); }
-                /* tslint:disable */
-                let colorpickerValue: string = Browser.info.name === 'msie' || Browser.info.name === 'edge' || isIDevice() ? colorPickerArgs.currentValue.rgba : colorPickerArgs.currentValue.hex;
-                /* tslint:enable */
+                let colorpickerValue: string = colorPickerArgs.currentValue.rgba;
                 colorPickerArgs.item = {
                     command: args.command,
                     subCommand: args.subCommand,
                     value: colorpickerValue
                 };
+                proxy.parent.notify(events.selectionRestore, {});
                 (proxy.currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor = colorpickerValue;
                 let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                 if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||

@@ -1593,6 +1593,242 @@ describe('Calendar', () => {
             expect(calendar.enableRtl).toBe(true);
         });
     });
+    describe('Header Format testing at initial rendering', () => {
+        let Cal: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (Cal) {
+                Cal.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Header short format testing', () => {
+            Cal = new Calendar({dayHeaderFormat: "Short"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Su');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header narrow format testing', () => {
+            Cal = new Calendar({dayHeaderFormat: "Narrow"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('S');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header abbreviated format testing', () => {
+            Cal = new Calendar({dayHeaderFormat: "Abbreviated"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sun');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header wide format testing', () => {
+            Cal = new Calendar({dayHeaderFormat: "Wide"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sunday');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).toBe(true);
+        });
+    });
+    
+    describe('Header Format testing at dynamic rendering', () => {
+        let Cal: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (Cal) {
+                Cal.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Header short format testing', () => {
+            Cal = new Calendar({});
+            Cal.appendTo('#calendar');
+            Cal.dayHeaderFormat= "Short";
+            Cal.dataBind();
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Su');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header narrow format testing', () => {
+            Cal = new Calendar({});
+            Cal.appendTo('#calendar');
+            Cal.dayHeaderFormat= "Narrow";
+            Cal.dataBind();
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('S');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header abbreviated format testing', () => {
+            Cal = new Calendar({});
+            Cal.appendTo('#calendar');
+            Cal.dayHeaderFormat= "Abbreviated";
+            Cal.dataBind();
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sun');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header wide format testing', () => {
+            Cal = new Calendar({});
+            Cal.appendTo('#calendar');
+            Cal.dayHeaderFormat= "Wide";
+            Cal.dataBind();
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sunday');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).toBe(true);
+        });
+    });
+    describe('Header Format test by changing dynamically', () => {
+        let Cal: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (Cal) {
+                Cal.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Header short format to narrow', () => {
+            Cal = new Calendar({dayHeaderFormat: "Short"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Su');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Narrow";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('S');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header short format to abbreiated', () => {
+            Cal = new Calendar({dayHeaderFormat: "Short"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Su');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Abbreviated";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sun');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header short format to wide', () => {
+            Cal = new Calendar({dayHeaderFormat: "Short"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Su');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Wide";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sunday');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).toBe(true);
+        });
+        it('Header narrow format to short', () => {
+            Cal = new Calendar({dayHeaderFormat: "Narrow"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('S');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Short";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Su');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header narrow format to abbreviated', () => {
+            Cal = new Calendar({dayHeaderFormat: "Narrow"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('S');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Abbreviated";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sun');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header narrow format to wide', () => {
+            Cal = new Calendar({dayHeaderFormat: "Narrow"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('S');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Wide";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sunday');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).toBe(true);
+        });
+        it('Header abbreviated format to short', () => {
+            Cal = new Calendar({dayHeaderFormat: "Abbreviated"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sun');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Short";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Su');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header abbreviated format to narrow', () => {
+            Cal = new Calendar({dayHeaderFormat: "Abbreviated"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sun');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Narrow";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('S');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header abbreviated format to wide', () => {
+            Cal = new Calendar({dayHeaderFormat: "Abbreviated"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sun');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+            Cal.dayHeaderFormat = "Wide";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sunday');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).toBe(true);
+        });
+        it('Header wide format to short', () => {
+            Cal = new Calendar({dayHeaderFormat: "Wide"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sunday');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).toBe(true);
+            Cal.dayHeaderFormat = "Short";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Su');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header wide format to narrow', () => {
+            Cal = new Calendar({dayHeaderFormat: "Wide"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sunday');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).toBe(true);
+            Cal.dayHeaderFormat = "Narrow";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('S');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+        it('Header wide format to abbreviated', () => {
+            Cal = new Calendar({dayHeaderFormat: "Wide"});
+            Cal.appendTo('#calendar');
+            Cal.getCultureValues();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sunday');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).toBe(true);
+            Cal.dayHeaderFormat = "Abbreviated";
+            Cal.dataBind();
+            expect(Cal.tableHeadElement.querySelector('th').textContent).toBe('Sun');
+            expect(Cal.element.classList.contains('e-calendar-day-header-lg')).not.toBe(true);
+        });
+    });
     describe(' notify property changes of', () => {
         let calendar: any;
         calendar = undefined;

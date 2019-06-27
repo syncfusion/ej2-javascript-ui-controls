@@ -1,5 +1,5 @@
 
-import { isNullOrUndefined, getValue } from './util';
+import { isNullOrUndefined, getValue, extend } from './util';
 /**
  * Observer is used to perform event handling based the object.
  * ```
@@ -94,20 +94,77 @@ export class Observer {
     /**
      * To notify the handlers in the specified event.
      * @param {string} property - Specifies the event to be notify.
-     *  @param {Object} args - Additional parameters to pass while calling the handler.
+     * @param {Object} args - Additional parameters to pass while calling the handler.
+     * @param {Function} successHandler - this function will invoke after event successfully triggered
+     * @param {Function} errorHandler - this function will invoke after event if it was failure to call.
      * @return {void}
      */
-    public notify(property: string, argument?: Object): void {
+    public notify(property: string, argument?: Object, successHandler?: Function, errorHandler?: Function): void | Object {
         if (this.notExist(property)) {
+            if (successHandler) {
+                successHandler.call(this, argument);
+            }
             return;
         }
         if (argument) {
             (<{ name: string }>argument).name = property;
         }
+        let blazor: string = 'Blazor';
         let curObject: BoundOptions[] = getValue(property, this.boundedEvents).slice(0);
-        for (let cur of curObject) {
-            cur.handler.call(cur.context, argument);
+        if (window[blazor]) {
+           return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
+        } else {
+            for (let cur of curObject) {
+                cur.handler.call(cur.context, argument);
+            }
+            if (successHandler) {
+                successHandler.call(this, argument);
+            }
         }
+    }
+
+    private blazorCallback(
+        objs: BoundOptions[],
+        argument: object,
+        successHandler: Function,
+        errorHandler: Function,
+        index: number): void | object {
+        let isTrigger: boolean = index === objs.length - 1;
+        if (index < objs.length) {
+            let obj: BoundOptions = objs[index];
+            let promise: Promise<object> = obj.handler.call(obj.context, argument);
+            if (promise && typeof promise.then === 'function') {
+                if (!successHandler) {
+                    return promise;
+                }
+                promise.then((data: object) => {
+                    data = typeof data === 'string' && this.isJson(data) ? JSON.parse(data as string) : data;
+                    extend(argument, argument, data, true);
+                    if (successHandler && isTrigger) {
+                        successHandler.call(obj.context, argument);
+                    } else {
+                        return this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
+                    }
+                }).catch((data: object) => {
+                    if (errorHandler) {
+                        errorHandler.call(obj.context, typeof data === 'string' && this.isJson(data) ? JSON.parse(data) : data);
+                    }
+                });
+            } else if (successHandler && isTrigger) {
+                successHandler.call(obj.context, argument);
+            } else {
+                return this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
+            }
+        }
+    }
+
+    public isJson(value: string): boolean {
+        try {
+            JSON.parse(value);
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
     /**
      * To destroy handlers in the event
@@ -119,7 +176,7 @@ export class Observer {
      * Returns if the property exists. 
      */
     private notExist(prop: string): boolean {
-        return this.boundedEvents.hasOwnProperty(prop) === false;
+        return this.boundedEvents.hasOwnProperty(prop) === false || this.boundedEvents[prop].length <= 0;
     }
     /**
      * Returns if the handler is present.

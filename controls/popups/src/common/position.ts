@@ -37,6 +37,7 @@ export function calculateRelativeBasedPosition(
 export function calculatePosition(
     currentElement: Element, positionX?: string, positionY?: string, parentElement?: Boolean,
     targetValues?: ClientRect): OffsetPosition {
+    (positionY + positionX === 'topright') ? popupRect = undefined : popupRect = targetValues;
     popupRect = targetValues;
     fixedParent = parentElement ? true : false;
     if (!currentElement) {

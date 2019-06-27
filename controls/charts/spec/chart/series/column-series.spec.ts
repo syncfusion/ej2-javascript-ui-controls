@@ -11,6 +11,7 @@ import { Category } from '../../../src/chart/axis/category-axis';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { ChartSeriesType, ChartRangePadding } from '../../../src/chart/utils/enum';
 import { ValueType } from '../../../src/chart/utils/enum';
+import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
@@ -20,9 +21,8 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
-import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, Tooltip, Crosshair);
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, Tooltip, Crosshair, DataEditing);
 
 describe('Column Series', () => {
     let element: HTMLElement;
@@ -1674,6 +1674,189 @@ describe('Column Series', () => {
             chartObj.refresh();
         });
         
+    });
+
+    /**
+     * Cheacking point drag and drop with column series
+     */
+    describe('Column series with drag and drop support', () => {
+        let columnChart: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let columnContainer: HTMLElement = createElement('div', { id: 'dragColumn' });
+        beforeAll(() => {
+            document.body.appendChild(columnContainer);
+            columnChart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        labelFormat: 'y',
+                        intervalType: 'Years',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 }
+                    },
+
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Column',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24 },
+                                { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                                { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                                { x: new Date(2011, 0, 1), y: 70 }
+                            ],
+                            animation: { enable: false },
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 10,
+                                height: 10
+                            },
+                            yName: 'y', name: 'Germany', dragSettings: { enable: true }
+                        },
+                    ],
+
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                    //Initializing User Interaction Tooltip
+                    tooltip: {
+                        enable: false
+                    },
+                });
+                columnChart.appendTo('#dragColumn');
+
+        });
+        afterAll((): void => {
+            columnChart.destroy();
+            columnContainer.remove();
+        });
+
+        it('Column series drag and drop with marker true', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('dragColumn_Series_0_Point_3_Symbol');
+                let chartArea: HTMLElement = document.getElementById('dragColumn_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + columnContainer.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + columnContainer.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
+                let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
+                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                columnChart.loaded = null;
+                done();
+            };
+            columnChart.loaded = loaded;
+            columnChart.refresh();
+        });
+        it('Column series drag and drop with marker false', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('dragColumn_Series_0_Point_3');
+                let chartArea: HTMLElement = document.getElementById('dragColumn_ChartAreaBorder');
+                x = columnChart.visibleSeries[0].points[3].regions[0].x + parseFloat(chartArea.getAttribute('x')) + columnContainer.offsetLeft;
+                y = columnChart.visibleSeries[0].points[3].regions[0].y + parseFloat(chartArea.getAttribute('y')) + columnContainer.offsetTop;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
+                let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
+                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                columnChart.loaded = null;
+                done();
+            };
+            columnChart.series[0].marker.visible = false;
+            columnChart.loaded = loaded;
+            columnChart.refresh();
+        });
+        it('Column series drag and drop with x axis inversed', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('dragColumn_Series_0_Point_3_Symbol');
+                let chartArea: HTMLElement = document.getElementById('dragColumn_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + columnContainer.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + columnContainer.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
+                let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
+                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                columnChart.loaded = null;
+                done();
+            };
+            columnChart.primaryXAxis.isInversed = true;
+            columnChart.series[0].marker.visible = true;
+            columnChart.loaded = loaded;
+            columnChart.refresh();
+        });
+        it('Column series drag and drop with y axis inversed', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('dragColumn_Series_0_Point_3_Symbol');
+                let chartArea: HTMLElement = document.getElementById('dragColumn_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + columnContainer.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + columnContainer.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) + 142);
+                let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
+                expect(yValue == 80.72 || yValue == 80.12).toBe(true);
+                columnChart.loaded = null;
+                done();
+            };
+            columnChart.primaryXAxis.isInversed = true;
+            columnChart.primaryYAxis.isInversed = true;
+            columnChart.series[0].marker.visible = true;
+            columnChart.loaded = loaded;
+            columnChart.refresh();
+        });
+        it('Column series drag and drop with isTransposed true', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('dragColumn_Series_0_Point_3_Symbol');
+                let chartArea: HTMLElement = document.getElementById('dragColumn_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + columnContainer.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + columnContainer.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x) - 142, Math.ceil(y));
+                let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
+                expect(yValue == 17.89 || yValue == 18.26).toBe(true);
+                columnChart.loaded = null;
+                done();
+            };
+            columnChart.primaryXAxis.isInversed = false;
+            columnChart.primaryYAxis.isInversed = false;
+            columnChart.isTransposed = true;
+            columnChart.loaded = loaded;
+            columnChart.refresh();
+        });
+        it('Column series drag and drop with dragged point fill color', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('dragColumn_Series_0_Point_3_Symbol');
+                let chartArea: HTMLElement = document.getElementById('dragColumn_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + columnContainer.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + columnContainer.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 142);
+                let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
+                expect(yValue == 80.27 || yValue == 79.68).toBe(true);
+                let color: string = document.getElementById('dragColumn_Series_0_Point_3').getAttribute('fill');
+                expect(color === 'red').toBe(true);
+                columnChart.loaded = null;
+                done();
+            };
+            columnChart.isTransposed = false;
+            columnChart.series[0].dragSettings.fill = 'red';
+            columnChart.loaded = loaded;
+            columnChart.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

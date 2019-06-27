@@ -19,6 +19,7 @@ export interface ISmithchartPrintEventArgs extends ISmithchartEventArgs {
 
 /**
  * Specifies the Load Event arguments.
+ * @deprecated
  */
 export interface ISmithchartLoadEventArgs extends ISmithchartEventArgs {
     /** Defines the current Smithchart instance */
@@ -47,6 +48,10 @@ export interface ISmithchartLegendRenderEventArgs extends ISmithchartEventArgs {
     shape: string;
 }
 
+/**
+ * Specifies the Title Render Event arguments.
+ * @deprecated
+ */
 export interface ITitleRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current title text */
     text: string;
@@ -56,6 +61,10 @@ export interface ITitleRenderEventArgs extends ISmithchartEventArgs {
     y: number;
 }
 
+/**
+ * Specifies the SubTitle Render Event arguments.
+ * @deprecated
+ */
 export interface ISubTitleRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current subtitle text */
     text: string;
@@ -65,6 +74,10 @@ export interface ISubTitleRenderEventArgs extends ISmithchartEventArgs {
     y: number;
 }
 
+/**
+ * Specifies the Text Render Event arguments.
+ * @deprecated
+ */
 export interface ISmithchartTextRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current datalabel text */
     text: string;
@@ -78,6 +91,10 @@ export interface ISmithchartTextRenderEventArgs extends ISmithchartEventArgs {
     pointIndex: number;
 }
 
+/**
+ * Specifies the Axis Label Render Event arguments.
+ * @deprecated
+ */
 export interface ISmithchartAxisLabelRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current axis label text */
     text: string;
@@ -87,6 +104,10 @@ export interface ISmithchartAxisLabelRenderEventArgs extends ISmithchartEventArg
     y: number;
 }
 
+/**
+ * Specifies the Series Render Event arguments.
+ * @deprecated
+ */
 export interface ISmithchartSeriesRenderEventArgs extends ISmithchartEventArgs {
     /** Defines name of the event */
     text: string;
@@ -94,6 +115,10 @@ export interface ISmithchartSeriesRenderEventArgs extends ISmithchartEventArgs {
     fill: string;
 }
 
+/**
+ * Specifies the Legend Render Event arguments.
+ * @deprecated
+ */
 export interface ISmithchartLegendRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current legend text */
     text: string;

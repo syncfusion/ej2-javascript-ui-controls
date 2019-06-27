@@ -35,7 +35,7 @@ describe('borders dialog setting check box validation', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Handle none div check box testing', () => {
         editor.openBlank();
@@ -88,7 +88,7 @@ describe('Borders dialog setting checkbox validation', () => {
         document.body.innerHTML = '';
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Handle all div check box testing', () => {
         editor.openBlank();
@@ -141,7 +141,7 @@ describe('Borders dialog preview checkbox validation', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Top Top preview div check box testing', () => {
         editor.openBlank();
@@ -206,7 +206,7 @@ describe('Borders dialog preview divs checkbox validation', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('bottom right preview div check box testing 1', () => {
         editor.openBlank();
@@ -274,7 +274,7 @@ describe('Borders dialog preview div checkbox validation', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('diagonal right preview div check box testing 2', () => {
         editor.openBlank();
@@ -336,7 +336,7 @@ describe('Change table cell drop down preview div checkbox validation', () => {
         document.body.innerHTML = '';
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('diagonal right preview div check box testing 3', () => {
         editor.openBlank();
@@ -355,58 +355,58 @@ describe('Change table cell drop down preview div checkbox validation', () => {
         ulElement.index = 0;
     });
 });
-
-describe('Change table cell drop down preview div checkbox validation', () => {
-    let editor: DocumentEditor;
-    let dialog: BordersAndShadingDialog;
-    beforeAll((): void => {
-        editor = undefined;
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, EditorHistory, BordersAndShadingDialog);
-        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableBordersAndShadingDialog: true });
-        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-        dialog = editor.bordersAndShadingDialogModule;
-    });
-    afterAll((done) => {
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        dialog.destroy();
-        dialog = undefined;
-        document.body.innerHTML = '';
-        setTimeout(() => {
-            done();
-        }, 1000);
-    });
-    it('diagonal right preview div check box testing', (done) => {
-        editor.openBlank();
-        editor.editor.insertTable(3, 3);
-        dialog.show();
-        setTimeout(() => {
-            editor.selection.tableFormat.table.tableFormat.borders.top = undefined;
-            (dialog as any).loadBordersShadingsPropertiesDialog();
-            dialog.closeDialog();
-            done();
-        }, 10);
-    });
-    it('diagonal right preview div check box testing', (done) => {
-        editor.openBlank();
-        editor.editor.insertTable(3, 3);
-        dialog.show();
-        (dialog as any).customDiv.classList.add('e-de-table-border-inside-setting-click')
-        setTimeout(() => {
-            editor.selection.tableFormat.table.tableFormat = undefined;
-            (dialog as any).loadBordersShadingsPropertiesDialog();
-            dialog.destroy();
-            done();
-        });
-    });
-});
+//TODO
+// describe('Change table cell drop down preview div checkbox validation', () => {
+//     let editor: DocumentEditor;
+//     let dialog: BordersAndShadingDialog;
+//     beforeAll((): void => {
+//         editor = undefined;
+//         let ele: HTMLElement = createElement('div', { id: 'container' });
+//         document.body.appendChild(ele);
+//         DocumentEditor.Inject(Editor, Selection, EditorHistory, BordersAndShadingDialog);
+//         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableBordersAndShadingDialog: true });
+//         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         editor.appendTo('#container');
+//         dialog = editor.bordersAndShadingDialogModule;
+//     });
+//     afterAll((done) => {
+//         editor.destroy();
+//         document.body.removeChild(document.getElementById('container'));
+//         editor = undefined;
+//         dialog.destroy();
+//         dialog = undefined;
+//         document.body.innerHTML = '';
+//         setTimeout(() => {
+//             done();
+//         }, 750);
+//     });
+//     it('diagonal right preview div check box testing', (done) => {
+//         editor.openBlank();
+//         editor.editor.insertTable(3, 3);
+//         dialog.show();
+//         setTimeout(() => {
+//             editor.selection.tableFormat.table.tableFormat.borders.top = undefined;
+//             (dialog as any).loadBordersShadingsPropertiesDialog();
+//             dialog.closeDialog();
+//             done();
+//         }, 10);
+//     });
+//     it('diagonal right preview div check box testing', (done) => {
+//         editor.openBlank();
+//         editor.editor.insertTable(3, 3);
+//         dialog.show();
+//         (dialog as any).customDiv.classList.add('e-de-table-border-inside-setting-click')
+//         setTimeout(() => {
+//             editor.selection.tableFormat.table.tableFormat = undefined;
+//             (dialog as any).loadBordersShadingsPropertiesDialog();
+//             dialog.destroy();
+//             done();
+//         });
+//     });
+// });
 
 describe('Get Line Style Validation of Border testing', () => {
     let editor: DocumentEditor;
@@ -433,7 +433,7 @@ describe('Get Line Style Validation of Border testing', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Single,Dot,DashSmallGap line style testing', () => {
         let lineStyle: number = (dialog as any).getLineStyle('Single');
@@ -498,7 +498,7 @@ describe('Check Line Style Validation of Border testing', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('ThickThinSmallGap,ThinThickThinSmallGap,ThinThickMediumGap line style testing', () => {
         let lineStyle: number = (dialog as any).getLineStyle('ThickThinSmallGap');
@@ -563,7 +563,7 @@ describe('Check Linestyle of Border testing', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('DoubleWavy,DashDotStroked,Emboss3D line style testing', () => {
         let lineStyle: number = (dialog as any).getLineStyle('DoubleWavy');
@@ -624,7 +624,7 @@ describe('Check Linestyle of Border testing', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('DoubleWavy,DashDotStroked,Emboss3D line style testing', () => {
         let lineStyle: number = (dialog as any).getLineStyle('DoubleWavy');
@@ -688,7 +688,7 @@ describe('Apply borders and shadings dialog values testing', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Apply table properties style testing', () => {
         editor.openBlank();
@@ -754,7 +754,7 @@ describe('Apply borders&shadings dialog values testing', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Apply table properties style testing', () => {
         editor.openBlank();
@@ -805,7 +805,7 @@ describe('Apply borders&shadings checkbox values testing', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Apply Table Cell Preview Boxes index 0 testing', () => {
         editor.openBlank();
@@ -855,7 +855,7 @@ describe('Apply borders&shadings checkbox values testing - 1', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Apply Table Cell Preview Boxes index 1 testing', () => {
         editor.openBlank();
@@ -906,7 +906,7 @@ describe('Border and shading dialog applying testing to table testing with histo
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Apply table properties style testing', () => {
         editor.openBlank();
@@ -955,7 +955,7 @@ describe('Border and shading dialog applying testing to table testing with histo
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Apply cell properties line style testing', () => {
         editor.openBlank();
@@ -1005,7 +1005,7 @@ describe('Border applying testing with none and box validation', () => {
         document.body.innerHTML = '';
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('Box div in borders div click validation', () => {
         editor.openBlank();
@@ -1088,7 +1088,7 @@ describe('Border applying testing with custom div validation', () => {
         tablePropertiesDialog = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 750);
     });
     it('custom div in bottom  previw div validation borders div click validation', () => {
         editor.openBlank();

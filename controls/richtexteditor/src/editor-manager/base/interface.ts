@@ -65,6 +65,7 @@ export interface IHtmlItem {
     item: IHtmlItemArgs;
     subCommand: string;
     value: string;
+    selector: string;
     callBack(args: IHtmlFormatterCallBack): () => void;
 }
 export interface IHtmlItemArgs {

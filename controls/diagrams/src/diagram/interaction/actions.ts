@@ -178,13 +178,15 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
             for (let i: number = 0; i < conn.segments.length; i++) {
                 let segment: ConnectorSegment; let segPoint: PointModel = { x: 0, y: 0 };
                 segment = (conn.segments)[i] as ConnectorSegment;
-                for (let j: number = 0; j < segment.points.length - 1; j++) {
-                    let length: number = Point.distancePoints(segment.points[j], segment.points[j + 1]);
-                    if (length >= 50) {
-                        segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
-                        segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
-                        if (contains(position, segPoint, 30)) {
-                            return 'OrthoThumb';
+                if (segment.allowDrag) {
+                    for (let j: number = 0; j < segment.points.length - 1; j++) {
+                        let length: number = Point.distancePoints(segment.points[j], segment.points[j + 1]);
+                        if (length >= 50) {
+                            segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
+                            segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
+                            if (contains(position, segPoint, 30)) {
+                                return 'OrthoThumb';
+                            }
                         }
                     }
                 }

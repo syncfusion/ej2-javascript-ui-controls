@@ -256,7 +256,6 @@ export interface PointerModel {
 
 /**
  * Interface for a class Axis
- * @private
  */
 export interface AxisModel {
 

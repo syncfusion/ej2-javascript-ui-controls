@@ -1,4 +1,4 @@
-﻿import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, classList, append, detach, ModuleDeclaration } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';
+﻿import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import {AnimationSettings,checkBoxPosition,SelectEventArgs} from "./list-view";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -40,7 +40,7 @@ export interface FieldSettingsModel {
 
     /**
      * This property used for nested navigation of list-items.
-     * Refer the documentation [here](../../listview/nested-list/)
+     * Refer the documentation [here](./listview/nested-list)
      *  to know more about this property with demo.
      */
     child?: string;
@@ -52,7 +52,7 @@ export interface FieldSettingsModel {
 
     /**
      * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](../../listview/grouping/)
+     * Refer the documentation [here](./listview/grouping)
      *  to know more about this property with demo.
      */
     groupBy?: string;
@@ -203,7 +203,7 @@ export interface ListViewModel extends ComponentModel{
 
     /**
      * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](../../listview/customizing-templates/)
+     * Refer the documentation [here](./listview/customizing-templates)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
@@ -236,12 +236,14 @@ export interface ListViewModel extends ComponentModel{
     /**
      * We can trigger the `select` event when we select the list item in the component.
      * @event
+     * @blazorProperty 'Selected'
      */
     select?: EmitType<SelectEventArgs>;
 
     /**
      * We can trigger `actionBegin` event before every ListView action starts.
      * @event
+     * @blazorProperty 'OnActionBegin'
      */
     actionBegin?: EmitType<Object>;
 
@@ -249,6 +251,7 @@ export interface ListViewModel extends ComponentModel{
      * We can trigger `actionComplete` event for every ListView action success event
      *  with the dataSource parameter.
      * @event
+     * @blazorProperty 'OnActionComplete'
      */
     actionComplete?: EmitType<Object>;
 
@@ -256,6 +259,7 @@ export interface ListViewModel extends ComponentModel{
      * We can trigger `actionFailure` event for every ListView action failure event
      *  with the dataSource parameter.
      * @event
+     * @blazorProperty 'OnActionFailure'
      */
     actionFailure?: EmitType<Object>;
 

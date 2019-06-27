@@ -6,6 +6,13 @@ import { createElement } from './dom';
 
 const HAS_ROW: RegExp = /^[\n\r.]+\<tr|^\<tr/;
 const HAS_SVG: RegExp = /^[\n\r.]+\<svg|^\<path|^\<g/;
+export let blazorTemplates: object = {};
+
+
+export function getRandomId(): string {
+
+    return '-' + Math.random().toString(36).substr(2, 5);
+}
 
 /**
  * Interface for Template Engine.
@@ -24,8 +31,21 @@ export interface ITemplateEngine {
 export function compile(templateString: string, helper?: Object): (data: Object | JSON, component?: any, propName?: any) => NodeList {
     let compiler: Function = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data: Object, component?: any, propName?: any): NodeList => {
+    return (data: Object, component?: any, propName?: any, templateId?: any): NodeList => {
         let result: object = compiler(data, component, propName);
+        let blazor: string = 'Blazor'; let blazorTemplateId: string = 'BlazorTemplateId';
+        if (window && window[blazor]) {
+            let randomId: string = getRandomId();
+            if (!blazorTemplates[templateId]) {
+                blazorTemplates[templateId] = [];
+            }
+            data[blazorTemplateId] = templateId + randomId;
+            blazorTemplates[templateId].push(data);
+            // tslint:disable-next-line:no-any
+            return propName === 'rowTemplate' ? [createElement('tr', { id: templateId + randomId })] as any :
+                // tslint:disable-next-line:no-any
+                [createElement('div', { id: templateId + randomId })] as any;
+        }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {
                 let ele: HTMLElement = createElement('svg', { innerHTML: result });
@@ -38,6 +58,35 @@ export function compile(templateString: string, helper?: Object): (data: Object 
             return <NodeList>result;
         }
     };
+}
+
+export function updateBlazorTemplate(templateId?: string, templateName?: string): void {
+    let blazor: string = 'Blazor';
+    if (window && window[blazor]) {
+        let ejsIntrop: string = 'ejsIntrop';
+        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId);
+        blazorTemplates[templateId] = [];
+    }
+}
+
+export function resetBlazorTemplate(templateId?: string, templateName?: string): void {
+    let templateDiv: HTMLElement = document.getElementById(templateId);
+    if (templateDiv) {
+        // tslint:disable-next-line:no-any
+        let innerTemplates: HTMLElement[] = templateDiv.getElementsByClassName('blazor-inner-template') as any;
+        for (let i: number = 0; i < innerTemplates.length; i++) {
+            let tempId: string = innerTemplates[i].getAttribute('data-templateId');
+            let tempElement: HTMLElement = document.getElementById(tempId);
+            if (tempElement) {
+                let length: number = tempElement.children.length;
+                for (let j: number = 0; j < length; j++) {
+                innerTemplates[i].appendChild(tempElement.children[0]);
+                tempElement.appendChild(innerTemplates[i].children[j].cloneNode(true));
+                }
+            }
+
+        }
+    }
 }
 
 /**

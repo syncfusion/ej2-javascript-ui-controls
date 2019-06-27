@@ -107,4 +107,61 @@
       }
     }
   }
+
+  //mouse small size
+  .e-small #{&}.e-timepicker.e-popup,
+  &.e-small#{&}.e-timepicker.e-popup {
+
+    & .e-list-parent.e-ul {
+      & .e-list-item {
+        font-size: $timepicker-list-small-font-size;
+        line-height: $timepicker-list-small-line-height;
+        text-indent: $timepicker-list-small-text-indent;
+      }
+    }
+  }
+
+  .e-small .e-time-wrapper,
+  &.e-small.e-time-wrapper,
+  &.e-small .e-control-wrapper.e-time-wrapper,
+  &.e-control-wrapper.e-small.e-time-wrapper {
+
+    & .e-time-icon.e-icons {
+      font-size: $timepicker-icon-small-font-size;
+    }
+  }
+
+  //mouse small size
+  .e-small.e-bigger #{&}.e-timepicker.e-popup,
+  &.e-small.e-bigger#{&}.e-timepicker.e-popup {
+
+    & .e-list-parent.e-ul {
+      & .e-list-item {
+        font-size: $timepicker-list-bigger-small-font-size;
+        line-height: $timepicker-list-bigger-small-line-height;
+        text-indent: $timepicker-list-bigger-small-text-indent;
+      }
+    }
+  }
+
+  .e-small.e-bigger .e-time-wrapper,
+  &.e-small.e-bigger.e-time-wrapper,
+  &.e-small.bigger .e-control-wrapper.e-time-wrapper,
+  &.e-control-wrapper.e-small.bigger.e-time-wrapper {
+
+    & .e-time-icon.e-icons {
+      font-size: $timepicker-icon-bigger-small-font-size;
+    }
+  }
+
+  .e-content-placeholder.e-timepicker.e-placeholder-timepicker {
+    background-size: 250px 33px;
+    min-height: 33px;
+  }
+
+  .e-bigger .e-content-placeholder.e-timepicker.e-placeholder-timepicker,
+  .e-bigger.e-content-placeholder.e-timepicker.e-placeholder-timepicker {
+    background-size: 250px 40px;
+    min-height: 40px;
+  }
 }

@@ -8,6 +8,16 @@ import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 export interface MultiSelectModel extends DropDownBaseModel{
 
     /**
+     * Specifies a Boolean value that indicates the whether the grouped list items are 
+     * allowed to check by checking the group header in checkbox mode.
+     * By default, there is no checkbox provided for group headers.
+     * This property allows you to render checkbox for group headers and to select 
+     * all the grouped items at once
+     * @default false
+     */
+    enableGroupCheckBox?: boolean;
+
+    /**
      * Sets the CSS classes to root element of this component which helps to customize the
      * complete styles.
      * @default null
@@ -260,60 +270,70 @@ export interface MultiSelectModel extends DropDownBaseModel{
     /**
      * Fires each time when selection changes happened in list items after model and input value get affected.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<MultiSelectChangeEventArgs>;
 
     /**
      * Fires before the selected item removed from the widget.
      * @event
+     * @blazorProperty 'OnValueRemove'
      */
     removing?: EmitType<RemoveEventArgs>;
 
     /**
      * Fires after the selected item removed from the widget.
      * @event
+     * @blazorProperty 'ValueRemoved'
      */
     removed?: EmitType<RemoveEventArgs>;
 
     /**
      * Fires after select all process completion.
      * @event
+     * @blazorProperty 'SelectedAll'
      */
     selectedAll?: EmitType<ISelectAllEventArgs>;
 
     /**
      * Fires when popup opens before animation.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<Object>;
 
     /**
      * Fires when popup opens after animation completion.
      * @event
+     * @blazorProperty 'Opened'
      */
     open?: EmitType<PopupEventArgs>;
 
     /**
      * Fires when popup close after animation completion.
      * @event
+     * @blazorProperty 'OnClose'
      */
     close?: EmitType<PopupEventArgs>;
 
     /**
      * Event triggers when the input get focus-out.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<Object>;
 
     /**
      * Event triggers when the input get focused.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<Object>;
 
     /**
      * Event triggers when the chip selection.
      * @event
+     * @blazorProperty 'ChipSelected'
      */
     chipSelection?: EmitType<Object>;
 
@@ -322,6 +342,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * > For more details about filtering, refer to [`Filtering`](../../multi-select/filtering) documentation.
      * 
      * @event
+     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<FilteringEventArgs>;
 
@@ -330,12 +351,14 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * > For more details about chip customization refer [`Chip Customization`](../../multi-select/chip-customization)
      * 
      * @event
+     * @blazorProperty 'OnChipTag'
      */
     tagging?: EmitType<TaggingEventArgs>;
 
     /**
      * Triggers when the [`customValue`](../../multi-select/custom-value) is selected.
      * @event
+     * @blazorProperty 'CustomValueSpecifier'
      */
     customValueSelection?: EmitType<CustomValueEventArgs>;
 

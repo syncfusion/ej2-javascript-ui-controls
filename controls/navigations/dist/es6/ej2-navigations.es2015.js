@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -910,6 +910,7 @@ const HIDE = 'e-menu-hide';
 const ICONS = 'e-icons';
 const RTL = 'e-rtl';
 const POPUP = 'e-menu-popup';
+const TEMPLATE_PROPERTY = 'Template';
 /**
  * Configures the field options of the Menu.
  */
@@ -1041,6 +1042,13 @@ let MenuBase = class MenuBase extends Component {
     render() {
         this.initialize();
         this.renderItems();
+        if (this.isMenu && this.template) {
+            let menuTemplateId = this.element.id + TEMPLATE_PROPERTY;
+            resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+            setTimeout(() => {
+                updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+            }, 500);
+        }
         this.wireEvents();
     }
     initialize() {
@@ -1264,25 +1272,12 @@ let MenuBase = class MenuBase extends Component {
         if (fli) {
             let fliIdx = this.getIdx(cul, fli);
             let navIdx = this.navIdx.concat(fliIdx);
-            let index;
             let item = this.getItem(navIdx);
             if (item.items.length) {
                 this.navIdx.push(fliIdx);
+                this.keyType = 'right';
+                this.action = e.action;
                 this.openMenu(fli, item, null, null, e);
-                fli.classList.remove(FOCUSED);
-                if (this.isMenu && this.navIdx.length === 1) {
-                    this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
-                }
-                fli.classList.add(SELECTED);
-                if (e.action === ENTER) {
-                    eventArgs = { element: fli, item: item, event: e };
-                    this.trigger('select', eventArgs);
-                }
-                fli.focus();
-                cul = this.getUlByNavIdx();
-                index = this.isValidLI(cul.children[0], 0, e.action);
-                cul.children[index].classList.add(FOCUSED);
-                cul.children[index].focus();
             }
             else {
                 if (e.action === ENTER) {
@@ -1302,15 +1297,8 @@ let MenuBase = class MenuBase extends Component {
     }
     leftEscKeyHandler(e) {
         if (this.navIdx.length) {
+            this.keyType = 'left';
             this.closeMenu(this.navIdx.length, e);
-            let cul = this.getUlByNavIdx();
-            let sli = this.getLIByClass(cul, SELECTED);
-            if (sli) {
-                sli.setAttribute('aria-expanded', 'false');
-                sli.classList.remove(SELECTED);
-                sli.classList.add(FOCUSED);
-                sli.focus();
-            }
         }
         else {
             if (e.action === ESCAPE) {
@@ -1339,50 +1327,80 @@ let MenuBase = class MenuBase extends Component {
     }
     closeMenu(ulIndex = 0, e = null) {
         if (this.isMenuVisible()) {
-            let ul;
             let sli;
+            let ul;
             let item;
             let items;
-            let closeArgs;
             let beforeCloseArgs;
-            let popupEle;
-            let popupObj;
             let wrapper = this.getWrapper();
             let popups = this.getPopups();
-            for (let cnt = this.isMenu ? popups.length + 1 : wrapper.childElementCount; cnt > ulIndex; cnt--) {
-                ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2])
-                    : selectAll('.e-menu-parent', wrapper)[cnt - 1];
-                if (this.isMenu && ul.classList.contains('e-menu')) {
-                    sli = this.getLIByClass(ul, SELECTED);
-                    if (sli) {
-                        sli.classList.remove(SELECTED);
-                    }
-                    break;
+            let isClose = false;
+            let cnt = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
+            ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2])
+                : selectAll('.e-menu-parent', wrapper)[cnt - 1];
+            if (this.isMenu && ul.classList.contains('e-menu')) {
+                sli = this.getLIByClass(ul, SELECTED);
+                if (sli) {
+                    sli.classList.remove(SELECTED);
                 }
+                isClose = true;
+            }
+            if (!isClose) {
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items = item ? item.items : this.items;
                 beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
-                this.trigger('beforeClose', beforeCloseArgs);
-                if (!beforeCloseArgs.cancel) {
-                    if (this.isMenu) {
-                        popupEle = closest(ul, '.' + POPUP);
-                        if (this.hamburgerMode) {
-                            popupEle.parentElement.style.minHeight = '';
+                this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs) => {
+                    let popupEle;
+                    let closeArgs;
+                    let popupObj;
+                    if (!observedCloseArgs.cancel) {
+                        if (this.isMenu) {
+                            popupEle = closest(ul, '.' + POPUP);
+                            if (this.hamburgerMode) {
+                                popupEle.parentElement.style.minHeight = '';
+                            }
+                            this.unWireKeyboardEvent(popupEle);
+                            this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
+                            popupObj = getInstance(popupEle, Popup);
+                            popupObj.hide();
+                            popupObj.destroy();
+                            detach(popupEle);
                         }
-                        this.unWireKeyboardEvent(popupEle);
-                        this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
-                        popupObj = getInstance(popupEle, Popup);
-                        popupObj.hide();
-                        popupObj.destroy();
-                        detach(popupEle);
+                        else {
+                            this.toggleAnimation(ul, false);
+                        }
+                        closeArgs = { element: ul, parentItem: item, items: items };
+                        this.trigger('onClose', closeArgs);
+                    }
+                    this.navIdx.pop();
+                    if (!ulIndex && this.navIdx.length) {
+                        this.closeMenu(null, e);
+                    }
+                    else if (!this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
+                        this.isMenusClosed = true;
+                        this.closeMenu(0, e);
+                    }
+                    else if (this.isMenu && e && e.target &&
+                        this.navIdx.length !== 0 && closest(e.target, '.e-menu-parent.e-control')) {
+                        this.closeMenu(0, e);
                     }
                     else {
-                        this.toggleAnimation(ul, false);
+                        if (this.keyType === 'right') {
+                            this.afterCloseMenu(e);
+                        }
+                        else {
+                            let cul = this.getUlByNavIdx();
+                            let sli = this.getLIByClass(cul, SELECTED);
+                            if (sli) {
+                                sli.setAttribute('aria-expanded', 'false');
+                                sli.classList.remove(SELECTED);
+                                sli.classList.add(FOCUSED);
+                                sli.focus();
+                            }
+                        }
                     }
-                    this.navIdx.length = ulIndex ? ulIndex - 1 : ulIndex;
-                    closeArgs = { element: ul, parentItem: item, items: items };
-                    this.trigger('onClose', closeArgs);
-                }
+                    this.removeStateWrapper();
+                });
             }
         }
     }
@@ -1420,127 +1438,56 @@ let MenuBase = class MenuBase extends Component {
         return canOpen;
     }
     openMenu(li, item, top = 0, left = 0, e = null, target = this.targetElement) {
-        let ul;
-        let popupObj;
-        let popupWrapper;
-        let eventArgs;
         let wrapper = this.getWrapper();
+        this.lItem = li;
+        let elemId = this.element.id !== '' ? this.element.id : 'menu';
+        this.isMenusClosed = false;
         if (li) {
-            ul = this.createItems(item[this.getField('children', this.navIdx.length - 1)]);
+            this.uList = this.createItems(item[this.getField('children', this.navIdx.length - 1)]);
             if (!this.isMenu && Browser.isDevice) {
                 wrapper.lastChild.style.display = 'none';
                 let data = {
                     text: item[this.getField('text')].toString(), iconCss: ICONS + ' e-previous'
                 };
-                let hdata = new MenuItem(this.items[0], null, data, true);
+                let hdata = new MenuItem(this.items[0], 'items', data, true);
                 let hli = this.createItems([hdata]).children[0];
                 hli.classList.add(HEADER);
-                ul.insertBefore(hli, ul.children[0]);
+                this.uList.insertBefore(hli, this.uList.children[0]);
             }
             if (this.isMenu) {
-                popupWrapper = this.createElement('div', {
-                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-menu-popup'
+                this.popupWrapper = this.createElement('div', {
+                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-' + elemId + '-popup'
                 });
                 if (this.hamburgerMode) {
                     top = li.offsetHeight;
-                    li.appendChild(popupWrapper);
+                    li.appendChild(this.popupWrapper);
                 }
                 else {
-                    document.body.appendChild(popupWrapper);
+                    document.body.appendChild(this.popupWrapper);
                 }
-                let isNestedOrVerticalMenu = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
-                popupObj = this.generatePopup(popupWrapper, ul, li, isNestedOrVerticalMenu);
+                this.isNestedOrVertical = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
+                this.popupObj = this.generatePopup(this.popupWrapper, this.uList, li, this.isNestedOrVertical);
                 if (this.hamburgerMode) {
-                    this.calculateIndentSize(ul, li);
+                    this.calculateIndentSize(this.uList, li);
                 }
                 else {
                     if (this.cssClass) {
-                        addClass([popupWrapper], this.cssClass.split(' '));
+                        addClass([this.popupWrapper], this.cssClass.split(' '));
                     }
-                    popupObj.hide();
+                    this.popupObj.hide();
                 }
-                eventArgs = this.triggerBeforeOpen(li, ul, item, e, 0, 0);
-                if (!this.hamburgerMode) {
-                    top = eventArgs.top;
-                    left = eventArgs.left;
-                }
-                popupWrapper.style.display = 'block';
-                if (!this.hamburgerMode) {
-                    popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
-                    this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
-                    this.checkScrollOffset(e);
-                }
-                let collide;
-                if (!this.hamburgerMode && !left && !top) {
-                    popupObj.refreshPosition(li, true);
-                    left = parseInt(popupWrapper.style.left, 10);
-                    top = parseInt(popupWrapper.style.top, 10);
-                    if (this.enableRtl) {
-                        left = isNestedOrVerticalMenu ? left - popupWrapper.offsetWidth - li.parentElement.offsetWidth
-                            : left - popupWrapper.offsetWidth + li.offsetWidth;
-                    }
-                    collide = isCollide(popupWrapper, null, left, top);
-                    if ((isNestedOrVerticalMenu || this.enableRtl) && (collide.indexOf('right') > -1 || collide.indexOf('left') > -1)) {
-                        popupObj.collision.X = 'none';
-                        left = this.enableRtl ? calculatePosition(li, isNestedOrVerticalMenu ? 'right' : 'left', 'top').left : left -
-                            popupWrapper.offsetWidth - closest(li, '.e-' + this.getModuleName() + '-wrapper').offsetWidth;
-                    }
-                    collide = isCollide(popupWrapper, null, left, top);
-                    if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
-                        left = this.callFit(popupWrapper, true, false, top, left).left;
-                    }
-                    popupWrapper.style.left = left + 'px';
-                }
-                else {
-                    popupObj.collision = { X: 'none', Y: 'none' };
-                }
-                popupWrapper.style.display = '';
+                this.triggerBeforeOpen(li, this.uList, item, e, 0, 0, 'menu');
             }
             else {
-                ul.style.zIndex = this.element.style.zIndex;
-                wrapper.appendChild(ul);
-                eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
-                top = eventArgs.top;
-                left = eventArgs.left;
+                this.uList.style.zIndex = this.element.style.zIndex;
+                wrapper.appendChild(this.uList);
+                this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
             }
         }
         else {
-            ul = this.element;
-            ul.style.zIndex = getZindexPartial(target ? target : this.element).toString();
-            eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
-            top = eventArgs.top;
-            left = eventArgs.left;
-        }
-        if (eventArgs.cancel) {
-            if (this.isMenu) {
-                popupObj.destroy();
-                detach(popupWrapper);
-            }
-            this.navIdx.pop();
-        }
-        else {
-            if (this.isMenu) {
-                if (this.hamburgerMode) {
-                    popupWrapper.style.top = top + 'px';
-                    popupWrapper.style.left = 0 + 'px';
-                    this.toggleAnimation(popupWrapper);
-                }
-                else {
-                    this.wireKeyboardEvent(popupWrapper);
-                    rippleEffect(popupWrapper, { selector: '.' + ITEM });
-                    popupWrapper.style.left = left + 'px';
-                    popupWrapper.style.top = top + 'px';
-                    let animationOptions = this.animationSettings.effect !== 'None' ? {
-                        name: this.animationSettings.effect, duration: this.animationSettings.duration,
-                        timingFunction: this.animationSettings.easing
-                    } : null;
-                    popupObj.show(animationOptions, li);
-                }
-            }
-            else {
-                this.setPosition(li, ul, top, left);
-                this.toggleAnimation(ul);
-            }
+            this.uList = this.element;
+            this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
+            this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
         }
     }
     calculateIndentSize(ul, li) {
@@ -1561,13 +1508,13 @@ let MenuBase = class MenuBase extends Component {
             blankIconElem.forEach((element) => element.style.textIndent = blankIconIndent + 'px');
         }
     }
-    generatePopup(popupWrapper, ul, li, isNestedOrVerticalMenu) {
+    generatePopup(popupWrapper, ul, li, isNestedOrVertical) {
         let popupObj = new Popup(popupWrapper, {
             actionOnScroll: this.hamburgerMode ? 'none' : 'reposition',
             relateTo: li,
-            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVerticalMenu ||
+            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVertical ||
                     this.enableRtl ? 'none' : 'flip', Y: 'fit' },
-            position: (isNestedOrVerticalMenu && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
+            position: (isNestedOrVertical && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
             targetType: 'relative',
             enableRtl: this.enableRtl,
             content: ul,
@@ -1600,37 +1547,137 @@ let MenuBase = class MenuBase extends Component {
     }
     openHamburgerMenu(e) {
         if (this.hamburgerMode) {
-            let eventArgs;
-            eventArgs = this.triggerBeforeOpen(null, this.element, null, e, 0, 0);
-            if (!eventArgs.cancel) {
-                this.element.classList.remove('e-hide-menu');
-                this.triggerOpen(this.element);
-            }
+            this.triggerBeforeOpen(null, this.element, null, e, 0, 0, 'hamburger');
         }
     }
     closeHamburgerMenu(e) {
         if (this.hamburgerMode) {
             let beforeCloseArgs;
             beforeCloseArgs = { element: this.element, parentItem: null, event: e, items: this.items, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs);
-            if (!beforeCloseArgs.cancel) {
-                this.closeMenu(null, e);
-                this.element.classList.add('e-hide-menu');
-                this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
-            }
+            this.trigger('beforeClose', beforeCloseArgs, (observedHamburgerCloseArgs) => {
+                if (!observedHamburgerCloseArgs.cancel) {
+                    this.closeMenu(null, e);
+                    this.element.classList.add('e-hide-menu');
+                    this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
+                }
+            });
         }
     }
     callFit(element, x, y, top, left) {
         return fit(element, null, { X: x, Y: y }, { top: top, left: left });
     }
-    triggerBeforeOpen(li, ul, item, e, top, left) {
+    triggerBeforeOpen(li, ul, item, e, top, left, type) {
         let navIdx = this.getIndex(li ? li.id : null, true);
         let items = li ? item[this.getField('children', this.navIdx.length - 1)] : this.items;
         let eventArgs = {
             element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
         };
-        this.trigger('beforeOpen', eventArgs);
-        return eventArgs;
+        let menuType = type;
+        this.trigger('beforeOpen', eventArgs, (observedOpenArgs) => {
+            switch (menuType) {
+                case 'menu':
+                    if (!this.hamburgerMode) {
+                        this.top = observedOpenArgs.top;
+                        this.left = observedOpenArgs.left;
+                    }
+                    this.popupWrapper.style.display = 'block';
+                    if (!this.hamburgerMode) {
+                        this.popupWrapper.style.maxHeight = this.popupWrapper.getBoundingClientRect().height + 'px';
+                        this.addScrolling(this.popupWrapper, this.uList, 'vscroll', this.popupWrapper.offsetHeight, this.uList.offsetHeight);
+                        this.checkScrollOffset(e);
+                    }
+                    let collide;
+                    if (!this.hamburgerMode && !this.left && !this.top) {
+                        this.popupObj.refreshPosition(this.lItem, true);
+                        this.left = parseInt(this.popupWrapper.style.left, 10);
+                        this.top = parseInt(this.popupWrapper.style.top, 10);
+                        if (this.enableRtl) {
+                            this.left =
+                                this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth
+                                    : this.left - this.popupWrapper.offsetWidth + this.lItem.offsetWidth;
+                        }
+                        collide = isCollide(this.popupWrapper, null, this.left, this.top);
+                        if ((this.isNestedOrVertical || this.enableRtl) && (collide.indexOf('right') > -1
+                            || collide.indexOf('left') > -1)) {
+                            this.popupObj.collision.X = 'none';
+                            let offWidth = closest(this.lItem, '.e-' + this.getModuleName() + '-wrapper').offsetWidth;
+                            this.left =
+                                this.enableRtl ? calculatePosition(this.lItem, this.isNestedOrVertical ? 'right' : 'left', 'top').left
+                                    : this.left - this.popupWrapper.offsetWidth - offWidth;
+                        }
+                        collide = isCollide(this.popupWrapper, null, this.left, this.top);
+                        if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
+                            this.left = this.callFit(this.popupWrapper, true, false, this.top, this.left).left;
+                        }
+                        this.popupWrapper.style.left = this.left + 'px';
+                    }
+                    else {
+                        this.popupObj.collision = { X: 'none', Y: 'none' };
+                    }
+                    this.popupWrapper.style.display = '';
+                    break;
+                case 'none':
+                    this.top = observedOpenArgs.top;
+                    this.left = observedOpenArgs.left;
+                    break;
+                case 'hamburger':
+                    if (!observedOpenArgs.cancel) {
+                        this.element.classList.remove('e-hide-menu');
+                        this.triggerOpen(this.element);
+                    }
+                    break;
+            }
+            if (menuType !== 'hamburger') {
+                if (observedOpenArgs.cancel) {
+                    if (this.isMenu) {
+                        this.popupObj.destroy();
+                        detach(this.popupWrapper);
+                    }
+                    this.navIdx.pop();
+                }
+                else {
+                    if (this.isMenu) {
+                        if (this.hamburgerMode) {
+                            this.popupWrapper.style.top = this.top + 'px';
+                            this.popupWrapper.style.left = 0 + 'px';
+                            this.toggleAnimation(this.popupWrapper);
+                        }
+                        else {
+                            this.wireKeyboardEvent(this.popupWrapper);
+                            rippleEffect(this.popupWrapper, { selector: '.' + ITEM });
+                            this.popupWrapper.style.left = this.left + 'px';
+                            this.popupWrapper.style.top = this.top + 'px';
+                            let animationOptions = this.animationSettings.effect !== 'None' ? {
+                                name: this.animationSettings.effect, duration: this.animationSettings.duration,
+                                timingFunction: this.animationSettings.easing
+                            } : null;
+                            this.popupObj.show(animationOptions, this.lItem);
+                        }
+                    }
+                    else {
+                        this.setPosition(this.lItem, this.uList, this.top, this.left);
+                        this.toggleAnimation(this.uList);
+                    }
+                }
+            }
+            if (this.keyType === 'right') {
+                let cul = this.getUlByNavIdx();
+                li.classList.remove(FOCUSED);
+                if (this.isMenu && this.navIdx.length === 1) {
+                    this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
+                }
+                li.classList.add(SELECTED);
+                if (this.action === ENTER) {
+                    let eventArgs = { element: li, item: item, event: e };
+                    this.trigger('select', eventArgs);
+                }
+                li.focus();
+                cul = this.getUlByNavIdx();
+                let index = this.isValidLI(cul.children[0], 0, this.action);
+                cul.children[index].classList.add(FOCUSED);
+                cul.children[index].focus();
+            }
+        });
     }
     checkScrollOffset(e) {
         let wrapper = this.getWrapper();
@@ -1772,6 +1819,9 @@ let MenuBase = class MenuBase extends Component {
             }
         };
         this.setProperties({ 'items': this.items }, true);
+        if (this.isMenu) {
+            listBaseOptions.templateID = this.element.id + TEMPLATE_PROPERTY;
+        }
         let ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template);
         ul.setAttribute('tabindex', '0');
         if (this.isMenu) {
@@ -1780,11 +1830,34 @@ let MenuBase = class MenuBase extends Component {
         return ul;
     }
     moverHandler(e) {
-        let wrapper = this.getWrapper();
         let trgt = e.target;
+        this.liTrgt = trgt;
         let cli = this.getLI(trgt);
-        if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper')) {
+        let wrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
+        let hdrWrapper = this.getWrapper();
+        let regex = new RegExp('-(.*)-popup');
+        let ulId;
+        let isDifferentElem = false;
+        if (!wrapper) {
+            return;
+        }
+        if (wrapper.id !== '') {
+            ulId = regex.exec(wrapper.id)[1];
+        }
+        else {
+            ulId = wrapper.querySelector('ul').id;
+        }
+        if (ulId !== this.element.id) {
+            if (this.navIdx.length) {
+                isDifferentElem = true;
+            }
+            else {
+                return;
+            }
+        }
+        if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper') && !isDifferentElem) {
             this.removeLIStateByClass([FOCUSED], this.isMenu ? [wrapper].concat(this.getPopups()) : [wrapper]);
+            this.removeLIStateByClass([FOCUSED], this.isMenu ? [hdrWrapper].concat(this.getPopups()) : [hdrWrapper]);
             cli.classList.add(FOCUSED);
             if (!this.showItemOnClick) {
                 this.clickHandler(e);
@@ -1795,11 +1868,27 @@ let MenuBase = class MenuBase extends Component {
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
+                    this.isClosed = true;
                     this.closeMenu(null, e);
                 }
             }
-            wrapper = closest(trgt, '.e-menu-vscroll');
-            if (trgt.tagName === 'DIV' && wrapper) {
+            else if (isDifferentElem) {
+                if (this.navIdx.length) {
+                    this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
+                    this.isClosed = true;
+                    this.closeMenu(null, e);
+                }
+            }
+            if (!this.isClosed) {
+                this.removeStateWrapper();
+            }
+            this.isClosed = false;
+        }
+    }
+    removeStateWrapper() {
+        if (this.liTrgt) {
+            let wrapper = closest(this.liTrgt, '.e-menu-vscroll');
+            if (this.liTrgt.tagName === 'DIV' && wrapper) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
             }
         }
@@ -1849,7 +1938,7 @@ let MenuBase = class MenuBase extends Component {
         else {
             let wrapper = this.getWrapper();
             let trgt = e.target;
-            let cli = this.getLI(trgt);
+            let cli = this.cli = this.getLI(trgt);
             let cliWrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
             let isInstLI = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
@@ -1874,41 +1963,29 @@ let MenuBase = class MenuBase extends Component {
                 }
                 else {
                     if (!cli.classList.contains(SEPARATOR)) {
-                        let showSubMenu = true;
+                        this.showSubMenu = true;
                         let cul = cli.parentNode;
-                        let cliIdx = this.getIdx(cul, cli);
+                        this.cliIdx = this.getIdx(cul, cli);
                         if (this.isMenu || !Browser.isDevice) {
                             let culIdx = this.isMenu ? Array.prototype.indexOf.call([wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
                                 : this.getIdx(wrapper, cul);
-                            if (this.navIdx[culIdx] === cliIdx) {
-                                showSubMenu = false;
+                            if (this.navIdx[culIdx] === this.cliIdx) {
+                                this.showSubMenu = false;
                             }
-                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || showSubMenu)) {
+                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || this.showSubMenu)) {
                                 let sli = this.getLIByClass(cul, SELECTED);
                                 if (sli) {
                                     sli.classList.remove(SELECTED);
                                 }
+                                this.isClosed = true;
+                                this.keyType = 'right';
                                 this.closeMenu(culIdx + 1, e);
                             }
                         }
-                        if (showSubMenu) {
-                            let idx = this.navIdx.concat(cliIdx);
-                            let item = this.getItem(idx);
-                            if (item[this.getField('children', idx.length - 1)] &&
-                                item[this.getField('children', idx.length - 1)].length) {
-                                if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
-                                    this.setLISelected(cli);
-                                }
-                                cli.setAttribute('aria-expanded', 'true');
-                                this.navIdx.push(cliIdx);
-                                this.openMenu(cli, item, null, null, e);
-                            }
-                            else {
-                                if (e.type !== 'mouseover') {
-                                    this.closeMenu(null, e);
-                                }
-                            }
+                        if (!this.isClosed) {
+                            this.afterCloseMenu(e);
                         }
+                        this.isClosed = false;
                     }
                 }
             }
@@ -1934,6 +2011,27 @@ let MenuBase = class MenuBase extends Component {
                 }
             }
         }
+    }
+    afterCloseMenu(e) {
+        if (this.showSubMenu) {
+            let idx = this.navIdx.concat(this.cliIdx);
+            let item = this.getItem(idx);
+            if (item[this.getField('children', idx.length - 1)] &&
+                item[this.getField('children', idx.length - 1)].length) {
+                if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
+                    this.setLISelected(this.cli);
+                }
+                this.cli.setAttribute('aria-expanded', 'true');
+                this.navIdx.push(this.cliIdx);
+                this.openMenu(this.cli, item, null, null, e);
+            }
+            else {
+                if (e.type !== 'mouseover') {
+                    this.closeMenu(null, e);
+                }
+            }
+        }
+        this.keyType = '';
     }
     setLISelected(li) {
         let sli = this.getLIByClass(li.parentElement, SELECTED);
@@ -2549,6 +2647,7 @@ const CLS_RTL$2 = 'e-rtl';
 const CLS_SEPARATOR = 'e-separator';
 const CLS_POPUPICON = 'e-popup-up-icon';
 const CLS_POPUPDOWN = 'e-popup-down-icon';
+const CLS_POPUPOPEN = 'e-popup-open';
 const CLS_TEMPLATE = 'e-template';
 const CLS_DISABLE$2 = 'e-overlay';
 const CLS_POPUPTEXT = 'e-toolbar-text';
@@ -2706,6 +2805,7 @@ let Toolbar = class Toolbar extends Component {
         this.tempId = [];
         this.tbarItemsCol = this.items;
         this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
+        this.isExtendedOpen = false;
         this.popupPriCount = 0;
         if (this.enableRtl) {
             this.add(this.element, CLS_RTL$2);
@@ -2813,7 +2913,8 @@ let Toolbar = class Toolbar extends Component {
             clst = this.popObj.element.querySelector('.' + CLS_ITEM);
         }
         else if (this.element === trgt || tbrNavChk) {
-            clst = this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE$2 + ' ):not(.' + CLS_SEPARATOR + ' )');
+            // tslint:disable-next-line:max-line-length
+            clst = this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE$2 + ' ):not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_HIDDEN + ' )');
         }
         else {
             clst = closest(trgt, '.' + CLS_ITEM);
@@ -2973,15 +3074,15 @@ let Toolbar = class Toolbar extends Component {
             rootEle.querySelector('#' + rootEle.id + '_nav').setAttribute('tabindex', !value ? '0' : '-1');
         }
     }
+    eleContains(el) {
+        // tslint:disable-next-line:max-line-length
+        return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
+        // tslint:enable-next-line:max-line-length
+    }
     eleFocus(closest$$1, pos) {
         let sib = Object(closest$$1)[pos + 'ElementSibling'];
-        let contains = (el) => {
-            // tslint:disable-next-line:max-line-length
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
-            // tslint:enable-next-line:max-line-length
-        };
         if (sib) {
-            let skipEle = contains(sib);
+            let skipEle = this.eleContains(sib);
             if (skipEle) {
                 this.eleFocus(sib, pos);
                 return;
@@ -2996,7 +3097,7 @@ let Toolbar = class Toolbar extends Component {
             if (!isNullOrUndefined(elem) && elem.children.length > 0) {
                 if (pos === 'next') {
                     let el = elem.querySelector('.' + CLS_ITEM);
-                    if (contains(el)) {
+                    if (this.eleContains(el)) {
                         this.eleFocus(el, pos);
                     }
                     else {
@@ -3006,7 +3107,7 @@ let Toolbar = class Toolbar extends Component {
                 }
                 else {
                     let el = elem.lastElementChild;
-                    if (contains(el)) {
+                    if (this.eleContains(el)) {
                         this.eleFocus(el, pos);
                     }
                     else {
@@ -3045,10 +3146,11 @@ let Toolbar = class Toolbar extends Component {
             this.trigger('items[' + this.tbarEle.indexOf(clst) + '].click', eventArgs);
         }
         if (!eventArgs.cancel) {
-            this.trigger('clicked', eventArgs);
-        }
-        if (!isNullOrUndefined(this.popObj) && isPopupElement && !eventArgs.cancel && this.overflowMode === 'Popup') {
-            this.popObj.hide({ name: 'FadeOut', duration: 100 });
+            this.trigger('clicked', eventArgs, (clickedArgs) => {
+                if (!isNullOrUndefined(this.popObj) && isPopupElement && !clickedArgs.cancel && this.overflowMode === 'Popup') {
+                    this.popObj.hide({ name: 'FadeOut', duration: 100 });
+                }
+            });
         }
     }
     ;
@@ -3085,6 +3187,7 @@ let Toolbar = class Toolbar extends Component {
         this.initialize();
         this.renderControl();
         this.separator();
+        this.refreshTemplate();
         this.wireEvents();
     }
     initialize() {
@@ -3414,7 +3517,15 @@ let Toolbar = class Toolbar extends Component {
             if (this.isVertical) {
                 popup.element.style.visibility = 'hidden';
             }
-            popup.hide();
+            if (this.isExtendedOpen) {
+                let popupNav = this.element.querySelector('.' + CLS_TBARNAV);
+                popupNav.classList.add(CLS_TBARNAVACT);
+                classList(popupNav.firstElementChild, [CLS_POPUPICON], [CLS_POPUPDOWN]);
+                this.element.querySelector('.' + CLS_EXTENDABLECLASS).classList.add(CLS_POPUPOPEN);
+            }
+            else {
+                popup.hide();
+            }
             this.popObj = popup;
             this.element.setAttribute('aria-haspopup', 'true');
         }
@@ -3972,6 +4083,7 @@ let Toolbar = class Toolbar extends Component {
      */
     addItems(items, index) {
         let innerItems;
+        this.extendedOpen();
         let itemsDiv = this.element.querySelector('.' + CLS_ITEMS);
         if (isNullOrUndefined(itemsDiv)) {
             this.itemsRerender(items);
@@ -4103,7 +4215,8 @@ let Toolbar = class Toolbar extends Component {
             }
             let tempArray;
             if (!isNullOrUndefined(templateFn)) {
-                tempArray = templateFn({}, this, 'template');
+                let toolbarTemplateID = this.element.id + 'template';
+                tempArray = templateFn({}, this, 'template', toolbarTemplateID);
             }
             if (!isNullOrUndefined(tempArray) && tempArray.length > 0) {
                 [].slice.call(tempArray).forEach((ele) => {
@@ -4218,6 +4331,15 @@ let Toolbar = class Toolbar extends Component {
         }
         return innerEle;
     }
+    refreshTemplate() {
+        for (let item of this.items) {
+            if (item.template && typeof item.template === 'string' &&
+                item.template.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'template', 'Template');
+                updateBlazorTemplate(this.element.id + 'template', 'Template');
+            }
+        }
+    }
     itemClick(e) {
         this.activeEleSwitch(e.currentTarget);
     }
@@ -4300,6 +4422,12 @@ let Toolbar = class Toolbar extends Component {
         this.tbResize = false;
         this.separator();
     }
+    extendedOpen() {
+        let sib = this.element.querySelector('.' + CLS_EXTENDABLECLASS);
+        if (this.overflowMode === 'Extended' && sib) {
+            this.isExtendedOpen = sib.classList.contains(CLS_POPUPOPEN);
+        }
+    }
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
      * @param  {ToolbarModel} newProp
@@ -4309,6 +4437,7 @@ let Toolbar = class Toolbar extends Component {
      */
     onPropertyChanged(newProp, oldProp) {
         let tEle = this.element;
+        this.extendedOpen();
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'items':
@@ -4389,7 +4518,9 @@ let Toolbar = class Toolbar extends Component {
     hideItem(index, value) {
         let isElement = (typeof (index) === 'object') ? true : false;
         let eleIndex = index;
+        let initIndex;
         let ele;
+        let innerItems = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
         if (isElement) {
             ele = index;
         }
@@ -4399,6 +4530,52 @@ let Toolbar = class Toolbar extends Component {
         }
         if (ele) {
             value ? ele.classList.add(CLS_HIDDEN) : ele.classList.remove(CLS_HIDDEN);
+            if (value && isNullOrUndefined(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
+                if (isNullOrUndefined(ele.firstElementChild.getAttribute('tabindex'))) {
+                    ele.firstElementChild.setAttribute('tabindex', '-1');
+                    let innerItems = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
+                    if (isElement) {
+                        eleIndex = innerItems.indexOf(ele);
+                    }
+                    let nextEle = innerItems[++eleIndex];
+                    while (nextEle) {
+                        let skipEle = this.eleContains(nextEle);
+                        if (!skipEle) {
+                            nextEle.firstElementChild.removeAttribute('tabindex');
+                            break;
+                        }
+                        nextEle = innerItems[++eleIndex];
+                    }
+                }
+            }
+            else if (isNullOrUndefined(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
+                initIndex = 0;
+                let setFlag = false;
+                let removeFlag = false;
+                let initELe = innerItems[initIndex];
+                while (initELe) {
+                    if (!initELe.classList.contains(CLS_SEPARATOR)) {
+                        if (isNullOrUndefined(initELe.firstElementChild.getAttribute('tabindex'))) {
+                            initELe.firstElementChild.setAttribute('tabindex', '-1');
+                            setFlag = true;
+                        }
+                        else {
+                            if (setFlag && removeFlag) {
+                                break;
+                            }
+                            let skipEle = this.eleContains(initELe);
+                            if (!skipEle) {
+                                initELe.firstElementChild.removeAttribute('tabindex');
+                                removeFlag = true;
+                            }
+                            initELe = innerItems[++initIndex];
+                        }
+                    }
+                    else {
+                        initELe = innerItems[++initIndex];
+                    }
+                }
+            }
             this.refreshOverflow();
         }
     }
@@ -4592,6 +4769,7 @@ let Accordion = class Accordion extends Component {
     render() {
         this.initialize();
         this.renderControl();
+        this.refreshTemplate();
         this.wireEvents();
     }
     initialize() {
@@ -4915,6 +5093,20 @@ let Accordion = class Accordion extends Component {
         }
         return innerEle;
     }
+    refreshTemplate() {
+        for (let item of this.items) {
+            if (item.header && typeof item.header === 'string' &&
+                item.header.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'header', 'Header');
+                updateBlazorTemplate(this.element.id + 'header', 'Header');
+            }
+            if (item.content && typeof item.content === 'string' &&
+                item.content.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'content', 'Content');
+                updateBlazorTemplate(this.element.id + 'content', 'Content');
+            }
+        }
+    }
     angularnativeCondiCheck(item, prop) {
         let property = prop === 'content' ? item.content : item.header;
         let content = property;
@@ -4951,7 +5143,14 @@ let Accordion = class Accordion extends Component {
         }
         let tempArray;
         if (!isNullOrUndefined(templateFn)) {
-            tempArray = templateFn();
+            let templateProps;
+            if (ele.classList.contains(CLS_HEADERCTN)) {
+                templateProps = this.element.id + 'header';
+            }
+            else if (ele.classList.contains(CLS_CTENT)) {
+                templateProps = this.element.id + 'content';
+            }
+            tempArray = templateFn({}, null, null, templateProps);
         }
         if (!isNullOrUndefined(tempArray) && tempArray.length > 0 && !(isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
             [].slice.call(tempArray).forEach((el) => {
@@ -5005,22 +5204,23 @@ let Accordion = class Accordion extends Component {
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: true };
         let eff = animation.name;
-        this.trigger('expanding', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        icon.classList.add(CLS_TOGANIMATE);
-        this.expandedItemsPush(trgtItemEle);
-        if (!isNullOrUndefined(expandState)) {
-            expandState.classList.remove(CLS_EXPANDSTATE);
-        }
-        trgtItemEle.classList.add(CLS_EXPANDSTATE);
-        if ((animation.name === 'None')) {
-            this.expandProgress('begin', icon, trgt, trgtItemEle, eventArgs);
-            this.expandProgress('end', icon, trgt, trgtItemEle, eventArgs);
-            return;
-        }
-        this.expandAnimation(eff, icon, trgt, trgtItemEle, animation, eventArgs);
+        this.trigger('expanding', eventArgs, (expandArgs) => {
+            if (!expandArgs.cancel) {
+                icon.classList.add(CLS_TOGANIMATE);
+                this.expandedItemsPush(trgtItemEle);
+                if (!isNullOrUndefined(expandState)) {
+                    expandState.classList.remove(CLS_EXPANDSTATE);
+                }
+                trgtItemEle.classList.add(CLS_EXPANDSTATE);
+                if ((animation.name === 'None')) {
+                    this.expandProgress('begin', icon, trgt, trgtItemEle, expandArgs);
+                    this.expandProgress('end', icon, trgt, trgtItemEle, expandArgs);
+                }
+                else {
+                    this.expandAnimation(eff, icon, trgt, trgtItemEle, animation, expandArgs);
+                }
+            }
+        });
     }
     expandAnimation(ef, icn, trgt, trgtItemEle, animate, args) {
         let height;
@@ -5097,19 +5297,20 @@ let Accordion = class Accordion extends Component {
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: false };
         let eff = animation.name;
-        this.trigger('expanding', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.expandedItemsPop(trgtItemEle);
-        trgtItemEle.classList.add(CLS_EXPANDSTATE);
-        icon.classList.add(CLS_TOGANIMATE);
-        if ((animation.name === 'None')) {
-            this.collapseProgress('begin', icon, trgt, trgtItemEle, eventArgs);
-            this.collapseProgress('end', icon, trgt, trgtItemEle, eventArgs);
-            return;
-        }
-        this.collapseAnimation(eff, trgt, trgtItemEle, icon, animation, eventArgs);
+        this.trigger('expanding', eventArgs, (expandArgs) => {
+            if (!expandArgs.cancel) {
+                this.expandedItemsPop(trgtItemEle);
+                trgtItemEle.classList.add(CLS_EXPANDSTATE);
+                icon.classList.add(CLS_TOGANIMATE);
+                if ((animation.name === 'None')) {
+                    this.collapseProgress('begin', icon, trgt, trgtItemEle, expandArgs);
+                    this.collapseProgress('end', icon, trgt, trgtItemEle, expandArgs);
+                }
+                else {
+                    this.collapseAnimation(eff, trgt, trgtItemEle, icon, animation, expandArgs);
+                }
+            }
+        });
     }
     collapseAnimation(ef, trgt, trgtItEl, icn, animate, args) {
         let height;
@@ -5516,6 +5717,7 @@ let ContextMenu = class ContextMenu extends MenuBase {
      */
     preRender() {
         this.isMenu = false;
+        this.element.id = this.element.id || getUniqueID('ej2-contextmenu');
         super.preRender();
     }
     initialize() {
@@ -5633,6 +5835,7 @@ let Menu = class Menu extends MenuBase {
      */
     preRender() {
         this.isMenu = true;
+        this.element.id = this.element.id || getUniqueID('ej2-menu');
         if (this.template) {
             try {
                 if (document.querySelectorAll(this.template).length) {
@@ -6031,6 +6234,7 @@ let Tab = class Tab extends Component {
     render() {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title } });
         this.renderContainer();
+        this.refreshTemplate();
         this.wireEvents();
         this.initRender = false;
     }
@@ -6220,6 +6424,20 @@ let Tab = class Tab extends Component {
         }
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
+    }
+    refreshTemplate() {
+        for (let item of this.items) {
+            if (item.header.text && typeof item.header.text === 'string' &&
+                item.header.text.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'text', 'Text');
+                updateBlazorTemplate(this.element.id + 'text', 'Text');
+            }
+            if (item.content && typeof item.content === 'string' &&
+                item.content.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'content', 'Content');
+                updateBlazorTemplate(this.element.id + 'content', 'Content');
+            }
+        }
     }
     removeActiveClass(id) {
         let hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element)[0];
@@ -6433,7 +6651,14 @@ let Tab = class Tab extends Component {
         let templateFn = compile(val);
         let templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            templateFUN = templateFn({}, this, prop);
+            let templateProps;
+            if (ele.classList.contains(CLS_TEXT)) {
+                templateProps = this.element.id + 'text';
+            }
+            else if (ele.classList.contains(CLS_CONTENT$1)) {
+                templateProps = this.element.id + 'content';
+            }
+            templateFUN = templateFn({}, this, prop, templateProps);
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach((el) => {
@@ -7044,67 +7269,74 @@ let Tab = class Tab extends Component {
      * @returns void.
      */
     addTab(items, index) {
-        let lastEleIndex = 0;
         let addArgs = { addedItems: items, cancel: false };
         if (!this.isReplace) {
-            this.trigger('adding', addArgs);
+            this.trigger('adding', addArgs, (tabAddingArgs) => {
+                if (!tabAddingArgs.cancel) {
+                    this.addingTabContent(items, index);
+                }
+            });
         }
-        if (addArgs.cancel) {
-            return;
+        else {
+            this.addingTabContent(items, index);
         }
+    }
+    addingTabContent(items, index) {
+        let lastEleIndex = 0;
         this.hdrEle = select('.' + CLS_HEADER$1, this.element);
         if (isNullOrUndefined(this.hdrEle)) {
             this.items = items;
             this.reRenderItems();
-            return;
-        }
-        let itemsCount = selectAll('.' + CLS_TB_ITEM, this.element).length;
-        if (itemsCount !== 0) {
-            lastEleIndex = this.lastIndex + 1;
-        }
-        if (isNullOrUndefined(index)) {
-            index = itemsCount - 1;
-        }
-        if (itemsCount < index || index < 0 || isNaN(index)) {
-            return;
-        }
-        if (itemsCount === 0 && !isNullOrUndefined(this.hdrEle)) {
-            this.hdrEle.style.display = '';
-        }
-        if (!isNullOrUndefined(this.bdrLine)) {
-            this.bdrLine.classList.add(CLS_HIDDEN$1);
-        }
-        this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
-        this.isAdd = true;
-        let tabItems = this.parseObject(items, index);
-        this.isAdd = false;
-        let i = 0;
-        let textValue;
-        items.forEach((item, place) => {
-            textValue = item.header.text;
-            if (!((isNullOrUndefined(item.header) || isNullOrUndefined(textValue) || (textValue.length === 0) && isNullOrUndefined(item.header.iconCss)))) {
-                this.items.splice((index + i), 0, item);
-                i++;
-            }
-            if (this.isTemplate && !isNullOrUndefined(item.header) && !isNullOrUndefined(item.header.text)) {
-                let no = lastEleIndex + place;
-                let ele = this.createElement('div', {
-                    id: CLS_CONTENT$1 + '_' + no, className: CLS_ITEM$2, attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + no }
-                });
-                this.cntEle.insertBefore(ele, this.cntEle.children[(index + place)]);
-                let eleTrg = this.getTrgContent(this.cntEle, no.toString());
-                this.getContent(eleTrg, item.content, 'render');
-            }
-        });
-        this.tbObj.addItems(tabItems, index);
-        if (!this.isReplace) {
-            this.trigger('added', { addedItems: items });
-        }
-        if (this.selectedItem === index) {
-            this.select(index);
         }
         else {
-            this.setActiveBorder();
+            let itemsCount = selectAll('.' + CLS_TB_ITEM, this.element).length;
+            if (itemsCount !== 0) {
+                lastEleIndex = this.lastIndex + 1;
+            }
+            if (isNullOrUndefined(index)) {
+                index = itemsCount - 1;
+            }
+            if (itemsCount < index || index < 0 || isNaN(index)) {
+                return;
+            }
+            if (itemsCount === 0 && !isNullOrUndefined(this.hdrEle)) {
+                this.hdrEle.style.display = '';
+            }
+            if (!isNullOrUndefined(this.bdrLine)) {
+                this.bdrLine.classList.add(CLS_HIDDEN$1);
+            }
+            this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
+            this.isAdd = true;
+            let tabItems = this.parseObject(items, index);
+            this.isAdd = false;
+            let i = 0;
+            let textValue;
+            items.forEach((item, place) => {
+                textValue = item.header.text;
+                if (!((isNullOrUndefined(item.header) || isNullOrUndefined(textValue) || (textValue.length === 0) && isNullOrUndefined(item.header.iconCss)))) {
+                    this.items.splice((index + i), 0, item);
+                    i++;
+                }
+                if (this.isTemplate && !isNullOrUndefined(item.header) && !isNullOrUndefined(item.header.text)) {
+                    let no = lastEleIndex + place;
+                    let ele = this.createElement('div', {
+                        id: CLS_CONTENT$1 + '_' + no, className: CLS_ITEM$2, attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + no }
+                    });
+                    this.cntEle.insertBefore(ele, this.cntEle.children[(index + place)]);
+                    let eleTrg = this.getTrgContent(this.cntEle, no.toString());
+                    this.getContent(eleTrg, item.content, 'render');
+                }
+            });
+            this.tbObj.addItems(tabItems, index);
+            if (!this.isReplace) {
+                this.trigger('added', { addedItems: items });
+            }
+            if (this.selectedItem === index) {
+                this.select(index);
+            }
+            else {
+                this.setActiveBorder();
+            }
         }
     }
     /**
@@ -7114,30 +7346,34 @@ let Tab = class Tab extends Component {
      */
     removeTab(index) {
         let trg = selectAll('.' + CLS_TB_ITEM, this.element)[index];
-        let removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
-        this.trigger('removing', removeArgs);
-        if (removeArgs.cancel || isNullOrUndefined(trg)) {
+        if (isNullOrUndefined(trg)) {
             return;
         }
-        this.tbObj.removeItems(index);
-        this.items.splice(index, 1);
-        this.itemIndexArray.splice(index, 1);
-        this.refreshActiveBorder();
-        let cntTrg = select('#' + CLS_CONTENT$1 + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT$1, this.element));
-        if (!isNullOrUndefined(cntTrg)) {
-            detach(cntTrg);
-        }
-        this.trigger('removed', removeArgs);
-        if (trg.classList.contains(CLS_ACTIVE$1)) {
-            index = (index > selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element).length - 1) ? index - 1 : index;
-            this.enableAnimation = false;
-            this.selectedItem = index;
-            this.select(index);
-        }
-        if (selectAll('.' + CLS_TB_ITEM, this.element).length === 0) {
-            this.hdrEle.style.display = 'none';
-        }
-        this.enableAnimation = true;
+        let removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
+        this.trigger('removing', removeArgs, (tabRemovingArgs) => {
+            if (!tabRemovingArgs.cancel) {
+                this.tbObj.removeItems(index);
+                this.items.splice(index, 1);
+                this.itemIndexArray.splice(index, 1);
+                this.refreshActiveBorder();
+                let cntTrg = select('#' + CLS_CONTENT$1 + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT$1, this.element));
+                if (!isNullOrUndefined(cntTrg)) {
+                    detach(cntTrg);
+                }
+                this.trigger('removed', tabRemovingArgs);
+                if (trg.classList.contains(CLS_ACTIVE$1)) {
+                    // tslint:disable-next-line:max-line-length
+                    index = (index > selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element).length - 1) ? index - 1 : index;
+                    this.enableAnimation = false;
+                    this.selectedItem = index;
+                    this.select(index);
+                }
+                if (selectAll('.' + CLS_TB_ITEM, this.element).length === 0) {
+                    this.hdrEle.style.display = 'none';
+                }
+                this.enableAnimation = true;
+            }
+        });
     }
     /**
      * Shows or hides the Tab that is in the specified index.
@@ -7238,11 +7474,17 @@ let Tab = class Tab extends Component {
             cancel: false
         };
         if (!this.initRender || this.selectedItem !== 0) {
-            this.trigger('selecting', eventArg);
+            this.trigger('selecting', eventArg, (selectArgs) => {
+                if (!selectArgs.cancel) {
+                    this.selectingContent(args);
+                }
+            });
         }
-        if (eventArg.cancel) {
-            return;
+        else {
+            this.selectingContent(args);
         }
+    }
+    selectingContent(args) {
         if (typeof args === 'number') {
             if (!isNullOrUndefined(this.tbItem[args]) && this.tbItem[args].classList.contains(CLS_DISABLE$4)) {
                 for (let i = args + 1; i < this.items.length; i++) {
@@ -7621,6 +7863,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 this.beforeNodeCreate(e);
             },
         };
+        if (this.nodeTemplate) {
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
         this.treeList = [];
@@ -8056,7 +8301,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             let textEle = e.item.querySelector('.' + LISTTEXT);
             textEle.innerHTML = '';
-            let tempArr = this.nodeTemplateFn(e.curData);
+            let tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate');
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, textEle);
         }
@@ -8925,6 +9170,10 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         args.element.parentElement.style.height = currentHeight + 'px';
     }
     renderChildNodes(parentLi, expandChild, callback, loaded) {
+        if (this.loadOnDemand && this.nodeTemplate) {
+            setTimeout(() => { resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         let eicon = select('div.' + ICON, parentLi);
         if (isNullOrUndefined(eicon)) {
             return;
@@ -9324,68 +9573,68 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             event: e,
             node: focusedNode,
         };
-        this.trigger('keyPress', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        switch (e.action) {
-            case 'space':
-                if (this.showCheckBox) {
-                    this.checkNode(e);
+        this.trigger('keyPress', eventArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'space':
+                        if (this.showCheckBox) {
+                            this.checkNode(e);
+                        }
+                        break;
+                    case 'moveRight':
+                        this.openNode(this.enableRtl ? false : true, e);
+                        break;
+                    case 'moveLeft':
+                        this.openNode(this.enableRtl ? true : false, e);
+                        break;
+                    case 'shiftDown':
+                        this.shiftKeySelect(true, e);
+                        break;
+                    case 'moveDown':
+                    case 'ctrlDown':
+                    case 'csDown':
+                        this.navigateNode(true);
+                        break;
+                    case 'shiftUp':
+                        this.shiftKeySelect(false, e);
+                        break;
+                    case 'moveUp':
+                    case 'ctrlUp':
+                    case 'csUp':
+                        this.navigateNode(false);
+                        break;
+                    case 'home':
+                    case 'shiftHome':
+                    case 'ctrlHome':
+                    case 'csHome':
+                        this.navigateRootNode(true);
+                        break;
+                    case 'end':
+                    case 'shiftEnd':
+                    case 'ctrlEnd':
+                    case 'csEnd':
+                        this.navigateRootNode(false);
+                        break;
+                    case 'enter':
+                    case 'ctrlEnter':
+                    case 'shiftEnter':
+                    case 'csEnter':
+                        this.toggleSelect(focusedNode, e);
+                        break;
+                    case 'f2':
+                        if (this.allowEditing && !focusedNode.classList.contains('e-disable')) {
+                            this.createTextbox(focusedNode, e);
+                        }
+                        break;
+                    case 'ctrlA':
+                        if (this.allowMultiSelection) {
+                            let sNodes = selectAll('.' + LISTITEM + ':not(.' + ACTIVE + ')', this.element);
+                            this.selectGivenNodes(sNodes);
+                        }
+                        break;
                 }
-                break;
-            case 'moveRight':
-                this.openNode(this.enableRtl ? false : true, e);
-                break;
-            case 'moveLeft':
-                this.openNode(this.enableRtl ? true : false, e);
-                break;
-            case 'shiftDown':
-                this.shiftKeySelect(true, e);
-                break;
-            case 'moveDown':
-            case 'ctrlDown':
-            case 'csDown':
-                this.navigateNode(true);
-                break;
-            case 'shiftUp':
-                this.shiftKeySelect(false, e);
-                break;
-            case 'moveUp':
-            case 'ctrlUp':
-            case 'csUp':
-                this.navigateNode(false);
-                break;
-            case 'home':
-            case 'shiftHome':
-            case 'ctrlHome':
-            case 'csHome':
-                this.navigateRootNode(true);
-                break;
-            case 'end':
-            case 'shiftEnd':
-            case 'ctrlEnd':
-            case 'csEnd':
-                this.navigateRootNode(false);
-                break;
-            case 'enter':
-            case 'ctrlEnter':
-            case 'shiftEnter':
-            case 'csEnter':
-                this.toggleSelect(focusedNode, e);
-                break;
-            case 'f2':
-                if (this.allowEditing && !focusedNode.classList.contains('e-disable')) {
-                    this.createTextbox(focusedNode, e);
-                }
-                break;
-            case 'ctrlA':
-                if (this.allowMultiSelection) {
-                    let sNodes = selectAll('.' + LISTITEM + ':not(.' + ACTIVE + ')', this.element);
-                    this.selectGivenNodes(sNodes);
-                }
-                break;
-        }
+            }
+        });
     }
     navigateToFocus(isUp) {
         let focusNode = this.getFocusedNode().querySelector('.' + TEXTWRAP);
@@ -9820,8 +10069,14 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let nodeData = this.getNodeData(currLi);
         return { cancel: false, isInteracted: isNullOrUndefined(e) ? false : true, node: currLi, nodeData: nodeData, event: e };
     }
+    destroyTemplate(nodeTemplate) {
+        this.clearTemplate(['nodeTemplate']);
+    }
     reRenderNodes() {
         this.element.innerHTML = '';
+        if (!isNullOrUndefined(this.nodeTemplateFn)) {
+            this.destroyTemplate(this.nodeTemplate);
+        }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
         this.isLoaded = false;
@@ -9856,26 +10111,26 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.updateOldText(liEle);
         let innerEle = this.createElement('input', { className: TREEINPUT, attrs: { value: this.oldText } });
         let eventArgs = this.getEditEvent(liEle, null, innerEle.outerHTML);
-        this.trigger('nodeEditing', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        let inpWidth = textEle.offsetWidth + 5;
-        let style = 'width:' + inpWidth + 'px';
-        addClass([liEle], EDITING);
-        textEle.innerHTML = eventArgs.innerHtml;
-        let inpEle = select('.' + TREEINPUT, textEle);
-        this.inputObj = Input.createInput({
-            element: inpEle,
-            properties: {
-                enableRtl: this.enableRtl,
+        this.trigger('nodeEditing', eventArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                let inpWidth = textEle.offsetWidth + 5;
+                let style = 'width:' + inpWidth + 'px';
+                addClass([liEle], EDITING);
+                textEle.innerHTML = eventArgs.innerHtml;
+                let inpEle = select('.' + TREEINPUT, textEle);
+                this.inputObj = Input.createInput({
+                    element: inpEle,
+                    properties: {
+                        enableRtl: this.enableRtl,
+                    }
+                }, this.createElement);
+                this.inputObj.container.setAttribute('style', style);
+                inpEle.focus();
+                let inputEle = inpEle;
+                inputEle.setSelectionRange(0, inputEle.value.length);
+                this.wireInputEvents(inpEle);
             }
-        }, this.createElement);
-        this.inputObj.container.setAttribute('style', style);
-        inpEle.focus();
-        let inputEle = inpEle;
-        inputEle.setSelectionRange(0, inputEle.value.length);
-        this.wireInputEvents(inpEle);
+        });
     }
     updateOldText(liEle) {
         let id = liEle.getAttribute('data-uid');
@@ -9902,7 +10157,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let newData = setValue(this.editFields.text, newText, this.editData);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             txtEle.innerHTML = '';
-            let tempArr = this.nodeTemplateFn(newData);
+            let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate');
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, txtEle);
         }
@@ -10200,11 +10455,21 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             }
             if (dragObj.allowMultiSelection && dragLi.classList.contains(ACTIVE)) {
                 let sNodes = selectAll('.' + ACTIVE, dragObj.element);
-                for (let i = 0; i < sNodes.length; i++) {
-                    if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
-                        continue;
+                if (e.target.offsetHeight <= 33 && offsetY > e.target.offsetHeight - 10 && offsetY > 6) {
+                    for (let i = sNodes.length - 1; i >= 0; i--) {
+                        if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
+                            continue;
+                        }
+                        this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
                     }
-                    this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
+                }
+                else {
+                    for (let i = 0; i < sNodes.length; i++) {
+                        if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
+                            continue;
+                        }
+                        this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
+                    }
                 }
             }
             else {
@@ -10916,6 +11181,10 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         return removedData;
     }
     triggerEvent() {
+        if (this.nodeTemplate) {
+            setTimeout(() => { resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         let eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     }
@@ -11557,11 +11826,11 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let txtEle = select('.' + LISTTEXT, liEle);
         this.updateOldText(liEle);
         let eventArgs = this.getEditEvent(liEle, null, null);
-        this.trigger('nodeEditing', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.appendNewText(liEle, txtEle, newText, false);
+        this.trigger('nodeEditing', eventArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                this.appendNewText(liEle, txtEle, newText, false);
+            }
+        });
     }
     /**
      * Unchecks all the checked nodes. You can also uncheck the specific nodes by passing array of checked nodes
@@ -11831,6 +12100,9 @@ let Sidebar = class Sidebar extends Component {
         else if (!this.isOpen) {
             addClass([this.element], CLOSE);
         }
+        if (this.enableDock) {
+            addClass([this.element], DOCKER);
+        }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.setAttribute('tabindex', this.tabIndex);
     }
@@ -11843,6 +12115,13 @@ let Sidebar = class Sidebar extends Component {
                 this.hide();
             }
         }
+    }
+    transitionEnd(e) {
+        this.setDock();
+        if (!isNullOrUndefined(e) && e.target === this.element) {
+            this.triggerChange();
+        }
+        EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     }
     destroyBackDrop() {
         let sibling = document.querySelector('.e-main-content') ||
@@ -11868,40 +12147,63 @@ let Sidebar = class Sidebar extends Component {
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        if (this.isOpen) {
-            this.trigger('close', closeArguments);
+        this.trigger('close', closeArguments, (observedcloseArgs) => {
+            if (!observedcloseArgs.cancel) {
+                if (this.element.classList.contains(CLOSE)) {
+                    return;
+                }
+                if (this.element.classList.contains(OPEN) && !this.animate) {
+                    this.triggerChange();
+                }
+                addClass([this.element], CLOSE);
+                removeClass([this.element], OPEN);
+                this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
+                    setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
+                this.setType(this.type);
+                let sibling = document.querySelector('.e-main-content') ||
+                    this.element.nextElementSibling;
+                if (!this.enableDock && sibling) {
+                    sibling.style.transform = 'translateX(' + 0 + 'px)';
+                    this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
+                }
+                this.destroyBackDrop();
+                this.setAnimation();
+                if (this.type === 'Slide') {
+                    document.body.classList.remove('e-sidebar-overflow');
+                }
+                this.setProperties({ isOpen: false }, true);
+                if (this.enableDock) {
+                    setTimeout(() => this.setTimeOut(), 50);
+                }
+                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+            }
+        });
+    }
+    setTimeOut() {
+        let sibling = document.querySelector('.e-main-content') ||
+            this.element.nextElementSibling;
+        if (this.element.classList.contains(OPEN) && sibling) {
+            if (this.position === 'Left') {
+                this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginLeft = this.setDimension(this.width);
+            }
+            else {
+                this.width === 'auto' ? sibling.style.marginRight = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginRight = this.setDimension(this.width);
+            }
         }
-        else {
-            return;
-        }
-        if (!closeArguments.cancel) {
-            if (this.element.classList.contains(CLOSE)) {
-                return;
+        else if (this.element.classList.contains(CLOSE) && sibling) {
+            if (this.position === 'Left') {
+                this.dockSize === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginLeft = this.setDimension(this.dockSize);
             }
-            if (this.element.classList.contains(OPEN)) {
-                let changeArguments = { name: 'change', element: this.element };
-                this.trigger('change', changeArguments);
+            else {
+                this.dockSize === 'auto' ? sibling.style.marginRight = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginRight = this.setDimension(this.dockSize);
             }
-            addClass([this.element], CLOSE);
-            removeClass([this.element], OPEN);
-            this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
-                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            this.setDock();
-            this.setType(this.type);
-            let sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
-            if (!this.enableDock && sibling) {
-                sibling.style.transform = 'translateX(' + 0 + 'px)';
-                this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
-            }
-            this.destroyBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.remove('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: false }, true);
         }
     }
+    ;
     /**
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
@@ -11914,29 +12216,29 @@ let Sidebar = class Sidebar extends Component {
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        this.trigger('open', openArguments);
-        if (!openArguments.cancel) {
-            removeClass([this.element], VISIBILITY);
-            if (this.element.classList.contains(OPEN)) {
-                return;
+        this.trigger('open', openArguments, (observedopenArgs) => {
+            if (!observedopenArgs.cancel) {
+                removeClass([this.element], VISIBILITY);
+                if (this.element.classList.contains(OPEN)) {
+                    return;
+                }
+                if (this.element.classList.contains(CLOSE) && !this.animate) {
+                    this.triggerChange();
+                }
+                addClass([this.element], [OPEN, TRASITION]);
+                setStyleAttribute(this.element, { 'transform': '' });
+                removeClass([this.element], CLOSE);
+                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
+                this.setType(this.type);
+                this.createBackDrop();
+                this.setAnimation();
+                if (this.type === 'Slide') {
+                    document.body.classList.add('e-sidebar-overflow');
+                }
+                this.setProperties({ isOpen: true }, true);
+                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
             }
-            if (this.element.classList.contains(CLOSE)) {
-                let changeArguments = { name: 'change', element: this.element };
-                this.trigger('change', changeArguments);
-            }
-            addClass([this.element], [OPEN, TRASITION]);
-            setStyleAttribute(this.element, { 'transform': '' });
-            removeClass([this.element], CLOSE);
-            setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            let elementWidth = this.element.getBoundingClientRect().width;
-            this.setType(this.type);
-            this.createBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.add('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: true }, true);
-        }
+        });
     }
     setAnimation() {
         if (this.animate) {
@@ -11945,6 +12247,10 @@ let Sidebar = class Sidebar extends Component {
         else {
             addClass([this.element], DISABLEANIMATION);
         }
+    }
+    triggerChange() {
+        let changeArguments = { name: 'change', element: this.element };
+        this.trigger('change', changeArguments);
     }
     setDock() {
         if (this.enableDock && this.position === 'Left' && !this.getState()) {
@@ -12159,9 +12465,6 @@ let Sidebar = class Sidebar extends Component {
     setType(type) {
         let elementWidth = this.element.getBoundingClientRect().width;
         this.setZindex();
-        if (this.enableDock) {
-            addClass([this.element], DOCKER);
-        }
         let sibling = document.querySelector('.e-main-content') ||
             this.element.nextElementSibling;
         if (sibling) {
@@ -12261,6 +12564,9 @@ __decorate$9([
 __decorate$9([
     Property(false)
 ], Sidebar.prototype, "isOpen", void 0);
+__decorate$9([
+    Property(false)
+], Sidebar.prototype, "enableRtl", void 0);
 __decorate$9([
     Property(true)
 ], Sidebar.prototype, "animate", void 0);

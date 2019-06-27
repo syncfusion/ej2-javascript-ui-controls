@@ -314,8 +314,7 @@ class ColorCollection {
     }
 }
 /**
- * Tooltip data for bubble type heatmap
- * @public
+ * class used to maintain color and value collection.
  */
 class BubbleTooltipData {
     constructor(mappingName, bubbleData, valueType) {
@@ -511,11 +510,11 @@ class CellColor {
         if (this.heatMap.paletteSettings.type === 'Fixed' && (tempcolorMapping.isCompact || tempcolorMapping.isLabel)) {
             return;
         }
-        if (minValue < this.heatMap.legendColorCollection[0].value) {
-            this.heatMap.legendColorCollection.unshift(new LegendColorCollection(minValue, this.heatMap.legendColorCollection[0].color, this.heatMap.legendColorCollection[0].label, true));
+        if (Math.round(minValue * 100) / 100 < this.heatMap.legendColorCollection[0].value) {
+            this.heatMap.legendColorCollection.unshift(new LegendColorCollection(Math.round(minValue * 100) / 100, this.heatMap.legendColorCollection[0].color, this.heatMap.legendColorCollection[0].label, true));
         }
-        if (maxValue > this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].value) {
-            this.heatMap.legendColorCollection.push(new LegendColorCollection(maxValue, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].color, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].label, true));
+        if (Math.round(maxValue * 100) / 100 > this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].value) {
+            this.heatMap.legendColorCollection.push(new LegendColorCollection(Math.round(maxValue * 100) / 100, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].color, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].label, true));
         }
     }
     /**
@@ -528,7 +527,7 @@ class CellColor {
         let label = 'label';
         returnCollection.isCompact = true;
         returnCollection.isLabel = true;
-        // tslint:disable-next-line:no-any 
+        // tslint:disable-next-line:no-any
         returnCollection.offsets = offsets.sort((a, b) => {
             if (isNullOrUndefined(a[label]) && isNullOrUndefined(b[label])) {
                 returnCollection.isLabel = false;
@@ -617,7 +616,7 @@ function measureText(text, font) {
         htmlObject = createElement('text', { id: 'heatmapmeasuretext' });
         document.body.appendChild(htmlObject);
     }
-    htmlObject.innerHTML = text;
+    htmlObject.innerText = text;
     htmlObject.style.position = 'absolute';
     htmlObject.style.visibility = 'hidden';
     htmlObject.style.fontSize = (font.size).indexOf('px') !== -1 ? font.size : font.size + 'px';
@@ -655,8 +654,8 @@ function titlePositionX(width, leftPadding, rightPadding, titleStyle) {
     return positionX;
 }
 /**
- * Height and width of heatmap
- * @public
+ * Internal class size for height and width
+ * @private
  */
 class Size {
     constructor(width, height) {
@@ -706,8 +705,8 @@ class CurrentRect {
     }
 }
 /**
- * Selected cell details in heatmap.
- * @public
+ * Class to define the details of selected cell.
+ * @private
  */
 class SelectedCellDetails {
     constructor(value, xLabel, yLabel, xValue, yValue, cellElement, xPosition, yPosition, width, height, x, y) {
@@ -979,7 +978,7 @@ class DrawSvgCanvas {
             htmlObject = this.heatMap.renderer.createText(renderOptions, text);
         }
         else {
-            this.heatMap.canvasRenderer.drawText(options, text);
+            this.heatMap.canvasRenderer.createText(options, text);
         }
         if (typeof options.text !== 'string' && options.text.length > 1) {
             for (let i = 1, len = options.text.length; i < len; i++) {
@@ -994,7 +993,7 @@ class DrawSvgCanvas {
                 else {
                     options.id = options.id + i;
                     options.y += height;
-                    this.heatMap.canvasRenderer.drawText(options, options.text[i]);
+                    this.heatMap.canvasRenderer.createText(options, options.text[i]);
                 }
             }
         }
@@ -1253,17 +1252,17 @@ function showTooltip(text, x, y, areaWidth, id, element, isTouch, heatmap) {
     x = x < 0 ? 5 : x;
     if (!tooltip) {
         tooltip = createElement('div', {
-            innerHTML: text,
             id: id,
             styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
                 'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: Segoe UI'
         });
+        tooltip.innerText = text;
         element.appendChild(tooltip);
     }
     else {
-        tooltip.innerHTML = text;
+        tooltip.innerText = text;
         tooltip.style.top = (y + 15).toString() + 'px';
         tooltip.style.left = (x + 15).toString() + 'px';
     }
@@ -2037,8 +2036,9 @@ class AxisHelper {
         this.drawSvgCanvas.drawLine(line, parent);
     }
     drawXAxisTitle(axis, parent, rect) {
-        let y = rect.y + (!axis.opposedPosition ? (axis.maxLabelSize.height + this.padding +
-            sum(axis.xAxisMultiLabelHeight)) : -(axis.maxLabelSize.height + this.padding + sum(axis.xAxisMultiLabelHeight)));
+        let titlepadding = (axis.textStyle.size === '0px' ? 0 : 10);
+        let y = rect.y + (!axis.opposedPosition ? (axis.maxLabelSize.height + titlepadding +
+            sum(axis.xAxisMultiLabelHeight)) : -(axis.maxLabelSize.height + titlepadding + sum(axis.xAxisMultiLabelHeight)));
         if (axis.title.text) {
             let heatMap = this.heatMap;
             let title = axis.title;
@@ -2061,7 +2061,8 @@ class AxisHelper {
                 title.textStyle.textAlignment === 'Far' ? 'end' : 'middle';
             let padding = 10;
             padding = axis.opposedPosition ? padding : -padding;
-            let x = rect.x + padding + ((axis.opposedPosition) ? axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight) :
+            let titlepadding = (axis.textStyle.size === '0px' ? 0 : padding);
+            let x = rect.x + titlepadding + ((axis.opposedPosition) ? axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight) :
                 -(axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight)));
             let y = rect.y + titlePositionY(rect, 0, 0, title.textStyle) + (axis.opposedPosition ? this.padding : -this.padding);
             let options = new TextOption(heatMap.element.id + '_YAxisTitle', new TextBasic(x, y - this.padding, anchor, title.text, labelRotation, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', 'auto'), title.textStyle, title.textStyle.color || heatMap.themeStyle.axisTitle);
@@ -3440,6 +3441,7 @@ class Tooltip$1 {
             enableAnimation: false,
             offset: offset,
             location: { x: x, y: y },
+            availableSize: this.heatMap.availableSize,
             data: {
                 xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
                 yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
@@ -3452,7 +3454,7 @@ class Tooltip$1 {
             theme: this.heatMap.theme,
             content: tempTooltipText,
             fill: this.heatMap.tooltipSettings.fill,
-            template: this.heatMap.tooltipSettings.template,
+            template: this.heatMap.tooltipSettings.template === '' ? null : this.heatMap.tooltipSettings.template,
             border: {
                 width: this.heatMap.tooltipSettings.border.width,
                 color: this.heatMap.tooltipSettings.border.color
@@ -3476,9 +3478,11 @@ class Tooltip$1 {
      * @private
      */
     createTooltipDiv(heatMap) {
+        let position = heatMap.enableCanvasRendering && heatMap.allowSelection ? 'relative' : 'absolute';
+        let top = heatMap.enableCanvasRendering && heatMap.allowSelection ? heatMap.availableSize.height : 0;
         let element2 = createElement('div', {
             id: this.heatMap.element.id + 'Celltooltipcontainer',
-            styles: 'position:absolute; z-index: 3'
+            styles: 'position:' + position + '; z-index: 3;top:-' + top + 'px'
         });
         this.heatMap.element.appendChild(createElement('div', {
             id: this.heatMap.element.id + 'Celltooltipparent',
@@ -3835,6 +3839,7 @@ class Legend {
         this.segmentCollections = [];
         this.textWrapCollections = [];
         this.labelCollections = [];
+        this.labelCollection = [];
         this.legendSize = 10;
         this.previousOptions = new GradientPointer(0, 0, 0, 0, 0, 0);
         this.listPerPage = 0;
@@ -4076,22 +4081,28 @@ class Legend {
             let labelX;
             let labelY;
             for (let i = 0; i < colorCollection.length; i++) {
-                let value = ((colorCollection[i].value - this.legendMinValue) /
-                    (this.legendMaxValue - this.legendMinValue)) * 100;
+                let value = ((colorCollection[i].value - (Math.round(this.legendMinValue * 100) / 100)) /
+                    ((Math.round(this.legendMaxValue * 100) / 100) - (Math.round(this.legendMinValue * 100) / 100))) * 100;
                 if (heatMap.horizontalGradient) {
                     labelX = this.segmentCollections[i];
                     labelY = rect.y + rect.height + this.labelPadding;
-                    anchor = (value === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'start' :
-                        (heatMap.dataSourceMaxValue === colorCollection[i].value) || (heatMap.legendSettings.enableSmartLegend &&
+                    anchor = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'start' :
+                        (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
+                            (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
+                                heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
+                            heatMap.paletteSettings.type === 'Fixed' &&
                             heatMap.legendSettings.labelDisplayType === 'Edge') ? 'end' : 'middle';
                     dominantBaseline = 'hanging';
                 }
                 else {
                     labelX = rect.x + rect.width + this.labelPadding;
                     labelY = this.segmentCollections[i];
-                    dominantBaseline = (value === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'hanging' :
-                        (heatMap.dataSourceMaxValue === colorCollection[i].value) || (heatMap.legendSettings.enableSmartLegend &&
-                            heatMap.legendSettings.labelDisplayType === 'Edge') ? 'baseline' : 'middle';
+                    dominantBaseline = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ?
+                        'hanging' : (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
+                        (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
+                            heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
+                        heatMap.legendSettings.labelDisplayType === 'Edge' &&
+                        heatMap.paletteSettings.type === 'Fixed') ? 'baseline' : 'middle';
                 }
                 textWrapWidth = heatMap.horizontalGradient ? this.textWrapCollections[i] : this.width - (this.legendRectScale.width +
                     this.labelPadding + this.legendRectPadding);
@@ -4247,6 +4258,7 @@ class Legend {
         let legendSettings = heatMap.legendSettings;
         let colorCollection = heatMap.legendColorCollection;
         this.labelCollections = [];
+        this.labelCollection = [];
         if (legendSettings.position !== 'Bottom' && legendSettings.position !== 'Top' &&
             legendSettings.position !== 'Right' && legendSettings.position !== 'Left') {
             legendSettings.position = 'Right';
@@ -4265,9 +4277,24 @@ class Legend {
             for (let i = 0; i < colorCollection.length; i++) {
                 let label = colorCollection[i].label ? colorCollection[i].label :
                     formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
-                if (heatMap.legendSettings.enableSmartLegend && heatMap.legendSettings.labelDisplayType === 'Edge'
-                    && i > 0 && i < colorCollection.length - 1) {
-                    this.labelCollections.push('');
+                let legendEventArg = {
+                    cancel: false, text: label, name: 'legendRender',
+                };
+                this.labelCollection.push(label);
+                this.heatMap.trigger('legendRender', legendEventArg);
+                if (heatMap.legendRender) {
+                    if (heatMap.legendSettings.enableSmartLegend && heatMap.legendSettings.labelDisplayType === 'Edge'
+                        && i > 0 && i < colorCollection.length - 1) {
+                        this.labelCollections.push('');
+                    }
+                    else {
+                        if (!legendEventArg.cancel) {
+                            this.labelCollections.push(legendEventArg.text);
+                        }
+                        else {
+                            this.labelCollections.push('');
+                        }
+                    }
                 }
                 else {
                     this.labelCollections.push(label);
@@ -4278,7 +4305,25 @@ class Legend {
             for (let i = 0; i < colorCollection.length; i++) {
                 let label = colorCollection[i].isHidden ? '' : colorCollection[i].label ?
                     colorCollection[i].label : formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
-                this.labelCollections.push(label);
+                let legendEventArg = {
+                    cancel: false,
+                    text: label,
+                    name: 'legendRender',
+                };
+                if (!colorCollection[i].isHidden) {
+                    this.heatMap.trigger('legendRender', legendEventArg);
+                }
+                if (heatMap.legendRender) {
+                    if (!legendEventArg.cancel) {
+                        this.labelCollections.push(legendEventArg.text);
+                    }
+                    else {
+                        this.labelCollections.push('');
+                    }
+                }
+                else {
+                    this.labelCollections.push(label);
+                }
             }
         }
         if (heatMap.paletteSettings.type === 'Gradient' || (heatMap.paletteSettings.type === 'Fixed' &&
@@ -4642,9 +4687,7 @@ class Legend {
     /**
      * @private
      */
-    renderLegendLabelTooltip(e) {
-        let x = this.heatMap.mouseX;
-        let y = this.heatMap.mouseY;
+    renderLegendLabelTooltip(e, pageX, pageY) {
         if (e.target.id.indexOf('_Legend_Label') !== -1 && e.target.textContent.indexOf('...') > -1) {
             let targetId = e.target.id.split(this.heatMap.element.id + '_Legend_Label');
             if (targetId.length === 2) {
@@ -4655,7 +4698,7 @@ class Legend {
                 else {
                     index = parseInt(targetId[1].substring(0, targetId[1].length - 1), 10);
                 }
-                showTooltip(this.labelCollections[index], x, y, this.heatMap.element.offsetWidth, this.heatMap.element.id + '_LegendLabel_Tooltip', getElement(this.heatMap.element.id + '_Secondary_Element'), null, this.heatMap);
+                showTooltip(this.labelCollections[index], pageX, pageY, this.heatMap.element.offsetWidth, this.heatMap.element.id + '_LegendLabel_Tooltip', getElement(this.heatMap.element.id + '_Secondary_Element'), null, this.heatMap);
                 document.getElementById(this.heatMap.element.id + '_LegendLabel_Tooltip').style.visibility = 'visible';
             }
         }
@@ -4719,8 +4762,7 @@ class Legend {
         let heatMap = this.heatMap;
         let legendSize = 10;
         let tempBorder = {
-            color: 'transparent',
-            width: 0,
+            color: 'transparent', width: 0,
         };
         let padding = 5; // padding for legend label from top
         this.legendLabelTooltip = [];
@@ -4751,6 +4793,9 @@ class Legend {
                 let text = this.labelCollections[i];
                 size = measureText(text, heatMap.legendSettings.textStyle);
             }
+            let legendEventArgs = {
+                cancel: false, text: this.labelCollection[i], name: 'legendRender',
+            };
             if (heatMap.horizontalGradient) {
                 legendX = this.legendXCollections[i];
                 legendY = this.legendYCollections[i];
@@ -4759,36 +4804,45 @@ class Legend {
             }
             labelX = legendX + this.legendSize + this.labelPadding;
             labelY = legendY + padding;
+            this.heatMap.trigger('legendRender', legendEventArgs);
             if (translate && heatMap.rendering && this.legendRange.length <= heatMap.colorCollection.length) {
                 let rectPosition = new LegendRange(legendX, legendY, legendSize, legendSize, heatMap.colorCollection[i].value, true, this.currentPage);
                 rectPosition.visible = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
-                this.legendRange.push(rectPosition);
+                if (!legendEventArgs.cancel) {
+                    this.legendRange.push(rectPosition);
+                }
+                else {
+                    let rectPosition = new LegendRange(legendX, legendY, 0, 0, heatMap.colorCollection[i].value, true, this.currentPage);
+                    this.legendRange.push(rectPosition);
+                }
                 if (heatMap.legendSettings.showLabel) {
                     let textPosition = new LegendRange(labelX, (labelY - size.height / 2), size.width, size.height, heatMap.colorCollection[i].value, true, this.currentPage);
                     textPosition.visible = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
                     this.legendTextRange.push(textPosition);
                 }
             }
-            if (heatMap.legendSettings.showLabel) {
-                let text = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, textWrapWidth);
-                if (text[0].indexOf('...') !== -1 && heatMap.enableCanvasRendering) {
-                    this.legendLabelTooltip.push(new CanvasTooltip(this.labelCollections[i], new Rect(labelX, labelY, size.width, size.height)));
+            if (!legendEventArgs.cancel) {
+                if (heatMap.legendSettings.showLabel) {
+                    let text = getTitle(this.labelCollections[i], heatMap.legendSettings.textStyle, textWrapWidth);
+                    if (text[0].indexOf('...') !== -1 && heatMap.enableCanvasRendering) {
+                        this.legendLabelTooltip.push(new CanvasTooltip(this.labelCollections[i], new Rect(labelX, labelY, size.width, size.height)));
+                    }
+                    let textBasic = new TextBasic(labelX, labelY, 'start', text, 0, 'translate(0,0)', 'middle');
+                    let options = new TextOption(heatMap.element.id + '_Legend_Label' + i, textBasic, heatMap.legendSettings.textStyle, heatMap.legendSettings.textStyle.color || heatMap.themeStyle.legendLabel);
+                    options.fill = heatMap.legendOnLoad ? options.fill : this.legendRange[i].visible ? options.fill : '#D3D3D3';
+                    this.drawSvgCanvas.createText(options, this.translategroup, text[0]);
+                    if (Browser.isIE && !heatMap.enableCanvasRendering) {
+                        this.translategroup.lastChild.setAttribute('dy', '0.6ex');
+                    }
                 }
-                let textBasic = new TextBasic(labelX, labelY, 'start', text, 0, 'translate(0,0)', 'middle');
-                let options = new TextOption(heatMap.element.id + '_Legend_Label' + i, textBasic, heatMap.legendSettings.textStyle, heatMap.legendSettings.textStyle.color || heatMap.themeStyle.legendLabel);
-                options.fill = heatMap.legendOnLoad ? options.fill : this.legendRange[i].visible ? options.fill : '#D3D3D3';
-                this.drawSvgCanvas.createText(options, this.translategroup, text[0]);
-                if (Browser.isIE && !heatMap.enableCanvasRendering) {
-                    this.translategroup.lastChild.setAttribute('dy', '0.6ex');
-                }
+                listRect = new Rect(legendX, legendY, legendSize, legendSize);
+                let listColor = heatMap.legendOnLoad ? heatMap.colorCollection[i].color :
+                    this.legendRange[i].visible ? heatMap.colorCollection[i].color : '#D3D3D3';
+                let rectItems = new RectOption(heatMap.element.id + '_legend_list' + i, listColor, tempBorder, 1, listRect);
+                this.drawSvgCanvas.drawRectangle(rectItems, this.translategroup);
+                heatMap.horizontalGradient ? legendX = legendX + this.legendSize + this.labelPadding + size.width + this.listInterval :
+                    legendY += this.legendSize + this.listInterval;
             }
-            listRect = new Rect(legendX, legendY, legendSize, legendSize);
-            let listColor = heatMap.legendOnLoad ? heatMap.colorCollection[i].color :
-                this.legendRange[i].visible ? heatMap.colorCollection[i].color : '#D3D3D3';
-            let rectItems = new RectOption(heatMap.element.id + '_legend_list' + i, listColor, tempBorder, 1, listRect);
-            this.drawSvgCanvas.drawRectangle(rectItems, this.translategroup);
-            heatMap.horizontalGradient ? legendX = legendX + this.legendSize + this.labelPadding + size.width + this.listInterval :
-                legendY += this.legendSize + this.listInterval;
         }
         if (!heatMap.enableCanvasRendering) {
             this.legendGroup.height = this.legendGroup.height > 0 ? this.legendGroup.height : 0;
@@ -5863,7 +5917,7 @@ let HeatMap = class HeatMap extends Component {
                     isshowTooltip = this.cellSelectionOnMouseMove(e, currentRect, pageX, pageY, isshowTooltip);
                 }
             }
-            this.tooltipOnMouseMove(e, currentRect, isshowTooltip);
+            this.tooltipOnMouseMove(e, currentRect, isshowTooltip, isheatmapRect);
             if (this.legendModule && this.legendSettings.visible && this.paletteSettings.type === 'Fixed' &&
                 this.legendSettings.enableSmartLegend && this.legendSettings.labelDisplayType === 'None') {
                 this.legendModule.createTooltip(pageX, pageY);
@@ -5874,7 +5928,7 @@ let HeatMap = class HeatMap extends Component {
                 }
                 this.axisTooltip(e, pageX, pageY, this.isTouch);
                 if (this.legendModule && this.legendSettings.visible && this.legendSettings.showLabel && this.legendVisibilityByCellType) {
-                    this.legendModule.renderLegendLabelTooltip(e);
+                    this.legendModule.renderLegendLabelTooltip(e, pageX, pageY);
                 }
             }
             else {
@@ -5915,7 +5969,7 @@ let HeatMap = class HeatMap extends Component {
     /**
      * Rendering tooltip on mouse move
      */
-    tooltipOnMouseMove(e, currentRect, isshowTooltip) {
+    tooltipOnMouseMove(e, currentRect, isshowTooltip, isheatmapRect) {
         if (isshowTooltip && currentRect) {
             if (this.tempTooltipRectId !== currentRect.id) {
                 if (this.showTooltip) {
@@ -5944,7 +5998,7 @@ let HeatMap = class HeatMap extends Component {
         }
         else {
             if (e !== null) {
-                if (e.target.id.indexOf('Celltooltip') === -1) {
+                if (!isheatmapRect) {
                     if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
                         this.heatMapSeries.highlightSvgRect(e.target.id);
                     }
@@ -6503,6 +6557,9 @@ __decorate([
 __decorate([
     Event()
 ], HeatMap.prototype, "cellClick", void 0);
+__decorate([
+    Event()
+], HeatMap.prototype, "legendRender", void 0);
 HeatMap = __decorate([
     NotifyPropertyChanges
 ], HeatMap);

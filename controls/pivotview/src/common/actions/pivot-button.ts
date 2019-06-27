@@ -48,8 +48,8 @@ export class PivotButton implements IAction {
         let showValuesButton: boolean = (this.parent.getModuleName() == "pivotfieldlist" &&
             (this.parent as PivotFieldList).pivotGridModule) ?
             (this.parent as PivotFieldList).pivotGridModule.showValuesButton : this.parent.showValuesButton;
-        if (((this.parent.dataSource.valueAxis === 'row' && args.axis === 'rows') ||
-            (this.parent.dataSource.valueAxis === 'column' && args.axis === 'columns')) && showValuesButton && this.parent.dataSource.values.length > 1) {
+        if (((this.parent.dataSourceSettings.valueAxis === 'row' && args.axis === 'rows') ||
+            (this.parent.dataSourceSettings.valueAxis === 'column' && args.axis === 'columns')) && showValuesButton && this.parent.dataSourceSettings.values.length > 1) {
             valuePos = field.length;
             field.push({
                 name: this.parent.localeObj.getConstant('values'), caption: this.parent.localeObj.getConstant('values'),
@@ -213,13 +213,13 @@ export class PivotButton implements IAction {
         let text: string = field[i].caption ? field[i].caption : field[i].name;
         buttonText = createElement('span', {
             attrs: {
-                title: axis === 'filters' ? (text + ' (' + filterMem + ')') : (((!this.parent.dataSource.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)),
+                title: axis === 'filters' ? (text + ' (' + filterMem + ')') : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
             className: cls.PIVOT_BUTTON_CONTENT_CLASS + ' ' +
                 (this.parent.getModuleName() === 'pivotview' && !(this.parent as PivotView).groupingBarSettings.allowDragAndDrop ? 'e-disable-drag' : ''),
-            innerHTML: axis === 'filters' ? (text + ' (' + filterMem + ')') : (!this.parent.dataSource.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)
+            innerHTML: axis === 'filters' ? (text + ' (' + filterMem + ')') : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)
         });
         return buttonText;
     }
@@ -282,9 +282,9 @@ export class PivotButton implements IAction {
             sortCLass = this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
         } else {
             sortCLass = '';
-            for (let i: number = 0; i < this.parent.dataSource.sortSettings.length; i++) {
-                if (this.parent.dataSource.sortSettings[i].name === fieldName) {
-                    sortCLass = this.parent.dataSource.sortSettings[i].order === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
+            for (let i: number = 0; i < this.parent.dataSourceSettings.sortSettings.length; i++) {
+                if (this.parent.dataSourceSettings.sortSettings[i].name === fieldName) {
+                    sortCLass = this.parent.dataSourceSettings.sortSettings[i].order === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
                 }
             }
         }
@@ -300,7 +300,7 @@ export class PivotButton implements IAction {
                 className: cls.ICON + ' ' + cls.SORT_CLASS + ' ' + sortCLass
             });
         }
-        if (this.parent.dataSource.enableSorting) {
+        if (this.parent.dataSourceSettings.enableSorting) {
             removeClass([spanElement], cls.ICON_DISABLE);
         } else {
             addClass([spanElement], cls.ICON_DISABLE);
@@ -322,8 +322,8 @@ export class PivotButton implements IAction {
                 !this.parent.engineModule.fieldList[fieldName].isExcelFilter ? cls.FILTER_CLASS : cls.FILTERED_CLASS : cls.FILTERED_CLASS;
         } else {
             filterCLass = cls.FILTER_CLASS;
-            for (let i: number = 0; i < this.parent.dataSource.filterSettings.length; i++) {
-                if (this.parent.dataSource.filterSettings[i].name === fieldName) {
+            for (let i: number = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
+                if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
                     filterCLass = cls.FILTERED_CLASS;
                 }
             }
@@ -440,28 +440,31 @@ export class PivotButton implements IAction {
         return isDropped;
     }
     private updateSorting(args: MouseEventArgs): void {
-        if (this.parent instanceof PivotFieldList || (this.parent as PivotView).groupingBarSettings.showSortIcon) {
-            if (((this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).enableValueSorting) ||
-                (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).pivotGridModule !== undefined &&
-                    (this.parent as PivotFieldList).pivotGridModule.enableValueSorting))) {
-                        if((this.parent as PivotView).enableValueSorting || (this.parent as PivotFieldList).pivotGridModule.enableValueSorting) {
-                            if ((args.target as HTMLElement).classList.contains('e-pivot-button')) {
-                                if((args.target as HTMLElement).parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
-                                    this.parent.setProperties({ dataSource: { valueSortSettings: { headerText: '' } } }, true);
-                                }
-                            } else {
-                                if((args.target as HTMLElement).parentElement.parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
-                                    this.parent.setProperties({ dataSource: { valueSortSettings: { headerText: '' } } }, true);
-                                }
+        if (!((args.target as HTMLElement).classList.contains(cls.FILTER_COMMON_CLASS)) &&
+            !((args.target as HTMLElement).classList.contains(cls.REMOVE_CLASS))) {
+            if (this.parent instanceof PivotFieldList || (this.parent as PivotView).groupingBarSettings.showSortIcon) {
+                if (((this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).enableValueSorting) ||
+                    (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).pivotGridModule !== undefined &&
+                        (this.parent as PivotFieldList).pivotGridModule.enableValueSorting))) {
+                    if ((this.parent as PivotView).enableValueSorting || (this.parent as PivotFieldList).pivotGridModule.enableValueSorting) {
+                        if ((args.target as HTMLElement).classList.contains('e-pivot-button')) {
+                            if ((args.target as HTMLElement).parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
+                                this.parent.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                            }
+                        } else {
+                            if ((args.target as HTMLElement).parentElement.parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
+                                this.parent.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                             }
                         }
-            }
-            this.parent.pivotCommon.eventBase.updateSorting(args);
-            if (!this.parent.allowDeferLayoutUpdate) {
-                this.updateDataSource(true);
-            }
-            if (this.parent instanceof PivotFieldList) {
-                this.axisField.render();
+                    }
+                }
+                this.parent.pivotCommon.eventBase.updateSorting(args);
+                if (!this.parent.allowDeferLayoutUpdate) {
+                    this.updateDataSource(true);
+                }
+                if (this.parent instanceof PivotFieldList) {
+                    this.axisField.render();
+                }
             }
         }
     }
@@ -473,7 +476,7 @@ export class PivotButton implements IAction {
                 (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
                 (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
                 (this.parent as PivotFieldList).
-                    pivotGridModule.setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties as IDataOptions }, true);
+                    pivotGridModule.setProperties({ dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions }, true);
             } else {
                 (this.parent as PivotFieldList).triggerPopulateEvent();
             }
@@ -528,7 +531,7 @@ export class PivotButton implements IAction {
         removeClass([].slice.call(this.dialogPopUp.element.querySelectorAll('.e-selected-tab')), 'e-selected-tab');
         if (e.selectedIndex > 0) {
             /* tslint:disable-next-line:max-line-length */
-            addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (e.selectedIndex === 1 && this.parent.dataSource.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
+            addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (e.selectedIndex === 1 && this.parent.dataSourceSettings.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
         }
         if (e.selectedIndex === 0) {
             this.parent.pivotCommon.filterDialog.updateCheckedState();
@@ -580,7 +583,7 @@ export class PivotButton implements IAction {
             filterObject.value1 = filterType === 'date' ? new Date(operand1) : operand1 as string;
             filterObject.value2 = filterType === 'date' ? new Date(operand2) : operand2 as string;
         } else {
-            this.parent.dataSource.filterSettings.push(filterItem);
+            this.parent.dataSourceSettings.filterSettings.push(filterItem);
         }
         if (type !== 'Value') {
             this.parent.lastFilterInfo = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
@@ -601,7 +604,7 @@ export class PivotButton implements IAction {
         let target: HTMLElement = args.target as HTMLElement;
         let fieldName: string = target.parentElement.id;
         if (target.parentElement.getAttribute('isvalue') === 'true') {
-            this.parent.setProperties({ dataSource: { values: [] } }, true);
+            this.parent.setProperties({ dataSourceSettings: { values: [] } }, true);
         } else {
             this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(fieldName);
         }
@@ -659,15 +662,15 @@ export class PivotButton implements IAction {
             false : true);
         let filterObject: IFilter = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         if (filterObject) {
-            for (let i: number = 0; i < this.parent.dataSource.filterSettings.length; i++) {
-                if (this.parent.dataSource.filterSettings[i].name === fieldName) {
-                    this.parent.dataSource.filterSettings.splice(i, 1);
+            for (let i: number = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
+                if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
+                    this.parent.dataSourceSettings.filterSettings.splice(i, 1);
                     break;
                 }
             }
-            this.parent.dataSource.filterSettings.push(filterItem);
+            this.parent.dataSourceSettings.filterSettings.push(filterItem);
         } else {
-            this.parent.dataSource.filterSettings.push(filterItem);
+            this.parent.dataSourceSettings.filterSettings.push(filterItem);
         }
         this.dialogPopUp.close();
         this.refreshPivotButtonState(fieldName, isNodeUnChecked);
@@ -698,7 +701,7 @@ export class PivotButton implements IAction {
         }
     }
     private removeDataSourceSettings(fieldName: string): void {
-        let filterSettings: IFilter[] = this.parent.dataSource.filterSettings;
+        let filterSettings: IFilter[] = this.parent.dataSourceSettings.filterSettings;
         for (let len: number = 0, lnt: number = filterSettings.length; len < lnt; len++) {
             if (filterSettings[len].name === fieldName) {
                 filterSettings.splice(len, 1);

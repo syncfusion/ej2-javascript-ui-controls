@@ -119,24 +119,26 @@ export class VirtualScroll {
     private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
         this.parent.isScrolling = true;
         if (this.direction === 'vertical') {
-            let rowValues: number = this.parent.dataSource.valueAxis === 'row' ? this.parent.dataSource.values.length : 1;
+            let rowValues: number = this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.dataSourceSettings.values.length : 1;
             let exactSize: number = (this.parent.pageSettings.rowSize * rowValues * this.parent.gridSettings.rowHeight);
             let section: number = Math.ceil(top / exactSize);
-            if (this.parent.scrollPosObject.vertical === section) {
+            if (this.parent.scrollPosObject.vertical === section ||
+                this.parent.engineModule.pageSettings.rowSize >= this.parent.engineModule.rowCount) {
                 hideSpinner(this.parent.element);
                 return;
             }
             showSpinner(this.parent.element);
             this.parent.scrollPosObject.vertical = section;
             this.parent.engineModule.pageSettings.rowCurrentPage = section > 1 ? section : 1;
-            this.parent.engineModule.generateGridData(this.parent.dataSource, this.parent.engineModule.headerCollection);
+            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
             this.parent.pivotValues = this.parent.engineModule.pivotValues;
             let exactPage: number = Math.ceil(this.parent.engineModule.rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
             let pos: number = exactSize * exactPage -
                 (this.parent.engineModule.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
             this.parent.scrollPosObject.verticalSection = pos;
         } else {
-            let colValues: number = this.parent.dataSource.valueAxis === 'column' ? this.parent.dataSource.values.length : 1;
+            let colValues: number =
+                this.parent.dataSourceSettings.valueAxis === 'column' ? this.parent.dataSourceSettings.values.length : 1;
             let exactSize: number = (this.parent.pageSettings.columnSize *
                 colValues * this.parent.gridSettings.columnWidth);
             let section: number = Math.ceil(left / exactSize);
@@ -147,7 +149,7 @@ export class VirtualScroll {
             showSpinner(this.parent.element);
             this.parent.scrollPosObject.horizontal = section;
             this.parent.engineModule.pageSettings.columnCurrentPage = section > 1 ? section : 1;
-            this.parent.engineModule.generateGridData(this.parent.dataSource, this.parent.engineModule.headerCollection);
+            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
             // let isLastPage: boolean =
             //     (this.parent.engineModule.pivotValues[0] as IAxisSet[])[this.parent.engineModule.pivotValues[0].length - 1].type
             //     === 'grand sum' && section > 0;

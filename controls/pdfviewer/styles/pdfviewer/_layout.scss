@@ -49,8 +49,20 @@
       user-select: none;
     }
 
+    .e-enable-text-selection .e-pv-text {
+      display: inline-block;
+    }
+
+    .e-disable-text-selection .e-pv-text {
+      display: none;
+    }
+
     .e-pv-cursor {
       cursor: text;
+    }
+
+    .e-pv-crosshair-cursor {
+      cursor: crosshair;
     }
 
     .e-pv-touch-select-drop {
@@ -143,6 +155,11 @@
       min-height: 132.08px;
       overflow: hidden auto;
       width: 368px;
+    }
+
+    .e-pv-properties-fill-color-icon,
+    .e-pv-properties-stroke-color-icon {
+      border-bottom: 2px solid;
     }
   }
 }

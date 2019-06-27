@@ -1,5 +1,6 @@
 import {
-    PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSettings, IPivotRows, INumberIndex, IFieldOptions
+    PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSettings, IPivotRows, INumberIndex, IFieldOptions,
+    IDrilledItem
 } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -9,16 +10,19 @@ import {
     StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries, PolarSeries,
     RadarSeries, AxisModel, RowModel, Series, ITooltipRenderEventArgs, ILoadedEventArgs, MultiLevelLabel,
     IAxisLabelRenderEventArgs, ScrollBar, Zoom, IResizeEventArgs, TooltipSettingsModel, LegendSettingsModel,
-    ZoomSettingsModel, ParetoSeries, Export, Crosshair
+    ZoomSettingsModel, ParetoSeries, Export, Crosshair, MultiLevelLabelsModel, IMultiLevelLabelClickEventArgs
 } from '@syncfusion/ej2-charts';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview';
-import { RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs } from '../../common';
+import { RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping } from '../../common';
+import { DrillOptionsModel } from '../../pivotview/model/datasourcesettings-model';
+import { showSpinner } from '@syncfusion/ej2-popups';
+import { PivotUtil } from '../../base/util';
 
 export class PivotChart {
     private chartSeries: SeriesModel[];
-    private dataSource: IDataOptions;
+    private dataSourceSettings: IDataOptions;
     private chartSettings: ChartSettingsModel;
     private element: HTMLElement;
     private measureList: string[];
@@ -48,19 +52,21 @@ export class PivotChart {
     public loadChart(parent: PivotView, chartSettings: ChartSettingsModel): void {
         this.parent = parent;
         this.engineModule = this.parent.engineModule;
-        this.dataSource = this.parent.dataSource;
+        this.dataSourceSettings = this.parent.dataSourceSettings;
         this.chartSettings = chartSettings;
-        if (this.dataSource.values.length > 0) {
+        if (this.dataSourceSettings.values.length > 0) {
             if (this.chartSettings.enableMultiAxis) {
-                this.measureList = this.dataSource.values.map(function (item) { return item.name; });
+                this.measureList = this.dataSourceSettings.values.map(function (item) { return item.name; });
             }
             else {
-                this.measureList = [chartSettings.value === '' ? this.dataSource.values[0].name : chartSettings.value];
+                this.measureList = [chartSettings.value === '' ? this.dataSourceSettings.values[0].name : chartSettings.value];
             }
         } else if (this.parent.chart) {
             this.parent.chart.series = [];
             this.parent.chart.primaryXAxis.title = '';
-            this.parent.chart.primaryYAxis.title = ''
+            this.parent.chart.primaryYAxis.title = '';
+            this.parent.chart.primaryXAxis.multiLevelLabels = [];
+            this.parent.chart.primaryYAxis.multiLevelLabels = [];
             if (this.parent.chart.axes.length > 0) {
                 this.parent.chart.axes[0].title = '';
             }
@@ -74,64 +80,79 @@ export class PivotChart {
         this.columnGroupObject = {};
         let pivotValues: IPivotValues = this.parent.engineModule.pivotValues;
         this.currentMeasure = chartSettings.enableMultiAxis ? this.measureList[0] :
-            (((chartSettings.value === '' || this.dataSource.values.filter((item: IFieldOptions) => {
+            (((chartSettings.value === '' || this.dataSourceSettings.values.filter((item: IFieldOptions) => {
                 return item.name === chartSettings.value;
-            }).length === 0) && this.dataSource.values.length > 0) ? this.dataSource.values[0].name : chartSettings.value);
+            }).length === 0) && this.dataSourceSettings.values.length > 0) ? this.dataSourceSettings.values[0].name : chartSettings.value);
         let totColIndex: INumberIndex = this.getColumnTotalIndex(pivotValues);
         let rKeys: string[] = Object.keys(pivotValues);
         let prevLevel: number;
         let indexCount: number = -0.5;
         this.headerColl = {};
+        this.maxLevel = 0;
+        let memberCell: IAxisSet;
         for (let rKey of rKeys) {
             let rowIndex: number = Number(rKey);
             if (pivotValues[rowIndex][0] && (pivotValues[rowIndex][0] as IAxisSet).axis === 'row' &&
-                (this.dataSource.rows.length === 0 ? true : (pivotValues[rowIndex][0] as IAxisSet).type !== 'grand sum')) {
+                (this.dataSourceSettings.rows.length === 0 ? true : (pivotValues[rowIndex][0] as IAxisSet).type !== 'grand sum')) {
                 let firstRowCell: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
-                this.maxLevel = firstRowCell.level > this.maxLevel ? firstRowCell.level : this.maxLevel;
-                if (!(prevLevel === undefined || prevLevel < firstRowCell.level)) {
-                    indexCount++;
+                if (firstRowCell.type !== 'value') {
+                    if (!(prevLevel === undefined || prevLevel < firstRowCell.level)) {
+                        indexCount++;
+                    }
+                    prevLevel = firstRowCell.level;
                 }
-                prevLevel = firstRowCell.level;
+                this.maxLevel = firstRowCell.level > this.maxLevel ? firstRowCell.level : this.maxLevel;
                 let name: string = firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString();
                 let caption: string = firstRowCell.hasChild ? ((firstRowCell.isDrilled ? ' - ' : ' + ') + name) : name;
                 let cellInfo: any = {
                     name: name,
                     text: caption,
+                    hasChild: firstRowCell.hasChild,
+                    isDrilled: firstRowCell.isDrilled,
                     levelName: firstRowCell.valueSort['levelName'].toString(),
                     level: firstRowCell.level,
-                    fieldName: firstRowCell.valueSort['axis'] ? firstRowCell.valueSort['axis'].toString() : ''
+                    fieldName: firstRowCell.valueSort['axis'] ? firstRowCell.valueSort['axis'].toString() : '',
+                    rowIndex: rowIndex,
+                    colIndex: 0
                 };
-                if (this.headerColl[indexCount]) {
-                    this.headerColl[indexCount][firstRowCell.level] = cellInfo;
-                } else {
-                    this.headerColl[indexCount] = {};
-                    this.headerColl[indexCount][firstRowCell.level] = cellInfo;
+                if (firstRowCell.type !== 'value') {
+                    if (this.headerColl[indexCount]) {
+                        this.headerColl[indexCount][firstRowCell.level] = cellInfo;
+                    } else {
+                        this.headerColl[indexCount] = {};
+                        this.headerColl[indexCount][firstRowCell.level] = cellInfo;
+                    }
                 }
+                let prevMemberCell: IAxisSet;
+                memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
                 let rows: IPivotRows = pivotValues[rowIndex];
                 let cKeys: string[] = Object.keys(rows);
                 for (let cKey of cKeys) {
                     let cellIndex: number = Number(cKey);
                     let cell: IAxisSet = pivotValues[rowIndex][cellIndex] as IAxisSet;
+                    let measureAllow: boolean = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
                     if (!totColIndex[cell.colIndex] && cell.axis === 'value' &&
                         (chartSettings.enableMultiAxis ? true : cell.actualText === this.currentMeasure)) {
-                        if (firstRowCell.members.length > 0) {
+                        if (((firstRowCell.type === 'value' && prevMemberCell) ?
+                            prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow) {
                             break;
                         }
                         let columnSeries: string = cell.columnHeaders.toString().split('.').join(' - ') + ' | ' + cell.actualText;
                         if (this.columnGroupObject[columnSeries]) {
                             this.columnGroupObject[columnSeries].push({
-                                x: this.dataSource.rows.length === 0 ? firstRowCell.formattedText :
+                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText :
                                     cell.rowHeaders.toString().split('.').join(' - '),
                                 y: Number(cell.value)
                             });
                         } else {
                             this.columnGroupObject[columnSeries] = [{
-                                x: this.dataSource.rows.length === 0 ? firstRowCell.formattedText :
+                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText :
                                     cell.rowHeaders.toString().split('.').join(' - '),
                                 y: Number(cell.value)
                             }];
                         }
                     }
+                    prevMemberCell = memberCell;
                 }
             }
         }
@@ -200,7 +221,7 @@ export class PivotChart {
                 className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
             }));
         }
-        if (!this.parent.chart) {
+        if (!(this.parent.chart && this.parent.chart.element && this.parent.element.querySelector('.e-chart'))) {
             if (this.parent.showGroupingBar) {
                 this.element.style.minWidth = '400px !important';
             } else {
@@ -240,6 +261,7 @@ export class PivotChart {
                     selectedDataIndexes: this.chartSettings.selectedDataIndexes,
                     isTransposed: this.chartSettings.isTransposed,
                     enableAnimation: this.chartSettings.enableAnimation,
+                    useGroupingSeparator: this.chartSettings.useGroupingSeparator,
                     description: this.chartSettings.description,
                     tabIndex: this.chartSettings.tabIndex,
                     locale: this.parent.locale,
@@ -266,7 +288,8 @@ export class PivotChart {
                     loaded: this.loaded.bind(this),
                     load: this.load.bind(this),
                     resized: this.resized.bind(this),
-                    axisLabelRender: this.axisLabelRender.bind(this)
+                    axisLabelRender: this.axisLabelRender.bind(this),
+                    multiLevelLabelClick: this.multiLevelLabelClick.bind(this),
                 },
                 '#' + this.parent.element.id + '_chart');
         } else {
@@ -295,12 +318,12 @@ export class PivotChart {
             this.persistSettings.chartSeries.type === 'StackingArea100');
         if (this.chartSettings.enableMultiAxis) {
             let valCnt: number = 0;
-            let divider: string = (100 / this.dataSource.values.length) + '%';
-            for (let item of this.dataSource.values) {
+            let divider: string = (100 / this.dataSourceSettings.values.length) + '%';
+            for (let item of this.dataSourceSettings.values) {
                 let measureField: IField = this.engineModule.fieldList[item.name];
                 let measureAggregatedName: string =
                     this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' + measureField.caption;
-                let formatSetting: IFormatSettings = this.dataSource.formatSettings.filter((itm: IFormatSettings) => {
+                let formatSetting: IFormatSettings = this.dataSourceSettings.formatSettings.filter((itm: IFormatSettings) => {
                     return itm.name === item.name;
                 })[0];
                 let resFormat: boolean =
@@ -324,7 +347,7 @@ export class PivotChart {
             let measureField: IField = this.engineModule.fieldList[this.currentMeasure];
             let measureAggregatedName: string = this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' +
                 measureField.caption;
-            let formatSetting: IFormatSettings = this.dataSource.formatSettings.filter((item: IFormatSettings) => {
+            let formatSetting: IFormatSettings = this.dataSourceSettings.formatSettings.filter((item: IFormatSettings) => {
                 return item.name === this.currentMeasure;
             })[0];
             let currentYAxis: AxisModel = {};
@@ -352,7 +375,7 @@ export class PivotChart {
                 let cell: IAxisSet = rows[Number(cellIndex)] as IAxisSet;
                 if (cell.axis !== 'column') {
                     return colIndexColl;
-                } else if ((cell.type === 'sum' || (this.dataSource.columns.length === 0 ? false : cell.type === 'grand sum'))
+                } else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
                     && cell.rowSpan !== -1) {
                     colIndexColl[cell.colIndex] = cell.colIndex;
                 }
@@ -361,65 +384,74 @@ export class PivotChart {
         return colIndexColl;
     }
 
-    // The commented lines will be utilized once we get the requested requirement(of multi-level labels) from chart team.
-
-    // private frameMultiLevelLabels(): MultiLevelLabelsModel[] {
-    //     let startKeys: string[] = Object.keys(this.headerColl);
-    //     let parentHeaders: RowHeaderLevelGrouping = this.headerColl[-0.5];
-    //     for (let startKey of startKeys) {
-    //         let sKey: number = Number(startKey);
-    //         let headers = this.headerColl[sKey];
-    //         let levelPos: number = 0;
-    //         let isAvail: boolean = false;
-    //         while (levelPos <= this.maxLevel) {
-    //             if (!isAvail) {
-    //                 if (!headers[levelPos]) {
-    //                     headers[levelPos] = parentHeaders[levelPos];
-    //                 } else {
-    //                     isAvail = true;
-    //                 }
-    //             } else if (!headers[levelPos]) {
-    //                 headers[levelPos] = {
-    //                     name: headers[levelPos - 1].name,
-    //                     text: headers[levelPos - 1].text,
-    //                     levelName: headers[levelPos - 1].levelName,
-    //                     level: headers[levelPos - 1].level,
-    //                     fieldName: headers[levelPos - 1].fieldName,
-    //                     span: -1
-    //                 };
-    //                 headers[levelPos - 1].span = 0;
-    //             }
-    //             levelPos++;
-    //         }
-    //         parentHeaders = this.headerColl[sKey];
-    //     }
-    //     let gRows: { [key: number]: any } = {};
-    //     for (let startKey of startKeys) {
-    //         let sKey: number = Number(startKey);
-    //         let headers = this.headerColl[sKey];
-    //         let lKeys: string[] = Object.keys(headers);
-    //         for (let levelKey of lKeys) {
-    //             let lKey: number = Number(levelKey);
-    //             if (gRows[lKey]) {
-    //                 let len: number = gRows[lKey].length;
-    //                 if (headers[lKey].levelName === parentHeaders[lKey].levelName) {
-    //                     gRows[lKey][len - 1].end = gRows[lKey][len - 1].end as number + 1;
-    //                 } else {
-    //                     gRows[lKey].push({ start: sKey, end: sKey + 1, text: headers[lKey].text, customAttributes: headers[lKey] });
-    //                 }
-    //             } else {
-    //                 gRows[lKey] = [{ start: sKey, end: sKey + 1, text: headers[lKey].text, customAttributes: headers[lKey] }];
-    //             }
-    //         }
-    //         parentHeaders = headers;
-    //     }
-    //     let levellength: number = Object.keys(gRows).length;
-    //     let multiLevelLabels: MultiLevelLabelsModel[] = [];
-    //     for (let level: number = levellength - 1; level > -1; level--) {
-    //         multiLevelLabels.push({ categories: gRows[level] });
-    //     }
-    //     return multiLevelLabels;
-    // }
+    private frameMultiLevelLabels(): MultiLevelLabelsModel[] {
+        let startKeys: string[] = Object.keys(this.headerColl);
+        let parentHeaders: RowHeaderLevelGrouping = this.headerColl[-0.5];
+        for (let startKey of startKeys) {
+            let sKey: number = Number(startKey);
+            let headers = this.headerColl[sKey];
+            let levelPos: number = 0;
+            let isAvail: boolean = false;
+            while (levelPos <= this.maxLevel) {
+                if (!isAvail) {
+                    if (!headers[levelPos]) {
+                        headers[levelPos] = parentHeaders[levelPos];
+                    } else {
+                        isAvail = true;
+                    }
+                } else if (!headers[levelPos]) {
+                    headers[levelPos] = {
+                        name: headers[levelPos - 1].name,
+                        // text: headers[levelPos - 1].text,
+                        text: '',
+                        hasChild: headers[levelPos - 1].hasChild,
+                        isDrilled: headers[levelPos - 1].isDrilled,
+                        levelName: headers[levelPos - 1].levelName,
+                        level: headers[levelPos - 1].level,
+                        fieldName: headers[levelPos - 1].fieldName,
+                        rowIndex: headers[levelPos - 1].rowIndex,
+                        colIndex: headers[levelPos - 1].colIndex,
+                        span: -1,
+                    };
+                    // headers[levelPos - 1].span = 0;
+                }
+                levelPos++;
+            }
+            parentHeaders = this.headerColl[sKey];
+        }
+        let gRows: { [key: number]: any } = {};
+        for (let startKey of startKeys) {
+            let sKey: number = Number(startKey);
+            let headers = this.headerColl[sKey];
+            let lKeys: string[] = Object.keys(headers);
+            for (let levelKey of lKeys) {
+                let lKey: number = Number(levelKey);
+                if (gRows[lKey]) {
+                    let len: number = gRows[lKey].length;
+                    if (headers[lKey].levelName === parentHeaders[lKey].levelName) {
+                        gRows[lKey][len - 1].end = gRows[lKey][len - 1].end as number + 1;
+                    } else {
+                        gRows[lKey].push({
+                            start: sKey, end: sKey + 1, text: headers[lKey].text,
+                            type: (headers[lKey].span === -1 ? 'WithoutTopandBottomBorder' : 'WithoutTopBorder'), customAttributes: headers[lKey]
+                        });
+                    }
+                } else {
+                    gRows[lKey] = [{
+                        start: sKey, end: sKey + 1, text: headers[lKey].text,
+                        type: (headers[lKey].span === -1 ? 'WithoutTopandBottomBorder' : 'WithoutTopBorder'), customAttributes: headers[lKey]
+                    }];
+                }
+            }
+            parentHeaders = headers;
+        }
+        let levellength: number = Object.keys(gRows).length;
+        let multiLevelLabels: MultiLevelLabelsModel[] = [];
+        for (let level: number = levellength - 1; level > -1; level--) {
+            multiLevelLabels.push({ categories: gRows[level], border: { width: 1 }, overflow: 'Trim' });
+        }
+        return multiLevelLabels;
+    }
 
     private getZoomFactor(): number {
         if (!isNaN(Number(this.parent.width))) {
@@ -460,8 +492,13 @@ export class PivotChart {
         currentXAxis.valueType = 'Category';
         currentXAxis.labelIntersectAction = currentXAxis.labelIntersectAction ? currentXAxis.labelIntersectAction : 'Rotate45';
         currentXAxis.title = currentXAxis.title ? currentXAxis.title :
-            this.dataSource.rows.map((args: IFieldOptions) => { return args.caption || args.name; }).join(' / ');
+            this.dataSourceSettings.rows.map((args: IFieldOptions) => { return args.caption || args.name; }).join(' / ');
         currentXAxis.zoomFactor = this.getZoomFactor();
+        if (this.chartSettings.showMultiLevelLabels) {
+            currentXAxis.multiLevelLabels = this.frameMultiLevelLabels();
+            currentXAxis.border = { width: 1, type: 'WithoutTopandBottomBorder' };
+            currentXAxis.majorTickLines = { width: 0, height: -10 };
+        }
         return currentXAxis;
     }
 
@@ -477,38 +514,102 @@ export class PivotChart {
             (args.series as Series).yAxisName ? ((args.series as Series).yAxisName.split('_CumulativeAxis')[0]) :
                 (this.chartSettings.enableMultiAxis ? args.series.name.split(' | ')[1] : this.currentMeasure)];
         let measureAggregatedName: string = this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' + measureField.caption;
-        args.text = measureAggregatedName + ': ' + this.parent.engineModule.getFormattedValue(
-            args.point.y as number, measureField.id).formattedText + ' <br/>' +
-            (this.dataSource.columns.length === 0 ? '' :
-                this.parent.localeObj.getConstant('column') + ': ' + args.series.name.split(' | ')[0] + ' <br/>') +
-            (this.dataSource.rows.length === 0 ? '' :
-                this.parent.localeObj.getConstant('row') + ': ' + args.point.x);
+        let formattedValue: string = (this.engineModule.formatFields[measureField.id] && this.chartSettings.useGroupingSeparator) ?
+            this.parent.engineModule.getFormattedValue(args.point.y as number, measureField.id).formattedText :
+            args.text.split('<b>')[1].split('</b>')[0];
+        args.text = measureAggregatedName + ': ' + formattedValue +
+            (this.dataSourceSettings.columns.length === 0 ? '' :
+                (' <br/>' + this.parent.localeObj.getConstant('column') + ': ' + args.series.name.split(' | ')[0])) +
+            (this.dataSourceSettings.rows.length === 0 ? '' :
+                (' <br/>' + this.parent.localeObj.getConstant('row') + ': ' + args.point.x));
         this.parent.trigger(events.chartTooltipRender, args);
     }
 
-    // The commented lines will be utilized once we get the requested requirement(of multi-level labels) from chart team.
     private loaded(args: ILoadedEventArgs): void {
         this.parent.isChartLoaded = true;
         if (this.parent.chart && this.parent.showGroupingBar && this.parent.groupingBarModule &&
             this.parent.showFieldList && this.parent.currentView === 'Chart') {
             this.parent.groupingBarModule.alignIcon();
         }
-        // if (this.chartSettings.showMultiLevelLabels) {
-        //     this.parent.element.querySelector(
-        //         "#" + this.parent.element.id + "_chartXAxisMultiLevelLabel0").setAttribute('cursor', 'pointer');
-        // }
+        if (this.chartSettings.showMultiLevelLabels) {
+            let multilabelAxisName: string = PivotUtil.inArray(this.chartSettings.chartSeries.type, ['Bar', 'StackingBar', 'StackingBar100']) > -1 ?
+                '_chartYAxisMultiLevelLabel0' : '_chartXAxisMultiLevelLabel0';
+            if (!isNullOrUndefined(this.parent.element.querySelector("#" + this.parent.element.id + multilabelAxisName))) {
+                this.parent.element.querySelector(
+                    "#" + this.parent.element.id + multilabelAxisName).setAttribute('cursor', 'pointer');
+            }
+        }
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.chartLoaded, args);
     }
 
-    // The commented lines will be utilized once we get the requested requirement(of multi-level labels) from chart team.
     private axisLabelRender(args: IAxisLabelRenderEventArgs): void {
-        // if (this.chartSettings.showMultiLevelLabels) {
-        //     if (args.axis.name === 'primaryXAxis') {
-        //         args.text = '';
-        //     }
-        // }
+        if (this.chartSettings.showMultiLevelLabels) {
+            if (args.axis.name === 'primaryXAxis') {
+                args.text = '';
+            }
+        }
         this.parent.trigger(events.chartAxisLabelRender, args);
+    }
+
+    private multiLevelLabelClick(args: IMultiLevelLabelClickEventArgs): void {
+        if (args.customAttributes && (args.customAttributes as any).hasChild) {
+            this.onDrill(args);
+        }
+    }
+    /** @hidden */
+    public onDrill(args: IMultiLevelLabelClickEventArgs): void {
+        let labelInfo: any = args.customAttributes;
+        let delimiter: string = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
+            this.dataSourceSettings.drilledMembers[0].delimiter : '**';
+        let fieldName: string = labelInfo.fieldName;
+        let currentCell: IAxisSet = this.engineModule.pivotValues[labelInfo.rowIndex][labelInfo.colIndex] as IAxisSet;
+        let memberUqName: string =
+            (currentCell.valueSort.levelName as string).
+                split(this.engineModule.valueSortSettings.headerDelimiter).join(delimiter);
+        let fieldAvail: boolean = false;
+        if (this.dataSourceSettings.drilledMembers.length === 0) {
+            this.parent.setProperties({ dataSourceSettings: { drilledMembers: [{ name: fieldName, items: [memberUqName], delimiter: delimiter }] } }, true);
+        } else {
+            for (let fCnt: number = 0; fCnt < this.dataSourceSettings.drilledMembers.length; fCnt++) {
+                let field: DrillOptionsModel = this.dataSourceSettings.drilledMembers[fCnt];
+                memberUqName = memberUqName.split(delimiter).join(field.delimiter ? field.delimiter : delimiter);
+                delimiter = field.delimiter = field.delimiter ? field.delimiter : delimiter;
+                if (field.name === fieldName) {
+                    fieldAvail = true;
+                    let memIndex: number = field.items.indexOf(memberUqName);
+                    if (memIndex > -1) {
+                        field.items.splice(memIndex, 1);
+                    } else {
+                        field.items.push(memberUqName);
+                    }
+                } else {
+                    continue;
+                }
+            }
+            if (!fieldAvail) {
+                this.dataSourceSettings.drilledMembers.push({ name: fieldName, items: [memberUqName], delimiter: delimiter });
+            }
+        }
+        showSpinner(this.parent.element);
+        let drilledItem: IDrilledItem = {
+            fieldName: fieldName, memberName: memberUqName, delimiter: delimiter,
+            axis: 'row',
+            action: labelInfo.isDrilled ? 'up' : 'down',
+            currentCell: currentCell
+        };
+        this.parent.trigger(events.drill, {
+            drillInfo: drilledItem,
+            pivotview: this
+        });
+        if (this.parent.enableVirtualization) {
+            this.engineModule.drilledMembers = this.dataSourceSettings.drilledMembers;
+            (this.engineModule as PivotEngine).onDrill(drilledItem);
+        } else {
+            this.engineModule.generateGridData(this.dataSourceSettings);
+        }
+        this.parent.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
+        this.parent.renderPivotGrid();
     }
 
     private load(args: ILoadedEventArgs): void {

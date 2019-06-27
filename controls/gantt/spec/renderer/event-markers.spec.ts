@@ -79,5 +79,15 @@ describe('Gantt spec for Event-Marker', () => {
             expect(ganttObj.element.querySelector('.e-holiday-container').children[0][style].width).toBe('180px');
             expect(ganttObj.element.querySelector('.e-holiday-container').children[0].children[0].textContent).toBe('public holiday');
         });
+        it('Aria-label Testing ', () => {
+            let arrayobj: any = [{ day: '10/30/2017', label: 'project start', cssClass: 'stripLine' }];
+            ganttObj.eventMarkers = arrayobj;
+            ganttObj.dataBind();
+            expect(ganttObj.element.querySelector('.e-event-markers-container').children[0].getAttribute('aria-label').indexOf('Event markers 10/30/2017 project start')> -1).toBeTruthy();
+            let arrayobj1: any = [{ day: new Date('10/30/2017'), label: 'project start', cssClass: 'stripLine' }];
+            ganttObj.eventMarkers = arrayobj1;
+            ganttObj.dataBind();
+            expect(ganttObj.element.querySelector('.e-event-markers-container').children[0].getAttribute('aria-label').indexOf('Event markers 10/30/2017 project start')> -1).toBeTruthy();
+        });
     });
 });

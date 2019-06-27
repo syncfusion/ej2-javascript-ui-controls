@@ -2,20 +2,13 @@
 import { Gantt, Selection } from '../../src/index';
 import { projectData1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
-import { Browser } from '@syncfusion/ej2-base';
 import { RowSelectingEventArgs } from '@syncfusion/ej2-grids';
 Gantt.Inject(Selection);
 
 describe('Gantt Selection support', () => {
     describe('Gantt selection', () => {
         let ganttObj: Gantt;
-        let ganttPopUp: HTMLElement;
-        let spanElement: HTMLElement;
-        let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
-            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-
         beforeAll((done: Function) => {
-            Browser.userAgent = androidPhoneUa;
             ganttObj = createGantt(
                 {
                     dataSource: projectData1,
@@ -43,8 +36,6 @@ describe('Gantt Selection support', () => {
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
-                let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
-                Browser.userAgent = desktop;
             }
         });
         it('Select rows by range when the selection type is single', () => {
@@ -82,11 +73,7 @@ describe('Gantt Selection support', () => {
             let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-left-label-container') as HTMLElement;
             let row1: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(row, 'mouseup', 10, 10);
-            ganttPopUp = ganttObj.element.querySelector('.e-ganttpopup') as HTMLElement;
-            spanElement = ganttPopUp.querySelector('span');
-            triggerMouseEvent(spanElement, 'mouseup', 5, 5);
             triggerMouseEvent(row1, 'mouseup', 30, 30);
-            triggerMouseEvent(spanElement, 'mouseup', 5, 5);
             expect(ganttObj.selectionModule.getSelectedRowIndexes()[0]).toBe(4);
         });
         it('Enabling persist selection', () => {

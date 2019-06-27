@@ -1,6 +1,6 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 /**
- * Defines holidays of project
+ * Defines holidays of project.
  */
 export class Holiday extends ChildProperty<Holiday> {
     /**

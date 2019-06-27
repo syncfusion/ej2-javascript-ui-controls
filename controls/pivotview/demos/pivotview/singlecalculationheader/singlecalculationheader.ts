@@ -11,8 +11,8 @@ import { FieldList } from '../../../src/common/actions/field-list';
 PivotView.Inject(FieldList);
 
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: true,
         formatSettings: [{ name: 'balance', format: 'C' }],
         rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],

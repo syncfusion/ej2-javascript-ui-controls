@@ -80,9 +80,10 @@ export class BubbleSeries {
                     );
                     element = drawSymbol(
                         bubblePoint.symbolLocations[0], 'Circle', new Size(argsData.width, argsData.height),
-                        marker.imageUrl, shapeOption, bubblePoint.x.toString() + ':' + bubblePoint.yValue.toString()
+                        marker.imageUrl, shapeOption, bubblePoint.x.toString() + ':' + bubblePoint.yValue.toString(),
+                        series.chart.svgRenderer, series.clipRect
                     );
-                    appendChildElement(series.seriesElement, element, redraw);
+                    appendChildElement(false, series.seriesElement, element, redraw);
                     bubblePoint.regions.push(
                         new Rect(
                             bubblePoint.symbolLocations[0].x - segmentRadius,

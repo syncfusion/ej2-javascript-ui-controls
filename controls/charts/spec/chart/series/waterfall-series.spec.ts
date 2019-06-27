@@ -21,7 +21,8 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
 import { Zoom } from '../../../src/chart/user-interaction/zooming';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs, ILegendRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs,
+    ILegendRenderEventArgs } from '../../../src/chart/model/chart-interface';
 // import { MouseEvents } from '../../../src/chart/base/events.spec';
 Chart.Inject(LineSeries, ColumnSeries, WaterfallSeries, Logarithmic, DataLabel, Category,
     DateTime, Legend, Selection, Tooltip, Crosshair, Zoom);

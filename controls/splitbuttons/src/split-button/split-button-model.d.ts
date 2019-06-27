@@ -56,48 +56,56 @@ export interface SplitButtonModel extends DropDownButtonModel{
     /**
      * Triggers while rendering each Popup item of SplitButton.
      * @event
+     * @blazorProperty 'OnItemRender'
      */
     beforeItemRender?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the SplitButton popup.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers before closing the SplitButton popup.
      * @event
+     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers when the primary button of SplitButton has been clicked.
      * @event
+     * @blazorProperty 'OnClick'
      */
     click?: EmitType<ClickEventArgs>;
 
     /**
      * Triggers while closing the SplitButton popup.
      * @event
+     * @blazorProperty 'Closed'
      */
     close?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while opening the SplitButton popup.
      * @event
+     * @blazorProperty 'Opened'
      */
     open?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while selecting action item of SplitButton popup.
      * @event
+     * @blazorProperty 'ItemSelected'
      */
     select?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

@@ -324,14 +324,21 @@ export class GroupingBar implements IAction {
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth) :
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth));
                 }
-                let valueColWidth: number = this.parent.renderModule.calculateColWidth(this.parent.dataSource.values.length > 0 ?
+                let valueColWidth: number = this.parent.renderModule.calculateColWidth((this.parent.dataSourceSettings.values.length > 0 &&
+                    this.parent.engineModule.pivotValues.length > 0) ?
                     this.parent.engineModule.pivotValues[0].length : 2);
                 for (let cCnt: number = 0; cCnt < gridColumn.length; cCnt++) {
                     if (cCnt !== 0) {
                         if ((gridColumn[cCnt] as Column).columns) {
                             this.setColWidth((gridColumn[cCnt] as Column).columns as Column[], valueColWidth);
                         } else {
-                            (gridColumn[cCnt] as Column).width = valueColWidth;
+                            if ((gridColumn[cCnt] as Column).width !== 'auto') {
+                                let levelName: string = gridColumn[cCnt].customAttributes ?
+                                    (gridColumn[cCnt].customAttributes as any).cell.valueSort.levelName : '';
+                                gridColumn[cCnt].width = this.parent.renderModule.setSavedWidth(levelName, valueColWidth);
+                            } else {
+                                (gridColumn[cCnt] as Column).minWidth = valueColWidth;
+                            }
                         }
                     }
                 }
@@ -359,7 +366,7 @@ export class GroupingBar implements IAction {
         } else {
             if (this.parent.grid.columns && this.parent.grid.columns.length > 0) {
                 (this.parent.grid.columns[0] as Column).width = (this.parent.grid.columns[0] as Column).width > this.resColWidth ?
-                (this.parent.grid.columns[0] as Column).width : this.resColWidth;
+                    (this.parent.grid.columns[0] as Column).width : this.resColWidth;
             }
             this.parent.grid.headerModule.refreshUI();
         }

@@ -445,7 +445,8 @@ export class ConnectTool extends ToolBase {
         }
         super.mouseUp(args);
     }
-
+    /**   @private  */
+    private pointChangeParameter: object = {};
     /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
@@ -475,11 +476,9 @@ export class ConnectTool extends ToolBase {
         }
         this.currentPosition = args.position;
         if (this.currentPosition && this.prevPosition) {
-            let diffX: number = this.currentPosition.x - this.prevPosition.x;
-            let diffY: number = this.currentPosition.y - this.prevPosition.y;
+
             let newValue: PointModel; let oldValue: PointModel;
-            let inPort: PointPortModel;
-            let outPort: PointPortModel;
+
             this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition); let connector: ConnectorModel;
             if (args.source && (args.source as SelectorModel).connectors) {
                 newValue = {
@@ -500,50 +499,65 @@ export class ConnectTool extends ToolBase {
                 connector: connector, state: 'Progress', targetNode: targetNodeId,
                 oldValue: oldValue, newValue: newValue, cancel: false, targetPort: targetPortId
             };
+            this.pointChangeParameter = { args: args, targetPortId: targetPortId, targetNodeId: targetNodeId };
             if (!(this instanceof ConnectorDrawingTool)) {
                 let trigger: number = this.endPoint === 'ConnectorSourceEnd' ?
                     DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
-                this.commandHandler.triggerEvent(trigger, arg);
-            }
-            if (args.target) {
-                inPort = getInOutConnectPorts((args.target as Node), true);
-                outPort = getInOutConnectPorts((args.target as Node), false);
-            }
-            if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
-                this.blocked = !this.commandHandler.dragConnectorEnds(
-                    this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
-                this.commandHandler.updateSelector();
-                if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
-                    || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
-                    if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
-                        this.commandHandler.disConnect(args.source, this.endPoint);
-                    }
-                    let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
-                        args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
-                    if (target instanceof Node) {
-                        if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
-                            || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
-                            this.commandHandler.connect(this.endPoint, args);
-                        }
-                    } else {
-                        let isConnect: boolean = this.checkConnect(target as PointPortModel);
-                        if (isConnect) {
-                            this.commandHandler.connect(this.endPoint, args);
-                        }
-                    }
-                } else if (this.endPoint.indexOf('Bezier') === -1) {
-                    this.commandHandler.disConnect(args.source, this.endPoint);
-                    this.commandHandler.updateSelector();
-                }
-            }
-            if (this.commandHandler.canEnableDefaultTooltip()) {
-                let content: string = this.getTooltipContent(args.position);
-                this.commandHandler.showTooltip(args.source, args.position, content, 'ConnectTool', this.isTooltipVisible);
-                this.isTooltipVisible = false;
-            }
+                this.commandHandler.triggerEvent(trigger, arg, this.onSuccessPointChange.bind(this));
+            } else { this.onSuccessPointChange(arg); }
+
         }
         this.prevPosition = this.currentPosition;
         return !this.blocked;
+    }
+
+    private onSuccessPointChange(arg: IEndChangeEventArgs): void {
+        let argsChar: string = 'args';
+        let args: MouseEventArgs = this.pointChangeParameter[argsChar];
+        let targetPortIdChar: string = 'targetPortId';
+        let targetPortId: string = this.pointChangeParameter[targetPortIdChar];
+        let targetNodeIdChar: string = 'targetNodeId';
+        let targetNodeId: string = this.pointChangeParameter[targetNodeIdChar];
+        let diffX: number = this.currentPosition.x - this.prevPosition.x;
+        let diffY: number = this.currentPosition.y - this.prevPosition.y;
+        let inPort: PointPortModel;
+        let outPort: PointPortModel;
+        if (args.target) {
+            inPort = getInOutConnectPorts((args.target as Node), true);
+            outPort = getInOutConnectPorts((args.target as Node), false);
+        }
+        if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
+            this.blocked = !this.commandHandler.dragConnectorEnds(
+                this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
+            this.commandHandler.updateSelector();
+            if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
+                || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
+                if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
+                    this.commandHandler.disConnect(args.source, this.endPoint);
+                }
+                let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
+                    args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
+                if (target instanceof Node) {
+                    if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
+                        || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
+                        this.commandHandler.connect(this.endPoint, args);
+                    }
+                } else {
+                    let isConnect: boolean = this.checkConnect(target as PointPortModel);
+                    if (isConnect) {
+                        this.commandHandler.connect(this.endPoint, args);
+                    }
+                }
+            } else if (this.endPoint.indexOf('Bezier') === -1) {
+                this.commandHandler.disConnect(args.source, this.endPoint);
+                this.commandHandler.updateSelector();
+            }
+        }
+        if (this.commandHandler.canEnableDefaultTooltip()) {
+            let content: string = this.getTooltipContent(args.position);
+            this.commandHandler.showTooltip(args.source, args.position, content, 'ConnectTool', this.isTooltipVisible);
+            this.isTooltipVisible = false;
+        }
     }
     /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
@@ -822,6 +836,7 @@ export class MoveTool extends ToolBase {
         return !this.blocked;
     }
 
+
     private getTooltipContent(node: SelectorModel): string {
         return 'X:' + Math.round(node.wrapper.bounds.x) + ' ' + 'Y:' + Math.round(node.wrapper.bounds.y);
     }
@@ -847,7 +862,8 @@ export class RotateTool extends ToolBase {
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
     }
-
+    /**   @private  */
+    public rotateEventArgs: object = {};
     /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         this.undoElement = cloneObject(args.source);
@@ -915,10 +931,8 @@ export class RotateTool extends ToolBase {
             newValue: newValue, cancel: false
         };
 
-        this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
-        if (!arg.cancel) {
-            this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
-        }
+        this.rotateEventArgs = { angle: angle, object: object };
+        this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg, this.successRotateEvent.bind(this));
         if (this.commandHandler.canEnableDefaultTooltip()) {
             let content: string = this.getTooltipContent(args.source as SelectorModel);
             this.commandHandler.showTooltip(args.source, args.position, content, 'RotateTool', this.isTooltipVisible);
@@ -931,7 +945,15 @@ export class RotateTool extends ToolBase {
     private getTooltipContent(node: SelectorModel): string {
         return Math.round((node.rotateAngle % 360)).toString() + '\xB0';
     }
-
+    private successRotateEvent(arg: IRotationEventArgs): Function {
+        if (!arg.cancel) {
+            let angleChar: string = 'angle';
+            let objectChar: string = 'object';
+            this.blocked = !(this.commandHandler.rotateSelectedItems(
+                this.rotateEventArgs[angleChar] - this.rotateEventArgs[objectChar].wrapper.rotateAngle));
+        }
+        return null;
+    }
     /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         this.mouseUp(args);
@@ -1094,6 +1116,9 @@ export class ResizeTool extends ToolBase {
         }
         return change;
     }
+    /**   @private  */
+    private sizeChangeParameters: object = {};
+
     /**
      * Updates the size with delta width and delta height using scaling.
      */
@@ -1120,6 +1145,7 @@ export class ResizeTool extends ToolBase {
             offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
+        this.sizeChangeParameters = { 'deltaWidth': deltaWidth, 'deltaHeight': deltaHeight };
         this.blocked = this.commandHandler.scaleSelectedItems(deltaWidth, deltaHeight, this.getPivot(this.corner));
         let newValue: SelectorModel = {
             offsetX: source.offsetX, offsetY: source.offsetY,
@@ -1127,14 +1153,21 @@ export class ResizeTool extends ToolBase {
         };
         let arg: ISizeChangeEventArgs;
         arg = { source: source as Selector, state: 'Progress', oldValue: oldValue, newValue: newValue, cancel: false };
-        this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
-        if (arg.cancel) {
-            this.commandHandler.scaleSelectedItems(1 / deltaWidth, 1 / deltaHeight, this.getPivot(this.corner));
-        }
+        this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg, this.sizeChangeSuccessCallback.bind(this));
         return this.blocked;
     }
 
-
+    private sizeChangeSuccessCallback(arg: ISizeChangeEventArgs): Function {
+        if (arg.cancel) {
+            let deltaHeight: string = 'deltaHeight';
+            let deltaWidth: string = 'deltaWidth';
+            this.commandHandler.scaleSelectedItems(
+                1 / this.sizeChangeParameters[deltaWidth], 1 / this.sizeChangeParameters[deltaHeight],
+                this.getPivot(this.corner));
+        }
+        this.sizeChangeParameters = {};
+        return null;
+    }
 }
 
 /**

@@ -5570,6 +5570,140 @@ describe('MultiSelect', () => {
             (<any>listObj).focusInHandler();
         });
     });
+    describe('Grouping in CheckBox Mode', () => {
+        let listObj: MultiSelect;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { "Name": "Australia", "Code": "AU", "Start": "A" },
+            { "Name": "Bermuda", "Code": "BM", "Start": "B" },
+            { "Name": "Canada", "Code": "CA", "Start": "C" },
+            { "Name": "Cameroon", "Code": "CM", "Start": "C" },
+            { "Name": "Denmark", "Code": "DK", "Start": "D" },
+            { "Name": "France", "Code": "FR", "Start": "F" },
+            { "Name": "Finland", "Code": "FI", "Start": "F" },
+            { "Name": "Germany", "Code": "DE", "Start": "G" },
+            { "Name": "Greenland", "Code": "GL", "Start": "G" },
+            { "Name": "Hong Kong", "Code": "HK", "Start": "H" },
+            { "Name": "India", "Code": "IN", "Start": "I" },
+            { "Name": "Italy", "Code": "IT", "Start": "I" },
+            { "Name": "Japan", "Code": "JP", "Start": "J" },
+            { "Name": "Mexico", "Code": "MX", "Start": "M" },
+            { "Name": "Norway", "Code": "NO", "Start": "N" },
+            { "Name": "Poland", "Code": "PL", "Start": "P" },
+            { "Name": "Switzerland", "Code": "CH", "Start": "S" },
+            { "Name": "United Kingdom", "Code": "GB", "Start": "U" },
+            { "Name": "United States", "Code": "US", "Start": "U" }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Validation for the grouping in CheckBox Mode', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                enableSelectionOrder: false
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            mouseEventArgs.target = listObj.ulElement.querySelector("li.e-list-item");
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+            expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
+            expect(listElement.previousElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
+            mouseEventArgs.target = listObj.ulElement.querySelector("li.e-list-group-item").firstElementChild.lastElementChild;
+            let groupElement = listObj.ulElement.querySelector("li.e-list-group-item");
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
+            expect(listElement.nextElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Validation for the grouping in CheckBox Mode using keys', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                enableSelectionOrder: false
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            let keyboardEventArgs: any = { preventDefault: (): void => { }, };
+                expect((<any>listObj).isPopupOpen()).toBe(true);
+                keyboardEventArgs.keyCode = 40;
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+                keyboardEventArgs.keyCode = 32;
+                keyboardEventArgs.code = 'Space';
+                (<any>listObj).onKeyDown(keyboardEventArgs);
+            let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+            expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
+            expect(listElement.previousElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
+            keyboardEventArgs.keyCode = 38;
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            keyboardEventArgs.keyCode = 32;
+            keyboardEventArgs.code = 'Space';
+            keyboardEventArgs.target = (<any>listObj).overAllWrapper;
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
+            expect(listElement.previousElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
+            
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+        it('Validation for clear all for grouping in CheckBox Mode', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'Name', groupBy: 'Start' },
+                enableGroupCheckBox: true,
+                mode : 'CheckBox',
+                width: '250px',
+                placeholder: 'Select an employee',
+                popupWidth: '250px',
+                popupHeight: '300px',
+                showSelectAll: true,
+                enableSelectionOrder: false
+            });
+            listObj.appendTo(element);
+            (<any>listObj).renderPopup();
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            mouseEventArgs.target = listObj.ulElement.querySelector("li.e-list-item");
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+            expect(listElement.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
+            expect(listElement.previousElementSibling.firstElementChild.lastElementChild.classList.contains('e-check')).toBe(true);
+            mouseEventArgs.target = (<any>listObj).overAllClear;
+            (<any>listObj).ClearAll(mouseEventArgs);
+            expect((<any>listObj).list.querySelector('li.e-list-group-item').firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
+            expect((<any>listObj).list.querySelector('li.e-list-item').firstElementChild.lastElementChild.classList.contains('e-check')).toBe(false);
+            listObj.hidePopup();
+            listObj.destroy();
+        });
+    });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

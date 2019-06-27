@@ -910,22 +910,20 @@ export type DialogType =
  */
 export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSelection' | 'Enter' | 'ImageResizing'
     | 'ReplaceAll' | 'Cut' | 'CharacterFormat' |
-    'Bold' | 'Italic' | 'FontSize' | 'FontFamily' | 'FontColor' | 'HighlightColor' |
+    'Bold' | 'Italic' | 'FontSize' | 'FontFamily' | 'HighlightColor' |
     'BaselineAlignment' | 'Strikethrough' | 'Underline'
     | 'InsertHyperlink'
     | 'InsertBookmark' | 'InsertElements' | 'DeleteBookmark'
-    | 'Underline' | 'FontColor' | 'InsertInline' | 'RemoveHyperlink'
+    | 'FontColor' | 'InsertInline' | 'RemoveHyperlink'
     | 'AutoFormatHyperlink'
     | 'TextAlignment'
     | 'LeftIndent'
     | 'AfterSpacing'
     | 'BeforeSpacing'
     | 'RightIndent'
-    | 'LeftIndent'
     | 'FirstLineIndent'
     | 'LineSpacing'
     | 'LineSpacingType'
-    | 'TextAlignment'
     | 'ListFormat'
     | 'ParagraphFormat'
     | 'SectionFormat'
@@ -937,7 +935,6 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
     | 'DeleteColumn'
     | 'InsertColumnLeft'
     | 'InsertColumnRight'
-    | 'Paste'
     | 'TableFormat'
     | 'RowFormat'
     | 'CellFormat'
@@ -953,7 +950,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
     'PageWidth' | 'LeftMargin' | 'RightMargin' | 'TopMargin' | 'BottomMargin' | 'DefaultCellSpacing'
     | 'ListCharacterFormat' | 'ContinueNumbering' | 'RestartNumbering' | 'ListSelect' | 'Shading' | 'Borders' | 'TOC' | 'StyleName'
     | 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
-    | 'ParagraphBidi'|'TableBidi';
+    | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange';
 export type BiDirectionalOverride =
     'None' |
     //Left to Right
@@ -968,3 +965,18 @@ export type AutoFitType =
     'FitToWindow' |
     /// Fit the contents respect to fixed column width.
     'FixedColumnWidth';
+
+/**
+ * Specifies the type of protection
+ * @private
+ */
+export type ProtectionType =
+    /// Do not apply protection to the document.
+    'NoProtection' |
+    /// Allow read-only access to the document.
+    'ReadOnly';
+
+export type PasteOptions =
+    'KeepSourceFormatting' |
+    'MergeWithExistingFormatting' |
+    'KeepTextOnly';

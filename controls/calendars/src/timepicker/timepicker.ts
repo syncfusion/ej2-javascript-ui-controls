@@ -34,6 +34,7 @@ const ANIMATIONDURATION: number = 50;
 const OVERFLOW: string = 'e-time-overflow';
 const OFFSETVAL: number = 4;
 const EDITABLE: string = 'e-non-edit';
+const wrapperAttributes: string[] = ['title', 'class', 'style'];
 
 
 export interface ChangeEventArgs {
@@ -181,6 +182,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private modal: HTMLElement;
     private invalidValueString: string = null;
     protected keyConfigure: { [key: string]: string };
+    private timeOptions : TimePickerModel;
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
      * @default null
@@ -225,6 +227,13 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      */
     @Property(false)
     public readonly: boolean;
+    /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string; };
     /**
      * Specifies the placeholder text to be floated.
      * Possible values are:
@@ -320,6 +329,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Triggers when the value is changed.
      * @event  
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -327,6 +337,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Triggers when the component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -334,36 +345,42 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Triggers when the component is destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers when the popup is opened.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public open: EmitType<PopupEventArgs>;
     /**
      * Triggers while rendering the each popup list item.
      * @event
+     * @blazorProperty 'OnItemRender'
      */
     @Event()
     public itemRender: EmitType<ItemEventArgs>;
     /**
      * Triggers when the popup is closed.
      * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public close: EmitType<PopupEventArgs>;
     /**
      * Triggers when the control loses the focus.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<BlurEventArgs>;
     /**
      * Triggers when the control gets focused.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<FocusEventArgs>;
@@ -374,6 +391,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      */
     constructor(options?: TimePickerModel, element?: string | HTMLInputElement) {
         super(options, element);
+        this.timeOptions  = options;
     }
     /**
      * Initialize the event handler
@@ -413,6 +431,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     protected render(): void {
         this.initialize();
         this.createInputElement();
+        this.updateHtmlAttributeToWrapper();
         this.setTimeAllowEdit();
         this.setEnable();
         this.validateInterval();
@@ -485,7 +504,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.setProperties({ min: this.checkDateValue(new Date(this.checkInValue(this.min))) }, true);
         this.setProperties({ max: this.checkDateValue(new Date(this.checkInValue(this.max))) }, true);
         if (this.angularTag !== null) { this.validationAttribute(this.element, this.inputElement); }
-        this.checkAttributes(); //check the input element attributes
+        this.updateHtmlAttributeToElement();
+        this.checkAttributes(true); //check the input element attributes
         let localeText: { placeholder: string } = { placeholder: this.placeholder };
         this.l10n = new L10n('timepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -754,6 +774,22 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         }
         return null;
+    }
+
+    private updateHtmlAttributeToWrapper(): void {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttributes.indexOf(key) > -1 ) {
+                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    }
+
+    private updateHtmlAttributeToElement(): void {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttributes.indexOf(key) < 0 ) {
+                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
     }
 
     private removeErrorClass(): void {
@@ -1072,26 +1108,31 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             };
 
             removeClass([document.body], OVERFLOW);
-            this.trigger('close', args);
-            if (!args.cancel) {
-                let animModel: AnimationModel = {
-                    name: 'FadeOut',
-                    duration: ANIMATIONDURATION,
-                    delay: delay ? delay : 0
-                };
-                this.popupObj.hide(new Animation(animModel));
-                removeClass([this.inputWrapper.container], [ICONANIMATION]);
-                attributes(this.inputElement, { 'aria-expanded': 'false' });
-                EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
+            this.trigger('close', args, (args: PopupEventArgs) => {
+                if (!args.cancel) {
+                    let animModel: AnimationModel = {
+                        name: 'FadeOut',
+                        duration: ANIMATIONDURATION,
+                        delay: delay ? delay : 0
+                    };
+                    this.popupObj.hide(new Animation(animModel));
+                    removeClass([this.inputWrapper.container], [ICONANIMATION]);
+                    attributes(this.inputElement, { 'aria-expanded': 'false' });
+                    EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
+                }
+                if (Browser.isDevice && this.modal) {
+                    this.modal.style.display = 'none';
+                    this.modal.outerHTML = '';
+                    this.modal = null;
+                }
+                if (Browser.isDevice && this.allowEdit && !this.readonly) {
+                    this.inputElement.removeAttribute('readonly');
+                }
+            });
+        } else {
+            if (Browser.isDevice && this.allowEdit && !this.readonly) {
+                this.inputElement.removeAttribute('readonly');
             }
-            if (Browser.isDevice && this.modal) {
-                this.modal.style.display = 'none';
-                this.modal.outerHTML = '';
-                this.modal = null;
-            }
-        }
-        if (Browser.isDevice && this.allowEdit && !this.readonly) {
-            this.inputElement.removeAttribute('readonly');
         }
     }
     private checkValueChange(event: KeyboardEventArgs | FocusEvent | MouseEvent, isNavigation: boolean): void {
@@ -1323,22 +1364,30 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.popupObj.dataBind();
         }
     }
-    protected checkAttributes(): void {
+    protected checkAttributes(isDynamic: boolean): void {
         let attributes: string[] = ['step', 'disabled', 'readonly', 'style', 'name', 'value', 'min', 'max', 'placeholder'];
         let value: Date;
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
-                        let enabled: boolean = isNullOrUndefined(this.inputElement.getAttribute(prop));
-                        this.setProperties({ enabled: enabled }, true);
-                        break;
-                    case 'readonly':
-                        let readonly: boolean = !isNullOrUndefined(this.inputElement.getAttribute(prop));
-                        this.setProperties({ readonly: readonly }, true);
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['enabled'] === undefined)) || !isDynamic) {
+                            let enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' || this.inputElement.getAttribute(prop) === '' ||
+                                this.inputElement.getAttribute(prop) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, isDynamic);
+                        }
                         break;
                     case 'style':
                         this.inputStyle = this.inputElement.getAttribute(prop);
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['readonly'] === undefined)) || !isDynamic) {
+                            let readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' || this.inputElement.getAttribute(prop) === '' ||
+                                this.inputElement.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, isDynamic);
+                        }
                         break;
                     case 'name':
                         this.inputElement.setAttribute('name', this.inputElement.getAttribute(prop));
@@ -1347,25 +1396,38 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         this.step = parseInt(this.inputElement.getAttribute(prop), 10);
                         break;
                     case 'placeholder':
-                        this.placeholder = this.inputElement.getAttribute(prop);
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        }
                         break;
                     case 'min':
-                        value = new Date(this.inputElement.getAttribute(prop));
-                        if (!isNullOrUndefined(this.checkDateValue(value))) {
-                            this.setProperties({ min: value }, true);
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                this.setProperties({ min: value }, isDynamic);
+                            }
                         }
                         break;
                     case 'max':
-                        value = new Date(this.inputElement.getAttribute(prop));
-                        if (!isNullOrUndefined(this.checkDateValue(value))) {
-                            this.setProperties({ max: value }, true);
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                this.setProperties({ max: value }, isDynamic);
+                            }
                         }
                         break;
                     case 'value':
-                        value = new Date(this.inputElement.getAttribute(prop));
-                        if (!isNullOrUndefined(this.checkDateValue(value))) {
-                            this.initValue = value;
-                            this.updateInput(false, this.initValue);
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                this.initValue = value;
+                                this.updateInput(false, this.initValue);
+                                this.setProperties({ value: value }, isDynamic);
+                            }
                         }
                         break;
                 }
@@ -1771,13 +1833,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     element: args.item as HTMLElement,
                     text: args.text, value: this.getDateObject(args.text), isDisabled: false
                 };
-                this.trigger('itemRender', eventArgs);
-                if (eventArgs.isDisabled) {
-                    eventArgs.element.classList.add(DISABLED);
-                }
-                if (eventArgs.element.classList.contains(DISABLED)) {
-                    this.disableItemCollection.push(eventArgs.element.getAttribute('data-value'));
-                }
+                this.trigger('itemRender', eventArgs, (eventArgs: ItemEventArgs) => {
+                    if (eventArgs.isDisabled) {
+                        eventArgs.element.classList.add(DISABLED);
+                    }
+                    if (eventArgs.element.classList.contains(DISABLED)) {
+                        this.disableItemCollection.push(eventArgs.element.getAttribute('data-value'));
+                    }
+                });
             }
         };
         this.listTag = ListBase.createList(this.createElement, listItems, listBaseOptions, true);
@@ -1935,34 +1998,37 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 name: 'open',
                 appendTo: document.body
             };
-            this.trigger('open', this.openPopupEventArgs);
-            if (!this.openPopupEventArgs.cancel && !this.inputWrapper.buttons[0].classList.contains(DISABLED)) {
-                this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
-                this.popupAlignment(this.openPopupEventArgs);
-                this.setScrollPosition();
-                if (!Browser.isDevice) {
-                    this.inputElement.focus();
-                }
-                let openAnimation: AnimationModel = {
-                    name: 'FadeIn',
-                    duration: ANIMATIONDURATION,
-                };
-                this.popupObj.refreshPosition(this.anchor);
-                if (this.zIndex === 1000) {
-                    this.popupObj.show(new Animation(openAnimation), this.element);
+            let eventArgs: PopupEventArgs = this.openPopupEventArgs;
+            this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
+                this.openPopupEventArgs = eventArgs;
+                if (!this.openPopupEventArgs.cancel && !this.inputWrapper.buttons[0].classList.contains(DISABLED)) {
+                    this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
+                    this.popupAlignment(this.openPopupEventArgs);
+                    this.setScrollPosition();
+                    if (!Browser.isDevice) {
+                        this.inputElement.focus();
+                    }
+                    let openAnimation: AnimationModel = {
+                        name: 'FadeIn',
+                        duration: ANIMATIONDURATION,
+                    };
+                    this.popupObj.refreshPosition(this.anchor);
+                    if (this.zIndex === 1000) {
+                        this.popupObj.show(new Animation(openAnimation), this.element);
+                    } else {
+                        this.popupObj.show(new Animation(openAnimation), null);
+                    }
+                    this.setActiveDescendant();
+                    attributes(this.inputElement, { 'aria-expanded': 'true' });
+                    addClass([this.inputWrapper.container], FOCUS);
+                    EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
                 } else {
-                    this.popupObj.show(new Animation(openAnimation), null);
+                    this.popupObj.destroy();
+                    this.popupWrapper = this.listTag = undefined;
+                    this.liCollections = this.timeCollections = this.disableItemCollection = [];
+                    this.popupObj = null;
                 }
-                this.setActiveDescendant();
-                attributes(this.inputElement, { 'aria-expanded': 'true' });
-                addClass([this.inputWrapper.container], FOCUS);
-                EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
-            } else {
-                this.popupObj.destroy();
-                this.popupWrapper = this.listTag = undefined;
-                this.liCollections = this.timeCollections = this.disableItemCollection = [];
-                this.popupObj = null;
-            }
+            });
         }
     }
     private formatValues(type: string | number): string {
@@ -2077,6 +2143,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     this.setZIndex();
+                    break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToElement();
+                    this.updateHtmlAttributeToWrapper();
+                    this.checkAttributes(false);
                     break;
                 case 'min':
                 case 'max':

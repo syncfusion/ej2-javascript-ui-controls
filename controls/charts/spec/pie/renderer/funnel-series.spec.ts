@@ -82,6 +82,21 @@ let data: object[] = [{ x: 'Renewed', y: 18.2, text: '18.20%' },
 { x: 'Downloaded', y: 76.8, text: '76.8%' },
 { x: 'Visited', y: 100, text: '100%' }];
 
+let dataPoints: object[] = [ { 'x': 'USA', y: 46, text: 'United States of America: 46' },
+{ 'x': 'China', y: 26, text: 'China: 26' },
+{ 'x': 'Russia', y: 19, text: 'Russia: 19' },
+{ 'x': 'Germany', y: 17, text: 'Germany: 17' },
+{ 'x': 'Japan', y: 12, text: 'Japan: 12' },
+{ 'x': 'France', y: 10, text: 'France: 10' },
+{ 'x': 'South Korea', y: 9, text: 'South Korea: 9' },
+{ 'x': 'Great Britain', y: 27, text: 'Great Britain: 27' },
+{ 'x': 'Australia', y: 8, text: 'Australia: 8' },
+{ 'x': 'Netherlands', y: 8, text: 'Netherlands: 8' },
+{ 'x': 'NewZealand', y: 4, text: 'New Zealand: 4' },
+{ 'x': 'Uzbekistan', y: 4, text: 'Uzbekistan: 4' },      
+{ 'x': 'Switzerland', y: 3, text: 'Switzerland: 3' },
+{ 'x': 'South Africa', y: 2, text: 'South Africa: 2' }];
+
 describe('Accumulation Chart Control', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -566,7 +581,6 @@ describe('Funnel Series checking', () => {
 
     it('Checking overlapped labels for outside position', (done: Function) => {
         chart.loaded = () => {
-            //debugger
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
             expect(group.getAttribute('x')).toBe('535');
             expect(group.getAttribute('y') === '264.8065916398714' ||
@@ -789,6 +803,87 @@ describe('Funnel Series checking', () => {
         chart.textRender = (args : IAccTextRenderEventArgs) : void => {
             args.text = args.point.x + ' : ' + args.text;
         };
+        chart.loaded = loaded;
+        chart.refresh();
+    });
+    it('Checking overlapped labels are placed at outside left position for position as inside',(done:Function) =>{
+        loaded = (args: Object): void => {
+            let group: Element = getElement('ej2container_datalabel_Series_0_text_6');
+            expect(group.getAttribute('x') === '47.20472756410254'|| group.getAttribute('x') === '478.79527243589746').toBe(true);
+            expect(group.getAttribute('y') === '202.79615384615386' ||
+                group.getAttribute('y') === '180.75128205128203').toBe(true);
+            done();
+        };
+        chart.series[0].dataSource = dataPoints;
+        chart.series[0].groupTo = 'null';
+        chart.series[0].width = '50%';
+        chart.series[0].height = '50%';
+        chart.series[0].neckWidth = '15%';
+        chart.series[0].neckHeight = '18%';
+        chart.loaded = loaded;
+        chart.refresh();
+    });
+    it('Checking data label with Legend position',(done:Function) =>{
+        loaded = (args: Object): void => {
+            let group: Element = getElement('ej2container_datalabel_Series_0_text_11');
+            expect(group.getAttribute('x') === '116.5'|| group.getAttribute('x') === '548.2884615384615').toBe(true);
+            expect(group.getAttribute('y') === '115.57051282051282' ||
+                group.getAttribute('y') === '84.35897435897436').toBe(true);
+            done();
+        };
+        chart.legendSettings.position = 'Left';
+        chart.loaded = loaded;
+        chart.refresh();
+    });
+    it('Check the default connector line at left outside', (done: Function) => {
+        chart.loaded = () => {
+            let group: Element = getElement('ej2container_datalabel_Series_0_connector_11');
+            expect(group.getAttribute('fill')).toBe('transparent');
+            expect(group.getAttribute('stroke')).toBe('#404041');
+            expect(group.getAttribute('stroke-width')).toBe('1');
+            expect(group.getAttribute('stroke-dasharray')).toBe('');
+            done();
+
+
+        };
+        chart.refresh();
+    });
+    it('Datalabel trimmed label mouse move tooltip', () => {
+        let datalabel: Element;
+        datalabel = getElement('ej2container_datalabel_Series_0_text_10');
+        trigger.mousemoveEvent(datalabel, 0, 0, 520, 210);
+        let tooltip: Element = getElement('ej2container_EJ2_Datalabel_Tooltip');
+        expect(tooltip).not.toBe(null);
+        expect(tooltip.textContent).toBe('NewZealand : 4');
+        removeElement('ej2container_EJ2_Datalabel_Tooltip');
+    });
+    it('Checking overlapped labels are placed at outside left position for position as outside ',(done:Function) =>{
+        loaded = (args: Object): void => {
+            let group: Element = getElement('ej2container_datalabel_Series_0_text_6');
+            expect(group.getAttribute('x') === '448'|| group.getAttribute('x') === '478.79527243589746').toBe(true);
+            expect(group.getAttribute('y') === '215.4' ||
+                group.getAttribute('y') === '209.09846153846155').toBe(true);
+            done();
+        };
+        chart.series[0].dataLabel.position = 'Outside';
+        chart.legendSettings.position = 'Top';
+        chart.height = '450';
+        chart.series[0].dataLabel.name = 'text';
+        chart.title = 'Website Visitors';
+        chart.loaded = loaded;
+        chart.refresh();
+    });
+    it('Checking Funnel default explode for outside left position',(done:Function) => {
+        loaded = (args: Object): void =>{
+            let value: Element = getElement('ej2container_Series_0_Point_4');
+            trigger.clickEvent(value);
+            expect(value.getAttribute('transform') == 'translate(-25, 0)' || value.getAttribute('transform') == 'translate(25, 0)').toBe(true);
+            done();  
+        };
+        chart.series[0].explode = true;
+        chart.series[0].explodeIndex = null;
+        chart.series[0].explodeOffset = '25px'
+        chart.enableAnimation = false;
         chart.loaded = loaded;
         chart.refresh();
     });

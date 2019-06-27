@@ -125,10 +125,13 @@ export class HiloOpenCloseSeries extends ColumnBase {
             series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index,
             argsData.fill, argsData.border.width, argsData.fill, series.opacity, series.dashArray, direction);
         pathAnimation(getElement(options.id), direction, series.chart.redraw);
-        let element: HTMLElement = series.chart.renderer.drawPath(options) as HTMLElement;
+        let element: HTMLElement =
+            series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
         element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
-        series.seriesElement.appendChild(element);
+        if (!series.chart.enableCanvas) {
+            series.seriesElement.appendChild(element);
+        }
     }
 
     /**

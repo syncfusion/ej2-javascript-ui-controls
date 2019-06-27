@@ -3,11 +3,12 @@ import { WidthType, WColor, AutoFitType } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
 import { LayoutViewer } from './viewer';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import { ElementInfo, HelperMethods, Point, WidthInfo } from '../editor/editor-helper';
 import { HeaderFooterType, TabLeader } from '../../base/types';
-
+import { TextPosition } from '..';
+import { ChartComponent } from '@syncfusion/ej2-office-chart';
 /** 
  * @private
  */
@@ -841,6 +842,10 @@ export class ParagraphWidget extends BlockWidget {
     /**
      * @private
      */
+    public isChangeDetected: boolean = false;
+    /**
+     * @private
+     */
     get isEndsWithPageBreak(): boolean {
         if (this.childWidgets.length > 0) {
             return (this.lastChild as LineWidget).isEndsWithPageBreak;
@@ -876,6 +881,8 @@ export class ParagraphWidget extends BlockWidget {
                     continue;
                 }
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
+                    || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
+                    || inline instanceof ChartElementBox
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                     return false;
                 }
@@ -902,7 +909,8 @@ export class ParagraphWidget extends BlockWidget {
                     }
                     if (!isStarted && (inline instanceof TextElementBox || inline instanceof ImageElementBox
                         || inline instanceof BookmarkElementBox || inline instanceof FieldElementBox
-                        && HelperMethods.isLinkedFieldCharacter(inline as FieldElementBox))) {
+                        && HelperMethods.isLinkedFieldCharacter(inline as FieldElementBox))
+                        || inline instanceof ChartElementBox) {
                         isStarted = true;
                     }
 
@@ -1895,11 +1903,10 @@ export class TableWidget extends BlockWidget {
      * @private
      */
     public insertTableRowsInternal(tableRows: TableRowWidget[], startIndex: number): void {
-        for (let i: number = 0; i < tableRows.length; i++) {
+        for (let i: number = tableRows.length - 1; i >= 0; i--) {
             let row: TableRowWidget = tableRows.splice(i, 1)[0] as TableRowWidget;
             row.containerWidget = this;
             this.childWidgets.splice(startIndex, 0, row);
-            i--;
         }
         this.updateRowIndex(startIndex);
         this.isGridUpdated = false;
@@ -3337,7 +3344,8 @@ export class LineWidget implements IWidget {
             if (inlineElement instanceof ListTextElementBox) {
                 continue;
             }
-            if (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
+            if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
+                || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
                 || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
                     && HelperMethods.isLinkedFieldCharacter((inlineElement as FieldElementBox)))) {
                 startOffset = count + inlineElement.length;
@@ -3349,7 +3357,7 @@ export class LineWidget implements IWidget {
     /**
      * @private
      */
-    public getInline(offset: number, indexInInline: number, bidi?: boolean): ElementInfo {
+    public getInline(offset: number, indexInInline: number, bidi?: boolean, isInsert?: boolean): ElementInfo {
         bidi = isNullOrUndefined(bidi) ? this.paragraph.bidi : bidi;
         let inlineElement: ElementBox = undefined;
         let count: number = 0;
@@ -3370,12 +3378,27 @@ export class LineWidget implements IWidget {
                 continue;
             }
             if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                || inlineElement instanceof BookmarkElementBox
+                || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
+                || inlineElement instanceof EditRangeStartElementBox
                 || inlineElement instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inlineElement as FieldElementBox))) {
                 isStarted = true;
             }
             if (isStarted && offset <= count + inlineElement.length) {
-                indexInInline = (offset - count);
+                // if (inlineElement instanceof BookmarkElementBox) {
+                //     offset += inlineElement.length;
+                //     count += inlineElement.length;
+                //     continue;
+                // }
+                // tslint:disable-next-line:max-line-length
+                if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && isInsert)) {
+                    let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
+                    inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
+                    indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+                    return { 'element': inlineElement, 'index': indexInInline };
+                }
+                else {
+                    indexInInline = (offset - count);
+                }
                 return { 'element': inlineElement, 'index': indexInInline };
             }
             count += inlineElement.length;
@@ -3384,6 +3407,17 @@ export class LineWidget implements IWidget {
             indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
         }
         return { 'element': inlineElement, 'index': indexInInline };
+    }
+    /**
+     * Method to retrieve next element
+     * @param line 
+     * @param index 
+     */
+    private getNextTextElement(line: LineWidget, index: number): ElementBox {
+        if (index < line.children.length - 1 && line.children[index] as TextElementBox) {
+            return line.children[index];
+        }
+        return null;
     }
     /**
      * @private
@@ -3473,7 +3507,23 @@ export abstract class ElementBox {
      */
 
     public isRightToLeft: boolean = false;
+    /**
+     * @private
+     */
+    public canTrigger: boolean = false;
 
+    /**
+     * @private
+     */
+    public ischangeDetected: boolean = false;
+     /**
+      * @private
+      */
+    public isVisible: boolean = false;
+    /**
+     * @private
+     */
+    public isSpellChecked?: boolean = false;
     /**
      * @private
      */
@@ -3754,6 +3804,10 @@ export class FieldElementBox extends ElementBox {
     /**
      * @private
      */
+    public fieldCodeType: string = '';
+    /**
+     * @private
+     */
     public hasFieldEnd: boolean = false;
     private fieldBeginInternal: FieldElementBox = undefined;
     private fieldSeparatorInternal: FieldElementBox = undefined;
@@ -3798,6 +3852,7 @@ export class FieldElementBox extends ElementBox {
         }
         field.width = this.width;
         field.height = this.height;
+        field.fieldCodeType = this.fieldCodeType;
         return field;
     }
     /**
@@ -3824,8 +3879,21 @@ export class TextElementBox extends ElementBox {
      * @private
      */
     public text: string = '';
+    /**
+     * @private
+     */
+    public errorCollection?: ErrorTextElementBox[];
+    /**
+     * @private
+     */
+    public ignoreOnceItems?: string[] = [];
+    /**
+     * @private
+     */
+    public istextCombined?: boolean = false;
     constructor() {
         super();
+        this.errorCollection = [];
     }
     /**
      * @private
@@ -3843,6 +3911,7 @@ export class TextElementBox extends ElementBox {
         if (this.margin) {
             span.margin = this.margin.clone();
         }
+        span.baselineOffset = this.baselineOffset;
         span.width = this.width;
         span.height = this.height;
         return span;
@@ -3853,6 +3922,34 @@ export class TextElementBox extends ElementBox {
     public destroy(): void {
         this.text = undefined;
         super.destroy();
+    }
+}
+
+/** 
+ * @private
+ */
+export class ErrorTextElementBox extends TextElementBox {
+    private startIn: TextPosition = undefined;
+    private endIn: TextPosition = undefined;
+    get start(): TextPosition {
+        return this.startIn;
+    }
+    set start(value: TextPosition) {
+        this.startIn = value;
+    }
+    get end(): TextPosition {
+        return this.endIn;
+    }
+    set end(value: TextPosition) {
+        this.endIn = value;
+    }
+
+    constructor() {
+        super();
+    }
+    public destroy(): void {
+        this.start = undefined;
+        this.end = undefined;
     }
 }
 /** 
@@ -4137,6 +4234,1692 @@ export class ListTextElementBox extends ElementBox {
     public destroy(): void {
         this.text = undefined;
         super.destroy();
+    }
+}
+/** 
+ * @private
+ */
+export class EditRangeEndElementBox extends ElementBox {
+    /**
+     * @private
+     */
+    public editRangeStart: EditRangeStartElementBox = undefined;
+    public editRangeId: number = -1;
+
+    constructor() {
+        super();
+    }
+    /**
+     * @private
+     */
+    public getLength(): number {
+        return 1;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.editRangeStart = undefined;
+    }
+
+
+    /**
+     * @private
+     */
+    public clone(): EditRangeEndElementBox {
+        let end: EditRangeEndElementBox = new EditRangeEndElementBox();
+        end.editRangeStart = this.editRangeStart;
+        end.editRangeId = this.editRangeId;
+        return end;
+    }
+}
+/** 
+ * @private
+ */
+export class EditRangeStartElementBox extends ElementBox {
+    /**
+     * @private
+     */
+    public columnFirst: number = -1;
+    /**
+     * @private
+     */
+    public columnLast: number = -1;
+    /**
+     * @private
+     */
+    public user: string = '';
+    /**
+     * @private
+     */
+    public group: string = '';
+    /**
+     * @private
+     */
+    public editRangeEnd: EditRangeEndElementBox;
+    public editRangeId: number = -1;
+
+    constructor() {
+        super();
+    }
+    /**
+     * @private
+     */
+    public getLength(): number {
+        return 1;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.user = undefined;
+        this.columnFirst = undefined;
+        this.columnLast = undefined;
+    }
+    /**
+     * @private
+     */
+    public clone(): EditRangeStartElementBox {
+        let start: EditRangeStartElementBox = new EditRangeStartElementBox();
+        start.columnFirst = this.columnFirst;
+        start.columnLast = this.columnLast;
+        start.user = this.user;
+        start.group = this.group;
+        start.editRangeEnd = this.editRangeEnd;
+        start.editRangeId = this.editRangeId;
+        return start;
+    }
+}
+/** 
+ * @private
+ */
+export class ChartElementBox extends ImageElementBox {
+    /**
+     * @private
+     */
+    private div: HTMLDivElement;
+    /**
+     * @private
+     */
+    private officeChartInternal: ChartComponent;
+    /**
+     * @private
+     */
+    private chartTitle: string = '';
+    /**
+     * @private
+     */
+    private chartType: string = '';
+    /**
+     * @private
+     */
+    private gapWidth: number;
+    /**
+     * @private
+     */
+    private overlap: number;
+    /**
+     * @private
+     */
+    private chartElement: HTMLDivElement = undefined;
+    /**
+     * @private
+     */
+    public chartArea: ChartArea;
+    /**
+     * @private
+     */
+    public chartPlotArea: ChartArea;
+    /**
+     * @private
+     */
+    public chartCategory: ChartCategory[] = [];
+    /**
+     * @private
+     */
+    public chartSeries: ChartSeries[] = [];
+    /**
+     * @private
+     */
+    public chartTitleArea: ChartTitleArea;
+    /**
+     * @private
+     */
+    public chartLegend: ChartLegend;
+    /**
+     * @private
+     */
+    public chartPrimaryCategoryAxis: ChartCategoryAxis;
+    /**
+     * @private
+     */
+    public chartPrimaryValueAxis: ChartCategoryAxis;
+    /**
+     * @private
+     */
+    public chartDataTable: ChartDataTable;
+    /**
+     * @private
+     */
+    public getLength(): number {
+        return 1;
+    }
+    /**
+     * @private
+     */
+    get title(): string {
+        return this.chartTitle;
+    }
+    /**
+     * @private
+     */
+    set title(value: string) {
+        this.chartTitle = value;
+    }
+    /**
+     * @private
+     */
+    get type(): string {
+        return this.chartType;
+    }
+    /**
+     * @private
+     */
+    set type(value: string) {
+        this.chartType = value;
+    }
+    /**
+     * @private
+     */
+    get chartGapWidth(): number {
+        return this.gapWidth;
+    }
+    /**
+     * @private
+     */
+    set chartGapWidth(value: number) {
+        this.gapWidth = value;
+    }
+    /**
+     * @private
+     */
+    get chartOverlap(): number {
+        return this.overlap;
+    }
+    /**
+     * @private
+     */
+    set chartOverlap(value: number) {
+        this.overlap = value;
+    }
+    /**
+     * @private
+     */
+    get targetElement(): HTMLDivElement {
+        if (isNullOrUndefined(this.div)) {
+            this.div = createElement('div') as HTMLDivElement;
+        }
+        return this.div;
+    }
+    /**
+     * @private
+     */
+    get officeChart(): ChartComponent {
+        return this.officeChartInternal;
+    }
+    /**
+     * @private
+     */
+    set officeChart(value: ChartComponent) {
+        if (value) {
+            this.officeChartInternal = value;
+            this.officeChartInternal.chart.loaded = this.onChartLoaded.bind(this);
+        }
+    }
+    /**
+     * @private
+     */
+    constructor() {
+        super();
+        this.chartArea = new ChartArea();
+        this.chartPlotArea = new ChartArea();
+        this.chartTitleArea = new ChartTitleArea();
+        this.chartLegend = new ChartLegend();
+        this.chartPrimaryCategoryAxis = new ChartCategoryAxis();
+        this.chartPrimaryValueAxis = new ChartCategoryAxis();
+        this.chartDataTable = new ChartDataTable();
+    }
+
+    private onChartLoaded(): void {
+        this.officeChart.convertChartToImage(this.officeChart.chart, this.width, this.height).then((dataURL: string) => {
+            this.imageString = dataURL;
+        });
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartElementBox {
+        let chart: ChartElementBox = new ChartElementBox();
+        chart.chartTitle = this.chartTitle;
+        chart.chartType = this.chartType;
+        chart.height = this.height;
+        chart.width = this.width;
+        chart.gapWidth = this.gapWidth;
+        chart.overlap = this.overlap;
+        for (let i: number = 0; i < this.chartCategory.length; i++) {
+            let chartCategory: ChartCategory = (this.chartCategory[i] as ChartCategory).clone();
+            chart.chartCategory.push(chartCategory);
+        }
+        for (let i: number = 0; i < this.chartSeries.length; i++) {
+            let series: ChartSeries = (this.chartSeries[i] as ChartSeries).clone();
+            chart.chartSeries.push(series);
+        }
+        chart.chartArea = this.chartArea.clone();
+        chart.chartPlotArea = this.chartPlotArea.clone();
+        chart.chartLegend = this.chartLegend.clone();
+        chart.chartTitleArea = this.chartTitleArea.clone();
+        chart.chartPrimaryCategoryAxis = this.chartPrimaryCategoryAxis.clone();
+        chart.chartPrimaryValueAxis = this.chartPrimaryValueAxis.clone();
+        chart.chartDataTable = this.chartDataTable.clone();
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        super.destroy();
+        if (this.officeChartInternal) {
+            this.officeChartInternal.chart.loaded = undefined;
+            this.officeChartInternal.destroy();
+            this.officeChartInternal = undefined;
+        }
+        if (this.div) {
+            this.div = undefined;
+        }
+        this.chartTitle = undefined;
+        this.chartType = undefined;
+        this.chartArea = undefined;
+        this.chartPlotArea = undefined;
+        this.chartCategory = [];
+        this.chartSeries = [];
+        this.chartTitleArea = undefined;
+        this.chartLegend = undefined;
+        this.chartPrimaryCategoryAxis = undefined;
+        this.chartPrimaryValueAxis = undefined;
+        this.chartDataTable = undefined;
+        this.chartElement = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartArea {
+    /**
+     * @private
+     */
+    private foreColor: string;
+    /**
+     * @private
+     */
+    get chartForeColor(): string {
+        return this.foreColor;
+    }
+    /**
+     * @private
+     */
+    set chartForeColor(value: string) {
+        this.foreColor = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartArea {
+        let chart: ChartArea = new ChartArea();
+        chart.foreColor = this.foreColor;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.foreColor = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartCategory {
+    /**
+     * @private
+     */
+    private categoryXName: string = '';
+    /**
+     * @private
+     */
+    public chartData: ChartData[] = [];
+    /**
+     * @private
+     */
+    get xName(): string {
+        return this.categoryXName;
+    }
+    /**
+     * @private
+     */
+    set xName(value: string) {
+        this.categoryXName = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartCategory {
+        let chart: ChartCategory = new ChartCategory();
+        chart.categoryXName = this.categoryXName;
+        for (let i: number = 0; i < this.chartData.length; i++) {
+            let chartData: ChartData = (this.chartData[i] as ChartData).clone();
+            chart.chartData.push(chartData);
+        }
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.categoryXName = undefined;
+        this.chartData = [];
+    }
+}
+/** 
+ * @private
+ */
+export class ChartData {
+    private yValue: number;
+    private xValue: number;
+    private size: number;
+    /**
+     * @private
+     */
+    get yAxisValue(): number {
+        return this.yValue;
+    }
+    /**
+     * @private
+     */
+    set yAxisValue(value: number) {
+        this.yValue = value;
+    }
+    /**
+     * @private
+     */
+    get xAxisValue(): number {
+        return this.xValue;
+    }
+    /**
+     * @private
+     */
+    set xAxisValue(value: number) {
+        this.xValue = value;
+    }
+    /**
+     * @private
+     */
+    get bubbleSize(): number {
+        return this.size;
+    }
+    /**
+     * @private
+     */
+    set bubbleSize(value: number) {
+        this.size = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartData {
+        let chart: ChartData = new ChartData();
+        chart.yValue = this.yValue;
+        chart.xValue = this.xValue;
+        chart.size = this.size;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.xValue = undefined;
+        this.yValue = undefined;
+        this.size = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartLegend {
+    /**
+     * @private
+     */
+    private legendPostion: string;
+    /**
+     * @private
+     */
+    public chartTitleArea: ChartTitleArea;
+    /**
+     * @private
+     */
+    get chartLegendPostion(): string {
+        return this.legendPostion;
+    }
+    /**
+     * @private
+     */
+    set chartLegendPostion(value: string) {
+        this.legendPostion = value;
+    }
+    /**
+     * @private
+     */
+    constructor() {
+        this.chartTitleArea = new ChartTitleArea();
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartLegend {
+        let chart: ChartLegend = new ChartLegend();
+        chart.legendPostion = this.legendPostion;
+        chart.chartTitleArea = this.chartTitleArea.clone();
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.legendPostion = undefined;
+        this.chartTitleArea = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartSeries {
+    /**
+     * @private
+     */
+    public chartDataFormat: ChartDataFormat[] = [];
+    /**
+     * @private
+     */
+    public errorBar: ChartErrorBar;
+    /**
+     * @private
+     */
+    public seriesFormat: ChartSeriesFormat;
+    /**
+     * @private
+     */
+    public trendLines: ChartTrendLines[] = [];
+    /**
+     * @private
+     */
+    private name: string;
+    /**
+     * @private
+     */
+    private sliceAngle: number;
+    /**
+     * @private
+     */
+    private holeSize: number;
+    /**
+     * @private
+     */
+    public dataLabels: ChartDataLabels;
+    /**
+     * @private
+     */
+    get seriesName(): string {
+        return this.name;
+    }
+    /**
+     * @private
+     */
+    set seriesName(value: string) {
+        this.name = value;
+    }
+    /**
+     * @private
+     */
+    get firstSliceAngle(): number {
+        return this.sliceAngle;
+    }
+    /**
+     * @private
+     */
+    set firstSliceAngle(value: number) {
+        this.sliceAngle = value;
+    }
+    /**
+     * @private
+     */
+    get doughnutHoleSize(): number {
+        return this.holeSize;
+    }
+    /**
+     * @private
+     */
+    set doughnutHoleSize(value: number) {
+        this.holeSize = value;
+    }
+    constructor() {
+        this.errorBar = new ChartErrorBar();
+        this.dataLabels = new ChartDataLabels();
+        this.seriesFormat = new ChartSeriesFormat();
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartSeries {
+        let chart: ChartSeries = new ChartSeries();
+        chart.name = this.name;
+        chart.sliceAngle = this.sliceAngle;
+        chart.holeSize = this.holeSize;
+        chart.errorBar = this.errorBar.clone();
+        chart.dataLabels = this.dataLabels.clone();
+        chart.seriesFormat = this.seriesFormat.clone();
+        for (let i: number = 0; i < this.chartDataFormat.length; i++) {
+            let format: ChartDataFormat = (this.chartDataFormat[i].clone());
+            chart.chartDataFormat.push(format);
+        }
+        for (let i: number = 0; i < this.trendLines.length; i++) {
+            let trendLine: ChartTrendLines = (this.trendLines[i].clone());
+            chart.trendLines.push(trendLine);
+        }
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.name = undefined;
+        this.errorBar = undefined;
+        this.trendLines = undefined;
+        this.chartDataFormat = [];
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartErrorBar {
+    /**
+     * @private
+     */
+    private type: string;
+    /**
+     * @private
+     */
+    private direction: string;
+    /**
+     * @private
+     */
+    private errorValue: number;
+    /**
+     * @private
+     */
+    private endStyle: string;
+    /**
+     * @private
+     */
+    get errorType(): string {
+        return this.type;
+    }
+    /**
+     * @private
+     */
+    set errorType(value: string) {
+        this.type = value;
+    }
+    /**
+     * @private
+     */
+    get errorDirection(): string {
+        return this.direction;
+    }
+    /**
+     * @private
+     */
+    set errorDirection(value: string) {
+        this.direction = value;
+    }
+    /**
+     * @private
+     */
+    get errorEndStyle(): string {
+        return this.endStyle;
+    }
+    /**
+     * @private
+     */
+    set errorEndStyle(value: string) {
+        this.endStyle = value;
+    }
+    get numberValue(): number {
+        return this.errorValue;
+    }
+    /**
+     * @private
+     */
+    set numberValue(value: number) {
+        this.errorValue = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartErrorBar {
+        let chart: ChartErrorBar = new ChartErrorBar();
+        chart.type = this.type;
+        chart.errorDirection = this.errorDirection;
+        chart.endStyle = this.endStyle;
+        chart.errorValue = this.errorValue;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.type = undefined;
+        this.errorDirection = undefined;
+        this.endStyle = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartSeriesFormat {
+    /**
+     * @private
+     */
+    private style: string;
+    /**
+     * @private
+     */
+    private color: string;
+    /**
+     * @private
+     */
+    private size: number;
+    /**
+     * @private
+     */
+    get markerStyle(): string {
+        return this.style;
+    }
+    /**
+     * @private
+     */
+    set markerStyle(value: string) {
+        this.style = value;
+    }
+    /**
+     * @private
+     */
+    get markerColor(): string {
+        return this.color;
+    }
+    /**
+     * @private
+     */
+    set markerColor(value: string) {
+        this.color = value;
+    }
+    /**
+     * @private
+     */
+    get numberValue(): number {
+        return this.size;
+    }
+    /**
+     * @private
+     */
+    set numberValue(value: number) {
+        this.size = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartSeriesFormat {
+        let chart: ChartSeriesFormat = new ChartSeriesFormat();
+        chart.style = this.style;
+        chart.color = this.color;
+        chart.size = this.size;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.style = undefined;
+        this.color = undefined;
+        this.size = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartDataLabels {
+    /**
+     * @private
+     */
+    private position: string;
+    /**
+     * @private
+     */
+    private name: string;
+    /**
+     * @private
+     */
+    private color: string;
+    /**
+     * @private
+     */
+    private size: number;
+    /**
+     * @private
+     */
+    private isLegend: boolean;
+    /**
+     * @private
+     */
+    private isBubble: boolean;
+    /**
+     * @private
+     */
+    private isCategory: boolean;
+    /**
+     * @private
+     */
+    private isSeries: boolean;
+    /**
+     * @private
+     */
+    private isValueEnabled: boolean;
+    /**
+     * @private
+     */
+    private isPercentageEnabled: boolean;
+    /**
+     * @private
+     */
+    private showLeaderLines: boolean;
+    /**
+     * @private
+     */
+    get labelPosition(): string {
+        return this.position;
+    }
+    /**
+     * @private
+     */
+    set labelPosition(value: string) {
+        this.position = value;
+    }
+    /**
+     * @private
+     */
+    get fontName(): string {
+        return this.name;
+    }
+    /**
+     * @private
+     */
+    set fontName(value: string) {
+        this.name = value;
+    }
+    /**
+     * @private
+     */
+    get fontColor(): string {
+        return this.color;
+    }
+    /**
+     * @private
+     */
+    set fontColor(value: string) {
+        this.color = value;
+    }
+    /**
+     * @private
+     */
+    get fontSize(): number {
+        return this.size;
+    }
+    /**
+     * @private
+     */
+    set fontSize(value: number) {
+        this.size = value;
+    }
+    /**
+     * @private
+     */
+    get isLegendKey(): boolean {
+        return this.isLegend;
+    }
+    /**
+     * @private
+     */
+    set isLegendKey(value: boolean) {
+        this.isLegend = value;
+    }
+    /**
+     * @private
+     */
+    get isBubbleSize(): boolean {
+        return this.isBubble;
+    }
+    /**
+     * @private
+     */
+    set isBubbleSize(value: boolean) {
+        this.isBubble = value;
+    }
+    /**
+     * @private
+     */
+    get isCategoryName(): boolean {
+        return this.isCategory;
+    }
+    /**
+     * @private
+     */
+    set isCategoryName(value: boolean) {
+        this.isCategory = value;
+    }
+    /**
+     * @private
+     */
+    get isSeriesName(): boolean {
+        return this.isSeries;
+    }
+    /**
+     * @private
+     */
+    set isSeriesName(value: boolean) {
+        this.isSeries = value;
+    }
+    /**
+     * @private
+     */
+    get isValue(): boolean {
+        return this.isValueEnabled;
+    }
+    /**
+     * @private
+     */
+    set isValue(value: boolean) {
+        this.isValueEnabled = value;
+    }
+    /**
+     * @private
+     */
+    get isPercentage(): boolean {
+        return this.isPercentageEnabled;
+    }
+    /**
+     * @private
+     */
+    set isPercentage(value: boolean) {
+        this.isPercentageEnabled = value;
+    }
+    /**
+     * @private
+     */
+    get isLeaderLines(): boolean {
+        return this.showLeaderLines;
+    }
+    /**
+     * @private
+     */
+    set isLeaderLines(value: boolean) {
+        this.showLeaderLines = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartDataLabels {
+        let chart: ChartDataLabels = new ChartDataLabels();
+        chart.position = this.position;
+        chart.name = this.name;
+        chart.color = this.color;
+        chart.size = this.size;
+        chart.isBubble = this.isBubble;
+        chart.isLegend = this.isLegend;
+        chart.isCategory = this.isCategory;
+        chart.isSeries = this.isSeries;
+        chart.isValueEnabled = this.isValueEnabled;
+        chart.isPercentageEnabled = this.isPercentageEnabled;
+        chart.showLeaderLines = this.showLeaderLines;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.position = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartTrendLines {
+    /**
+     * @private
+     */
+    private type: string;
+    /**
+     * @private
+     */
+    private name: string;
+    /**
+     * @private
+     */
+    private backward: number;
+    /**
+     * @private
+     */
+    private forward: number;
+    /**
+     * @private
+     */
+    private intercept: number;
+    /**
+     * @private
+     */
+    private displayRSquared: boolean;
+    /**
+     * @private
+     */
+    private displayEquation: boolean;
+    /**
+     * @private
+     */
+    get trendLineType(): string {
+        return this.type;
+    }
+    /**
+     * @private
+     */
+    set trendLineType(value: string) {
+        this.type = value;
+    }
+    /**
+     * @private
+     */
+    get trendLineName(): string {
+        return this.name;
+    }
+    /**
+     * @private
+     */
+    set trendLineName(value: string) {
+        this.name = value;
+    }
+    /**
+     * @private
+     */
+    get interceptValue(): number {
+        return this.intercept;
+    }
+    /**
+     * @private
+     */
+    set interceptValue(value: number) {
+        this.intercept = value;
+    }
+    /**
+     * @private
+     */
+    get forwardValue(): number {
+        return this.forward;
+    }
+    /**
+     * @private
+     */
+    set forwardValue(value: number) {
+        this.forward = value;
+    }
+    /**
+     * @private
+     */
+    get backwardValue(): number {
+        return this.backward;
+    }
+    /**
+     * @private
+     */
+    set backwardValue(value: number) {
+        this.backward = value;
+    }
+    /**
+     * @private
+     */
+    get isDisplayRSquared(): boolean {
+        return this.displayRSquared;
+    }
+    /**
+     * @private
+     */
+    set isDisplayRSquared(value: boolean) {
+        this.displayRSquared = value;
+    }
+    /**
+     * @private
+     */
+    get isDisplayEquation(): boolean {
+        return this.displayEquation;
+    }
+    /**
+     * @private
+     */
+    set isDisplayEquation(value: boolean) {
+        this.displayEquation = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartTrendLines {
+        let chart: ChartTrendLines = new ChartTrendLines();
+        chart.type = this.type;
+        chart.name = this.name;
+        chart.forward = this.forward;
+        chart.backward = this.backward;
+        chart.intercept = this.intercept;
+        chart.displayEquation = this.displayEquation;
+        chart.displayRSquared = this.displayRSquared;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.type = undefined;
+        this.name = undefined;
+        this.forward = undefined;
+        this.backward = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartTitleArea {
+    /**
+     * @private
+     */
+    private fontName: string;
+    /**
+     * @private
+     */
+    private fontSize: number;
+    /**
+     * @private
+     */
+    public dataFormat: ChartDataFormat;
+    /**
+     * @private
+     */
+    public layout: ChartLayout;
+    /**
+     * @private
+     */
+    get chartfontName(): string {
+        return this.fontName;
+    }
+    /**
+     * @private
+     */
+    set chartfontName(value: string) {
+        this.fontName = value;
+    }
+    /**
+     * @private
+     */
+    get chartFontSize(): number {
+        return this.fontSize;
+    }
+    /**
+     * @private
+     */
+    set chartFontSize(value: number) {
+        this.fontSize = value;
+    }
+    /**
+     * @private
+     */
+    constructor() {
+        this.dataFormat = new ChartDataFormat();
+        this.layout = new ChartLayout();
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartTitleArea {
+        let chart: ChartTitleArea = new ChartTitleArea();
+        chart.fontName = this.fontName;
+        chart.fontSize = this.fontSize;
+        chart.dataFormat = this.dataFormat.clone();
+        chart.layout = this.layout.clone();
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.fontName = undefined;
+        this.fontSize = undefined;
+        this.dataFormat = undefined;
+        this.layout = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartDataFormat {
+    /**
+     * @private
+     */
+    public line: ChartFill;
+    /**
+     * @private
+     */
+    public fill: ChartFill;
+    /**
+     * @private
+     */
+    constructor() {
+        this.fill = new ChartFill();
+        this.line = new ChartFill();
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartDataFormat {
+        let chart: ChartDataFormat = new ChartDataFormat();
+        chart.fill = this.fill.clone();
+        chart.line = this.line.clone();
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.fill = undefined;
+        this.line = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartFill {
+    /**
+     * @private
+     */
+    private fillColor: string;
+    /**
+     * @private
+     */
+    private fillRGB: string;
+    /**
+     * @private
+     */
+    get color(): string {
+        return this.fillColor;
+    }
+    /**
+     * @private
+     */
+    set color(value: string) {
+        this.fillColor = value;
+    }
+    /**
+     * @private
+     */
+    get rgb(): string {
+        return this.fillRGB;
+    }
+    /**
+     * @private
+     */
+    set rgb(value: string) {
+        this.fillRGB = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartFill {
+        let chart: ChartFill = new ChartFill();
+        chart.fillColor = this.fillColor;
+        chart.fillRGB = this.fillRGB;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.fillColor = undefined;
+        this.fillRGB = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartLayout {
+    /**
+     * @private
+     */
+    private layoutX: number;
+    /**
+     * @private
+     */
+    private layoutY: number;
+    /**
+     * @private
+     */
+    get chartLayoutLeft(): number {
+        return this.layoutX;
+    }
+    /**
+     * @private
+     */
+    set chartLayoutLeft(value: number) {
+        this.layoutX = value;
+    }
+    /**
+     * @private
+     */
+    get chartLayoutTop(): number {
+        return this.layoutY;
+    }
+    /**
+     * @private
+     */
+    set chartLayoutTop(value: number) {
+        this.layoutY = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartLayout {
+        let chart: ChartLayout = new ChartLayout();
+        chart.layoutX = this.layoutX;
+        chart.layoutY = this.layoutY;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.layoutX = undefined;
+        this.layoutY = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartCategoryAxis {
+    /**
+     * @private
+     */
+    private title: string;
+    /**
+     * @private
+     */
+    private fontSize: number;
+    /**
+     * @private
+     */
+    private fontName: string;
+    /**
+     * @private
+     */
+    private categoryType: string;
+    /**
+     * @private
+     */
+    private numberFormat: string;
+    /**
+     * @private
+     */
+    public chartTitleArea: ChartTitleArea;
+    /**
+     * @private
+     */
+    private hasMajorGridLines: boolean;
+    /**
+     * @private
+     */
+    private hasMinorGridLines: boolean;
+    /**
+     * @private
+     */
+    private majorTickMark: string;
+    /**
+     * @private
+     */
+    private minorTickMark: string;
+    /**
+     * @private
+     */
+    private tickLabelPostion: string;
+    /**
+     * @private
+     */
+    private majorUnit: number;
+    /**
+     * @private
+     */
+    private minimumValue: number;
+    /**
+     * @private
+     */
+    private maximumValue: number;
+    /**
+     * @private
+     */
+    get majorTick(): string {
+        return this.majorTickMark;
+    }
+    /**
+     * @private
+     */
+    set majorTick(value: string) {
+        this.majorTickMark = value;
+    }
+    /**
+     * @private
+     */
+    get minorTick(): string {
+        return this.minorTickMark;
+    }
+    /**
+     * @private
+     */
+    set minorTick(value: string) {
+        this.minorTickMark = value;
+    }
+    /**
+     * @private
+     */
+    get tickPosition(): string {
+        return this.tickLabelPostion;
+    }
+    /**
+     * @private
+     */
+    set tickPosition(value: string) {
+        this.tickLabelPostion = value;
+    }
+    /**
+     * @private
+     */
+    get minorGridLines(): boolean {
+        return this.hasMinorGridLines;
+    }
+    /**
+     * @private
+     */
+    set minorGridLines(value: boolean) {
+        this.hasMinorGridLines = value;
+    }
+    /**
+     * @private
+     */
+    get majorGridLines(): boolean {
+        return this.hasMajorGridLines;
+    }
+    /**
+     * @private
+     */
+    set majorGridLines(value: boolean) {
+        this.hasMajorGridLines = value;
+    }
+    /**
+     * @private
+     */
+    get interval(): number {
+        return this.majorUnit;
+    }
+    /**
+     * @private
+     */
+    set interval(value: number) {
+        this.majorUnit = value;
+    }
+    /**
+     * @private
+     */
+    get max(): number {
+        return this.maximumValue;
+    }
+    /**
+     * @private
+     */
+    set max(value: number) {
+        this.maximumValue = value;
+    }
+    /**
+     * @private
+     */
+    get min(): number {
+        return this.minimumValue;
+    }
+    /**
+     * @private
+     */
+    set min(value: number) {
+        this.minimumValue = value;
+    }
+    /**
+     * @private
+     */
+    get categoryAxisTitle(): string {
+        return this.title;
+    }
+    /**
+     * @private
+     */
+    set categoryAxisTitle(value: string) {
+        this.title = value;
+    }
+    /**
+     * @private
+     */
+    get categoryAxisType(): string {
+        return this.categoryType;
+    }
+    /**
+     * @private
+     */
+    set categoryAxisType(value: string) {
+        this.categoryType = value;
+    }
+    /**
+     * @private
+     */
+    get categoryNumberFormat(): string {
+        return this.numberFormat;
+    }
+    /**
+     * @private
+     */
+    set categoryNumberFormat(value: string) {
+        this.numberFormat = value;
+    }
+    /**
+     * @private
+     */
+    get axisFontSize(): number {
+        return this.fontSize;
+    }
+    /**
+     * @private
+     */
+    set axisFontSize(value: number) {
+        this.fontSize = value;
+    }
+    /**
+     * @private
+     */
+    get axisFontName(): string {
+        return this.fontName;
+    }
+    /**
+     * @private
+     */
+    set axisFontName(value: string) {
+        this.fontName = value;
+    }
+    constructor() {
+        this.chartTitleArea = new ChartTitleArea();
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartCategoryAxis {
+        let chart: ChartCategoryAxis = new ChartCategoryAxis();
+        chart.title = this.title;
+        chart.categoryType = this.categoryType;
+        chart.numberFormat = this.numberFormat;
+        chart.fontSize = this.fontSize;
+        chart.fontName = this.fontName;
+        chart.hasMajorGridLines = this.hasMajorGridLines;
+        chart.hasMinorGridLines = this.hasMinorGridLines;
+        chart.minimumValue = this.minimumValue;
+        chart.maximumValue = this.maximumValue;
+        chart.majorUnit = this.majorUnit;
+        chart.majorTickMark = this.majorTickMark;
+        chart.minorTickMark = this.minorTickMark;
+        chart.tickLabelPostion = this.tickLabelPostion;
+        chart.chartTitleArea = this.chartTitleArea.clone();
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.title = undefined;
+        this.categoryType = undefined;
+        this.numberFormat = undefined;
+        this.chartTitleArea = undefined;
+        this.minimumValue = undefined;
+        this.maximumValue = undefined;
+        this.fontSize = undefined;
+        this.fontName = undefined;
+        this.majorUnit = undefined;
+        this.majorTickMark = undefined;
+        this.minorTickMark = undefined;
+        this.tickLabelPostion = undefined;
+    }
+}
+
+/** 
+ * @private
+ */
+export class ChartDataTable {
+    /**
+     * @private
+     */
+    private isSeriesKeys: boolean;
+    /**
+     * @private
+     */
+    private isHorzBorder: boolean;
+    /**
+     * @private
+     */
+    private isVertBorder: boolean;
+    /**
+     * @private
+     */
+    private isBorders: boolean;
+    /**
+     * @private
+     */
+    get showSeriesKeys(): boolean {
+        return this.isSeriesKeys;
+    }
+    /**
+     * @private
+     */
+    set showSeriesKeys(value: boolean) {
+        this.isSeriesKeys = value;
+    }
+    /**
+     * @private
+     */
+    get hasHorzBorder(): boolean {
+        return this.isHorzBorder;
+    }
+    /**
+     * @private
+     */
+    set hasHorzBorder(value: boolean) {
+        this.isHorzBorder = value;
+    }
+    /**
+     * @private
+     */
+    get hasVertBorder(): boolean {
+        return this.isVertBorder;
+    }
+    /**
+     * @private
+     */
+    set hasVertBorder(value: boolean) {
+        this.isVertBorder = value;
+    }
+    /**
+     * @private
+     */
+    get hasBorders(): boolean {
+        return this.isBorders;
+    }
+    /**
+     * @private
+     */
+    set hasBorders(value: boolean) {
+        this.isBorders = value;
+    }
+    /**
+     * @private
+     */
+    public clone(): ChartDataTable {
+        let chart: ChartDataTable = new ChartDataTable();
+        chart.isSeriesKeys = this.isSeriesKeys;
+        chart.isHorzBorder = this.isHorzBorder;
+        chart.isVertBorder = this.isVertBorder;
+        chart.isBorders = this.isBorders;
+        return chart;
+    }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.isSeriesKeys = undefined;
+        this.isHorzBorder = undefined;
+        this.isVertBorder = undefined;
+        this.isBorders = undefined;
     }
 }
 /** 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Double quotes will be preserved proper on exporting grid data to CSV
+
 ## 17.1.1-beta (2019-01-29)
 
 ### Excel Export

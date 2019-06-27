@@ -118,7 +118,7 @@ describe('Clear Format commands', () => {
         domSelection.setSelectionText(document, node1, node2, 0, node2.childNodes.length);
         ClearFormat.clear(document, divElement);
         expect(document.getElementById('div4').childNodes[0].nodeName.toLowerCase()).toEqual('p');
-        expect(document.getElementById('paragraph23').nextElementSibling.nodeName.toLowerCase()).toEqual('ol');
+        expect(document.getElementById('div4').querySelectorAll("p")[5].nextElementSibling.nodeName.toLowerCase()).toEqual('ol');
     });
     it('Paragraph with bold  element specific selection', () => {
         new ClearFormat();

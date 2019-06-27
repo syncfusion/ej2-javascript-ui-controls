@@ -3,6 +3,7 @@ import { addClass, removeClass, isVisible, closest, attributes, detach, classLis
 import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, getUniqueID, formatUnit, Collection, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Browser } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { calculatePosition } from '@syncfusion/ej2-popups';
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
@@ -39,6 +40,7 @@ const CLS_RTL: Str = 'e-rtl';
 const CLS_SEPARATOR: Str = 'e-separator';
 const CLS_POPUPICON: Str = 'e-popup-up-icon';
 const CLS_POPUPDOWN: Str = 'e-popup-down-icon';
+const CLS_POPUPOPEN: Str = 'e-popup-open';
 const CLS_TEMPLATE: Str = 'e-template';
 const CLS_DISABLE: Str = 'e-overlay';
 const CLS_POPUPTEXT: Str = 'e-toolbar-text';
@@ -225,6 +227,7 @@ export class Item extends ChildProperty<Item>  {
     /**
      * Event triggers when `click` the toolbar item.
      * @event
+     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -266,6 +269,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private scrollStep: number;
     private isVertical: boolean;
     private tempId: string[];
+    private isExtendedOpen: boolean;
     private resizeContext: EventListenerObject = this.resize.bind(this);
 
     /**
@@ -315,24 +319,28 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * The event will be fired on clicking the Toolbar elements.
      * @event
+     * @blazorProperty 'Clicked'
      */
     @Event()
     public clicked: EmitType<ClickEventArgs>;
     /**
      * The event will be fired when the control is rendered.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired when the control gets destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Event>;
     /**
      * The event will be fired before the control is rendered on a page.
      * @event
+     * @blazorProperty 'OnCreate'
      */
     @Event()
     public beforeCreate: EmitType<BeforeCreateArgs>;
@@ -377,6 +385,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.tempId = [];
         this.tbarItemsCol = this.items;
         this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
+        this.isExtendedOpen = false;
         this.popupPriCount = 0;
         if (this.enableRtl) {
             this.add(this.element, CLS_RTL);
@@ -459,7 +468,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.remove(this.element, CLS_EXTENDEDPOPOPEN);
         this.remove(this.element, CLS_EXTEANDABLE_TOOLBAR);
-        let tempEle : HTMLElement = this.element.querySelector('.e-toolbar-multirow');
+        let tempEle: HTMLElement = this.element.querySelector('.e-toolbar-multirow');
         if (tempEle) { this.remove(tempEle, CLS_MULTIROW); }
         if (this.popObj) {
             this.popupRefresh(this.popObj.element, true);
@@ -485,7 +494,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if (tbrNavChk && this.popObj && isVisible(this.popObj.element)) {
             clst = <HTEle>this.popObj.element.querySelector('.' + CLS_ITEM);
         } else if (this.element === trgt || tbrNavChk) {
-            clst = <HTEle>this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE + ' ):not(.' + CLS_SEPARATOR + ' )');
+            // tslint:disable-next-line:max-line-length
+            clst = <HTEle>this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE + ' ):not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_HIDDEN + ' )');
         } else {
             clst = <HTEle>closest(trgt, '.' + CLS_ITEM);
         }
@@ -625,15 +635,15 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             rootEle.querySelector('#' + rootEle.id + '_nav').setAttribute('tabindex', !value ? '0' : '-1');
         }
     }
+    private eleContains(el: HTEle): string | boolean {
+        // tslint:disable-next-line:max-line-length
+        return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
+        // tslint:enable-next-line:max-line-length
+    }
     private eleFocus(closest: HTEle, pos: Str): void {
         let sib: HTEle = Object(closest)[pos + 'ElementSibling'];
-        let contains: Function = (el: HTEle) => {
-            // tslint:disable-next-line:max-line-length
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
-            // tslint:enable-next-line:max-line-length
-        };
         if (sib) {
-            let skipEle: boolean = contains(sib);
+            let skipEle: string | boolean = this.eleContains(sib);
             if (skipEle) {
                 this.eleFocus(sib, pos); return;
             }
@@ -646,7 +656,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (!isNOU(elem) && elem.children.length > 0) {
                 if (pos === 'next') {
                     let el: HTEle = <HTEle>elem.querySelector('.' + CLS_ITEM);
-                    if (contains(el)) {
+                    if (this.eleContains(el)) {
                         this.eleFocus(el, pos);
                     } else {
                         (<HTEle>el.firstElementChild).focus();
@@ -654,7 +664,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 } else {
                     let el: HTEle = <HTEle>elem.lastElementChild;
-                    if (contains(el)) {
+                    if (this.eleContains(el)) {
                         this.eleFocus(el, pos);
                     } else {
                         this.elementFocus(el);
@@ -691,9 +701,12 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if (itemObj && !isNOU(itemObj.click)) {
             this.trigger('items[' + this.tbarEle.indexOf(clst) + '].click', eventArgs);
         }
-        if (!eventArgs.cancel) { this.trigger('clicked', eventArgs); }
-        if (!isNOU(this.popObj) && isPopupElement && !eventArgs.cancel && this.overflowMode === 'Popup') {
-            this.popObj.hide({ name: 'FadeOut', duration: 100 });
+        if (!eventArgs.cancel) {
+            this.trigger('clicked', eventArgs, (clickedArgs: ClickEventArgs) => {
+                if (!isNOU(this.popObj) && isPopupElement && !clickedArgs.cancel && this.overflowMode === 'Popup') {
+                    this.popObj.hide({ name: 'FadeOut', duration: 100 });
+                }
+            });
         }
     };
     private popupClickHandler(ele: HTMLElement, popupNav: HTMLElement, CLS_RTL: Str): void {
@@ -726,6 +739,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.initialize();
         this.renderControl();
         this.separator();
+        this.refreshTemplate();
         this.wireEvents();
     }
     private initialize(): void {
@@ -1024,7 +1038,14 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             EventHandler.add(document, 'click ', this.docEvent.bind(this));
             popup.element.style.maxHeight = popup.element.offsetHeight + 'px';
             if (this.isVertical) { popup.element.style.visibility = 'hidden'; }
-            popup.hide();
+            if (this.isExtendedOpen) {
+                let popupNav: HTEle = this.element.querySelector('.' + CLS_TBARNAV);
+                popupNav.classList.add(CLS_TBARNAVACT);
+                classList(popupNav.firstElementChild, [CLS_POPUPICON], [CLS_POPUPDOWN]);
+                this.element.querySelector('.' + CLS_EXTENDABLECLASS).classList.add(CLS_POPUPOPEN);
+            } else {
+                popup.hide();
+            }
             this.popObj = popup;
             this.element.setAttribute('aria-haspopup', 'true');
         } else {
@@ -1529,6 +1550,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public addItems(items: ItemModel[], index?: number): void {
         let innerItems: HTEle[];
+        this.extendedOpen();
         let itemsDiv: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEMS);
         if (isNOU(itemsDiv)) {
             this.itemsRerender(items);
@@ -1652,7 +1674,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             }
             let tempArray: HTEle[];
             if (!isNOU(templateFn)) {
-                tempArray = templateFn({}, this, 'template');
+                let toolbarTemplateID: string = this.element.id + 'template';
+                tempArray = templateFn({}, this, 'template', toolbarTemplateID);
             }
             if (!isNOU(tempArray) && tempArray.length > 0) {
                 [].slice.call(tempArray).forEach((ele: HTEle): void => {
@@ -1761,6 +1784,17 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return innerEle;
     }
+
+    private refreshTemplate(): void {
+        for (let item of this.items) {
+            if (item.template && typeof item.template === 'string' &&
+                (<string>item.template).indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'template', 'Template');
+                updateBlazorTemplate(this.element.id + 'template', 'Template');
+            }
+        }
+    }
+
     private itemClick(e: Event): void {
         this.activeEleSwitch(<HTEle>e.currentTarget);
     }
@@ -1831,6 +1865,14 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.tbResize = false;
         this.separator();
     }
+
+    private extendedOpen(): void {
+        let sib: HTEle = this.element.querySelector('.' + CLS_EXTENDABLECLASS) as HTEle;
+        if (this.overflowMode === 'Extended' && sib) {
+            this.isExtendedOpen = sib.classList.contains(CLS_POPUPOPEN);
+        }
+    }
+
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
      * @param  {ToolbarModel} newProp
@@ -1840,6 +1882,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public onPropertyChanged(newProp: ToolbarModel, oldProp: ToolbarModel): void {
         let tEle: HTEle = this.element;
+        this.extendedOpen();
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'items':
@@ -1916,7 +1959,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     public hideItem(index: number| HTMLElement | Element, value?: boolean): void {
         let isElement: boolean = (typeof (index) === 'object') ? true : false;
         let eleIndex: number = index as number;
+        let initIndex: number;
         let ele: HTMLElement;
+        let innerItems: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
         if (isElement) {
             ele = (index as HTMLElement);
         } else if (this.tbarEle[eleIndex]) {
@@ -1925,6 +1970,47 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (ele) {
         value ? ele.classList.add(CLS_HIDDEN) : ele.classList.remove(CLS_HIDDEN);
+        if (value && isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
+            if (isNOU(ele.firstElementChild.getAttribute('tabindex'))) {
+                ele.firstElementChild.setAttribute('tabindex', '-1');
+                let innerItems: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
+                if (isElement) {
+                    eleIndex = innerItems.indexOf(ele);
+                }
+                let nextEle: HTEle = innerItems[++eleIndex];
+                while (nextEle) {
+                    let skipEle: string | boolean = this.eleContains(nextEle);
+                    if (!skipEle) {
+                        nextEle.firstElementChild.removeAttribute('tabindex');
+                        break;
+                    }
+                    nextEle = innerItems[++eleIndex];
+                }
+            }
+        } else if (isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
+            initIndex = 0;
+            let setFlag: boolean = false;
+            let removeFlag: boolean = false;
+            let initELe: HTEle = innerItems[initIndex];
+            while (initELe) {
+                if (!initELe.classList.contains(CLS_SEPARATOR)) {
+                    if (isNOU(initELe.firstElementChild.getAttribute('tabindex'))) {
+                        initELe.firstElementChild.setAttribute('tabindex', '-1');
+                        setFlag = true;
+                    } else {
+                        if (setFlag && removeFlag) { break; }
+                        let skipEle: string | boolean = this.eleContains(initELe);
+                        if (!skipEle) {
+                            initELe.firstElementChild.removeAttribute('tabindex');
+                            removeFlag = true;
+                        }
+                        initELe = innerItems[++initIndex];
+                    }
+                } else {
+                    initELe = innerItems[++initIndex];
+                }
+            }
+        }
         this.refreshOverflow(); }
     }
 }

@@ -131,6 +131,6 @@ export type PivotContextMenuItem =
     /**  Sort the current column in ascending order */
     'Sort Ascending' |
     /**  Sort the current column in descending order */
-    'Sort Descending'|
+    'Sort Descending' |
     /**  Sets aggregate type to sum */
     'Aggregate';

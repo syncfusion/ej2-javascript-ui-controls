@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, detach, closest, addClass, removeClass } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, detach, closest, addClass, removeClass, select, Browser } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
@@ -21,7 +21,7 @@ export class ImageCommand {
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.IMAGE, this.imageCommand, this);
     }
-    private imageCommand(e: IHtmlItem): void {
+    public imageCommand(e: IHtmlItem): void {
         switch (e.value.toString().toLocaleLowerCase()) {
             case 'image':
             case 'replace':
@@ -96,9 +96,18 @@ export class ImageCommand {
             if (!isNullOrUndefined(e.item.selection)) {
                 e.item.selection.restore();
             }
-            InsertHtml.Insert(this.parent.currentDocument, imgElement, this.parent.editableElement);
+            if (!isNullOrUndefined(e.selector) && e.selector === 'pasteCleanupModule') {
+                e.callBack({ requestType: 'Image',
+                    editorMode: 'HTML',
+                    event: e.event,
+                    range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                    elements: imgElement
+                });
+            } else {
+                InsertHtml.Insert(this.parent.currentDocument, imgElement, this.parent.editableElement);
+            }
         }
-        if (e.callBack) {
+        if (e.callBack && (isNullOrUndefined(e.selector) || !isNullOrUndefined(e.selector) && e.selector !== 'pasteCleanupModule')) {
             e.callBack({
                 requestType: 'Image',
                 editorMode: 'HTML',
@@ -114,6 +123,10 @@ export class ImageCommand {
                 href: e.item.url
             }
         });
+        if (e.item.selectNode[0].parentElement.classList.contains('e-img-wrap')) {
+            e.item.selection.restore();
+            anchor.setAttribute('contenteditable', 'true');
+        }
         anchor.appendChild(e.item.selectNode[0]);
         if (!isNullOrUndefined(e.item.target)) {
             anchor.setAttribute('target', e.item.target);
@@ -126,8 +139,20 @@ export class ImageCommand {
         this.callBack(e);
     }
     private removeImageLink(e: IHtmlItem): void {
-        detach(closest(e.item.selectParent[0], 'a'));
-        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement, this.parent.editableElement);
+        let selectParent: HTMLElement = e.item.selectParent[0] as HTMLElement;
+        if (selectParent.classList.contains('e-img-caption')) {
+            let capImgWrap: Element = select('.e-img-wrap', selectParent);
+            let textEle: Element = select('.e-img-inner', selectParent);
+            let newTextEle: Node = textEle.cloneNode(true);
+            detach(select('a', selectParent));
+            detach(textEle);
+            capImgWrap.appendChild(e.item.insertElement);
+            capImgWrap.appendChild(newTextEle);
+        } else {
+            detach(selectParent);
+            if (Browser.isIE) { e.item.selection.restore(); }
+            InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement, this.parent.editableElement);
+        }
         this.callBack(e);
     }
     private editImageLink(e: IHtmlItem): void {

@@ -247,6 +247,24 @@ export class TaskProcessor extends DateProcessor {
             return null;
         }
     }
+
+    /**
+     * @private
+     */
+    public reUpdateResources(): void {
+        if (this.parent.flatData.length > 0) {
+            let data: ITaskData;
+            let ganttProperties: ITaskData;
+            let ganttData: IGanttData;
+            for (let index: number = 0; index < this.parent.flatData.length; index++) {
+                data = this.parent.flatData[index].taskData;
+                ganttProperties = this.parent.flatData[index].ganttProperties;
+                ganttData = this.parent.flatData[index];
+                this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
+                this.updateResourceName(ganttData);
+            }
+        }
+    }
     private addTaskData(ganttData: IGanttData, data: Object, isLoad: boolean): void {
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
         let dataManager: Object[] | DataManager = this.parent.dataSource;
@@ -728,6 +746,26 @@ export class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('duration', getValue('duration', tempDuration), ganttProperties, true);
         if (!isNullOrUndefined(getValue('durationUnit', tempDuration))) {
             this.parent.setRecordValue('durationUnit', getValue('durationUnit', tempDuration), ganttProperties, true);
+        }
+    }
+
+    /**
+     * @private
+     */
+    public reUpdateGanttData(): void {
+        if (this.parent.flatData.length > 0) {
+            let data: ITaskData;
+            let ganttData: IGanttData;
+            this.parent.secondsPerDay = this.getSecondsPerDay();
+            for (let index: number = 0; index < this.parent.flatData.length; index++) {
+                data = this.parent.flatData[index].taskData;
+                ganttData = this.parent.flatData[index];
+                if (!isNullOrUndefined(this.parent.taskFields.duration)) {
+                    this.setRecordDuration(ganttData, this.parent.taskFields.duration);
+                }
+                this.calculateScheduledValues(ganttData, data, false);
+            }
+            this.updateGanttData();
         }
     }
 

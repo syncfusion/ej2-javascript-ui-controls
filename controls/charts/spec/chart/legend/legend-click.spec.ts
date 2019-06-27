@@ -1,7 +1,8 @@
 /**
  * legend click checking
  */
-import { Chart, Legend, LineSeries, ILoadedEventArgs, SeriesModel, getElement, Series, ColumnSeries, Category  } from '../../../src/index';
+import { Chart, Legend, LineSeries, ILoadedEventArgs, ILegendClickEventArgs, SeriesModel, getElement, Series, ColumnSeries, 
+    Category  } from '../../../src/index';
 import { BarSeries, SplineSeries, DataLabel, AreaSeries, StackingColumnSeries, StackingAreaSeries } from '../../../src/index';
 import { ErrorBar, StackingBarSeries, StripLine, DateTime, AccumulationDistributionIndicator, ChartAnnotation } from '../../../src/index';
 import { CandleSeries, HiloOpenCloseSeries, HiloSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries } from '../../../src/index';
@@ -50,6 +51,7 @@ describe('Chart Control', () => {
 describe('Chart Control Legend Checking', () => {
     let chart: Chart;
     let loaded: EmitType<ILoadedEventArgs>;
+    let legendClick: EmitType<ILegendClickEventArgs>;
     let legendId: string = 'cartesianChart' + '_chart_legend';
     let legendElement: Element;
     let series: SeriesModel[] = [seriesCollection[0], seriesCollection[1], seriesCollection[2], seriesCollection[3], seriesCollection[4]];
@@ -59,6 +61,7 @@ describe('Chart Control Legend Checking', () => {
     let seriesElement: HTMLElement;
     let lastLabel: HTMLElement;
     let dataLabel: HTMLElement;
+    let svg: HTMLElement;
     document.body.appendChild(ele);
     beforeAll((): void => {
         chart = new Chart({
@@ -317,6 +320,46 @@ describe('Chart Control Legend Checking', () => {
             expect(seriesElement.childElementCount).toEqual(8);
             done();
         }, 301);
+    });
+    it('checking series color without giving fill color in legendClick event', (done: Function) => {
+        loaded = (args: Object): void => {
+            chart.loaded = null;
+            legendElement = document.getElementById(legendId + '_shape_0');
+            trigger.clickEvent(legendElement);
+            expect(legendElement.getAttribute('d').split('L').length).toBe(4);
+            trigger.clickEvent(legendElement);
+            svg = document.getElementById('cartesianChart_Series_0_Point_0');
+            expect(svg.getAttribute('fill') == '#663AB6').toBe(true);
+            done();
+        };
+        legendClick = (args: ILegendClickEventArgs): void => {
+            args.legendShape = 'Triangle';
+        }
+        chart.legendClick = legendClick;
+        chart.loaded = loaded;
+        chart.refresh();
+    });
+    it('checking with legend shape after legendClick event', (done: Function) => {
+        loaded = (args: Object): void => {
+            chart.loaded = null;
+            legendElement = document.getElementById(legendId + '_text_' + 0);
+            trigger.clickEvent(legendElement);
+            expect(legendElement.textContent).toBe('Series 0');
+            legendElement = document.getElementById(legendId + '_shape_0');
+            trigger.clickEvent(legendElement);
+            expect(legendElement.getAttribute('d').split('L').length).toBe(5);
+            svg = document.getElementById('cartesianChart_Series_0_Point_0');
+            trigger.clickEvent(legendElement);
+            expect(svg.getAttribute('fill') == 'red').toBe(true);
+            done();
+        };
+        legendClick = (args: ILegendClickEventArgs): void =>{
+            args.legendShape = 'Diamond';
+            args.chart.series[0].fill = "red";
+        }
+        chart.legendClick = legendClick;
+        chart.loaded = loaded;
+        chart.refresh();
     });
 });
 

@@ -4,7 +4,7 @@
 import { Browser } from "@syncfusion/ej2-base";
 import { RichTextEditor, Toolbar } from './../../../src/index';
 import { detach } from '@syncfusion/ej2-base';
-import { renderRTE, destroy } from "./../render.spec";
+import { renderRTE, destroy, dispatchKeyEvent, dispatchEvent } from "./../render.spec";
 RichTextEditor.Inject(Toolbar);
 
 describe("'FontColor and BackgroundColor' - ColorPicker render testing", () => {
@@ -340,6 +340,7 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
             <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
                     
             <p class='second-p-node'><label class='second-label'>label node</label></p>
+            <p class='third-p-node'>dom node</p>
             <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`
         });
         rteEle = rteObj.element;
@@ -348,6 +349,30 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
 
     afterAll(() => {
         destroy(rteObj);
+    });
+
+    it("Color Picker initial rendering testing - 1", (done) => {
+        selectNode = editNode.querySelector('.third-p-node');
+        setCursorPoint(document, selectNode.childNodes[0] as Element, 1);
+        rteObj.notify('selection-save', {});
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector(".e-rte-backgroundcolor-dropdown");
+        backgroundColorPicker.click();
+        dispatchEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'focusin');
+        (document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild as any).value = '50';
+        dispatchKeyEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'input');
+        dispatchKeyEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'keyup', { 'key': 'a', 'keyCode': 65 });
+        dispatchEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'change');
+        dispatchEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'focusout');
+        setTimeout(() => {
+            let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[1];
+            mouseEventArgs = {
+                target: backgroundColorPickerItem
+            };
+            (rteObj.htmlEditorModule as any).colorPickerModule.backgroundColorPicker.btnClickHandler(mouseEventArgs);
+            expect(selectNode.childNodes[0].nodeName.toLocaleLowerCase()).toBe("span");
+            expect((selectNode.childNodes[0] as HTMLElement).getAttribute('style')).toBe('background-color: rgba(255, 255, 0, 0.5);');
+            done();
+        }, 200);
     });
 
     it("Color Picker initial rendering testing", () => {

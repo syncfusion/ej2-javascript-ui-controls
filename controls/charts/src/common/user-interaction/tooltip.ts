@@ -64,16 +64,18 @@ export class BaseTooltip extends ChartData {
     public getTooltipElement(isTooltip: boolean): HTMLDivElement {
         this.inverted = this.chart.requireInvertedAxis;
         this.header = (this.control.tooltip.header === null) ?
-        ((this.control.tooltip.shared) ? '<b>${point.x}</b>' : '<b>${series.name}</b>')
-        : (this.control.tooltip.header);
+            ((this.control.tooltip.shared) ? '<b>${point.x}</b>' : '<b>${series.name}</b>')
+            : (this.control.tooltip.header);
         this.formattedText = [];
-        if (!isTooltip) {
+        let tooltipDiv: HTMLElement = document.getElementById(this.chart.element.id + '_tooltip');
+        let isStockChart: boolean = this.chart.element.id.indexOf('stockChart') > -1;
+        if (!isTooltip && !tooltipDiv || isStockChart) {
             return this.createElement();
         }
         return null;
     }
 
-    private createElement(): HTMLDivElement {
+    public createElement(): HTMLDivElement {
         let tooltipDiv: HTMLDivElement = document.createElement('div');
         tooltipDiv.id = this.element.id + '_tooltip'; tooltipDiv.className = 'ejSVGTooltip';
         tooltipDiv.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
@@ -152,6 +154,8 @@ export class BaseTooltip extends ChartData {
                 isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
                 inverted: this.chart.requireInvertedAxis && series.isRectSeries,
                 arrowPadding : this.text.length > 1 || this.chart.stockChart ? 0 : 12,
+                availableSize: chart.availableSize,
+                isCanvas: this.chart.enableCanvas,
                 tooltipRender: () => {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -210,7 +214,8 @@ export class BaseTooltip extends ChartData {
     }
 
     public fadeOut(data: PointData[], chart: Chart | AccumulationChart): void {
-        let svgElement: HTMLElement = this.getElement(this.element.id + '_tooltip_svg');
+        let svgElement: HTMLElement = this.chart.enableCanvas ? this.getElement(this.element.id + '_tooltip_group') :
+         this.getElement(this.element.id + '_tooltip_svg');
         let isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         if (!isTooltip) {
             this.valueX = null;

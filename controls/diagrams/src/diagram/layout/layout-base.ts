@@ -183,6 +183,7 @@ export class Layout extends ChildProperty<Layout> {
      * ```
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public getLayoutInfo: Function | string;
@@ -191,6 +192,7 @@ export class Layout extends ChildProperty<Layout> {
      * Defines whether an object should be at the left/right of the mind map. Applicable only for the direct children of the root node
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public getBranch: Function | string;
@@ -411,7 +413,6 @@ export interface ILayout {
     root?: string;
 }
 
-/** @private */
 export interface LevelBounds {
     rBounds: Bounds;
 }

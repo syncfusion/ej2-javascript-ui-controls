@@ -8,7 +8,7 @@ import { Layout } from './layout';
 import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import {
-    Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget
+    Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
@@ -21,12 +21,13 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection, } from '../index';
 import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
-import { Dialog } from '@syncfusion/ej2-popups';
+import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { ImageResizer } from '../editor/image-resizer';
-import { HeaderFooterType, PageFitType, TableAlignment } from '../../base/types';
+import { HeaderFooterType, PageFitType, TableAlignment, ProtectionType } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
 import { DocumentEditorKeyDownEventArgs } from '../../base/events-helper';
+import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 
 /** 
  * @private
@@ -288,6 +289,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public bookmarks: Dictionary<string, BookmarkElementBox>;
+    /**
+     * @private
+     */
+    public editRanges: Dictionary<string, EditRangeStartElementBox[]>;
     private isMouseDownInFooterRegion: boolean = false;
     private pageFitTypeIn: PageFitType = 'None';
     /**
@@ -322,6 +327,59 @@ export abstract class LayoutViewer {
      * @private
      */
     public isTextInput: boolean = false;
+    /**
+     * @private
+     */
+    public isScrollHandler: boolean = false;
+    /**
+     * @private
+     */
+    public triggerElementsOnLoading: boolean = false;
+
+    /**
+     * @private
+     */
+    public triggerSpellCheck: boolean = false;
+
+    /**
+     * @private
+     */
+    public scrollTimer: number;
+
+    //Document Protection Properties Starts
+    /**
+     * preserve the format
+     * @private
+     */
+    public restrictFormatting: boolean = false;
+    /**
+     * preserve the document protection type either readonly or no protection
+     * @private
+     */
+    public protectionType: ProtectionType = 'NoProtection';
+    /**
+     * Preserve the password protection is enforced or not
+     * @private
+     */
+    public isDocumentProtected: boolean = false;
+    /**
+     * preserve the hash value of password
+     * @private
+     */
+    public hashValue: string = '';
+    /**
+     * @private
+     */
+    public saltValue: string = '';
+    /**
+     * @private
+     */
+    public userCollection: string[] = [];
+    /**
+     * @private
+     */
+    public restrictEditingPane: RestrictEditing;
+    //Document Protection Properties Ends
 
     //#region Properties
     /**
@@ -476,6 +534,7 @@ export abstract class LayoutViewer {
         this.preDefinedStyles = new Dictionary<string, string>();
         this.initalizeStyles();
         this.bookmarks = new Dictionary<string, BookmarkElementBox>();
+        this.editRanges = new Dictionary<string, EditRangeStartElementBox[]>();
     }
     private initalizeStyles(): void {
         /* tslint:disable-next-line:max-line-length */
@@ -531,6 +590,7 @@ export abstract class LayoutViewer {
      * @private
      */
     public clearDocumentItems(): void {
+        this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];
         this.bookmarks.clear();
@@ -540,6 +600,12 @@ export abstract class LayoutViewer {
         this.setDefaultCharacterValue(this.characterFormat);
         this.setDefaultParagraphValue(this.paragraphFormat);
         this.defaultTabWidth = 36;
+        this.isDocumentProtected = false;
+        this.protectionType = 'NoProtection';
+        this.restrictFormatting = false;
+        this.hashValue = '';
+        this.saltValue = '';
+        this.userCollection = [];
     }
     /**
      * @private
@@ -673,6 +739,8 @@ export abstract class LayoutViewer {
         this.zoomModule = new Zoom(this);
         this.initTouchEllipse();
         this.wireEvent();
+        this.restrictEditingPane = new RestrictEditing(this);
+        createSpinner({ target: this.owner.element, cssClass: 'e-spin-overlay' });
     }
 
     /**
@@ -872,10 +940,12 @@ export abstract class LayoutViewer {
                 char = event.key;
             }
             // tslint:disable-next-line:max-line-length
-            if (char !== 'Spacebar' && char !== '\r' && char !== '\b' && char !== '\u001B' && !this.owner.isReadOnlyMode && event.ctrlKey === false) {
+            if (char !== ' ' && char !== '\r' && char !== '\b' && char !== '\u001B' && !this.owner.isReadOnlyMode && event.ctrlKey === false) {
                 this.owner.editorModule.handleTextInput(char);
-            } else if (char === 'Spacebar') {
+            } else if (char === ' ') {
+                this.triggerSpellCheck = true;
                 this.owner.editorModule.handleTextInput(' ');
+                this.triggerSpellCheck = false;
             }
             event.preventDefault();
         }
@@ -998,10 +1068,17 @@ export abstract class LayoutViewer {
         this.layout.isInitialLoad = true;
         this.layout.layoutItems(sections);
         if (this.owner.selection) {
+            this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
+            if (this.isDocumentProtected) {
+                this.restrictEditingPane.showHideRestrictPane(true);
+            }
         }
         if (this.owner.optionsPaneModule) {
             this.owner.optionsPaneModule.showHideOptionsPane(false);
+        }
+        if (this.restrictEditingPane.restrictPane && !this.isDocumentProtected) {
+            this.restrictEditingPane.showHideRestrictPane(false);
         }
         this.owner.fireDocumentChange();
     }
@@ -1009,7 +1086,11 @@ export abstract class LayoutViewer {
      * Fires on scrolling.
      */
     private scrollHandler = (): void => {
+        if (this.scrollTimer) {
+            clearTimeout(this.scrollTimer);
+        }
         this.clearContent();
+        this.isScrollHandler = true;
         if (!Browser.isDevice && !this.isComposingIME) {
             this.iframe.style.top = this.containerTop + 'px';
             this.iframe.style.left = this.containerLeft + 'px';
@@ -1023,6 +1104,12 @@ export abstract class LayoutViewer {
         if (viewer instanceof PageLayoutViewer && !isNullOrUndefined(this.owner)) {
             this.owner.fireViewChange();
         }
+        this.isScrollHandler = false;
+        this.scrollTimer = setTimeout(() => {
+            if (!this.isScrollHandler) {
+                this.updateScrollBars();
+            }
+        }, 200);
     }
     /**
      * Fires when the window gets resized.
@@ -1688,9 +1775,14 @@ export abstract class LayoutViewer {
             let width: number = 0;
             let height: number = 0;
             height = rect.height > 0 ? rect.height : 200;
-            if (this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow) {
-                let optionsRect: ClientRect = this.owner.optionsPaneModule.optionsPane.getBoundingClientRect();
-                width = (rect.width - optionsRect.width) > 0 ? (rect.width - optionsRect.width) : 200;
+            let restrictPaneRect: ClientRect = this.restrictEditingPane && this.restrictEditingPane.isShowRestrictPane ?
+                this.restrictEditingPane.restrictPane.getBoundingClientRect() : undefined;
+            let optionsRect: ClientRect = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
+                this.owner.optionsPaneModule.optionsPane.getBoundingClientRect() : undefined;
+            if (restrictPaneRect || optionsRect) {
+                let paneWidth: number = restrictPaneRect ? restrictPaneRect.width : 0;
+                paneWidth += optionsRect ? optionsRect.width : 0;
+                width = (rect.width - paneWidth) > 0 ? (rect.width - paneWidth) : 200;
             } else {
                 width = rect.width > 0 ? rect.width : 200;
             }
@@ -2419,7 +2511,9 @@ export class PageLayoutViewer extends LayoutViewer {
     /**
      * @private
      */
-    public pageGap: number = 20;
+    get pageGap(): number {
+        return this.owner.pageGap;
+    }
     /**
      * @private
      */

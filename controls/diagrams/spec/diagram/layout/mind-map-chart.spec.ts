@@ -75,7 +75,7 @@ describe('Diagram Control', () => {
                 layout: {
                     type: 'MindMap',
                 },
-                dataSourceSettings: { id: 'id', parentId: 'parentId', dataManager: items },
+                dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: items },
                 getNodeDefaults: (node: Node) => {
                     let obj: NodeModel = {};
                     obj.shape = { type: 'Text', content: (node.data as { Label: 'string' }).Label };
@@ -175,7 +175,7 @@ describe('Diagram Control', () => {
 
 
                 },
-                dataSourceSettings: { id: 'id', parentId: 'parentId', dataManager: items, root: String(1) },
+                dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: items, root: String(1) },
                 getNodeDefaults: (node: Node) => {
                     let obj: NodeModel = {};
                     obj.shape = { type: 'Text', content: (node.data as { Label: 'string' }).Label };

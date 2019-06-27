@@ -28,6 +28,11 @@
 
       .e-btn.e-dlg-closeicon-btn:hover {
         background-color: $gantt-dialog-icon-hover-color;
+
+        .e-icon-dlg-close {
+          color: $gantt-dialog-close-icon-hover-color;
+        }
+
       }
 
       .e-tab {
@@ -167,13 +172,6 @@
         border-color: $gantt-line-container-cell-border-color;
       }
 
-      .e-left-label-inner-div,
-      .e-right-label-inner-div {
-        color: $gantt-label-color;
-        font-family: $font-family;
-        font-size: $gantt-label-size;
-      }
-
       .e-gantt-child-taskbar-inner-div {
         background-color: $gantt-child-task-bar;
         border: $gantt-child-task-bar-border;
@@ -280,18 +278,18 @@
 
       // sass-lint:disable-all
       .e-connector-line-right-arrow-hover {
-        border-left-color: $connector-line-hover-color !important;
+        border-left-color: $connector-line-hover-color;
       }
 
       // sass-lint:disable-all
       .e-connector-line-left-arrow-hover {
-        border-right-color: $connector-line-hover-color !important;
+        border-right-color: $connector-line-hover-color;
       }
 
       // sass-lint:disable-all
       .e-connector-line-hover {
-        border-color: $connector-line-hover-color !important;
-        outline-color: $connector-line-hover-color !important;
+        border-color: $connector-line-hover-color;
+        outline-color: $connector-line-hover-color;
       }
 
       .e-gantt-false-line {
@@ -301,6 +299,7 @@
       .e-connectorpoint-left-hover,
       .e-connectorpoint-right-hover {
         background-color: $connector-point-hover-color;
+        border-color: $connector-point-border-color;
       }
 
       .e-connectorpoint-left-hover:hover,
@@ -311,18 +310,18 @@
 
       .e-right-label-container {
         margin-left: $gantt-right-label-container-margin-left;
+        font-size: $gantt-label-font-size;
+        font-family: $font-family;
+        color: $gantt-label-font-color;
       }
       .e-left-label-container {
         padding-right: $gantt-right-label-container-margin-left;
+        font-size: $gantt-label-font-size;
+        font-family: $font-family;
+        color: $gantt-label-font-color;
       }
       .e-connectorpoint-right {
         margin-left: $gantt-connector-point-right-margin-left;
-      }
-      .e-connectorpoint-left:hover {
-        margin-left: -$gantt-connector-point-right-margin-left - 1;
-      }
-      .e-connectorpoint-right:hover {
-        margin-left: $gantt-connector-point-right-margin-left - 1;
       }
       .e-right-connectorpoint-outer-div,
       .e-left-connectorpoint-outer-div {
@@ -360,10 +359,6 @@
       .e-milestone-bottom {
         border-top-color: $gantt-milestone-border-color;
       }
-      .e-label{
-       font-size: $gantt-label-font-size;
-       color: $gantt-label-font-color;
-      }
       .e-active {
        background: $gantt-active-background;
        color: $gantt-active-color;
@@ -380,7 +375,119 @@
       }
       .e-baseline-milestone-bottom{
         border-top-color: $gantt-baseline-color;
-      }  
+      }
+      .e-uptail::before {
+        border-bottom-color: $gantt-uptail-border;
+      }
+      .e-downtail::after {
+        border-top-color: $progress-handler-outline;
+      }
+  
+      .e-downtail::before {
+        border-top-color: $gantt-uptail-border;
+      }
+      .e-content {
+        background-color: $progress-handler-outline;
+        border-color: $gantt-uptail-border;
+      }
+      .e-spanclicked,
+      .e-grid .e-gridpopup .e-spanclicked {
+        border-color: $gantt-gridpopup-span;
+      }
+      .e-active-parent-task {
+        box-shadow: 4px 4px 3px 0px $gantt-active-parent-shadow;
+        border-radius: 4px;
+        .e-gantt-parent-taskbar-inner-div {
+          background: $gantt-active-parent-task;
+          border: $gantt-active-parent-task;
+        }
+        .e-gantt-parent-progressbar-inner-div {
+          background-color: transparent;
+          border: transparent;
+        }
+        .e-task-label {
+          color: transparent;
+        }
+      }
+      .e-predecessor-touch-mode{
+        .e-task-label {
+          color: transparent;
+        }
+        .e-line{
+          border-color: $gantt-inactive-parent;
+        }
+        .e-connector-line-right-arrow{
+          border-left-color: $gantt-inactive-parent;
+        }
+        .e-connector-line-left-arrow{
+          border-right-color: $gantt-inactive-parent;
+        }
+        .e-gantt-child-taskbar-inner-div {
+          background: $gantt-inactive-child;
+          border: $gantt-inactive-child;
+        }
+        .e-gantt-child-progressbar-inner-div {
+          background-color: transparent;
+          border: transparent;
+        }
+        .e-milestone-top {
+          border-bottom-color: $gantt-inactive-child;
+        }
+        .e-milestone-bottom {
+           border-top-color: $gantt-inactive-child;
+        }
+        .e-gantt-parent-taskbar-inner-div {
+          background-color: $gantt-inactive-parent;
+          border: $gantt-inactive-parent;
+        }  
+        .e-gantt-parent-progressbar-inner-div {
+          background-color: transparent;
+          border: transparent;
+        }      
+        .e-active-child-task {
+        .e-gantt-child-taskbar-inner-div {
+          background: $gantt-child-progress-bar;
+          border: $gantt-child-progress-bar;
+        }
+        .e-milestone-top {
+          border-bottom-color: $gantt-child-progress-bar;
+         }
+         .e-milestone-bottom {
+           border-top-color: $gantt-child-progress-bar;
+         }
+        }
+        .e-active-connected-task {
+        .e-gantt-child-taskbar-inner-div {
+          background: $gantt-connected-task;
+          border: $gantt-connected-task;
+        }
+        .e-milestone-top {
+          border-bottom-color: $gantt-connected-task;
+         }
+         .e-milestone-bottom {
+           border-top-color: $gantt-connected-task;
+         }
+         .e-line{
+           border-color: $gantt-child-progress-bar;
+         }
+         .e-connector-line-right-arrow{
+          border-left-color: $gantt-child-progress-bar;
+        }
+        .e-connector-line-left-arrow{
+          border-right-color: $gantt-child-progress-bar;
+        }
+        }
+      }
+    }
+  }
+  .e-gantt.e-device {
+    .e-left-resize-gripper,
+    .e-right-resize-gripper {
+    border-color: $gantt-left-resize-gripper-border;
+    color: $gantt-left-resize-gripper-color;
+    }
+    .e-backarrowspan {
+      color: $gantt-gridpopup-span;
     }
   }
 }

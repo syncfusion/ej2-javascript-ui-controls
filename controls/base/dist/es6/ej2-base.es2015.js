@@ -1023,20 +1023,75 @@ class Observer {
     /**
      * To notify the handlers in the specified event.
      * @param {string} property - Specifies the event to be notify.
-     *  @param {Object} args - Additional parameters to pass while calling the handler.
+     * @param {Object} args - Additional parameters to pass while calling the handler.
+     * @param {Function} successHandler - this function will invoke after event successfully triggered
+     * @param {Function} errorHandler - this function will invoke after event if it was failure to call.
      * @return {void}
      */
-    notify(property, argument) {
+    notify(property, argument, successHandler, errorHandler) {
         if (this.notExist(property)) {
+            if (successHandler) {
+                successHandler.call(this, argument);
+            }
             return;
         }
         if (argument) {
             argument.name = property;
         }
+        let blazor = 'Blazor';
         let curObject = getValue(property, this.boundedEvents).slice(0);
-        for (let cur of curObject) {
-            cur.handler.call(cur.context, argument);
+        if (window[blazor]) {
+            return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
         }
+        else {
+            for (let cur of curObject) {
+                cur.handler.call(cur.context, argument);
+            }
+            if (successHandler) {
+                successHandler.call(this, argument);
+            }
+        }
+    }
+    blazorCallback(objs, argument, successHandler, errorHandler, index) {
+        let isTrigger = index === objs.length - 1;
+        if (index < objs.length) {
+            let obj = objs[index];
+            let promise = obj.handler.call(obj.context, argument);
+            if (promise && typeof promise.then === 'function') {
+                if (!successHandler) {
+                    return promise;
+                }
+                promise.then((data) => {
+                    data = typeof data === 'string' && this.isJson(data) ? JSON.parse(data) : data;
+                    extend(argument, argument, data, true);
+                    if (successHandler && isTrigger) {
+                        successHandler.call(obj.context, argument);
+                    }
+                    else {
+                        return this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
+                    }
+                }).catch((data) => {
+                    if (errorHandler) {
+                        errorHandler.call(obj.context, typeof data === 'string' && this.isJson(data) ? JSON.parse(data) : data);
+                    }
+                });
+            }
+            else if (successHandler && isTrigger) {
+                successHandler.call(obj.context, argument);
+            }
+            else {
+                return this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
+            }
+        }
+    }
+    isJson(value) {
+        try {
+            JSON.parse(value);
+        }
+        catch (e) {
+            return false;
+        }
+        return true;
     }
     /**
      * To destroy handlers in the event
@@ -1048,7 +1103,7 @@ class Observer {
      * Returns if the property exists.
      */
     notExist(prop) {
-        return this.boundedEvents.hasOwnProperty(prop) === false;
+        return this.boundedEvents.hasOwnProperty(prop) === false || this.boundedEvents[prop].length <= 0;
     }
     /**
      * Returns if the handler is present.
@@ -1208,28 +1263,49 @@ class Base {
         if (this.isDestroyed !== true) {
             let prevDetection = this.isProtectedOnChange;
             this.isProtectedOnChange = false;
-            this.modelObserver.notify(eventName, eventProp);
+            let data = this.modelObserver.notify(eventName, eventProp, successHandler, errorHandler);
             if (isColEName.test(eventName)) {
                 let handler = getValue(eventName, this);
                 if (handler) {
-                    let promise = handler.call(this, eventProp);
-                    if (promise && (promise.toString()).indexOf('Promise') >= 0) {
-                        promise.then((data) => {
-                            if (successHandler) {
-                                successHandler.call(this, data);
+                    let blazor = 'Blazor';
+                    if (window[blazor]) {
+                        let promise = handler.call(this, eventProp);
+                        if (promise && typeof promise.then === 'function') {
+                            if (!successHandler) {
+                                data = promise;
                             }
-                        }).catch((data) => {
-                            if (errorHandler) {
-                                errorHandler.call(this, data);
+                            else {
+                                promise.then((data) => {
+                                    if (successHandler) {
+                                        data = typeof data === 'string' && this.modelObserver.isJson(data) ?
+                                            JSON.parse(data) : data;
+                                        successHandler.call(this, data);
+                                    }
+                                }).catch((data) => {
+                                    if (errorHandler) {
+                                        data = typeof data === 'string' && this.modelObserver.isJson(data) ? JSON.parse(data) : data;
+                                        errorHandler.call(this, data);
+                                    }
+                                });
                             }
-                        });
+                        }
+                        else if (successHandler) {
+                            successHandler.call(this, eventProp);
+                        }
                     }
-                    else if (successHandler) {
-                        successHandler.call(this, eventProp);
+                    else {
+                        handler.call(this, eventProp);
+                        if (successHandler) {
+                            successHandler.call(this, eventProp);
+                        }
                     }
+                }
+                else if (successHandler) {
+                    successHandler.call(this, eventProp);
                 }
             }
             this.isProtectedOnChange = prevDetection;
+            return data;
         }
     }
     /**
@@ -6644,6 +6720,10 @@ function addNameSpace(str, addNS, nameSpace, ignoreList) {
  */
 const HAS_ROW = /^[\n\r.]+\<tr|^\<tr/;
 const HAS_SVG = /^[\n\r.]+\<svg|^\<path|^\<g/;
+let blazorTemplates = {};
+function getRandomId() {
+    return '-' + Math.random().toString(36).substr(2, 5);
+}
 /**
  * Compile the template string into template function.
  * @param  {string} templateString - The template string which is going to convert.
@@ -6654,8 +6734,22 @@ const HAS_SVG = /^[\n\r.]+\<svg|^\<path|^\<g/;
 function compile$$1(templateString, helper) {
     let compiler = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data, component, propName) => {
+    return (data, component, propName, templateId) => {
         let result = compiler(data, component, propName);
+        let blazor = 'Blazor';
+        let blazorTemplateId = 'BlazorTemplateId';
+        if (window && window[blazor]) {
+            let randomId = getRandomId();
+            if (!blazorTemplates[templateId]) {
+                blazorTemplates[templateId] = [];
+            }
+            data[blazorTemplateId] = templateId + randomId;
+            blazorTemplates[templateId].push(data);
+            // tslint:disable-next-line:no-any
+            return propName === 'rowTemplate' ? [createElement('tr', { id: templateId + randomId })] :
+                // tslint:disable-next-line:no-any
+                [createElement('div', { id: templateId + randomId })];
+        }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {
                 let ele = createElement('svg', { innerHTML: result });
@@ -6670,6 +6764,32 @@ function compile$$1(templateString, helper) {
             return result;
         }
     };
+}
+function updateBlazorTemplate(templateId, templateName) {
+    let blazor = 'Blazor';
+    if (window && window[blazor]) {
+        let ejsIntrop = 'ejsIntrop';
+        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId);
+        blazorTemplates[templateId] = [];
+    }
+}
+function resetBlazorTemplate(templateId, templateName) {
+    let templateDiv = document.getElementById(templateId);
+    if (templateDiv) {
+        // tslint:disable-next-line:no-any
+        let innerTemplates = templateDiv.getElementsByClassName('blazor-inner-template');
+        for (let i = 0; i < innerTemplates.length; i++) {
+            let tempId = innerTemplates[i].getAttribute('data-templateId');
+            let tempElement = document.getElementById(tempId);
+            if (tempElement) {
+                let length = tempElement.children.length;
+                for (let j = 0; j < length; j++) {
+                    innerTemplates[i].appendChild(tempElement.children[0]);
+                    tempElement.appendChild(innerTemplates[i].children[j].cloneNode(true));
+                }
+            }
+        }
+    }
 }
 /**
  * Set your custom template engine for template rendering.
@@ -6699,5 +6819,5 @@ let engineObj = { compile: new Engine().compile };
  * Base modules
  */
 
-export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, compile$$1 as compile, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
+export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
 //# sourceMappingURL=ej2-base.es2015.js.map

@@ -84,9 +84,9 @@ export const actionBegin: string = 'actionBegin';
 /** @hidden */
 export const actionComplete: string = 'actionComplete';
 /** @hidden */
-export const actionSuccess: string = 'actionSuccess';
+export const toolbarStatusUpdate: string = 'toolbarStatusUpdate';
 /** @hidden */
-export const popupOpen: string = 'popupOpen';
+export const actionSuccess: string = 'actionSuccess';
 /** @hidden */
 export const updateToolbarItem: string = 'updateToolbarItem';
 /** @hidden */
@@ -173,3 +173,17 @@ export const checkUndo: string = 'checkUndoStack';
 export const readOnlyMode: string = 'readOnlyMode';
 /** @hidden */
 export const pasteClean: string = 'pasteClean';
+/** @hidden */
+export const beforeDialogOpen: string = 'beforeDialogOpen';
+/** @hidden */
+export const dialogOpen: string = 'dialogOpen';
+/** @hidden */
+export const dialogClose: string = 'dialogClose';
+/** @hidden */
+export const beforeQuickToolbarOpen: string = 'beforeQuickToolbarOpen';
+/** @hidden */
+export const quickToolbarOpen: string = 'quickToolbarOpen';
+/** @hidden */
+export const quickToolbarClose: string = 'quickToolbarClose';
+/** @hidden */
+export const popupHide: string = 'popupHide';

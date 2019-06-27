@@ -1,4 +1,4 @@
-import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -481,7 +481,8 @@ var ListBase;
                 li.innerText = fieldData[curFields.text];
             }
             else {
-                append(compiledString(curItem), li);
+                const currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
+                append(compiledString(curItem, null, null, currentID), li);
                 li.setAttribute('data-value', value);
                 li.setAttribute('role', 'option');
             }
@@ -509,15 +510,16 @@ var ListBase;
      * @param  {FieldsMapping} fields - Specifies fields for mapping the dataSource.
      * @param  {Element[]} headerItems? - Specifies listbase header items.
      */
-    function renderGroupTemplate(groupTemplate, groupDataSource, fields, headerItems) {
+    function renderGroupTemplate(groupTemplate, groupDataSource, fields, headerItems, options) {
         let compiledString = compile(groupTemplate);
         let curFields = extend({}, ListBase.defaultMappedFields, fields);
+        let curOpt = extend({}, defaultListBaseOptions, options);
         let category = curFields.groupBy;
         for (let header of headerItems) {
             let headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData), header);
+            append(compiledString(headerData, null, null, curOpt.groupTemplateID), header);
         }
         return headerItems;
     }
@@ -657,11 +659,11 @@ var ListBase;
         !isNullOrUndefined(uID) ? li.setAttribute('data-uid', uID) : li.setAttribute('data-uid', generateId());
         if (grpLI && options && options.groupTemplate) {
             let compiledString = compile(options.groupTemplate);
-            append(compiledString(item), li);
+            append(compiledString(item, null, null, curOpt.groupTemplateID), li);
         }
         else if (!grpLI && options && options.template) {
             let compiledString = compile(options.template);
-            append(compiledString(item), li);
+            append(compiledString(item, null, null, curOpt.templateID), li);
         }
         else {
             let innerDiv = createElement('div', {
@@ -795,6 +797,9 @@ const classNames = {
     listviewCheckbox: 'e-listview-checkbox',
     itemCheckList: 'e-checklist'
 };
+const LISTVIEW_TEMPLATE_PROPERTY = 'Template';
+const LISTVIEW_GROUPTEMPLATE_PROPERTY = 'GroupTemplate';
+const LISTVIEW_HEADERTEMPLATE_PROPERTY = 'HeaderTemplate';
 class FieldSettings extends ChildProperty {
 }
 __decorate([
@@ -984,8 +989,9 @@ let ListView = class ListView extends Component {
             if (this.headerTemplate) {
                 let compiledString = compile(this.headerTemplate);
                 let headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
-                append(compiledString({}), headerTemplateEle);
+                append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                 append([headerTemplateEle], this.headerEle);
+                this.updateBlazorTemplates(false, true);
             }
             if (this.headerTemplate && this.headerTitle) {
                 textEle.classList.add('header');
@@ -1072,7 +1078,9 @@ let ListView = class ListView extends Component {
                 groupItemRole: 'group', wrapperRole: 'presentation'
             },
             fields: this.fields.properties, sortOrder: this.sortOrder, showIcon: this.showIcon,
-            itemCreated: this.renderCheckbox.bind(this)
+            itemCreated: this.renderCheckbox.bind(this),
+            templateID: `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`,
+            groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`
         };
         this.initialization();
     }
@@ -1084,6 +1092,9 @@ let ListView = class ListView extends Component {
         this.isNestedList = false;
         this.selectedData = [];
         this.selectedId = [];
+        this.LISTVIEW_TEMPLATE_ID = `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`;
+        this.LISTVIEW_GROUPTEMPLATE_ID = `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`;
+        this.LISTVIEW_HEADERTEMPLATE_ID = `${this.element.id}${LISTVIEW_HEADERTEMPLATE_PROPERTY}`;
         this.aniObj = new Animation(this.animateOptions);
     }
     renderCheckbox(args) {
@@ -1348,6 +1359,7 @@ let ListView = class ListView extends Component {
         return siblingLI;
     }
     arrowKeyHandler(e, prev) {
+        e.preventDefault();
         if (Object.keys(this.dataSource).length && this.curUL) {
             let siblingLI = this.onArrowKeyDown(e, prev);
             let elementTop = this.element.getBoundingClientRect().top;
@@ -1366,15 +1378,15 @@ let ListView = class ListView extends Component {
                     heightDiff = this.isWindow ? (siblingTop + siblingHeight) :
                         ((siblingTop - elementTop) + siblingHeight);
                     if (heightDiff > height) {
-                        this.isWindow ? window.scrollTo(0, pageYOffset + (heightDiff - height)) :
-                            this.element.scrollTo(0, this.element.scrollTop + (heightDiff - height));
+                        this.isWindow ? window.scroll(0, pageYOffset + (heightDiff - height)) :
+                            this.element.scrollTop = this.element.scrollTop + (heightDiff - height);
                     }
                 }
                 else {
                     heightDiff = this.isWindow ? siblingTop : (siblingTop - elementTop);
                     if (heightDiff < 0) {
-                        this.isWindow ? window.scrollTo(0, pageYOffset + heightDiff) :
-                            this.element.scrollTo(0, this.element.scrollTop + heightDiff);
+                        this.isWindow ? window.scroll(0, pageYOffset + heightDiff) :
+                            this.element.scrollTop = this.element.scrollTop + heightDiff;
                     }
                 }
             }
@@ -1384,22 +1396,22 @@ let ListView = class ListView extends Component {
                     this.onUIScrolled = undefined;
                 };
                 heightDiff = this.virtualizationModule.listItemHeight;
-                this.isWindow ? window.scrollTo(0, pageYOffset - heightDiff) :
-                    this.element.scrollTo(0, this.element.scrollTop - heightDiff);
+                this.isWindow ? window.scroll(0, pageYOffset - heightDiff) :
+                    this.element.scrollTop = this.element.scrollTop - heightDiff;
             }
             else if (prev) {
                 if (this.showHeader && this.headerEle) {
                     let topHeight = groupItemBounds ? groupItemBounds.top : firstItemBounds.top;
                     let headerBounds = this.headerEle.getBoundingClientRect();
                     heightDiff = headerBounds.top < 0 ? (headerBounds.height - topHeight) : 0;
-                    this.isWindow ? window.scrollTo(0, pageYOffset - heightDiff)
-                        : this.element.scrollTo(0, 0);
+                    this.isWindow ? window.scroll(0, pageYOffset - heightDiff)
+                        : this.element.scrollTop = 0;
                 }
                 else if (this.fields.groupBy) {
                     heightDiff = this.isWindow ? (groupItemBounds.top < 0 ? groupItemBounds.top : 0) :
                         (elementTop - firstItemBounds.top) + groupItemBounds.height;
-                    this.isWindow ? window.scrollTo(0, pageYOffset + heightDiff) :
-                        this.element.scrollTo(0, this.element.scrollTop - heightDiff);
+                    this.isWindow ? window.scroll(0, pageYOffset + heightDiff) :
+                        this.element.scrollTop = this.element.scrollTop - heightDiff;
                 }
             }
         }
@@ -1457,9 +1469,6 @@ let ListView = class ListView extends Component {
                 }
                 this.back();
                 break;
-            case 9:
-                this.tabFocus(e);
-                break;
             case 32:
                 this.spaceKeyHandler(e);
                 break;
@@ -1504,31 +1513,6 @@ let ListView = class ListView extends Component {
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
         this.touchModule.destroy();
-    }
-    tabFocus(e) {
-        if (this.curUL && ((!this.curUL.querySelector('.' + classNames.focused) && this.showCheckBox) ||
-            (!this.curUL.querySelector('.' + classNames.selected) && !this.showCheckBox &&
-                !this.curUL.querySelector('.' + classNames.hasChild)) ||
-            (this.curUL.querySelector('.' + classNames.hasChild) &&
-                !this.curUL.querySelector('.' + classNames.focused) &&
-                !this.curUL.querySelector('.' + classNames.selected)))) {
-            e.preventDefault();
-        }
-        if (Object.keys(this.dataSource).length && this.curUL) {
-            let selectedList = this.curUL.querySelector('.' + classNames.selected);
-            if ((!selectedList && this.curUL) || this.showCheckBox) {
-                let li = selectedList || this.curUL.querySelector('.' + classNames.listItem);
-                if (li.classList.contains(classNames.hasChild) || this.showCheckBox) {
-                    let focusedElement = this.curUL.querySelector('.' + classNames.focused);
-                    if (isNullOrUndefined(focusedElement)) {
-                        li.classList.add(classNames.focused);
-                    }
-                }
-                else {
-                    this.setSelectLI(li, e);
-                }
-            }
-        }
     }
     removeFocus() {
         let focusedLI = this.element.querySelectorAll('.' + classNames.focused);
@@ -1797,12 +1781,14 @@ let ListView = class ListView extends Component {
         }
     }
     reRender() {
+        this.resetBlazorTemplates();
         this.element.innerHTML = '';
         this.headerEle = this.ulElement = this.liCollection = undefined;
         this.setLocalData();
         this.header();
     }
     resetCurrentList() {
+        this.resetBlazorTemplates();
         this.setViewDataSource(this.curViewDS);
         this.contentContainer.innerHTML = '';
         this.createList();
@@ -1813,6 +1799,35 @@ let ListView = class ListView extends Component {
         this.isNestedList = false;
         this.ulElement = this.curUL = ListBase.createList(this.createElement, this.curViewDS, this.listBaseOption);
         this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+        this.updateBlazorTemplates(true);
+    }
+    resetBlazorTemplates() {
+        if (this.template) {
+            resetBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
+        }
+        if (this.groupTemplate) {
+            resetBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
+        }
+        if (this.headerTemplate) {
+            resetBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
+        }
+    }
+    updateBlazorTemplates(template = false, headerTemplate = false) {
+        if (this.template && template) {
+            setTimeout(() => {
+                updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
+            }, 0);
+        }
+        if (this.groupTemplate && template) {
+            setTimeout(() => {
+                updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
+            }, 0);
+        }
+        if (this.headerTemplate && headerTemplate) {
+            setTimeout(() => {
+                updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
+            }, 0);
+        }
     }
     renderSubList(li) {
         let uID = li.getAttribute('data-uid');
@@ -1823,10 +1838,12 @@ let ListView = class ListView extends Component {
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 let data = this.curViewDS;
+                this.resetBlazorTemplates();
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
                 ele.setAttribute('pID', uID);
                 ele.style.display = 'none';
                 this.renderIntoDom(ele);
+                this.updateBlazorTemplates(true);
             }
             this.switchView(ul, ele);
             this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
@@ -1891,6 +1908,7 @@ let ListView = class ListView extends Component {
      * It is used to destroy the ListView component.
      */
     destroy() {
+        this.resetBlazorTemplates();
         this.unWireEvents();
         let classAr = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter((css) => css));
@@ -2022,7 +2040,7 @@ let ListView = class ListView extends Component {
         return parentId;
     }
     /**
-     * It is used to get the currently [here](./selectedItem)
+     * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
      */
     getSelectedItems() {
@@ -2199,6 +2217,7 @@ let ListView = class ListView extends Component {
                     }
                     child = child.concat(data);
                     if (ds instanceof Array) {
+                        this.resetBlazorTemplates();
                         data.forEach((dataSource) => {
                             this.dataSource.push(dataSource);
                             this.setViewDataSource(this.dataSource);
@@ -2214,6 +2233,9 @@ let ListView = class ListView extends Component {
                                 this.reRender();
                             }
                         });
+                        if (this.ulElement) {
+                            this.updateBlazorTemplates(true);
+                        }
                         this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
                     }
                     else {
@@ -2240,7 +2262,9 @@ let ListView = class ListView extends Component {
                 this.virtualizationModule.removeItem(obj);
             }
             else {
+                this.resetBlazorTemplates();
                 this.removeItemFromList(obj);
+                this.updateBlazorTemplates(true);
             }
         }
     }
@@ -2283,6 +2307,7 @@ let ListView = class ListView extends Component {
     removeMultipleItems(obj) {
         if (!(this.dataSource instanceof DataManager)) {
             if (obj.length) {
+                this.resetBlazorTemplates();
                 for (let i = 0; i < obj.length; i++) {
                     if (this.enableVirtualization) {
                         this.removeItem(obj[i]);
@@ -2291,6 +2316,7 @@ let ListView = class ListView extends Component {
                         this.removeItemFromList(obj[i]);
                     }
                 }
+                this.updateBlazorTemplates(true);
             }
         }
     }
@@ -3384,15 +3410,13 @@ let Sortable = Sortable_1 = class Sortable extends Base {
                 (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
                 this.curTarget = target;
                 let oldIdx = this.getIndex(newInst.placeHolderElement, newInst);
-                let isPlaceHolder = isNullOrUndefined(oldIdx);
-                oldIdx = isPlaceHolder ? this.getIndex(this.target) :
+                oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) :
                     this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
                 newInst.placeHolderElement = this.getPlaceHolder(target, newInst);
                 let newIdx = this.getIndex(target, newInst);
-                let idx = newInst.element !== this.element && isPlaceHolder ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
+                let idx = newInst.element !== this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                 if (newInst.placeHolderElement) {
-                    let len = newInst.element.childElementCount;
-                    if (newInst.element !== this.element && (idx === len - 1 || idx === len) && (isPlaceHolder || idx === len)) {
+                    if (newInst.element !== this.element && idx === newInst.element.childElementCount - 1) {
                         newInst.element.appendChild(newInst.placeHolderElement);
                     }
                     else {
@@ -3409,16 +3433,8 @@ let Sortable = Sortable_1 = class Sortable extends Base {
                         target: e.target, helper: newInst.element.lastChild, droppedElement: this.target, scope: this.scope });
                 }
             }
-            if (newInst.element === e.target) {
-                if (!this.isPlaceHolderPresent(newInst)) {
-                    newInst.placeHolderElement = this.getPlaceHolder(target, newInst);
-                }
-                if (newInst.placeHolderElement) {
-                    newInst.element.appendChild(newInst.placeHolderElement);
-                }
-            }
             newInst = this.getSortableInstance(this.curTarget);
-            if (isNullOrUndefined(target) && newInst.element !== e.target && e.target !== newInst.placeHolderElement) {
+            if (isNullOrUndefined(target) && e.target !== newInst.placeHolderElement) {
                 if (this.isPlaceHolderPresent(newInst)) {
                     this.removePlaceHolder(newInst);
                 }
@@ -3435,7 +3451,6 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             }
         };
         this.onDragStart = (e) => {
-            this.element.style.touchAction = 'none';
             this.target = this.getSortableElement(e.target);
             this.target.classList.add('e-grabbed');
             this.curTarget = this.target;
@@ -3454,17 +3469,14 @@ let Sortable = Sortable_1 = class Sortable extends Base {
                     target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
                 remove(dropInst.placeHolderElement);
             }
-            let newInst = this.getSortableInstance(e.target);
-            if (newInst.element === e.target && newInst !== dropInst && this.isPlaceHolderPresent(newInst)) {
+            dropInst = this.getSortableInstance(e.target);
+            if (dropInst.element === e.target && !dropInst.element.childElementCount) {
                 prevIdx = this.getIndex(this.target);
-                this.updateItemClass(newInst);
-                newInst.element.appendChild(this.target);
-                remove(newInst.placeHolderElement);
-                this.trigger('drop', { event: e.event, element: newInst.element, previousIndex: prevIdx,
-                    currentIndex: newInst.element.childElementCount, target: e.target, helper: e.helper,
-                    droppedElement: this.target, scopeName: this.scope });
+                this.updateItemClass(dropInst);
+                dropInst.element.appendChild(this.target);
+                this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: 0,
+                    target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
             }
-            this.element.style.touchAction = '';
             this.target.classList.remove('e-grabbed');
             this.target = null;
             this.curTarget = null;

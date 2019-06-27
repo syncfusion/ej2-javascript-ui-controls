@@ -1,7 +1,7 @@
 import { Chart } from '../chart';
 import { EventHandler, Browser, createElement } from '@syncfusion/ej2-base';
 import { getRectLocation, minMax, getElement, ChartLocation, RectOption } from '../../common/utils/helper';
-import { Rect, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { Rect, measureText, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../axis/axis';
 import { Toolkit } from './zooming-toolkit';
 import { AxisModel } from '../axis/axis-model';
@@ -10,9 +10,8 @@ import { Series } from '../series/chart-series';
 import { ZoomMode, ToolbarItems } from '../utils/enum';
 import { ZoomSettingsModel } from '../chart-model';
 import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
-import { ITouches, IZoomAxisRange } from '../../chart/model/chart-interface';
+import { IZoomCompleteEventArgs, ITouches, IZoomAxisRange } from '../../chart/model/chart-interface';
 import { zoomComplete } from '../../common/model/constants';
-import { IZoomCompleteEventArgs } from '../../chart/model/chart-interface';
 import { withInBounds } from '../../common/utils/helper';
 
 /**
@@ -121,10 +120,11 @@ export class Zoom {
                 rect.width = areaBounds.width;
                 rect.x = areaBounds.x;
             }
-            chart.svgObject.appendChild(chart.renderer.drawRectangle(new RectOption(
-                this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill,
-                { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')
-            ) as HTMLElement);
+            let svg: Element = chart.enableCanvas ? document.getElementById(this.elementId + '_tooltip_svg') : chart.svgObject;
+            svg.appendChild(chart.svgRenderer.drawRectangle(new RectOption(
+                    this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill,
+                    { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')
+                ) as HTMLElement);
         }
     }
 
@@ -174,6 +174,9 @@ export class Zoom {
             }
             this.setTransform(translateX, translateY, null, null, chart, false);
             this.refreshAxis(<CartesianAxisLayoutPanel>chart.chartAxisLayoutPanel, chart, chart.axisCollections);
+            if (chart.enableCanvas) {
+                this.performZoomRedraw(chart);
+            }
         } else {
             this.performZoomRedraw(chart);
         }
@@ -198,7 +201,7 @@ export class Zoom {
             } else if (chart.disableTrackTooltip) {
                 chart.disableTrackTooltip = false;
                 chart.delayRedraw = false;
-                chart.removeSvg();
+                chart.enableCanvas ? chart.createChartSvg() : chart.removeSvg() ;
                 chart.refreshAxis();
                 chart.refreshBound();
             }
@@ -410,7 +413,9 @@ export class Zoom {
 
     // Series transformation style applied here.
     private setTransform(transX: number, transY: number, scaleX: number, scaleY: number, chart: Chart, isPinch: boolean): void {
-        chart.seriesElements.setAttribute('clip-path', 'url(#' + this.elementId + '_ChartAreaClipRect_)');
+        if (!chart.enableCanvas) {
+            chart.seriesElements.setAttribute('clip-path', 'url(#' + this.elementId + '_ChartAreaClipRect_)');
+        }
         if (chart.indicatorElements) {
             chart.indicatorElements.setAttribute('clip-path', 'url(#' + this.elementId + '_ChartAreaClipRect_)');
         }
@@ -429,7 +434,9 @@ export class Zoom {
                     if (value.category === 'Indicator') {
                         (value.seriesElement.parentNode as HTMLInputElement).setAttribute('transform', translate);
                     } else {
-                        value.seriesElement.setAttribute('transform', translate);
+                        if (!chart.enableCanvas) {
+                            value.seriesElement.setAttribute('transform', translate);
+                        }
                     }
                     element = getElement(chart.element.id + '_Series_' + value.index + '_DataLabelCollections');
                     if (value.errorBarElement) {
@@ -476,7 +483,7 @@ export class Zoom {
         let toolboxItems: ToolbarItems[] = this.zooming.toolbarItems;
         let areaBounds: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
         let spacing: number = 5;
-        let render: SvgRenderer = chart.renderer;
+        let render: SvgRenderer | CanvasRenderer = chart.svgRenderer;
         let length: number = this.isDevice ? 1 : toolboxItems.length;
         let iconSize: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).width : 16;
         let height: number = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).height : 22;
@@ -528,7 +535,23 @@ export class Zoom {
         }
         this.toolkitElements.setAttribute('opacity', this.isDevice ? '1' : '' + this.zoomkitOpacity);
         this.toolkitElements.setAttribute('cursor', 'auto');
-        chart.svgObject.appendChild(this.toolkitElements);
+        if (chart.enableCanvas) {
+            let zoomDiv: HTMLElement = document.createElement('div');
+            zoomDiv.id = chart.element.id + '_zoom';
+            zoomDiv.setAttribute('style', 'position:absolute; z-index:1');
+            let zoomheight: number = chart.availableSize.height / 2;
+            let svg: Element = chart.svgRenderer.createSvg({
+                id: chart.element.id + '_zoomkit_svg',
+                width: chart.availableSize.width,
+                height: zoomheight
+            });
+            svg.setAttribute('style', 'position:absolute');
+            svg.appendChild(this.toolkitElements);
+            zoomDiv.appendChild(svg);
+            document.getElementById(this.elementId + '_Secondary_Element').appendChild(zoomDiv);
+        } else {
+            chart.svgObject.appendChild(this.toolkitElements);
+        }
         if (!this.isDevice) {
             EventHandler.add(this.toolkitElements, 'mousemove touchstart', this.zoomToolkitMove, this);
             EventHandler.add(this.toolkitElements, 'mouseleave touchend', this.zoomToolkitLeave, this);

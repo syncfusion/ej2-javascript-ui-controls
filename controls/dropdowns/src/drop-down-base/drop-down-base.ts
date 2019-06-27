@@ -5,6 +5,7 @@ import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data'
 import { ListBase, SortOrder, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 import { DropDownBaseModel, FieldSettingsModel } from './drop-down-base-model';
 import { Popup } from '@syncfusion/ej2-popups';
+import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 
 export class FieldSettings extends ChildProperty<FieldSettings> {
     /**
@@ -55,6 +56,14 @@ export const dropDownBaseClasses: DropDownBaseClassList = {
     disabled: ListBaseClasses.disabled,
     grouping: 'e-dd-group'
 };
+
+const ITEMTEMPLATE_PROPERTY: string = 'ItemTemplate';
+const VALUETEMPLATE_PROPERTY: string = 'ValueTemplate';
+const GROUPTEMPLATE_PROPERTY: string = 'GroupTemplate';
+const HEADERTEMPLATE_PROPERTY: string = 'HeaderTemplate';
+const FOOTERTEMPLATE_PROPERTY: string = 'FooterTemplate';
+const NORECORDSTEMPLATE_PROPERTY: string = 'NoRecordsTemplate';
+const ACTIONFAILURETEMPLATE_PROPERTY: string = 'ActionFailureTemplate';
 
 export interface DropDownBaseClassList {
     root: string;
@@ -116,7 +125,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isRequested: boolean;
     protected isDataFetched: boolean;
     protected queryString: string;
-    private sortedData: { [key: string]: Object }[] | string[] | boolean[] | number[];
+    protected sortedData: { [key: string]: Object }[] | string[] | boolean[] | number[];
+    protected isGroupChecking: boolean;
+    protected itemTemplateId: string;
+    protected valueTemplateId: string;
+    protected groupTemplateId: string;
+    protected headerTemplateId: string;
+    protected footerTemplateId: string;
+    protected noRecordsTemplateId: string;
+    protected actionFailureTemplateId: string;
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -227,42 +244,49 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Triggers before fetching data from the remote server.
      * @event
+     * @blazorProperty 'OnActionBegin'
      */
     @Event()
     public actionBegin: EmitType<Object>;
     /**
      * Triggers after data is fetched successfully from the remote server.
      * @event
+     * @blazorProperty 'OnActionComplete'
      */
     @Event()
     public actionComplete: EmitType<Object>;
     /**
      * Triggers when the data fetch request from the remote server fails.
      * @event
+     * @blazorProperty 'OnActionFailure'
      */
     @Event()
     public actionFailure: EmitType<Object>;
     /**
      * Triggers when an item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
      * @event
+     * @blazorProperty 'OnValueSelect'
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
     /**
      * Triggers when data source is populated in the popup list..
      * @event
+     * @blazorProperty 'DataBound'
      */
     @Event()
     public dataBound: EmitType<Object>;
     /** 
      * Triggers when the component is created.
      * @event 
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when the component is destroyed.
-     * @event 
+     * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -390,13 +414,16 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected l10nUpdate(actionFailure?: boolean): void {
         let ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
+            this.DropDownBaseresetBlazorTemplates(false, false, true, true);
             let template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString: Function;
+            let templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             ele.innerHTML = '';
             compiledString = compile(template);
-            for (let item of compiledString({})) {
+            for (let item of compiledString({}, null, null, templateId)) {
                 ele.appendChild(item);
             }
+            this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure);
         } else {
             let l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
             let componentLocale: L10n = new L10n(this.getLocaleName(), {}, this.locale);
@@ -448,6 +475,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     private initialize(): void {
         this.bindEvent = true;
+        this.actionFailureTemplateId = `${this.element.id}${ACTIONFAILURETEMPLATE_PROPERTY}`;
         if (this.element.tagName === 'UL') {
             let jsonElement: { [key: string]: Object }[] = ListBase.createJsonFromElement(this.element);
             this.setProperties({ fields: { text: 'text', value: 'text' } }, true);
@@ -460,6 +488,65 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.setListData(this.dataSource, this.fields, this.query);
         }
     };
+
+    protected DropDownBaseupdateBlazorTemplates(
+        item: boolean, group: boolean, noRecord: boolean, action: boolean,
+        value?: boolean, header?: boolean, footer?: boolean): void {
+        if (this.itemTemplate && item) {
+            updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
+        }
+        if (this.groupTemplate && group) {
+            setTimeout(
+                () => {
+                    updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
+                },
+                0);
+        }
+        if (this.noRecordsTemplate && noRecord) {
+            setTimeout(
+                () => {
+                    updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
+                },
+                0);
+        }
+        if (this.actionFailureTemplate && action) {
+            updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
+        }
+        if (value) {
+            updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
+        }
+        if (header) {
+            updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
+        }
+        if (footer) {
+            updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
+        }
+    }
+    protected DropDownBaseresetBlazorTemplates(
+        item: boolean, group: boolean, noRecord: boolean, action: boolean,
+        value?: boolean, header?: boolean, footer?: boolean): void {
+        if (this.itemTemplate && item) {
+            resetBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
+        }
+        if (this.groupTemplate && group) {
+            resetBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
+        }
+        if (this.noRecordsTemplate && noRecord) {
+            resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
+        }
+        if (this.actionFailureTemplate && action) {
+            resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
+        }
+        if (value) {
+            resetBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
+        }
+        if (header) {
+            resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
+        }
+        if (footer) {
+            resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
+        }
+    }
     /**
      * Get the properties to be maintained in persisted state.
      */
@@ -533,6 +620,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.enableRtlElements = [];
         this.isRequested = false;
         this.isDataFetched = false;
+        this.itemTemplateId = `${this.element.id}${ITEMTEMPLATE_PROPERTY}`;
+        this.valueTemplateId = `${this.element.id}${VALUETEMPLATE_PROPERTY}`;
+        this.groupTemplateId = `${this.element.id}${GROUPTEMPLATE_PROPERTY}`;
+        this.headerTemplateId = `${this.element.id}${HEADERTEMPLATE_PROPERTY}`;
+        this.footerTemplateId = `${this.element.id}${FOOTERTEMPLATE_PROPERTY}`;
+        this.noRecordsTemplateId = `${this.element.id}${NORECORDSTEMPLATE_PROPERTY}`;
     }
     /**
      * Creates the list items of DropDownBase component.
@@ -544,45 +637,50 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let ulElement: HTMLElement;
         this.isActive = true;
         let eventArgs: { [key: string]: Object } = { cancel: false, data: dataSource, query: query };
-        this.trigger('actionBegin', eventArgs);
-        if (eventArgs.cancel) { return; }
-        this.showSpinner();
-        if (dataSource instanceof DataManager) {
-            this.isRequested = true;
-            if (this.isDataFetched) {
-                this.emptyDataRequest(fields);
-                return;
-            }
-            (eventArgs.data as DataManager).executeQuery(this.getQuery(eventArgs.query as Query)).then((e: Object) => {
-                this.trigger('actionComplete', e);
-                if ((e as { [key: string]: Object }).cancel) { return; }
-                let listItems: { [key: string]: Object }[] = (e as ResultData).result;
-                if (listItems.length === 0) {
-                    this.isDataFetched = true;
+        this.trigger('actionBegin', eventArgs, (eventArgs: { [key: string]: object }) => {
+            if (!eventArgs.cancel) {
+                this.showSpinner();
+                if (dataSource instanceof DataManager) {
+                    this.isRequested = true;
+                    if (this.isDataFetched) {
+                        this.emptyDataRequest(fields);
+                        return;
+                    }
+                    (eventArgs.data as DataManager).executeQuery(this.getQuery(eventArgs.query as Query)).then((e: Object) => {
+                        this.trigger('actionComplete', e, (e: Object) => {
+                            if (!(e as { [key: string]: object }).cancel) {
+                                let listItems: { [key: string]: Object }[] = (e as ResultData).result;
+                                if (listItems.length === 0) {
+                                    this.isDataFetched = true;
+                                }
+                                ulElement = this.renderItems(listItems, fields);
+                                this.onActionComplete(ulElement, listItems, e);
+                                if (this.groupTemplate) { this.renderGroupTemplate(ulElement); }
+                                this.isRequested = false;
+                                this.bindChildItems(listItems, ulElement, fields, e);
+                            }
+                        });
+                    }).catch((e: Object) => {
+                        this.isRequested = false;
+                        this.onActionFailure(e);
+                        this.hideSpinner();
+                    });
+                } else {
+                    let dataManager: DataManager = new DataManager(eventArgs.data as DataOptions | JSON[]);
+                    let listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
+                        this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
+                    let localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
+                    this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
+                        if (!localDataArgs.cancel) {
+                            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object; }[], fields);
+                            this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object; }[]);
+                            if (this.groupTemplate) { this.renderGroupTemplate(ulElement); }
+                            this.bindChildItems(localDataArgs.result as { [key: string]: Object; }[], ulElement, fields);
+                        }
+                    });
                 }
-                ulElement = this.renderItems(listItems, fields);
-                this.onActionComplete(ulElement, listItems, e);
-                if (this.groupTemplate) { this.renderGroupTemplate(ulElement); }
-                this.isRequested = false;
-                this.bindChildItems(listItems, ulElement, fields, e);
-            }).catch((e: Object) => {
-                this.isRequested = false;
-                this.onActionFailure(e);
-                this.hideSpinner();
-            });
-        } else {
-            let dataManager: DataManager = new DataManager(eventArgs.data as DataOptions | JSON[]);
-            let listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
-                this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
-            let localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
-            this.trigger('actionComplete', localDataArgs);
-            if (localDataArgs.cancel) { return; }
-            ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object; }[], fields);
-            this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object; }[]);
-            if (this.groupTemplate) { this.renderGroupTemplate(ulElement); }
-            this.bindChildItems(localDataArgs.result as { [key: string]: Object; }[], ulElement, fields);
-        }
-
+            }
+        });
     }
     private bindChildItems(
         listItems: { [key: string]: Object; }[],
@@ -594,6 +692,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 () => {
                     let childNode: HTMLElement[] = this.remainingItems(this.sortedData, fields);
                     append(childNode, ulElement);
+                    this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
                     this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
                     this.updateListValues();
                     this.raiseDataBound(listItems, e);
@@ -706,11 +805,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private renderGroupTemplate(listEle: HTMLElement): void {
         if (this.fields.groupBy !== null && this.dataSource || this.element.querySelector('.' + dropDownBaseClasses.group)) {
             let dataSource: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.dataSource;
+            let option: { [key: string]: Object } = { groupTemplateID: this.groupTemplateId };
             let headerItems: Element[] = <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             let tempHeaders: Element[] = ListBase.renderGroupTemplate(
                 this.groupTemplate as string, <{ [key: string]: Object }[]>dataSource,
                 (this.fields as FieldSettingsModel & { properties: Object }).properties,
-                headerItems);
+                headerItems, option);
+            this.DropDownBaseupdateBlazorTemplates(false, true, false, false);
         }
     }
     /**
@@ -786,7 +887,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * To render the list items
      */
-    private renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
+    protected renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
         let ulElement: HTMLElement;
         if (this.itemTemplate && listData) {
             let dataSource: { [key: string]: Object }[] = listData;
@@ -804,6 +905,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
         } else {
             ulElement = this.createListItems(listData, fields);
         }
@@ -811,7 +913,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     };
 
     protected templateListItem(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
+        this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         let option: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
+        option.templateID = this.itemTemplateId;
         return ListBase.renderContentTemplate(
             this.createElement, this.itemTemplate, dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, option);
     }
@@ -966,7 +1070,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let rippleModel: RippleOptions = { duration: 300, selector: '.' + dropDownBaseClasses.li };
         this.rippleFun = rippleEffect(this.list, rippleModel);
         let group: HTMLElement = <HTMLElement>this.element.querySelector('select>optgroup');
-        if (this.fields.groupBy || !isNullOrUndefined(group)) {
+        if ((this.fields.groupBy || !isNullOrUndefined(group)) && !this.isGroupChecking) {
             EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
         }
         if (this.getModuleName() === 'dropdownbase') {
@@ -1013,6 +1117,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (!this.list || this.list.textContent === this.noRecordsTemplate) {
             this.renderList();
         }
+        this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         let itemsCount: number = this.getItems().length;
         let selectedItemValue: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
         items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
@@ -1034,7 +1139,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (isHeader) { li.innerText = itemText; }
             if (this.itemTemplate && !isHeader) {
                 let compiledString: Function = compile(this.itemTemplate);
-                append(compiledString(item), li);
+                append(compiledString(item, null, null, this.itemTemplateId), li);
+                this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             } else if (!isHeader) {
                 li.appendChild(document.createTextNode(itemText));
             }

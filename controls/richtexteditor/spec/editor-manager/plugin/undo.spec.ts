@@ -230,5 +230,64 @@ describe('Undo and Redo module', () => {
             destroy(rteObj);
         });
     });
+    describe('undo redo status testing with custom tool', () => {
+        let rteObj: RichTextEditor;
+        let mdsource: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'Italic', 'StrikeThrough', '|',
+                    'Formats', 'OrderedList', 'UnorderedList', '|',
+                    'CreateLink', 'Image', 'CreateTable', '|',
+                    {
+                        tooltipText: 'Preview',
+                        template: '<button id="preview-code" class="e-tbar-btn  e-control e-btn e-icon-btn">' +
+                        '<span class="e-btn-icon e-md-preview e-icons"></span></button>'
+                    }, '|','undo', 'redo']
+                },
+                undoRedoSteps: 5,
+                editorMode: 'Markdown',
+                toolbarStatusUpdate: function statusUpdate() {
+                    if (document.getElementById('preview-code').classList.contains('e-active')) {
+                        rteObj.disableToolbarItem(['Undo', 'Redo'], true);
+                    }
+                },
+                created: () => {
+                    mdsource = document.getElementById('preview-code');
+                    mdsource.addEventListener('click', (e: Event) => {
+                        if (mdsource.classList.contains('e-active')) {
+                            mdsource.classList.remove('e-active');    
+                            rteObj.disableToolbarItem(['Undo', 'Redo'],true);
 
+                        } else {
+                            mdsource.classList.add('e-active'); 
+                            rteObj.enableToolbarItem(['Undo', 'Redo'],true);                          
+                        }
+                    });                   
+                },
+            });
+        });
+        it('check after custom tool click', () => {
+            var undoElement = document.querySelector('[title="Undo"]');
+            var redoElement = document.querySelector('[title="Redo"]');
+            rteObj.value = 'Markdown content updated';
+            rteObj.dataBind();
+            rteObj.formatter.saveData();
+            rteObj.formatter.enableUndo(rteObj);
+            expect(undoElement.classList.contains('e-overlay')).toBe(true);
+            expect(redoElement.classList.contains('e-overlay')).toBe(true);
+            rteObj.value = ' updated';
+            rteObj.dataBind();
+            rteObj.formatter.saveData();
+            rteObj.formatter.enableUndo(rteObj);
+            expect(undoElement.classList.contains('e-overlay')).toBe(false);
+            expect(redoElement.classList.contains('e-overlay')).toBe(true);
+           document.getElementById('preview-code').click();   
+           expect(undoElement.classList.contains('e-overlay')).toBe(true);
+           expect(redoElement.classList.contains('e-overlay')).toBe(true);
+           document.getElementById('preview-code').click();   
+           expect(undoElement.classList.contains('e-overlay')).toBe(false);
+           expect(redoElement.classList.contains('e-overlay')).toBe(true);
+        });
+    });
 });

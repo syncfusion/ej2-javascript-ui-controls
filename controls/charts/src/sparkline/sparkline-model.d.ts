@@ -173,78 +173,97 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers after sparkline rendered.
      * @event
+     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ISparklineLoadedEventArgs>;
 
     /**
      * Triggers before sparkline render.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ISparklineLoadEventArgs>;
 
     /**
      * Triggers before sparkline tooltip render.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnTooltipInitialize'
      */
     tooltipInitialize?: EmitType<ITooltipRenderingEventArgs>;
 
     /**
      * Triggers before sparkline series render.
      * @event
+     * @deprecated
+     * @blazorProperty 'SeriesRendering'
      */
     seriesRendering?: EmitType<ISeriesRenderingEventArgs>;
 
     /**
      * Triggers before sparkline axis render.
      * @event
+     * @deprecated
+     * @blazorProperty 'AxisRendering'
      */
     axisRendering?: EmitType<IAxisRenderingEventArgs>;
 
     /**
      * Triggers before sparkline points render.
      * @event
+     * @blazorProperty 'PointRendering'
      */
     pointRendering?: EmitType<ISparklinePointEventArgs>;
 
     /**
      * Triggers while mouse move on the sparkline point region.
      * @event
+     * @blazorProperty 'OnPointRegionMouseMove'
      */
     pointRegionMouseMove?: EmitType<IPointRegionEventArgs>;
 
     /**
      * Triggers while mouse click on the sparkline point region.
      * @event
+     * @blazorProperty 'OnPointRegionMouseClick'
      */
     pointRegionMouseClick?: EmitType<IPointRegionEventArgs>;
 
     /**
      * Triggers while mouse move on the sparkline container.
      * @event
+     * @blazorProperty 'OnSparklineMouseMove'
      */
     sparklineMouseMove?: EmitType<ISparklineMouseEventArgs>;
 
     /**
      * Triggers while mouse click on the sparkline container.
      * @event
+     * @blazorProperty 'OnSparklineMouseClick'
      */
     sparklineMouseClick?: EmitType<ISparklineMouseEventArgs>;
 
     /**
      * Triggers before the sparkline datalabel render.
      * @event
+     * @deprecated
+     * @blazorProperty 'DataLabelRendering'
      */
     dataLabelRendering?: EmitType<IDataLabelRenderingEventArgs>;
 
     /**
      * Triggers before the sparkline marker render.
      * @event
+     * @deprecated
+     * @blazorProperty 'MarkerRendering'
      */
     markerRendering?: EmitType<IMarkerRenderingEventArgs>;
 
     /**
      * Triggers on resizing the sparkline.
      * @event
+     * @blazorProperty 'Resizing'
      */
     resize?: EmitType<ISparklineResizeEventArgs>;
 

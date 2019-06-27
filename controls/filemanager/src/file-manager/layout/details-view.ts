@@ -1,26 +1,26 @@
 import { Grid, Resize, ContextMenu, Sort, VirtualScroll, RowSelectEventArgs, RowDeselectEventArgs, Column } from '@syncfusion/ej2-grids';
-import { select, KeyboardEvents, EventHandler, KeyboardEventArgs, getValue, selectAll, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { select, KeyboardEvents, EventHandler, KeyboardEventArgs, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, setValue, addClass, removeClass } from '@syncfusion/ej2-base';
-import { Internationalization, closest } from '@syncfusion/ej2-base';
+import { Internationalization, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { FileManager } from '../base/file-manager';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
-import { ReadArgs, SearchArgs, IFileManager, FileDetails, NotifyArgs } from '../base/interface';
-import { FileSelectEventArgs, FileBeforeLoadEventArgs } from '../base/interface';
+import { ReadArgs, SearchArgs, FileDetails, NotifyArgs } from '../base/interface';
+import { FileSelectEventArgs, FileLoadEventArgs } from '../base/interface';
 import { FileOpenEventArgs } from '../base/interface';
 import { createDialog, createImageDialog } from '../pop-up/dialog';
-import { treeNodes } from '../common/utility';
-import { removeBlur, openAction, getImageUrl, fileType, getSortedData, getLocaleText } from '../common/utility';
+import { removeBlur, openAction, getImageUrl, fileType, getSortedData, getLocaleText, updateLayout } from '../common/utility';
 import { createEmptyElement } from '../common/utility';
-import { read, Download } from '../common/operations';
-import { cutFiles, addBlur, openSearchFolder } from '../common/index';
-import { ROWCELL } from '../../index';
+import { read, Download, GetDetails, Delete } from '../common/operations';
+import { cutFiles, addBlur, openSearchFolder, copyFiles, removeActive, pasteHandler, getPathObject } from '../common/index';
+import { hasReadAccess, hasEditAccess, hasDownloadAccess, doRename, getAccessClass, createDeniedDialog } from '../common/index';
+import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getDirectoryPath, getModule } from '../common/index';
 import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel } from '@syncfusion/ej2-grids';
-Grid.Inject(Resize, ContextMenu, Sort, VirtualScroll);
+import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs } from '@syncfusion/ej2-grids';
 
 /**
- * GridView module
+ * DetailsView module
  */
 export class DetailsView {
 
@@ -28,13 +28,19 @@ export class DetailsView {
     public element: HTMLElement;
     private parent: FileManager;
     private keyboardModule: KeyboardEvents;
+    private keyboardDownModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
-    private selectedItem: boolean;
+    private islayoutChange: boolean = false;
     private sortItem: boolean;
     private isInteracted: boolean = true;
+    private isPasteOperation: boolean = false;
+    private isCloumnRefresh: boolean = false;
     private clickObj: Touch;
     private sortSelectedNodes: string[];
     private emptyArgs: ReadArgs | SearchArgs;
+    private dragObj: Draggable = null;
+    private startIndex: number = null;
+    private firstItemIndex: number = null;
 
     /* public variable */
     public gridObj: Grid;
@@ -48,6 +54,7 @@ export class DetailsView {
      * @hidden
      */
     constructor(parent?: FileManager) {
+        Grid.Inject(Resize, ContextMenu, Sort, VirtualScroll);
         this.parent = parent;
         this.element = <HTMLElement>select('#' + this.parent.element.id + CLS.GRID_ID, this.parent.element);
         this.addEventListener();
@@ -55,13 +62,35 @@ export class DetailsView {
             altEnter: 'alt+enter',
             esc: 'escape',
             tab: 'tab',
+            moveDown: 'downarrow',
+            ctrlEnd: 'ctrl+end',
+            ctrlHome: 'ctrl+home',
+            ctrlDown: 'ctrl+downarrow',
+            ctrlLeft: 'ctrl+leftarrow',
+            ctrlRight: 'ctrl+rightarrow',
+            shiftEnd: 'shift+end',
+            shiftHome: 'shift+home',
+            shiftDown: 'shift+downarrow',
+            shiftUp: 'shift+uparrow',
+            ctrlUp: 'ctrl+uparrow',
+            csEnd: 'ctrl+shift+end',
+            csHome: 'ctrl+shift+home',
+            csDown: 'ctrl+shift+downarrow',
+            csUp: 'ctrl+shift+uparrow',
+            space: 'space',
+            ctrlSpace: 'ctrl+space',
+            shiftSpace: 'shift+space',
+            csSpace: 'ctrl+shift+space',
+            end: 'end',
+            home: 'home',
+            moveUp: 'uparrow',
             del: 'delete',
             ctrlX: 'ctrl+x',
             ctrlC: 'ctrl+c',
             ctrlV: 'ctrl+v',
             ctrlShiftN: 'ctrl+shift+n',
             shiftdel: 'shift+delete',
-            shiftF10: 'shift+F10',
+            ctrlD: 'ctrl+d',
             f2: 'f2',
             ctrlA: 'ctrl+a',
             enter: 'enter'
@@ -69,6 +98,7 @@ export class DetailsView {
     }
 
     // tslint:disable-next-line
+    /* istanbul ignore next */
     private render(args: ReadArgs | SearchArgs): void {
         if (this.parent.view === 'Details') {
             removeClass([this.parent.element], CLS.MULTI_SELECT);
@@ -100,7 +130,11 @@ export class DetailsView {
                 rowDataBound: this.onRowDataBound.bind(this),
                 actionBegin: this.onActionBegin.bind(this),
                 headerCellInfo: this.onHeaderCellInfo.bind(this),
-                width: '100%'
+                width: '100%',
+                beforeCopy: (args: BeforeCopyEventArgs) => { args.cancel = true; },
+                load: function (args: Object): void {
+                    this.focusModule.destroy();
+                }
             });
             this.gridObj.appendTo('#' + this.parent.element.id + CLS.GRID_ID);
             this.wireEvents();
@@ -111,25 +145,40 @@ export class DetailsView {
         }
     }
 
+    private adjustWidth(columns: ColumnModel[], fieldName: string): void {
+        for (let i: number = 0; i < columns.length; i++) {
+            if (columns[i].field === fieldName) {
+                let nameWidth: string;
+                if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+                    nameWidth = (this.element.clientWidth <= 500) ? '120px' : 'auto';
+                } else {
+                    nameWidth = (this.element.clientWidth <= 680) ? ((fieldName === 'name') ? '120px' : '180px') : 'auto';
+                }
+                columns[i].width = nameWidth;
+            }
+        }
+    }
+
     private getColumns(): ColumnModel[] {
         let columns: ColumnModel[];
         if (this.parent.isMobile) {
             columns = [
                 {
                     field: 'name', headerText: getLocaleText(this.parent, 'Name'), width: 'auto', minWidth: 120, headerTextAlign: 'Left',
-                    template: '<div class="e-fe-text">${name}</div><div class="e-fe-date">${dateModified}</div>' +
+                    template: '<div class="e-fe-text">${name}</div><div class="e-fe-date">${_fm_modified}</div>' +
                         '<span class="e-fe-size">${size}</span>'
                 },
             ];
         } else {
             columns = JSON.parse(JSON.stringify(this.parent.detailsViewSettings.columns));
+            this.adjustWidth(columns, 'name');
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
                 columns[i].headerText = getLocaleText(this.parent, columns[i].headerText);
             }
         }
         let iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
         let icon: ColumnModel = {
-            field: 'type', width: iWidth, minWidth: iWidth, template: '<span class="e-fe-icon ${iconClass}"></span>',
+            field: 'type', width: iWidth, minWidth: iWidth, template: '<span class="e-fe-icon ${_fm_iconClass}"></span>',
             allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
             headerTemplate: '<span class="e-fe-icon e-fe-folder"></span>',
         };
@@ -165,6 +214,16 @@ export class DetailsView {
     }
 
     private onRowDataBound(args: RowDataBoundEventArgs): void {
+        let td: Element = select('.e-fe-grid-name', args.row);
+        if (td) {
+            td.setAttribute('title', getValue('name', args.data));
+        }
+        if (this.islayoutChange && this.parent.isCut && this.parent.fileAction === 'move' &&
+            this.parent.selectedNodes && this.parent.selectedNodes.length !== 0) {
+            if (this.parent.selectedNodes.indexOf(getValue('name', args.data)) !== -1) {
+                addBlur(args.row);
+            }
+        }
         /* istanbul ignore next */
         if (!this.parent.showFileExtension && getValue('isFile', args.data)) {
             let textEle: Element = args.row.querySelector('.e-fe-text');
@@ -190,7 +249,7 @@ export class DetailsView {
             sizeEle.innerHTML = modifiedSize;
         }
         if (this.parent.isMobile) {
-            if (getValue('dateModified', args.data) !== undefined && args.row.querySelector('.e-fe-date')) {
+            if (getValue('_fm_modified', args.data) !== undefined && args.row.querySelector('.e-fe-date')) {
                 let dateEle: Element = args.row.querySelector('.e-fe-date');
                 let intl: Internationalization = new Internationalization();
                 let columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
@@ -201,7 +260,7 @@ export class DetailsView {
                         break;
                     }
                 }
-                let formattedString: string = intl.formatDate(new Date(getValue('dateModified', args.data)), format);
+                let formattedString: string = intl.formatDate(new Date(getValue('_fm_modified', args.data)), format);
                 dateEle.innerHTML = formattedString;
             }
         }
@@ -209,12 +268,15 @@ export class DetailsView {
         if (checkWrap) {
             checkWrap.classList.add('e-small');
         }
-        let eventArgs: FileBeforeLoadEventArgs = {
+        if (!hasEditAccess(args.data)) {
+            args.row.className += ' ' + getAccessClass(args.data);
+        }
+        let eventArgs: FileLoadEventArgs = {
             element: args.row as HTMLElement,
             fileDetails: args.data,
             module: 'DetailsView'
         };
-        this.parent.trigger('beforeFileLoad', eventArgs);
+        this.parent.trigger('fileLoad', eventArgs);
     }
 
     private onActionBegin(args: SortEventArgs): void {
@@ -247,54 +309,34 @@ export class DetailsView {
         let items: Object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
         args.result = items;
     }
-
-    private maintainBlur(): void {
-        let length: number = 0;
-        let records: Object[] = this.gridObj.getCurrentViewRecords();
-        for (length; length < records.length; length++) {
-            let nodeEle: Element = this.gridObj.getDataRows()[length];
-            let name: string = nodeEle.querySelector('.' + CLS.TEMPLATE_CELL).textContent;
-            if (this.parent.selectedNodes.indexOf(name) !== -1) {
-                let node: HTMLElement[] = selectAll('.' + CLS.ROWCELL, nodeEle);
-                let nodeLength: number = 0;
-                while (nodeLength < node.length) {
-                    addBlur(node[nodeLength]);
-                    nodeLength++;
-                }
-            }
-        }
-    }
     /* istanbul ignore next */
-    private onDataBound(args: Object): void {
+    private onDataBound(): void {
+        this.createDragObj();
         if (this.parent.selectedItems.length !== 0) {
-            this.selectedItem = true;
+            this.selectRecords(this.parent.selectedItems);
         }
-        if (this.pasteOperation === true || this.selectedItem === true) {
-            let selectedNodes: string[] = (this.selectedItem !== true) ? this.parent.selectedNodes : this.parent.selectedItems;
-            this.selectRecords(selectedNodes);
-            this.pasteOperation = ((this.selectedItem !== true)) ? false : this.pasteOperation;
-            this.selectedItem = false;
-        }
-        if (this.parent.cutNodes && this.parent.cutNodes.length !== 0) {
-            this.maintainBlur();
+        if (this.isPasteOperation === true) {
+            if (!this.isCloumnRefresh) {
+                this.selectRecords(this.parent.pasteNodes);
+                this.isPasteOperation = false;
+            } else {
+                this.isCloumnRefresh = false;
+            }
         }
         if (this.parent.createdItem) {
             this.selectRecords([getValue('name', this.parent.createdItem)]);
             this.parent.createdItem = null;
         }
+        if (this.parent.layoutSelectedItems.length) {
+            this.selectRecords(this.parent.layoutSelectedItems);
+        }
         if (this.parent.renamedItem) {
-            this.selectRecords([getValue('name', this.parent.renamedItem)]);
+            this.addSelection(this.parent.renamedItem);
             this.parent.renamedItem = null;
         }
         if (this.sortItem === true) {
             this.selectRecords(this.sortSelectedNodes);
             this.sortItem = false;
-        }
-        if (this.parent.allowMultiSelection && this.parent.singleSelection !== undefined) {
-            this.selectRecords([this.parent.singleSelection]);
-        }
-        if (!this.parent.allowMultiSelection && this.parent.singleSelection !== undefined) {
-            this.selectRecords([this.parent.singleSelection]);
         }
         if (this.uploadOperation === true) {
             this.count++;
@@ -324,23 +366,40 @@ export class DetailsView {
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
+        this.islayoutChange = false;
         this.checkEmptyDiv(this.emptyArgs);
     }
 
-    private selectRecords(nodes: string[]): void {
+    private selectRecords(nodes: string[], byId?: boolean): void {
         let gridRecords: { [key: string]: Object; }[] = <{ [key: string]: Object; }[]>this.gridObj.getCurrentViewRecords();
         let sRecords: number[] = [];
         for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
-            if (nodes.indexOf(getValue('name', gridRecords[i])) !== -1) {
+            let node: string = byId ? getValue('_fm_id', gridRecords[i]) : this.getName(gridRecords[i]);
+            if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
         }
         if (sRecords.length !== 0) {
             this.gridObj.selectRows(sRecords);
+            this.addFocus(this.gridObj.selectedRowIndex);
         }
     }
 
-    private onSortColumn(args: Object): void {
+    private addSelection(data: Object): void {
+        let items: Object[] = this.gridObj.getCurrentViewRecords();
+        let rData: Object[] = new DataManager(items).
+            executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
+        if (rData.length > 0) {
+            let nData: Object[] = new DataManager(rData).
+                executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
+            if (nData.length > 0) {
+                let index: number = items.indexOf(nData[0]);
+                this.gridObj.selectRows([index]);
+            }
+        }
+    }
+
+    private onSortColumn(): void {
         this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
     }
 
@@ -351,6 +410,9 @@ export class DetailsView {
         }
         for (let prop of Object.keys(e.newProp)) {
             switch (prop) {
+                case 'allowDragAndDrop':
+                    this.createDragObj();
+                    break;
                 case 'height':
                     this.adjustHeight();
                     break;
@@ -370,12 +432,6 @@ export class DetailsView {
                         this.gridObj.clearSelection();
                     }
                     break;
-                case 'enableRtl':
-                    if (!isNullOrUndefined(this.gridObj)) {
-                        this.gridObj.enableRtl = e.newProp.enableRtl;
-                        this.gridObj.dataBind();
-                    }
-                    break;
                 case 'showFileExtension':
                     read(this.parent, events.pathChanged, this.parent.path);
                     break;
@@ -389,37 +445,33 @@ export class DetailsView {
                     }
                     break;
                 case 'view':
-                    read(this.parent, events.layoutChange, this.parent.path);
+                    updateLayout(this.parent, 'Details');
                     break;
+                case 'width':
+                    this.onDetailsResize();
             }
         }
     }
     private onPathChanged(args: ReadArgs): void {
+        this.parent.isCut = false;
         if (this.parent.breadcrumbbarModule.searchObj.element.value.trim() === '' && this.gridObj) {
             this.parent.searchedItems = [];
             let len: number = this.gridObj.columns.length;
             // tslint:disable-next-line
-            let column: any = JSON.parse(JSON.stringify(this.gridObj.columns));
-            if (column[len - 1].field) {
-                if (column[len - 1].field === 'filterPath') {
+            let columnData: any = JSON.parse(JSON.stringify(this.gridObj.columns));
+            if (columnData[len - 1].field) {
+                if (columnData[len - 1].field === 'filterPath') {
                     this.gridObj.columns.pop();
                     this.gridObj.refreshColumns();
+                    this.isCloumnRefresh = true;
                 }
             }
         }
-        removeBlur(this.parent as IFileManager);
-        if (!this.parent.persistData) {
-            this.parent.setProperties({ selectedItems: [] }, true);
-        }
+        removeBlur(this.parent);
         if (this.parent.view === 'Details') {
             /* istanbul ignore next */
-            if (!this.parent.persistData) {
-                this.parent.setProperties({ selectedItems: [] }, true);
-            } else {
-                this.isInteracted = false;
-            }
-            this.parent.persistData = false;
-            this.parent.cutNodes = [];
+            this.isInteracted = false;
+            this.parent.setProperties({ selectedItems: [] }, true);
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
             this.parent.notify(events.searchTextChange, args);
         }
@@ -429,7 +481,7 @@ export class DetailsView {
     private checkEmptyDiv(args: ReadArgs | SearchArgs): void {
         let items: Object[] = getSortedData(this.parent, args.files);
         if (items.length === 0 && !isNOU(this.element.querySelector('.' + CLS.GRID_VIEW))) {
-            createEmptyElement(this.parent, getValue('name', args), this.element);
+            createEmptyElement(this.parent, this.element, args);
         } else if (items.length !== 0 && this.element.querySelector('.' + CLS.EMPTY)) {
             if (this.element.querySelector('.' + CLS.GRID_VIEW).querySelector('.' + CLS.EMPTY)) {
                 let emptyDiv: Element = this.element.querySelector('.' + CLS.GRID_VIEW).querySelector('.' + CLS.EMPTY);
@@ -440,17 +492,13 @@ export class DetailsView {
         }
     }
 
-    private onOpenInit(args: ReadArgs | SearchArgs): void {
+    private onOpenInit(): void {
         if (this.parent.activeModule === 'detailsview') {
             let data: Object = this.gridObj.getSelectedRecords()[0];
             this.openContent(data);
         }
     }
 
-    /**
-     * Triggers when double click on the grid record
-     * @public
-     */
     public DblClickEvents(args: RecordDoubleClickEventArgs): void {
         this.gridObj.selectRows([args.rowIndex]);
         let data: Object;
@@ -461,33 +509,43 @@ export class DetailsView {
     }
 
     public openContent(data: Object): void {
-        let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data };
-        this.parent.trigger('beforeFileOpen', eventArgs);
-        if (eventArgs.cancel) { return; }
-        if (getValue('isFile', data)) {
-            let icon: string = fileType(data);
-            if (icon === CLS.ICON_IMAGE) {
-                let name: string = getValue('name', data);
-                let imgUrl: string = getImageUrl(this.parent, data);
-                createImageDialog(this.parent, name, imgUrl);
-            }
-        } else {
-            let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
-            if (val === '') {
-                let newPath: string = this.parent.path + getValue('name', data) + '/';
-                this.parent.setProperties({ path: newPath }, true);
-                this.parent.pathId.push(getValue('nodeId', data));
-                this.parent.itemData = [data];
-                openAction(this.parent);
-            } else {
-                openSearchFolder(this.parent, data);
-            }
+        if (!hasReadAccess(data)) {
+            createDeniedDialog(this.parent, data);
+            return;
         }
+        let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: data };
+        this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs: FileOpenEventArgs) => {
+            if (!fileOpenArgs.cancel) {
+                if (getValue('isFile', data)) {
+                    let icon: string = fileType(data);
+                    if (icon === CLS.ICON_IMAGE) {
+                        let name: string = getValue('name', data);
+                        let imgUrl: string = getImageUrl(this.parent, data);
+                        createImageDialog(this.parent, name, imgUrl);
+                    }
+                } else {
+                    let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
+                    if (val === '') {
+                        let newPath: string = this.parent.path + getValue('name', data) + '/';
+                        this.parent.setProperties({ path: newPath }, true);
+                        this.parent.pathId.push(getValue('_fm_id', data));
+                        this.parent.itemData = [data];
+                        openAction(this.parent);
+                    } else {
+                        openSearchFolder(this.parent, data);
+                    }
+                }
+                this.element.focus();
+            }
+        });
     }
 
     /* istanbul ignore next */
     private onLayoutChange(args: ReadArgs): void {
         if (this.parent.view === 'Details') {
+            if (getValue('name', args) === 'layout-change') {
+                this.islayoutChange = true;
+            }
             if (!this.gridObj) {
                 this.render(args);
             }
@@ -496,9 +554,6 @@ export class DetailsView {
             this.gridObj.element.classList.remove(CLS.DISPLAY_NONE);
             this.isInteracted = false;
             this.gridObj.clearSelection();
-            if (this.parent.selectedItems) {
-                this.selectedItem = true;
-            }
             if (this.parent.breadcrumbbarModule.searchObj.element.value.trim() !== '') {
                 this.onSearchFiles(args);
             }
@@ -509,6 +564,8 @@ export class DetailsView {
     /* istanbul ignore next */
     private onSearchFiles(args: SearchArgs | ReadArgs): void {
         if (this.parent.view === 'Details') {
+            this.parent.setProperties({ selectedItems: [] }, true);
+            this.parent.notify(events.selectionChanged, {});
             let len: number = this.gridObj.columns.length;
             // tslint:disable-next-line
             let column: any = JSON.parse(JSON.stringify(this.gridObj.columns));
@@ -517,9 +574,14 @@ export class DetailsView {
                     this.gridObj.columns.pop();
                 }
             }
-            let item: Object = { field: 'filterPath', headerText: 'path', minWidth: 180 };
+            if (!this.islayoutChange) {
+                this.parent.layoutSelectedItems = [];
+            }
+            let item: Object = { field: 'filterPath', headerText: getLocaleText(this.parent, 'Path'), minWidth: 180, width: 'auto' };
             if (!this.parent.isMobile) {
                 (this.gridObj.columns as Column[]).push(item as Column);
+                this.adjustWidth((this.gridObj.columns as Column[]), 'name');
+                this.adjustWidth((this.gridObj.columns as Column[]), 'filterPath');
             }
             this.gridObj.refreshColumns();
             this.parent.searchedItems = args.files;
@@ -530,9 +592,6 @@ export class DetailsView {
     private changeData(args: ReadArgs): void {
         this.isInteracted = false;
         this.gridObj.dataSource = getSortedData(this.parent, args.files);
-        if (this.parent.selectedItems) {
-            this.selectedItem = true;
-        }
     }
 
     private onFinalizeEnd(args: ReadArgs): void {
@@ -551,8 +610,20 @@ export class DetailsView {
     }
 
     private onRenameInit(): void {
-        if (this.parent.view === 'Details' && this.parent.selectedItems.length === 1) {
+        if (this.parent.activeModule === 'detailsview' && this.parent.selectedItems.length === 1) {
             this.updateRenameData();
+        }
+    }
+
+    private onSelectedData(): void {
+        if (this.parent.activeModule === 'detailsview') {
+            this.parent.itemData = this.gridObj.getSelectedRecords();
+        }
+    }
+
+    private onDeleteInit(): void {
+        if (this.parent.activeModule === 'detailsview') {
+            Delete(this.parent, this.parent.selectedItems, this.parent.path, 'delete');
         }
     }
 
@@ -568,7 +639,7 @@ export class DetailsView {
         this.changeData(args);
     }
 
-    private onHideLayout(args: ReadArgs): void {
+    private onHideLayout(): void {
         if (this.parent.view !== 'Details' && this.gridObj) {
             this.gridObj.element.classList.add(CLS.DISPLAY_NONE);
         }
@@ -596,11 +667,16 @@ export class DetailsView {
         }
     }
 
+    private onLayoutRefresh(): void {
+        if (this.parent.view !== 'Details') { return; }
+        this.adjustHeight();
+    }
+
     private onBeforeRequest(): void {
         this.isRendered = false;
     }
 
-    private onAfterRequest(args: Object): void {
+    private onAfterRequest(): void {
         this.isRendered = true;
     }
 
@@ -610,15 +686,20 @@ export class DetailsView {
         this.parent.on(events.layoutChange, this.onLayoutChange, this);
         this.parent.on(events.pathChanged, this.onPathChanged, this);
         this.parent.on(events.createEnd, this.onCreateEnd, this);
-        this.parent.on(events.deleteEnd, this.onDeleteEnd, this);
+        this.parent.on(events.dropInit, this.onDropInit, this);
+        this.parent.on(events.detailsInit, this.onDetailsInit, this);
         this.parent.on(events.refreshEnd, this.onRefreshEnd, this);
         this.parent.on(events.search, this.onSearchFiles, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
+        this.parent.on(events.deleteInit, this.onDeleteInit, this);
+        this.parent.on(events.deleteEnd, this.onDeleteEnd, this);
+        this.parent.on(events.selectedData, this.onSelectedData, this);
         this.parent.on(events.renameInit, this.onRenameInit, this);
         this.parent.on(events.renameEnd, this.onPathChanged, this);
         this.parent.on(events.openInit, this.onOpenInit, this);
         this.parent.on(events.sortColumn, this.onSortColumn, this);
         this.parent.on(events.openEnd, this.onPathChanged, this);
+        this.parent.on(events.pasteInit, this.onPasteInit, this);
         this.parent.on(events.hideLayout, this.onHideLayout, this);
         this.parent.on(events.selectAllInit, this.onSelectAllInit, this);
         this.parent.on(events.clearAllInit, this.onClearAllInit, this);
@@ -626,6 +707,12 @@ export class DetailsView {
         this.parent.on(events.selectionChanged, this.onSelectionChanged, this);
         this.parent.on(events.beforeRequest, this.onBeforeRequest, this);
         this.parent.on(events.afterRequest, this.onAfterRequest, this);
+        this.parent.on(events.pasteEnd, this.onpasteEnd, this);
+        this.parent.on(events.cutCopyInit, this.oncutCopyInit, this);
+        this.parent.on(events.menuItemData, this.onMenuItemData, this);
+        this.parent.on(events.resizeEnd, this.onDetailsResize, this);
+        this.parent.on(events.splitterResize, this.onDetailsResize, this);
+        this.parent.on(events.layoutRefresh, this.onLayoutRefresh, this);
     }
 
     private removeEventListener(): void {
@@ -633,6 +720,7 @@ export class DetailsView {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.layoutChange, this.onLayoutChange);
         this.parent.off(events.pathChanged, this.onPathChanged);
+        this.parent.off(events.pasteInit, this.onPasteInit);
         this.parent.off(events.createEnd, this.onCreateEnd);
         this.parent.off(events.refreshEnd, this.onRefreshEnd);
         this.parent.off(events.search, this.onSearchFiles);
@@ -645,11 +733,152 @@ export class DetailsView {
         this.parent.off(events.hideLayout, this.onHideLayout);
         this.parent.off(events.selectAllInit, this.onSelectAllInit);
         this.parent.off(events.clearAllInit, this.onClearAllInit);
+        this.parent.off(events.deleteInit, this.onDeleteInit);
         this.parent.off(events.deleteEnd, this.onDeleteEnd);
         this.parent.off(events.pathColumn, this.onPathColumn);
         this.parent.off(events.selectionChanged, this.onSelectionChanged);
         this.parent.off(events.beforeRequest, this.onBeforeRequest);
         this.parent.off(events.afterRequest, this.onAfterRequest);
+        this.parent.off(events.pasteEnd, this.onpasteEnd);
+        this.parent.off(events.cutCopyInit, this.oncutCopyInit);
+        this.parent.off(events.dropInit, this.onDropInit);
+        this.parent.off(events.selectedData, this.onSelectedData);
+        this.parent.off(events.detailsInit, this.onDetailsInit);
+        this.parent.off(events.menuItemData, this.onMenuItemData);
+        this.parent.off(events.resizeEnd, this.onDetailsResize);
+        this.parent.off(events.splitterResize, this.onDetailsResize);
+        this.parent.off(events.layoutRefresh, this.onLayoutRefresh);
+    }
+
+    private onMenuItemData(args: { [key: string]: Object; }): void {
+        if (this.parent.activeModule === this.getModuleName()) {
+            this.parent.itemData = [this.gridObj.getRowInfo(<Element>args.target).rowData];
+        }
+    }
+
+    private onPasteInit(): void {
+        if (this.parent.activeModule === this.getModuleName()) {
+            this.parent.itemData = (this.parent.folderPath !== '') ? this.gridObj.getSelectedRecords() :
+                [getPathObject(this.parent)];
+        }
+    }
+
+    private onDetailsInit(): void {
+        if (this.parent.activeModule === this.getModuleName()) {
+            if (this.parent.selectedItems.length !== 0) {
+                this.parent.itemData = this.gridObj.getSelectedRecords();
+            } else {
+                this.parent.itemData = [getValue(this.parent.path, this.parent.feParent)];
+            }
+        }
+    }
+
+    public dragHelper(args: { element: HTMLElement, sender: MouseEvent & TouchEvent }): HTMLElement {
+        let dragTarget: Element = <Element>args.sender.target;
+        let dragLi: Element = dragTarget.closest('tr.e-row');
+        if (!dragLi) { return null; }
+        let name: string = (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
+        if (dragLi && !dragLi.querySelector('.e-active')) {
+            this.selectRecords([name]);
+        }
+        getModule(this.parent, dragLi);
+        this.parent.activeElements = [];
+        this.parent.dragData = [];
+        this.parent.dragData = <{ [key: string]: Object; }[]>this.gridObj.getSelectedRecords();
+        this.parent.dragPath = this.parent.path;
+        this.parent.activeElements = this.gridObj.getSelectedRows();
+        createVirtualDragElement(this.parent);
+        return this.parent.virtualDragElement;
+    }
+
+    /* istanbul ignore next */
+    private onDetailsResize(): void {
+        if (this.parent.view === 'Details' && !this.parent.isMobile) {
+            let gridHeader: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent().querySelector('.e-headercontent');
+            let gridHeaderColGroup: HTMLElement = <HTMLElement>gridHeader.firstChild.childNodes[0];
+            let gridContentColGroup: HTMLElement =
+                <HTMLElement>this.gridObj.getContent().querySelector('.e-content .e-table').children[0];
+            let gridHeaderColNames: ColumnModel[] = this.gridObj.getColumns();
+            for (let i: number = 0; i < gridHeaderColNames.length; i++) {
+                if (gridHeaderColNames[i].field === 'name' || gridHeaderColNames[i].field === 'filterPath') {
+                    if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+                        if (this.element.clientWidth <= 500) {
+                            gridHeaderColGroup.children[i].setAttribute('style', 'width: 120px');
+                            gridContentColGroup.children[i].setAttribute('style', 'width: 120px');
+                        } else if (this.element.clientWidth > 500) {
+                            gridHeaderColGroup.children[i].setAttribute('style', 'width: auto');
+                            gridContentColGroup.children[i].setAttribute('style', 'width: auto');
+                        }
+                    } else {
+                        if (this.element.clientWidth <= 680) {
+                            if (gridHeaderColNames[i].field === 'name') {
+                                gridHeaderColGroup.children[i].setAttribute('style', 'width: 120px');
+                                gridContentColGroup.children[i].setAttribute('style', 'width: 120px');
+                            } else {
+                                gridHeaderColGroup.children[i].setAttribute('style', 'width: 180px');
+                                gridContentColGroup.children[i].setAttribute('style', 'width: 180px');
+                            }
+                        } else if (this.element.clientWidth > 680) {
+                            gridHeaderColGroup.children[i].setAttribute('style', 'width: auto');
+                            gridContentColGroup.children[i].setAttribute('style', 'width: auto');
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private createDragObj(): void {
+        if (!this.parent.isMobile && this.gridObj) {
+            if (this.parent.allowDragAndDrop) {
+                if (this.dragObj) { this.dragObj.destroy(); }
+                this.dragObj = new Draggable(this.gridObj.element, {
+                    cursorAt: this.parent.dragCursorPosition,
+                    enableTailMode: true,
+                    dragArea: this.parent.element,
+                    dragTarget: '.' + CLS.ROW,
+                    drag: draggingHandler.bind(this, this.parent),
+                    dragStart: dragStartHandler.bind(this, this.parent),
+                    dragStop: dragStopHandler.bind(this, this.parent),
+                    enableAutoScroll: true,
+                    helper: this.dragHelper.bind(this)
+                });
+            } else if (!this.parent.allowDragAndDrop && this.dragObj) {
+                this.dragObj.destroy();
+            }
+        }
+    }
+
+    private onDropInit(args: DragEventArgs): void {
+        if (this.parent.targetModule === this.getModuleName()) {
+            /* istanbul ignore next */
+            if (!args.target.closest('tr')) {
+                this.parent.dropPath = this.parent.path;
+                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+            } else {
+                let info: { [key: string]: Object; } = null;
+                info = <{ [key: string]: Object; }>this.gridObj.getRowInfo(args.target).rowData;
+                this.parent.dropPath = info.isFile ? this.parent.path :
+                    ((<string>info.filterPath).replace(/\\/g, '/') + <string>info.name + '/');
+                this.parent.dropData = info.isFile ? info : this.gridObj.getRowInfo(args.target).rowData;
+            }
+        }
+    }
+
+    private oncutCopyInit(): void {
+        if (this.parent.activeModule === this.getModuleName()) {
+            this.parent.activeRecords = this.gridObj.getSelectedRecords();
+            this.parent.activeElements = this.gridObj.getSelectedRows();
+        }
+    }
+
+    private onpasteEnd(args: ReadArgs): void {
+        if (this.parent.view === 'Details') {
+            this.isPasteOperation = true;
+            if (this.parent.path === getDirectoryPath(args)) {
+                this.onPathChanged(args);
+            }
+        }
     }
 
     /**
@@ -660,11 +889,6 @@ export class DetailsView {
         return 'detailsview';
     }
 
-    /**
-     * Destroys the GridView module.
-     * @method destroy
-     * @return {void}
-     */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
         this.removeEventListener();
@@ -674,27 +898,42 @@ export class DetailsView {
         }
     }
 
-    /**
-     * Grid row selected event
-     * @private
-     */
     /* istanbul ignore next */
     private onSelected(args: RowSelectEventArgs): void {
-        this.parent.activeElements = this.gridObj.element.querySelectorAll('.' + CLS.ACTIVE);
+        this.addFocus(this.gridObj.selectedRowIndex);
         this.parent.activeModule = 'detailsview';
-        this.selectedRecords();
+        if (!this.islayoutChange) { this.selectedRecords(); }
         this.parent.notify(events.selectionChanged, {});
+        if (this.gridObj.getSelectedRowIndexes().length === 1) {
+            this.firstItemIndex = this.gridObj.selectedRowIndex;
+        }
+        this.gridObj.element.setAttribute('tabindex', '-1');
         this.triggerSelect('select', args);
-        if (this.parent.allowMultiSelection) {
-            let rows: number[] = this.gridObj.getSelectedRowIndexes();
-            let len: number = rows.length;
-            if (len > 1) {
-                let data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
-                this.parent.currentItemText = getValue('name', data);
+        let item: Element = this.gridObj.getRowByIndex(this.gridObj.selectedRowIndex);
+        if (!isNOU(item) && !isNOU(item.querySelector('.e-checkselect'))) {
+            if (this.gridObj.getSelectedRowIndexes().length !== 1) {
+                let lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
+                let lastItem: Element = this.gridObj.getRowByIndex(lastItemIndex);
+                lastItem.querySelector('.e-checkselect').setAttribute('tabindex', '-1');
+            }
+            item.querySelector('.e-rowcell.e-fe-checkbox').removeAttribute('tabindex');
+        }
+        if (!isNOU(this.gridObj) && !isNOU(this.gridObj.element.querySelector('.e-checkselectall'))) {
+            this.gridObj.element.querySelector('.e-checkselectall').setAttribute('tabindex', '-1');
+        }
+        let rows: number[] = this.gridObj.getSelectedRowIndexes();
+        if (!this.parent.allowMultiSelection) {
+            for (let i: number = 0; i < rows.length; i++) {
+                if (rows[i] === this.gridObj.selectedRowIndex) {
+                    this.gridObj.getRowByIndex(rows[i]).setAttribute('tabindex', '0');
+                } else {
+                    this.gridObj.getRowByIndex(rows[i]).removeAttribute('tabindex');
+                }
             }
         }
-        if (this.parent.selectedItems.length === 1) {
-            let data: Object = this.gridObj.getRowsObject()[this.gridObj.selectedRowIndex].data;
+        let len: number = rows.length;
+        if (len > 0) {
+            let data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
             this.parent.currentItemText = getValue('name', data);
         }
         let indexes: number[] = getValue('rowIndexes', args);
@@ -706,10 +945,17 @@ export class DetailsView {
             }
         }
         this.parent.visitedItem = args.row;
+        if (this.parent.allowMultiSelection && !isNOU(item) && !isNOU(item.querySelector('.e-checkselect'))) {
+            let checkItem: HTMLElement = <HTMLElement>item.querySelector('.e-checkselect');
+            checkItem.focus();
+        }
+        if (!this.islayoutChange) {
+            this.isInteracted = true;
+        }
     }
     /* istanbul ignore next */
-    private onPathColumn(args: object): void {
-        if (this.parent.view === 'Details') {
+    private onPathColumn(): void {
+        if (this.parent.view === 'Details' && !isNOU(this.gridObj)) {
             let len: number = this.gridObj.columns.length;
             if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
                 // tslint:disable-next-line
@@ -731,31 +977,36 @@ export class DetailsView {
         let selectSize: number = 0;
         while (selectSize < selectedRecords.length) {
             let record: FileDetails = <FileDetails>selectedRecords[selectSize];
-            this.parent.selectedItems.push(record.name);
+            this.parent.selectedItems.push(this.getName(record));
             selectSize++;
         }
     }
 
-    /**
-     * Grid row de-selected event
-     * @private
-     */
+    private getName(data: Object): string {
+        let name: string = getValue('name', data);
+        if (this.parent.breadcrumbbarModule.searchObj.element.value !== '') {
+            let path: string = getValue('filterPath', data).replace(/\\/g, '/');
+            name = path.replace(this.parent.path, '') + name;
+        }
+        return name;
+    }
+
     private onDeSelection(args: RowDeselectEventArgs): void {
+        /* istanbul ignore next */
+        if (!this.parent.allowMultiSelection && isNOU(args.data)) {
+            this.gridObj.getRowByIndex(args.rowIndex).removeAttribute('tabindex');
+        } else if (this.gridObj.getSelectedRowIndexes().length > 1) {
+            let lastItemIndex: number = this.gridObj.getSelectedRowIndexes()[this.gridObj.getSelectedRowIndexes().length - 2];
+            this.gridObj.getRowByIndex(lastItemIndex).querySelector('.e-checkselect').removeAttribute('tabindex');
+        }
+        if (this.gridObj.selectedRowIndex === -1) {
+            this.gridObj.element.setAttribute('tabindex', '0');
+        }
         if (!this.isInteracted) {
             this.isInteracted = true;
             return;
         }
-        if (this.parent.activeElements[0].querySelector('.' + CLS.ROWCELL)) {
-            this.selectedRecords();
-            this.parent.activeElements = this.gridObj.element.querySelectorAll('.' + CLS.ACTIVE);
-        }
-        let data: Object[] = args.data as Object[];
-        for (let i: number = 0, len: number = data.length; i < len; i++) {
-            let index: number = this.parent.selectedItems.indexOf(getValue('name', data[i]));
-            if (index > -1) {
-                this.parent.selectedItems.splice(index, 1);
-            }
-        }
+        this.selectedRecords();
         if (this.parent.selectedItems.length === 0) {
             setValue('enableSelectMultiTouch', false, this.gridObj.selectionModule);
             removeClass([this.parent.element], CLS.MULTI_SELECT);
@@ -774,18 +1025,27 @@ export class DetailsView {
         this.keyboardModule = new KeyboardEvents(
             this.gridObj.element,
             {
-                keyAction: this.keyDown.bind(this),
+                keyAction: this.keyupHandler.bind(this),
                 keyConfigs: this.keyConfigs,
                 eventName: 'keyup',
             }
         );
-        EventHandler.add(this.gridObj.element, 'focus', this.removeSelection, this);
+        this.keyboardDownModule = new KeyboardEvents(
+            this.element,
+            {
+                keyAction: this.keydownHandler.bind(this),
+                keyConfigs: this.keyConfigs,
+                eventName: 'keydown',
+            }
+        );
+        EventHandler.add(this.gridObj.element, 'blur', this.removeFocus, this);
     }
 
     private unWireEvents(): void {
         this.wireClickEvent(false);
         this.keyboardModule.destroy();
-        EventHandler.remove(this.gridObj.element, 'focus', this.removeSelection);
+        this.keyboardDownModule.destroy();
+        EventHandler.remove(this.gridObj.element, 'blur', this.removeFocus);
     }
 
     private wireClickEvent(toBind: boolean): void {
@@ -793,6 +1053,11 @@ export class DetailsView {
             let proxy: DetailsView = this;
             let ele: HTMLElement = <HTMLElement>this.gridObj.getContent();
             this.clickObj = new Touch(ele, {
+                tap: (eve: TapEventArgs) => {
+                    if (eve.tapCount === 1 && (<HTMLElement>eve.originalEvent.target).classList.contains('e-content')) {
+                        proxy.onClearAllInit();
+                    }
+                },
                 tapHold: (e: TapEventArgs) => {
                     if (proxy.parent.isDevice) {
                         e.originalEvent.preventDefault();
@@ -822,29 +1087,92 @@ export class DetailsView {
         this.gridObj.clearSelection();
         this.parent.setProperties({ selectedItems: [] }, true);
         this.parent.notify(events.selectionChanged, {});
+        if (this.gridObj.selectedRowIndex === -1) {
+            this.startIndex = null;
+        }
     }
 
-    /**
-     * Grid keyDown event
-     * @private
-     */
+    private removeFocus(): void {
+        this.addFocus(null);
+    }
+
+    private getFocusedItemIndex(): number {
+        return (!isNOU(this.getFocusedItem())) ?
+            parseInt(this.getFocusedItem().getAttribute('aria-rowindex'), 10) : null;
+    }
+
     /* istanbul ignore next */
-    private keyDown(e: KeyboardEventArgs): void {
+    // tslint:disable-next-line:max-func-body-length
+    private keydownHandler(e: KeyboardEventArgs): void {
+        if (!this.isRendered) { return; }
+        switch (e.action) {
+            case 'end':
+            case 'home':
+            case 'space':
+            case 'ctrlSpace':
+            case 'shiftSpace':
+            case 'csSpace':
+            case 'ctrlA':
+            case 'enter':
+            case 'altEnter':
+            case 'ctrlEnd':
+            case 'shiftEnd':
+            case 'csEnd':
+            case 'ctrlHome':
+            case 'shiftHome':
+            case 'csHome':
+            case 'ctrlDown':
+            case 'shiftDown':
+            case 'csDown':
+            case 'ctrlLeft':
+            case 'shiftLeft':
+            case 'csLeft':
+            case 'esc':
+            case 'del':
+            case 'shiftdel':
+            case 'ctrlC':
+            case 'ctrlV':
+            case 'ctrlX':
+            case 'f2':
+            case 'moveDown':
+            case 'moveUp':
+                e.preventDefault();
+                break;
+            default:
+                break;
+        }
+    }
+
+    /* istanbul ignore next */
+    // tslint:disable-next-line:max-func-body-length
+    private keyupHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         e.preventDefault();
         let action: string = e.action;
+        let gridItems: object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
+        let gridLength: number = gridItems.length;
+        let focItem: Element = this.getFocusedItem();
+        let focIndex: number = this.getFocusedItemIndex();
+        let selIndex: number = this.gridObj.selectedRowIndex;
+        let selRowIndeces: number[] = this.gridObj.getSelectedRowIndexes();
         switch (action) {
             case 'altEnter':
-                this.parent.getDetails();
+                GetDetails(this.parent, this.parent.selectedItems, this.parent.path, 'details');
                 break;
             case 'esc':
-                removeBlur(this.parent as IFileManager);
-                this.parent.selectedNodes = [];
-                if (this.parent.navigationpaneModule) { this.parent.navigationpaneModule.treeNodes = []; }
+                removeActive(this.parent);
                 break;
             case 'del':
             case 'shiftdel':
                 if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
+                    this.parent.itemData = this.gridObj.getSelectedRecords();
+                    let items: Object[] = this.parent.itemData;
+                    for (let i: number = 0; i < items.length; i++) {
+                        if (!hasEditAccess(items[i])) {
+                            createDeniedDialog(this.parent, items[i]);
+                            return;
+                        }
+                    }
                     createDialog(this.parent, 'Delete');
                 }
                 break;
@@ -857,50 +1185,106 @@ export class DetailsView {
                 }
                 break;
             case 'ctrlC':
-                removeBlur(this.parent as IFileManager);
-                this.parent.navigationpaneModule.treeNodes = [];
-                this.parent.navigationpaneModule.copyNodes = [];
-                this.parent.cutNodes = [];
-                this.parent.selectedNodes = [];
-                this.parent.targetPath = this.parent.path;
-                treeNodes(this.parent.navigationpaneModule, this.gridSelectNodes(), 'copy');
-                this.parent.fileAction = 'CopyTo';
-                this.parent.enablePaste = true;
-                this.parent.notify(events.showPaste, {});
-                this.parent.fileOperation(this.gridSelectNodes());
+                copyFiles(this.parent);
                 break;
             case 'ctrlV':
-                this.parent.pasteHandler();
+                this.parent.folderPath = '';
+                pasteHandler(this.parent);
                 break;
             case 'ctrlX':
-                cutFiles(this.parent as IFileManager);
-                this.parent.fileOperation(this.parent.nodeNames);
+                cutFiles(this.parent);
                 break;
-            case 'shiftF10':
-                Download(this.parent, this.gridSelectNodes());
+            case 'ctrlD':
+                if (this.parent.selectedItems.length !== 0) {
+                    this.parent.itemData = this.gridObj.getSelectedRecords();
+                    let items: Object[] = this.parent.itemData;
+                    for (let i: number = 0; i < items.length; i++) {
+                        if (!hasDownloadAccess(items[i])) {
+                            createDeniedDialog(this.parent, items[i]);
+                            return;
+                        }
+                    }
+                    Download(this.parent, this.parent.path, this.parent.selectedItems);
+                }
                 break;
             case 'f2':
                 if (this.parent.selectedItems.length === 1) {
                     this.updateRenameData();
-                    createDialog(this.parent, 'Rename');
+                    doRename(this.parent);
                 }
                 break;
             case 'ctrlA':
-                let data: Object[] = [this.gridObj.getSelectedRecords()[0]];
-                this.parent.currentItemText = getValue('name', data[0]);
+                if (!isNOU(gridItems[0]) && this.parent.allowMultiSelection) {
+                    this.gridObj.selectionModule.selectRowsByRange(0, gridItems.length - 1);
+                }
                 break;
+            case 'ctrlHome':
             case 'tab':
-                let selectedItems: object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
-                this.parent.selectedItems = [getValue('name', selectedItems[0])];
-                this.selectRecords([getValue('name', selectedItems[0])]);
+                if (!isNOU(gridItems[0])) {
+                    if (!this.parent.allowMultiSelection && e.action === 'ctrlHome') {
+                        this.gridObj.selectRow(0);
+                    } else if (this.gridObj.selectedRowIndex !== -1 && e.action === 'tab') {
+                        return;
+                    } else {
+                        this.addFocus(0);
+                    }
+                }
+                break;
+            case 'ctrlEnd':
+                if (!isNOU(gridItems[0])) {
+                    (!this.parent.allowMultiSelection) ?
+                        this.gridObj.selectRow(gridLength - 1) : this.addFocus(gridLength - 1);
+                }
+                break;
+            case 'shiftHome':
+            case 'shiftEnd':
+            case 'csHome':
+            case 'csEnd':
+                if (!this.parent.allowMultiSelection) {
+                    this.gridObj.selectRow((e.action === 'shiftHome' || e.action === 'csHome') ? 0 : gridItems.length - 1);
+                } else {
+                    if (!isNOU(gridItems[0])) {
+                        if (!isNOU(selIndex) && selIndex !== -1) {
+                            this.checkRowsKey(gridItems, selIndex, null, e);
+                        } else {
+                            (e.action === 'csHome' || e.action === 'shiftHome') ?
+                                this.gridObj.selectRow(0) : this.gridObj.selectionModule.selectRowsByRange(0, gridItems.length - 1);
+                        }
+                    }
+                }
+                break;
+            case 'space':
+            case 'csSpace':
+            case 'shiftSpace':
+            case 'ctrlSpace':
+                this.spaceSelection(selRowIndeces, focIndex, selIndex, e);
+                break;
+            case 'csUp':
+            case 'csDown':
+            case 'shiftUp':
+            case 'shiftDown':
+                this.shiftMoveMethod(gridItems, selIndex, focIndex, selRowIndeces, e);
+                break;
+            case 'ctrlUp':
+            case 'ctrlDown':
+                (!this.parent.allowMultiSelection) ? this.moveFunction(gridItems, e, selIndex) :
+                    this.ctrlMoveFunction(gridItems, e, selIndex);
+                break;
+            case 'home':
+                this.parent.selectedItems = [getValue('name', gridItems[0])];
+                this.selectRecords([getValue('name', gridItems[0])]);
+                break;
+            case 'moveUp':
+            case 'moveDown':
+                this.moveFunction(gridItems, e, selIndex);
+                break;
+            case 'end':
+                this.parent.selectedItems = [getValue('name', gridItems[gridLength - 1])];
+                this.selectRecords(this.parent.selectedItems);
                 break;
         }
     }
 
-    /**
-     * Get selected grid records
-     * @public
-     */
     public gridSelectNodes(): Object[] {
         return this.gridObj.getSelectedRecords();
     }
@@ -908,7 +1292,199 @@ export class DetailsView {
     private updateRenameData(): void {
         let data: Object = this.gridSelectNodes()[0];
         this.parent.itemData = [data];
-        this.parent.currentItemText = getValue('name', data);
         this.parent.isFile = getValue('isFile', data);
+        this.parent.filterPath = getValue('filterPath', data);
+    }
+
+    private shiftMoveMethod(gridItems: object[], selIndex: number, focIndex: number, selRowIndeces: number[], e: KeyboardEventArgs): void {
+        if (!this.parent.allowMultiSelection) {
+            this.moveFunction(gridItems, e, selIndex);
+        } else {
+            if (selIndex === -1 && (e.action === 'csUp' || e.action === 'csDown')) {
+                this.ctrlMoveFunction(gridItems, e, selIndex);
+            } else if (selIndex !== -1 && focIndex !== selIndex &&
+                !((e.action === 'csUp' || e.action === 'csDown') && this.isSelected(selRowIndeces, focIndex))) {
+                this.shiftSelectFocusItem(selIndex, focIndex, selRowIndeces, e);
+            } else {
+                this.shiftSelectedItem(selIndex, selRowIndeces, gridItems, e);
+            }
+        }
+    }
+
+    private moveFunction(selectedItems: object[], e: KeyboardEventArgs, rowIndex: number): void {
+        if (!isNOU(this.getFocusedItem()) && this.parent.allowMultiSelection) {
+            if (e.action === 'moveDown') {
+                this.gridObj.selectRow(this.getFocusedItemIndex() + 1);
+            } else {
+                this.gridObj.selectRow(this.getFocusedItemIndex() - 1);
+            }
+        } else if (!isNOU(rowIndex) && rowIndex !== -1) {
+            if (e.action === 'moveDown' || e.action === 'ctrlDown' || e.action === 'shiftDown' || e.action === 'csDown') {
+                this.gridObj.selectRow(rowIndex + ((rowIndex !== selectedItems.length - 1) ? 1 : 0));
+            } else {
+                this.gridObj.selectRow(rowIndex - ((rowIndex !== 0) ? 1 : 0));
+            }
+        } else {
+            if (!isNOU(selectedItems[0])) {
+                this.gridObj.selectRow(0);
+            }
+        }
+    }
+
+    private spaceSelection(selRowIndeces: number[], focIndex: number, selIndex: number, e: KeyboardEventArgs): void {
+        if (!this.isSelected(selRowIndeces, focIndex) && selIndex !== -1 && (e.action === 'shiftSpace' || e.action === 'csSpace')) {
+            if (focIndex < selIndex) {
+                this.gridObj.selectionModule.selectRowsByRange(focIndex, selIndex);
+            } else {
+                this.gridObj.selectionModule.selectRowsByRange(selIndex, focIndex);
+            }
+        } else if (!isNOU(this.getFocusedItem()) && focIndex !== selIndex) {
+            selRowIndeces.push(this.getFocusedItemIndex());
+            this.gridObj.selectRows(selRowIndeces);
+        } else if (selIndex !== -1 && e.action === 'ctrlSpace' && this.parent.allowMultiSelection) {
+            let lItem: number = selIndex;
+            selRowIndeces.pop();
+            this.gridObj.selectRows(selRowIndeces);
+            this.addFocus(lItem);
+        } else if (e.action === 'shiftSpace') {
+            this.gridObj.selectRow(selIndex);
+        }
+    }
+
+    private ctrlMoveFunction(items: object[], e: KeyboardEventArgs, rowIndex: number): void {
+        let nextItem: number;
+        if (!isNOU(this.getFocusedItem())) {
+            let nextIndex: number = this.getFocusedItemIndex();
+            nextItem = (e.action === 'ctrlDown' || e.action === 'csDown') ?
+                nextIndex + ((nextIndex < items.length - 1) ? 1 : 0) : nextIndex - ((nextIndex < 1) ? 0 : 1);
+        } else if (!isNOU(rowIndex) && rowIndex !== -1) {
+            nextItem = (e.action === 'ctrlDown' || e.action === 'csDown') ?
+                rowIndex + ((rowIndex < items.length) ? 1 : 0) : rowIndex - ((rowIndex < 1) ? 0 : 1);
+        } else {
+            if (!isNOU(items[0])) {
+                nextItem = 0;
+            }
+        }
+        this.addFocus(nextItem);
+    }
+
+    private checkRowsKey(items: object[], indexValue: number, focIndex: (null | number), e: KeyboardEventArgs): void {
+        if (this.gridObj.checkAllRows === 'Uncheck' || this.gridObj.checkAllRows === 'Intermediate') {
+            if (e.action !== 'csHome' && e.action !== 'csEnd') {
+                if (isNOU(this.startIndex) && this.firstItemIndex !== indexValue) {
+                    this.firstItemIndex = indexValue;
+                }
+                if (e.action === 'shiftEnd') {
+                    this.gridObj.selectionModule.selectRowsByRange(this.firstItemIndex, items.length - 1);
+                } else {
+                    this.gridObj.selectionModule.selectRowsByRange(0, this.firstItemIndex);
+                }
+                this.startIndex = indexValue;
+            } else {
+                if (e.action === 'csEnd') {
+                    this.gridObj.
+                        selectRows(this.InnerItems(isNOU(indexValue) ? 0 : indexValue, isNOU(focIndex) ? items.length - 1 : focIndex, e));
+                } else {
+                    ((isNOU(indexValue)) ? this.gridObj.selectRow(0) :
+                        this.gridObj.selectRows(this.InnerItems(isNOU(focIndex) ? 0 : focIndex, indexValue, e)));
+                }
+            }
+        } else {
+            this.gridObj.selectionModule.selectRow(((e.action === 'shiftHome' || e.action === 'csHome') ? 0 : items.length - 1));
+        }
+    }
+
+    private InnerItems(fItem: number, lItem: number, e: KeyboardEventArgs): number[] {
+        let itemArr: number[] = this.gridObj.getSelectedRowIndexes();
+        if (e.action === 'csEnd') {
+            for (let i: number = fItem + 1; i <= lItem; i++) {
+                itemArr.push(i);
+            }
+        } else {
+            for (let i: number = lItem - 1; fItem <= i; i--) {
+                itemArr.push(i);
+            }
+        }
+        return itemArr;
+    }
+
+    private shiftSelectFocusItem(selIndex: number, fIndex: number, selRowIndexes: number[], e: KeyboardEventArgs): void {
+        let lItem: number;
+        let fItem: number;
+        lItem = fIndex + ((e.action === 'shiftDown' || e.action === 'csDown') ? 1 : -1);
+        fItem = isNOU(this.startIndex) ? selIndex : selRowIndexes[0];
+        if (fItem === lItem) {
+            this.gridObj.selectRow(fItem);
+        } else {
+            (fItem < lItem) ?
+                ((e.action === 'shiftDown' || e.action === 'csDown') ? this.gridObj.selectionModule.selectRowsByRange(fItem, lItem) :
+                    this.gridObj.selectionModule.selectRowsByRange(lItem, fItem)) : ((e.action === 'shiftDown' || e.action === 'csDown') ?
+                        this.gridObj.selectionModule.selectRowsByRange(lItem, fItem) :
+                        this.gridObj.selectionModule.selectRowsByRange(fItem, lItem));
+        }
+        this.startIndex = this.gridObj.selectedRowIndex;
+    }
+
+    private addFocus(item: number | null): void {
+        let fItem: Element = this.getFocusedItem();
+        let itemElement: Element = this.gridObj.getRowByIndex(item);
+        if (fItem) {
+            removeClass([fItem], [CLS.FOCUS, CLS.FOCUSED]);
+        }
+        if (!isNOU(itemElement)) {
+            addClass([itemElement], [CLS.FOCUS, CLS.FOCUSED]);
+        }
+    }
+
+    private getFocusedItem(): Element {
+        return select('.' + CLS.FOCUSED, this.element);
+    }
+
+    private isSelected(selRowIndexes: number[], focIndex: number): boolean {
+        let check: boolean = false;
+        for (let i: number = 0; i <= selRowIndexes.length - 1; i++) {
+            if (selRowIndexes[i] === focIndex) {
+                check = true;
+                break;
+            }
+        }
+        return check;
+    }
+
+    private shiftSelectedItem(selIndex: number, selRowIndexes: number[], gridItems: object[], e: KeyboardEventArgs): void {
+        if (selIndex === -1) {
+            this.gridObj.selectRow(0);
+        } else {
+            if (isNOU(this.startIndex) && e.shiftKey) {
+                this.startIndex = this.gridObj.selectedRowIndex;
+                this.gridObj.selectRows([selIndex, (e.action === 'shiftDown' || e.action === 'csDown') ?
+                    (selIndex + ((selIndex !== gridItems.length - 1) ? 1 : 0)) : (selIndex - ((selIndex !== 0) ? 1 : 0))]);
+            } else {
+                if (e.action === 'shiftDown' || e.action === 'shiftUp') {
+                    if (e.action === 'shiftDown' && selRowIndexes.indexOf(selIndex + 1) === -1) {
+                        if (selIndex !== gridItems.length - 1) { selRowIndexes.push(selIndex + 1); }
+                    } else if (e.action === 'shiftUp' && selRowIndexes.indexOf(selIndex - 1) === -1) {
+                        if (selIndex !== 0) { selRowIndexes.push(selIndex - 1); }
+                    } else {
+                        selRowIndexes.pop();
+                    }
+                    this.gridObj.selectRows(selRowIndexes);
+                } else {
+                    if (e.action === 'csDown') {
+                        if (!this.isSelected(selRowIndexes, this.getFocusedItemIndex() + 1)) {
+                            selRowIndexes.push((this.getFocusedItemIndex() + 1));
+                            this.gridObj.selectRows(selRowIndexes);
+                        } else {
+                            this.addFocus(this.getFocusedItemIndex() + 1);
+                        }
+                    } else if (!this.isSelected(selRowIndexes, this.getFocusedItemIndex() - 1)) {
+                        selRowIndexes.push((this.getFocusedItemIndex() - 1));
+                        this.gridObj.selectRows(selRowIndexes);
+                    } else {
+                        this.addFocus(this.getFocusedItemIndex() - 1);
+                    }
+                }
+            }
+        }
     }
 }

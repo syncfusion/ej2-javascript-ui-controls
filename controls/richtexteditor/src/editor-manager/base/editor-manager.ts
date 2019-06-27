@@ -100,7 +100,11 @@ export class EditorManager {
                 this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'alignments':
-                this.observer.notify(CONSTANT.ALIGNMENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
+                this.observer.notify(CONSTANT.ALIGNMENT_TYPE, {
+                    subCommand: value, event: event, callBack: callBack,
+                    selector: selector,
+                    value: exeValue
+                });
                 break;
             case 'indents':
                 this.observer.notify(CONSTANT.INDENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
@@ -109,7 +113,8 @@ export class EditorManager {
                 this.observer.notify(CONSTANT.LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
                 break;
             case 'images':
-                this.observer.notify(CONSTANT.IMAGE, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
+                this.observer.notify(CONSTANT.IMAGE, {
+                    command: command, value: value, item: exeValue, event: event, callBack: callBack, selector: selector });
                 break;
             case 'table':
                 switch (value.toString().toLocaleLowerCase()) {

@@ -1,6 +1,8 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration } from '@syncfusion/ej2-base';
+// tslint:disable-next-line:max-line-length
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
+// tslint:disable-next-line:max-line-length
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle } from './index';
 // tslint:disable-next-line:max-line-length
 import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from './index';
@@ -25,7 +27,9 @@ import { SfdtExport } from './index';
 import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';
 import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
-import { DocumentEditorModel } from './document-editor-model';
+import { SpellChecker } from './implementation/spell-check/spell-checker';
+import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
+import { DocumentEditorModel, ServerActionSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties } from './implementation';
 
 /**
@@ -71,10 +75,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public findResultsList: string[] = undefined;
-    /**
-     * Gets or sets the name of the document.    
-     */
-    public documentName: string = '';
     //Module Declaration
     /**
      * @private
@@ -139,6 +139,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public spellCheckDialogModule: SpellCheckDialog;
+    /**
+     * @private
+     */
     public pageSetupDialogModule: PageSetupDialog;
     /**
      * @private
@@ -173,6 +177,37 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public searchModule: Search;
 
+    /**
+     * Current User
+     */
+    @Property('')
+    public currentUser: string;
+
+    /**
+     * User Selection Highlight Color
+     */
+    @Property('#FFFF00')
+    public userColor: string;
+
+    /**
+     * Gets or sets the page gap value in document editor
+     * @default 20
+     */
+    @Property(20)
+    public pageGap: number;
+    /**
+     * Gets or sets the name of the document.    
+     */
+    @Property('')
+    public documentName: string;
+
+    public spellCheckerModule: SpellChecker;
+
+    /**
+     * Sfdt Service URL
+     */
+    @Property()
+    public serviceUrl: string;
     // Public Implementation Starts
     /**
      * Gets or sets the zoom factor in document editor.
@@ -329,99 +364,131 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(false)
     public enableImageResizer: boolean;
     /**
+     * Gets or sets a value indicating whether editor need to be spell checked.
+     * @default false
+     */
+    @Property(false)
+    public enableSpellCheck: boolean;
+
+    /**
+     * Gets or Sets a value indicating whether tab key can be accepted as input or not.
+     * @default false
+     */
+    @Property(false)
+    public acceptTab: boolean;
+    /**
+     * Gets or Sets a value indicating whether holding Ctrl key is required to follow hyperlink on click. The default value is true.
+     * @default true
+     */
+    @Property(true)
+    public useCtrlClickToFollowHyperlink: boolean;
+    /**
+     * Gets or sets the page outline color.
+     */
+    @Property('#000000')
+    public pageOutline: string;
+    /**
+     * Gets or sets a value indicating whether to enable cursor in document editor on read only state or not. The default value is false.
+     * @default false
+     */
+    @Property(false)
+    public enableCursorOnReadOnly: boolean;
+    /**
+     * Gets or sets a value indicating whether local paste needs to be enabled or not.
+     * @default false
+     */
+    @Property(false)
+    public enableLocalPaste: boolean;
+    /**
+     * Defines the settings of the DocumentEditor services
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
+    public serverActionSettings: ServerActionSettingsModel;
+    /**
      * Triggers whenever document changes in the document editor.
      * @event
+     * @blazorproperty 'DocumentChanged'
      */
     @Event()
     public documentChange: EmitType<DocumentChangeEventArgs>;
     /**
      * Triggers whenever container view changes in the document editor.
      * @event
+     * @blazorproperty 'ViewChanged'
      */
     @Event()
     public viewChange: EmitType<ViewChangeEventArgs>;
     /**
      * Triggers whenever zoom factor changes in the document editor.
      * @event
+     * @blazorproperty 'ZoomFactorChanged'
      */
     @Event()
     public zoomFactorChange: EmitType<ZoomFactorChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor.
      * @event
+     * @blazorproperty 'SelectionChanged'
      */
     @Event()
     public selectionChange: EmitType<SelectionChangeEventArgs>;
     /**
      * Triggers whenever hyperlink is clicked or tapped in the document editor.
      * @event
+     * @blazorproperty 'OnRequestNavigate'
      */
     @Event()
     public requestNavigate: EmitType<RequestNavigateEventArgs>;
     /**
      * Triggers whenever content changes in the document editor.
      * @event
+     * @blazorproperty 'ContentChanged'
      */
     @Event()
     public contentChange: EmitType<ContentChangeEventArgs>;
     /**
      * Triggers whenever key is pressed in the document editor.
      * @event
+     * @blazorproperty 'OnKeyDown'
      */
     @Event()
     public keyDown: EmitType<DocumentEditorKeyDownEventArgs>;
     /**
      * Triggers whenever search results changes in the document editor.
      * @event
+     * @blazorproperty 'SearchResultsChanged'
      */
     @Event()
     public searchResultsChange: EmitType<SearchResultsChangeEventArgs>;
     /**
      * Triggers when the component is created
      * @event
+     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
      * @event
+     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers while selecting the custom context-menu option.
      * @event
+     * @blazorproperty 'ContextMenuItemSelected'
      */
     @Event()
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
     /**
      * Triggers before opening the custom context-menu option.
      * @event
+     * @blazorproperty 'OnContextMenuOpen'
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
-
-    /**
-     * Gets or Sets a value indicating whether tab key can be accepted as input or not.
-     * @default false
-     */
-    public acceptTab: boolean;
-    /**
-     * Gets or Sets a value indicating whether holding Ctrl key is required to follow hyperlink on click. The default value is true.
-     */
-    public useCtrlClickToFollowHyperlink: boolean = true;
-    /**
-     * Gets or sets the page outline color.
-     */
-    public pageOutline: string = '#000000';
-    /**
-     * Gets or sets a value indicating whether to enable cursor in document editor on read only state or not. The default value is false.
-     */
-    public enableCursorOnReadOnly: boolean = false;
-    /**
-     * Gets or sets a value indicating whether local paste needs to be enabled or not.
-     */
-    public enableLocalPaste: boolean = false;
     /**
      * @private
      */
@@ -432,6 +499,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public paragraphFormat: ParagraphFormatProperties;
     /**
      * Gets the total number of pages.
+     * @returns {number}
      */
     get pageCount(): number {
         if (!this.isDocumentLoaded || isNullOrUndefined(this.viewer)) {
@@ -441,40 +509,59 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      *  Gets the selection object of the document editor.
-     * @returns Selection
+     * @asptype Selection
+     * @returns {Selection}
      * @default undefined
      */
-    get selection(): Selection {
+    public get selection(): Selection {
         return this.selectionModule;
     }
     /**
      *  Gets the editor object of the document editor.
-     * @returns Editor
+     * @asptype Editor
+     * @returns {Editor}
      * @default undefined
      */
-    get editor(): Editor {
+    public get editor(): Editor {
         return this.editorModule;
     }
     /** 
      * Gets the editor history object of the document editor.
-     * @returns EditorHistory
+     * @asptype EditorHistory
+     * @returns {EditorHistory}
      */
-    get editorHistory(): EditorHistory {
+    public get editorHistory(): EditorHistory {
         return this.editorHistoryModule;
     }
     /** 
      * Gets the search object of the document editor.
+     * @asptype Search
      * @returns { Search }
      */
-    get search(): Search {
+    public get search(): Search {
         return this.searchModule;
     }
     /**
      * Gets the context menu object of the document editor.
-     * @returns ContextMenu
+     * @asptype ContextMenu
+     * @returns {ContextMenu}
      */
-    get contextMenu(): ContextMenu {
+    public get contextMenu(): ContextMenu {
         return this.contextMenuModule;
+    }
+    /**
+     * Gets the spell check dialog object of the document editor.
+     * @returns SpellCheckDialog
+     */
+    get spellCheckDialog(): SpellCheckDialog {
+        return this.spellCheckDialogModule;
+    }
+    /**
+     * Gets the spell check object of the document editor.
+     * @returns SpellChecker
+     */
+    get spellChecker(): SpellChecker {
+        return this.spellCheckerModule;
     }
     /**
      * @private
@@ -525,7 +612,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     get isReadOnlyMode(): boolean {
-        return this.isReadOnly || isNullOrUndefined(this.editorModule) || isNullOrUndefined(this.selectionModule);
+        return this.isReadOnly || isNullOrUndefined(this.editorModule)
+            || isNullOrUndefined(this.selectionModule) || !isNullOrUndefined(this.editor) && this.editor.restrictEditing;
     }
     /**
      * Specifies to enable image resizer option
@@ -582,6 +670,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
                         this.optionsPaneModule.showHideOptionsPane(false);
                     }
+                    break;
+                case 'currentUser':
+                case 'userColor':
+                    if (this.selection && this.viewer.isDocumentProtected) {
+                        this.selection.highlightEditRegion();
+                    }
+                    break;
+                case 'pageGap':
+                case 'pageOutline':
+                    this.viewer.updateScrollBars();
                     break;
             }
         }
@@ -981,6 +1079,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     member: 'TableOptionsDialog', args: [this.viewer]
                 });
             }
+            if (this.enableSpellCheck) {
+                modules.push({
+                    member: 'SpellChecker', args: [this.viewer]
+                });
+                modules.push({
+                    member: 'SpellCheckDialog', args: [this.viewer]
+                });
+            }
         }
         return modules;
     }
@@ -1231,7 +1337,49 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Left-to-right': 'Left-to-right',
         'Direction': 'Direction',
         'Table direction': 'Table direction',
-        'Indent from right': 'Indent from right'
+        'Indent from right': 'Indent from right',
+        /* tslint:disable */
+        "Don't add space between the paragraphs of the same styles": "Don't add space between the paragraphs of the same styles",
+        "The password don't match": "The password don't match",
+        /* tslint:enable */
+        'Restrict Editing': 'Restrict Editing',
+        'Formatting restrictions': 'Formatting restrictions',
+        'Allow formatting': 'Allow formatting',
+        'Editing restrictions': 'Editing restrictions',
+        'Read only': 'Read only',
+        'Exceptions (optional)': 'Exceptions (optional)',
+        // tslint:disable-next-line:max-line-length
+        'Select parts of the document and choose users who are allowed to freely edit them.': 'Select parts of the document and choose users who are allowed to freely edit them.',
+        'Everyone': 'Everyone',
+        'More users': 'More users',
+        'Add Users': 'Add Users',
+        'Yes, Start Enforcing Protection': 'Yes, Start Enforcing Protection',
+        'Start Enforcing Protection': 'Start Enforcing Protection',
+        'Enter User': 'Enter User',
+        'Users': 'Users',
+        'Enter new password': 'Enter new password',
+        'Reenter new password to confirm': 'Reenter new password to confirm',
+        'Your permissions': 'Your permissions',
+        // tslint:disable-next-line:max-line-length
+        'This document is protected from unintentional editing.You may edit in this region.': 'This document is protected from unintentional editing.You may edit in this region.',
+        'You may format text only with certain styles.': 'You may format text only with certain styles.',
+        'Stop Protection': 'Stop Protection',
+        'Password': 'Password',
+        'Spelling Editor': 'Spelling Editor',
+        'Spelling': 'Spelling',
+        'Spell Check': 'Spell Check',
+        'Underline errors': 'Underline errors',
+        'Ignore': 'Ignore',
+        'Ignore all': 'Ignore All',
+        'Add to Dictionary': 'Add to Dictionary',
+        'Change': 'Change',
+        'Change All': 'Change All',
+        'Suggestions': 'Suggestions',
+        'The password is incorrect': 'The password is incorrect',
+        'Error in establishing connection with web server': 'Error in establishing connection with web server',
+        'Highlight the regions I can edit': 'Highlight the regions I can edit',
+        'Show All Regions I Can Edit': 'Show All Regions I Can Edit',
+        'Find Next Region I Can Edit': 'Find Next Region I Can Edit'
 
     };
     // Public Implementation Starts
@@ -1242,15 +1390,20 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public open(sfdtText: string): void {
         if (!isNullOrUndefined(this.viewer)) {
             this.clearPreservedCollectionsInViewer();
+            this.viewer.userCollection.push('Everyone');
             this.viewer.lists = [];
             this.viewer.abstractLists = [];
             this.viewer.styles = new WStyles();
+            this.viewer.triggerElementsOnLoading = true;
+            this.viewer.triggerSpellCheck = true;
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
                 this.viewer.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
                 if (this.editorModule) {
                     this.editorModule.intializeDefaultStyles();
                 }
             }
+            this.viewer.triggerElementsOnLoading = false;
+            this.viewer.triggerSpellCheck = false;
         }
     }
     /**
@@ -1277,9 +1430,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableTableOfContentsDialog = this.enablePageSetupDialog = this.enableStyleDialog
             = this.enableListDialog = this.enableParagraphDialog = this.enableFontDialog
             = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
-            = this.enableTableOptionsDialog = true;
+            = this.enableTableOptionsDialog = this.enableSpellCheck = true;
         // tslint:disable-next-line:max-line-length
-        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog);
+        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog);
     }
     /**
      * Resizes the component and its sub elements based on given size or container size.
@@ -1409,6 +1562,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         let hfs: HeaderFooters = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
+            this.viewer.userCollection.push('Everyone');
             this.viewer.setDefaultDocumentFormat();
             this.viewer.headersFooters.push(hfs);
             this.viewer.onDocumentChanged(sections);
@@ -1524,6 +1678,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.findResultsList = [];
         this.findResultsList = undefined;
     }
+    /* tslint:disable */
     private destroyDependentModules(): void {
         if (this.printModule) {
             this.printModule.destroy();
@@ -1624,6 +1779,47 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.tableOfContentsDialogModule.destroy();
             this.tableOfContentsDialogModule = undefined;
         }
+        if (this.spellCheckerModule) {
+            this.spellCheckerModule.destroy();
+            this.spellCheckerModule = undefined;
+        }
     }
+    /* tslint:enable */
     // Public Implementation Ends.
 }
+
+/**
+ * The `ServerActionSettings` module is used to provide the server action methods of Document Editor.
+ */
+export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
+
+    /**
+     * specifies the system clipboard action of Document Editor.
+     */
+    @Property('SystemClipboard')
+    public systemClipboard: string;
+
+    /**
+     * specifies the spell check action of Document Editor.
+     */
+    @Property('SpellCheck')
+    public spellCheck: string;
+
+    /**
+     * specifies the restrict editing encryption/decryption action of Document Editor.
+     */
+    @Property('RestrictEditing')
+    public restrictEditing: string;
+}
+
+/**
+ * The `ServerActionSettings` module is used to provide the server action methods of Document Editor Container.
+ */
+export class ContainerServerActionSettings extends ServerActionSettings {
+    /**
+     * specifies the load action of Document Editor.
+     */
+    @Property('Import')
+    public import: string;
+}
+

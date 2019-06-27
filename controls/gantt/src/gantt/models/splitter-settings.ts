@@ -2,7 +2,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { SplitterView } from '../base/enum';
 
 /**
- * Configures splitter position and splitter bar
+ * Configures splitter position and splitter bar.
  */
 export class SplitterSettings extends ChildProperty<SplitterSettings> {
     /**
@@ -32,9 +32,9 @@ export class SplitterSettings extends ChildProperty<SplitterSettings> {
     public minimum: string;
     /**
      * Defines predefined view of Gantt.
-     * * `Default` - Shows grid side and side of Gantt
-     * * `Grid` - Shows grid side alone in Gantt
-     * * `Chart` - Shows chart side alone in Gantt
+     * * `Default` - Shows grid side and side of Gantt.
+     * * `Grid` - Shows grid side alone in Gantt.
+     * * `Chart` - Shows chart side alone in Gantt.
      * @default Default 
      */
     @Property('Default')

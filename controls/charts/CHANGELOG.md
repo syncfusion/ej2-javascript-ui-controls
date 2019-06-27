@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### Chart
+
+#### New Features
+
+- Canvas rendering mode support provided.
+- Overlapping data labels in funnel and pyramid charts will be arranged on both sides of the charts.
+- Data Editing support provided for chart series points.
+- Multi level label click event added with custom object.
+
+#### Breaking Changes
+
+- sizeType enumeration name changed to SizeType
+
+### Stock Chart
+
+#### Breaking Changes
+
+- sizeType enumeration name changed to SizeType
+
 ## 17.1.51 (2019-06-11)
 
 ### Chart

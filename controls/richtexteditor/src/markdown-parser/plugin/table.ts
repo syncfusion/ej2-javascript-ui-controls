@@ -140,9 +140,9 @@ export class MDTable {
 
     private ensureFormatApply(line: string): boolean {
         let formatTags: string[] = this.getFormatTag();
-        let formatSplitZero: string = line.split(' ', 2)[0] + ' ';
+        let formatSplitZero: string = line.trim().split(' ', 2)[0] + ' ';
         for (let i: number = 0; i < formatTags.length; i++) {
-            if (formatSplitZero === formatTags[i]) {
+            if (formatSplitZero === formatTags[i] || /^[\d.]+[ ]+$/.test(formatSplitZero)) {
                 return true;
             }
         }

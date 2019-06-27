@@ -61,6 +61,9 @@ describe('Data Label checking for the pie doughnut series', () => {
         let template1: Element = createElement('div', { id: 'template1', styles: 'display: none;' });
         document.body.appendChild(template1);
         template1.innerHTML = '<div>${point.y}</div>';
+        let template2: Element = createElement('div', { id: 'template2', styles: 'display: none;' });
+        document.body.appendChild(template2);
+        template2.innerHTML = '<div>${point.label}</div>';
         document.body.appendChild(ele);
         accumulation = new AccumulationChart({
             title: 'Datalabel Spec',
@@ -497,6 +500,54 @@ describe('Data Label checking for the pie doughnut series', () => {
         accumulation.series[0].dataLabel.position = 'Inside';
         accumulation.series[0].radius = 'radius';
         accumulation.series[0].innerRadius = '30%';
+        accumulation.refresh();
+    });
+    it('Checking datalabel text after enable group separator', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let element: HTMLElement = document.getElementById('ej2container_datalabel_Series_0_text_0');
+            expect(element.textContent).toEqual('18,000');
+            let element1: HTMLElement = document.getElementById('ej2container_datalabel_Series_0_text_1');
+            expect(element1.textContent).toEqual('feb: 10000');
+            let element2: HTMLElement = document.getElementById('ej2container_datalabel_Series_0_text_3');
+            expect(element2.textContent).toEqual('70,000');
+            done();
+        };
+        accumulation.series = [
+            {
+                dataSource: [{ x: 'Labour', y: 18000 }, { x: 'Legal', y: 8000, text: 'feb: 10000' },
+                { x: 'Production', y: 15000 }, { x: 'License', y: 11000, text: '70000' },
+                { x: 'Facilities', y: 18000 }, { x: 'Taxes', y: 14000 },
+                { x: 'Insurance', y: 16000 }],
+                dataLabel: {
+                    visible: true,
+                    name: 'text',
+                    position: 'Inside',
+                    font: {
+                        fontWeight: '600',
+                        color: '#ffffff'
+                    },
+                },
+                radius: '70%', xName: 'x',
+                yName: 'y', startAngle: 0,
+                endAngle: 360, innerRadius: '40%', name: 'Project',
+                explode: true, explodeOffset: '10%', explodeIndex: 3,
+            }
+        ];
+        accumulation.useGroupingSeparator = true;
+        accumulation.refresh();
+    });
+    it('Checking datalabel text after enable group separator with template', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            let element: HTMLElement = document.getElementById('ej2container_Series_0_DataLabel_0');
+            expect(element.children[0].innerHTML).toBe('18,000');
+            done();
+        };
+        accumulation.series[0].dataSource = [{ x: 'Labour', y: 18000 }, { x: 'Legal', y: 8000, text: 'feb: 10000' },
+        { x: 'Production', y: 15000 }, { x: 'License', y: 11000, text: '70000' },
+        { x: 'Facilities', y: 18000 }, { x: 'Taxes', y: 14000 },
+        { x: 'Insurance', y: 16000 }];
+        accumulation.useGroupingSeparator = true;
+        accumulation.series[0].dataLabel.template = '#template2';
         accumulation.refresh();
     });
 

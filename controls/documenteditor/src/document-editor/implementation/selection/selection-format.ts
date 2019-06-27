@@ -63,12 +63,17 @@ export class SelectionCharacterFormat {
      */
     public styleName: string;
     /**
-     * Gets or sets the font size of selected contents.
+     * Gets the font size of selected contents.
+     * @asptype int
      */
-    get fontSize(): number {
+    public get fontSize(): number {
         return this.fontSizeIn;
     }
-    set fontSize(value: number) {
+    /**
+     * Sets the font size of selected contents.
+     * @asptype int
+     */
+    public set fontSize(value: number) {
         if (value === this.fontSizeIn) {
             return;
         }
@@ -77,11 +82,16 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font family of selected contents.
+     * @asptype string
      */
-    get fontFamily(): string {
+    public get fontFamily(): string {
         return this.fontFamilyIn;
     }
-    set fontFamily(value: string) {
+    /**
+     * Sets the font family of selected contents.
+     * @asptype string
+     */
+    public set fontFamily(value: string) {
         if (value === this.fontFamilyIn) {
             return;
         }
@@ -90,11 +100,16 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font color of selected contents.
+     * @asptype string
      */
-    get fontColor(): string {
+    public get fontColor(): string {
         return this.fontColorIn;
     }
-    set fontColor(value: string) {
+    /**
+     * Sets the font color of selected contents.
+     * @asptype string
+     */
+    public set fontColor(value: string) {
         if (value === this.fontColorIn) {
             return;
         }
@@ -103,11 +118,16 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the bold formatting of selected contents.
+     * @asptype bool
      */
-    get bold(): boolean {
+    public get bold(): boolean {
         return this.boldIn;
     }
-    set bold(value: boolean) {
+    /**
+     * Sets the bold formatting of selected contents.
+     * @asptype bool
+     */
+    public set bold(value: boolean) {
         if (value === this.boldIn) {
             return;
         }
@@ -116,11 +136,16 @@ export class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the italic formatting of selected contents.
+     * @asptype bool
      */
-    get italic(): boolean {
+    public get italic(): boolean {
         return this.italicIn;
     }
-    set italic(value: boolean) {
+    /**
+     * Sets the italic formatting of selected contents.
+     * @asptype bool
+     */
+    public set italic(value: boolean) {
         if (value === this.italic) {
             return;
         }
@@ -130,10 +155,13 @@ export class SelectionCharacterFormat {
     /**
      * Gets or sets the strikethrough property of selected contents.
      */
-    get strikethrough(): Strikethrough {
+    public get strikethrough(): Strikethrough {
         return this.strikeThroughIn;
     }
-    set strikethrough(value: Strikethrough) {
+    /**
+     * Sets the strikethrough property of selected contents.
+     */
+    public set strikethrough(value: Strikethrough) {
         if (value === this.strikeThroughIn) {
             return;
         }
@@ -143,10 +171,13 @@ export class SelectionCharacterFormat {
     /**
      * Gets or sets the baseline alignment property of selected contents.
      */
-    get baselineAlignment(): BaselineAlignment {
+    public get baselineAlignment(): BaselineAlignment {
         return this.baselineAlignmentIn;
     }
-    set baselineAlignment(value: BaselineAlignment) {
+    /**
+     * Sets the baseline alignment property of selected contents.
+     */
+    public set baselineAlignment(value: BaselineAlignment) {
         if (value === this.baselineAlignmentIn) {
             return;
         }
@@ -156,10 +187,13 @@ export class SelectionCharacterFormat {
     /**
      * Gets or sets the underline style of selected contents.
      */
-    get underline(): Underline {
+    public get underline(): Underline {
         return this.underlineIn;
     }
-    set underline(value: Underline) {
+    /**
+     * Sets the underline style of selected contents.
+     */
+    public set underline(value: Underline) {
         if (value === this.underlineIn) {
             return;
         }
@@ -169,10 +203,13 @@ export class SelectionCharacterFormat {
     /**
      * Gets or sets the highlight color of selected contents.
      */
-    get highlightColor(): HighlightColor {
+    public get highlightColor(): HighlightColor {
         return this.highlightColorIn;
     }
-    set highlightColor(value: HighlightColor) {
+    /**
+     * Sets the highlight color of selected contents.
+     */
+    public set highlightColor(value: HighlightColor) {
         if (value === this.highlightColorIn) {
             return;
         }
@@ -411,6 +448,7 @@ export class SelectionParagraphFormat {
     private lineSpacingIn: number = 1;
     private lineSpacingTypeIn: LineSpacingType = undefined;
     private bidiIn: boolean = undefined;
+    private contextualSpacingIn: boolean = undefined;
     /**
      * @private
      */
@@ -424,11 +462,17 @@ export class SelectionParagraphFormat {
     /**
      * Gets or Sets the left indent for selected paragraphs.
      * @default undefined
+     * @asptype int
      */
-    get leftIndent(): number {
+    public get leftIndent(): number {
         return this.leftIndentIn;
     }
-    set leftIndent(value: number) {
+    /**
+     * Sets the left indent for selected paragraphs.
+     * @default undefined
+     * @asptype int
+     */
+    public set leftIndent(value: number) {
         if (value === this.leftIndentIn) {
             return;
         }
@@ -438,11 +482,17 @@ export class SelectionParagraphFormat {
     /**
      * Gets or Sets the right indent for selected paragraphs.
      * @default undefined
+     * @asptype int
      */
-    get rightIndent(): number {
+    public get rightIndent(): number {
         return this.rightIndentIn;
     }
-    set rightIndent(value: number) {
+    /**
+     * Sets the right indent for selected paragraphs.
+     * @default undefined
+     * @asptype int
+     */
+    public set rightIndent(value: number) {
         if (value === this.rightIndentIn) {
             return;
         }
@@ -452,11 +502,17 @@ export class SelectionParagraphFormat {
     /**
      * Gets or Sets the first line indent for selected paragraphs.
      * @default undefined
+     * @asptype int
      */
-    get firstLineIndent(): number {
+    public get firstLineIndent(): number {
         return this.firstLineIndentIn;
     }
-    set firstLineIndent(value: number) {
+    /**
+     * Sets the first line indent for selected paragraphs.
+     * @default undefined
+     * @asptype int
+     */
+    public set firstLineIndent(value: number) {
         if (value === this.firstLineIndentIn) {
             return;
         }
@@ -467,10 +523,14 @@ export class SelectionParagraphFormat {
      * Gets or Sets the text alignment for selected paragraphs.
      * @default undefined
      */
-    get textAlignment(): TextAlignment {
+    public get textAlignment(): TextAlignment {
         return this.textAlignmentIn;
     }
-    set textAlignment(value: TextAlignment) {
+    /**
+     * Sets the text alignment for selected paragraphs.
+     * @default undefined
+     */
+    public set textAlignment(value: TextAlignment) {
         if (value === this.textAlignmentIn) {
             return;
         }
@@ -478,13 +538,19 @@ export class SelectionParagraphFormat {
         this.notifyPropertyChanged('textAlignment');
     }
     /**
-     * Gets or Sets the after spacing for selected paragraphs.
+     * Sets the after spacing for selected paragraphs.
      * @default undefined
+     * @asptype int
      */
-    get afterSpacing(): number {
+    public get afterSpacing(): number {
         return this.afterSpacingIn;
     }
-    set afterSpacing(value: number) {
+    /**
+     * Gets or Sets the after spacing for selected paragraphs.
+     * @default undefined
+     * @asptype int
+     */
+    public set afterSpacing(value: number) {
         if (value === this.afterSpacingIn) {
             return;
         }
@@ -494,11 +560,17 @@ export class SelectionParagraphFormat {
     /**
      * Gets or Sets the before spacing for selected paragraphs.
      * @default undefined
+     * @asptype int
      */
-    get beforeSpacing(): number {
+    public get beforeSpacing(): number {
         return this.beforeSpacingIn;
     }
-    set beforeSpacing(value: number) {
+    /**
+     * Sets the before spacing for selected paragraphs.
+     * @default undefined
+     * @asptype int
+     */
+    public set beforeSpacing(value: number) {
         if (value === this.beforeSpacingIn) {
             return;
         }
@@ -508,11 +580,17 @@ export class SelectionParagraphFormat {
     /**
      * Gets or Sets the line spacing for selected paragraphs.
      * @default undefined
+     * @asptype int
      */
-    get lineSpacing(): number {
+    public get lineSpacing(): number {
         return this.lineSpacingIn;
     }
-    set lineSpacing(value: number) {
+    /**
+     * Sets the line spacing for selected paragraphs.
+     * @default undefined
+     * @asptype int
+     */
+    public set lineSpacing(value: number) {
         if (value === this.lineSpacingIn) {
             return;
         }
@@ -523,10 +601,14 @@ export class SelectionParagraphFormat {
      * Gets or Sets the line spacing type for selected paragraphs.
      * @default undefined
      */
-    get lineSpacingType(): LineSpacingType {
+    public get lineSpacingType(): LineSpacingType {
         return this.lineSpacingTypeIn;
     }
-    set lineSpacingType(value: LineSpacingType) {
+    /**
+     * Gets or Sets the line spacing type for selected paragraphs.
+     * @default undefined
+     */
+    public set lineSpacingType(value: LineSpacingType) {
         if (value === this.lineSpacingTypeIn) {
             return;
         }
@@ -534,13 +616,19 @@ export class SelectionParagraphFormat {
         this.notifyPropertyChanged('lineSpacingType');
     }
     /**
-     * Gets or Sets the list level number for selected paragraphs.
+     * Sets the list level number for selected paragraphs.
      * @default undefined
+     * @asptype int
      */
-    get listLevelNumber(): number {
+    public get listLevelNumber(): number {
         return this.listLevelNumberIn;
     }
-    set listLevelNumber(value: number) {
+    /**
+     * Gets or Sets the list level number for selected paragraphs.
+     * @default undefined
+     * @asptype int
+     */
+    public set listLevelNumber(value: number) {
         if (value === this.listLevelNumberIn) {
             return;
         }
@@ -549,18 +637,39 @@ export class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the bidirectional property for selected paragraphs
+     * @asptype bool
      */
-    get bidi(): boolean {
+    public get bidi(): boolean {
         return this.bidiIn;
     }
-    set bidi(value: boolean) {
+    /**
+     * Sets the bidirectional property for selected paragraphs
+     * @asptype bool
+     */
+    public set bidi(value: boolean) {
         this.bidiIn = value;
         this.notifyPropertyChanged('bidi');
     }
     /**
-     * Gets the list text for selected paragraphs.
+     * Gets or sets a value indicating whether to add space between the paragraphs of same style.
+     * @asptype bool
      */
-    get listText(): string {
+    public get contextualSpacing(): boolean {
+        return this.contextualSpacingIn;
+    }
+    /**
+     * Sets a value indicating whether to add space between the paragraphs of same style.
+     * @asptype bool
+     */
+    public set contextualSpacing(value: boolean) {
+        this.contextualSpacingIn = value;
+        this.notifyPropertyChanged('contextualSpacing');
+    }
+    /**
+     * Gets the list text for selected paragraphs.
+     * @asptype string
+     */
+    public get listText(): string {
         let listFormat: string = undefined;
         let list: WList = this.viewer.getListById(this.listId);
         if (list instanceof WList && this.listLevelNumberIn > -1 && this.listLevelNumberIn < 9) {
@@ -611,6 +720,8 @@ export class SelectionParagraphFormat {
                 return this.lineSpacingType;
             case 'bidi':
                 return this.bidi;
+            case 'contextualSpacing':
+                return this.contextualSpacing;
             default:
                 return undefined;
         }
@@ -656,6 +767,7 @@ export class SelectionParagraphFormat {
         this.lineSpacingType = format.lineSpacingType;
         this.textAlignment = format.textAlignment;
         this.bidi = format.bidi;
+        this.contextualSpacing = format.contextualSpacing;
         if (!isNullOrUndefined(format.listFormat) && !isNullOrUndefined(format.listFormat.listId)) {
             this.listId = format.listFormat.listId;
             this.listLevelNumber = format.listFormat.listLevelNumber;
@@ -701,6 +813,9 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.bidi)) {
             format.bidi = this.bidi;
         }
+        if (!isNullOrUndefined(this.contextualSpacing)) {
+            format.contextualSpacing = this.contextualSpacing;
+        }
     }
     /**
      * Combines the format.
@@ -743,6 +858,9 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.bidi) && this.bidi !== format.bidi) {
             this.bidi = undefined;
         }
+        if (!isNullOrUndefined(this.contextualSpacing) && this.contextualSpacing !== format.contextualSpacing) {
+            this.contextualSpacing = undefined;
+        }
     }
     /**
      * Clears the format.
@@ -762,6 +880,7 @@ export class SelectionParagraphFormat {
         this.listLevelNumber = -1;
         this.styleName = undefined;
         this.bidi = undefined;
+        this.contextualSpacing = undefined;
     }
     /**
      * Gets the clone of list at current selection.
@@ -869,6 +988,7 @@ export class SelectionParagraphFormat {
         this.selection = undefined;
         this.styleName = undefined;
         this.bidi = undefined;
+        this.contextualSpacing = undefined;
     }
 }
 /**
@@ -892,101 +1012,151 @@ export class SelectionSectionFormat {
     public bidi: boolean = undefined;
     /**
      * Gets or sets the page height.
+     * @asptype int
      */
-    get pageHeight(): number {
+    public get pageHeight(): number {
         return this.pageHeightIn;
     }
-    set pageHeight(value: number) {
+    /**
+     * Gets or sets the page height.
+     * @asptype int
+     */
+    public set pageHeight(value: number) {
         this.pageHeightIn = value;
         this.notifyPropertyChanged('pageHeight');
     }
     /**
      * Gets or sets the page width.
+     * @asptype int
      */
-    get pageWidth(): number {
+    public get pageWidth(): number {
         return this.pageWidthIn;
     }
-    set pageWidth(value: number) {
+    /**
+     * Gets or sets the page width.
+     * @asptype int
+     */
+    public set pageWidth(value: number) {
         this.pageWidthIn = value;
         this.notifyPropertyChanged('pageWidth');
     }
     /**
      * Gets or sets the page left margin.
+     * @asptype int
      */
-    get leftMargin(): number {
+    public get leftMargin(): number {
         return this.leftMarginIn;
     }
-    set leftMargin(value: number) {
+    /**
+     * Gets or sets the page left margin.
+     * @asptype int
+     */
+    public set leftMargin(value: number) {
         this.leftMarginIn = value;
         this.notifyPropertyChanged('leftMargin');
     }
     /**
      * Gets or sets the page bottom margin.
+     * @asptype int
      */
-    get bottomMargin(): number {
+    public get bottomMargin(): number {
         return this.bottomMarginIn;
     }
-    set bottomMargin(value: number) {
+    /**
+     * Gets or sets the page bottom margin.
+     * @asptype int
+     */
+    public set bottomMargin(value: number) {
         this.bottomMarginIn = value;
         this.notifyPropertyChanged('bottomMargin');
     }
     /**
      * Gets or sets the page top margin.
+     * @asptype int
      */
-    get topMargin(): number {
+    public get topMargin(): number {
         return this.topMarginIn;
     }
-    set topMargin(value: number) {
+    /**
+     * Gets or sets the page top margin.
+     * @asptype int
+     */
+    public set topMargin(value: number) {
         this.topMarginIn = value;
         this.notifyPropertyChanged('topMargin');
     }
     /**
      * Gets or sets the page right margin.
+     * @asptype int
      */
-    get rightMargin(): number {
+    public get rightMargin(): number {
         return this.rightMarginIn;
     }
-    set rightMargin(value: number) {
+    /**
+     * Gets or sets the page right margin.
+     * @asptype int
+     */
+    public set rightMargin(value: number) {
         this.rightMarginIn = value;
         this.notifyPropertyChanged('rightMargin');
     }
     /**
      * Gets or sets the header distance.
+     * @asptype int
      */
-    get headerDistance(): number {
+    public get headerDistance(): number {
         return this.headerDistanceIn;
     }
-    set headerDistance(value: number) {
+    /**
+     * Gets or sets the header distance.
+     * @asptype int
+     */
+    public set headerDistance(value: number) {
         this.headerDistanceIn = value;
         this.notifyPropertyChanged('headerDistance');
     }
     /**
      * Gets or sets the footer distance.
+     * @asptype int
      */
-    get footerDistance(): number {
+    public get footerDistance(): number {
         return this.footerDistanceIn;
     }
-    set footerDistance(value: number) {
+    /**
+     * Gets or sets the footer distance.
+     * @asptype int
+     */
+    public set footerDistance(value: number) {
         this.footerDistanceIn = value;
         this.notifyPropertyChanged('footerDistance');
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
+     * @asptype bool
      */
-    get differentFirstPage(): boolean {
+    public get differentFirstPage(): boolean {
         return this.differentFirstPageIn;
     }
-    set differentFirstPage(value: boolean) {
+    /**
+     * Gets or sets a value indicating whether the section has different first page.
+     * @asptype bool
+     */
+    public set differentFirstPage(value: boolean) {
         this.differentFirstPageIn = value;
         this.notifyPropertyChanged('differentFirstPage');
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
+     * @asptype bool
      */
-    get differentOddAndEvenPages(): boolean {
+    public get differentOddAndEvenPages(): boolean {
         return this.differentOddAndEvenPagesIn;
     }
-    set differentOddAndEvenPages(value: boolean) {
+    /**
+     * Gets or sets a value indicating whether the section has different odd and even page.
+     * @asptype bool
+     */
+    public set differentOddAndEvenPages(value: boolean) {
         this.differentOddAndEvenPagesIn = value;
         this.notifyPropertyChanged('differentOddAndEvenPages');
     }
@@ -1186,12 +1356,16 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or Sets the left indent for selected table.
-     * @private
+     * @asptype int
      */
-    get leftIndent(): number {
+    public get leftIndent(): number {
         return this.leftIndentIn;
     }
-    set leftIndent(value: number) {
+    /**
+     * Gets or Sets the left indent for selected table.
+     * @asptype int
+     */
+    public set leftIndent(value: number) {
         if (value === this.leftIndentIn) {
             return;
         }
@@ -1201,11 +1375,17 @@ export class SelectionTableFormat {
     /**
      * Gets or Sets the default top margin of cell for selected table.
      * @default undefined
+     * @asptype int
      */
-    get topMargin(): number {
+    public get topMargin(): number {
         return this.topMarginIn;
     }
-    set topMargin(value: number) {
+    /**
+     * Gets or Sets the default top margin of cell for selected table.
+     * @default undefined
+     * @asptype int
+     */
+    public set topMargin(value: number) {
         if (value === this.topMarginIn) {
             return;
         }
@@ -1215,11 +1395,17 @@ export class SelectionTableFormat {
     /**
      * Gets or Sets the background for selected table.
      * @default undefined
+     * @asptype string
      */
-    get background(): string {
+    public get background(): string {
         return this.backgroundIn;
     }
-    set background(value: string) {
+    /**
+     * Gets or Sets the background for selected table.
+     * @default undefined
+     * @asptype string
+     */
+    public set background(value: string) {
         if (value === this.backgroundIn) {
             return;
         }
@@ -1230,10 +1416,14 @@ export class SelectionTableFormat {
      * Gets or Sets the table alignment for selected table.
      * @default undefined
      */
-    get tableAlignment(): TableAlignment {
+    public get tableAlignment(): TableAlignment {
         return this.tableAlignmentIn;
     }
-    set tableAlignment(value: TableAlignment) {
+    /**
+     * Gets or Sets the table alignment for selected table.
+     * @default undefined
+     */
+    public set tableAlignment(value: TableAlignment) {
         if (value === this.tableAlignmentIn) {
             return;
         }
@@ -1243,11 +1433,17 @@ export class SelectionTableFormat {
     /**
      * Gets or Sets the default left margin of cell for selected table.
      * @default undefined
+     * @asptype int
      */
-    get leftMargin(): number {
+    public get leftMargin(): number {
         return this.leftMarginIn;
     }
-    set leftMargin(value: number) {
+    /**
+     * Gets or Sets the default left margin of cell for selected table.
+     * @default undefined
+     * @asptype int
+     */
+    public set leftMargin(value: number) {
         if (value === this.leftMarginIn) {
             return;
         }
@@ -1257,11 +1453,17 @@ export class SelectionTableFormat {
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
      * @default undefined
+     * @asptype int
      */
-    get bottomMargin(): number {
+    public get bottomMargin(): number {
         return this.bottomMarginIn;
     }
-    set bottomMargin(value: number) {
+    /**
+     * Gets or Sets the default bottom margin of cell for selected table.
+     * @default undefined
+     * @asptype int
+     */
+    public set bottomMargin(value: number) {
         if (value === this.bottomMarginIn) {
             return;
         }
@@ -1271,11 +1473,17 @@ export class SelectionTableFormat {
     /**
      * Gets or Sets the cell spacing for selected table.
      * @default undefined
+     * @asptype int
      */
-    get cellSpacing(): number {
+    public get cellSpacing(): number {
         return this.cellSpacingIn;
     }
-    set cellSpacing(value: number) {
+    /**
+     * Gets or Sets the cell spacing for selected table.
+     * @default undefined
+     * @asptype int
+     */
+    public set cellSpacing(value: number) {
         if (value === this.cellSpacingIn) {
             return;
         }
@@ -1285,11 +1493,17 @@ export class SelectionTableFormat {
     /**
      * Gets or Sets the default right margin of cell for selected table.
      * @default undefined
+     * @asptype int
      */
-    get rightMargin(): number {
+    public get rightMargin(): number {
         return this.rightMarginIn;
     }
-    set rightMargin(value: number) {
+    /**
+     * Gets or Sets the default right margin of cell for selected table.
+     * @default undefined
+     * @asptype int
+     */
+    public set rightMargin(value: number) {
         if (value === this.rightMarginIn) {
             return;
         }
@@ -1299,11 +1513,17 @@ export class SelectionTableFormat {
     /**
      * Gets or Sets the preferred width for selected table.
      * @default undefined
+     * @asptype int
      */
-    get preferredWidth(): number {
+    public get preferredWidth(): number {
         return this.preferredWidthIn;
     }
-    set preferredWidth(value: number) {
+    /**
+     * Gets or Sets the preferred width for selected table.
+     * @default undefined
+     * @asptype int
+     */
+    public set preferredWidth(value: number) {
         if (value === this.preferredWidthIn) {
             return;
         }
@@ -1314,10 +1534,14 @@ export class SelectionTableFormat {
      * Gets or Sets the preferred width type for selected table.
      * @default undefined
      */
-    get preferredWidthType(): WidthType {
+    public get preferredWidthType(): WidthType {
         return this.preferredWidthTypeIn;
     }
-    set preferredWidthType(value: WidthType) {
+    /**
+     * Gets or Sets the preferred width type for selected table.
+     * @default undefined
+     */
+    public set preferredWidthType(value: WidthType) {
         if (value === this.preferredWidthTypeIn) {
             return;
         }
@@ -1326,11 +1550,16 @@ export class SelectionTableFormat {
     }
     /**
      * Gets or sets the bidi property
+     * @asptype bool
      */
-    get bidi(): boolean {
+    public get bidi(): boolean {
         return this.bidiIn;
     }
-    set bidi(value: boolean) {
+    /**
+     * Gets or sets the bidi property
+     * @asptype bool
+     */
+    public set bidi(value: boolean) {
         this.bidiIn = value;
         this.notifyPropertyChanged('bidi');
     }
@@ -1460,10 +1689,14 @@ export class SelectionCellFormat {
      * Gets or sets the vertical alignment of the selected cells.
      * @default undefined
      */
-    get verticalAlignment(): CellVerticalAlignment {
+    public get verticalAlignment(): CellVerticalAlignment {
         return this.verticalAlignmentIn;
     }
-    set verticalAlignment(value: CellVerticalAlignment) {
+    /**
+     * Gets or sets the vertical alignment of the selected cells.
+     * @default undefined
+     */
+    public set verticalAlignment(value: CellVerticalAlignment) {
         if (value === this.verticalAlignmentIn) {
             return;
         }
@@ -1473,12 +1706,18 @@ export class SelectionCellFormat {
     /**
      * Gets or Sets the left margin for selected cells.
      * @default undefined
+     * @asptype int
      */
     /* tslint:disable */
-    get leftMargin(): number {
+    public get leftMargin(): number {
         return this.leftMarginIn;
     }
-    set leftMargin(value: number) {
+    /**
+     * Gets or Sets the left margin for selected cells.
+     * @default undefined
+     * @asptype int
+     */
+    public set leftMargin(value: number) {
         if (value === this.leftMarginIn) {
             return;
         }
@@ -1488,11 +1727,17 @@ export class SelectionCellFormat {
     /**
      * Gets or Sets the right margin for selected cells.
      * @default undefined
+     * @asptype int
      */
-    get rightMargin(): number {
+    public get rightMargin(): number {
         return this.rightMarginIn;
     }
-    set rightMargin(value: number) {
+    /**
+     * Gets or Sets the right margin for selected cells.
+     * @default undefined
+     * @asptype int
+     */
+    public set rightMargin(value: number) {
         if (value === this.rightMarginIn) {
             return;
         }
@@ -1502,11 +1747,17 @@ export class SelectionCellFormat {
     /**
      * Gets or Sets the top margin for selected cells.
      * @default undefined
+     * @asptype int
      */
-    get topMargin(): number {
+    public get topMargin(): number {
         return this.topMarginIn;
     }
-    set topMargin(value: number) {
+    /**
+     * Gets or Sets the top margin for selected cells.
+     * @default undefined
+     * @asptype int
+     */
+    public set topMargin(value: number) {
         if (value === this.topMarginIn) {
             return;
         }
@@ -1516,11 +1767,17 @@ export class SelectionCellFormat {
     /**
      * Gets or Sets the bottom margin for selected cells.
      * @default undefined
+     * @asptype int
      */
-    get bottomMargin(): number {
+    public get bottomMargin(): number {
         return this.bottomMarginIn;
     }
-    set bottomMargin(value: number) {
+    /**
+     * Gets or Sets the bottom margin for selected cells.
+     * @default undefined
+     * @asptype int
+     */
+    public set bottomMargin(value: number) {
         if (value === this.bottomMarginIn) {
             return;
         }
@@ -1530,12 +1787,18 @@ export class SelectionCellFormat {
     /**
      * Gets or Sets the background for selected cells.
      * @default undefined
+     * @asptype string
      */
-    get background(): string {
+    public get background(): string {
         return this.backgroundIn;
     }
+    /**
+     * Gets or Sets the background for selected cells.
+     * @default undefined
+     * @asptype string
+     */
     /* tslint:enable */
-    set background(value: string) {
+    public set background(value: string) {
         if (value === this.backgroundIn) {
             return;
         }
@@ -1547,11 +1810,14 @@ export class SelectionCellFormat {
      * Gets or Sets the preferred width type for selected cells.
      * @default undefined
      */
-    get preferredWidthType(): WidthType {
+    public get preferredWidthType(): WidthType {
         return this.preferredWidthTypeIn;
     }
-
-    set preferredWidthType(value: WidthType) {
+    /**
+     * Gets or Sets the preferred width type for selected cells.
+     * @default undefined
+     */
+    public set preferredWidthType(value: WidthType) {
         if (value === this.preferredWidthTypeIn) {
             return;
         }
@@ -1561,12 +1827,17 @@ export class SelectionCellFormat {
     /**
      * Gets or Sets the preferred width  for selected cells.
      * @default undefined
+     * @asptype int
      */
-    get preferredWidth(): number {
+    public get preferredWidth(): number {
         return this.preferredWidthIn;
     }
-
-    set preferredWidth(value: number) {
+    /**
+     * Gets or Sets the preferred width  for selected cells.
+     * @default undefined
+     * @asptype int
+     */
+    public set preferredWidth(value: number) {
         if (value === this.preferredWidthIn) {
             return;
         }
@@ -1722,11 +1993,17 @@ export class SelectionRowFormat {
     /**
      * Gets or Sets the height for selected rows.
      * @default undefined
+     * @asptype int
      */
-    get height(): number {
+    public get height(): number {
         return this.heightIn;
     }
-    set height(value: number) {
+    /**
+     * Gets or Sets the height for selected rows.
+     * @default undefined
+     * @asptype int
+     */
+    public set height(value: number) {
         if (value === this.heightIn) {
             return;
         }
@@ -1737,10 +2014,14 @@ export class SelectionRowFormat {
      * Gets or Sets the height type for selected rows.
      * @default undefined
      */
-    get heightType(): HeightType {
+    public get heightType(): HeightType {
         return this.heightTypeIn;
     }
-    set heightType(value: HeightType) {
+    /**
+     * Gets or Sets the height type for selected rows.
+     * @default undefined
+     */
+    public set heightType(value: HeightType) {
         if (value === this.heightTypeIn) {
             return;
         }
@@ -1750,11 +2031,17 @@ export class SelectionRowFormat {
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
      * @default undefined
+     * @asptype bool
      */
-    get isHeader(): boolean {
+    public get isHeader(): boolean {
         return this.isHeaderIn;
     }
-    set isHeader(value: boolean) {
+    /**
+     * Gets or Sets a value indicating whether the selected rows are header rows or not.
+     * @default undefined
+     * @asptype bool
+     */
+    public set isHeader(value: boolean) {
         if (value === this.isHeaderIn) {
             return;
         }
@@ -1764,11 +2051,17 @@ export class SelectionRowFormat {
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
      * @default undefined
+     * @asptype bool
      */
-    get allowBreakAcrossPages(): boolean {
+    public get allowBreakAcrossPages(): boolean {
         return this.allowRowBreakAcrossPagesIn;
     }
-    set allowBreakAcrossPages(value: boolean) {
+    /**
+     * Gets or Sets a value indicating whether to allow break across pages for selected rows.
+     * @default undefined
+     * @asptype bool
+     */
+    public set allowBreakAcrossPages(value: boolean) {
         if (value === this.allowRowBreakAcrossPagesIn) {
             return;
         }
@@ -1888,8 +2181,9 @@ export class SelectionImageFormat {
     public selection: Selection;
     /**
      * Gets the width of the image.
+     * @asptype int
      */
-    get width(): number {
+    public get width(): number {
         if (this.image) {
             return this.image.width;
         }
@@ -1897,8 +2191,9 @@ export class SelectionImageFormat {
     }
     /**
      * Gets the height of the image.
+     * @asptype int
      */
-    get height(): number {
+    public get height(): number {
         if (this.image) {
             return this.image.height;
         }

@@ -1,6 +1,6 @@
 import { isNullOrUndefined, isUndefined, extend, setValue, getValue, deleteObject, createElement } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
-import { TaskFieldsModel } from '../models/models';
+import { TaskFieldsModel, EditSettingsModel } from '../models/models';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent, IPredecessor } from '../base/interface';
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs } from '../base/interface';
 import { ColumnModel } from '../models/column';
@@ -22,7 +22,10 @@ export class Edit {
     public validatedChildItems: IGanttData[];
     private isFromDeleteMethod: boolean = false;
     private targetedRecords: IGanttData[] = [];
-    private confirmDialog: Dialog = null;
+    /**
+     * @private
+     */
+    public confirmDialog: Dialog = null;
     private taskbarMoved: boolean = false;
     private predecessorUpdated: boolean = false;
     public newlyAddedRecordBackup: IGanttData;
@@ -61,6 +64,43 @@ export class Edit {
 
     private getModuleName(): string {
         return 'edit';
+    }
+
+    /**
+     * @private
+     */
+    public reUpdateEditModules(): void {
+        let editSettings: EditSettingsModel = this.parent.editSettings;
+        if (this.parent.editModule.cellEditModule && (!editSettings.allowEditing ||
+            editSettings.mode === 'Dialog')) {
+            this.cellEditModule.destroy();
+        } else if (!isNullOrUndefined(this.cellEditModule) && editSettings.allowEditing &&
+            editSettings.mode === 'Auto') {
+            this.cellEditModule = new CellEdit(this.parent);
+        }
+        if (this.taskbarEditModule && !editSettings.allowTaskbarEditing) {
+            this.taskbarEditModule.destroy();
+        } else if (!isNullOrUndefined(this.taskbarEditModule) && editSettings.allowTaskbarEditing) {
+            this.taskbarEditModule = new TaskbarEdit(this.parent);
+        }
+        if (this.dialogModule && !editSettings.allowEditing) {
+            this.dialogModule.destroy();
+        } else if (!isNullOrUndefined(this.dialogModule) && editSettings.allowEditing) {
+            this.dialogModule = new DialogEdit(this.parent);
+            if (this.parent.editSettings.mode === 'Dialog') {
+                this.parent.treeGrid.recordDoubleClick = this.recordDoubleClick.bind(this);
+            }
+        }
+        if (this.confirmDialog && !this.confirmDialog.isDestroyed &&
+            !editSettings.allowDeleting) {
+            this.confirmDialog.destroy();
+        } else if (!isNullOrUndefined(this.confirmDialog) && this.parent.editSettings.allowDeleting) {
+            let confirmDialog: HTMLElement = createElement('div', {
+                id: this.parent.element.id + '_deleteConfirmDialog',
+            });
+            this.parent.element.appendChild(confirmDialog);
+            this.renderDeleteConfirmDialog();
+        }
     }
 
     private recordDoubleClick(args: RecordDoubleClickEventArgs): void {
@@ -142,6 +182,9 @@ export class Edit {
                 if (isFromDialog) {
                     if (tasks.duration === key) {
                         ganttObj.dataOperation.updateDurationValue(data[key], ganttData.ganttProperties);
+                        if (ganttData.ganttProperties.duration > 0 && ganttData.ganttProperties.isMilestone) {
+                            this.parent.setRecordValue('isMilestone', false, ganttData.ganttProperties, true);
+                        }
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key]);
                     } else {
                         ganttObj.setRecordValue(ganttPropByMapping[key], data[key], ganttData.ganttProperties, true);
@@ -244,8 +287,9 @@ export class Edit {
     private isTaskbarMoved(data: IGanttData): boolean {
         let isMoved: boolean = false;
         let taskData: ITaskData = data.ganttProperties;
-        let prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
-        if (prevData.ganttProperties) {
+        let prevData: IGanttData = this.parent.previousRecords &&
+            this.parent.previousRecords[data.uniqueID];
+        if (prevData && prevData.ganttProperties) {
             let prevStart: Date = getValue('ganttProperties.startDate', prevData) as Date;
             let prevEnd: Date = getValue('ganttProperties.endDate', prevData) as Date;
             let prevDuration: number = getValue('ganttProperties.duration', prevData);
@@ -777,6 +821,8 @@ export class Edit {
     private confirmDeleteOkButton(): void {
         this.deleteSelectedItems();
         this.confirmDialog.hide();
+        let focussedElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-treegrid');
+        focussedElement.focus();
     }
     /**
      * @private
@@ -794,7 +840,7 @@ export class Edit {
     private deleteSelectedItems(): void {
         if (!this.isFromDeleteMethod) {
             let selectedRecords: IGanttData[] = [];
-            if (this.parent.selectionSettings.mode === 'Row') {
+            if (this.parent.selectionSettings.mode !== 'Cell') {
                 selectedRecords = this.parent.selectionModule.getSelectedRecords();
             } else if (this.parent.selectionSettings.mode === 'Cell') {
                 selectedRecords = this.parent.selectionModule.getCellSelectedRecords();
@@ -809,9 +855,9 @@ export class Edit {
     }
 
     /**
-     * Public method for deleting a record
-     * @param taskDetail 
-     * @private
+     * Method to delete record.
+     * @param {number | string | number[] | string[] | IGanttData | IGanttData[]} taskDetail - Defines the details of data to delete. 
+     * @public
      */
     public deleteRecord(taskDetail: number | string | number[] | string[] | IGanttData | IGanttData[]): void {
         this.isFromDeleteMethod = true;
@@ -884,8 +930,10 @@ export class Edit {
                     this.deleteChildRecords(deleteRecord);
                 }
             }
-            // clear selection
-            this.parent.selectionModule.clearSelection();
+            if (this.parent.allowSelection) {
+                // clear selection
+                this.parent.selectionModule.clearSelection();
+            }
             let delereArgs: ITaskDeletedEventArgs = {};
             delereArgs.deletedRecordCollection = this.deletedTaskDetails;
             delereArgs.updatedRecordCollection = this.parent.editedRecords;

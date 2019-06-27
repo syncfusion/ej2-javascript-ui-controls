@@ -1410,7 +1410,7 @@ describe('Uploader Control', () => {
             keyboardEventArgs.action = 'enter';
             keyboardEventArgs.target = uploadObj.uploadButton;
             expect(iconElement[0].classList.contains('e-file-delete-btn')).toBe(false);
-            uploadObj.keyActionHandler(keyboardEventArgs);
+            // uploadObj.keyActionHandler(keyboardEventArgs);
             // setTimeout(() => {
             //     expect(iconElement[0].classList.contains('e-file-delete-btn')).toBe(true);
             //     expect(iconElement[1].classList.contains('e-file-delete-btn')).toBe(true);
@@ -1701,10 +1701,10 @@ describe('Uploader Control', () => {
             document.body.innerHTML = '';
         });
         it('accept attribute', () => {
-            expect(uploadObj.allowedExtensions).toEqual('.png');
+            expect(uploadObj.allowedExtensions).toEqual('.pdf');
         })
         it('multiple selection', () => {
-            expect(uploadObj.multiple).toBe(true);
+            expect(uploadObj.multiple).toBe(false);
         })
         it('disabled attribute', () => {
             expect(uploadObj.uploadWrapper.classList.contains('e-disabled')).toBe(true);
@@ -1764,6 +1764,83 @@ describe('Uploader Control', () => {
         });        
     })    
 
+    describe('HTML attributes at inline element testing', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload', attrs: {accept : '.png', name:'images[]'}});            
+            document.body.appendChild(element);
+            element.setAttribute('disabled', 'disabled');
+            element.setAttribute('multiple', 'multiple');
+        })
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Inline element testing', () => {
+            uploadObj = new Uploader({});
+            uploadObj.appendTo(document.getElementById('upload'));
+            expect(uploadObj.multiple).toBe(true);
+            expect(uploadObj.uploadWrapper.classList.contains('e-disabled')).toBe(true);
+            expect(uploadObj.browseButton.hasAttribute('disabled')).toBe(true);
+            expect(uploadObj.enabled).toBe(false);
+        })
+        it('Inline and API testing', () => {
+            uploadObj = new Uploader({multiple: false, enabled: true});
+            uploadObj.appendTo(document.getElementById('upload'));
+            expect(uploadObj.multiple).toBe(false);
+            expect(uploadObj.uploadWrapper.classList.contains('e-disabled')).toBe(false);
+            expect(uploadObj.browseButton.hasAttribute('disabled')).toBe(false);
+            expect(uploadObj.enabled).toBe(true);
+        })
+        it('Inline and html attributes API testing', () => {
+            uploadObj = new Uploader({ htmlAttributes: {multiple: "false", disabled: "true"}});
+            uploadObj.appendTo(document.getElementById('upload'));
+            expect(uploadObj.multiple).toBe(false);
+            expect(uploadObj.uploadWrapper.classList.contains('e-disabled')).toBe(true);
+            expect(uploadObj.browseButton.hasAttribute('disabled')).toBe(true);
+            expect(uploadObj.enabled).toBe(false);
+        })
+        it('Inline, API and html attributes API testing', () => {
+            uploadObj = new Uploader({ htmlAttributes: {multipe: "true", disabled: "true"}, multiple: false, enabled: true});
+            uploadObj.appendTo(document.getElementById('upload'));
+            expect(uploadObj.multiple).toBe(false);
+            expect(uploadObj.uploadWrapper.classList.contains('e-disabled')).toBe(false);
+            expect(uploadObj.browseButton.hasAttribute('disabled')).toBe(false);
+            expect(uploadObj.enabled).toBe(true);
+        })
+        it('Other attribute testing with htmlAttributes API', () => {
+            uploadObj = new Uploader({ htmlAttributes:{ class: "test", title:"sample", style: 'background-color:yellow'}});
+            uploadObj.appendTo('#upload');
+            uploadObj.updateHTMLAttrToWrapper();
+            expect(uploadObj.uploadWrapper.getAttribute('title')).toBe('sample');
+            expect(uploadObj.uploadWrapper.getAttribute('class')).toBe('test');
+            expect(uploadObj.uploadWrapper.getAttribute('style')).toBe('background-color:yellow');
+        });
+    });
+    
+    describe('HTML attribute API dynamic testing', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload', attrs: {accept : '.png', name:'images[]'}});            
+            document.body.appendChild(element);
+        })
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            uploadObj = new Uploader({ htmlAttributes: {multiple: "false", disabled: "true"}});
+            uploadObj.appendTo(document.getElementById('upload'));
+            expect(uploadObj.multiple).toBe(false);
+            expect(uploadObj.uploadWrapper.classList.contains('e-disabled')).toBe(true);
+            expect(uploadObj.browseButton.hasAttribute('disabled')).toBe(true);
+            expect(uploadObj.enabled).toBe(false);
+            uploadObj.htmlAttributes = { multiple: "true", disabled: "false"};
+            uploadObj.dataBind();
+            expect(uploadObj.multiple).toBe(true);
+            expect(uploadObj.uploadWrapper.classList.contains('e-disabled')).toBe(false);
+            expect(uploadObj.browseButton.hasAttribute('disabled')).toBe(false);
+            expect(uploadObj.enabled).toBe(true);
+        });
+    });
     describe('Form support', () => {
         let uploadObj: any;
         beforeAll((): void => {

@@ -91,7 +91,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     private hsv: number[];
     private formElement: HTMLFormElement;
     private initialInputValue: string;
-
     /**
      * It is used to set the color value for ColorPicker. It should be specified as Hex code.
      * @default '#008000ff'
@@ -180,6 +179,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers while selecting the color in picker / palette, when showButtons property is enabled.
      * @event
+     * @blazorProperty 'Selected'
      */
     @Event()
     public select: EmitType<ColorPickerEventArgs>;
@@ -189,13 +189,15 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
      * If the property is false, the event will be triggered while selecting the colors.
      * If the property is true, the event will be triggered while apply the selected color.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ColorPickerEventArgs>;
 
     /**
      * Trigger while rendering each palette tile.
-     * @event
+     * @event 
+     * @blazorProperty 'OnTileRender'
      */
     @Event()
     public beforeTileRender: EmitType<PaletteTileEventArgs>;
@@ -203,6 +205,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers before opening the ColorPicker popup.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseEventArgs>;
@@ -210,6 +213,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers while opening the ColorPicker popup.
      * @event
+     * @blazorProperty 'Opened'
      */
     @Event()
     public open: EmitType<OpenEventArgs>;
@@ -217,6 +221,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers before closing the ColorPicker popup.
      * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseEventArgs>;
@@ -224,6 +229,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers before Switching between ColorPicker mode.
      * @event
+     * @blazorProperty 'OnModeSwitch'
      */
     @Event()
     public beforeModeSwitch: EmitType<ModeSwitchEventArgs>;
@@ -231,6 +237,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -372,38 +379,40 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private beforeOpenFn(args: BeforeOpenCloseMenuEventArgs): void {
         let beforeOpenArgs: BeforeOpenCloseEventArgs = { element: this.container, event: args.event, cancel: false };
-        this.trigger('beforeOpen', beforeOpenArgs);
-        args.cancel = beforeOpenArgs.cancel;
-        if (!args.cancel) {
-            let popupEle: HTMLElement = this.getPopupEle();
-            popupEle.style.top = formatUnit(0 + pageYOffset);
-            popupEle.style.left = formatUnit(0 + pageXOffset);
-            popupEle.style.display = 'block';
-            this.createWidget();
-            popupEle.style.display = '';
-            if (Browser.isDevice) {
-                this.modal = this.createElement('div');
-                this.modal.className = 'e-' + this.getModuleName() + ' e-modal';
-                this.modal.style.display = 'none';
-                document.body.insertBefore(this.modal, popupEle);
-                document.body.className += ' e-colorpicker-overflow';
-                this.modal.style.display = 'block';
-                this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+        this.trigger('beforeOpen', beforeOpenArgs, (observeOpenArgs: BeforeOpenCloseMenuEventArgs) => {
+            args.cancel = observeOpenArgs.cancel;
+            if (!observeOpenArgs.cancel) {
+                let popupEle: HTMLElement = this.getPopupEle();
+                popupEle.style.top = formatUnit(0 + pageYOffset);
+                popupEle.style.left = formatUnit(0 + pageXOffset);
+                popupEle.style.display = 'block';
+                this.createWidget();
+                popupEle.style.display = '';
+                if (Browser.isDevice) {
+                    this.modal = this.createElement('div');
+                    this.modal.className = 'e-' + this.getModuleName() + ' e-modal';
+                    this.modal.style.display = 'none';
+                    document.body.insertBefore(this.modal, popupEle);
+                    document.body.className += ' e-colorpicker-overflow';
+                    this.modal.style.display = 'block';
+                    this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+                }
             }
-        }
+        });
     }
 
     private beforePopupClose(args: BeforeOpenCloseMenuEventArgs): void {
         if (!isNullOrUndefined(args.event)) {
             let beforeCloseArgs: BeforeOpenCloseEventArgs = { element: this.container, event: args.event, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs);
-            if (Browser.isDevice && args.event.target === this.modal) {
-                beforeCloseArgs.cancel = true;
-            }
-            args.cancel = beforeCloseArgs.cancel;
-            if (!args.cancel) {
-                this.onPopupClose();
-            }
+            this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
+                if (Browser.isDevice && args.event.target === this.modal) {
+                    observedCloseArgs.cancel = true;
+                }
+                args.cancel = observedCloseArgs.cancel;
+                if (!observedCloseArgs.cancel) {
+                    this.onPopupClose();
+                }
+            });
         }
     }
 
@@ -1011,11 +1020,12 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private closePopup(e: MouseEvent | KeyboardEvent): void {
         let beforeCloseArgs: BeforeOpenCloseEventArgs = { element: this.container, event: e, cancel: false };
-        this.trigger('beforeClose', beforeCloseArgs);
-        if (!beforeCloseArgs.cancel) {
-            this.splitBtn.toggle();
-            this.onPopupClose();
-        }
+        this.trigger('beforeClose', beforeCloseArgs, (observedcloseArgs: BeforeOpenCloseEventArgs) => {
+            if (!observedcloseArgs.cancel) {
+                this.splitBtn.toggle();
+                this.onPopupClose();
+            }
+        });
     }
 
     private triggerChangeEvent(value: string): void {

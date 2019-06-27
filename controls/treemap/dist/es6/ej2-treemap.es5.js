@@ -1,4 +1,4 @@
-import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -1828,6 +1828,7 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
     };
     /* tslint:disable-next-line:max-func-body-length */
     LayoutPanel.prototype.renderLayoutItems = function (renderData) {
+        var _this = this;
         var position;
         var treeMap = this.treemap;
         var colorMapping;
@@ -1871,20 +1872,20 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
         var leaf = treeMap.leafItemSettings;
         var childItems;
         var connectorText;
-        for (var i = 0; i < this.renderItems.length; i++) {
-            item = this.renderItems[i];
+        var _loop_1 = function (i) {
+            item = this_1.renderItems[i];
             index = item['groupIndex'];
-            if (this.treemap.drillDownView && isNullOrUndefined(this.treemap.currentLevel)
-                && index > 0 || this.treemap.drillDownView
-                && index > (this.treemap.currentLevel + 1)) {
-                continue;
+            if (this_1.treemap.drillDownView && isNullOrUndefined(this_1.treemap.currentLevel)
+                && index > 0 || this_1.treemap.drillDownView
+                && index > (this_1.treemap.currentLevel + 1)) {
+                return "continue";
             }
             rect = item['rect'];
             isLeafItem = item['isLeafItem'];
             groupId = elementID + '_Level_Index_' + index + '_Item_Index_' + i;
-            itemGroup = this.renderer.createGroup({ id: groupId + '_Group' });
+            itemGroup = this_1.renderer.createGroup({ id: groupId + '_Group' });
             gap = (isLeafItem ? leaf.gap : levels[index].groupGap) / 2;
-            var treemapItemRect = this.treemap.totalRect ? convertToContainer(this.treemap.totalRect) : this.treemap.areaRect;
+            var treemapItemRect = this_1.treemap.totalRect ? convertToContainer(this_1.treemap.totalRect) : this_1.treemap.areaRect;
             if (treeMap.layoutType === 'Squarified') {
                 rect.width = Math.abs(rect.x - rect.width) - gap;
                 rect.height = Math.abs(rect.y - rect.height) - gap;
@@ -1900,16 +1901,16 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                 rect.y = (treemapItemRect.y + treemapItemRect.height) - rect.height - Math.abs(treemapItemRect.y - rect.y);
             }
             colorMapping = isLeafItem ? leaf.colorMapping : levels[index].colorMapping;
-            getItemColor = this.getItemColor(isLeafItem, item);
+            getItemColor = this_1.getItemColor(isLeafItem, item);
             fill = getItemColor['fill'];
             opacity = getItemColor['opacity'];
             format = isLeafItem ? leaf.labelFormat : (levels[index]).headerFormat;
             var levelName = void 0;
             txtVisible = isLeafItem ? leaf.showLabels : (levels[index]).showHeader;
-            if (index === this.treemap.currentLevel) {
-                if (this.treemap.enableBreadcrumb) {
+            if (index === this_1.treemap.currentLevel) {
+                if (this_1.treemap.enableBreadcrumb) {
                     var re = /#/gi;
-                    connectorText = '#' + this.treemap.breadcrumbConnector + '#';
+                    connectorText = '#' + this_1.treemap.breadcrumbConnector + '#';
                     levelName = item['levelOrderName'].replace(re, connectorText);
                     levelName = index !== 0 ? '#' + levelName : levelName;
                 }
@@ -1918,18 +1919,18 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                if (this.treemap.enableBreadcrumb) {
+                if (this_1.treemap.enableBreadcrumb) {
                     item['isDrilled'] = false;
                 }
                 levelName = item['name'];
             }
-            renderText = textFormatter(format, item['data'], this.treemap) || levelName;
+            renderText = textFormatter(format, item['data'], this_1.treemap) || levelName;
             childItems = findChildren(item)['values'];
-            renderText = !isLeafItem && childItems && childItems.length > 0 && this.treemap.enableDrillDown ?
+            renderText = !isLeafItem && childItems && childItems.length > 0 && this_1.treemap.enableDrillDown ?
                 !item['isDrilled'] ? treeMap.enableRtl ? renderText + ' [+]' : '[+] ' + renderText :
                     treeMap.enableRtl ? renderText + ' [-]' : '[-] ' + renderText : renderText;
             textStyle = (isLeafItem ? leaf.labelStyle : levels[index].headerStyle);
-            textStyle.fontFamily = this.treemap.themeStyle.labelFontFamily || textStyle.fontFamily;
+            textStyle.fontFamily = this_1.treemap.themeStyle.labelFontFamily || textStyle.fontFamily;
             border = isLeafItem ? leaf.border : levels[index].border;
             position = !isLeafItem ? (levels[index].headerAlignment) === 'Near' ? 'TopLeft' : (levels[index].headerAlignment) === 'Center' ?
                 'TopCenter' : 'TopRight' : leaf.labelPosition;
@@ -1937,30 +1938,45 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
             template = isLeafItem ? leaf.labelTemplate : levels[index].headerTemplate;
             item['options'] = { border: border, opacity: opacity, fill: fill };
             eventArgs = {
-                cancel: false, name: itemRendering, treemap: this.treemap,
-                currentItem: item, RenderItems: this.renderItems, options: item['options']
+                cancel: false, name: itemRendering, treemap: this_1.treemap,
+                currentItem: item, RenderItems: this_1.renderItems, options: item['options']
             };
-            this.treemap.trigger(itemRendering, eventArgs);
-            if (!eventArgs.cancel) {
-                rectPath = ' M ' + rect.x + ' ' + rect.y + ' L ' + (rect.x + rect.width) + ' ' + rect.y +
-                    ' L ' + (rect.x + rect.width) + ' ' + (rect.y + rect.height) + ' L ' + rect.x + ' ' + (rect.y + rect.height) + 'z';
-                pathOptions = new PathOption(groupId + '_RectPath', fill, border.width, border.color, opacity, null, rectPath);
-                var path = this.renderer.drawPath(pathOptions);
-                itemGroup.appendChild(path);
-                if (txtVisible) {
-                    this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
+            this_1.treemap.trigger(itemRendering, eventArgs, function (observedArgs) {
+                if (!observedArgs.cancel) {
+                    rectPath = ' M ' + rect.x + ' ' + rect.y + ' L ' + (rect.x + rect.width) + ' ' + rect.y +
+                        ' L ' + (rect.x + rect.width) + ' ' + (rect.y + rect.height) + ' L ' + rect.x + ' ' + (rect.y + rect.height) + 'z';
+                    pathOptions = new PathOption(groupId + '_RectPath', fill, border.width, border.color, opacity, null, rectPath);
+                    var path = _this.renderer.drawPath(pathOptions);
+                    itemGroup.appendChild(path);
+                    if (txtVisible) {
+                        _this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
+                    }
+                    if (template) {
+                        templateEle = _this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
+                        templateGroup.appendChild(templateEle);
+                    }
+                    itemGroup.setAttribute('aria-label', item['name']);
+                    itemGroup.setAttribute('tabindex', (_this.treemap.tabIndex + i + 2).toString());
+                    _this.layoutGroup.appendChild(itemGroup);
                 }
-                if (template) {
-                    templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
-                    templateGroup.appendChild(templateEle);
-                }
-                itemGroup.setAttribute('aria-label', item['name']);
-                itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
-                this.layoutGroup.appendChild(itemGroup);
-            }
+            });
+        };
+        var this_1 = this;
+        for (var i = 0; i < this.renderItems.length; i++) {
+            _loop_1(i);
         }
         if (templateGroup.childNodes.length > 0) {
             secondaryEle.appendChild(templateGroup);
+            if (leaf.labelTemplate) {
+                for (var i = 0; i < templateGroup.childElementCount; i++) {
+                    updateBlazorTemplate(templateGroup.children[i].id, 'LabelTemplate');
+                }
+            }
+            else {
+                for (var j = 0; j < templateGroup.childElementCount; j++) {
+                    updateBlazorTemplate(templateGroup.children[j].id, 'HeaderTemplate');
+                }
+            }
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);
     };
@@ -2253,21 +2269,21 @@ var Theme;
 function getThemeStyle(theme) {
     var style;
     var color;
-    switch (theme) {
-        case 'MaterialDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
             color = '#303030';
             break;
-        case 'FabricDark':
+        case 'fabricdark':
             color = '#201F1F';
             break;
-        case 'BootstrapDark':
+        case 'bootstrapdark':
             color = '#1A1A1A';
             break;
     }
-    switch (theme) {
-        case 'BootstrapDark':
-        case 'FabricDark':
-        case 'MaterialDark':
+    switch (theme.toLowerCase()) {
+        case 'bootstrapdark':
+        case 'fabricdark':
+        case 'materialdark':
             style = {
                 backgroundColor: color,
                 titleFontColor: '#FFFFFF',
@@ -2275,10 +2291,11 @@ function getThemeStyle(theme) {
                 tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#DADADA',
-                legendTextColor: '#DADADA'
+                legendTextColor: '#DADADA',
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
-        case 'HighContrast':
+        case 'highcontrast':
             style = {
                 backgroundColor: '#000000',
                 titleFontColor: '#FFFFFF',
@@ -2286,10 +2303,11 @@ function getThemeStyle(theme) {
                 tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#FFFFFF',
-                legendTextColor: '#FFFFFF'
+                legendTextColor: '#FFFFFF',
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
@@ -2314,7 +2332,8 @@ function getThemeStyle(theme) {
                 tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#353535',
-                legendTextColor: '#353535'
+                legendTextColor: '#353535',
+                fontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
     }
@@ -2959,6 +2978,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
     };
     /* tslint:disable-next-line:max-func-body-length */
     TreeMap.prototype.mouseEndOnTreeMap = function (e) {
+        var _this = this;
         var targetEle = e.target;
         var targetId = targetEle.id;
         var totalRect;
@@ -3036,44 +3056,45 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                         this.drilledItems[this.drilledItems.length - 1]['data']['name'] : item['name'],
                     rightClick: e.which === 3 ? true : false, childItems: null
                 };
-                this.trigger(drillStart, startEvent);
-                this.currentLevel = item['isDrilled'] && isNullOrUndefined(drillLevel) ? item['groupIndex'] :
-                    (!isNullOrUndefined(drillLevel) && this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
-                if (!startEvent.cancel) {
-                    if (document.getElementById(layoutID)) {
-                        document.getElementById(layoutID).remove();
-                    }
-                    totalRect = extend({}, this.areaRect, totalRect, true);
-                    if (this.legendSettings.visible && !isNullOrUndefined(this.treeMapLegendModule)) {
-                        if (!isNullOrUndefined(newDrillItem)) {
-                            this.treeMapLegendModule.legendGroup.textContent = '';
-                            this.treeMapLegendModule.legendGroup = null;
-                            this.treeMapLegendModule.widthIncrement = 0;
-                            this.treeMapLegendModule.heightIncrement = 0;
-                            if (this.enableBreadcrumb && !isNullOrUndefined(drillLevel)) {
-                                this.drilledLegendItems = {
-                                    name: this.drilledItems[this.drilledItems.length - 1]['data']['levelOrderName'],
-                                    data: this.drilledItems[this.drilledItems.length - 1]['data']
-                                };
-                            }
-                            else {
-                                this.drilledLegendItems = { name: item['levelOrderName'], data: item };
-                            }
-                            this.treeMapLegendModule.renderLegend();
+                this.trigger(drillStart, startEvent, function (observedArgs) {
+                    _this.currentLevel = item['isDrilled'] && isNullOrUndefined(drillLevel) ? item['groupIndex'] :
+                        (!isNullOrUndefined(drillLevel) && _this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
+                    if (!observedArgs.cancel) {
+                        if (document.getElementById(layoutID)) {
+                            document.getElementById(layoutID).remove();
                         }
-                        totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
+                        totalRect = extend({}, _this.areaRect, totalRect, true);
+                        if (_this.legendSettings.visible && !isNullOrUndefined(_this.treeMapLegendModule)) {
+                            if (!isNullOrUndefined(newDrillItem)) {
+                                _this.treeMapLegendModule.legendGroup.textContent = '';
+                                _this.treeMapLegendModule.legendGroup = null;
+                                _this.treeMapLegendModule.widthIncrement = 0;
+                                _this.treeMapLegendModule.heightIncrement = 0;
+                                if (_this.enableBreadcrumb && !isNullOrUndefined(drillLevel)) {
+                                    _this.drilledLegendItems = {
+                                        name: _this.drilledItems[_this.drilledItems.length - 1]['data']['levelOrderName'],
+                                        data: _this.drilledItems[_this.drilledItems.length - 1]['data']
+                                    };
+                                }
+                                else {
+                                    _this.drilledLegendItems = { name: item['levelOrderName'], data: item };
+                                }
+                                _this.treeMapLegendModule.renderLegend();
+                            }
+                            totalRect = !isNullOrUndefined(_this.totalRect) ? _this.totalRect : totalRect;
+                        }
+                        if (document.getElementById(templateID)) {
+                            document.getElementById(templateID).remove();
+                        }
+                        if (!isNullOrUndefined(observedArgs.childItems) && !observedArgs.cancel) {
+                            _this.layout.onDemandProcess(observedArgs.childItems);
+                        }
+                        else {
+                            _this.layout.calculateLayoutItems(newDrillItem, totalRect);
+                            _this.layout.renderLayoutItems(newDrillItem);
+                        }
                     }
-                    if (document.getElementById(templateID)) {
-                        document.getElementById(templateID).remove();
-                    }
-                    if (!isNullOrUndefined(startEvent.childItems) && !startEvent.cancel) {
-                        this.layout.onDemandProcess(startEvent.childItems);
-                    }
-                    else {
-                        this.layout.calculateLayoutItems(newDrillItem, totalRect);
-                        this.layout.renderLayoutItems(newDrillItem);
-                    }
-                }
+                });
                 endEvent = { cancel: false, name: drillEnd, treemap: this, renderItems: this.layout.renderItems };
                 this.trigger(drillEnd, endEvent);
                 if (process) {
@@ -3344,6 +3365,7 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
      * method for legend
      */
     TreeMapLegend.prototype.renderLegend = function () {
+        var _this = this;
         this.legendRenderingCollections = [];
         this.legendCollections = [];
         this.legendNames = [];
@@ -3358,14 +3380,15 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
             cancel: false, name: legendRendering, treemap: this.treemap, _changePosition: this.treemap.legendSettings.position,
             position: this.treemap.legendSettings.position
         };
-        this.treemap.trigger(legendRendering, eventArgs);
-        if (!eventArgs.cancel && eventArgs._changePosition !== this.treemap.legendSettings.position) {
-            this.treemap.legendSettings.position = eventArgs._changePosition;
-        }
-        this.calculateLegendBounds();
-        if (this.legendCollections.length > 0) {
-            this.drawLegend();
-        }
+        this.treemap.trigger(legendRendering, eventArgs, function (observedArgs) {
+            if (!observedArgs.cancel && observedArgs._changePosition !== _this.treemap.legendSettings.position) {
+                _this.treemap.legendSettings.position = observedArgs._changePosition;
+            }
+            _this.calculateLegendBounds();
+            if (_this.legendCollections.length > 0) {
+                _this.drawLegend();
+            }
+        });
     };
     /* tslint:disable:no-string-literal */
     /* tslint:disable-next-line:max-func-body-length */
@@ -3908,7 +3931,9 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
         }
         return { shapeLocation: shapeLocation, textLocation: textLocation };
     };
+    /* tslint:disable-next-line:max-func-body-length */
     TreeMapLegend.prototype.drawLegendItem = function (page) {
+        var _this = this;
         var treemap = this.treemap;
         var spacing = 10;
         var legend = treemap.legendSettings;
@@ -3922,11 +3947,11 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
             if (document.getElementById(this.legendGroup.id)) {
                 document.getElementById(this.legendGroup.id).remove();
             }
-            var isLineShape = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine' || legend.shape === 'Cross');
-            var strokeColor = isLineShape ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
-            var strokeWidth = isLineShape ? (shapeBorder.width === 0) ? 1 : shapeBorder.width : shapeBorder.width;
-            for (var i = 0; i < this.totalPages[page]['Collection'].length; i++) {
-                var collection = this.totalPages[page]['Collection'][i];
+            var isLineShape_1 = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine' || legend.shape === 'Cross');
+            var strokeColor_1 = isLineShape_1 ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
+            var strokeWidth_1 = isLineShape_1 ? (shapeBorder.width === 0) ? 1 : shapeBorder.width : shapeBorder.width;
+            var _loop_1 = function (i) {
+                var collection = this_1.totalPages[page]['Collection'][i];
                 var legendElement = render.createGroup({ id: treemap.element.id + '_Legend_Index_' + i });
                 var legendText = collection['DisplayText'];
                 var shapeId = treemap.element.id + '_Legend_Shape_Index_' + i;
@@ -3934,7 +3959,7 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                 var shapeLocation = collection['Shape'];
                 var textLocation = collection['Text'];
                 if (treemap.enableRtl) {
-                    legendRtlLocation = this.defaultLegendRtlLocation(collection, spacing, treemap, legend);
+                    legendRtlLocation = this_1.defaultLegendRtlLocation(collection, spacing, treemap, legend);
                     shapeLocation = legendRtlLocation['shapeLocation'];
                     textLocation = legendRtlLocation['textLocation'];
                 }
@@ -3942,12 +3967,17 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                     cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
-                this.treemap.trigger(legendItemRendering, eventArgs);
-                var renderOptions_1 = new PathOption(shapeId, eventArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, '');
-                legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, eventArgs.imageUrl, renderOptions_1, legendText));
-                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color || this.treemap.themeStyle.legendTextColor, legendElement);
-                this.legendGroup.appendChild(legendElement);
+                this_1.treemap.trigger(legendItemRendering, eventArgs, function (observedArgs) {
+                    var renderOptions = new PathOption(shapeId, observedArgs.fill, strokeWidth_1, isLineShape_1 ? collection['Fill'] : strokeColor_1, legend.opacity, '');
+                    legendElement.appendChild(drawSymbol(shapeLocation, observedArgs.shape, shapeSize, observedArgs.imageUrl, renderOptions, legendText));
+                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
+                    renderTextElement(textOptions, legend.textStyle, legend.textStyle.color || _this.treemap.themeStyle.legendTextColor, legendElement);
+                    _this.legendGroup.appendChild(legendElement);
+                });
+            };
+            var this_1 = this;
+            for (var i = 0; i < this.totalPages[page]['Collection'].length; i++) {
+                _loop_1(i);
             }
             var pagingGroup = void 0;
             var width = spacing;
@@ -4655,6 +4685,7 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
     }
     /* tslint:disable:no-string-literal */
     TreeMapTooltip.prototype.renderTooltip = function (e) {
+        var _this = this;
         var pageX;
         var pageY;
         var target;
@@ -4710,8 +4741,7 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
-                this.tooltipSettings.textStyle.fontFamily = this.treemap.theme === 'Bootstrap4' ? 'HelveticaNeue-Medium'
-                    : this.tooltipSettings.textStyle.fontFamily;
+                this.tooltipSettings.textStyle.fontFamily = this.treemap.themeStyle.fontFamily;
                 this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
                     || this.tooltipSettings.textStyle.color;
                 this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
@@ -4725,30 +4755,34 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
                     treemap: this.treemap,
                     element: target, eventArgs: e
                 };
-                this.treemap.trigger(tooltipRendering, tootipArgs);
-                if (!tootipArgs.cancel) {
-                    this.svgTooltip = new Tooltip({
-                        enable: true,
-                        header: '',
-                        data: tootipArgs.options['data'],
-                        template: tootipArgs.options['template'],
-                        content: tootipArgs.options['text'],
-                        shapes: [],
-                        location: tootipArgs.options['location'],
-                        palette: [markerFill],
-                        areaBounds: this.treemap.areaRect,
-                        textStyle: tootipArgs.options['textStyle']
-                    });
-                    this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                    this.svgTooltip.appendTo(tooltipEle);
-                }
-                else {
-                    this.removeTooltip();
-                }
+                this.treemap.trigger(tooltipRendering, tootipArgs, function (observedArgs) {
+                    if (!observedArgs.cancel) {
+                        _this.svgTooltip = new Tooltip({
+                            enable: true,
+                            header: '',
+                            data: observedArgs.options['data'],
+                            template: observedArgs.options['template'],
+                            content: observedArgs.options['text'],
+                            shapes: [],
+                            location: observedArgs.options['location'],
+                            palette: [markerFill],
+                            areaBounds: _this.treemap.areaRect,
+                            textStyle: observedArgs.options['textStyle']
+                        });
+                        _this.svgTooltip.opacity = _this.treemap.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
+                        _this.svgTooltip.appendTo(tooltipEle);
+                        updateBlazorTemplate(_this.treemap.element.id + 'Template', 'Template');
+                    }
+                    else {
+                        _this.removeTooltip();
+                        resetBlazorTemplate(_this.treemap.element.id + 'Template', 'Template');
+                    }
+                });
             }
         }
         else {
             this.removeTooltip();
+            resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
         }
     };
     TreeMapTooltip.prototype.mouseUpHandler = function (e) {

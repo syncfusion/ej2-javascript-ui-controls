@@ -11,8 +11,9 @@ import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 // tslint:disable-next-line:max-line-length
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
+import { ContainerServerActionSettingsModel } from '../document-editor/document-editor-model';
 
 /**
  * Document Editor container component.
@@ -35,6 +36,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(false)
     public restrictEditing: boolean;
     /**
+     * Enable or disable spell checker in document editor container.
+     */
+    @Property(false)
+    public enableSpellCheck: boolean;
+    /**
      * Enable local paste
      */
     @Property(true)
@@ -47,12 +53,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Triggers when the component is created
      * @event
+     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
      * @event
+     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -60,15 +68,24 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Triggers whenever the content changes in the document editor container.
      * @event
+     * @blazorproperty 'ContentChanged'
      */
     @Event()
     public contentChange: EmitType<ContainerContentChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor container.
      * @event
+     * @blazorproperty 'SelectionChanged'
      */
     @Event()
     public selectionChange: EmitType<ContainerSelectionChangeEventArgs>;
+    /**
+     * Triggers whenever document changes in the document editor container.
+     * @event
+     * @blazorproperty 'DocumentChanged'
+     */
+    @Event()
+    public documentChange: EmitType<ContainerDocumentChangeEventArgs>;
 
     /**
      * Document editor container's toolbar module
@@ -82,7 +99,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Document Editor instance
      */
-    public documentEditor: DocumentEditor;
+    private documentEditorInternal: DocumentEditor;
     /**
      * @private
      */
@@ -142,6 +159,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showPropertiesPaneInternal: boolean = true;
+    /**
+     * Defines the settings of the DocumentEditorContainer service.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
+    public serverActionSettings: ContainerServerActionSettingsModel;
+    /**
+     * Gets DocumentEditor instance.
+     * @asptype DocumentEditor
+     */
+    public get documentEditor(): DocumentEditor {
+        return this.documentEditorInternal;
+    }
     /** 
      * Initialize the constructor of DocumentEditorContainer
      */
@@ -261,6 +291,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Page': 'Page',
         'of': 'of',
         'Fit one page': 'Fit one page',
+        'Spell Check': 'Spell Check',
+        'Underline errors': 'Underline errors',
         'Fit page width': 'Fit page width',
         'Update': 'Update',
         'Cancel': 'Cancel',
@@ -288,8 +320,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             ' 2. You can use the keyboard shortcuts (Ctrl+X, Ctrl+C and Ctrl+V) to cut, copy and paste with system clipboard.',
         'Restrict editing.': 'Restrict editing.',
         // tslint:disable-next-line:max-line-length
-        'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.'
-
+        'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.',
+        'Read only': 'Read only',
+        'Protections': 'Protections',
+        'Error in establishing connection with web server': 'Error in establishing connection with web server'
     };
 
     /**
@@ -307,7 +341,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             switch (prop) {
                 case 'restrictEditing':
                     if (this.toolbarModule) {
-                        this.toolbarModule.enableDisableToolBarItem(!newModel.restrictEditing);
+                        this.toolbarModule.enableDisableToolBarItem(!newModel.restrictEditing, false);
                     }
                     this.documentEditor.isReadOnly = newModel.restrictEditing;
                     break;
@@ -318,6 +352,17 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     if (this.documentEditor) {
                         this.documentEditor.enableLocalPaste = newModel.enableLocalPaste;
                     }
+                    break;
+                case 'serviceUrl':
+                    if (this.documentEditor) {
+                        this.documentEditor.serviceUrl = newModel.serviceUrl;
+                    }
+                    break;
+                case 'serverActionSettings':
+                    if (this.documentEditor) {
+                        this.setserverActionSettings();
+                    }
+                    break;
             }
         }
     }
@@ -347,6 +392,23 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.statusBar = new StatusBar(this.statusBarElement, this);
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
+        this.setserverActionSettings();
+
+    }
+
+    private setserverActionSettings(): void {
+        if (this.serviceUrl) {
+            this.documentEditor.serviceUrl = this.serviceUrl;
+        }
+        if (this.serverActionSettings.spellCheck) {
+            this.documentEditor.serverActionSettings.spellCheck = this.serverActionSettings.spellCheck;
+        }
+        if (this.serverActionSettings.restrictEditing) {
+            this.documentEditor.serverActionSettings.restrictEditing = this.serverActionSettings.restrictEditing;
+        }
+        if (this.serverActionSettings.systemClipboard) {
+            this.documentEditor.serverActionSettings.systemClipboard = this.serverActionSettings.systemClipboard;
+        }
     }
     /**
      * @private
@@ -398,7 +460,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     private initializeDocumentEditor(): void {
         let id: string = this.element.id + '_editor';
         let documentEditorTarget: HTMLElement = this.createElement('div', { id: id, styles: 'width:100%;height:100%' });
-        this.documentEditor = new DocumentEditor({
+        this.documentEditorInternal = new DocumentEditor({
             isReadOnly: false, enableRtl: this.enableRtl,
             selectionChange: this.onSelectionChange.bind(this),
             contentChange: this.onContentChange.bind(this),
@@ -406,12 +468,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             zoomFactorChange: this.onZoomFactorChange.bind(this),
             requestNavigate: this.onRequestNavigate.bind(this),
             viewChange: this.onViewChange.bind(this),
-            locale: this.locale
+            locale: this.locale,
+            acceptTab: true,
+            enableLocalPaste: this.enableLocalPaste,
+            pageOutline: '#E0E0E0'
         });
-        this.documentEditor.acceptTab = true;
-        this.documentEditor.enableLocalPaste = this.enableLocalPaste;
         this.documentEditor.enableAllModules();
-        this.documentEditor.pageOutline = '#E0E0E0';
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
@@ -454,6 +516,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
+        let eventArgs: ContainerDocumentChangeEventArgs = { source: this };
+        this.trigger('documentChange', eventArgs);
     }
     /**
      * @private
@@ -501,6 +565,31 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.restrictEditing) {
             return;
         }
+        let isProtectedDocument: boolean = this.documentEditor.viewer.protectionType === 'ReadOnly';
+        let allowFormatting: boolean = isProtectedDocument && this.documentEditor.viewer.restrictFormatting;
+        let isSelectionInProtectecRegion: boolean = this.documentEditor.editor.restrictEditing;
+
+        if (isProtectedDocument) {
+            if (this.toolbarModule) {
+                this.toolbarModule.enableDisableToolBarItem(!isSelectionInProtectecRegion, true);
+            }
+            this.textProperties.enableDisableElements(!allowFormatting && !isSelectionInProtectecRegion);
+            this.tableProperties.enableDisableElements(!allowFormatting && !isSelectionInProtectecRegion);
+            this.tocProperties.enableDisableElements(!isSelectionInProtectecRegion);
+            this.headerFooterProperties.enableDisableElements(!isSelectionInProtectecRegion);
+            this.imageProperties.enableDisableElements(!isSelectionInProtectecRegion);
+        } else {
+            let isReadOnly: boolean = !this.documentEditor.isReadOnly;
+            if (this.toolbarModule) {
+                this.toolbarModule.enableDisableToolBarItem(isReadOnly, true);
+            }
+            this.textProperties.enableDisableElements(isReadOnly);
+            this.tableProperties.enableDisableElements(true);
+            this.tocProperties.enableDisableElements(true);
+            this.headerFooterProperties.enableDisableElements(true);
+            this.imageProperties.enableDisableElements(true);
+        }
+
         let currentContext: string = this.documentEditor.selection.contextType;
         let isInHeaderFooter: boolean = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;
@@ -562,10 +651,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.toolbarContainer.parentElement.removeChild(this.toolbarContainer);
         }
         this.toolbarContainer = undefined;
-        if (this.documentEditor) {
-            this.documentEditor.destroy();
+        if (this.documentEditorInternal) {
+            this.documentEditorInternal.destroy();
         }
-        this.documentEditor = undefined;
+        this.documentEditorInternal = undefined;
         if (this.textProperties) {
             this.textProperties.destroy();
         }

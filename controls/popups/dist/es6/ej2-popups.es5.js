@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getUniqueID, isNullOrUndefined, prepend, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getUniqueID, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 
 /**
@@ -33,6 +33,7 @@ function calculateRelativeBasedPosition(anchor, element) {
     return anchorPos;
 }
 function calculatePosition(currentElement, positionX, positionY, parentElement, targetValues) {
+    (positionY + positionX === 'topright') ? popupRect = undefined : popupRect = targetValues;
     popupRect = targetValues;
     fixedParent = parentElement ? true : false;
     if (!currentElement) {
@@ -1742,7 +1743,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.element.querySelector('.' + DLG_HEADER_CONTENT))) {
             computedHeaderHeight = getComputedStyle(this.headerContent).height;
         }
-        var footerEle = this.getEle(this.element.childNodes, DLG_FOOTER_CONTENT);
+        var footerEle = this.getEle(this.element.children, DLG_FOOTER_CONTENT);
         if (!isNullOrUndefined(footerEle)) {
             computedFooterHeight = getComputedStyle(footerEle).height;
         }
@@ -2042,7 +2043,8 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.contentEle.appendChild(this.innerContentElement);
         }
         else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
-            if (typeof (this.content) === 'string') {
+            var blazorContain = Object.keys(window);
+            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
                 this.contentEle.innerHTML = this.content;
             }
             else if (this.content instanceof HTMLElement) {
@@ -2064,18 +2066,43 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     };
     Dialog.prototype.setTemplate = function (template, toElement) {
         var templateFn;
+        var templateProps;
+        var blazorContain = Object.keys(window);
+        if (toElement.classList.contains(DLG_HEADER)) {
+            templateProps = this.element.id + 'header';
+        }
+        else if (toElement.classList.contains(DLG_FOOTER_CONTENT)) {
+            templateProps = this.element.id + 'footerTemplate';
+        }
+        else {
+            templateProps = this.element.id + 'content';
+        }
         if (!isNullOrUndefined(template.outerHTML)) {
             templateFn = compile(template.outerHTML);
         }
-        else {
+        else if (typeof (template) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
             templateFn = compile(template);
         }
-        var fromElements = [];
-        for (var _i = 0, _a = templateFn({}); _i < _a.length; _i++) {
-            var item = _a[_i];
-            fromElements.push(item);
+        else {
+            toElement.innerHTML = template;
         }
-        append([].slice.call(fromElements), toElement);
+        var fromElements = [];
+        if (!isNullOrUndefined(templateFn)) {
+            for (var _i = 0, _a = templateFn({}, null, null, templateProps); _i < _a.length; _i++) {
+                var item = _a[_i];
+                fromElements.push(item);
+            }
+            append([].slice.call(fromElements), toElement);
+        }
+        if (templateProps === this.element.id + 'header') {
+            updateBlazorTemplate(templateProps, 'Header');
+        }
+        else if (templateProps === this.element.id + 'footerTemplate') {
+            updateBlazorTemplate(templateProps, 'FooterTemplate');
+        }
+        else {
+            updateBlazorTemplate(templateProps, 'Content');
+        }
     };
     Dialog.prototype.setMaxHeight = function () {
         if (!this.allowMaxHeight) {
@@ -2408,6 +2435,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.show();
         }
         this.positionChange();
+        if (this.isModal && this.dlgOverlay) {
+            EventHandler.add(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler, this);
+        }
     };
     Dialog.prototype.setzIndex = function (zIndexElement, setPopupZindex) {
         var prevOnChange = this.isProtectedOnChange;
@@ -2470,7 +2500,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.showCloseIcon) {
             EventHandler.add(this.closeIcon, 'click', this.closeIconClickEventHandler, this);
         }
-        if (this.isModal) {
+        if (this.isModal && this.dlgOverlay) {
             EventHandler.add(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler, this);
         }
     };
@@ -2507,6 +2537,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Dialog.prototype.show = function (isFullScreen) {
+        var _this = this;
         if (!this.element.classList.contains(ROOT)) {
             return;
         }
@@ -2514,61 +2545,61 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(isFullScreen)) {
                 this.fullScreen(isFullScreen);
             }
-            var eventArgs = {
+            var eventArgs_1 = {
                 cancel: false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
                 target: this.target,
                 maxHeight: this.element.style.maxHeight
             };
-            this.trigger('beforeOpen', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
-            if (this.element.style.maxHeight !== eventArgs.maxHeight) {
-                this.allowMaxHeight = false;
-                this.element.style.maxHeight = eventArgs.maxHeight;
-            }
-            this.storeActiveElement = document.activeElement;
-            this.element.tabIndex = -1;
-            if (this.isModal && (!isNullOrUndefined(this.dlgOverlay))) {
-                this.dlgOverlay.style.display = 'block';
-                this.dlgContainer.style.display = 'flex';
-                removeClass([this.dlgOverlay], 'e-fade');
-                if (!isNullOrUndefined(this.targetEle)) {
-                    if (this.targetEle === document.body) {
-                        this.dlgContainer.style.position = 'fixed';
+            this.trigger('beforeOpen', eventArgs_1, function (beforeOpenArgs) {
+                if (!beforeOpenArgs.cancel) {
+                    if (_this.element.style.maxHeight !== eventArgs_1.maxHeight) {
+                        _this.allowMaxHeight = false;
+                        _this.element.style.maxHeight = eventArgs_1.maxHeight;
                     }
-                    else {
-                        this.dlgContainer.style.position = 'absolute';
+                    _this.storeActiveElement = document.activeElement;
+                    _this.element.tabIndex = -1;
+                    if (_this.isModal && (!isNullOrUndefined(_this.dlgOverlay))) {
+                        _this.dlgOverlay.style.display = 'block';
+                        _this.dlgContainer.style.display = 'flex';
+                        removeClass([_this.dlgOverlay], 'e-fade');
+                        if (!isNullOrUndefined(_this.targetEle)) {
+                            if (_this.targetEle === document.body) {
+                                _this.dlgContainer.style.position = 'fixed';
+                            }
+                            else {
+                                _this.dlgContainer.style.position = 'absolute';
+                            }
+                            _this.dlgOverlay.style.position = 'absolute';
+                            _this.element.style.position = 'relative';
+                            addClass([_this.targetEle], SCROLL_DISABLED);
+                        }
+                        else {
+                            addClass([document.body], SCROLL_DISABLED);
+                        }
                     }
-                    this.dlgOverlay.style.position = 'absolute';
-                    this.element.style.position = 'relative';
-                    addClass([this.targetEle], SCROLL_DISABLED);
+                    var openAnimation = {
+                        name: _this.animationSettings.effect + 'In',
+                        duration: _this.animationSettings.duration,
+                        delay: _this.animationSettings.delay
+                    };
+                    var zIndexElement = (_this.isModal) ? _this.element.parentElement : _this.element;
+                    if (_this.calculatezIndex) {
+                        _this.setzIndex(zIndexElement, true);
+                        setStyleAttribute(_this.element, { 'zIndex': _this.zIndex });
+                        if (_this.isModal) {
+                            _this.setOverlayZindex(_this.zIndex);
+                        }
+                    }
+                    _this.animationSettings.effect === 'None' ? _this.popupObj.show() : _this.popupObj.show(openAnimation);
+                    _this.dialogOpen = true;
+                    var prevOnChange = _this.isProtectedOnChange;
+                    _this.isProtectedOnChange = true;
+                    _this.visible = true;
+                    _this.isProtectedOnChange = prevOnChange;
                 }
-                else {
-                    addClass([document.body], SCROLL_DISABLED);
-                }
-            }
-            var openAnimation = {
-                name: this.animationSettings.effect + 'In',
-                duration: this.animationSettings.duration,
-                delay: this.animationSettings.delay
-            };
-            var zIndexElement = (this.isModal) ? this.element.parentElement : this.element;
-            if (this.calculatezIndex) {
-                this.setzIndex(zIndexElement, true);
-                setStyleAttribute(this.element, { 'zIndex': this.zIndex });
-                if (this.isModal) {
-                    this.setOverlayZindex(this.zIndex);
-                }
-            }
-            this.animationSettings.effect === 'None' ? this.popupObj.show() : this.popupObj.show(openAnimation);
-            this.dialogOpen = true;
-            var prevOnChange = this.isProtectedOnChange;
-            this.isProtectedOnChange = true;
-            this.visible = true;
-            this.isProtectedOnChange = prevOnChange;
+            });
         }
     };
     /**
@@ -2576,6 +2607,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Dialog.prototype.hide = function (event) {
+        var _this = this;
         if (!this.element.classList.contains(ROOT)) {
             return;
         }
@@ -2588,26 +2620,26 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             container: this.isModal ? this.dlgContainer : this.element,
             event: event
         };
-        this.trigger('beforeClose', eventArgs);
         this.closeArgs = eventArgs;
-        if (eventArgs.cancel) {
-            return;
-        }
-        if (this.isModal) {
-            !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
-                removeClass([document.body], SCROLL_DISABLED);
-        }
-        var closeAnimation = {
-            name: this.animationSettings.effect + 'Out',
-            duration: this.animationSettings.duration,
-            delay: this.animationSettings.delay
-        };
-        this.animationSettings.effect === 'None' ? this.popupObj.hide() : this.popupObj.hide(closeAnimation);
-        this.dialogOpen = false;
-        var prevOnChange = this.isProtectedOnChange;
-        this.isProtectedOnChange = true;
-        this.visible = false;
-        this.isProtectedOnChange = prevOnChange;
+        this.trigger('beforeClose', eventArgs, function (beforeCloseArgs) {
+            if (!beforeCloseArgs.cancel) {
+                if (_this.isModal) {
+                    !isNullOrUndefined(_this.targetEle) ? removeClass([_this.targetEle], SCROLL_DISABLED) :
+                        removeClass([document.body], SCROLL_DISABLED);
+                }
+                var closeAnimation = {
+                    name: _this.animationSettings.effect + 'Out',
+                    duration: _this.animationSettings.duration,
+                    delay: _this.animationSettings.delay
+                };
+                _this.animationSettings.effect === 'None' ? _this.popupObj.hide() : _this.popupObj.hide(closeAnimation);
+                _this.dialogOpen = false;
+                var prevOnChange = _this.isProtectedOnChange;
+                _this.isProtectedOnChange = true;
+                _this.visible = false;
+                _this.isProtectedOnChange = prevOnChange;
+            }
+        });
     };
     /**
      * Specifies to view the Full screen Dialog.
@@ -3076,6 +3108,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.trigger('afterOpen', this.tooltipEventArgs);
     };
     Tooltip.prototype.closePopupHandler = function () {
+        resetBlazorTemplate(this.element.id + 'content', 'Content');
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
     };
@@ -3214,6 +3247,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         arrowEle.style.left = leftValue;
     };
     Tooltip.prototype.renderContent = function (target) {
+        var _this = this;
         var tooltipContent = this.tooltipEle.querySelector('.' + CONTENT);
         if (target && !isNullOrUndefined(target.getAttribute('title'))) {
             target.setAttribute('data-content', target.getAttribute('title'));
@@ -3224,12 +3258,13 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             if (this.content instanceof HTMLElement) {
                 tooltipContent.appendChild(this.content);
             }
-            else if (typeof this.content === 'string') {
+            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') !== 0) {
                 tooltipContent.innerHTML = this.content;
             }
             else {
                 var templateFunction = compile(this.content);
-                append(templateFunction(), tooltipContent);
+                append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
+                setTimeout(function () { updateBlazorTemplate(_this.element.id + 'content', 'Content'); }, 0);
             }
         }
         else {
@@ -3326,74 +3361,85 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         clearTimeout(this.hideTimer);
         this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
             { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
-        this.trigger('beforeRender', this.tooltipEventArgs);
-        if (this.tooltipEventArgs.cancel) {
-            this.isHidden = true;
-            this.clear();
-            return;
-        }
-        this.isHidden = false;
-        if (isNullOrUndefined(this.tooltipEle)) {
-            this.ctrlId = this.element.getAttribute('id') ? getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
-            this.tooltipEle = this.createElement('div', {
-                className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
-                    role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
-                }, styles: 'width:' + formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
-            });
-            if (this.cssClass) {
-                addClass([this.tooltipEle], this.cssClass.split(' '));
+        this.trigger('beforeRender', this.tooltipEventArgs, function (beforeRenderArgs) {
+            if (beforeRenderArgs.cancel) {
+                _this.isHidden = true;
+                _this.clear();
             }
-            if (Browser.isDevice) {
-                addClass([this.tooltipEle], DEVICE$1);
-            }
-            if (this.width !== 'auto') {
-                this.tooltipEle.style.maxWidth = formatUnit(this.width);
-            }
-            this.tooltipEle.appendChild(this.createElement('div', { className: CONTENT }));
-            document.body.appendChild(this.tooltipEle);
-            this.addDescribedBy(target, this.ctrlId + '_content');
-            this.renderContent(target);
-            addClass([this.tooltipEle], POPUP_OPEN);
-            if (this.showTipPointer) {
-                this.renderArrow();
-            }
-            this.renderCloseIcon();
-            this.renderPopup(target);
-        }
-        else {
-            this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
-            this.addDescribedBy(target, this.ctrlId + '_content');
-            this.renderContent(target);
-            Animation.stop(this.tooltipEle);
-            this.reposition(target);
-        }
-        removeClass([this.tooltipEle], POPUP_OPEN);
-        addClass([this.tooltipEle], POPUP_CLOSE);
-        this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
-            { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
-        this.trigger('beforeOpen', this.tooltipEventArgs);
-        if (this.tooltipEventArgs.cancel) {
-            this.isHidden = true;
-            this.clear();
-            return;
-        }
-        var openAnimation = {
-            name: showAnimation.effect, duration: showAnimation.duration, delay: showAnimation.delay, timingFunction: 'easeOut'
-        };
-        if (showAnimation.effect === 'None') {
-            openAnimation = undefined;
-        }
-        if (this.openDelay > 0) {
-            var show = function () {
-                if (_this.popupObj) {
-                    _this.popupObj.show(openAnimation, target);
+            else {
+                _this.isHidden = false;
+                if (isNullOrUndefined(_this.tooltipEle)) {
+                    _this.ctrlId = _this.element.getAttribute('id') ?
+                        getUniqueID(_this.element.getAttribute('id')) : getUniqueID('tooltip');
+                    _this.tooltipEle = _this.createElement('div', {
+                        className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
+                            role: 'tooltip', 'aria-hidden': 'false', 'id': _this.ctrlId + '_content'
+                        }, styles: 'width:' +
+                            formatUnit(_this.width) + ';height:' + formatUnit(_this.height) + ';position:absolute;'
+                    });
+                    if (_this.cssClass) {
+                        addClass([_this.tooltipEle], _this.cssClass.split(' '));
+                    }
+                    if (Browser.isDevice) {
+                        addClass([_this.tooltipEle], DEVICE$1);
+                    }
+                    if (_this.width !== 'auto') {
+                        _this.tooltipEle.style.maxWidth = formatUnit(_this.width);
+                    }
+                    _this.tooltipEle.appendChild(_this.createElement('div', { className: CONTENT }));
+                    document.body.appendChild(_this.tooltipEle);
+                    _this.addDescribedBy(target, _this.ctrlId + '_content');
+                    _this.renderContent(target);
+                    addClass([_this.tooltipEle], POPUP_OPEN);
+                    if (_this.showTipPointer) {
+                        _this.renderArrow();
+                    }
+                    _this.renderCloseIcon();
+                    _this.renderPopup(target);
                 }
-            };
-            this.showTimer = setTimeout(show, this.openDelay);
-        }
-        else {
-            this.popupObj.show(openAnimation, target);
-        }
+                else {
+                    _this.adjustArrow(target, _this.position, _this.tooltipPositionX, _this.tooltipPositionY);
+                    _this.addDescribedBy(target, _this.ctrlId + '_content');
+                    _this.renderContent(target);
+                    Animation.stop(_this.tooltipEle);
+                    _this.reposition(target);
+                }
+                removeClass([_this.tooltipEle], POPUP_OPEN);
+                addClass([_this.tooltipEle], POPUP_CLOSE);
+                _this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: _this.tooltipEle } :
+                    { type: null, cancel: false, target: target, event: null, element: _this.tooltipEle };
+                var this$_1 = _this;
+                _this.trigger('beforeOpen', _this.tooltipEventArgs, function (observedArgs) {
+                    if (observedArgs.cancel) {
+                        this$_1.isHidden = true;
+                        this$_1.clear();
+                        this$_1.restoreElement(target);
+                    }
+                    else {
+                        var openAnimation_1 = {
+                            name: showAnimation.effect,
+                            duration: showAnimation.duration,
+                            delay: showAnimation.delay,
+                            timingFunction: 'easeOut'
+                        };
+                        if (showAnimation.effect === 'None') {
+                            openAnimation_1 = undefined;
+                        }
+                        if (this$_1.openDelay > 0) {
+                            var show = function () {
+                                if (this$_1.popupObj) {
+                                    this$_1.popupObj.show(openAnimation_1, target);
+                                }
+                            };
+                            this$_1.showTimer = setTimeout(show, this$_1.openDelay);
+                        }
+                        else {
+                            this$_1.popupObj.show(openAnimation_1, target);
+                        }
+                    }
+                });
+            }
+        });
     };
     Tooltip.prototype.checkCollision = function (target, x, y) {
         var elePos = {
@@ -3481,31 +3527,35 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(target)) {
             return;
         }
-        this.trigger('beforeClose', this.tooltipEventArgs);
-        if (!this.tooltipEventArgs.cancel) {
-            this.restoreElement(target);
-            this.isHidden = true;
-            var closeAnimation_1 = {
-                name: hideAnimation.effect, duration: hideAnimation.duration, delay: hideAnimation.delay, timingFunction: 'easeIn'
-            };
-            if (hideAnimation.effect === 'None') {
-                closeAnimation_1 = undefined;
-            }
-            if (this.closeDelay > 0) {
-                var hide = function () {
-                    if (_this.popupObj) {
-                        _this.popupObj.hide(closeAnimation_1);
-                    }
+        this.trigger('beforeClose', this.tooltipEventArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                _this.restoreElement(target);
+                _this.isHidden = true;
+                var closeAnimation_1 = {
+                    name: hideAnimation.effect,
+                    duration: hideAnimation.duration,
+                    delay: hideAnimation.delay,
+                    timingFunction: 'easeIn'
                 };
-                this.hideTimer = setTimeout(hide, this.closeDelay);
+                if (hideAnimation.effect === 'None') {
+                    closeAnimation_1 = undefined;
+                }
+                if (_this.closeDelay > 0) {
+                    var hide = function () {
+                        if (_this.popupObj) {
+                            _this.popupObj.hide(closeAnimation_1);
+                        }
+                    };
+                    _this.hideTimer = setTimeout(hide, _this.closeDelay);
+                }
+                else {
+                    _this.popupObj.hide(closeAnimation_1);
+                }
             }
             else {
-                this.popupObj.hide(closeAnimation_1);
+                _this.isHidden = false;
             }
-        }
-        else {
-            this.isHidden = false;
-        }
+        });
     };
     Tooltip.prototype.restoreElement = function (target) {
         this.unwireMouseEvents(target);

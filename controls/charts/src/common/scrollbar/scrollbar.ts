@@ -7,6 +7,7 @@ import { Axis, IScrollbarThemeStyle, IScrollEventArgs, VisibleRangeModel } from 
 import { getScrollbarThemeColor } from '../model/theme';
 import { ScrollbarSettingsRangeModel, ScrollbarSettingsModel } from '../../chart/model/chart-base-model';
 import { scrollChanged, scrollEnd, scrollStart } from '../model/constants';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 
 /**
  * Scrollbar Base
@@ -258,6 +259,7 @@ export class ScrollBar {
         let zoomPosition: number = this.zoomPosition;
         let zoomFactor: number = this.zoomFactor;
         if (this.isThumbDrag) {
+            this.component.isScrolling = this.isThumbDrag;
             (this.svgObject as HTMLElement).style.cursor = '-webkit-grabbing';
             mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
             let currentX: number = elem.thumbRectX + (mouseXY - this.previousXY);
@@ -364,6 +366,7 @@ export class ScrollBar {
         this.isResizeLeft = false;
         this.isResizeRight = false;
         this.isScrollEnd = false;
+        this.component.isScrolling = false;
         if (this.scrollStarted && !this.isLazyLoad) {
             this.component.trigger(
                 scrollEnd, this.getArgs(scrollChanged, this.startRange, this.startZoomPosition, this.startZoomFactor)
@@ -472,11 +475,11 @@ private getStartEnd(start: number | Date, end: number | Date, isCurrentStartEnd:
         }
         this.getTheme();
         this.removeScrollSvg();
-        createScrollSvg(this, this.component.renderer);
+        createScrollSvg(this, this.component.svgRenderer as SvgRenderer);
         this.wireEvents(this.svgObject);
         this.svgObject.appendChild(
             this.scrollElements.renderElements(
-                this, this.component.renderer
+                this, this.component.svgRenderer as SvgRenderer
             )
         );
         return this.svgObject;

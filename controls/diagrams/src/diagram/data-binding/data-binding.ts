@@ -44,7 +44,7 @@ export class DataBinding {
     }
 
 
-   /**   @private  */
+    /**   @private  */
     public dataTable: Object = {};
 
     /**
@@ -55,14 +55,17 @@ export class DataBinding {
      */
 
     public initData(data: DataSourceModel, diagram: Diagram): void {
-        let dataSource: Object[];
+        let dataSource: Object[] | JSON;
         let dataProp: string = 'data';
         let jsonProp: string = 'json';
-        let dataManager: DataManager = data.dataManager || {} as DataManager;
+        let dataManager: DataManager = data.dataManager || data.dataSource || {} as DataManager;
         dataSource = dataManager[dataProp] || dataManager[jsonProp] ||
             (dataManager.dataSource ? dataManager.dataSource.json : undefined);
-        if (dataSource && dataSource.length) {
-            this.applyDataSource(data, dataSource, diagram);
+        if (dataSource && (dataSource as Object[]).length === 0 && dataManager.dataSource.data) {
+            dataSource = dataManager.dataSource.data;
+        }
+        if (dataSource && (dataSource as Object[]).length) {
+            this.applyDataSource(data, dataSource as Object[], diagram);
 
         }
     }
@@ -77,9 +80,11 @@ export class DataBinding {
     public initSource(data: DataSourceModel, diagram: Diagram): void {
         let dataSource: DataSourceModel = data; let result: Object[];
         let mapper: DataSourceModel = data;
-        if (dataSource.dataManager instanceof DataManager) {
-            let query: Query = mapper.dataManager.defaultQuery;
-            data.dataManager.executeQuery(query).then((e: Object) => {
+        if (dataSource.dataManager instanceof DataManager || dataSource.dataSource instanceof DataManager) {
+            let tempObj: DataManager = mapper.dataManager || mapper.dataSource;
+            let query: Query = tempObj.defaultQuery || new Query();
+            let dataManager: DataManager = data.dataManager || data.dataSource;
+            dataManager.executeQuery(query).then((e: Object) => {
                 let prop: string = 'result';
                 result = e[prop];
                 if (!diagram.isDestroyed) {

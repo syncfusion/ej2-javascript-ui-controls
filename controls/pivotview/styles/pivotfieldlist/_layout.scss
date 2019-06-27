@@ -864,6 +864,24 @@
       height: $field-list-member-filter-list-bigger-height;
     }
 
+    // sass-lint:disable-all
+    .e-member-editor-dialog {
+      .e-member-editor-wrapper ul {
+        @if ($field-list-skin == 'bootstrap4') {
+          margin-left: -30px;
+        }
+      }
+
+      &.e-rtl {
+        .e-member-editor-wrapper ul {
+          @if ($field-list-skin == 'bootstrap4') {
+            margin-right: -30px;
+          }
+        }
+      }
+    }
+    // sass-lint:enable-all
+
     .e-adaptive-field-list-dialog,
     .e-member-editor-dialog,
     .e-value-field-settings {

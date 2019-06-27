@@ -121,6 +121,7 @@ export class AggregateMenu {
             close: this.removeDialog.bind(this)
         });
         this.valueDialog.appendTo(valueDialog);
+        this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
     }
     /* tslint:disable:all */
     private createFieldOptions(buttonElement: HTMLElement): HTMLElement {
@@ -154,8 +155,8 @@ export class AggregateMenu {
         ];
         let baseItemTypes: string[] = ['DifferenceFrom', 'PercentageOfDifferenceFrom'];
         let baseFieldTypes: string[] = ['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
-        let dataFields: IFieldOptions[] = extend([], this.parent.dataSource.rows, null, true) as IFieldOptions[];
-        dataFields = dataFields.concat(this.parent.dataSource.columns);
+        let dataFields: IFieldOptions[] = extend([], this.parent.dataSourceSettings.rows, null, true) as IFieldOptions[];
+        dataFields = dataFields.concat(this.parent.dataSourceSettings.columns);
         let fieldDataSource: { [key: string]: Object }[] = [];
         let fieldItemDataSource: string[] = [];
         // let summaryDataSource: { [key: string]: Object }[] = [];
@@ -280,14 +281,14 @@ export class AggregateMenu {
                 this.createValueSettingsDialog(buttonElement, this.parentElement);
             } else {
                 let field: string = buttonElement.getAttribute('data-uid');
-                let valuefields: IFieldOptions[] = this.parent.dataSource.values;
+                let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
                 let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
                 let captionName: string = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
                 contentElement.innerHTML = captionName;
                 contentElement.setAttribute('title', captionName);
                 buttonElement.setAttribute('data-type', menu.item.id as string);
-                for (let vCnt: number = 0; vCnt < this.parent.dataSource.values.length; vCnt++) {
-                    if (this.parent.dataSource.values[vCnt].name === field) {
+                for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
+                    if (this.parent.dataSourceSettings.values[vCnt].name === field) {
                         let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties ?
                             (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties : valuefields[vCnt];
                         dataSourceItem.type = menu.item.id as SummaryTypes;
@@ -305,8 +306,10 @@ export class AggregateMenu {
             this.parent.updateDataSource(isRefreshed);
         } else {
             if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {
-                (this.parent as PivotFieldList).pivotGridModule.
-                    setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties as IDataOptions }, true);
+                /* tslint:disable:align */
+                (this.parent as PivotFieldList).pivotGridModule.setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions
+                }, true);
                 (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
                 (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
             } else {
@@ -337,7 +340,8 @@ export class AggregateMenu {
             buttonElement.setAttribute('data-basefield', baseFieldInstance.value as string);
             buttonElement.setAttribute('data-baseitem', baseItemInstance.value as string);
         }
-        let selectedField: IFieldOptions = this.parent.pivotCommon.eventBase.getFieldByName(fieldName, this.parent.dataSource.values);
+        let selectedField: IFieldOptions =
+            this.parent.pivotCommon.eventBase.getFieldByName(fieldName, this.parent.dataSourceSettings.values);
         selectedField = (<{ [key: string]: Object }>selectedField).properties ?
             (<{ [key: string]: Object }>selectedField).properties : selectedField;
         selectedField.caption = captionInstance.value;

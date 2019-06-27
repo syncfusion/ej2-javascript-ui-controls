@@ -64,6 +64,7 @@ export interface DiagramRulerModel {
      * diagram.appendTo('#diagram');
      * ```
      * @default null
+     * @deprecated
      */
     arrangeTick?: Function | string;
 

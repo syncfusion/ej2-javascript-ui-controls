@@ -2,18 +2,11 @@
 
 ## [Unreleased]
 
-## 17.1.48 (2019-05-21)
+## 17.2.28-beta (2019-06-27)
 
 ### Chart
 
 #### Bug Fixes
 
-- #236117 - Axis labels aligned not properly when using some special characters issue fixed.
-
-## 17.1.41 (2019-04-16)
-
-### Chart
-
-#### Bug Fixes
-
-- #143802 - The scrollbar occurs when the mouse move on the zooming toolkit issue fixed
+- #238440 - Synchronized Charts tooltip not working properly issue fixed.
+- #238974 - `<br>` tag in axis labels pushes the chart to the right side issue fixed.

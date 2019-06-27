@@ -836,5 +836,4 @@ describe('RTE CR issues', () => {
             }, 100)
         });
     });
-
 })

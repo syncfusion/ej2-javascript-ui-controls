@@ -49,7 +49,7 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
         thumbWidth: thumbWidth,
         thumbHeight: thumbHeight
     };
-    switch (theme) {
+    switch (theme as string) {
         case 'Fabric':
             style.selectedRegionColor = range.series.length ? 'transparent' : '#007897';
             break;
@@ -74,6 +74,7 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
                 thumbHeight: thumbHeight
             };
             break;
+        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 gridLineColor: darkGridlineColor,

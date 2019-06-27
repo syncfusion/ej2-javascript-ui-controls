@@ -20,10 +20,10 @@ window.getName = function () {
     return "TestName";
 }
 
-let outDOM: Function = (tempFunction: Function, data: Object[]) => {
+let outDOM: Function = (tempFunction: Function, data: Object[], templateID?: string, propName?: string) => {
     let output: any[] = [];
     for (let item of data) {
-        let htmlEle: HTMLCollection = tempFunction(item);
+        let htmlEle: HTMLCollection = tempFunction(item, templateID, propName);
         output = output.concat(Array.prototype.slice.call(htmlEle));
     }
     return output.concat([]);
@@ -60,6 +60,73 @@ describe('Template Engine', () => {
         let templateStr: string = '<path d= "M150 0 L75 200 L225 200 Z"></path>';
         let result: any = outDOM(template.compile(templateStr), dsJSONArray)
         expect(result[0].parentNode.localName).toEqual('svg');
+    });
+
+    it('Testing for blazor others templates', () => {
+        let templateStr: string = '<div> Blazor  template</div>';
+        let Blazor: string = 'Blazor';
+        window[Blazor] = 'template';
+        let result: any = outDOM(template.compile(templateStr), [dsJSONArray[0]], '', 'Template')
+        window[Blazor] = null;
+        expect(result[0].tagName).toEqual('DIV');
+    });
+
+    it('Check blazor template', () => {
+        let templateStr: string = '<div class="   class1">blazor</div>';
+        let result: any = [];
+        let blazor: string = 'Blazor';
+        let ejsIntrop: string = 'ejsIntrop';
+        window[blazor] = 'Template';
+        window[ejsIntrop] = { updateTemplate: function () { } };
+        result = (template.updateBlazorTemplate('template', 'Template'));
+        window[blazor] = null;
+        window[ejsIntrop] = null;
+        expect(result).toBeUndefined();
+    });
+
+    it('Check blazor row template', () => {
+        let templateStr: string = '<div class="   class1">blazor</div>';
+        let result: any = [];
+        let blazor: string = 'Blazor';
+        let ejsIntrop: string = 'ejsIntrop';
+        window[blazor] = 'Template';
+        window[ejsIntrop] = { updateTemplate: function () { } };
+        result = (template.updateBlazorTemplate('rowtemplate', 'RowTemplate'));
+        window[blazor] = null;
+        window[ejsIntrop] = null;
+        expect(result).toBeUndefined();
+    });
+
+    it('Check reset blazor template', () => {
+        let result: any = [];
+        result = (template.resetBlazorTemplate('template', 'Template'));
+        expect(result).toBeUndefined();
+    });
+
+    it('Check append the blazor template to the body', () => {
+        let elem: HTMLElement = document.createElement('div');
+        elem.setAttribute('id', 'template');
+        let newElement: HTMLElement = document.createElement('div');
+        newElement.setAttribute('class', 'blazor-inner-template');
+        newElement.setAttribute('data-templateId', 'tempID');
+        elem.appendChild(newElement);
+        let elem2: HTMLElement = document.createElement('div');
+        elem2.setAttribute('id', 'tempID');
+        elem2.setAttribute('data-templateId', 'tempID');
+        document.activeElement.appendChild(elem2);
+        document.activeElement.appendChild(elem);
+        let result: any = [];
+        result = (template.resetBlazorTemplate('template', 'Template'));
+        expect(result).toBeUndefined();
+    });
+
+    it('Testing for blazor Row template', () => {
+        let templateStr: string = '<tr> Blazor template</tr>';
+        let Blazor: string = 'Blazor';
+        window[Blazor] = 'template';
+        let result: any = outDOM(template.compile(templateStr), [dsJSONArray[0]], '', 'rowTemplate')
+        window[Blazor] = null;
+        expect(result[0].tagName).toEqual('TR');
     });
 
     it('custom helper', () => {

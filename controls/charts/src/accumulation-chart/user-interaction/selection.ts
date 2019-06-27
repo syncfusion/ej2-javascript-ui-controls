@@ -2,7 +2,7 @@
  * AccumulationChart Selection src file
  */
 import { extend } from '@syncfusion/ej2-base';
-import { Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { indexFinder } from '../../common/utils/helper';
 import { AccumulationSelectionMode } from '../model/enum';
 import { AccumulationChart } from '../accumulation';
@@ -14,7 +14,7 @@ import { BaseSelection } from '../../common/user-interaction/selection';
  * `AccumulationSelection` module handles the selection for accumulation chart.
  */
 export class AccumulationSelection extends BaseSelection {
-    private renderer: SvgRenderer;
+    private renderer: SvgRenderer | CanvasRenderer;
     /** @private */
     public rectPoints: Rect;
     public selectedDataIndexes: Indexes[];

@@ -9,9 +9,9 @@ import { CellDeselectEventArgs, CellSelectingEventArgs } from '@syncfusion/ej2-g
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, append } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs  } from '@syncfusion/ej2-navigations';
+import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { GridSettingsModel } from '../model/gridsettings-model';
-import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs } from '../../common/base/interface';
+import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs, PivotColumn } from '../../common/base/interface';
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
 
@@ -33,13 +33,13 @@ export class Render {
     private lastSpan: number = 0;
     private resColWidth: number;
     private aggMenu: AggregateMenu;
-    private field : string;
+    private field: string;
     /* tslint:disable-next-line */
     private timeOutObj: any;
     /** Constructor for render module */
     constructor(parent: PivotView) {
         this.parent = parent;
-        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 249) :
+        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
             (this.parent.isAdaptive ? 140 : 200);
         this.engine = parent.engineModule;
         this.gridSettings = parent.gridSettings;
@@ -50,9 +50,10 @@ export class Render {
     /** @hidden */
     /* tslint:disable */
     public render(): void {
-        this.parent.gridHeaderCellInfo = [];
         let parent: PivotView = this.parent;
         let engine: PivotEngine = this.parent.engineModule;
+        this.parent.gridHeaderCellInfo = [];
+        this.parent.gridCellCollection = {};
         this.injectGridModules(parent);
         this.rowStartPos = this.getRowStartPos();
         if (this.parent.grid && this.parent.grid.element && this.parent.element.querySelector('.e-grid')) {
@@ -67,11 +68,14 @@ export class Render {
             }
             /* tslint:disable */
             this.parent.grid.setProperties({
-                columns: this.frameStackedHeaders(), dataSource: parent.dataSource.values.length > 0 && !this.engine.isEmptyData ? engine.valueContent :
+                columns: this.frameStackedHeaders(), dataSource: parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData ? engine.valueContent :
                     this.frameDataSource('value')
             }, true);
             /* tslint:enable */
             this.parent.grid.notify('datasource-modified', {});
+            if (this.parent.isScrolling) {
+                this.parent.resizeInfo = {};
+            }
             this.parent.grid.refreshColumns();
             if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
                 this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
@@ -82,9 +86,9 @@ export class Render {
                 this.parent.grid.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup').innerHTML;
             this.parent.grid.width = this.calculateGridWidth();
             if (!this.parent.isScrolling) {
-                this.parent.grid.height = this.calculateGridHeight();
+                this.calculateGridHeight(true);
             }
-            this.parent.isScrolling = false;
+            //this.parent.isScrolling = false;
         } else {
             this.parent.element.innerHTML = '';
             this.bindGrid(this.parent, (this.engine.isEmptyData ? true : false));
@@ -134,9 +138,12 @@ export class Render {
             allowTextWrap: this.gridSettings.allowTextWrap,
             allowReordering: this.gridSettings.allowReordering,
             allowSelection: this.gridSettings.allowSelection,
+            /* tslint:disable-next-line */
             contextMenuItems: this.gridSettings.contextMenuItems as any,
             selectedRowIndex: this.gridSettings.selectedRowIndex,
+            /* tslint:disable-next-line */
             selectionSettings: this.gridSettings.selectionSettings as any,
+            textWrapSettings: this.gridSettings.textWrapSettings,
             printMode: this.gridSettings.printMode,
             rowHeight: this.gridSettings.rowHeight,
             gridLines: this.gridSettings.gridLines,
@@ -167,6 +174,17 @@ export class Render {
             excelQueryCellInfo: this.excelQueryCellInfo.bind(this),
             pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this)
         });
+        this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
+    }
+    /* tslint:disable-next-line */
+    private headerRefreshed(args: any): void {
+        if (this.parent.lastGridSettings && Object.keys(this.parent.lastGridSettings).indexOf('allowResizing') > -1) {
+            this.parent.lastGridSettings = undefined;
+            if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
+                this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
+                this.parent.groupingBarModule.setGridRowWidth();
+            }
+        }
     }
 
     private rowSelected(args: RowSelectEventArgs): void {
@@ -224,10 +242,12 @@ export class Render {
     }
 
     private dataBound(args: DataBoundEventArgs): void {
-        if (this.parent.cellTemplate) {
+        /* tslint:disable-next-line */
+        if (this.parent.cellTemplate && !(window && (window as any).Blazor)) {
             for (let cell of this.parent.gridHeaderCellInfo) {
                 if (this.parent.cellTemplate) {
-                    append([].slice.call(this.parent.getCellTemplate()(cell, this.parent, 'cellTemplate')), cell.targetCell);
+                    /* tslint:disable-next-line */
+                    append([].slice.call(this.parent.getCellTemplate()(cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate')), cell.targetCell);
                 }
             }
             this.parent.gridHeaderCellInfo = [];
@@ -240,24 +260,33 @@ export class Render {
             }
         }
         this.parent.grid.widthService.setWidthToTable();
+        /* tslint:disable-next-line */
+        if (!(this.parent as any).isEmptyGrid) {
+            this.calculateGridHeight(true);
+        }
+        if (this.parent.currentView !== 'Chart') {
+            this.parent.grid.hideScroll();
+        }
+        this.parent.isScrolling = false;
         this.parent.notify(events.contentReady, {});
     }
 
-    private contextMenuOpen ( args: BeforeOpenCloseMenuEventArgs){
-        for( let item of args.items)
-        {
-            let cellTarget:Element = this.parent.lastCellClicked;
+    /* tslint:disable */
+    /* tslint:disable:typedef */
+    private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        for (let item of args.items) {
+            let cellTarget: Element = this.parent.lastCellClicked;
             let elem: Element = null;
             let bool: boolean;
             if (cellTarget.classList.contains('e-stackedheadercelldiv') || cellTarget.classList.contains('e-cellvalue') ||
-            cellTarget.classList.contains('e-headercelldiv') || cellTarget.classList.contains('e-icons') || cellTarget.classList.contains('e-rhandler')) {
+                cellTarget.classList.contains('e-headercelldiv') || cellTarget.classList.contains('e-icons') || cellTarget.classList.contains('e-rhandler')) {
                 elem = cellTarget.parentElement;
             } else if (cellTarget.classList.contains('e-headercell') || cellTarget.classList.contains('e-rowcell') || cellTarget.classList.contains('e-columnsheader') ||
-            cellTarget.classList.contains('e-rowsheader') || cellTarget.classList.contains('e-valuescontent') || cellTarget.classList.contains('e-valuesheader')) {
+                cellTarget.classList.contains('e-rowsheader') || cellTarget.classList.contains('e-valuescontent') || cellTarget.classList.contains('e-valuesheader')) {
                 elem = cellTarget;
             } else if (cellTarget.classList.contains('e-headertext')) {
-                elem = cellTarget.parentElement.parentElement ;
-            } 
+                elem = cellTarget.parentElement.parentElement;
+            }
             if (elem.classList.contains('e-valuesheader') || elem.classList.contains('e-stot')) {
                 bool = true;
             }
@@ -265,87 +294,81 @@ export class Render {
             let colIndex: number = Number(elem.getAttribute('aria-colindex'));
             let pivotValue1: IAxisSet = this.parent.pivotValues[rowIndex][colIndex] as IAxisSet;
             let select: string = item.id;
-            switch(select){
+            switch (select) {
                 case 'expand':
-                    if(elem.querySelectorAll('.'+cls.EXPAND).length>0){
-                        if(args.element.querySelectorAll(cls.CONTEXT_COLLAPSE_ID)){
+                    if (elem.querySelectorAll('.' + cls.EXPAND).length > 0) {
+                        if (args.element.querySelectorAll(cls.CONTEXT_COLLAPSE_ID)) {
                             args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_DISABLE);
                         }
-                        if(args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.contains(cls.MENU_DISABLE)){
+                        if (args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.contains(cls.MENU_DISABLE)) {
                             args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_DISABLE);
                         }
-                        if(args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.contains(cls.MENU_HIDE)){ 
+                        if (args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.contains(cls.MENU_HIDE)) {
                             args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_HIDE);
                             args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_HIDE);
                         }
                     } else {
-                        
-                        if(bool){
+
+                        if (bool) {
                             args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_HIDE);
-                        }
-                        else {
+                        } else {
                             args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_DISABLE);
                         }
                     }
                     break;
                 case 'collapse':
-                    if(elem.querySelectorAll('.'+cls.COLLAPSE).length>0){
-                        if(args.element.querySelector(cls.CONTEXT_EXPAND_ID)){
+                    if (elem.querySelectorAll('.' + cls.COLLAPSE).length > 0) {
+                        if (args.element.querySelector(cls.CONTEXT_EXPAND_ID)) {
                             args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_DISABLE);
                         }
-                        if(args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.contains(cls.MENU_DISABLE)){
+                        if (args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.contains(cls.MENU_DISABLE)) {
                             args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_DISABLE);
                         }
-                        if(args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.contains(cls.MENU_HIDE)){ 
+                        if (args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.contains(cls.MENU_HIDE)) {
                             args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_HIDE);
                             args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_HIDE);
                         }
-                    }else {
-                        
-                        if(bool){
+                    } else {
+
+                        if (bool) {
                             args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_HIDE);
-                        }
-                        else {
+                        } else {
                             args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_DISABLE);
                         }
                     }
                     break;
                 case 'drillthrough':
-                    if(!this.parent.allowDrillThrough) {
-                        if(args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID)) {
+                    if (!this.parent.allowDrillThrough) {
+                        if (args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID)) {
                             args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.add(cls.MENU_DISABLE);
                         }
-                    }
-                     else if (!(elem.classList.contains('e-summary'))) {
-                            if ((elem as HTMLElement).innerText === "") {
-                                if (args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID)) {
-                                    args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.add(cls.MENU_DISABLE);
-                                }
+                    } else if (!(elem.classList.contains('e-summary'))) {
+                        if ((elem as HTMLElement).innerText === "") {
+                            if (args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID)) {
+                                args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.add(cls.MENU_DISABLE);
                             }
                         }
-                    else {
-                        if(args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.contains(cls.MENU_DISABLE)) {
+                    } else {
+                        if (args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.contains(cls.MENU_DISABLE)) {
                             args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.remove(cls.MENU_DISABLE);
                         }
                     }
                     break;
                 case 'sortasc':
                     if (!this.parent.enableValueSorting) {
-                        if(args.element.querySelector(cls.CONTEXT_SORT_ASC_ID)) {
+                        if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID)) {
                             args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.add(cls.MENU_DISABLE);
                         }
                     } else if (elem.querySelectorAll('.e-icon-descending').length > 0) {
                         if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID)) {
                             args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.add(cls.MENU_DISABLE);
-                        }
-                        else {
+                        } else {
                             args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
                         }
                         if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.contains(cls.MENU_DISABLE)) {
                             args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
                         }
-                    }
-                    else if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.contains(cls.MENU_DISABLE)) {
+                    } else if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.contains(cls.MENU_DISABLE)) {
                         args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
                     }
                     break;
@@ -354,31 +377,28 @@ export class Render {
                         if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID)) {
                             args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.add(cls.MENU_DISABLE);
                         }
-                    }
-                    else if (elem.querySelectorAll('.e-icon-ascending').length > 0) {
+                    } else if (elem.querySelectorAll('.e-icon-ascending').length > 0) {
                         if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID)) {
                             args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.add(cls.MENU_DISABLE);
-                        }
-                        else {
+                        } else {
                             args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
                         }
                         if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.contains(cls.MENU_DISABLE)) {
                             args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
                         }
-                    }
-                    else if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.contains(cls.MENU_DISABLE)) {
+                    } else if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.contains(cls.MENU_DISABLE)) {
                         args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
                     }
                     break;
                 case 'CalculatedField':
                     if (!this.parent.allowCalculatedField) {
                         args.element.querySelector(cls.CONTEXT_CALC_ID).classList.add(cls.MENU_DISABLE);
-                    } 
+                    }
                     break;
                 case 'pdf':
                     if (!this.parent.allowPdfExport) {
                         args.element.querySelector(cls.CONTEXT_PDF_ID).classList.add(cls.MENU_DISABLE);
-                    } 
+                    }
                     break;
                 case 'excel':
                     if (!this.parent.allowExcelExport) {
@@ -392,16 +412,15 @@ export class Render {
                     break;
                 case 'exporting':
                     if ((!this.parent.allowExcelExport) && (!this.parent.allowPdfExport)) {
-                        args.element.querySelector(cls.CONTEXT_EXPORT_ID).classList.add(cls.MENU_DISABLE);  
-                    } 
+                        args.element.querySelector(cls.CONTEXT_EXPORT_ID).classList.add(cls.MENU_DISABLE);
+                    }
                     break;
                 case 'aggregate':
                     if ((elem as HTMLElement).innerText === "") {
                         if (args.element.querySelector(cls.CONTEXT_AGGREGATE_ID)) {
                             args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.add(cls.MENU_DISABLE);
                         }
-                    }
-                    else {
+                    } else {
                         if (args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.contains(cls.MENU_DISABLE)) {
                             args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.remove(cls.MENU_DISABLE);
                         }
@@ -409,12 +428,12 @@ export class Render {
                     break;
             }
         }
-        this.parent.trigger(events.contextMenuOpen,args);
+        this.parent.trigger(events.contextMenuOpen, args);
     }
 
-    private contextMenuClick(args:MenuEventArgs){
+    private contextMenuClick(args: MenuEventArgs): void {
         // this.parent.gridSettings.contextMenuClick();
-        let target:Element = this.parent.lastCellClicked;
+        let target: Element = this.parent.lastCellClicked;
         let selected: string = args.item.id;
         let event: MouseEvent = new MouseEvent('dblclick', {
             'view': window,
@@ -428,15 +447,15 @@ export class Render {
         } else if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
             ele = target;
         } else if (target.classList.contains('e-headertext')) {
-            ele = target.parentElement.parentElement ;
+            ele = target.parentElement.parentElement;
         }
         let rowIndx: number = Number(ele.getAttribute('index'));
         let colIndx: number = Number(ele.getAttribute('aria-colindex'));
         let pivotValue: IAxisSet = this.parent.pivotValues[rowIndx][colIndx] as IAxisSet;
-        if(  args.item.id === 'AggSum' || args.item.id === 'AggProduct' || args.item.id === 'AggCount' || 
-            args.item.id === 'AggDistinctCount' || args.item.id === 'AggAvg' || args.item.id === 'AggMin' || 
-            args.item.id === 'AggMax' || args.item.id === 'AggMoreOption' ){
-                this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
+        if (args.item.id === 'AggSum' || args.item.id === 'AggProduct' || args.item.id === 'AggCount' ||
+            args.item.id === 'AggDistinctCount' || args.item.id === 'AggAvg' || args.item.id === 'AggMin' ||
+            args.item.id === 'AggMax' || args.item.id === 'AggMoreOption') {
+            this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
         }
         switch (selected) {
             case 'pdf':
@@ -453,35 +472,35 @@ export class Render {
                 break;
             case 'sortasc':
                 this.parent.setProperties({
-                    dataSource:{
+                    dataSourceSettings: {
                         valueSortSettings: {
                             headerText: (pivotValue as IAxisSet).valueSort.levelName as string,
-                            headerDelimiter: this.parent.dataSource.valueSortSettings.headerDelimiter
+                            headerDelimiter: this.parent.dataSourceSettings.valueSortSettings.headerDelimiter
                         }
                     }
                 });
-                this.parent.dataSource.valueSortSettings.sortOrder = 'Ascending';
+                this.parent.dataSourceSettings.valueSortSettings.sortOrder = 'Ascending';
                 break;
             case 'sortdesc':
                 this.parent.setProperties({
-                    dataSource:{
+                    dataSourceSettings: {
                         valueSortSettings: {
                             headerText: (pivotValue as IAxisSet).valueSort.levelName as string,
-                            headerDelimiter: this.parent.dataSource.valueSortSettings.headerDelimiter
+                            headerDelimiter: this.parent.dataSourceSettings.valueSortSettings.headerDelimiter
                         }
                     }
                 });
-                this.parent.dataSource.valueSortSettings.sortOrder = 'Descending';
+                this.parent.dataSourceSettings.valueSortSettings.sortOrder = 'Descending';
                 break;
             case 'expand':
-                if(ele.querySelectorAll('.'+cls.EXPAND)){
-                    let exp = ele.querySelectorAll('.'+cls.EXPAND)[0] as Element
+                if (ele.querySelectorAll('.' + cls.EXPAND)) {
+                    let exp = ele.querySelectorAll('.' + cls.EXPAND)[0] as Element
                     this.parent.onDrill(exp);
                 }
                 break;
             case 'collapse':
-                if(ele.querySelectorAll('.'+cls.COLLAPSE)){
-                    let colp = ele.querySelectorAll('.'+cls.COLLAPSE)[0] as Element
+                if (ele.querySelectorAll('.' + cls.COLLAPSE)) {
+                    let colp = ele.querySelectorAll('.' + cls.COLLAPSE)[0] as Element
                     this.parent.onDrill(colp);
                 }
                 break;
@@ -510,24 +529,24 @@ export class Render {
                 this.updateAggregate('Max');
                 break;
             case 'AggMoreOption':
-                ele.setAttribute('id',this.field);
-                ele.setAttribute('data-caption',this.field);
-                ele.setAttribute('data-field',this.field);
-                ele.setAttribute('data-type',this.parent.engineModule.fieldList[pivotValue.actualText.toString()].aggregateType);
-                ele.setAttribute('data-basefield',this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseField);
-                ele.setAttribute('data-baseItem',this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseItem);
-                this.aggMenu.createValueSettingsDialog(ele as HTMLElement,this.parent.element);
+                ele.setAttribute('id', this.field);
+                ele.setAttribute('data-caption', this.field);
+                ele.setAttribute('data-field', this.field);
+                ele.setAttribute('data-type', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].aggregateType);
+                ele.setAttribute('data-basefield', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseField);
+                ele.setAttribute('data-baseItem', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseItem);
+                this.aggMenu.createValueSettingsDialog(ele as HTMLElement, this.parent.element);
                 break;
 
         }
         this.parent.trigger(events.contextMenuClick, args);
     }
-
-    private updateAggregate(aggregate: string){
-        let valuefields: IFieldOptions[] = this.parent.dataSource.values;
-        for (let valueCnt = 0; valueCnt < this.parent.dataSource.values.length; valueCnt++) {
-            if (this.parent.dataSource.values[valueCnt].name === this.field) {
-                let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[valueCnt]) 
+    /* tslint:enable */
+    private updateAggregate(aggregate: string): void {
+        let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
+        for (let valueCnt: number = 0; valueCnt < this.parent.dataSourceSettings.values.length; valueCnt++) {
+            if (this.parent.dataSourceSettings.values[valueCnt].name === this.field) {
+                let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[valueCnt]);
                 dataSourceItem.type = aggregate as SummaryTypes;
             }
         }
@@ -541,15 +560,7 @@ export class Render {
         if (parent.allowPdfExport) {
             Grid.Inject(PdfExport);
         }
-        if (this.gridSettings.allowSelection) {
-            Grid.Inject(Selection);
-        }
-        if (this.gridSettings.allowReordering) {
-            Grid.Inject(Reorder);
-        }
-        if (this.gridSettings.allowResizing) {
-            Grid.Inject(Resize);
-        }
+        Grid.Inject(Selection, Reorder, Resize);
         if (this.gridSettings.contextMenuItems) {
             Grid.Inject(ContextMenu);
         }
@@ -562,20 +573,46 @@ export class Render {
         this.parent.grid.allowTextWrap = this.gridSettings.allowTextWrap;
         this.parent.grid.allowReordering = this.gridSettings.allowReordering;
         this.parent.grid.allowSelection = this.gridSettings.allowSelection;
+        /* tslint:disable-next-line */
         this.parent.grid.contextMenuItems = this.gridSettings.contextMenuItems as any;
         this.parent.grid.selectedRowIndex = this.gridSettings.selectedRowIndex;
+        /* tslint:disable-next-line */
         this.parent.grid.selectionSettings = this.gridSettings.selectionSettings as any;
+        this.parent.grid.textWrapSettings = this.gridSettings.textWrapSettings;
         this.parent.grid.printMode = this.gridSettings.printMode;
         this.parent.grid.rowHeight = this.gridSettings.rowHeight;
         this.parent.grid.gridLines = this.gridSettings.gridLines;
-        this.parent.grid.height = this.gridSettings.height;
-        this.parent.grid.width = this.gridSettings.width;
+        if (this.parent.lastGridSettings) {
+            let keys: string[] = Object.keys(this.parent.lastGridSettings);
+            if (keys.indexOf('height') > -1) {
+                this.parent.grid.height = this.gridSettings.height;
+            }
+            if (keys.indexOf('width') > -1) {
+                this.parent.grid.width = this.gridSettings.width;
+            }
+            this.updatePivotColumns();
+        }
         this.clearColumnSelection();
     }
 
+    private updatePivotColumns(): void {
+        let keys: string[] = Object.keys(this.parent.lastGridSettings);
+        for (let colPos: number = 0; colPos < this.parent.pivotColumns.length; colPos++) {
+            let pivotColumn: PivotColumn = this.parent.pivotColumns[colPos];
+            for (let keyPos: number = 0; keyPos < keys.length; keyPos++) {
+                let key: string = keys[keyPos];
+                /* tslint:disable-next-line */
+                if (!isNullOrUndefined((this.parent.pivotColumns[colPos] as any)[key])) {
+                    /* tslint:disable-next-line */
+                    (pivotColumn as any)[key] = (this.parent.lastGridSettings as any)[key];
+                }
+            }
+        }
+        this.parent.fillGridColumns(this.parent.grid.columns as ColumnModel[]);
+    }
+
     private clearColumnSelection(): void {
-        this.parent.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR).forEach(function
-            (ele: HTMLElement) {
+        this.parent.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR).forEach((ele: HTMLElement) => {
             ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
             ele.classList.remove(cls.SELECTED_BGCOLOR);
         });
@@ -583,25 +620,30 @@ export class Render {
 
     private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number): HTMLElement {
         if (this.parent.enableValueSorting) {
-            let vSort: IValueSortSettings = this.parent.dataSource.valueSortSettings;
-            let len: number = (cell.type === 'grand sum' && this.parent.dataSource.values.length === 1 && !this.parent.dataSource.alwaysShowValueHeader) ? 0 :
-                (this.parent.dataSource.values.length > 1 || this.parent.dataSource.alwaysShowValueHeader) ? (this.parent.engineModule.headerContent.length - 1) :
-                    this.parent.dataSource.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
+            let vSort: IValueSortSettings = this.parent.dataSourceSettings.valueSortSettings;
+            let len: number = (cell.type === 'grand sum' &&
+                this.parent.dataSourceSettings.values.length === 1 && !this.parent.dataSourceSettings.alwaysShowValueHeader) ? 0 :
+                (this.parent.dataSourceSettings.values.length > 1 || this.parent.dataSourceSettings.alwaysShowValueHeader) ?
+                    (this.parent.engineModule.headerContent.length - 1) :
+                    this.parent.dataSourceSettings.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
             let lock: boolean = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
-            if (vSort !== undefined && lock && rCnt === len && this.parent.dataSource.valueAxis === 'column') {
+            if (vSort !== undefined && lock && rCnt === len && this.parent.dataSourceSettings.valueAxis === 'column') {
                 if (tCell.querySelector('.e-sortfilterdiv')) {
-                    tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ? 'e-descending' : 'e-ascending');
+                    tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ?
+                        'e-descending' : 'e-ascending');
                     tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ?
                         'e-icon-descending' : 'e-icon-ascending');
                 } else {
                     tCell.appendChild(createElement('div', {
                         className: (vSort.sortOrder === 'Descending' ?
-                            'e-icon-descending e-icons e-descending e-sortfilterdiv' : 'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
+                            'e-icon-descending e-icons e-descending e-sortfilterdiv' :
+                            'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
                     }));
                 }
                 if (!isNullOrUndefined(cell.hasChild) && cell.type !== 'grand sum' && tCell.querySelector('.e-expand') &&
                     (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending'))) {
-                    let element: HTMLElement = (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending')) as HTMLElement;
+                    let element: HTMLElement =
+                        (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending')) as HTMLElement;
                     setStyleAttribute(element, { 'padding-top': '12px' });
                 }
             }
@@ -611,15 +653,17 @@ export class Render {
     }
 
     private onResizeStop(args: ResizeArgs): void {
-        let column: string = args.column.field === '0.formattedText' ? '0.formattedText' :
-            (args.column.customAttributes as any).cell.valueSort.levelName;
-        this.parent.resizeInfo[column] =
-            Number(args.column.width.toString().split('px')[0]);
+        /* tslint:disable-next-line */
+        let column: string = args.column.field === '0.formattedText' ? '0.formattedText' : (args.column.customAttributes as any).cell.valueSort.levelName;
+        this.parent.resizeInfo[column] = Number(args.column.width.toString().split('px')[0]);
         this.setGroupWidth(args);
+        this.calculateGridHeight(true);
+        this.parent.grid.hideScroll();
     }
 
     private setGroupWidth(args: ResizeArgs): void {
-        if (this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
+        if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
+            this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
             this.parent.groupingBarModule.refreshUI();
             if ((this.parent.element.querySelector('.e-group-row') as HTMLElement).offsetWidth < 245 && !this.parent.firstColWidth) {
                 args.cancel = true;
@@ -630,10 +674,11 @@ export class Render {
                 this.parent.element.querySelector('.e-frozenheader').querySelector('col').style.width = (this.resColWidth + 'px');
                 this.parent.element.querySelector('.e-frozencontent').querySelector('col').style.width = (this.resColWidth + 'px');
             }
+            (this.parent.element.querySelector('.e-group-rows') as HTMLElement).style.height = 'auto';
             (this.parent.element.querySelector('.e-group-values') as HTMLElement).style.width =
                 (this.parent.element.querySelector('.e-group-row') as HTMLElement).offsetWidth + 'px';
-            (this.parent.element.querySelector('.e-group-row') as HTMLElement).style.height =
-                (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight + 'px';
+            let firstRowHeight: number = (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight;
+            (this.parent.element.querySelector('.e-group-rows') as HTMLElement).style.height = firstRowHeight + 'px';
         }
         this.parent.trigger(args.e.type === 'touchend' || args.e.type === 'mouseup' ? events.resizeStop : events.resizing, args);
     }
@@ -647,6 +692,7 @@ export class Render {
 
     private onSelect(): void {
         let pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues, currentCell: null };
+        /* tslint:disable-next-line */
         let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
         for (let element of selectedElements) {
             let colIndex: number = Number(element.getAttribute('aria-colindex'));
@@ -685,6 +731,7 @@ export class Render {
 
     private rowCellBoundEvent(args: QueryCellInfoEventArgs): void {
         let tCell: HTMLElement = args.cell as HTMLElement;
+        /* tslint:disable-next-line */
         if (tCell && !(this.parent as any).isEmptyGrid) {
             let customClass: string = this.parent.hyperlinkSettings.cssClass;
             tCell.setAttribute('index', (Number(tCell.getAttribute('index')) + this.engine.headerContent.length).toString());
@@ -709,9 +756,9 @@ export class Render {
                     }));
                 }
                 let fieldName: string;
-                if ((this.parent.dataSource.rows.length > 0 &&
+                if ((this.parent.dataSourceSettings.rows.length > 0 &&
                     (cell.valueSort ? Object.keys(cell.valueSort).length > 0 : true))) {
-                    fieldName = level > -1 ? this.parent.dataSource.rows[level].name : '';
+                    fieldName = level > -1 ? this.parent.dataSourceSettings.rows[level].name : '';
                     tCell.setAttribute('fieldname', fieldName);
                 }
                 let localizedText: string = cell.formattedText;
@@ -735,19 +782,21 @@ export class Render {
                 }
                 tCell.appendChild(createElement('span', {
                     className: cls.CELLVALUE,
+                    /* tslint:disable-next-line */
                     innerHTML: (this.parent.isRowCellHyperlink || cell.enableHyperlink ? '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>' : localizedText)
                 }));
-                let vSort: IValueSortSettings = this.parent.pivotView.dataSource.valueSortSettings;
+                let vSort: IValueSortSettings = this.parent.pivotView.dataSourceSettings.valueSortSettings;
                 if (this.parent.enableValueSorting) {
-                    if (vSort && vSort.headerText && this.parent.dataSource.valueAxis === 'row'
+                    if (vSort && vSort.headerText && this.parent.dataSourceSettings.valueAxis === 'row'
                         && (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
                         if ((this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName
                             === vSort.headerText) {
-                            let style: string = (tCell.querySelector('.e-expand') || tCell.querySelector('.e-collapse')) ? 'padding-top: 18px' :
-                                'padding-top: 12px';
+                            let style: string = (tCell.querySelector('.e-expand') || tCell.querySelector('.e-collapse')) ?
+                                'padding-top: 18px' : 'padding-top: 12px';
                             tCell.appendChild(createElement('div', {
                                 className: (vSort.sortOrder === 'Descending' ?
-                                    'e-icon-descending e-icons e-descending e-sortfilterdiv' : 'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
+                                    'e-icon-descending e-icons e-descending e-sortfilterdiv' :
+                                    'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
                                 styles: style
                             }));
                         }
@@ -767,12 +816,21 @@ export class Render {
                 tCell.appendChild(createElement('span', {
                     className: cls.CELLVALUE,
                     innerHTML: ((tCell.className.indexOf('e-summary') !== -1 && this.parent.isSummaryCellHyperlink) ||
-                        (tCell.className.indexOf('e-summary') === -1 && this.parent.isValueCellHyperlink) ||
-                        cell.enableHyperlink ? '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>' : innerText)
+                        (tCell.className.indexOf('e-summary') === -1 && this.parent.isValueCellHyperlink) || cell.enableHyperlink ?
+                        '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>' : innerText)
                 }));
             }
             if (this.parent.cellTemplate) {
-                append([].slice.call(this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate')), tCell);
+                let index: string = tCell.getAttribute('index');
+                let colindex: string = tCell.getAttribute('aria-colindex');
+                let templateID: string = index + '_' + colindex;
+                /* tslint:disable-next-line */
+                if (!(window && (window as any).Blazor)) {
+                    /* tslint:disable-next-line */
+                    append([].slice.call(this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate')), tCell);
+                } else if (index && colindex) {
+                    this.parent.gridCellCollection[templateID] = tCell;
+                }
             }
             this.unWireEvents(tCell);
             this.wireEvents(tCell);
@@ -801,10 +859,12 @@ export class Render {
                 args.node.setAttribute('aria-colindex', cell.colIndex.toString());
                 args.node.setAttribute('index', cell.rowIndex.toString());
                 let fieldName: string;
-                if (!(this.parent.dataSource.values && this.parent.dataSource.valueAxis === 'column' && this.parent.dataSource.values.length > 1 &&
-                    (cell.rowIndex === this.engine.headerContent.length - 1)) && this.parent.dataSource.columns &&
-                    this.parent.dataSource.columns.length > 0) {
-                    fieldName = level > -1 ? this.parent.dataSource.columns[level].name : '';
+                if (!(this.parent.dataSourceSettings.values && this.parent.dataSourceSettings.valueAxis === 'column' &&
+                    this.parent.dataSourceSettings.values.length > 1 &&
+                    (cell.rowIndex === this.engine.headerContent.length - 1)) && this.parent.dataSourceSettings.columns &&
+                    this.parent.dataSourceSettings.columns.length > 0) {
+                    fieldName = level > -1 && this.parent.dataSourceSettings.columns[level] ?
+                        this.parent.dataSourceSettings.columns[level].name : '';
                     tCell.setAttribute('fieldname', fieldName);
                 }
                 if (cell.type) {
@@ -821,10 +881,12 @@ export class Render {
                 if (this.parent.isColumnCellHyperlink || cell.enableHyperlink) {
                     if (tCell.querySelector('.e-stackedheadercelldiv') as HTMLElement) {
                         let innerText: string = (tCell.querySelector('.e-stackedheadercelldiv') as HTMLElement).innerText;
-                        (tCell.querySelector('.e-stackedheadercelldiv') as HTMLElement).innerHTML = '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>';
+                        (tCell.querySelector('.e-stackedheadercelldiv') as HTMLElement).innerHTML =
+                            '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>';
                     } else if (tCell.querySelector('.e-headertext') as HTMLElement) {
                         let innerText: string = (tCell.querySelector('.e-headertext') as HTMLElement).innerText;
-                        (tCell.querySelector('.e-headertext') as HTMLElement).innerHTML = '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>';
+                        (tCell.querySelector('.e-headertext') as HTMLElement).innerHTML =
+                            '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>';
                     }
                 }
                 if (cell.hasChild === true) {
@@ -850,20 +912,20 @@ export class Render {
                 }
                 tCell = this.appendValueSortIcon(cell, tCell, cell.rowIndex, cell.colIndex);
                 if (this.parent.cellTemplate) {
-                    try {
-                        if (this.parent.getCellTemplate()()) {
-                            this.parent.gridHeaderCellInfo = [];
-                            append([].slice.call(this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate')), tCell);
-                        }
-                    } catch (error) {
+                    let index: string = tCell.getAttribute('index');
+                    let colindex: string = tCell.getAttribute('aria-colindex');
+                    let templateID: string = index + '_' + colindex;
+                    /* tslint:disable-next-line */
+                    if (!(window && (window as any).Blazor)) {
                         this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
+                    } else if (index && colindex) {
+                        this.parent.gridCellCollection[templateID] = tCell;
                     }
                 }
-                let  field : string;
-                let len: number = this.parent.dataSource.values.length
-                for (let vCnt=0;vCnt<len;vCnt++){
-                    if(this.parent.dataSource.values[vCnt].name === cell.actualText)
-                    {
+                let field: string;
+                let len: number = this.parent.dataSourceSettings.values.length;
+                for (let vCnt: number = 0; vCnt < len; vCnt++) {
+                    if (this.parent.dataSourceSettings.values[vCnt].name === cell.actualText) {
                         tCell.classList.add(cls.VALUESHEADER);
                     }
                 }
@@ -882,8 +944,13 @@ export class Render {
             data: this.engine.pivotValues[Number(cell.getAttribute('index'))][Number(cell.getAttribute('aria-colindex'))],
             cancel: true
         };
-        this.parent.trigger(events.hyperlinkCellClick, args);
-        if (!args.cancel) { window.open((e.target as HTMLElement).getAttribute('data-url')); }
+        this.parent.trigger(events.hyperlinkCellClick, args, (observedArgs: HyperCellClickEventArgs) => {
+            if (!observedArgs.cancel) {
+                let url: string = args.currentCell.getAttribute('data-url') ? (args.currentCell).getAttribute('data-url') :
+                    (args.currentCell.querySelector('a') as HTMLElement).getAttribute('data-url');
+                window.open(url);
+            }
+        });
     }
 
     private getRowStartPos(): number {
@@ -900,7 +967,7 @@ export class Render {
 
     private frameDataSource(type: string): IGridValues {
         let dataContent: IGridValues = [];
-        if (this.parent.dataSource.values.length > 0 && !this.engine.isEmptyData) {
+        if (this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
             if ((this.parent.enableValueSorting) || !this.engine.isEngineUpdated) {
                 let rowCnt: number = 0;
                 let pivotValues: IPivotValues = this.parent.pivotValues;
@@ -928,7 +995,9 @@ export class Render {
     }
 
     /** @hidden */
+    /* tslint:disable-next-line */
     public frameEmptyData(): any[] {
+        /* tslint:disable-next-line */
         let dataContent: any = [{
             0: { formattedText: this.parent.localeObj.getConstant('grandTotal') },
             1: { formattedText: this.parent.localeObj.getConstant('emptyData') }
@@ -940,9 +1009,10 @@ export class Render {
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
-        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - (colCount);
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth);
         colCount = colCount - 1;
-        let colWidth: number = (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
+        let colWidth: number =
+            (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
         return colWidth;
     }
 
@@ -951,16 +1021,21 @@ export class Render {
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
         colCount = colCount - 1;
-        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - (colCount);
-        let colWidth: number = (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth);
+        let colWidth: number =
+            (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
         return colWidth;
     }
 
     public calculateGridWidth(): number | string {
         let parWidth: number | string = this.parent.width;
+        let eleWidth: number = this.parent.element.getBoundingClientRect().width ?
+            this.parent.element.getBoundingClientRect().width : this.parent.element.offsetWidth;
         if (this.gridSettings.width === 'auto') {
-            if (this.parent.width === 'auto' && this.parent.element.offsetWidth < this.parent.totColWidth) {
-                parWidth = this.parent.element.offsetWidth;
+            if (this.parent.width === 'auto') {
+                parWidth = eleWidth;
+            } else if (this.parent.width.toString().indexOf('%') > -1) {
+                parWidth = ((parseFloat(this.parent.width.toString()) / 100) * eleWidth);
             }
         } else {
             parWidth = this.gridSettings.width;
@@ -969,34 +1044,52 @@ export class Render {
     }
 
     /** @hidden */
-    public calculateGridHeight(): number | string {
+    public calculateGridHeight(elementCreated?: boolean): number | string {
         let gridHeight: number | string = this.parent.height;
-        if (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement) {
         let parHeight: number = this.parent.getHeightAsNumber();
-        if (this.gridSettings.height === 'auto' && parHeight) {
-            let rowColHeight: number = (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight;
-            let gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) ?
-                (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
-            let toolBarHeight: number = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
-            gridHeight = parHeight - (gBarHeight + toolBarHeight) - 5;
-            if (gridHeight > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
-                if (this.parent.enableVirtualization && this.engine.rowCount > this.engine.valueContent.length) {
-                    gridHeight = ((this.engine.valueContent.length > 1 ?
-                        (this.engine.valueContent.length - 1) : 1) * this.gridSettings.rowHeight);
-                } else {
-                    gridHeight = 'auto';
-                }
-            }
-        } else {
-            gridHeight = this.gridSettings.height;
+        if (isNaN(parHeight)) {
+            parHeight = this.parent.element.offsetHeight > 0 ? this.parent.element.offsetHeight : 1;
         }
+        if (this.parent.currentView !== 'Chart') {
+            if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + cls.GRID_HEADER)) {
+                let rowColHeight: number = (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight;
+                let gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) ?
+                    (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
+                let toolBarHeight: number = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
+                gridHeight = parHeight - (gBarHeight + toolBarHeight) - 2;
+                if (elementCreated) {
+                    let tableHeight: number =
+                        (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetHeight;
+                    let contentHeight: number =
+                        (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetHeight;
+                    let tableWidth: number =
+                        (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetWidth;
+                    let contentWidth: number =
+                        (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetWidth;
+                    let horizontalOverflow: boolean = contentWidth < tableWidth;
+                    let verticalOverflow: boolean = contentHeight < tableHeight;
+                    let commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
+                    if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
+                        !verticalOverflow && !commonOverflow) {
+                        this.parent.grid.height = 'auto';
+                    } else {
+                        this.parent.grid.height = gridHeight;
+                    }
+                } else {
+                    if (gridHeight > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
+                        gridHeight = 'auto';
+                    }
+                }
+            } else {
+                gridHeight = this.gridSettings.height;
+            }
         }
         return gridHeight < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
     }
 
     public frameStackedHeaders(): ColumnModel[] {
         let integrateModel: ColumnModel[] = [];
-        if (this.parent.dataSource.values.length > 0 && !this.engine.isEmptyData) {
+        if (this.parent.dataSourceSettings.values.length > 0 && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
             let headerSplit: Object[] = [];
             let splitPos: Object[] = [];
@@ -1010,18 +1103,20 @@ export class Render {
                     for (let cCnt: number = 0; cCnt < Object.keys(colField).length + (colField[0] ? 0 : 1); cCnt++) {
                         let colSpan: number = (colField[cCnt] && colField[cCnt].colSpan) ? colField[cCnt].colSpan : 1;
                         let rowSpan: number = (colField[cCnt] && colField[cCnt].rowSpan) ? colField[cCnt].rowSpan : 1;
-                        let formattedText: string = colField[cCnt] ? (colField[cCnt].type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
-                            (colField[cCnt].type === 'sum' ? colField[cCnt].formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total') :
-                                colField[cCnt].formattedText)) : '';
+                        let formattedText: string = colField[cCnt] ?
+                            (colField[cCnt].type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
+                                (colField[cCnt].type === 'sum' ?
+                                    colField[cCnt].formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total') :
+                                    colField[cCnt].formattedText)) : '';
                         if (headerCnt === this.engine.headerContent.length - 1) {
                             columnModel[actualCnt] = {
                                 field: (cCnt + '.formattedText'),
                                 headerText: formattedText,
                                 customAttributes: { 'cell': colField[cCnt] },
-                                width: colField[cCnt] ?
-                                    this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
+                                /* tslint:disable-next-line */
+                                width: colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
                                 minWidth: 30,
-                                format: cCnt === 0 ? '' : this.formatList[(cCnt - 1) % this.parent.dataSource.values.length],
+                                format: cCnt === 0 ? '' : this.formatList[(cCnt - 1) % this.parent.dataSourceSettings.values.length],
                                 allowReordering: this.parent.gridSettings.allowReordering,
                                 allowResizing: this.parent.gridSettings.allowResizing,
                                 visible: true
@@ -1040,8 +1135,8 @@ export class Render {
                                     columnModel[actualCnt] = {
                                         headerText: formattedText,
                                         customAttributes: { 'cell': colField[cCnt] },
-                                        width: colField[cCnt] ?
-                                            this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
+                                        /* tslint:disable-next-line */
+                                        width: colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
                                         minWidth: 30,
                                         allowReordering: this.parent.gridSettings.allowReordering,
                                         allowResizing: this.parent.gridSettings.allowResizing,
@@ -1077,6 +1172,10 @@ export class Render {
         } else {
             integrateModel = this.frameEmptyColumns();
         }
+        if (integrateModel.length > 1) {
+            integrateModel[integrateModel.length - 1].minWidth = integrateModel[integrateModel.length - 1].width;
+            integrateModel[integrateModel.length - 1].width = 'auto';
+        }
         this.parent.triggerColumnRenderEvent(integrateModel);
         return integrateModel;
     }
@@ -1092,6 +1191,7 @@ export class Render {
         let columns: ColumnModel[] = [];
         let colWidth: number = this.calculateColWidth(2);
         columns.push({ field: '0.formattedText', headerText: '', minWidth: 30, width: this.resColWidth });
+        /* tslint:disable-next-line */
         columns.push({ field: '1.formattedText', headerText: this.parent.localeObj.getConstant('grandTotal'), minWidth: 30, width: colWidth });
         return columns;
     }
@@ -1099,12 +1199,12 @@ export class Render {
     /** @hidden */
     public getFormatList(): string[] {
         let formatArray: string[] = [];
-        for (let vCnt: number = 0; vCnt < this.parent.dataSource.values.length; vCnt++) {
-            let field: IFieldOptions = this.parent.dataSource.values[vCnt];
-            if (this.parent.dataSource.formatSettings.length > 0) {
+        for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
+            let field: IFieldOptions = this.parent.dataSourceSettings.values[vCnt];
+            if (this.parent.dataSourceSettings.formatSettings.length > 0) {
                 let format: string = '';
-                for (let fCnt: number = 0; fCnt < this.parent.dataSource.formatSettings.length; fCnt++) {
-                    let formatSettings: IFormatSettings = this.parent.dataSource.formatSettings[fCnt];
+                for (let fCnt: number = 0; fCnt < this.parent.dataSourceSettings.formatSettings.length; fCnt++) {
+                    let formatSettings: IFormatSettings = this.parent.dataSourceSettings.formatSettings[fCnt];
                     if (field.name === formatSettings.name) {
                         format = formatSettings.format;
                         break;
@@ -1137,6 +1237,7 @@ export class Render {
             this.lastSpan = isValueCell ? this.lastSpan : level;
         } else {
             this.colPos++;
+            /* tslint:disable-next-line */
             args.value = (<any>args.data)[this.colPos].value || (<any>args.data)[this.colPos].formattedText;
         }
         args = this.exportContentEvent(args);
@@ -1176,6 +1277,7 @@ export class Render {
 
     private unWireEvents(cell: HTMLElement): void {
         if (cell.querySelector('.e-hyperlinkcell')) {
+            /* tslint:disable-next-line */
             EventHandler.remove(cell.querySelector('.e-hyperlinkcell'), this.parent.isAdaptive ? 'touchend' : 'click', this.onHyperCellClick);
         } else {
             return;
@@ -1184,6 +1286,7 @@ export class Render {
 
     private wireEvents(cell: HTMLElement): void {
         if (cell.querySelector('.e-hyperlinkcell')) {
+            /* tslint:disable-next-line */
             EventHandler.add(cell.querySelector('.e-hyperlinkcell'), this.parent.isAdaptive ? 'touchend' : 'click', this.onHyperCellClick, this);
         } else {
             return;

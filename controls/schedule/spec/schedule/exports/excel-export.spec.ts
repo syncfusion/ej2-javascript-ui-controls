@@ -1,13 +1,11 @@
 /**
  * Excel export spec
  */
-import { EmitType } from '@syncfusion/ej2-base';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth,
     MonthAgenda, ScheduleModel, ExcelExport, ExportOptions
 } from '../../../src/schedule/index';
 import { createSchedule, destroy } from '../util.spec';
-import { timezoneData } from '../base/datasource.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, ExcelExport);
@@ -27,34 +25,27 @@ describe('excel export', () => {
     describe('Exports properties check', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            let events: Object[] = [
-                {
-                    Id: 1,
-                    Subject: 'Meteor Showers in 2018',
-                    StartTime: new Date(2018, 1, 14, 13, 0),
-                    EndTime: new Date(2018, 1, 14, 14, 30),
-                    CategoryColor: '#ea7a57'
-                }, {
-                    Id: 2,
-                    Subject: 'Milky Way as Melting pot',
-                    StartTime: new Date(2018, 1, 15, 12, 0),
-                    EndTime: new Date(2018, 1, 15, 14, 0),
-                    CategoryColor: '#00bdae'
-                }, {
-                    Id: 3,
-                    Subject: 'Mysteries of Bermuda Triangle',
-                    StartTime: new Date(2018, 1, 15, 9, 30),
-                    EndTime: new Date(2018, 1, 15, 11, 0),
-                    CategoryColor: '#f57f17'
-                }
-            ];
-            let dataBound: EmitType<Object> = () => { done(); };
-            let options: ScheduleModel = {
-                eventSettings: { dataSource: events },
-                selectedDate: new Date(2018, 1, 15), dataBound: dataBound
-            };
-
-            schObj = createSchedule(options, timezoneData, done);
+            let events: Object[] = [{
+                Id: 1,
+                Subject: 'Meteor Showers in 2018',
+                StartTime: new Date(2018, 1, 14, 13, 0),
+                EndTime: new Date(2018, 1, 14, 14, 30),
+                CategoryColor: '#ea7a57'
+            }, {
+                Id: 2,
+                Subject: 'Milky Way as Melting pot',
+                StartTime: new Date(2018, 1, 15, 12, 0),
+                EndTime: new Date(2018, 1, 15, 14, 0),
+                CategoryColor: '#00bdae'
+            }, {
+                Id: 3,
+                Subject: 'Mysteries of Bermuda Triangle',
+                StartTime: new Date(2018, 1, 15, 9, 30),
+                EndTime: new Date(2018, 1, 15, 11, 0),
+                CategoryColor: '#f57f17'
+            }];
+            let options: ScheduleModel = { selectedDate: new Date(2018, 1, 15) };
+            schObj = createSchedule(options, events, done);
         });
         afterAll(() => {
             destroy(schObj);
@@ -66,13 +57,13 @@ describe('excel export', () => {
         });
 
         it('export check with filename', (done: Function) => {
-            let exportValues: ExportOptions = { fileName: "hello" };
+            let exportValues: ExportOptions = { fileName: 'hello' };
             schObj.exportToExcel(exportValues);
             setTimeout(() => done(), 50);
         });
 
         it('export check with fields', (done: Function) => {
-            let exportValues: ExportOptions = { fields: ["Id", "Subject", "Location"] };
+            let exportValues: ExportOptions = { fields: ['Id', 'Subject', 'Location'] };
             schObj.exportToExcel(exportValues);
             setTimeout(() => done(), 50);
         });
@@ -135,16 +126,18 @@ describe('excel export', () => {
         });
 
         it('Excel schedule Check style', () => {
+            // tslint:disable:no-any
             (<any>schObj.excelExportModule).theme = {
                 header: { bold: false, fontSize: 15 },
                 caption: { bold: true, fontSize: 10 },
-                record: { fontName: "TimesRoman", fontColor: "#FFFFFF", fontSize: 12 }
-            }
+                record: { fontName: 'TimesRoman', fontColor: '#FFFFFF', fontSize: 12 }
+            };
             let style: any = (<any>schObj.excelExportModule).theme;
             expect(style.caption.bold).toBeTruthy();
             expect(style.caption.fontSize).toBe(10);
-            expect(style.record.fontName).toBe("TimesRoman");
-            expect(style.record.fontColor).toBe("#FFFFFF");
+            expect(style.record.fontName).toBe('TimesRoman');
+            expect(style.record.fontColor).toBe('#FFFFFF');
+            // tslint:enable:no-any
         });
     });
 

@@ -6,7 +6,7 @@ import { Property, extend, ChildProperty, Collection, isNullOrUndefined } from '
 export interface PaletteSettingsModel {
 
     /**
-     * Specifies the color collection for heat map cell. 
+     * Specifies the color collection for heat map cell.
      * @default ''
      */
     palette?: PaletteCollectionModel[];

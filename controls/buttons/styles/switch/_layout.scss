@@ -216,6 +216,158 @@
   }
 }
 
+  &.e-small .e-switch-wrapper,
+  &.e-small.e-switch-wrapper,
+  &.e-small .e-css.e-switch-wrapper,
+  &.e-small.e-css.e-switch-wrapper {
+    height: $switch-small-wrapper-height;
+    width: $switch-small-wrapper-width;
+
+    & .e-switch-handle {
+      height: $switch-small-handle-height;
+      width: $switch-small-handle-width;
+    }
+
+    & .e-ripple-container {
+      border-radius: 50%;
+      height: $switch-small-ripple-height;
+      left: $switch-small-ripple-left;
+      pointer-events: none;
+      position: absolute;
+      top: $switch-small-ripple-top;
+      width: $switch-small-ripple-width;
+      z-index: 1;
+    }
+
+    & .e-switch-handle.e-switch-active {
+      left: $switch-small-handle-active-left;
+      margin-left: $switch-small-handle-margin-left;
+    }
+
+    & .e-switch-on,
+    & .e-switch-off {
+      font-size: $switch-small-font-size;
+    }
+
+    & .e-switch-on {
+      text-indent: $switch-small-on-text-indent;
+    }
+
+    & .e-switch-off {
+      text-indent: $switch-small-off-text-indent;
+    }
+
+    &.e-rtl {
+      & .e-switch-handle {
+        left: $switch-small-handle-active-left;
+        margin-left: $switch-small-handle-margin-left;
+      }
+
+      & .e-switch-handle {
+        height: $switch-small-handle-height;
+        width: $switch-small-handle-width;
+      }
+
+      & .e-switch-on {
+        left: $switch-small-on-rtl;
+        opacity: $switch-active-on-opacity;
+      }
+
+      & .e-switch-off {
+        left: $switch-small-off-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-small-on-position-left-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-small-off-position-left-rtl;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-small-handle-active-left-rtl;
+       }
+    }
+}
+
+  &.e-bigger.e-small .e-switch-wrapper,
+  &.e-bigger.e-small.e-switch-wrapper,
+  &.e-bigger.e-small .e-css.e-switch-wrapper,
+  &.e-bigger.e-small.e-css.e-switch-wrapper {
+    height: $switch-bigger-small-wrapper-height;
+    width: $switch-bigger-small-wrapper-width;
+
+    & .e-switch-handle {
+      height: $switch-bigger-small-handle-height;
+      left: $switch-bigger-small-handle-left;
+      top: $switch-bigger-small-handle-to;
+      width: $switch-bigger-small-handle-width;
+    }
+
+    & .e-ripple-container {
+      border-radius: 50%;
+      height: $switch-bigger-small-ripple-height;
+      left: $switch-bigger-small-ripple-left;
+      pointer-events: none;
+      position: absolute;
+      top: $switch-bigger-small-ripple-top;
+      width: $switch-bigger-small-ripple-width;
+      z-index: 1;
+    }
+
+    & .e-switch-handle.e-switch-active {
+      left: $switch-bigger-small-handle-active-left;
+      margin-left: $switch-bigger-small-handle-margin-left;
+    }
+
+    & .e-switch-on,
+    & .e-switch-off {
+      font-size: $switch-bigger-small-font-size;
+    }
+
+    & .e-switch-on {
+      text-indent: $switch-bigger-small-on-text-indent;
+    }
+
+    & .e-switch-off {
+      text-indent: $switch-bigger-small-off-text-indent;
+    }
+
+    &.e-rtl {
+      & .e-switch-handle {
+        left: $switch-bigger-small-handle-active-left;
+        margin-left: $switch-bigger-small-handle-margin-left;
+        }
+
+      & .e-switch-handle {
+        height: $switch-bigger-small-handle-height;
+        width: $switch-bigger-small-handle-width;
+        }
+
+      & .e-switch-on {
+        left: $switch-bigger-small-on-rtl;
+        opacity: $switch-active-on-opacity;
+       }
+
+      & .e-switch-off {
+        left: $switch-bigger-small-off-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-on {
+        left: $switch-bigger-small-on-position-left-rtl;
+      }
+
+      & .e-switch-inner.e-switch-active .e-switch-off {
+        left: $switch-bigger-small-off-position-left-rtl;
+      }
+
+      & .e-switch-handle.e-switch-active {
+        left: $switch-bigger-small-handle-active-left-rtl;
+        }
+      }
+    }
+
   &.e-bigger .e-switch-wrapper,
   &.e-bigger.e-switch-wrapper,
   &.e-bigger .e-css.e-switch-wrapper,

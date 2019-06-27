@@ -14,7 +14,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
   public columns: PredicateModel[];
 
   /**
-   * Defines filter type of Gantt
+   * Defines filter type of Gantt.
    * * `Menu` - Enables menu filters in Grid.
    * @hidden
    */

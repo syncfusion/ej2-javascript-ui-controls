@@ -55,42 +55,49 @@ export interface DropDownButtonModel extends ComponentModel{
     /**
      * Triggers while rendering each Popup item of DropDownButton.
      * @event
+     * @blazorProperty 'OnItemRender'
      */
     beforeItemRender?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the DropDownButton popup.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers before closing the DropDownButton popup.
      * @event
+     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers while closing the DropDownButton popup.
      * @event
+     * @blazorProperty 'Closed'
      */
     close?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while opening the DropDownButton popup.
      * @event
+     * @blazorProperty 'Opened'
      */
     open?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while selecting action item in DropDownButton popup.
      * @event
+     * @blazorProperty 'ItemSelected'
      */
     select?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

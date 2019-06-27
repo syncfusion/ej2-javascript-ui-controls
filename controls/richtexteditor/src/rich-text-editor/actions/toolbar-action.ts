@@ -40,7 +40,9 @@ export class ToolbarAction {
         this.parent.notify(events.selectionRestore, {});
         if (!(document.body.contains(document.body.querySelector('.e-rte-quick-toolbar'))
             && e.item && (e.item.command === 'Images' || e.item.command === 'Display' || e.item.command as string === 'Table'))) {
-            this.parent.formatter.process(this.parent, e, e.originalEvent, null);
+            let value: string = e.item.controlParent && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar
+                && this.parent.quickToolbarModule.tableQTBar.element.contains(e.item.controlParent.element) ? 'Table' : null;
+            this.parent.formatter.process(this.parent, e, e.originalEvent, value);
         }
         this.parent.notify(events.selectionSave, {});
     }

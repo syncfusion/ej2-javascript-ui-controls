@@ -224,6 +224,75 @@ export interface MarginModel {
 }
 
 /**
+ * Interface for a class MarkerClusterSettings
+ */
+export interface MarkerClusterSettingsModel {
+
+    /**
+     * Toggle the Clustering visibility.
+     * @default false
+     */
+    allowClustering?: boolean;
+
+    /**
+     * Options for customizing the color and width of the Clustering.
+     */
+    border?: BorderModel;
+
+    /**
+     * To customize the fill color of the Clustering.
+     * @default '#D2691E'
+     */
+    fill?: string;
+
+    /**
+     * To customize the opacity of the Clustering.
+     * @default 1
+     */
+    opacity?: number;
+
+    /**
+     * To customize the Clustering of the marker.
+     * @default Rectangle
+     */
+    shape?: MarkerType;
+
+    /**
+     * Customize the legend width of the maps.
+     * @default 12
+     */
+    width?: number;
+
+    /**
+     * Customize the legend height of the maps.
+     * @default 12
+     */
+    height?: number;
+
+    /**
+     * To move the marker by setting offset values
+     */
+    offset?: Point;
+
+    /**
+     * To provide the image url for rendering marker image
+     */
+    imageUrl?: string;
+
+    /**
+     * dashArray
+     *  @default ''
+     */
+    dashArray?: string;
+
+    /**
+     * cluster style
+     */
+    labelStyle?: FontModel;
+
+}
+
+/**
  * Interface for a class ColorMappingSettings
  */
 export interface ColorMappingSettingsModel {
@@ -427,6 +496,7 @@ export interface BubbleSettingsModel {
 
     /**
      * Specifies the data source for bubble.
+     * @isdatamanager false
      * @default []
      */
     dataSource?: object[];
@@ -1037,6 +1107,7 @@ export interface MarkerBaseModel {
 
     /**
      * To configure the dataSource of the marker.
+     * @isdatamanager false
      * @default []
      */
     dataSource?: Object[];
@@ -1102,6 +1173,7 @@ export interface LayerSettingsModel {
 
     /**
      * Specifies the data source for the layer.
+     * @isdatamanager false
      * @default []
      */
     dataSource?: object[] | DataManager | MapAjax;
@@ -1170,6 +1242,11 @@ export interface LayerSettingsModel {
      * To configure the marker settings.
      */
     markerSettings?: MarkerSettingsModel[];
+
+    /**
+     * To configure the cluster settings.
+     */
+    markerClusterSettings?: MarkerClusterSettingsModel;
 
     /**
      * To configure the datalabel settings of the maps.

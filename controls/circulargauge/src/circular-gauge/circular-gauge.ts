@@ -181,6 +181,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after gauge loaded.
      * @event
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -188,6 +189,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before gauge load.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -195,6 +198,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after animation gets completed for pointers.
      * @event
+     * @blazorProperty 'AnimationCompleted'
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -202,6 +206,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before each axis label gets rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'AxisLabelRendering'
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
@@ -209,6 +215,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before the radius gets rendered
      * @event
+     * @deprecated
+     * @blazorProperty 'OnRadiusCalculate'
      */
     @Event()
     public radiusCalculate: EmitType<IRadiusCalculateEventArgs>;
@@ -217,6 +225,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before each annotation gets rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'AnnotationRendering'
      */
     @Event()
     public annotationRender: EmitType<IAnnotationRenderEventArgs>;
@@ -224,6 +234,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before the tooltip for pointer gets rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'TooltipRendering'
      */
 
     @Event()
@@ -232,6 +244,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before the pointer is dragged.
      * @event
+     * @blazorProperty 'OnDragStart'
      */
 
     @Event()
@@ -240,6 +253,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers while dragging the pointers.
      * @event
+     * @blazorProperty 'OnDragMove'
      */
 
     @Event()
@@ -248,6 +262,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after the pointer is dragged.
      * @event
+     * @blazorProperty 'OnDragEnd'
      */
 
     @Event()
@@ -256,6 +271,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers on hovering the circular gauge.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnGaugeMouseMove'
      */
 
     @Event()
@@ -265,6 +282,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers while cursor leaves the circular gauge.
      * @event
+     * @blazorProperty 'OnGaugeMouseLeave'
      */
 
     @Event()
@@ -273,6 +291,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers on mouse down.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnGaugeMouseDown'
      */
 
     @Event()
@@ -281,6 +301,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers on mouse up.
      * @event
+     * @blazorProperty 'OnGaugeMouseUp'
      */
 
     @Event()
@@ -289,6 +310,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after window resize.
      * @event
+     * @blazorProperty 'Resizing'
      */
 
     @Event()
@@ -409,23 +431,24 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public mouseMove(e: PointerEvent): boolean {
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger(gaugeMouseMove, args);
-        let dragArgs: IPointerDragEventArgs;
-        let tooltip: GaugeTooltip = this.tooltipModule;
-        if (!args.cancel) {
-            if (this.enablePointerDrag && this.activePointer) {
-                dragArgs = {
-                    axis: this.activeAxis,
-                    pointer: this.activePointer,
-                    previousValue: this.activePointer.currentValue,
-                    name: dragMove,
-                    currentValue: null
-                };
-                this.pointerDrag(new GaugeLocation(args.x, args.y));
-                dragArgs.currentValue = this.activePointer.currentValue;
-                this.trigger(dragMove, dragArgs);
+        this.trigger('gaugeMouseMove', args, (observedArgs: IMouseEventArgs) => {
+            let dragArgs: IPointerDragEventArgs;
+            let tooltip: GaugeTooltip = this.tooltipModule;
+            if (!args.cancel) {
+                if (this.enablePointerDrag && this.activePointer) {
+                    dragArgs = {
+                        axis: this.activeAxis,
+                        pointer: this.activePointer,
+                        previousValue: this.activePointer.currentValue,
+                        name: dragMove,
+                        currentValue: null
+                    };
+                    this.pointerDrag(new GaugeLocation(args.x, args.y));
+                    dragArgs.currentValue = this.activePointer.currentValue;
+                    this.trigger(dragMove, dragArgs);
+                }
             }
-        }
+        });
         this.notify(Browser.touchMoveEvent, e);
         return false;
     }
@@ -484,8 +507,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public gaugeOnMouseDown(e: PointerEvent): boolean {
         let currentPointer: IVisiblePointer;
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger(gaugeMouseDown, args);
-        if (!args.cancel && args.target.id.indexOf('_Pointer_') >= 0 &&
+        this.trigger('gaugeMouseDown', args, (observedArgs: IMouseEventArgs) => {
+            if (!args.cancel && args.target.id.indexOf('_Pointer_') >= 0 &&
             args.target.id.indexOf(this.element.id + '_Axis_') >= 0) {
             currentPointer = getPointer(args.target.id, this);
             this.activeAxis = <Axis>this.axes[currentPointer.axisIndex];
@@ -501,6 +524,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             } as IPointerDragEventArgs);
             this.svgObject.setAttribute('cursor', 'pointer');
         }
+        });
         return false;
     }
 

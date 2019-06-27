@@ -17,6 +17,8 @@ export type CalendarView = 'Month' | 'Year' | 'Decade';
 
 export type CalendarType = 'Islamic' | 'Gregorian';
 
+export type DayHeaderFormats = 'Short' | 'Narrow' | 'Abbreviated' | 'Wide';
+
 //class constant defination.
 const OTHERMONTH: string = 'e-other-month';
 const OTHERDECADE: string = 'e-other-year';
@@ -52,6 +54,7 @@ const BTN: string = 'e-btn';
 const FLAT: string = 'e-flat';
 const CSS: string = 'e-css';
 const PRIMARY: string = 'e-primary';
+const DAYHEADERLONG: string = 'e-calendar-day-header-lg';
 const dayMilliSeconds: number = 86400000;
 const minutesMilliSeconds: number = 60000;
 
@@ -214,6 +217,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(true)
     public showTodayButton: boolean;
+    /**
+     * Specifies the format of the day that to be displayed in header. By default, the format is ‘short’.
+     * Possible formats are:
+     * * `Short` - Sets the short format of day name (like Su ) in day header.
+     * * `Narrow` - Sets the single character of day name (like S ) in day header.
+     * * `Abbreviated` - Sets the min format of day name (like Sun ) in day header.
+     * * `Wide` - Sets the long format of day name (like Sunday ) in day header.
+     * @default Short
+     */
+    @Property('Short')
+    public dayHeaderFormat: DayHeaderFormats;
     /** 
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
@@ -223,13 +237,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     public enablePersistence: boolean;
     /** 
      * Triggers when Calendar is created.
-     * @event 
+     * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when Calendar is destroyed.
-     * @event 
+     * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -237,12 +253,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Triggers when the Calendar is navigated to another level or within the same level of view.
      * @event
+     * @blazorProperty 'Navigated'
      */
     @Event()
     public navigated: EmitType<NavigatedEventArgs>;
     /**     
      * Triggers when each day cell of the Calendar is rendered.
      * @event
+     * @blazorProperty 'OnRenderDayCell'
      */
     @Event()
     public renderDayCell: EmitType<RenderDayCellEventArgs>;
@@ -398,6 +416,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             this.calendarElement.appendChild(this.headerElement);
         }
+        this.adjustLongHeaderSize();
     }
     protected createContent(): void {
         this.contentElement = this.createElement('div', { className: CONTENT });
@@ -418,8 +437,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected getCultureValues(): string[] {
         let culShortNames: string[] = [];
         let cldrObj: string[];
+        let dayFormat: string = 'days.stand-alone.' + this.dayHeaderFormat.toLowerCase();
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = <string[]>(getValue('days.stand-alone.short', getDefaultDateObject()));
+            cldrObj = <string[]>(getValue(dayFormat, getDefaultDateObject()));
         } else {
             cldrObj = <string[]>(this.getCultureObjects(cldrData, '' + this.locale));
         }
@@ -1226,6 +1246,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                         }
                     }
                     break;
+                case 'dayHeaderFormat':
+                    this.getCultureValues();
+                    this.createContentHeader();
+                    this.adjustLongHeaderSize();
+                    break;
                 case 'min':
                 case 'max':
                     this.rangeValidation(this.min, this.max);
@@ -1315,9 +1340,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     protected setValueUpdate(): void {
-        detach(this.tableBodyElement);
-        this.setProperties({ start: this.currentView() }, true);
-        this.createContentBody();
+        if (!isNullOrUndefined(this.tableBodyElement)) {
+            detach(this.tableBodyElement);
+            this.setProperties({ start: this.currentView() }, true);
+            this.createContentBody();
+        }
     }
     protected copyValues(values: Date[]): Date[] {
         let copyValues: Date[] = [];
@@ -1530,10 +1557,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             && date.getMonth() === (value).getMonth() && date.getFullYear() === (value).getFullYear());
     }
     protected getCultureObjects(ld: Object, c: string): Object {
+
+        let gregorianFormat: string = '.dates.calendars.gregorian.days.format.' + this.dayHeaderFormat.toLowerCase();
+        let islamicFormat: string = '.dates.calendars.islamic.days.format.' + this.dayHeaderFormat.toLowerCase();
         if (this.calendarMode === 'Gregorian') {
-            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.short', ld);
+            return getValue('main.' + '' + this.locale + gregorianFormat, ld);
         } else {
-            return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.days.format.short', ld);
+            return getValue('main.' + '' + this.locale + islamicFormat, ld);
         }
     };
     protected getWeek(d: Date): number {
@@ -1584,6 +1614,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let value: number = date.valueOf() - date.valueOf() % 1000;
         return new Date(value);
         //return this.globalize.parseDate(dateString, dateFormatOptions);
+    }
+    protected adjustLongHeaderSize(): void {
+        removeClass([this.element], DAYHEADERLONG);
+        if (this.dayHeaderFormat === 'Wide') {
+            addClass([this.getModuleName() === 'calendar' ? this.element : this.calendarElement], DAYHEADERLONG);
+        }
     }
     protected selectDate(e: MouseEvent | KeyboardEventArgs, date: Date, node: Element, multiSelection?: boolean, values?: Date[]): void {
         let element: Element = node || <Element>e.currentTarget;
@@ -1896,7 +1932,8 @@ export class Calendar extends CalendarBase {
 
     /**
      * Triggers when the Calendar value is changed.
-     * @event  
+     * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangedEventArgs>;

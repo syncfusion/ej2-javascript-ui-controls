@@ -240,8 +240,14 @@ export class DOMNode {
         let end: Element = this.parent.querySelector('.' + markerClassName.endSelection);
         let startTextNode: Element;
         let endTextNode: Element;
-        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab') {
-            start.innerHTML = '&#65279;&#65279;';
+        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab' &&
+        (!isNullOrUndefined(start.parentElement) && start.parentElement.tagName !== 'LI' &&
+        this.parent.textContent !== '')) {
+            if (start.childNodes.length === 1 && start.childNodes[0].nodeName === 'BR') {
+                start.innerHTML = '&#65279;&#65279;<br>';
+            } else {
+                start.innerHTML = '&#65279;&#65279;';
+            }
         }
         if (this.hasClass(start, markerClassName.startSelection) && start.classList.length > 1) {
             let replace: string = this.createTagString(CONSTANT.DEFAULT_TAG, start, this.encode(start.textContent));
@@ -319,18 +325,26 @@ export class DOMNode {
                 let markerEnd: Element = (range.endContainer as HTMLElement).querySelector('.' + markerClassName.endSelection);
                 markerEnd.appendChild(end);
             } else {
-                this.replaceWith(end, this.marker(markerClassName.endSelection, this.encode(end.textContent)));
+                this.ensureSelfClosingTag(end, markerClassName.endSelection, range);
             }
         } else {
-            if (start.nodeType === 3) {
-                this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
-            } else {
-                for (let i: number = 0; i < selfClosingTags.length; i++) {
-                    start = start.tagName === selfClosingTags[i] ? start.parentNode as Element : start;
-                }
-                let marker: string = this.marker(markerClassName.startSelection, '');
-                append([this.parseHTMLFragment(marker)], start);
+            this.ensureSelfClosingTag(start, markerClassName.startSelection, range);
+        }
+    }
+
+    public ensureSelfClosingTag(start: Element, className: string, range: Range): void {
+        if (start.nodeType === 3) {
+            this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
+        } else if (start.tagName === 'BR') {
+            this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
+            let markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
+            markerStart.appendChild(start);
+        } else {
+            for (let i: number = 0; i < selfClosingTags.length; i++) {
+                start = start.tagName === selfClosingTags[i] ? start.parentNode as Element : start;
             }
+            let marker: string = this.marker(className, '');
+            append([this.parseHTMLFragment(marker)], start);
         }
     }
 
@@ -359,6 +373,13 @@ export class DOMNode {
         }
         return element;
     }
+    public getImageTagInSelection(): NodeListOf<HTMLImageElement> {
+        let selection: Selection = this.getSelection();
+        if (this.isEditorArea() && selection.rangeCount) {
+            return (selection.focusNode as HTMLElement).querySelectorAll('img');
+        }
+        return null;
+    }
     public blockNodes(): Node[] {
         let collectionNodes: Element[] = [];
         let selection: Selection = this.getSelection();
@@ -381,7 +402,11 @@ export class DOMNode {
                         let tempNode: Element = startNode.previousSibling &&
                             (startNode.previousSibling as Element).nodeType === Node.TEXT_NODE ?
                             startNode.previousSibling as Element : startNode;
-                        collectionNodes.push(this.createTempNode(tempNode));
+                        if (!startNode.nextSibling && !startNode.previousSibling && startNode.tagName === 'BR') {
+                            collectionNodes.push(tempNode);
+                        } else {
+                            collectionNodes.push(this.createTempNode(tempNode));
+                        }
                     } else {
                         collectionNodes.push(parentNode);
                     }

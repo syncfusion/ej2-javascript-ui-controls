@@ -17,7 +17,7 @@ import { PivotView } from '../../pivotview';
 
 export interface LoadEventArgs {
     /** Defines current dataSource */
-    dataSource?: IDataOptions;
+    dataSourceSettings?: IDataOptions;
     pivotview?: PivotView;
     fieldsType?: IStringIndex;
 }
@@ -69,12 +69,12 @@ export interface ToolbarArgs {
 
 export interface EnginePopulatingEventArgs {
     /** Defines current dataSource */
-    dataSource?: IDataOptions;
+    dataSourceSettings?: IDataOptions;
 }
 
 export interface EnginePopulatedEventArgs {
     /** Defines populated pivotvalues */
-    dataSource?: IDataOptions;
+    dataSourceSettings?: IDataOptions;
     pivotFieldList?: IFieldListOptions;
     pivotValues?: IPivotValues;
 }
@@ -83,7 +83,7 @@ export interface FieldDroppedEventArgs {
     /** Defines dropped field item */
     droppedField?: IFieldOptions;
     /** Defines current dataSource */
-    dataSource?: IDataOptions;
+    dataSourceSettings?: IDataOptions;
     /** Defines dropped axis */
     droppedAxis?: string;
 }
@@ -188,7 +188,7 @@ export interface PivotColumn {
 
 export interface ColumnRenderEventArgs {
     columns: PivotColumn[];
-    dataSource: IDataOptions;
+    dataSourceSettings: IDataOptions;
 }
 
 export interface BeginDrillThroughEventArgs {
@@ -267,7 +267,7 @@ export interface SelectionSettings {
  */
 export interface CommonArgs {
     pivotEngine: PivotEngine;
-    dataSource: IDataOptions;
+    dataSourceSettings: IDataOptions;
     element: HTMLElement;
     id: string;
     moduleName: string;
@@ -368,7 +368,16 @@ export interface RowHeaderPositionGrouping {
  */
 export interface RowHeaderLevelGrouping {
     [key: string]: {
-        text: string, name: string, level: number, levelName: string, fieldName: string, span?: number
+        text: string,
+        name: string,
+        level: number,
+        hasChild: boolean,
+        isDrilled: boolean
+        levelName: string,
+        fieldName: string,
+        rowIndex: number,
+        colIndex: number,
+        span?: number,
     };
 }
 

@@ -13,8 +13,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 //335 or 315
 PivotView.Inject(FieldList, GroupingBar);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: true,
         enableSorting: true,
         allowValueFilter: true,

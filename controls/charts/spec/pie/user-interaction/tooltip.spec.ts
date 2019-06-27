@@ -300,6 +300,27 @@ describe('Tooltip checking for the pie series', () => {
         accumulation.series[0].innerRadius = '20%';
         accumulation.refresh();
     });
+    it('Checking tooltip when grouping separator is true', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            segement = getElement(sliceid + 0);
+            trigger.mousemoveEvent(segement, 0, 0, 200, 200);
+            let tooltip: HTMLElement = document.getElementById('ej2container_tooltip');
+            expect(tooltip !== null).toBe(true);
+            let group: HTMLElement = tooltip.childNodes[0].childNodes[0] as HTMLElement;
+            let text1: HTMLElement = group.childNodes[1] as HTMLElement;
+            expect(text1.textContent == '18,000').toBe(true);
+            done();
+        };
+        accumulation.series[0].dataSource = [{ x: 'Labour', y: 18000 }, { x: 'Legal', y: 8000, text: 'feb: 10000' },
+        { x: 'Production', y: 15000 }, { x: 'License', y: 11000, text: '70000' },
+        { x: 'Facilities', y: 18000 }, { x: 'Taxes', y: 14000 },
+        { x: 'Insurance', y: 16000 }];
+        accumulation.tooltip.template = null;
+        accumulation.tooltip.format = '${point.label}';
+        accumulation.useGroupingSeparator = true;
+        accumulation.series[0].dataLabel.visible = true;
+        accumulation.refresh();
+    });
 });
 it('memory leak', () => {
     profile.sample();

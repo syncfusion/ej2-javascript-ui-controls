@@ -12,8 +12,8 @@ enableRipple(true);
 //335 or 315
 PivotFieldList.Inject(CalculatedField);
 let fieldlist: PivotFieldList = new PivotFieldList({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: false,
         enableSorting: true,
         sortSettings: [{ name: 'company', order: 'Descending' }],

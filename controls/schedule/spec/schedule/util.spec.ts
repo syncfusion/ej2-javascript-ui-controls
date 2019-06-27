@@ -1,8 +1,10 @@
-import { Internationalization, EmitType, createElement, remove, extend, EventHandler, Ajax, loadCldr } from '@syncfusion/ej2-base';
-import { Dialog, Popup } from '@syncfusion/ej2-popups';
-import { ResourceDetails, TreeViewArgs, Schedule, ScheduleModel, EJ2Instance } from '../../src/schedule/index';
+import { Internationalization, createElement, remove, extend, EventHandler, Ajax, loadCldr } from '@syncfusion/ej2-base';
+import { Dialog, Popup, Tooltip } from '@syncfusion/ej2-popups';
+import { ResourceDetails, TreeViewArgs, Schedule, ScheduleModel, EJ2Instance, ActionEventArgs } from '../../src/schedule/index';
 import { cloneDataSource } from './base/datasource.spec';
 import * as cls from '../../src/schedule/base/css-constant';
+import { RecurrenceEditor, RecurrenceEditorModel } from '../../src/recurrence-editor/index';
+import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * schedule spec utils
@@ -35,34 +37,41 @@ export interface TemplateFunction extends Window {
     getResourceName?: Function;
 }
 
-export function createSchedule(options: ScheduleModel, dataSource: Object[], done: Function): Schedule {
-    let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-    let dataBound: EmitType<Object> = () => {
-        disableScheduleAnimation(scheduleObj);
-        done();
-    };
+export function createSchedule(options: ScheduleModel, data: Object[] | DataManager, done?: Function, element?: HTMLElement): Schedule {
+    element = element || createElement('div', { id: 'Schedule' });
+    document.body.appendChild(element);
     let defaultOptions: ScheduleModel = {
         height: 580,
-        dataBound: dataBound,
-        eventSettings: { dataSource: cloneDataSource(dataSource) }
+        eventSettings: { dataSource: data instanceof DataManager ? data : cloneDataSource(data) },
+        // tslint:disable-next-line:no-console
+        actionFailure: (args: ActionEventArgs) => console.log(args)
     };
-    options = extend(defaultOptions, options);
-    let scheduleObj: Schedule = new Schedule(options);
-    document.body.appendChild(elem);
-    scheduleObj.appendTo(elem);
+    if (done) {
+        defaultOptions.dataBound = () => {
+            disableScheduleAnimation(scheduleObj);
+            done();
+        };
+    }
+    let model: ScheduleModel = extend({}, defaultOptions, options, true);
+    let scheduleObj: Schedule = new Schedule(model, element);
     return scheduleObj;
+}
+
+export function createRecurrenceEditor(model?: RecurrenceEditorModel, element?: HTMLElement): RecurrenceEditor {
+    element = element || createElement('div', { id: 'RecurrenceEditor' });
+    document.body.appendChild(element);
+    let recurrenceObj: RecurrenceEditor = model ? new RecurrenceEditor(model) : new RecurrenceEditor();
+    recurrenceObj.appendTo(element);
+    return recurrenceObj;
 }
 
 export function createGroupSchedule(groupCount: number, options: ScheduleModel, dataSource: Object[], done: Function): Schedule {
     if (groupCount === 1) {
         let groupOptions: ScheduleModel = {
-            group: {
-                resources: ['Owners']
-            },
+            group: { resources: ['Owners'] },
             resources: [
                 {
-                    field: 'OwnerId', title: 'Owner',
-                    name: 'Owners', allowMultiple: true,
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
                     dataSource: [
                         { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
@@ -89,17 +98,14 @@ export function createGroupSchedule(groupCount: number, options: ScheduleModel, 
             },
             resources: [
                 {
-                    field: 'RoomId', title: 'Room',
-                    name: 'Rooms', allowMultiple: true,
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: true,
                     dataSource: [
                         { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
                         { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
                     ],
                     textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                },
-                {
-                    field: 'OwnerId', title: 'Owner',
-                    name: 'Owners', allowMultiple: true,
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
                     dataSource: [
                         { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                         { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
@@ -114,10 +120,10 @@ export function createGroupSchedule(groupCount: number, options: ScheduleModel, 
     return createSchedule(options, dataSource, done);
 }
 
-export function destroy(schedule: Schedule): void {
-    if (schedule) {
-        schedule.destroy();
-        remove(document.getElementById(schedule.element.id));
+export function destroy(instance: Schedule | RecurrenceEditor): void {
+    if (instance) {
+        instance.destroy();
+        remove(document.getElementById(instance.element.id));
     }
 }
 
@@ -167,16 +173,6 @@ export function triggerSwipeEvent(target: Element, x?: number, y?: number): void
     EventHandler.trigger(<HTMLElement>node, 'transitionend');
 }
 
-// export function triggerMouseEvent(node: HTMLElement, eventType: string, x?: number, y?: number) {
-//     let mouseEve: MouseEvent = new MouseEvent(eventType);
-//     if (x && y) {
-//         mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, false, false, false, false, 0, null);
-//     } else {
-//         mouseEve.initEvent(eventType, true, true);
-//     }
-//     node.dispatchEvent(mouseEve);
-// }
-
 export function triggerMouseEvent(
     node: HTMLElement, eventType: string, x: number = 0, y: number = 0, isShiftKey?: boolean, isCtrlKey?: boolean): void {
     let mouseEve: MouseEvent = new MouseEvent(eventType);
@@ -207,33 +203,33 @@ export function disableScheduleAnimation(schObj: Schedule): void {
     }
 }
 
-function disablePopupAnimation(popupObj: Popup): void {
+export function disablePopupAnimation(popupObj: Popup): void {
     popupObj.showAnimation = null;
     popupObj.hideAnimation = null;
     popupObj.dataBind();
 }
 
-function disableDialogAnimation(dialogObject: Dialog): void {
+export function disableDialogAnimation(dialogObject: Dialog): void {
     dialogObject.animationSettings = { effect: 'None' };
     dialogObject.dataBind();
     dialogObject.hide();
 }
 
+export function disableTooltipAnimation(tooltipObj: Tooltip): void {
+    tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'None' } };
+    tooltipObj.dataBind();
+}
+
 export function loadCultureFiles(name: string, base?: boolean): void {
-    let files: string[] = !base ?
-        ['ca-gregorian.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'] : ['numberingSystems.json'];
+    let files: string[] = base ? ['numberingSystems.json'] : ['ca-gregorian.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'];
     for (let prop of files) {
-        let val: Object;
         let ajax: Ajax;
         if (base) {
             ajax = new Ajax('base/spec/cldr-data/supplemental/' + prop, 'GET', false);
         } else {
             ajax = new Ajax('base/spec/cldr-data/main/' + name + '/' + prop, 'GET', false);
         }
-        ajax.onSuccess = (value: JSON) => {
-            val = value;
-        };
+        ajax.onSuccess = (value: Object) => loadCldr(JSON.parse(<string>value));
         ajax.send();
-        loadCldr(JSON.parse(<string>val));
     }
 }

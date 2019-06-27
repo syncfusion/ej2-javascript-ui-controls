@@ -53,4 +53,16 @@
       }
     }
   }
+
+  .e-small #{&}.e-timepicker.e-popup,
+  &.e-small#{&}.e-timepicker.e-popup,
+  .e-bigger.e-small #{&}.e-timepicker.e-popup,
+  &.e-bigger.e-small#{&}.e-timepicker.e-popup {
+
+    & .e-list-parent.e-ul {
+      & .e-list-item {
+        color: $timepicker-list-small-font-color;
+      }
+    }
+  }
 }

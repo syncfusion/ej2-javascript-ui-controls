@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization } from '@syncfusion/ej2-base';import { Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';import { DataManager } from '@syncfusion/ej2-data';import { Chart } from '../chart/index';import { RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series } from '../index';import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';import { Axis } from '../chart/index';import { Periods } from '../common/model/base';import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../chart/model/chart-interface';import { PeriodsModel } from '../common/model/base-model';import { ChartTheme } from '../chart/index';import { CrosshairSettings, CrosshairSettingsModel, TooltipSettings, TooltipSettingsModel } from '../chart/index';import { ZoomSettings, ZoomSettingsModel } from '../chart/index';import { calculateSize, getElement } from '../common/utils/helper';import { getRangeValueXByPoint } from '../range-navigator/index';import { PeriodSelector } from '../common/period-selector/period-selector';import { CartesianChart } from './renderer/cartesian-chart';import { RangeSelector } from './renderer/range-selector';import { ToolBarSelector } from './renderer/toolbar-selector';import { SelectionMode } from '../index';import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes, StockEventsSettings } from './model/base';import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder, IRangeChangeEventArgs } from './model/base';import { StockChartAnnotationSettings, IStockEventRenderArgs, } from './model/base';import { StockChartAnnotationSettingsModel } from './model/base-model';import { StockChartFont } from './model/base';import { StockSeriesModel, StockChartIndicatorModel, StockChartAxisModel, StockChartRowModel } from './model/base-model';import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel, StockEventsSettingsModel } from './model/base-model';import { StockChartBorderModel, StockMarginModel } from './model/base-model';import { ChartSeriesType, ExportType, TrendlineTypes, TechnicalIndicators } from '../index';import { textElement, titlePositionX, Alignment } from '../index';import { getThemeColor } from '../common/model/theme';import { StockEvents } from './renderer/stock-events';
+import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization } from '@syncfusion/ej2-base';import { Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';import { DataManager } from '@syncfusion/ej2-data';import { Chart } from '../chart/index';import { RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series } from '../index';import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';import { Axis } from '../chart/index';import { Periods } from '../common/model/base';import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs  } from '../chart/model/chart-interface';import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../chart/model/chart-interface';import { PeriodsModel } from '../common/model/base-model';import { ChartTheme } from '../chart/index';import { CrosshairSettings, CrosshairSettingsModel, TooltipSettings, TooltipSettingsModel } from '../chart/index';import { ZoomSettings, ZoomSettingsModel } from '../chart/index';import { calculateSize, getElement } from '../common/utils/helper';import { getRangeValueXByPoint } from '../range-navigator/index';import { PeriodSelector } from '../common/period-selector/period-selector';import { CartesianChart } from './renderer/cartesian-chart';import { RangeSelector } from './renderer/range-selector';import { ToolBarSelector } from './renderer/toolbar-selector';import { SelectionMode } from '../index';import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes, StockEventsSettings } from './model/base';import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder, IRangeChangeEventArgs } from './model/base';import { StockChartAnnotationSettings, IStockEventRenderArgs, } from './model/base';import { StockChartAnnotationSettingsModel } from './model/base-model';import { StockChartFont } from './model/base';import { StockSeriesModel, StockChartIndicatorModel, StockChartAxisModel, StockChartRowModel } from './model/base-model';import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel, StockEventsSettingsModel } from './model/base-model';import { StockChartBorderModel, StockMarginModel } from './model/base-model';import { ChartSeriesType, ExportType, TrendlineTypes, TechnicalIndicators } from '../index';import { textElement, titlePositionX, Alignment } from '../index';import { getThemeColor } from '../common/model/theme';import { StockEvents } from './renderer/stock-events';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -196,12 +196,14 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers before render the selector
      * @event
+     * @deprecated
      */
     selectorRender?: EmitType<IRangeSelectorRenderEventArgs>;
 
     /**
      * Triggers on hovering the stock chart.
      * @event
+     * @blazorProperty 'OnStockChartMouseMove'
      */
 
     stockChartMouseMove?: EmitType<IMouseEventArgs>;
@@ -209,6 +211,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers when cursor leaves the chart.
      * @event
+     * @blazorProperty 'OnStockChartMouseLeave'
      */
 
     stockChartMouseLeave?: EmitType<IMouseEventArgs>;
@@ -216,6 +219,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on mouse down.
      * @event
+     * @blazorProperty 'OnStockChartMouseDown'
      */
 
     stockChartMouseDown?: EmitType<IMouseEventArgs>;
@@ -223,6 +227,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on mouse up.
      * @event
+     * @blazorProperty 'OnStockChartMouseUp'
      */
 
     stockChartMouseUp?: EmitType<IMouseEventArgs>;
@@ -230,6 +235,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on clicking the stock chart.
      * @event
+     * @blazorProperty 'OnStockChartMouseClick'
      */
 
     stockChartMouseClick?: EmitType<IMouseEventArgs>;
@@ -237,6 +243,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on point click.
      * @event
+     * @blazorProperty 'OnPointClick'
      */
 
     pointClick?: EmitType<IPointEventArgs>;
@@ -244,6 +251,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers on point move.
      * @event
+     * @blazorProperty 'PointMoved'
      */
 
     pointMove?: EmitType<IPointEventArgs>;
@@ -270,30 +278,35 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers before the range navigator rendering
      * @event
+     * @deprecated
      */
     load?: EmitType<IStockChartEventArgs>;
 
     /**
      * Triggers after the range navigator rendering
      * @event
+     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<IStockChartEventArgs>;
 
     /**
      * Triggers if the range is changed
      * @event
+     * @blazorProperty 'RangeChange'
      */
     rangeChange?: EmitType<IRangeChangeEventArgs>;
 
     /**
      * Triggers before each axis label is rendered.
      * @event
+     * @deprecated
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
+     * @deprecated
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -301,6 +314,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers before the series is rendered.
      * @event
+     * @deprecated
      */
 
     seriesRender?: EmitType<ISeriesRenderEventArgs>;
@@ -308,6 +322,7 @@ export interface StockChartModel extends ComponentModel{
     /**
      * Triggers before the series is rendered.
      * @event
+     * @deprecated
      */
     stockEventRender?: EmitType<IStockEventRenderArgs>;
 

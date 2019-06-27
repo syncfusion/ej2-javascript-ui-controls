@@ -31,12 +31,15 @@ export class DayMarkers {
             switch (key) {
                 case 'eventMarkers':
                     this.eventMarkerRender.renderEventMarkers();
+                    this.updateHeight();
                     break;
                 case 'highlightWeekends':
                     this.nonworkingDayRender.renderWeekends();
+                    this.updateHeight();
                     break;
                 case 'holidays':
                     this.nonworkingDayRender.renderHolidays();
+                    this.updateHeight();
                     break;
             }
         }

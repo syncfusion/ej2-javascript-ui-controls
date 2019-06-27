@@ -25,7 +25,7 @@ describe('PivotView spec', () => {
         });
         describe('Check the Field List information', () => {
             let dataSource: IDataOptions = {
-                data: pivotDataset, rows: [{ name: 'Product' }],
+                dataSource: pivotDataset, rows: [{ name: 'Product' }],
                 columns: [{ name: 'Date' }], values: [{ name: 'Amount' }], filters: [{ name: 'State' }]
             };
             let pivotEngine: PivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
@@ -47,7 +47,7 @@ describe('PivotView spec', () => {
             let dataSource: IDataOptions = {
                 //filterSettings: [{ name: 'Date', type: 'exclude', items: ['FY 2006']}, {name: 'gender', type: 'include', items: ['Canada']}],
                 drilledMembers: [{ name: 'state', items: ['New Jercy'] }],
-                data: ds,
+                dataSource: ds,
                 rows: [{ name: 'company' }, { name: 'state' }],
                 columns: [{ name: 'name' }],
                 values: [{ name: 'balance' },
@@ -60,7 +60,7 @@ describe('PivotView spec', () => {
             });
             it('Ensure the initial biding with empty row', () => {
                 dataSource = {
-                    data: ds
+                    dataSource: ds
                 };
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
                 expect(pivotEngine.pivotValues.length).toBe(2);
@@ -71,7 +71,7 @@ describe('PivotView spec', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
                 sortSettings: [{ name: 'company', order: 'Descending' }],
-                data: ds,
+                dataSource: ds,
                 rows: [{ name: 'company' }, { name: 'state' }],
                 columns: [{ name: 'name' }],
                 values: [{ name: 'balance' },
@@ -93,7 +93,7 @@ describe('PivotView spec', () => {
                 filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
                 { name: 'company', type: 'Include', items: ['NIPAZ'] },
                 { name: 'gender', type: 'Include', items: ['male'] }],
-                data: ds,
+                dataSource: ds,
                 rows: [{ name: 'company' }, { name: 'state' }],
                 columns: [{ name: 'name' }],
                 values: [{ name: 'balance' },
@@ -130,7 +130,7 @@ describe('PivotView spec', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
                 expandAll: false,
-                data: ds,
+                dataSource: ds,
                 rows: [{ name: 'company' }, { name: 'state' }],
                 columns: [{ name: 'name' }, { name: 'gender' }],
                 values: [{ name: 'balance' },
@@ -161,7 +161,7 @@ describe('PivotView spec', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
                 expandAll: false,
-                data: ds,
+                dataSource: ds,
                 rows: [{ name: 'state' }],
                 columns: [{ name: 'product' }],
                 values: [{ name: 'balance' },
@@ -201,7 +201,7 @@ describe('PivotView spec', () => {
             let ds: IDataSet[] = excel_data as IDataSet[];
             let dataSource: IDataOptions = {
                 expandAll: false,
-                data: ds,
+                dataSource: ds,
                 emptyCellsTextContent: '*',
                 rows: [{ name: 'Product' }],
                 columns: [{ name: 'Date' }],
@@ -275,7 +275,7 @@ describe('PivotView spec', () => {
             it('% of Parent Total with multiple level in Column type', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }, { name: 'Qty 2' }, { name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'PercentageOfParentTotal' }],
                     columns: [],
@@ -288,7 +288,7 @@ describe('PivotView spec', () => {
             it('% of Parent Total with multiple level in row type', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'PercentageOfParentTotal' }, { name: 'Qty 2' }],
                     columns: [{ name: 'Product' }],
@@ -302,7 +302,7 @@ describe('PivotView spec', () => {
             it('% of Parent Total with multiple level(innner level selection) in Column type', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Qty 2' }, { name: 'Product' }, { name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'PercentageOfParentTotal', baseField: 'Product' }],
                     columns: [],
@@ -315,7 +315,7 @@ describe('PivotView spec', () => {
             it('Standard Deviation of population type', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }],
                     values: [{ name: 'Qty 1', type: 'PopulationStDev' }, { name: 'Qty 2' }],
                     columns: [{ name: 'Date' }],
@@ -352,7 +352,7 @@ describe('PivotView spec', () => {
             it('Running Totals with value(multiple level) in column type', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }, { name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'RunningTotals' }, { name: 'Qty 2' }],
                     columns: [],
@@ -365,7 +365,7 @@ describe('PivotView spec', () => {
             it('Running Totals with value(one level) in rows type', () => {
                 dataSource = {
                     expandAll: false,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }],
                     values: [{ name: 'Qty 1', type: 'RunningTotals' }, { name: 'Qty 2' }],
                     columns: [{ name: 'Date' }],
@@ -379,7 +379,7 @@ describe('PivotView spec', () => {
             it('Running Totals with value(multiple level) in row type', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }, { name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'RunningTotals' }, { name: 'Qty 2' }],
                     columns: [],
@@ -393,7 +393,7 @@ describe('PivotView spec', () => {
             it('Difference From with value(one level) in column type without using selected row member', () => {
                 dataSource = {
                     expandAll: false,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }],
                     values: [{ name: 'Qty 1', type: 'DifferenceFrom' }, { name: 'Qty 2' }],
                     columns: [{ name: 'Date' }],
@@ -428,7 +428,7 @@ describe('PivotView spec', () => {
             it('Difference From with value(mulitple level) in column type using selected row member', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }, { name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'DifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
                     columns: [],
@@ -447,7 +447,7 @@ describe('PivotView spec', () => {
             it('% Of Difference From with value(one level) in column type using selected row member', () => {
                 dataSource = {
                     expandAll: false,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }],
                     columns: [{ name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'PercentageOfDifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
@@ -466,7 +466,7 @@ describe('PivotView spec', () => {
             it('% Of Difference From with value(mulitple level) in column type using selected row member', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'Product' }, { name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'PercentageOfDifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
                     columns: [],
@@ -485,7 +485,7 @@ describe('PivotView spec', () => {
             it('Difference From with value(one level) in column type using selected column member', () => {
                 dataSource = {
                     expandAll: false,
-                    data: ds,
+                    dataSource: ds,
                     columns: [{ name: 'Product' }],
                     rows: [{ name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'DifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
@@ -504,7 +504,7 @@ describe('PivotView spec', () => {
             it('Difference From with value(mulitple level) in column type using selected column member', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     columns: [{ name: 'Product' }, { name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'DifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
                     rows: [],
@@ -523,7 +523,7 @@ describe('PivotView spec', () => {
             it('% Of Difference From with value(one level) in column type using selected column member', () => {
                 dataSource = {
                     expandAll: false,
-                    data: ds,
+                    dataSource: ds,
                     columns: [{ name: 'Product' }],
                     rows: [{ name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'PercentageOfDifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
@@ -542,7 +542,7 @@ describe('PivotView spec', () => {
             it('% Of Difference From with value(mulitple level) in column type using selected column member', () => {
                 dataSource = {
                     expandAll: true,
-                    data: ds,
+                    dataSource: ds,
                     columns: [{ name: 'Product' }, { name: 'Date' }],
                     values: [{ name: 'Qty 1', type: 'PercentageOfDifferenceFrom', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],
                     rows: [],
@@ -565,7 +565,7 @@ describe('PivotView spec', () => {
                 expandAll: false,
                 formatSettings: [{ format: 'P2', name: 'balance', useGrouping: true },
                 { name: 'quantity', skeleton: 'Ehms', type: 'date' }],
-                data: ds,
+                dataSource: ds,
                 rows: [{ name: 'state' }],
                 columns: [{ name: 'product' }],
                 values: [{ name: 'balance' }, { name: 'advance' },
@@ -590,7 +590,7 @@ describe('PivotView spec', () => {
                     expandAll: false,
                     formatSettings: [{ format: 'N2', name: 'balance' },
                     { format: '$ ###.00', name: 'advance' }],
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'state' }],
                     columns: [{ name: 'product' }],
                     values: [{ name: 'balance' }, { name: 'advance' },
@@ -613,7 +613,7 @@ describe('PivotView spec', () => {
                     formatSettings: [{ name: 'balance', skeleton: 'medium', type: 'date' },
                     { name: 'advance', skeleton: 'short', type: 'time' },
                     { name: 'quantity', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'state' }],
                     columns: [{ name: 'product' }],
                     values: [{ name: 'balance' }, { name: 'advance' },
@@ -641,7 +641,7 @@ describe('PivotView spec', () => {
                 expandAll: false,
                 formatSettings: [{ format: 'P2', name: 'balance', useGrouping: true },
                 { name: 'quantity', skeleton: 'Ehms', type: 'date' }],
-                data: ds,
+                dataSource: ds,
                 rows: [{ name: 'quantity' }],
                 columns: [{ name: 'product' }],
                 values: [{ name: 'balance' }, { name: 'advance' },
@@ -667,7 +667,7 @@ describe('PivotView spec', () => {
                     { name: 'quantity', skeleton: 'yMEd', type: 'date' },
                     { name: 'date', format: '\'year:\'y \'month:\' MM', type: 'date' }
                     ],
-                    data: ds,
+                    dataSource: ds,
                     rows: [{ name: 'quantity' }],
                     columns: [{ name: 'date' }],
                     values: [{ name: 'balance' }, { name: 'advance' },
@@ -694,7 +694,7 @@ describe('PivotView spec', () => {
                 filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
                 { name: 'company', type: 'Include', items: ['NIPAZ'] },
                 { name: 'gender', type: 'Include', items: ['male'] }],
-                data: ds,
+                dataSource: ds,
                 calculatedFieldSettings: [{ name: 'price', formula: '10+5' },
                 { name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }],
                 rows: [{ name: 'company' }, { name: 'state' }],
@@ -717,7 +717,7 @@ describe('PivotView spec', () => {
         describe('Paging', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
-                data: ds,
+                dataSource: ds,
                 rows: [{ name: 'company' }],
                 columns: [{ name: 'name' }],
                 values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -769,7 +769,7 @@ describe('PivotView spec', () => {
         describe('ValueSorting', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
-                data: pivot_dataset as IDataSet[],
+                dataSource: pivot_dataset as IDataSet[],
                 expandAll: false,
                 enableSorting: true,
                 sortSettings: [{ name: 'state', order: 'Descending' }],
@@ -816,7 +816,7 @@ describe('PivotView spec', () => {
         describe('Label Filtering', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
-                data: pivot_dataset as IDataSet[],
+                dataSource: pivot_dataset as IDataSet[],
                 allowLabelFilter: true,
                 filterSettings: [{ name: 'company', type: 'Label', condition: 'Contains', value1: 'z' }],
                 rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
@@ -1006,7 +1006,7 @@ describe('PivotView spec', () => {
         describe('Date Filtering', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
-                data: pivot_dataset as IDataSet[],
+                dataSource: pivot_dataset as IDataSet[],
                 allowLabelFilter: true,
                 formatSettings: [{ name: 'date', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
                 filterSettings: [{ name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') }],
@@ -1216,7 +1216,7 @@ describe('PivotView spec', () => {
         describe('Number Filtering', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
-                data: pivot_dataset as IDataSet[],
+                dataSource: pivot_dataset as IDataSet[],
                 allowLabelFilter: true,
                 filterSettings: [{ name: 'age', type: 'Number', condition: 'Equals', value1: '25', value2: '35' }],
                 rows: [{ name: 'age', caption: 'Age' }],
@@ -1422,7 +1422,7 @@ describe('PivotView spec', () => {
         describe('Value Filtering', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
-                data: pivot_dataset as IDataSet[],
+                dataSource: pivot_dataset as IDataSet[],
                 allowLabelFilter: true,
                 allowValueFilter: true,
                 filterSettings: [{ name: 'eyeColor', type: 'Value', condition: 'GreaterThan', value1: '400', measure: 'quantity' }],
@@ -1566,10 +1566,10 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
             });
         });
-        describe('Group by date', () => {
+        describe('Group by date - Row', () => {
             let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let dataSource: IDataOptions = {
-                data: ds,
+                dataSource: ds,
                 allowLabelFilter: true,
                 formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
                 filterSettings: [{ name: 'date_years', type: 'Include', items: ['1970', '1971', '1972', '1973', '1974', '1975'] }],
@@ -1662,10 +1662,106 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1971');
             });
         });
+        describe('Group by date - Column', () => {
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
+            let dataSource: IDataOptions = {
+                dataSource: ds,
+                allowLabelFilter: true,
+                formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
+                filterSettings: [{ name: 'date_years', type: 'Include', items: ['1970', '1971', '1972', '1973', '1974', '1975'] }],
+                columns: [{ name: 'date', caption: 'TimeLine' }],
+                rows: [{ name: 'gender', caption: 'Population' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [{ name: 'product', caption: 'Category' }],
+                groupSettings: [{ name: 'date', type: 'Date', groupInterval: ['Years', 'Quarters', 'Months', 'Days', 'Hours', 'Minutes', 'Seconds'] }]
+            };
+            let pivotEngine: PivotEngine;
+            it('Check with group date at code-behind', () => {
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
+                expect(pivotEngine.pivotValues.length).toBe(11);
+                expect(pivotEngine.pivotValues[0].length).toBe(15);
+                //expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Sat May 30 1970 00:00:00 GMT+0530 (India Standard Time)');
+                expect((pivotEngine.pivotValues[8][0] as IDataSet).formattedText).toBe('female');
+            });
+            it('With Advanced filtering', () => {
+                let newDate: Date = PivotUtil.resetTime(new Date());
+                dataSource.filterSettings = [{ name: 'date_years', type: 'Date', condition: 'Between', value1: new Date(newDate.setFullYear(1970)), value2: new Date(newDate.setFullYear(1975)) }];
+                expect(dataSource.filterSettings.length === 1).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
+                expect(pivotEngine.pivotValues.length).toBe(11);
+                expect(pivotEngine.pivotValues[0].length).toBe(15);
+                //expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Sat May 30 1970 00:00:00 GMT+0530 (India Standard Time)');
+                expect((pivotEngine.pivotValues[8][0] as IDataSet).formattedText).toBe('female');
+            });
+            it('With sorting enabled', () => {
+                dataSource.enableSorting = true;
+                dataSource.sortSettings = [{ name: 'date_years', order: 'Descending' }];
+                expect(dataSource.filterSettings.length === 1).toBeTruthy;
+                expect(dataSource.sortSettings.length === 1).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
+                expect(pivotEngine.pivotValues.length).toBe(11);
+                expect(pivotEngine.pivotValues[0].length).toBe(15);
+                //expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Fri May 30 1975 00:00:00 GMT+0530 (India Standard Time)');
+                expect((pivotEngine.pivotValues[8][0] as IDataSet).formattedText).toBe('female');
+            });
+            it('With valuesorting enabled', () => {
+                dataSource.valueSortSettings = {
+                    headerText: 'Grand Total##balance',
+                    headerDelimiter: '##',
+                    sortOrder: 'Descending'
+                };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
+                expect(dataSource.filterSettings.length === 1).toBeTruthy;
+                expect(dataSource.sortSettings.length === 1).toBeTruthy;
+                expect(pivotEngine.pivotValues.length).toBe(11);
+                expect(pivotEngine.pivotValues[0].length).toBe(15);
+                //expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Fri May 30 1975 00:00:00 GMT+0530 (India Standard Time)');
+                expect((pivotEngine.pivotValues[8][0] as IDataSet).formattedText).toBe('male');
+            });
+            it('With ExpandAll enabled', () => {
+                dataSource.expandAll = true;
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(11);
+                expect(pivotEngine.pivotValues[0].length).toBe(497);
+                //expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Fri May 30 1975 00:00:00 GMT+0530 (India Standard Time)');
+                expect((pivotEngine.pivotValues[8][0] as IDataSet).actualText.toString()).toBe('male');
+            });
+            it('With Calculated Settings', () => {
+                dataSource.expandAll = false;
+                dataSource.calculatedFieldSettings = [{ name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }];
+                dataSource.values = [{ name: 'balance' }, { name: 'total' }, { name: 'quantity' }];
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(11);
+                expect(pivotEngine.pivotValues[0].length).toBe(22);
+                //expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Fri May 30 1975 00:00:00 GMT+0530 (India Standard Time)');
+                expect((pivotEngine.pivotValues[8][0] as IDataSet).formattedText).toBe('male');
+            });
+        });
         describe('Range Group by Date', () => {
             let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let dataSource: IDataOptions = {
-                data: ds,
+                dataSource: ds,
                 allowLabelFilter: true,
                 formatSettings: [{ name: 'age', format: 'N' }, { name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
                 rows: [{ name: 'date', caption: 'TimeLine' }],
@@ -1734,7 +1830,7 @@ describe('PivotView spec', () => {
                     }, 'en-US')
                 };
                 pivotEngine = new PivotEngine();
-                dataSource.data = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
+                dataSource.dataSource = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
                 pivotEngine.renderEngine(dataSource,customProperties);
                 expect(pivotEngine.pivotValues.length).toBe(886);
                 expect(pivotEngine.pivotValues[0].length).toBe(7);
@@ -1762,7 +1858,7 @@ describe('PivotView spec', () => {
         describe('Range Group by Number', () => {
             let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let dataSource: IDataOptions = {
-                data: ds,
+                dataSource: ds,
                 allowLabelFilter: true,
                 formatSettings: [{ name: 'age', format: 'N' }, { name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
                 rows: [{ name: 'date', caption: 'TimeLine' }],
@@ -1846,7 +1942,7 @@ describe('PivotView spec', () => {
         describe('enable/disable ValueSorting', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
-                data: pivot_dataset as IDataSet[],
+                dataSource: pivot_dataset as IDataSet[],
                 expandAll: false,
                 enableSorting: true,
                 sortSettings: [{ name: 'state', order: 'Descending' }],
@@ -1901,7 +1997,7 @@ describe('PivotView spec', () => {
         describe('exclude fields from fieldlist', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
             let dataSource: IDataOptions = {
-                data: pivot_dataset as IDataSet[],
+                dataSource: pivot_dataset as IDataSet[],
                 expandAll: false,
                 enableSorting: true,
                 excludeFields:['age','advance','guid','index','pno','phone','email'],

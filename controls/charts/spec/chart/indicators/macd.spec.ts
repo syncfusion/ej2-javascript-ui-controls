@@ -14,9 +14,8 @@ import { MouseEvents } from '../base/events.spec';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 import { Category } from '../../../src/chart/axis/category-axis';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
 import { Zoom } from '../../../src/chart/user-interaction/zooming';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(Zoom, Legend, MacdIndicator, LineSeries, CandleSeries, Category, ColumnSeries,

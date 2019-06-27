@@ -6,7 +6,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Alignment, LegendPosition, LegendType, LegendMode, ShapeLayerType, Type, MarkerType, Orientation, MapAjax } from '../../index';
 import { SmartLabelMode, IntersectAction } from '../../index';
 import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsModel, NavigationLineSettingsModel } from './base-model';
-import { MarkerSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
+import { MarkerSettingsModel, MarkerClusterSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
 import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, SelectionSettingsModel } from './base-model';
 import { HighlightSettingsModel } from './base-model';
 import { Theme } from './theme';
@@ -248,6 +248,76 @@ export class Margin extends ChildProperty<Margin> {
     public bottom: number;
 }
 /**
+ * To configure cluster in marker
+ */
+
+export class MarkerClusterSettings extends ChildProperty<MarkerClusterSettings> {
+    /**
+     * Toggle the Clustering visibility.
+     * @default false
+     */
+    @Property(false)
+    public allowClustering: boolean;
+    /**
+     * Options for customizing the color and width of the Clustering.
+     */
+    @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
+    public border: BorderModel;
+    /**
+     * To customize the fill color of the Clustering.
+     * @default '#D2691E'
+     */
+    @Property('#D2691E')
+    public fill: string;
+    /**
+     * To customize the opacity of the Clustering.
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+    /**
+     * To customize the Clustering of the marker.
+     * @default Rectangle
+     */
+    @Property('Rectangle')
+    public shape: MarkerType;
+
+    /**
+     * Customize the legend width of the maps.
+     * @default 12
+     */
+    @Property(12)
+    public width: number;
+
+    /**
+     * Customize the legend height of the maps.
+     * @default 12
+     */
+    @Property(12)
+    public height: number;
+    /**
+     * To move the marker by setting offset values
+     */
+    @Property(new Point(0, 0))
+    public offset: Point;
+    /**
+     * To provide the image url for rendering marker image
+     */
+    @Property('')
+    public imageUrl: string;
+    /**
+     * dashArray
+     *  @default ''
+     */
+    @Property('')
+    public dashArray: string;
+    /**
+     * cluster style
+     */
+    @Complex<FontModel>({}, Font)
+    public labelStyle: FontModel;
+}
+/**
  * To configure ColorMapping in Maps
  */
 export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
@@ -445,6 +515,7 @@ export class BubbleSettings extends ChildProperty<BubbleSettings> {
     public visible: boolean;
     /**
      * Specifies the data source for bubble.
+     * @isdatamanager false
      * @default []
      */
     @Property([])
@@ -1087,6 +1158,7 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
     public template: string;
     /**
      * To configure the dataSource of the marker.
+     * @isdatamanager false
      * @default []
      */
     @Property([])
@@ -1158,6 +1230,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
 
     /**
      * Specifies the data source for the layer.
+     * @isdatamanager false
      * @default []
      */
     @Property([])
@@ -1228,6 +1301,11 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      */
     @Collection<MarkerSettingsModel>([], MarkerSettings)
     public markerSettings: MarkerSettingsModel[];
+    /**
+     * To configure the cluster settings.
+     */
+    @Complex<MarkerClusterSettingsModel>({}, MarkerClusterSettings)
+    public markerClusterSettings: MarkerClusterSettingsModel;
     /**
      * To configure the datalabel settings of the maps.
      */

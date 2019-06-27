@@ -124,7 +124,6 @@ describe('Symbol Palette - Group', () => {
             events.mouseMoveEvent(diagram.element, 300, 300, false, false);
             events.mouseUpEvent(diagram.element, 300, 300, false, false);
             expect(diagram.nodes.length).toBe(5);
-            done();
         });
         it('Checking Allow Drag', (done: Function) => {
             palette.allowDrag = false;

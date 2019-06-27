@@ -58,7 +58,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the size of the Sidebar in dock state.
      * > For more details about dockSize refer to 
-     * [`Dock`](../../sidebar/docking-sidebar#dock) documentation.
+     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
      * @default 'auto'
      */
     @Property('auto')
@@ -71,7 +71,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      *   });
      * ```
      * > For more details about mediaQuery refer to 
-     * [`Auto Close`](../../sidebar/auto-close#auto-close) documentation.
+     * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
      * @default null
      * @aspType string
      */
@@ -80,7 +80,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the docking state of the component.
      * > For more details about enableDock refer to 
-     * [`Dock`](../../sidebar/docking-sidebar/#dock) documentation.
+     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
      * @default false
      */
     @Property(false)
@@ -116,6 +116,12 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(false)
     public isOpen: boolean;
     /**
+     * Specifies the Sidebar in RTL mode that displays the content in the right-to-left direction.
+     * @default false
+     */
+    @Property(false)
+    public enableRtl: boolean;
+    /**
      * Enable or disable the animation transitions on expanding or collapsing the Sidebar.
      * @default true
      */
@@ -137,7 +143,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the position of the Sidebar (Left/Right) corresponding to the main content.
      * > For more details about SidebarPosition refer to 
-     * [`position`](../../sidebar/getting-started#position) documentation.
+     * [`position`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#position) documentation.
      * @default 'Left'
      */
     @Property('Left')
@@ -145,7 +151,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Allows to place the sidebar inside the target element.
      * > For more details about target refer to 
-     * [`Custom Context`](../../sidebar/custom-context#target) documentation.
+     * [`Custom Context`](https://ej2.syncfusion.com/documentation/sidebar/custom-context/) documentation.
      * @default null
      */
     @Property(null)
@@ -153,7 +159,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the whether to apply overlay options to main content when the Sidebar is in an open state.
      * > For more details about showBackdrop refer to 
-     * [`Backdrop`](../../sidebar/getting-started/#enable-backdrop) documentation.
+     * [`Backdrop`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#enable-backdrop) documentation.
      * @default false
      */
     @Property(false)
@@ -166,7 +172,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * The main content area will not be adjusted within the screen width.
      * * `Auto` - Sidebar with `Over` type in mobile resolution and `Push` type in other higher resolutions.
      * > For more details about SidebarType refer to 
-     * [`SidebarType`](../../sidebar/variations/#types) documentation.
+     * [`SidebarType`](./variations.html#types) documentation.
      * @default 'Auto'
      */
     @Property('Auto')
@@ -180,38 +186,43 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     public width: string | number;
     /**
      * Specifies the z-index of the Sidebar. It is applicable only when sidebar act as overlay type.
-     * @default '1000'
-     * @aspType string
+     * @default 1000
+     * @aspType double
      */
     @Property(1000)
     public zIndex: string | number;
     /**
      * Triggers when component is created.
      * @event 
+     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when component is closed.
      * @event 
+     * @blazorproperty 'OnClose'
      */
     @Event()
     public close: EmitType<EventArgs>;
     /**
      * Triggers when component is opened.
      * @event 
+     * @blazorproperty 'OnOpen'
      */
     @Event()
     public open: EmitType<EventArgs>;
     /**
      * Triggers when the state(expand/collapse) of the component is changed.
      * @event 
+     * @blazorproperty 'Changed'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /**
      * Triggers when component gets destroyed.
      * @event 
+     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -312,6 +323,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         } else if (!this.isOpen) {
             addClass([this.element], CLOSE);
         }
+        if (this.enableDock) {
+            addClass([this.element], DOCKER);
+        }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.setAttribute('tabindex', this.tabIndex);
     }
@@ -323,6 +337,13 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                 this.hide();
             }
         }
+    }
+    private transitionEnd(e: Event): void {
+        this.setDock();
+        if (!isNullOrUndefined(e) && e.target === this.element) {
+            this.triggerChange();
+        }
+        EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     }
     private destroyBackDrop(): void {
         let sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) ||
@@ -347,35 +368,60 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        if (this.isOpen) { this.trigger('close', closeArguments); } else { return; }
-        if (!closeArguments.cancel) {
-            if (this.element.classList.contains(CLOSE)) {
-                return;
+        this.trigger('close', closeArguments, (observedcloseArgs: EventArgs) => {
+            if (!observedcloseArgs.cancel) {
+                if (this.element.classList.contains(CLOSE)) {
+                    return;
+                }
+                if (this.element.classList.contains(OPEN) && !this.animate) {
+                    this.triggerChange();
+                }
+                addClass([this.element], CLOSE);
+                removeClass([this.element], OPEN);
+                this.enableDock ? setStyle(this.element, { 'width': formatUnit(this.dockSize) }) :
+                    setStyle(this.element, { 'width': formatUnit(this.width) });
+                this.setType(this.type);
+                let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
+                    (<HTMLElement>this.element.nextElementSibling);
+                if (!this.enableDock && sibling) {
+                    sibling.style.transform = 'translateX(' + 0 + 'px)';
+                    this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
+                }
+                this.destroyBackDrop();
+                this.setAnimation();
+                if (this.type === 'Slide') {
+                    document.body.classList.remove('e-sidebar-overflow');
+                }
+                this.setProperties({ isOpen: false }, true);
+                if (this.enableDock) {
+                    setTimeout((): void => this.setTimeOut(), 50);
+                }
+                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
             }
-            if (this.element.classList.contains(OPEN)) {
-                let changeArguments: ChangeEventArgs = { name: 'change', element: this.element };
-                this.trigger('change', changeArguments);
-            }
-            addClass([this.element], CLOSE);
-            removeClass([this.element], OPEN);
-            this.enableDock ? setStyle(this.element, { 'width': formatUnit(this.dockSize) }) :
-                setStyle(this.element, { 'width': formatUnit(this.width) });
-            this.setDock();
-            this.setType(this.type);
-            let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
-                (<HTMLElement>this.element.nextElementSibling);
-            if (!this.enableDock && sibling) {
-                sibling.style.transform = 'translateX(' + 0 + 'px)';
-                this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
-            }
-            this.destroyBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.remove('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: false }, true);
-        }
+        });
     }
+
+    private setTimeOut(): void {
+        let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
+            (<HTMLElement>this.element.nextElementSibling);
+        if (this.element.classList.contains(OPEN) && sibling) {
+            if (this.position === 'Left') {
+                this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginLeft = this.setDimension(this.width);
+            } else {
+                this.width === 'auto' ? sibling.style.marginRight = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginRight = this.setDimension(this.width);
+            }
+        } else if (this.element.classList.contains(CLOSE) && sibling) {
+            if (this.position === 'Left') {
+                this.dockSize === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginLeft = this.setDimension(this.dockSize);
+            } else {
+                this.dockSize === 'auto' ? sibling.style.marginRight = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginRight = this.setDimension(this.dockSize);
+            }
+        }
+    };
     /** 
      * Shows the Sidebar component, if it is in closed state.
      * @returns void 
@@ -388,30 +434,29 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        this.trigger('open', openArguments);
-        if (!openArguments.cancel) {
-            removeClass([this.element], VISIBILITY);
-            if (this.element.classList.contains(OPEN)) {
-                return;
+        this.trigger('open', openArguments, (observedopenArgs: EventArgs) => {
+            if (!observedopenArgs.cancel) {
+                removeClass([this.element], VISIBILITY);
+                if (this.element.classList.contains(OPEN)) {
+                    return;
+                }
+                if (this.element.classList.contains(CLOSE) && !this.animate) {
+                    this.triggerChange();
+                }
+                addClass([this.element], [OPEN, TRASITION]);
+                setStyle(this.element, { 'transform': '' });
+                removeClass([this.element], CLOSE);
+                setStyle(this.element, { 'width': formatUnit(this.width) });
+                this.setType(this.type);
+                this.createBackDrop();
+                this.setAnimation();
+                if (this.type === 'Slide') {
+                    document.body.classList.add('e-sidebar-overflow');
+                }
+                this.setProperties({ isOpen: true }, true);
+                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
             }
-            if (this.element.classList.contains(CLOSE)) {
-                let changeArguments: ChangeEventArgs = { name: 'change', element: this.element };
-                this.trigger('change', changeArguments);
-            }
-            addClass([this.element], [OPEN, TRASITION]);
-            setStyle(this.element, { 'transform': '' });
-            removeClass([this.element], CLOSE);
-            setStyle(this.element, { 'width': formatUnit(this.width) });
-            let elementWidth: number = this.element.getBoundingClientRect().width;
-            this.setType(this.type);
-            this.createBackDrop();
-
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.add('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: true }, true);
-        }
+        });
     }
 
     private setAnimation(): void {
@@ -420,6 +465,11 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             addClass([this.element], DISABLEANIMATION);
         }
+    }
+
+    private triggerChange(): void {
+        let changeArguments: ChangeEventArgs = { name: 'change', element: this.element };
+        this.trigger('change', changeArguments);
     }
 
     private setDock(): void {
@@ -559,7 +609,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                     removeClass([this.element], [VISIBILITY]);
                     this.addClass();
                     addClass([this.element], this.type === 'Auto' ? (Browser.isDevice ? ['e-over'] :
-                    ['e-push']) : ['e-' + this.type.toLowerCase()]);
+                        ['e-push']) : ['e-' + this.type.toLowerCase()]);
                     break;
                 case 'position':
                     this.element.style.transform = '';
@@ -625,9 +675,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     protected setType(type?: string): void {
         let elementWidth: number = this.element.getBoundingClientRect().width;
         this.setZindex();
-        if (this.enableDock) {
-            addClass([this.element], DOCKER);
-        }
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
             (<HTMLElement>this.element.nextElementSibling);
         if (sibling) {
@@ -694,7 +741,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         this.element.style.zIndex = '';
         this.element.style.transform = '';
         (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
-        this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
+            this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content')
             || (<HTMLElement>this.element.nextElementSibling);
         if (!isNullOrUndefined(sibling)) {
@@ -718,6 +765,13 @@ export interface ChangeEventArgs {
      * Defines the element.
      */
     element: HTMLElement;
+}
+
+export interface TransitionEvent extends Event {
+    /**
+     * Returns event name
+     */
+    propertyName: string;
 }
 
 export interface EventArgs {

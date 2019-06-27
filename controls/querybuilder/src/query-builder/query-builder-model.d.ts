@@ -156,25 +156,29 @@ export interface QueryBuilderModel extends ComponentModel{
 
     /**
      * Triggers when the component is created.
-     * @event 
+     * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 
     /**
      * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
+     * @blazorProperty 'OnChange'
      */
     beforeChange?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
+     * @blazorProperty 'Changed'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
+     * @blazorProperty 'RuleChanged'
      */
     ruleChange?: EmitType<RuleChangeEventArgs>;
 

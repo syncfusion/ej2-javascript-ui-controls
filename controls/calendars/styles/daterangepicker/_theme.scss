@@ -14,7 +14,8 @@
     }
   }
 
-  #{&}.e-daterangepicker {
+  #{&}.e-daterangepicker,
+  .e-bigger.e-small #{&}.e-daterangepicker {
     &.e-popup {
       background: $range-background;
 

@@ -73,7 +73,6 @@ export class ExportUtils {
      * To export the file as image/svg format
      * @param type 
      * @param fileName 
-     * @param isVertical
      */
     public export(
         type: ExportType, fileName: string,
@@ -174,7 +173,7 @@ export class ExportUtils {
      * @param controls 
      * @param name 
      */
-    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart)[], isVertical: boolean): IControlValue {
+    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart)[], isVertical?: boolean): IControlValue {
         let width: number = 0;
         let height: number = 0;
         let content: string = '';
@@ -186,13 +185,15 @@ export class ExportUtils {
             let svg: Node = control.svgObject.cloneNode(true);
             let groupEle: Element = control.renderer.createGroup({
                 style: (isNullOrUndefined(isVertical) || isVertical) ? 'transform: translateY(' + height + 'px)' :
-                    'transform: translateX(' + width + 'px)'
+                        'transform: translateX(' + width + 'px)'
+
             });
             groupEle.appendChild(svg);
             width = (isNullOrUndefined(isVertical) || isVertical) ? Math.max(control.availableSize.width, width) :
                 width + control.availableSize.width;
             height = (isNullOrUndefined(isVertical) || isVertical) ? height + control.availableSize.height :
                 Math.max(control.availableSize.height, height);
+
             content += control.svgObject.outerHTML;
             svgObject.appendChild(groupEle);
         });

@@ -7,10 +7,12 @@ import { LineSeries } from '../../../src/chart/series/line-series';
 import { definition1, definition2, definition3 } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents } from '../base/data.spec';
+import { MouseEvents } from '../base/events.spec';
+import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { Category } from '../../../src/chart/axis/category-axis';
-Chart.Inject(LineSeries, Category);
+Chart.Inject(LineSeries, Category, DataEditing);
 
 describe('Chart Control', () => {
     let ele: HTMLElement;
@@ -392,6 +394,89 @@ describe('Chart Control', () => {
             chart.loaded = loaded;
             chart.primaryXAxis.opposedPosition = true;
             chart.refresh();
+        });
+    });
+
+    describe('Multi rows with drag and drop support', () => {
+        let chartObj: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element1: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element1);
+            let chartData: any[] = [
+                { x: 'Jan', y: 15, y1: 33 }, { x: 'Feb', y: 20, y1: 31 }, { x: 'Mar', y: 35, y1: 30 },
+                { x: 'Apr', y: 40, y1: 28 }, { x: 'May', y: 80, y1: 29 }, { x: 'Jun', y: 70, y1: 30 },
+                { x: 'Jul', y: 65, y1: 33 }, { x: 'Aug', y: 55, y1: 32 }, { x: 'Sep', y: 50, y1: 34 },
+                { x: 'Oct', y: 30, y1: 32 }, { x: 'Nov', y: 35, y1: 32 }, { x: 'Dec', y: 35, y1: 31 }
+            ];
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        title: 'Months',
+                        valueType: 'Category',
+                        interval: 1
+                    },
+                    primaryYAxis: {
+                        minimum: 0, maximum: 90, interval: 20,
+                        lineStyle: { width: 0 },
+                        title: 'Temperature (Fahrenheit)',
+                        labelFormat: '{value}°F'
+                    },
+                    // Rows for chart axis
+                    rows: [
+                        {
+                            height: '50%'
+                        }, {
+                            height: '50%'
+                        }
+                    ],
+                    axes: [
+                        {
+                            majorGridLines: { width: 0 },
+                            rowIndex: 1, opposedPosition: true,
+                            lineStyle: { width: 0 },
+                            minimum: 24, maximum: 36, interval: 4,
+                            name: 'yAxis', title: 'Temperature (Celsius)',
+                            labelFormat: '{value}°C'
+                        }
+                    ],
+                    series: [{
+                        dataSource: chartData,
+                        xName: 'x', yName: 'y',
+                        name: 'Germany', type: 'Column', animation: {enable: false}
+                    }, {
+                        dataSource: chartData, width: 2,
+                        xName: 'x', yName: 'y1', yAxisName: 'yAxis',
+                        name: 'Japan', type: 'Line', dragSettings: { enable: true }, animation: {enable: false},
+                        marker: { visible: true, width: 10, height: 10, border: { width: 2, color: '#F8AB1D' } }
+                    }],
+                    title: 'Weather Condition'
+
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element1.remove();
+        });
+
+        it('Multi rows with drag and drop', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('container_Series_1_Point_6_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + element1.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + element1.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) + 50);
+                let yValue: number = chartObj.visibleSeries[1].points[6].yValue;
+                expect(yValue == 29.06 || yValue == 29.16).toBe(true);
+                chartObj.loaded = null;
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
         });
     });
 });

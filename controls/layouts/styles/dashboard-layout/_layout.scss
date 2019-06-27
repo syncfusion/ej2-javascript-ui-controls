@@ -52,10 +52,19 @@
       }
 
       & .e-panel-header {
+        border-bottom: $panel-header-border-bottom;
+        color: $panel-header-color;
+        font-family: $panel-header-font-family;
         font-size: $panel-header-font-size;
         font-weight: $panel-header-font-weight;
         height: $panel-header-height;
         padding: $panel-header-padding;
+
+        & div {
+          overflow: $panel-header-overflow;
+          text-overflow: $panel-header-text-overflow;
+          white-space: $panel-header-white-space;
+        }
 
         & .e-header-content {
           display: inline-block;
@@ -82,6 +91,7 @@
       & .e-resize.e-single,
       & .e-resize.e-double {
         position: $panel-position;
+        touch-action: none;
 
         &.e-east,
         &.e-west,
@@ -180,5 +190,10 @@
         padding: $panel-bigger-header-padding;
       }
     }
+  }
+
+  .e-content-placeholder.e-dashboardlayout.e-placeholder-dashboardlayout {
+    height: $panel-full-height;
+    width: $panel-full-width;
   }
 }

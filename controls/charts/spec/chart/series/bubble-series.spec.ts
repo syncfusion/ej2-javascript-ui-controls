@@ -18,6 +18,7 @@ import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { Selection } from '../../../src/chart/user-interaction/selection';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { Zoom } from '../../../src/chart/user-interaction/zooming';
+import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
@@ -26,7 +27,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(BarSeries, BubbleSeries, LineSeries, Category, Tooltip, DateTime, Logarithmic,
-    Legend, DataLabel, Selection, Zoom, Crosshair);
+    Legend, DataLabel, Selection, Zoom, Crosshair, DataEditing);
 
 let datetime: any = datetimeData;
 let trigger: MouseEvents = new MouseEvents();
@@ -572,7 +573,7 @@ describe('Chart Control', () => {
                 tooltipY = parseFloat(tooltip.style.top);
                 labelText = document.getElementById('container_Series_0_Point_2_TextShape_0');
                 dataLabelY = parseFloat(labelText.getAttribute('y'));
-              
+
                 expect(tooltipY != dataLabelY).toBe(true);
                 done();
             };
@@ -598,8 +599,13 @@ describe('Chart Control', () => {
                 tooltipY = parseFloat(tooltip.style.top);
                 labelText = document.getElementById('container_Series_0_Point_6_Text_0');
                 dataLabelY = parseFloat(labelText.getAttribute('y'));
-
                 expect(tooltipY > dataLabelY).toBe(true);
+                // let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
+                // let translateX: string[] = transform[1].split(',');
+                // let translateY: string[] = translateX[0].split(')');
+                // labelText = document.getElementById('container_Series_0_Point_6_Text_0');
+                // dataLabelY = parseFloat(labelText.getAttribute('y'));
+                // expect(parseFloat(translateY[0]) > dataLabelY).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -983,7 +989,7 @@ describe('Chart Control', () => {
                 trigger.mousedownEvent(resetElement, 0, 0, 5, 5);
                 done();
             };
-            
+
             chartObj.loaded = loaded;
             chartObj.zoomSettings.enableMouseWheelZooming = true;
             chartObj.crosshair.enable = true;
@@ -1053,7 +1059,7 @@ describe('Chart Control', () => {
                         { x: 90.4, y: 6.0, size: 0.238 },
                         { x: 99.4, y: 2.2, size: 0.312 },
                         { x: 88.6, y: 1.3, size: 0.197 },
-                        ], xName: 'x', yName: 'y', size: 'size',  
+                        ], xName: 'x', yName: 'y', size: 'size',
                     }, {
                         type: 'Bubble',
                         dataSource: [{ x: 92.2, y: 7.8, size: 2 },
@@ -1339,6 +1345,94 @@ describe('Chart Control', () => {
             chart.loaded = loaded;
             chart.tooltip.shared = true;
             chart.refresh();
+        });
+    });
+        /**
+     * Cheacking point drag and drop with bubble series
+     */
+    describe('Bubble series with drag and drop support', () => {
+        let chartObj: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element1: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element1);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        labelFormat: 'y',
+                        intervalType: 'Years',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 }
+                    },
+
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Bubble',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21, size: '1' }, { x: new Date(2006, 0, 1), y: 24, size: '2' },
+                                { x: new Date(2007, 0, 1), y: 36, size: '1.5' }, { x: new Date(2008, 0, 1), y: 38, size: '1.8' },
+                                { x: new Date(2009, 0, 1), y: 54, size: '2.2' }, { x: new Date(2010, 0, 1), y: 57, size: '3' },
+                                { x: new Date(2011, 0, 1), y: 70, size: '2.1' }
+                            ],
+                            animation: { enable: false },
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 10,
+                                height: 10
+                            },
+                            yName: 'y', name: 'Germany', dragSettings: { enable: true }, size: 'size'
+                        }
+                    ],
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                    //Initializing User Interaction Tooltip
+                    tooltip: {
+                        enable: true
+                    },
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element1.remove();
+        });
+
+        it('Bubble series drag and drop with marker true', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('container_Series_0_Point_4');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + element1.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + element1.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) + 115);
+                let yValue: number = chartObj.visibleSeries[0].points[4].yValue;
+                expect(yValue == 19.58 || yValue == 19.88).toBe(true);
+                chartObj.loaded = null;
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
         });
     });
     it('memory leak', () => {

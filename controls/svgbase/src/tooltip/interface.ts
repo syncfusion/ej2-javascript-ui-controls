@@ -41,7 +41,8 @@ export interface ITooltipLoadedEventArgs extends ITooltipEventArgs {
 /** @private */
 export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
     let style: ITooltipThemeStyle;
-    switch (theme) {
+    switch (theme as string) {
+        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 tooltipFill: '#ffffff',

@@ -1,7 +1,7 @@
 import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';
-import { attributes, closest, removeClass, addClass, remove } from '@syncfusion/ej2-base';
+import { attributes, closest, removeClass, addClass, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
 import { Popup } from '../popup/popup';
 import { OffsetPosition, calculatePosition } from '../common/position';
@@ -290,6 +290,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      *  [here](https://ej2.syncfusion.com/documentation/tooltip/content.html?lang=typescript#dynamic-content-via-ajax)
      *  to know more about this property with demo.
      * @event
+     * @blazorProperty 'OnRender'
      */
     @Event()
     public beforeRender: EmitType<TooltipEventArgs>;
@@ -299,42 +300,49 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * This event is mainly used for the purpose of refreshing the Tooltip positions dynamically or to
      *  set customized styles in it and so on.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `afterOpen` event after the Tooltip Component gets opened.
      * @event
+     * @blazorProperty 'Opened'
      */
     @Event()
     public afterOpen: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `beforeClose` event before the Tooltip hides from the screen. If returned false, then the Tooltip is no more hidden.
      * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public beforeClose: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `afterClose` event when the Tooltip Component gets closed.
      * @event
+     * @blazorProperty 'Closed'
      */
     @Event()
     public afterClose: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `beforeCollision` event for every collision fit calculation.
      * @event
+     * @blazorProperty 'OnCollision'
      */
     @Event()
     public beforeCollision: EmitType<TooltipEventArgs>;
     /**
      * We can trigger `created` event after the Tooltip component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * We can trigger `destroyed` event when the Tooltip component is destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -406,6 +414,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.trigger('afterOpen', this.tooltipEventArgs);
     }
     private closePopupHandler(): void {
+        resetBlazorTemplate(this.element.id + 'content', 'Content');
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
     }
@@ -541,11 +550,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             tooltipContent.innerHTML = '';
             if (this.content instanceof HTMLElement) {
                 tooltipContent.appendChild(this.content);
-            } else if (typeof this.content === 'string') {
+            } else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') !== 0) {
                 tooltipContent.innerHTML = this.content;
             } else {
                 let templateFunction: Function = compile(this.content);
-                append(templateFunction(), tooltipContent);
+                append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
+                setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'Content'); }, 0);
             }
         } else {
             if (target && !isNullOrUndefined(target.getAttribute('data-content'))) {
@@ -630,73 +640,83 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         clearTimeout(this.hideTimer);
         this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
             { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
-        this.trigger('beforeRender', this.tooltipEventArgs);
-        if (this.tooltipEventArgs.cancel) {
-            this.isHidden = true;
-            this.clear();
-            return;
-        }
-        this.isHidden = false;
-        if (isNullOrUndefined(this.tooltipEle)) {
-            this.ctrlId = this.element.getAttribute('id') ? getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
-            this.tooltipEle = this.createElement('div', {
-                className: TOOLTIP_WRAP + ' ' + POPUP_ROOT + ' ' + POPUP_LIB, attrs: {
-                    role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
-                }, styles: 'width:' + formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
-            });
-            if (this.cssClass) {
-                addClass([this.tooltipEle], this.cssClass.split(' '));
-            }
-            if (Browser.isDevice) {
-                addClass([this.tooltipEle], DEVICE);
-            }
-            if (this.width !== 'auto') {
-                this.tooltipEle.style.maxWidth = formatUnit(this.width);
-            }
-            this.tooltipEle.appendChild(this.createElement('div', { className: CONTENT }));
-            document.body.appendChild(this.tooltipEle);
-            this.addDescribedBy(target, this.ctrlId + '_content');
-            this.renderContent(target);
-            addClass([this.tooltipEle], POPUP_OPEN);
-            if (this.showTipPointer) {
-                this.renderArrow();
-            }
-            this.renderCloseIcon();
-            this.renderPopup(target);
-        } else {
-            this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
-            this.addDescribedBy(target, this.ctrlId + '_content');
-            this.renderContent(target);
-            PopupAnimation.stop(this.tooltipEle);
-            this.reposition(target);
-        }
-        removeClass([this.tooltipEle], POPUP_OPEN);
-        addClass([this.tooltipEle], POPUP_CLOSE);
-        this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
-            { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
-        this.trigger('beforeOpen', this.tooltipEventArgs);
-        if (this.tooltipEventArgs.cancel) {
-            this.isHidden = true;
-            this.clear();
-            return;
-        }
-        let openAnimation: Object = {
-            name: showAnimation.effect, duration: showAnimation.duration, delay: showAnimation.delay, timingFunction: 'easeOut'
-        };
-        if (showAnimation.effect === 'None') {
-            openAnimation = undefined;
-        }
-        if (this.openDelay > 0) {
-            let show: Function = (): void => {
-                if (this.popupObj) {
-                    this.popupObj.show(openAnimation, target);
+        this.trigger('beforeRender', this.tooltipEventArgs, (beforeRenderArgs: TooltipEventArgs) => {
+            if (beforeRenderArgs.cancel) {
+                this.isHidden = true;
+                this.clear();
+            } else {
+                this.isHidden = false;
+                if (isNullOrUndefined(this.tooltipEle)) {
+                    this.ctrlId = this.element.getAttribute('id') ?
+                        getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
+                    this.tooltipEle = this.createElement('div', {
+                        className: TOOLTIP_WRAP + ' ' + POPUP_ROOT + ' ' + POPUP_LIB, attrs: {
+                            role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
+                        }, styles: 'width:' +
+                            formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
+                    });
+                    if (this.cssClass) {
+                        addClass([this.tooltipEle], this.cssClass.split(' '));
+                    }
+                    if (Browser.isDevice) {
+                        addClass([this.tooltipEle], DEVICE);
+                    }
+                    if (this.width !== 'auto') {
+                        this.tooltipEle.style.maxWidth = formatUnit(this.width);
+                    }
+                    this.tooltipEle.appendChild(this.createElement('div', { className: CONTENT }));
+                    document.body.appendChild(this.tooltipEle);
+                    this.addDescribedBy(target, this.ctrlId + '_content');
+                    this.renderContent(target);
+                    addClass([this.tooltipEle], POPUP_OPEN);
+                    if (this.showTipPointer) {
+                        this.renderArrow();
+                    }
+                    this.renderCloseIcon();
+                    this.renderPopup(target);
+                } else {
+                    this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
+                    this.addDescribedBy(target, this.ctrlId + '_content');
+                    this.renderContent(target);
+                    PopupAnimation.stop(this.tooltipEle);
+                    this.reposition(target);
                 }
-            };
-            this.showTimer = setTimeout(show, this.openDelay);
-        } else {
-            this.popupObj.show(openAnimation, target);
-        }
+                removeClass([this.tooltipEle], POPUP_OPEN);
+                addClass([this.tooltipEle], POPUP_CLOSE);
+                this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
+                    { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
+                const this$: Tooltip = this;
+                this.trigger('beforeOpen', this.tooltipEventArgs, (observedArgs: TooltipEventArgs) => {
+                    if (observedArgs.cancel) {
+                        this$.isHidden = true;
+                        this$.clear();
+                        this$.restoreElement(target);
+                    } else {
+                        let openAnimation: Object = {
+                            name: showAnimation.effect,
+                            duration: showAnimation.duration,
+                            delay: showAnimation.delay,
+                            timingFunction: 'easeOut'
+                        };
+                        if (showAnimation.effect === 'None') {
+                            openAnimation = undefined;
+                        }
+                        if (this$.openDelay > 0) {
+                            let show: Function = (): void => {
+                                if (this$.popupObj) {
+                                    this$.popupObj.show(openAnimation, target);
+                                }
+                            };
+                            this$.showTimer = setTimeout(show, this$.openDelay);
+                        } else {
+                            this$.popupObj.show(openAnimation, target);
+                        }
+                    }
+                });
+            }
+        });
     }
+
     private checkCollision(target: HTMLElement, x: number, y: number): ElementPosition {
         let elePos: ElementPosition = {
             left: x, top: y, position: this.position,
@@ -778,27 +798,31 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             };
         }
         if (isNullOrUndefined(target)) { return; }
-        this.trigger('beforeClose', this.tooltipEventArgs);
-        if (!this.tooltipEventArgs.cancel) {
-            this.restoreElement(target);
-            this.isHidden = true;
-            let closeAnimation: Object = {
-                name: hideAnimation.effect, duration: hideAnimation.duration, delay: hideAnimation.delay, timingFunction: 'easeIn'
-            };
-            if (hideAnimation.effect === 'None') {
-                closeAnimation = undefined;
-            }
-            if (this.closeDelay > 0) {
-                let hide: Function = (): void => {
-                    if (this.popupObj) { this.popupObj.hide(closeAnimation); }
+        this.trigger('beforeClose', this.tooltipEventArgs, (observedArgs: TooltipEventArgs) => {
+            if (!observedArgs.cancel) {
+                this.restoreElement(target);
+                this.isHidden = true;
+                let closeAnimation: Object = {
+                    name: hideAnimation.effect,
+                    duration: hideAnimation.duration,
+                    delay: hideAnimation.delay,
+                    timingFunction: 'easeIn'
                 };
-                this.hideTimer = setTimeout(hide, this.closeDelay);
+                if (hideAnimation.effect === 'None') {
+                    closeAnimation = undefined;
+                }
+                if (this.closeDelay > 0) {
+                    let hide: Function = (): void => {
+                        if (this.popupObj) { this.popupObj.hide(closeAnimation); }
+                    };
+                    this.hideTimer = setTimeout(hide, this.closeDelay);
+                } else {
+                    this.popupObj.hide(closeAnimation);
+                }
             } else {
-                this.popupObj.hide(closeAnimation);
+                this.isHidden = false;
             }
-        } else {
-            this.isHidden = false;
-        }
+        });
     }
     private restoreElement(target: HTMLElement): void {
         this.unwireMouseEvents(target);

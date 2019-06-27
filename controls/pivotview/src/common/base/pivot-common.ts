@@ -24,7 +24,7 @@ export class PivotCommon {
     /** @hidden */
     public engineModule: PivotEngine;
     /** @hidden */
-    public dataSource: IDataOptions;
+    public dataSourceSettings: IDataOptions;
     /** @hidden */
     public element: HTMLElement;
     /** @hidden */
@@ -79,7 +79,7 @@ export class PivotCommon {
     constructor(control: CommonArgs) {
         this.element = control.element;
         this.moduleName = control.moduleName;
-        this.dataSource = control.dataSource;
+        this.dataSourceSettings = control.dataSourceSettings;
         this.engineModule = control.pivotEngine;
         this.enableRtl = control.enableRtl;
         this.isAdaptive = control.isAdaptive;

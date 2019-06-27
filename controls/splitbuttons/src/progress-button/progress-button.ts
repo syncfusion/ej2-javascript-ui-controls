@@ -81,6 +81,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     private timerId: number;
     private step: number = 1;
     private interval: number;
+    private eIsVertical: boolean;
 
     /**
      * Enables or disables the background filler UI in the progress button.
@@ -166,6 +167,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -173,6 +175,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers when the progress starts.
      * @event
+     * @blazorProperty 'OnBegin'
      */
     @Event()
     public begin: EmitType<ProgressEventArgs>;
@@ -180,6 +183,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers in specified intervals.
      * @event
+     * @blazorProperty 'Progressing'
      */
     @Event()
     public progress: EmitType<ProgressEventArgs>;
@@ -187,6 +191,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers when the progress is completed.
      * @event
+     * @blazorProperty 'OnEnd'
      */
     @Event()
     public end: EmitType<ProgressEventArgs>;
@@ -194,6 +199,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     /**
      * Triggers when the progress is incomplete.
      * @event
+     * @blazorProperty 'OnFailure'
      */
     @Event()
     public fail: EmitType<Event>;
@@ -365,47 +371,19 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
             percent = percent + (timeDiff - timeDiffBuffer) / this.duration * 100;
             prevPercent = ((progressTime - prevProgressTime) % stepTime === 0 || percent === 100) ? percent : prevPercent;
             args = { percent: prevPercent, currentDuration: progressTime, step: step };
+            this.eIsVertical = isVertical;
             if (percent === 0) {
-                this.trigger('begin', args);
-            } else if (percent === 100 || progressTime === this.duration) {
-                this.trigger('end', args);
-            } else {
-                this.trigger('progress', args);
-            }
-            if (percent !== args.percent && args.percent !== prevPercent) {
-                percent = args.percent;
-            }
-            this.percent = percent;
-            this.step = args.step;
-            if ((progressTime - prevProgressTime) % (this.duration * args.step / 100) === 0 || percent === 100) {
-                this.timerId = requestAnimationFrame(() => {
-                    if (this.enableProgress) {
-                        this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
-                    }
-                    this.element.setAttribute('aria-valuenow', percent.toString());
+                this.trigger('begin', args, (observedArgs: ProgressEventArgs) => {
+                    this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer, prevTime);
                 });
-                prevPercent = percent;
-                prevProgressTime = progressTime;
-            }
-            if (!this.isPaused) {
-                if (progressTime < this.duration && percent < 100) {
-                    this.interval = window.setTimeout(() => {
-                        this.startAnimate(
-                            Date.now(), progressTime, prevTime, percent,
-                            prevPercent, args.step, prevProgressTime, isVertical);
-                        // tslint:disable-next-line
-                    }, (this.duration / 100) - timeDiffBuffer);
-                } else {
-                    this.interval = window.setTimeout(() => {
-                        this.progressTime = this.percent = 0;
-                        if (this.enableProgress) {
-                            this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
-                        }
-                        this.element.setAttribute('aria-valuenow', '0');
-                        this.hideSpin();
-                        // tslint:disable-next-line
-                    }, 100);
-                }
+            } else if (percent === 100 || progressTime === this.duration) {
+                this.trigger('end', args, (observedArgs: ProgressEventArgs) => {
+                    this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer, prevTime);
+                });
+            } else {
+                this.trigger('progress', args, (observedArgs: ProgressEventArgs) => {
+                    this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer, prevTime);
+                });
             }
         } catch (e) {
             cancelAnimationFrame(this.timerId);
@@ -413,6 +391,47 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         }
     }
 
+    private successCallback(
+        args: ProgressEventArgs, perc: number, pPerc: number, prgTim: number, pPrgTim: number, timDif: number, pTim: number): void {
+        let percent: number = perc; let prevPercent: number = pPerc; let timeDiffBuffer: number = timDif;
+        let progressTime: number = prgTim; let prevProgressTime: number = pPrgTim;
+        let prevTime: number = pTim; let isVertical: boolean = this.eIsVertical;
+        if (percent !== args.percent && args.percent !== prevPercent) {
+            percent = args.percent;
+        }
+        this.percent = percent;
+        this.step = args.step;
+        if ((progressTime - prevProgressTime) % (this.duration * args.step / 100) === 0 || percent === 100) {
+            this.timerId = requestAnimationFrame(() => {
+                if (this.enableProgress) {
+                    this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
+                }
+                this.element.setAttribute('aria-valuenow', percent.toString());
+            });
+            prevPercent = percent;
+            prevProgressTime = progressTime;
+        }
+        if (!this.isPaused) {
+            if (progressTime < this.duration && percent < 100) {
+                this.interval = window.setTimeout(() => {
+                    this.startAnimate(
+                        Date.now(), progressTime, prevTime, percent,
+                        prevPercent, args.step, prevProgressTime, isVertical);
+                    // tslint:disable-next-line
+                }, (this.duration / 100) - timeDiffBuffer);
+            } else {
+                this.interval = window.setTimeout(() => {
+                    this.progressTime = this.percent = 0;
+                    if (this.enableProgress) {
+                        this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
+                    }
+                    this.element.setAttribute('aria-valuenow', '0');
+                    this.hideSpin();
+                    // tslint:disable-next-line
+                }, 100);
+            }
+        }
+    }
     private startContAnimate(): void {
         let ele: HTMLElement = this.element.getElementsByClassName(CONTENTCLS)[0] as HTMLElement;
         if (this.animationSettings.effect !== 'None') {

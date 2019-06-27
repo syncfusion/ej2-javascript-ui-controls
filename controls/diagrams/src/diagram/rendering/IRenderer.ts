@@ -1,6 +1,7 @@
 import { PathAttributes, TextAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
 import { ImageElement } from '../core/elements/image-element';
+import { Container } from '../core/containers/container';
 /**
  * IRenderer interface defines the base of the SVG and Canvas renderer.
  */
@@ -16,7 +17,7 @@ export interface IRenderer {
     renderPath(canvas: HTMLCanvasElement | SVGElement, options: PathAttributes,
         collection: Object[]): void;
         drawText(canvas: HTMLCanvasElement | SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object,
-            diagramId?: string, scaleValue?: number): void;
+            diagramId?: string, scaleValue?: number, parentNode?: Container): void;
         drawImage(
             canvas: HTMLCanvasElement | SVGElement | ImageElement,
             obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean): void;

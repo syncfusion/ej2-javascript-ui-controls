@@ -72,6 +72,20 @@ export class UserHandle extends ChildProperty<UserHandle> {
     public pathData: string;
 
     /**
+     * Defines the custom content of the user handle
+     * @default ''
+     */
+    @Property('')
+    public content: string;
+
+    /**
+     * Defines the image source of the user handle
+     * @default ''
+     */
+    @Property('')
+    public source: string;
+
+    /**
      * Defines the background color of user Handle 
      * @default 'black'
      */
@@ -340,6 +354,15 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * @aspNumberEnum
      */
     public thumbsConstraints: ThumbsConstraints;
+
+    /**
+     * setTooltipTemplate helps to customize the content of a tooltip
+     * @aspDefaultValueIgnore
+     * @default undefined
+     * @deprecated
+     */
+    @Property()
+    public setTooltipTemplate: Function | string;
 
     /**
      * Initializes the UI of the container

@@ -1,7 +1,7 @@
 import { PdfViewer } from '../index';
 
 /**
- * @private
+ * @hidden
  */
 export class AjaxHandler {
 
@@ -23,11 +23,13 @@ export class AjaxHandler {
     /**		 
      * A boolean value indicating whether the request should be sent asynchronous or not.
      * @default true
+     * @private
      */
     public mode: boolean = true;
     /**		 
      * Specifies the ContentType to which request to be sent
      * @default null
+     * @private
      */
     public contentType: string = 'application/json;charset=UTF-8';
 
@@ -38,6 +40,7 @@ export class AjaxHandler {
      * Constructor for Ajax class
      * @param  {PdfViewer} pdfviewer
      * @returns defaultType
+     * @private
      */
     constructor(pdfviewer: PdfViewer) {
         this.pdfViewer = pdfviewer;
@@ -46,11 +49,12 @@ export class AjaxHandler {
     /**
      * Send the request to server
      * @param  {object} jsonObj - To send to service
+     * @private
      */
     public send(jsonObj: object): void {
         this.httpRequest = new XMLHttpRequest();
         if (!this.mode) {
-            setTimeout( () => { this.sendRequest(jsonObj); });
+            setTimeout(() => { this.sendRequest(jsonObj); });
         } else {
             this.sendRequest(jsonObj);
         }
@@ -58,7 +62,7 @@ export class AjaxHandler {
         this.httpRequest.onerror = () => { this.error(this); };
     }
 
-    private sendRequest(jsonObj: object) : void {
+    private sendRequest(jsonObj: object): void {
         this.httpRequest.open(this.type, this.url, this.mode);
         this.httpRequest.setRequestHeader('Content-Type', this.contentType);
         this.setCustomAjaxHeaders();
@@ -69,7 +73,7 @@ export class AjaxHandler {
     }
 
     private stateChange(proxy: AjaxHandler): void {
-        if (proxy.httpRequest.readyState  === 4 && proxy.httpRequest.status === 200) {
+        if (proxy.httpRequest.readyState === 4 && proxy.httpRequest.status === 200) {
             // tslint:disable-next-line
             let data: any;
             if (this.responseType !== null) {
@@ -110,18 +114,21 @@ export class AjaxHandler {
      * Specifies callback function to be triggered after XmlHttpRequest is succeeded. 
      * The callback will contain server response as the parameter.
      * @event
+     * @private
      */
     public onSuccess: Function;
     /**
      * Specifies callback function to be triggered after XmlHttpRequest is got failed. 
      * The callback will contain server response as the parameter.
      * @event
+     * @private
      */
     public onFailure: Function;
     /**
      * Specifies callback function to be triggered after XmlHttpRequest is got error. 
      * The callback will contain server response as the parameter.
      * @event
+     * @private
      */
     public onError: Function;
 
@@ -150,7 +157,7 @@ export class AjaxHandler {
     }
 
     private setCustomAjaxHeaders(): void {
-        for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++ ) {
+        for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
             // tslint:disable-next-line:max-line-length
             this.httpRequest.setRequestHeader(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerValue);
         }

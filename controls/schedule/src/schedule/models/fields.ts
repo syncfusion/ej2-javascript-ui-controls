@@ -122,4 +122,11 @@ export class Field extends ChildProperty<Field> {
     @Property('IsReadonly')
     public isReadonly: string;
 
+    /** 
+     * The `followingID` field is mapped from dataSource and usually holds the ID value of the main parent event.
+     * @default null
+     */
+    @Property('FollowingID')
+    public followingID: string;
+
 }

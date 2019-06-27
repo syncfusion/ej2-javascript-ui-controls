@@ -18,6 +18,18 @@ export interface UserHandleModel {
     pathData?: string;
 
     /**
+     * Defines the custom content of the user handle
+     * @default ''
+     */
+    content?: string;
+
+    /**
+     * Defines the image source of the user handle
+     * @default ''
+     */
+    source?: string;
+
+    /**
      * Defines the background color of user Handle 
      * @default 'black'
      */
@@ -233,5 +245,13 @@ export interface SelectorModel {
      * @aspNumberEnum 
      */
     constraints?: SelectorConstraints;
+
+    /**
+     * setTooltipTemplate helps to customize the content of a tooltip
+     * @aspDefaultValueIgnore
+     * @default undefined
+     * @deprecated
+     */
+    setTooltipTemplate?: Function | string;
 
 }

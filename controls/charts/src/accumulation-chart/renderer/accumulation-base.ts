@@ -221,7 +221,10 @@ export class AccumulationBase {
         let pointId: string = this.accumulation.element.id + '_Series_0_Point_';
         let chart: AccumulationChart = this.accumulation;
         if (!this.isCircular()) {
-            translate = { x: chart.explodeDistance, y: 0 };
+            translate = {
+                x: ((point.labelRegion && point.labelRegion.x < point.region.x) ? -chart.explodeDistance :
+                    chart.explodeDistance), y : 0
+            };
         } else {
             translate = degreeToLocation(point.midAngle, chart.explodeDistance, this.center);
         }

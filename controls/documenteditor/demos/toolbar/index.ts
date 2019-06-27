@@ -276,7 +276,25 @@ L10n.load({
             'Left-to-right': 'من اليسار إلى اليمين',
             'Direction': 'الاتجاه',
             'Table direction': 'اتجاه الجدول',
-            'Indent from right': 'مسافة بادئه من اليمين'
+            'Indent from right': 'مسافة بادئه من اليمين',
+            'Format restrictions': 'قيود التنسيق',
+            'Allow Formatting': 'السماح بالتنسيق',
+            'Editing restrictions': 'قيود التحرير',
+            'Read Only': 'للقراءة فقط',
+            'User permissions': 'أذونات المستخدم',
+            'Everyone': 'الجميع',
+            'Add Users': 'أضافه مستخدمين',
+            'Enforcing Protection': 'فرض الحماية',
+            'Enter User': 'ادخل المستخدم',
+            'Users': 'المستخدمين',
+            'Enter new password': 'ادخل كلمه مرور جديد',
+            'Reenter new password': 'أعاده إدخال كلمه مرور جديده',
+            'Your permissions': 'الأذونات الخاصة بك',
+            'This document is protected from unintenional editing.You may edit in this region,but all changes will be tracked.': 'هذا المستند محمي من التحرير غير الموجه. يمكنك التحرير في هذه المنطقة ، ولكن سيتم تعقب كافة التغييرات',
+            'You may format text only with certain styles.': 'يمكنك تنسيق النص فقط مع أنماط معينه',
+            'Stop Protection': 'إيقاف الحماية',
+            'Unprotect Document': 'إلغاء حماية المستند',
+            'Password': 'كلمه المرور',
         },
         'documenteditorcontainer': {
             'New': 'الجديد',
@@ -409,7 +427,26 @@ L10n.load({
                 'تم رفض الوصول إلى حافظه النظام من خلال البرنامج النصي بسبب نهج أمان المستعرضات. بدلا ' + '</br>' +
                 '1. يمكنك تمكين الحافظة الداخلية لقطع ونسخ ولصق داخل المكون' + '</br>' +
                 '2. يمكنك استخدام اختصارات لوحه المفاتيح (ctrl + X ، ctrl + C و ctrl + V) لقص ونسخ ولصق مع الحافظة النظام',
-            'Restrict editing.': 'تقييد التحرير'
+            'Restrict editing.': 'تقييد التحرير',
+            'Format restrictions': 'قيود التنسيق',
+            'Allow Formatting': 'السماح بالتنسيق',
+            'Editing restrictions': 'قيود التحرير',
+            'Read Only': 'للقراءة فقط',
+            'User permissions': 'أذونات المستخدم',
+            'Everyone': 'الجميع',
+            'Add Users': 'أضافه مستخدمين',
+            'Enforcing Protection': 'فرض الحماية',
+            'Enter User': 'ادخل المستخدم',
+            'Users': 'المستخدمين',
+            'Enter new password': 'ادخل كلمه مرور جديد',
+            'Reenter new password': 'أعاده إدخال كلمه مرور جديده',
+            'Your permissions': 'الأذونات الخاصة بك',
+            'This document is protected from unintenional editing.You may edit in this region,but all changes will be tracked.': 'هذا المستند محمي من التحرير غير الموجه. يمكنك التحرير في هذه المنطقة ، ولكن سيتم تعقب كافة التغييرات',
+            'You may format text only with certain styles.': 'يمكنك تنسيق النص فقط مع أنماط معينه',
+            'Stop Protection': 'إيقاف الحماية',
+            'Unprotect Document': 'إلغاء حماية المستند',
+            'Password': 'كلمه المرور',
+            'Protections': 'الحمايه'
         },
         'colorpicker': {
             'Apply': 'تطبيق',
@@ -422,6 +459,6 @@ L10n.load({
  * Container component
  */
 let container: DocumentEditorContainer = new DocumentEditorContainer();
+container.serviceUrl = 'https://ej2services.syncfusion.com/development/web-services/api/documenteditor/';
 DocumentEditorContainer.Inject(Toolbar);
-container.serviceUrl = 'https://ej2services.syncfusion.com/production/web-services/api/documenteditor/Import';
 container.appendTo('#container');

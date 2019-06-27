@@ -147,30 +147,31 @@ export class ScheduleTouch {
 
     private confirmSwipe(swipeDirection: string): void {
         let previousDate: Date = swipeDirection === this.touchLeftDirection ? this.nextPanel.selectedDate : this.previousPanel.selectedDate;
-        let navArgs: NavigatingEventArgs = {
+        let args: NavigatingEventArgs = {
             action: 'date', cancel: false, previousDate: previousDate, currentDate: this.currentPanel.selectedDate
         };
-        this.parent.trigger(events.navigating, navArgs);
-        if (navArgs.cancel) {
-            this.swapPanels(swipeDirection);
-            this.cancelSwipe();
-            return;
-        }
-        this.parent.activeView.setPanel(this.currentPanel.element);
-        this.parent.setProperties({ selectedDate: this.currentPanel.selectedDate }, true);
-        let translateX: number;
-        if (this.parent.enableRtl) {
-            translateX = swipeDirection === this.touchLeftDirection ?
-                (this.previousPanel ? this.previousPanel.element.offsetLeft : this.currentPanel.element.offsetWidth) : 0;
-        } else {
-            translateX = swipeDirection === this.touchLeftDirection ? -this.currentPanel.element.offsetLeft : 0;
-        }
-        addClass([this.element], cls.TRANSLATE_CLASS);
-        this.element.style.transform = 'translatex(' + (translateX) + 'px)';
-        if (this.parent.headerModule) {
-            this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
-        }
-        this.parent.renderModule.refreshDataManager();
+        this.parent.trigger(events.navigating, args, (navArgs: NavigatingEventArgs) => {
+            if (navArgs.cancel) {
+                this.swapPanels(swipeDirection);
+                this.cancelSwipe();
+            } else {
+                this.parent.activeView.setPanel(this.currentPanel.element);
+                this.parent.setProperties({ selectedDate: this.currentPanel.selectedDate }, true);
+                let translateX: number;
+                if (this.parent.enableRtl) {
+                    translateX = swipeDirection === this.touchLeftDirection ?
+                        (this.previousPanel ? this.previousPanel.element.offsetLeft : this.currentPanel.element.offsetWidth) : 0;
+                } else {
+                    translateX = swipeDirection === this.touchLeftDirection ? -this.currentPanel.element.offsetLeft : 0;
+                }
+                addClass([this.element], cls.TRANSLATE_CLASS);
+                this.element.style.transform = 'translatex(' + translateX + 'px)';
+                if (this.parent.headerModule) {
+                    this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
+                }
+                this.parent.renderModule.refreshDataManager();
+            }
+        });
     }
 
     private cancelSwipe(): void {

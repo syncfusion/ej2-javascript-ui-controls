@@ -3,6 +3,7 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class TextStyle
+ * @private
  */
 export interface TextStyleModel {
 
@@ -117,6 +118,7 @@ export interface ToolLocationModel {
 
 /**
  * Interface for a class Tooltip
+ * @private
  */
 export interface TooltipModel extends ComponentModel{
 
@@ -143,21 +145,21 @@ export interface TooltipModel extends ComponentModel{
     enableShadow?: boolean;
 
     /**
-     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string. 
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
      * @private.
      */
 
     fill?: string;
 
     /**
-     * Header for tooltip. 
+     * Header for tooltip.
      * @private.
      */
 
     header?: string;
 
     /**
-     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string. 
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
      * @private.
      */
 
@@ -295,6 +297,20 @@ export interface TooltipModel extends ComponentModel{
      * @private.
      */
     areaBounds?: AreaBoundsModel;
+
+    /**
+     * Bounds for chart.
+     * @private.
+     */
+    availableSize?: Size;
+
+    /**
+     * To check chart is canvas.
+     * @default false.
+     * @private.
+     */
+
+    isCanvas?: boolean;
 
     /**
      * Triggers before each axis range is rendered.

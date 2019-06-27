@@ -798,6 +798,18 @@ describe('Splitter Control', () => {
             splitterObj.previousCoordinates = {x: 314, y: 267};
             expect(splitterObj.isCursorMoved(eventArgs)).toEqual(false);
         });
+
+        it('Touch with focus not removed from previous splitbar issue check', () => {
+            let splitbars: Element[] = splitterObj.element.querySelectorAll('.e-split-bar');
+            splitterObj.clickHandler({ target: splitbars[0] });
+            expect(splitbars[0].classList.contains('e-split-bar-hover')).toEqual(true);
+            splitterObj.clickHandler({ target: splitbars[1] });
+            expect(splitbars[0].classList.contains('e-split-bar-hover')).toEqual(false);
+            expect(splitbars[1].classList.contains('e-split-bar-hover')).toEqual(true);
+            splitterObj.clickHandler({ target: splitbars[0] });
+            expect(splitbars[0].classList.contains('e-split-bar-hover')).toEqual(true);
+            expect(splitbars[1].classList.contains('e-split-bar-hover')).toEqual(false);
+        });
     });
 
 

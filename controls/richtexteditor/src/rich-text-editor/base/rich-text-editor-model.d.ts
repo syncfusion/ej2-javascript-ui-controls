@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType } from './enum';import { EditorMode } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode } from '../base/util';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType } from './enum';import { EditorMode } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';
 import {ChangeEventArgs} from "./rich-text-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -66,7 +66,14 @@ export interface RichTextEditorModel extends ComponentModel{
      * {
      *  prompt: false,
      *  deniedAttrs: null,
-     *  allowedStyleProps: null,
+     *  allowedStyleProps: ['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius',
+     *  'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor',
+     *  'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style',
+     *  'height', 'left', 'line-height', 'margin', 'margin-top', 'margin-left',
+     *  'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width',
+     *  'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right',
+     *  'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-indent',
+     *  'top', 'vertical-align', 'visibility', 'white-space', 'width'],
      *  deniedTags: null,
      *  keepFormat: true,
      *  plainText:  false
@@ -379,71 +386,141 @@ export interface RichTextEditorModel extends ComponentModel{
      * If you cancel this event, the command cannot be executed. 
      * Set the cancel argument to true to cancel the command execution.
      * @event
+     * @blazorProperty 'OnActionBegin'
      */
     actionBegin?: EmitType<ActionBeginEventArgs>;
 
     /**
      * Triggers after command execution using toolbar items or executeCommand method.
      * @event
+     * @blazorProperty 'OnActionComplete'
      */
     actionComplete?: EmitType<ActionCompleteEventArgs>;
 
     /**
+     * Event triggers when the dialog is being opened.
+     * If you cancel this event, the dialog remains closed. 
+     * Set the cancel argument to true to cancel the open of a dialog.
+     * @event
+     * @blazorProperty 'OnDialogOpen'
+     */
+
+    beforeDialogOpen?: EmitType<BeforeOpenEventArgs>;
+
+    /**
+     * Event triggers when a dialog is opened.
+     * @event
+     * @blazorProperty 'DialogOpened'
+     */
+    dialogOpen?: EmitType<Object>;
+
+    /**
+     * Event triggers after the dialog has been closed.
+     * @event
+     * @blazorProperty 'DialogClosed'
+     */
+    dialogClose?: EmitType<Object>;
+
+    /**
+     * Event triggers when the quick toolbar is being opened.
+     * @event
+     * @blazorProperty 'OnQuickToolbarOpen'
+     */
+
+    beforeQuickToolbarOpen?: EmitType<BeforeQuickToolbarOpenArgs>;
+
+    /**
+     * Event triggers when a quick toolbar is opened.
+     * @event
+     * @blazorProperty 'QuickToolbarOpened'
+     */
+    quickToolbarOpen?: EmitType<Object>;
+
+    /**
+     * Event triggers after the quick toolbar has been closed.
+     * @event
+     * @blazorProperty 'QuickToolbarClosed'
+     */
+    quickToolbarClose?: EmitType<Object>;
+
+    /**
+     * Triggers when the undo and redo status is updated.
+     * @event 
+     */
+    toolbarStatusUpdate?: EmitType<Object>;
+
+    /**
      * Triggers when the RichTextEditor is rendered.
      * @event 
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the RichTextEditor is destroyed.
      * @event 
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
+     * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
+     * @event 
+     * @blazorProperty 'OnSanitizeHtml'
+     */
+    beforeSanitizeHtml?: EmitType<BeforeSanitizeHtmlArgs>;
+
+    /**
      * Triggers when RichTextEditor is focused out.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<Object>;
 
     /**
      * Triggers when RichTextEditor Toolbar items is clicked.
      * @event
+     * @blazorProperty 'OnToolbarClick'
      */
     toolbarClick?: EmitType<Object>;
 
     /**
      * Triggers when RichTextEditor is focused in
      * @event
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<Object>;
 
     /**
      * Triggers only when RichTextEditor is blurred and changes are done to the content.
      * @event 
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers only when resizing the image.
      * @event 
+     * @blazorProperty 'Resizing'
      */
     resizing?: EmitType<ResizeArgs>;
 
     /**
      * Triggers only when start resize the image.
      * @event 
+     * @blazorProperty 'OnResizeStart'
      */
     resizeStart?: EmitType<ResizeArgs>;
 
     /**
      * Triggers only when stop resize the image.
      * @event 
+     * @blazorProperty 'OnResizeStop'
      */
     resizeStop?: EmitType<ResizeArgs>;
 
     /**
-     * Customize keyCode to change the key value.
+     * Customize keyCode to change the key value. 
      * @default null 
      */
     formatter?: IFormatter;

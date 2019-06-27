@@ -780,7 +780,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].
                     renderPoint(point, this, accumulation, option, seriesGroup, redraw);
         }
-        appendChildElement(accumulation.getSeriesElement(), seriesGroup, redraw);
+        appendChildElement(false, accumulation.getSeriesElement(), seriesGroup, redraw);
     }
     /**
      * Method render the datalabel elements for accumulation chart.
@@ -800,10 +800,10 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         }
         if (this.dataLabel.template !== null && element.childElementCount) {
             appendChildElement(
-                getElement(accumulation.element.id + '_Secondary_Element'), element, redraw
+                false, getElement(accumulation.element.id + '_Secondary_Element'), element, redraw
             );
         }
-        appendChildElement(accumulation.getSeriesElement(), datalabelGroup, redraw);
+        appendChildElement(false, accumulation.getSeriesElement(), datalabelGroup, redraw);
     }
 
     /**

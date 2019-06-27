@@ -5,7 +5,6 @@ $ddl-last-child-bottom-border: 0 !default;
 $ddl-default-font-family: $font-family !default;
 $ddl-list-border-size: 0 !default;
 $ddl-list-bottom-border: $ddl-list-border-size !default;
-
 $ddl-list-border-color: transparent !default;
 $ddl-list-gradient-color: none !default;
 $ddl-list-bg-color: $grey-800 !default;
@@ -33,10 +32,34 @@ $ddl-list-padding-right: 16px !default;
 $ddl-bigger-list-header-font-size: 14px !default;
 $ddl-multi-column-border-width: 0 0 1px 0 !default;
 $ddl-multi-column-border-color: $grey-700 !default;
+
+// Small Size
+
+$ddl-small-icon-font-size: 14px !default;
+$ddl-small-line-height: 26px !default;
+$ddl-small-list-font-color: $grey-dark-font !default;
+$ddl-small-list-text-indent: 12px !default;
+
+// Touch Small
+
+$ddl-bigger-small-icon-font-size: 18px !default;
+$ddl-bigger-small-line-height: 40px !default;
+$ddl-bigger-small-list-font-color: $grey-light-font !default;
+$ddl-bigger-small-list-text-indent: 16px !default;
+$ddl-bigger-small-list-header-font-size: 13px !default;
+
 //enddefault
 //dimensions
 @include export-module('dropdownbase-material-dark') {
   .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 16px 0 0;
+  }
+
+  .e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 12px 0 0;
+  }
+
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
     padding: 0 16px 0 0;
   }
 }

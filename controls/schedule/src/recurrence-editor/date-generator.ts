@@ -79,6 +79,14 @@ export function generate(
     let cacheDate: Date; calendarUtil = getCalendarUtil(calendarMode);
     let data: number[] = [];
     let modifiedDate: Date = new Date(startDate.getTime());
+    tempExcludeDate = [];
+    let tempDate: string[] = isNullOrUndefined(excludeDate) ? [] : excludeDate.split(',');
+    tempDate.forEach((content: string) => {
+        let parsedDate: Date = getDateFromRecurrenceDateString(content);
+        tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
+    });
+    ruleObject.recExceptionCount = !isNullOrUndefined(ruleObject.count) ? tempExcludeDate.length : 0;
+
     if (viewDate && viewDate > startDate && !ruleObject.count) {
         tempViewDate = new Date(new Date(viewDate.getTime()).setHours(0, 0, 0));
     } else {
@@ -94,12 +102,6 @@ export function generate(
     }
     maxOccurrence = maximumCount;
     setFirstDayOfWeek(DAYINDEX[startDayOfWeek]);
-    tempExcludeDate = [];
-    let tempDate: string[] = isNullOrUndefined(excludeDate) ? [] : excludeDate.split(',');
-    tempDate.forEach((content: string) => {
-        let parsedDate: Date = getDateFromRecurrenceDateString(content);
-        tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
-    });
     switch (ruleObject.freq) {
         case 'DAILY':
             dailyType(modifiedDate, ruleObject.until, data, ruleObject);
@@ -142,7 +144,7 @@ function dailyType(startDate: Date, endDate: Date, data: number[], ruleObject: R
         state = validateRules(tempDate, ruleObject);
         if (state && (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1 || expectedDays.length === 0)) {
             excludeDateHandler(data, tempDate.getTime());
-            if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+            if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
                 break;
             }
         }
@@ -177,7 +179,7 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
                 if (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1) {
                     weekCollection.push([tempDate.getTime()]);
                 }
-                if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+                if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
                     break;
                 }
                 tempDate.setDate(tempDate.getDate() + 1);
@@ -185,7 +187,7 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
                 resetTime(compareTempDate);
             }
             tempDate.setDate(tempDate.getDate() - 1);
-            if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+            if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
                 break;
             }
             tempDate.setDate((tempDate.getDate()) + 1 + ((interval - 1) * 7));
@@ -199,7 +201,7 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
             if (weekState && (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1)) {
                 excludeDateHandler(data, tempDate.getTime());
             }
-            if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+            if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
                 break;
             }
             tempDate.setDate(tempDate.getDate() + (interval * 7));
@@ -296,7 +298,7 @@ function processWeekNo(startDate: Date, endDate: Date, data: number[], ruleObjec
         if (!isNullOrUndefined(ruleObject.setPosition)) {
             insertDatasIntoExistingCollection(weekCollection, state, startDate, endDate, data, ruleObject);
         }
-        if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+        if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
             return;
         }
         stDate = calendarUtil.getYearLastDate(tempDate, ruleObject.interval);
@@ -334,7 +336,7 @@ function processYearDay(startDate: Date, endDate: Date, data: number[], ruleObje
         if (!isNullOrUndefined(ruleObject.setPosition)) {
             insertDatasIntoExistingCollection(dateCollection, state, startDate, endDate, data, ruleObject);
         }
-        if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+        if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
             return;
         }
         stDate = calendarUtil.getYearLastDate(tempDate, ruleObject.interval);
@@ -378,7 +380,7 @@ function monthlyDateTypeProcess(startDate: Date, endDate: Date, data: number[], 
     while (compareDates(ruleData.tempDate, endDate)) {
         currentMonthDate = new Date(ruleData.tempDate.getTime());
         while (calendarUtil.isSameYear(currentMonthDate, ruleData.tempDate) &&
-            (ruleData.expectedCount && (data.length + tempExcludeDate.length) <= ruleData.expectedCount)) {
+            (ruleData.expectedCount && (data.length + ruleObject.recExceptionCount) <= ruleData.expectedCount)) {
             if (ruleObject.month.length === 0 || (ruleObject.month.length > 0
                 && !calendarUtil.checkMonth(ruleData.tempDate, ruleObject.month))) {
                 processDateCollectionForByMonthDay(ruleObject, ruleData, endDate, false);
@@ -397,7 +399,7 @@ function monthlyDateTypeProcess(startDate: Date, endDate: Date, data: number[], 
             calendarUtil.setValidDate(ruleData.tempDate, 1, 1);
             ruleData.tempDate = getStartDateForWeek(ruleData.tempDate, ruleObject.day);
         }
-        if (ruleData.expectedCount && (data.length + tempExcludeDate.length) >= ruleData.expectedCount) {
+        if (ruleData.expectedCount && (data.length + ruleObject.recExceptionCount) >= ruleData.expectedCount) {
             return;
         }
         ruleData.tempDate.setFullYear(ruleData.tempDate.getFullYear() + ruleObject.interval - 1);
@@ -418,7 +420,7 @@ function monthlyDateTypeProcessforMonthFreq(startDate: Date, endDate: Date, data
             insertDatasIntoExistingCollection
                 (ruleData.dateCollection, ruleData.state, startDate, endDate, data, ruleObject);
         }
-        if (ruleData.expectedCount && (data.length + tempExcludeDate.length) >= ruleData.expectedCount) {
+        if (ruleData.expectedCount && (data.length + ruleObject.recExceptionCount) >= ruleData.expectedCount) {
             return;
         }
         ruleData.monthInit = setNextValidDate
@@ -444,7 +446,7 @@ function processDateCollectionForByMonthDay(
             }
             if (ruleObject.day.length === 0 || ruleObject.day.indexOf(DAYINDEX[recRuleVariables.tempDate.getDay()]) > -1) {
                 if (isByMonth && isNullOrUndefined(ruleObject.setPosition) && (recRuleVariables.expectedCount
-                    && (data.length + tempExcludeDate.length) < recRuleVariables.expectedCount)) {
+                    && (data.length + ruleObject.recExceptionCount) < recRuleVariables.expectedCount)) {
                     insertDateCollection
                         (recRuleVariables.state, startDate, endDate, data, ruleObject, recRuleVariables.tempDate.getTime());
                 } else {
@@ -497,7 +499,7 @@ function getMonthCollection
     }
     tempDate = getStartDateForWeek(tempDate, ruleObject.day);
     while (compareDates(tempDate, endDate)
-        && (expectedCount && (data.length + tempExcludeDate.length) < expectedCount)) {
+        && (expectedCount && (data.length + ruleObject.recExceptionCount) < expectedCount)) {
         let currentMonthDate: Date = new Date(tempDate.getTime());
         let isHavingNumber: boolean[] = expectedDays.map((item: string) => HASNUMBER.test(item));
         if (isHavingNumber.indexOf(true) > -1) {
@@ -526,7 +528,7 @@ function getMonthCollection
                         insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index) :
                         dateCollection = [(filterDateCollectionByIndex(monthCollection, index, dates))];
                 }
-                if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+                if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
                     return;
                 }
                 monthCollection = [];
@@ -567,7 +569,7 @@ function getMonthCollection
             if (monthCollection.length > 0) {
                 insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index);
             }
-            if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+            if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
                 return;
             }
             monthInit = setNextValidDate(tempDate, ruleObject, monthInit, beginDate);
@@ -595,7 +597,7 @@ function monthlyDayTypeProcessforMonthFreq(startDate: Date, endDate: Date, data:
         calendarUtil.setMonth(tempDate, ruleObject.month[0], 1);
     }
     tempDate = getStartDateForWeek(tempDate, ruleObject.day);
-    while (compareDates(tempDate, endDate) && (expectedCount && (data.length + tempExcludeDate.length) < expectedCount)) {
+    while (compareDates(tempDate, endDate) && (expectedCount && (data.length + ruleObject.recExceptionCount) < expectedCount)) {
         beginDate = new Date(tempDate.getTime());
         let currentMonthDate: Date = new Date(tempDate.getTime());
         while (calendarUtil.isSameMonth(tempDate, currentMonthDate)) {
@@ -638,7 +640,7 @@ function monthlyDayTypeProcess(startDate: Date, endDate: Date, data: number[], r
     while (compareDates(tempDate, endDate)) {
         currentMonthDate = new Date(tempDate.getTime());
         while (calendarUtil.isSameYear(currentMonthDate, tempDate) &&
-            (expectedCount && (data.length + tempExcludeDate.length) <= expectedCount)) {
+            (expectedCount && (data.length + ruleObject.recExceptionCount) <= expectedCount)) {
             currentMonthDate = new Date(tempDate.getTime());
             while (calendarUtil.isSameYear(currentMonthDate, tempDate)) {
                 if (ruleObject.month.length === 0 || (ruleObject.month.length > 0
@@ -683,7 +685,7 @@ function monthlyDayTypeProcess(startDate: Date, endDate: Date, data: number[], r
             tempDate = getStartDateForWeek(tempDate, ruleObject.day);
         }
         tempDate.setFullYear(tempDate.getFullYear() + interval - 1);
-        if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+        if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
             return;
         }
         tempDate = getStartDateForWeek(tempDate, ruleObject.day);
@@ -719,7 +721,7 @@ function processDateCollectionforByDayWithInteger(startDate: Date, endDate: Date
                 tempDate = getStartDateForWeek(tempDate, ruleObject.day);
                 monthCollection = [];
                 while (calendarUtil.isSameYear(currentMonthDate, tempDate) &&
-                    (expectedCount && (data.length + tempExcludeDate.length) <= expectedCount)) {
+                    (expectedCount && (data.length + ruleObject.recExceptionCount) <= expectedCount)) {
                     while (calendarUtil.isSameYear(currentMonthDate, tempDate)) {
                         currentMonthDate = new Date(tempDate.getTime());
                         if (ruleObject.month.length === 0 ||
@@ -752,7 +754,7 @@ function processDateCollectionforByDayWithInteger(startDate: Date, endDate: Date
                         insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index) :
                         dateCollection = [(filterDateCollectionByIndex(monthCollection, index, datas))];
                 }
-                if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+                if (expectedCount && (data.length + ruleObject.recExceptionCount) >= expectedCount) {
                     return;
                 }
             }
@@ -872,7 +874,7 @@ function insertDateCollection
     let chDate: Date = new Date(dayData);
     state = validateRules(chDate, ruleObject);
     if ((chDate >= startDate) && compareDates(chDate, endDate) && state
-        && expectedCount && (data.length + tempExcludeDate.length) < expectedCount) {
+        && expectedCount && (data.length + ruleObject.recExceptionCount) < expectedCount) {
         excludeDateHandler(data, dayData);
     }
 }
@@ -1150,6 +1152,7 @@ export interface RecRule {
     yearDay: number[];
     setPosition: number;
     validRules: string[];
+    recExceptionCount?: number;
 }
 
 // Variables which are used for recurrence date generation

@@ -92,6 +92,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;

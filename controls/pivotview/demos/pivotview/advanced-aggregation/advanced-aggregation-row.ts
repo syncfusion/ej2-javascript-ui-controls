@@ -14,8 +14,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 //335 or 315
 PivotView.Inject(FieldList, CalculatedField);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: excel_data as IDataSet[],
+    dataSourceSettings: {
+        dataSource: excel_data as IDataSet[],
         expandAll: false,
         enableSorting: true,
         rows: [{ name: 'Product' }],
@@ -33,7 +33,7 @@ let listObj: DropDownList = new DropDownList({
     placeholder: 'Select an aggregate type',
     popupHeight: '200px',
     change: (arg: ChangeEventArgs) => {
-        pivotGridObj.dataSource.values[0].type = arg.value as SummaryTypes;
+        pivotGridObj.dataSourceSettings.values[0].type = arg.value as SummaryTypes;
     },
     width: '250px'
 });

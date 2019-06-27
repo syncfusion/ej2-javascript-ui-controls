@@ -84,7 +84,7 @@ describe('DropDownList', () => {
             });
             listObj.appendTo(element);
         });
-        it("Items values", function (done) {
+        it("Items values", function () {
             listObj.open = function (args) {
                 popup = document.getElementById('dropdownlist_popup');
                 liEle = popup.querySelector('li');
@@ -95,12 +95,11 @@ describe('DropDownList', () => {
                 // listObj.open = null;
             };
             listObj.close = function (args) {
-                done();
                 listObj.close = null;
             };
             listObj.showPopup();
         });
-        it("Items Recheck values", function (done) {
+        it("Items Recheck values", function () {
             listObj.open = function (args) {
                 popup = document.getElementById('dropdownlist_popup');
                 liEle = popup.querySelector('li');
@@ -111,7 +110,6 @@ describe('DropDownList', () => {
                 listObj.open = null;
             };
             listObj.close = function (args) {
-                done();
                 listObj.close = null;
             };
             listObj.showPopup();
@@ -370,6 +368,34 @@ describe('DropDownList', () => {
             }, 2000);
         });
     });
+    describe('EJ2-26552 - Defult value maintained in from reset', () => {
+        let element: HTMLInputElement;
+        let data: ['American Football', 'Cricket', 'FootBall', 'Hockey', 'BasketBall'];
+        let listObj: DropDownList;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('form', { id: 'form1' });
+            element.innerHTML = `<input type="text" id="ddl">
+            <input type="reset" id="resetForm"/>`;
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: data,
+                value: 'American Football',
+                allowFiltering: true
+            });
+            listObj.appendTo('#ddl');
+            listObj.showPopup();
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('reset the form', (done) => {
+            document.getElementById('resetForm').click();
+            setTimeout(() => {
+                expect(listObj.value === 'American Football').toBe(true);
+                done();
+            });
+        });
+    });
     describe('EJ2-16375: Form reset', () => {
         let element: HTMLInputElement;
         let data: { [key: string]: Object }[] = [
@@ -442,6 +468,54 @@ describe('DropDownList', () => {
                 expect(input.value === '').toBe(true);
                 done();
             })
+        });
+    });
+
+    describe('EJ2-27976 - Dynamic filtering issue', () => {
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74,
+            metaKey: false
+        };
+        let listObj: any;
+        let element: HTMLSelectElement;
+        beforeAll(() => {
+            element = <HTMLSelectElement>createElement('select', { id: 'list' });
+            element.innerHTML = `<option value="0">American Football</option>
+            <option value="1">Badminton</option>
+            <option value="2">Basketball</option>
+            <option value="3">Cricket</option>
+            <option value="4">Football</option>
+            <option value="5">Golf</option>
+            <option value="6">Hockey</option>
+            <option value="7">Rugby</option>
+            <option value="8">Snooker</option>
+            <option value="9">Tennis</option>`;
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+            });
+            listObj.appendTo(element);
+            listObj.allowFiltering = true
+            listObj.dataBind();
+            listObj.showPopup();
+        });
+        afterAll(() => {
+            if (element) { element.remove(); };
+            document.body.innerHTML = '';
+        });
+
+        it('filter a suggestion list with select element', () => {
+            listObj.filterInput.value = "C";
+            listObj.onInput()
+            listObj.onFilterUp(keyEventArgs);
+            let element = document.querySelector(".e-list-parent");
+            expect(element.childNodes[0].textContent === 'Cricket').toBe(true);
+            let li: any = listObj.list.getElementsByClassName('e-list-item');
+            let len: number = listObj.list.getElementsByClassName('e-list-item').length;
+            li[0].click();
+            listObj.hidePopup();
+            let len2: number = listObj.list.getElementsByClassName('e-list-item').length;
+            expect(len === len2 ).toBe(true);
         });
     });
 

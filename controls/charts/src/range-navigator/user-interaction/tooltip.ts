@@ -1,5 +1,5 @@
 import { RangeNavigator, RangeSlider } from '../../range-navigator';
-import { Tooltip as SVGTooltip } from '@syncfusion/ej2-svg-base';
+import { Tooltip as SVGTooltip} from '@syncfusion/ej2-svg-base';
 import { getElement } from '../../common/utils/helper';
 import { stopTimer } from '../../common/utils/helper';
 import { RangeTooltipSettingsModel, firstToLowerCase, Axis, FontModel } from '../../index';
@@ -136,6 +136,7 @@ export class RangeTooltip {
                     border: tooltip.border, opacity: tooltip.opacity,
                     template: tooltip.template,
                     textStyle: argsData.textStyle,
+                    availableSize: control.availableSize,
                     data: {
                         'start': this.getTooltipContent(this.control.startValue)[0],
                         'end': this.getTooltipContent(this.control.endValue)[0],

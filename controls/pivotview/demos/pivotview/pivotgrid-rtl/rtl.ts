@@ -10,8 +10,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 
 PivotView.Inject(GroupingBar);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: false,
         enableSorting: true,
         sortSettings: [{ name: 'company', order: 'Descending' }],

@@ -1,11 +1,10 @@
 /**
  * Events base methods testing
  */
-import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel } from '../../../src/schedule/index';
 import { EventBase } from '../../../src/schedule/event-renderer/event-base';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-import { createGroupSchedule, destroy } from '../util.spec';
+import * as util from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
@@ -24,34 +23,20 @@ describe('Event Base Module', () => {
     describe('split event by day method testing', () => {
         let schObj: Schedule;
         let eventBase: EventBase;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule();
+            schObj = util.createSchedule({}, []);
             eventBase = new EventBase(schObj);
-            schObj.appendTo('#Schedule');
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
-
         it('Event on same day', () => {
-            let event: { [key: string]: Object } = {
-                'StartTime': new Date(2017, 11, 1, 4),
-                'EndTime': new Date(2017, 11, 1, 8)
-            };
+            let event: { [key: string]: Object } = { 'StartTime': new Date(2017, 11, 1, 4), 'EndTime': new Date(2017, 11, 1, 8) };
             let spannedEvents: Object[] = eventBase.splitEventByDay(event);
             expect(spannedEvents.length).toEqual(1);
         });
-
         it('Event on multiple day', () => {
-            let event: { [key: string]: Object } = {
-                'StartTime': new Date(2017, 11, 1, 4),
-                'EndTime': new Date(2017, 11, 4, 8)
-            };
+            let event: { [key: string]: Object } = { 'StartTime': new Date(2017, 11, 1, 4), 'EndTime': new Date(2017, 11, 4, 8) };
             let spannedEvents: Object[] = eventBase.splitEventByDay(event);
             expect(spannedEvents.length).toEqual(4);
         });
@@ -59,29 +44,18 @@ describe('Event Base Module', () => {
 
     describe('checking spanned recurrence appointment', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let eventData: Object[] = [{
+            Id: 1,
+            StartTime: new Date(2018, 7, 7, 23),
+            EndTime: new Date(2018, 7, 8, 16),
+            RecurrenceRule: 'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;UNTIL=20180905T070000Z;'
+        }];
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '550px', selectedDate: new Date(2018, 7, 7),
-                eventSettings: {
-                    dataSource: [{
-                        Id: 1,
-                        StartTime: new Date(2018, 7, 7, 23),
-                        EndTime: new Date(2018, 7, 8, 16),
-                        RecurrenceRule: 'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;UNTIL=20180905T070000Z;'
-                    }]
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { height: '550px', selectedDate: new Date(2018, 7, 7) };
+            schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('spanned recurrence appointments with offsetTop', (done: Function) => {
             schObj.dataBound = () => {
@@ -101,53 +75,33 @@ describe('Event Base Module', () => {
 
     describe('Schedule Timezone testing', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        let datas: Object[] = [{
+        let timezone: Timezone = new Timezone();
+        let eventData: Object[] = [{
             Id: 1,
             Subject: 'Testing',
-            StartTime: new Date(2018, 5, 14, 15, 0),
-            EndTime: new Date(2018, 5, 14, 17, 0)
+            StartTime: timezone.removeLocalOffset(new Date(2018, 5, 14, 15, 0)),
+            EndTime: timezone.removeLocalOffset(new Date(2018, 5, 14, 17, 0))
         }];
-        for (let data of datas) {
-            let event: { [key: string]: Object } = data as { [key: string]: Object };
-            let timezone: Timezone = new Timezone();
-            event.StartTime = timezone.removeLocalOffset(<Date>event.StartTime);
-            event.EndTime = timezone.removeLocalOffset(<Date>event.EndTime);
-        }
-        let initialStartDate: Date = new Date((datas[0] as { [key: string]: Object }).StartTime + '');
+        let initialStartDate: Date = new Date((eventData[0] as { [key: string]: Object }).StartTime + '');
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                selectedDate: new Date(2018, 5, 14),
-                eventSettings: {
-                    dataSource: datas
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2018, 5, 14) };
+            schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
-
         it('Set timezone to Schedule', () => {
             schObj.timezone = 'America/New_York';
             schObj.dataBind();
             let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
             expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 5, 14, 11, 0).getTime());
         });
-
         it('Convert timezone', () => {
             schObj.timezone = 'Asia/Kolkata';
             schObj.dataBind();
             let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
             expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 5, 14, 20, 30).getTime());
         });
-
         it('Remove timezone to Schedule', () => {
             schObj.timezone = null;
             schObj.dataBind();
@@ -158,34 +112,25 @@ describe('Event Base Module', () => {
 
     describe('checking recurrence appointment', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let eventData: Object[] = [{
+            Id: 1,
+            StartTime: new Date(2018, 9, 11, 0),
+            EndTime: new Date(2018, 9, 12, 0),
+            RecurrenceRule: 'FREQ=DAILY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;'
+        }];
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 height: '550px', selectedDate: new Date(2018, 9, 1),
                 views: [
                     { displayName: '3 Days', option: 'Day', interval: 3 },
                     { displayName: '2 Weeks', option: 'Week', interval: 2 },
                     { displayName: '4 Months', option: 'Month', isSelected: true, interval: 4 }
-                ],
-                eventSettings: {
-                    dataSource: [{
-                        Id: 1,
-                        StartTime: new Date(2018, 9, 11, 0),
-                        EndTime: new Date(2018, 9, 12, 0),
-                        RecurrenceRule: 'FREQ=DAILY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;'
-                    }]
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                ]
+            };
+            schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('spanned recurrence appointments with offsetTop', (done: Function) => {
             schObj.dataBound = () => {
@@ -200,13 +145,10 @@ describe('Event Base Module', () => {
         });
     });
 
-
     describe('Resources with allow multiplegroup as true', () => {
         let schObj: Schedule;
-        let getResourceIndex: Function = (element: HTMLElement) => {
-            return parseInt(element.getAttribute('data-group-index'), 10);
-        };
-        let data: Object[] = [{
+        let getResourceIndex: Function = (element: HTMLElement) => parseInt(element.getAttribute('data-group-index'), 10);
+        let eventData: Object[] = [{
             Id: 1,
             Subject: 'Meeting',
             StartTime: new Date(2018, 3, 1, 10, 0),
@@ -216,14 +158,11 @@ describe('Event Base Module', () => {
             OwnerId: [1, 2, 3]
         }];
         beforeAll((done: Function) => {
-            let options: ScheduleModel = {
-                height: '550px', width: '100%',
-                selectedDate: new Date(2018, 3, 1)
-            };
-            schObj = createGroupSchedule(2, options, data, done);
+            let options: ScheduleModel = { height: '550px', width: '100%', selectedDate: new Date(2018, 3, 1) };
+            schObj = util.createGroupSchedule(2, options, eventData, done);
         });
         afterAll(() => {
-            destroy(schObj);
+            util.destroy(schObj);
         });
 
         it('Allow multiple true', () => {
@@ -272,7 +211,8 @@ describe('Event Base Module', () => {
             schObj.resources[0].dataSource = [
                 { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
                 { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
-                { RoomText: 'ROOM 12', Id: 12, RoomColor: '#cb6bb2' }];
+                { RoomText: 'ROOM 12', Id: 12, RoomColor: '#cb6bb2' }
+            ];
             schObj.resources[1].dataSource = [
                 { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
                 { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
@@ -318,16 +258,14 @@ describe('Event Base Module', () => {
                 expect(resourceIndex).toEqual(2);
                 done();
             };
-            schObj.resources = [
-                {
-                    field: 'RoomId', title: 'Room',
-                    name: 'Rooms', allowMultiple: false,
-                    dataSource: [
-                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
-                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
-                        { RoomText: 'ROOM 12', Id: 12, RoomColor: '#cb6bb2' }],
-                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                }];
+            schObj.resources = [{
+                field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                dataSource: [
+                    { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                    { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
+                    { RoomText: 'ROOM 12', Id: 12, RoomColor: '#cb6bb2' }],
+                textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+            }];
             schObj.eventSettings.dataSource = [{
                 Id: 1,
                 Subject: 'Meeting',
@@ -339,7 +277,6 @@ describe('Event Base Module', () => {
             schObj.dataBind();
         });
         it('Resource data source with 2 digits with single resource and allow multiple true', (done: Function) => {
-
             schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(1);
@@ -357,7 +294,6 @@ describe('Event Base Module', () => {
                 RoomId: [12],
             }];
             schObj.dataBind();
-
         });
     });
 

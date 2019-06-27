@@ -245,9 +245,10 @@ export class CalculatedField implements IAction {
                 currentObj.parent.localeObj.getConstant('error'), currentObj.parent.localeObj.getConstant('fieldExist'));
             return;
         }
-        this.newFields = extend([], (this.parent.dataSource as IDataOptions).calculatedFieldSettings, null, true) as ICalculatedFields[];
-        this.existingReport = extend({}, this.parent.dataSource, null, true) as IDataOptions;
-        let report: IDataOptions = this.parent.dataSource;
+        this.newFields =
+            extend([], (this.parent.dataSourceSettings as IDataOptions).calculatedFieldSettings, null, true) as ICalculatedFields[];
+        this.existingReport = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
+        let report: IDataOptions = this.parent.dataSourceSettings;
         let dropField: HTMLTextAreaElement = document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement;
         if (this.inputObj.value !== null && this.inputObj.value !== '' && dropField.value !== '') {
             let field: IFieldOptions = {
@@ -307,7 +308,7 @@ export class CalculatedField implements IAction {
 
     private addFormula(report: IDataOptions, field: string): void {
         try {
-            this.parent.setProperties({ dataSource: report }, true);
+            this.parent.setProperties({ dataSourceSettings: report }, true);
             if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
                 (this.parent as PivotFieldList).isRequiredUpdate = false;
             }
@@ -330,7 +331,7 @@ export class CalculatedField implements IAction {
             }
             this.parent.pivotCommon.errorDialog.createErrorDialog(
                 this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormula'));
-            this.parent.setProperties({ dataSource: this.existingReport }, true);
+            this.parent.setProperties({ dataSourceSettings: this.existingReport }, true);
             this.parent.lastCalcFieldInfo = {};
             this.parent.updateDataSource(false);
         }
@@ -462,6 +463,7 @@ export class CalculatedField implements IAction {
     }
 
     private beforeOpen(args: BeforeOpenEventArgs): void {
+        this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('createCalculatedField');
         this.dialog.element.querySelector('.e-dlg-header').
             setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
     }
@@ -790,9 +792,9 @@ export class CalculatedField implements IAction {
             if (type.indexOf(CALC) === -1) {
                 fieldText = fieldText + ('"' + type + '(' + field + ')' + '"');
             } else {
-                for (let j: number = 0; j < this.parent.dataSource.calculatedFieldSettings.length; j++) {
-                    if (this.parent.dataSource.calculatedFieldSettings[j].name === field) {
-                        fieldText = fieldText + this.parent.dataSource.calculatedFieldSettings[j].formula;
+                for (let j: number = 0; j < this.parent.dataSourceSettings.calculatedFieldSettings.length; j++) {
+                    if (this.parent.dataSourceSettings.calculatedFieldSettings[j].name === field) {
+                        fieldText = fieldText + this.parent.dataSourceSettings.calculatedFieldSettings[j].formula;
                         break;
                     }
                 }
@@ -821,7 +823,8 @@ export class CalculatedField implements IAction {
      * @returns void
      */
     private renderDialogLayout(): void {
-        this.newFields = extend([], (this.parent.dataSource as IDataOptions).calculatedFieldSettings, null, true) as ICalculatedFields[];
+        this.newFields =
+            extend([], (this.parent.dataSourceSettings as IDataOptions).calculatedFieldSettings, null, true) as ICalculatedFields[];
         this.createDialog();
         this.dialog.content = this.renderDialogElements();
         this.dialog.refresh();
@@ -884,10 +887,11 @@ export class CalculatedField implements IAction {
             close: this.removeErrorDialog.bind(this)
         });
         this.confirmPopUp.appendTo(errorDialog);
+        this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
 
     private replaceFormula(): void {
-        let report: IDataOptions = this.parent.dataSource;
+        let report: IDataOptions = this.parent.dataSourceSettings;
         let dropField: HTMLTextAreaElement = document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement;
         for (let i: number = 0; i < report.values.length; i++) {
             if (report.values[i].type === CALC && report.values[i].name === this.inputObj.value) {

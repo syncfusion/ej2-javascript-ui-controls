@@ -129,7 +129,7 @@ public isRemote(): boolean {
       this.taskIds = [];
       for (let i: number = 0; i < Object.keys(data).length; i++) {
         let tempData: Object = data[i];
-        this.hierarchyData.push(extend({}, tempData));
+        this.hierarchyData.push(extend({}, tempData, true));
         if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
           this.taskIds.push(tempData[this.parent.idMapping]);
         }
@@ -220,12 +220,16 @@ public isRemote(): boolean {
    * Function to manipulate datasource
    * @hidden
    */
-  private collectExpandingRecs(rowDetails: {record: ITreeData, rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement}): void {
+  private collectExpandingRecs(rowDetails: {record: ITreeData,
+    rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement, detailrows: HTMLTableRowElement}): void {
     let args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
     if (rowDetails.rows.length > 0) {
       rowDetails.record.expanded = true;
       for (let i: number = 0; i < rowDetails.rows.length; i++) {
         rowDetails.rows[i].style.display = 'table-row';
+        if (!isNullOrUndefined(rowDetails.detailrows[i])) {
+          rowDetails.detailrows[i].style.display = 'table-row';
+          }
       }
       this.parent.trigger(events.expanded, args);
     } else {
@@ -280,7 +284,7 @@ public isRemote(): boolean {
           currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
             ? currentData[this.parent.expandStateMapping] : true;
           }
-        }
+      }
       currentData.index =  currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
       if (this.isSelfReference && isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
         this.parent.parentData.push(currentData);
@@ -364,8 +368,10 @@ public isRemote(): boolean {
         if (isNullOrUndefined(gridQuery)) {
           gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
         }
+        if (!isNullOrUndefined(query)) {
         let summaryQuery: QueryOptions[]  = query.queries.filter((q: QueryOptions) => q.fn === 'onAggregates');
         results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, results, true);
+        }
       }
     }
     if (this.parent.grid.aggregates.length && this.parent.grid.sortSettings.columns.length === 0
@@ -380,11 +386,9 @@ public isRemote(): boolean {
     if (this.parent.grid.sortSettings.columns.length > 0 || this.isSortAction) {
       this.isSortAction = false; let parentData: Object;
       let action: string = 'action'; let collpasedIndexes: number[] = [];
-      parentData = this.parent.parentData;
-      let sortedData: Object[];
+      parentData = this.parent.parentData; let sortedData: Object[];
       let query: Query = getObject('query', args);
-      this.parent.sortModule = new Sort(this.parent);
-      let srtQry: Query = new Query();
+      this.parent.sortModule = new Sort(this.parent); let srtQry: Query = new Query();
       for (let srt: number = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
         let col: Column = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
         let compFun: Function | string = col.sortComparer && !this.isRemote() ?
@@ -394,12 +398,13 @@ public isRemote(): boolean {
       }
       let modifiedData: Object = new DataManager(parentData).executeLocal(srtQry);
       sortedData = <Object[]>modifiedData;
-      this.parent.notify('createSort', { modifiedData: <Object[]>modifiedData, filteredData: results, srtQry: srtQry });
-      results = <ITreeData[]>this.dataResults.result;
-      this.dataResults.result = null;
-      this.sortedData = results;
+      let sortArgs: { modifiedData: ITreeData[], filteredData: ITreeData[], srtQry: Query}
+      = {modifiedData: <Object[]>modifiedData, filteredData: results, srtQry: srtQry};
+      this.parent.notify('createSort', sortArgs);
+      results = sortArgs.modifiedData;
+      this.dataResults.result = null; this.sortedData = results;
       this.parent.notify('updateModel', {});
-      if (this.parent.grid.aggregates.length > 0) {
+      if (this.parent.grid.aggregates.length > 0 && !isNullOrUndefined(query)) {
         let isSort: boolean = false;
         let query: Query = getObject('query', args);
         let summaryQuery: QueryOptions[]  = query.queries.filter((q: QueryOptions) => q.fn === 'onAggregates');
@@ -407,14 +412,23 @@ public isRemote(): boolean {
       }
     }
     count = results.length;
+    let temp: BeforeDataBoundArgs = this.paging(results, count, isExport, exportType, args);
+    results = temp.result;
+    count = temp.count;
+    args.result = results; args.count = count;
+    this.parent.notify('updateResults', args);
+  }
+  private paging(results: ITreeData[], count: number, isExport: boolean, exportType: string, args: object): BeforeDataBoundArgs {
     if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')) {
       this.parent.notify(events.pagingActions, {result: results, count: count});
+      results = <ITreeData[]>this.dataResults.result; count = this.dataResults.count;
+    } else if (this.parent.enableVirtualization && (!isExport || exportType === 'CurrentPage')) {
+      this.parent.notify(events.pagingActions, {result: results, count: count, actionArgs: getValue('actionArgs', args)});
       results = <ITreeData[]>this.dataResults.result;
       count = this.dataResults.count;
     }
-    args.result = results;
-    args.count = count;
-    this.parent.notify('updateResults', args);
+    let value: BeforeDataBoundArgs = { result: results, count: count };
+    return value;
   }
   /**
    * update for datasource

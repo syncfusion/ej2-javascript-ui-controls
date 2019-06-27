@@ -391,11 +391,12 @@ export class Search {
      */
     public addSearchHighlightBorder(lineWidget: LineWidget): SearchWidgetInfo {
         let highlighters: SearchWidgetInfo[] = undefined;
-        if (this.searchHighlighters.containsKey(lineWidget)) {
-            highlighters = this.searchHighlighters.get(lineWidget);
+        let collection: Dictionary<LineWidget, SearchWidgetInfo[]> = this.searchHighlighters;
+        if (collection.containsKey(lineWidget)) {
+            highlighters = collection.get(lineWidget);
         } else {
             highlighters = [];
-            this.searchHighlighters.add(lineWidget, highlighters);
+            collection.add(lineWidget, highlighters);
         }
         let searchHighlight: SearchWidgetInfo = new SearchWidgetInfo(0, 0);
         highlighters.push(searchHighlight);

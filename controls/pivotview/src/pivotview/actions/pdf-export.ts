@@ -265,11 +265,11 @@ export class PDFExport {
                                     this.processCellStyle(pdfGridRow.cells.getCell(localCnt), args);
                                 }
                                 pdfGridRow.cells.getCell(localCnt).value = '';
-                                if (cCnt === 0 && isColHeader && this.parent.dataSource.columns &&
-                                    this.parent.dataSource.columns.length > 0) {
+                                if (cCnt === 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                    this.parent.dataSourceSettings.columns.length > 0) {
                                     pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
-                                } else if (cCnt !== 0 && isColHeader && this.parent.dataSource.columns &&
-                                    this.parent.dataSource.columns.length > 0 &&
+                                } else if (cCnt !== 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                    this.parent.dataSourceSettings.columns.length > 0 &&
                                     pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan <
                                     Object.keys(this.parent.engineModule.headerContent).length) {
                                     pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
@@ -291,7 +291,7 @@ export class PDFExport {
                 }
                 pdfGrid.columns.getColumn(0).width = 100 + (maxLevel * 20);
             }
-            if (integratedCnt === 0 && this.parent.dataSource.columns && this.parent.dataSource.columns.length > 0) {
+            if (integratedCnt === 0 && this.parent.dataSourceSettings.columns && this.parent.dataSourceSettings.columns.length > 0) {
                 pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan--;
             }
             pdfGrid.draw(page, new PointF(10, 20));
@@ -404,7 +404,7 @@ export class PDFExport {
         if (this.parent.enableVirtualization) {
             let pageSettings: IPageSettings = this.parent.engineModule.pageSettings;
             this.parent.engineModule.pageSettings = null;
-            this.parent.engineModule.generateGridData(this.parent.dataSource);
+            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings);
             this.parent.engineModule.pageSettings = pageSettings;
         }
         let clonedValues: IPivotValues = JSON.parse(JSON.stringify(this.parent.engineModule.pivotValues));

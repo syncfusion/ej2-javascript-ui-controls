@@ -231,7 +231,6 @@ export function isDiagramChild(htmlLayer: HTMLElement): boolean {
     return false;
 }
 
-
 /** @private */
 export function groupHasType(node: NodeModel, type: Shapes, nameTable: {}): boolean {
     let contains: boolean = false;
@@ -1766,6 +1765,7 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
         }
     }
 };
+
 /** @private */
 export let updatePathElement: Function = (anglePoints: PointModel[], connector: ConnectorModel): PathElement => {
     let pathElement: PathElement = new PathElement();

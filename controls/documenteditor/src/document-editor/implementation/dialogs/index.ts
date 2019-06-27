@@ -16,3 +16,4 @@ export * from './borders-and-shading-dialog';
 export * from './table-options-dialog';
 export * from './cell-options-dialog';
 export * from './styles-dialog';
+export * from './spellCheck-dialog';

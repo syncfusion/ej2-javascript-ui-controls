@@ -17,8 +17,8 @@ import { Button } from '@syncfusion/ej2-buttons';
 //335 or 315
 PivotView.Inject(FieldList, CalculatedField, GroupingBar);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         enableSorting: true,
         allowLabelFilter: true,
         allowValueFilter: true,

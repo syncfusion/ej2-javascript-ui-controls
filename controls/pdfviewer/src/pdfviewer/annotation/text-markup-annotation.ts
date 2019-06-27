@@ -1,4 +1,5 @@
-import { PdfViewer, PdfViewerBase, IRectangle, ISelection, AnnotationType } from '../index';
+import { PdfViewer, PdfViewerBase, IRectangle, ISelection, AnnotationType, IPageAnnotations, ICommentsCollection,
+    IReviewCollection } from '../index';
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker, ChangeEventArgs } from '@syncfusion/ej2-inputs';
 
@@ -18,14 +19,11 @@ export interface ITextMarkupAnnotation {
     opacity: number;
     // tslint:disable-next-line
     rect: any;
-}
-
-/**
- * @hidden
- */
-export interface IPageAnnotations {
-    pageIndex: number;
-    annotations: ITextMarkupAnnotation[];
+    comments: ICommentsCollection[];
+    review: IReviewCollection;
+    annotName: string;
+    shapeAnnotationType: string;
+    position?: string;
 }
 
 /**
@@ -86,6 +84,7 @@ export class TextMarkupAnnotation {
      */
     public currentTextMarkupAnnotation: ITextMarkupAnnotation = null;
     private currentAnnotationIndex: number = null;
+    private author: string;
 
     /**
      * @private
@@ -99,6 +98,7 @@ export class TextMarkupAnnotation {
         this.highlightOpacity = pdfViewer.highlightSettings.opacity;
         this.underlineOpacity = pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = pdfViewer.strikethroughSettings.opacity;
+        this.author = pdfViewer.highlightSettings.author;
     }
 
     /**
@@ -127,9 +127,8 @@ export class TextMarkupAnnotation {
     // tslint:disable-next-line
     private renderTextMarkupAnnotations(textMarkupAnnotations: any, pageNumber: number, canvas: HTMLElement, factor: number): void {
         if (canvas) {
-            (canvas as HTMLCanvasElement).width = this.getMagnifiedValue(this.pdfViewerBase.pageSize[pageNumber].width, factor);
-            (canvas as HTMLCanvasElement).height = this.getMagnifiedValue(this.pdfViewerBase.pageSize[pageNumber].height, factor);
             let context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
+            context.setTransform(1, 0, 0, 1, 0 , 0);
             context.setLineDash([]);
             // tslint:disable-next-line
             let annotations: any[] = this.getAnnotations(pageNumber, textMarkupAnnotations);
@@ -140,8 +139,9 @@ export class TextMarkupAnnotation {
                     let annotationObject: ITextMarkupAnnotation = null;
                     if (annotation.TextMarkupAnnotationType) {
                         // tslint:disable-next-line:max-line-length
-                        annotationObject = { textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect };
-                        this.storeAnnotations(pageNumber, annotationObject);
+                        annotationObject = { textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: this.author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+                        annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation), review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: this.author}, shapeAnnotationType: 'textMarkup' };
+                        this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
                     }
                     // tslint:disable-next-line:max-line-length
                     let type: string = annotation.TextMarkupAnnotationType ? annotation.TextMarkupAnnotationType : annotation.textMarkupAnnotationType;
@@ -222,7 +222,7 @@ export class TextMarkupAnnotation {
             }
             this.pdfViewerBase.isDocumentEdited = true;
             // tslint:disable-next-line
-            let settings: any = { opacity: annotation.opacity, color: annotation.color, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate };
+            let settings: any = { opacity: annotation.opacity, color: annotation.color, author: this.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate };
             let index: number = this.pdfViewer.annotationModule.actionCollection[this.pdfViewer.annotationModule.actionCollection.length - 1].index;
             this.pdfViewer.fireAnnotationAdd(pageNumber, index, (type as AnnotationType), annotation.rect, settings);
         }
@@ -293,11 +293,26 @@ export class TextMarkupAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number): string {
-        let canvas: HTMLElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex });
+    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any): string {
+        let canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
+        canvas.style.width = 816 + 'px';
+        canvas.style.height = 1056 + 'px';
+        canvas.height = 1056 * this.pdfViewer.magnification.zoomFactor;
+        canvas.width = 816 * this.pdfViewer.magnification.zoomFactor;
         // tslint:disable-next-line
-        let annotations: any = this.getAnnotations(pageIndex, null);
-        if (annotations) {
+        let textMarkupannotations: any = this.getAnnotations(pageIndex, null, '_annotations_textMarkup');
+        // tslint:disable-next-line
+        let shapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape');
+        // tslint:disable-next-line
+        let stampAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_stamp');
+
+        if (stampAnnotation || shapeAnnotation) {
+            this.pdfViewer.renderDrawing(canvas, pageIndex);
+        } else {
+            this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, null, null, canvas);
+            this.pdfViewer.annotation.stampAnnotationModule.renderStampAnnotations(stampData, pageIndex, canvas);
+        }
+        if (textMarkupannotations) {
             this.renderTextMarkupAnnotations(null, pageIndex, canvas, 1);
         } else {
             this.renderTextMarkupAnnotations(textMarkupAnnotations, pageIndex, canvas, 1);
@@ -311,32 +326,32 @@ export class TextMarkupAnnotation {
      */
     public saveTextMarkupAnnotations(): string {
         // tslint:disable-next-line
-        let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+        let storeTextMarkupObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
         // tslint:disable-next-line
-        let annotations: Array<any> = new Array();
-        let colorpick: ColorPicker = new ColorPicker();
+        let textMarkupAnnotations: Array<any> = new Array();
+        let textMarkupColorpick: ColorPicker = new ColorPicker();
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
-            annotations[j] = [];
+            textMarkupAnnotations[j] = [];
         }
-        if (storeObject) {
-            let annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
-            for (let i: number = 0; i < annotationCollection.length; i++) {
+        if (storeTextMarkupObject) {
+            let textMarkupAnnotationCollection: IPageAnnotations[] = JSON.parse(storeTextMarkupObject);
+            for (let i: number = 0; i < textMarkupAnnotationCollection.length; i++) {
                 let newArray: ITextMarkupAnnotation[] = [];
-                let pageAnnotationObject: IPageAnnotations = annotationCollection[i];
+                let pageAnnotationObject: IPageAnnotations = textMarkupAnnotationCollection[i];
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.getBoundsForSave(pageAnnotationObject.annotations[z].bounds));
-                        let colorString: string = colorpick.getValue(pageAnnotationObject.annotations[z].color, 'rgba');
+                        let colorString: string = textMarkupColorpick.getValue(pageAnnotationObject.annotations[z].color, 'rgba');
                         pageAnnotationObject.annotations[z].color = JSON.stringify(this.getRgbCode(colorString));
                         pageAnnotationObject.annotations[z].rect = JSON.stringify(pageAnnotationObject.annotations[z].rect);
                     }
                     newArray = pageAnnotationObject.annotations;
                 }
-                annotations[pageAnnotationObject.pageIndex] = newArray;
+                textMarkupAnnotations[pageAnnotationObject.pageIndex] = newArray;
             }
         }
-        return JSON.stringify(annotations);
+        return JSON.stringify(textMarkupAnnotations);
     }
 
     /**
@@ -352,11 +367,20 @@ export class TextMarkupAnnotation {
                     // tslint:disable-next-line:max-line-length
                     this.pdfViewer.annotationModule.addAction(this.selectTextMarkupCurrentPage, i, deletedAnnotation, 'Text Markup Deleted', null);
                     this.currentAnnotationIndex = i;
+                    this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(deletedAnnotation, 'textMarkup');
+                    let removeDiv: HTMLElement = document.getElementById(deletedAnnotation.annotName);
+                    if (removeDiv) {
+                        if (removeDiv.parentElement.childElementCount === 1) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
+                        } else {
+                            removeDiv.remove();
+                        }
+                    }
                 }
             }
             this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
             this.currentTextMarkupAnnotation = null;
-            this.renderTextMarkupAnnotationsInPage(null, this.selectTextMarkupCurrentPage);
+            this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
             this.pdfViewerBase.isDocumentEdited = true;
             // tslint:disable-next-line:max-line-length
             this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, this.currentAnnotationIndex, deletedAnnotation.textMarkupAnnotationType as AnnotationType);
@@ -377,10 +401,10 @@ export class TextMarkupAnnotation {
         if (this.currentTextMarkupAnnotation) {
             let pageAnnotations: ITextMarkupAnnotation[] = this.modifyAnnotationProperty('Color', color, null);
             this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
-            this.renderTextMarkupAnnotationsInPage(null, this.selectTextMarkupCurrentPage);
+            this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
             this.pdfViewerBase.isDocumentEdited = true;
             // tslint:disable-next-line:max-line-length
-            this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, this.currentAnnotationIndex, this.currentTextMarkupAnnotation.textMarkupAnnotationType as AnnotationType, true, false);
+            this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, this.currentAnnotationIndex, this.currentTextMarkupAnnotation.textMarkupAnnotationType as AnnotationType, true, false, false, false);
             this.currentAnnotationIndex = null;
         }
     }
@@ -392,27 +416,28 @@ export class TextMarkupAnnotation {
         if (this.currentTextMarkupAnnotation) {
             let pageAnnotations: ITextMarkupAnnotation[] = this.modifyAnnotationProperty('Opacity', args.value / 100, args.name);
             this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
-            this.renderTextMarkupAnnotationsInPage(null, this.selectTextMarkupCurrentPage);
+            this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
             if (args.name === 'changed') {
                 this.pdfViewerBase.isDocumentEdited = true;
                 // tslint:disable-next-line:max-line-length
-                this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, this.currentAnnotationIndex, this.currentTextMarkupAnnotation.textMarkupAnnotationType as AnnotationType, false, true);
+                this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, this.currentAnnotationIndex, this.currentTextMarkupAnnotation.textMarkupAnnotationType as AnnotationType, false, true, false, false);
                 this.currentAnnotationIndex = null;
             }
         }
     }
 
+
     // tslint:disable-next-line
-    private modifyAnnotationProperty(property: string, value: any, status: string): ITextMarkupAnnotation[] {
+    private modifyAnnotationProperty(property: string, value: any, status: string, annotName?: string): ITextMarkupAnnotation[] {
         let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(this.selectTextMarkupCurrentPage, null);
         for (let i: number = 0; i < pageAnnotations.length; i++) {
             if (JSON.stringify(this.currentTextMarkupAnnotation) === JSON.stringify(pageAnnotations[i])) {
+                let date: Date = new Date();
                 if (property === 'Color') {
                     pageAnnotations[i].color = value;
-                } else if (property === 'Opacity') {
+                } else {
                     pageAnnotations[i].opacity = value;
                 }
-                let date: Date = new Date();
                 pageAnnotations[i].modifiedDate = date.toLocaleString();
                 this.currentAnnotationIndex = i;
                 if (status === null || status === 'changed') {
@@ -432,15 +457,27 @@ export class TextMarkupAnnotation {
         let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations) {
             if (action === 'Text Markup Added') {
+                this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(pageAnnotations[index], 'textMarkup');
+                // tslint:disable-next-line
+                let removeDiv: any = document.getElementById(pageAnnotations[index].annotName);
+                if (removeDiv) {
+                    if (removeDiv.parentElement.childElementCount === 1) {
+                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
+                    } else {
+                        removeDiv.remove();
+                    }
+                }
                 pageAnnotations.splice(index, 1);
             } else if (action === 'Text Markup Deleted') {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageAnnotations[index], annotation.shapeAnnotationType);
                 pageAnnotations.splice(index, 0, annotation);
             }
         }
         this.clearCurrentAnnotation();
         this.pdfViewerBase.isDocumentEdited = true;
         this.manageAnnotations(pageAnnotations, pageNumber);
-        this.renderTextMarkupAnnotationsInPage(null, pageNumber);
+        this.pdfViewer.annotationModule.renderAnnotations(pageNumber, null, null, null);
     }
 
     /**
@@ -463,7 +500,7 @@ export class TextMarkupAnnotation {
         this.clearCurrentAnnotation();
         this.pdfViewerBase.isDocumentEdited = true;
         this.manageAnnotations(pageAnnotations, pageNumber);
-        this.renderTextMarkupAnnotationsInPage(null, pageNumber);
+        this.pdfViewer.annotationModule.renderAnnotations(pageNumber, null, null, null);
         return annotation;
     }
 
@@ -474,15 +511,27 @@ export class TextMarkupAnnotation {
         let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations) {
             if (action === 'Text Markup Added') {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageAnnotations[index], annotation.shapeAnnotationType);
                 pageAnnotations.push(annotation);
             } else if (action === 'Text Markup Deleted') {
+                this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(pageAnnotations[index], 'textMarkup');
+                // tslint:disable-next-line
+                let removeDiv: any = document.getElementById(pageAnnotations[index].annotName);
+                if (removeDiv) {
+                    if (removeDiv.parentElement.childElementCount === 1) {
+                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
+                    } else {
+                        removeDiv.remove();
+                    }
+                }
                 pageAnnotations.splice(index, 1);
             }
         }
         this.clearCurrentAnnotation();
         this.pdfViewerBase.isDocumentEdited = true;
         this.manageAnnotations(pageAnnotations, pageNumber);
-        this.renderTextMarkupAnnotationsInPage(null, pageNumber);
+        this.pdfViewer.annotationModule.renderAnnotations(pageNumber, null, null, null);
     }
 
     /**
@@ -532,14 +581,16 @@ export class TextMarkupAnnotation {
 
     // tslint:disable-next-line
     private getRgbCode(colorString: string): any {
-        let stringArray: string[] = colorString.split(',');
+        let markupStringArray: string[] = colorString.split(',');
         // tslint:disable-next-line:radix
-        let r: number = parseInt(stringArray[0].split('(')[1]);
+        let textMarkupR: number = parseInt(markupStringArray[0].split('(')[1]);
         // tslint:disable-next-line:radix
-        let g: number = parseInt(stringArray[1]);
+        let textMarkupG: number = parseInt(markupStringArray[1]);
         // tslint:disable-next-line:radix
-        let b: number = parseInt(stringArray[2]);
-        return { r: r, g: g, b: b };
+        let textMarkupB: number = parseInt(markupStringArray[2]);
+        // tslint:disable-next-line:radix
+        let textMarkupA: number = parseInt(markupStringArray[3]);
+        return { a: textMarkupA * 255, r: textMarkupR, g: textMarkupG, b: textMarkupB };
     }
 
     private getDrawnBounds(): IPageAnnotationBounds[] {
@@ -715,6 +766,16 @@ export class TextMarkupAnnotation {
                 this.currentTextMarkupAnnotation = currentAnnot;
                 this.selectTextMarkupCurrentPage = pageNumber;
                 this.enableAnnotationPropertiesTool(true);
+                // tslint:disable-next-line
+                let accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
+                if (accordionExpand) {
+                    accordionExpand.ej2_instances[0].expandItem(true);
+                }
+                // tslint:disable-next-line
+                let comments: any = document.getElementById(currentAnnot.annotName);
+                if (comments) {
+                    comments.firstChild.click();
+                }
                 if (this.pdfViewer.toolbarModule) {
                     this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
                     this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
@@ -746,6 +807,16 @@ export class TextMarkupAnnotation {
                 this.currentTextMarkupAnnotation = currentAnnot;
                 this.selectTextMarkupCurrentPage = pageNumber;
                 this.enableAnnotationPropertiesTool(true);
+                // tslint:disable-next-line
+                let accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
+                if (accordionExpand) {
+                    accordionExpand.ej2_instances[0].expandItem(true);
+                }
+                // tslint:disable-next-line
+                let comments: any = document.getElementById(currentAnnot.annotName);
+                if (comments) {
+                    comments.firstChild.click();
+                }
             } else {
                 this.clearCurrentAnnotation();
             }
@@ -788,7 +859,7 @@ export class TextMarkupAnnotation {
     private showPopupNote(event: any, annotation: ITextMarkupAnnotation): void {
         if (annotation.note) {
             // tslint:disable-next-line:max-line-length
-            this.pdfViewer.annotationModule.showPopupNote(event, annotation.color, annotation.author, annotation.note, annotation.textMarkupAnnotationType);
+            this.pdfViewer.annotationModule.showPopupNote(event, annotation.color, this.author, annotation.note, annotation.textMarkupAnnotationType);
         }
     }
 
@@ -870,11 +941,18 @@ export class TextMarkupAnnotation {
         if (canvas) {
             let context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
             context.setLineDash([]);
-            this.renderTextMarkupAnnotationsInPage(null, pageNumber);
+            this.pdfViewer.annotationModule.renderAnnotations(pageNumber, null, null, null);
         }
     }
 
-    private selectAnnotation(annotation: ITextMarkupAnnotation, canvas: HTMLElement): void {
+    /**
+     * @private
+     */
+    public selectAnnotation(annotation: ITextMarkupAnnotation, canvas: HTMLElement, pageNumber?: number): void {
+        if (!isNaN(pageNumber)) {
+            this.currentTextMarkupAnnotation = annotation;
+            this.selectTextMarkupCurrentPage = pageNumber;
+        }
         for (let i: number = 0; i < annotation.bounds.length; i++) {
             // tslint:disable-next-line
             let bound: any = annotation.bounds[i];
@@ -889,6 +967,7 @@ export class TextMarkupAnnotation {
 
     private drawAnnotationSelectRect(canvas: HTMLElement, x: number, y: number, width: number, height: number): void {
         let context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
+        context.setTransform(1, 0, 0, 1, 0 , 0);
         context.beginPath();
         context.setLineDash([4 * this.pdfViewerBase.getZoomFactor()]);
         context.globalAlpha = 1;
@@ -899,20 +978,23 @@ export class TextMarkupAnnotation {
         context.save();
     }
 
-    private enableAnnotationPropertiesTool(isEnable: boolean): void {
+    /**
+     * @private
+     */
+    public enableAnnotationPropertiesTool(isEnable: boolean): void {
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
             this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(isEnable);
         }
         // tslint:disable-next-line:max-line-length
-        if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule.isMobileAnnotEnabled) {
+        if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule.isMobileAnnotEnabled && this.pdfViewer.selectedItems.annotations.length === 0) {
             if (this.pdfViewer.toolbarModule.annotationToolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(isEnable);
                 let enable: boolean = isEnable;
                 if (this.isTextMarkupAnnotationMode) {
                     enable = true;
                 }
-                this.pdfViewer.toolbarModule.annotationToolbarModule.enableAnnotationPropertiesTools(enable);
+                this.pdfViewer.toolbarModule.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(enable);
                 if (this.currentTextMarkupAnnotation) {
                     // tslint:disable-next-line:max-line-length
                     this.pdfViewer.toolbarModule.annotationToolbarModule.updateColorInIcon(this.pdfViewer.toolbarModule.annotationToolbarModule.colorDropDownElement, this.currentTextMarkupAnnotation.color);
@@ -940,36 +1022,36 @@ export class TextMarkupAnnotation {
         }
     }
 
-    private storeAnnotations(pageNumber: number, annotation: ITextMarkupAnnotation): number {
-        // tslint:disable-next-line
-        let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
-        let index: number = 0;
-        if (!storeObject) {
-            let markupAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
-            markupAnnotation.annotations.push(annotation);
-            index = markupAnnotation.annotations.indexOf(annotation);
-            let annotationCollection: IPageAnnotations[] = [];
-            annotationCollection.push(markupAnnotation);
-            let annotationStringified: string = JSON.stringify(annotationCollection);
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_textMarkup', annotationStringified);
-        } else {
-            let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
-            let pageIndex: number = this.getPageCollection(annotObject, pageNumber);
-            if (annotObject[pageIndex]) {
-                (annotObject[pageIndex] as IPageAnnotations).annotations.push(annotation);
-                index = (annotObject[pageIndex] as IPageAnnotations).annotations.indexOf(annotation);
-            } else {
-                let markupAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
-                markupAnnotation.annotations.push(annotation);
-                index = markupAnnotation.annotations.indexOf(annotation);
-                annotObject.push(markupAnnotation);
-            }
-            let annotationStringified: string = JSON.stringify(annotObject);
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_textMarkup', annotationStringified);
-        }
-        return index;
-    }
+    // private storeAnnotations(pageNumber: number, annotation: ITextMarkupAnnotation): number {
+    //     // tslint:disable-next-line
+    //     let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+    //     let index: number = 0;
+    //     if (!storeObject) {
+    //         let markupAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
+    //         markupAnnotation.annotations.push(annotation);
+    //         index = markupAnnotation.annotations.indexOf(annotation);
+    //         let annotationCollection: IPageAnnotations[] = [];
+    //         annotationCollection.push(markupAnnotation);
+    //         let annotationStringified: string = JSON.stringify(annotationCollection);
+    //         window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_textMarkup', annotationStringified);
+    //     } else {
+    //         let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+    //         window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+    //         let pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
+    //         if (annotObject[pageIndex]) {
+    //             (annotObject[pageIndex] as IPageAnnotations).annotations.push(annotation);
+    //             index = (annotObject[pageIndex] as IPageAnnotations).annotations.indexOf(annotation);
+    //         } else {
+    //             let markupAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
+    //             markupAnnotation.annotations.push(annotation);
+    //             index = markupAnnotation.annotations.indexOf(annotation);
+    //             annotObject.push(markupAnnotation);
+    //         }
+    //         let annotationStringified: string = JSON.stringify(annotObject);
+    //         window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_textMarkup', annotationStringified);
+    //     }
+    //     return index;
+    // }
 
     private manageAnnotations(pageAnnotations: ITextMarkupAnnotation[], pageNumber: number): void {
         // tslint:disable-next-line
@@ -977,7 +1059,7 @@ export class TextMarkupAnnotation {
         if (storeObject) {
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
-            let index: number = this.getPageCollection(annotObject, pageNumber);
+            let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
             if (annotObject[index]) {
                 annotObject[index].annotations = pageAnnotations;
             }
@@ -987,14 +1069,18 @@ export class TextMarkupAnnotation {
     }
 
     // tslint:disable-next-line
-    private getAnnotations(pageIndex: number, textMarkupAnnotations: any[]): any[] {
+    private getAnnotations(pageIndex: number, textMarkupAnnotations: any[], id?: string): any[] {
         // tslint:disable-next-line
         let annotationCollection: any[];
         // tslint:disable-next-line
-        let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+        if (id == null || id == undefined) {
+            id = '_annotations_textMarkup';
+        }
+         // tslint:disable-next-line
+        let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + id);
         if (storeObject) {
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            let index: number = this.getPageCollection(annotObject, pageIndex);
+            let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
             if (annotObject[index]) {
                 annotationCollection = annotObject[index].annotations;
             } else {
@@ -1006,27 +1092,40 @@ export class TextMarkupAnnotation {
         return annotationCollection;
     }
 
-    private getPageCollection(pageAnnotations: IPageAnnotations[], pageNumber: number): number {
-        let index: number = null;
-        for (let i: number = 0; i < pageAnnotations.length; i++) {
-            if (pageAnnotations[i].pageIndex === pageNumber) {
-                index = i;
-                break;
-            }
-        }
-        return index;
-    }
-
     // tslint:disable-next-line
     private getAddedAnnotation(type: string, color: string, opacity: number, bounds: any, author: string, subject: string, predefinedDate: string, note: string, rect: any, pageNumber: number): ITextMarkupAnnotation {
         let date: Date = new Date();
         // tslint:disable-next-line:max-line-length
         let modifiedDate: string = predefinedDate ? predefinedDate : date.toLocaleString();
-        // tslint:disable-next-line
-        let annotation: ITextMarkupAnnotation = { textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author, subject: subject, modifiedDate: modifiedDate, note: note, rect: rect };
-        let storedIndex: number = this.storeAnnotations(pageNumber, annotation);
+        let annotationName: string = this.pdfViewer.annotation.createGUID();
+        let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('textMarkup', pageNumber + 1);
+        document.getElementById(commentsDivid).id = annotationName;
+        let annotation: ITextMarkupAnnotation = {
+            // tslint:disable-next-line:max-line-length
+            textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author, subject: subject, modifiedDate: modifiedDate, note: note, rect: rect,
+            annotName: annotationName, comments: [], review: {state: '', stateModel: '', author: 'Author', modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup'
+        };
+        document.getElementById(annotationName).addEventListener('mouseup', this.annotationDivSelect(annotation, pageNumber));
+        let storedIndex: number = this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotation, '_annotations_textMarkup');
         this.pdfViewer.annotationModule.addAction(pageNumber, storedIndex, annotation, 'Text Markup Added', null);
         return annotation;
+    }
+
+    // tslint:disable-next-line
+    private annotationDivSelect(annotation: any, pageNumber: number): any {
+        let canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+        this.selectAnnotation(annotation, canvas, pageNumber);
+        if (this.pdfViewer.toolbarModule) {
+            if (this.pdfViewer.toolbarModule.annotationToolbarModule) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.clearShapeMode();
+                this.pdfViewer.toolbarModule.annotationToolbarModule.clearMeasureMode();
+                this.pdfViewer.toolbarModule.annotationToolbarModule.enableTextMarkupAnnotationPropertiesTools(true);
+                this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
+                this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
+                this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
+                this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+            }
+        }
     }
 
     private getPageContext(pageNumber: number): CanvasRenderingContext2D {

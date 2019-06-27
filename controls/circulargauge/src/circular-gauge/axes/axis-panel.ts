@@ -135,9 +135,10 @@ export class AxisLayoutPanel {
                 cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
                 midPoint: this.gauge.midPoint, axis: axis
             };
-            this.gauge.trigger(radiusCalculate, args);
-            axis.currentRadius = args.currentRadius;
-            this.gauge.midPoint = args.midPoint;
+            this.gauge.trigger('radiusCalculate', args, (observedArgs: IRadiusCalculateEventArgs) => {
+                axis.currentRadius = args.currentRadius;
+                this.gauge.midPoint = args.midPoint;
+            });
             this.calculateVisibleLabels(axis);
         }
     }
@@ -261,12 +262,13 @@ export class AxisLayoutPanel {
                     format(roundValue),
                 value: roundValue
             };
-            this.gauge.trigger(axisLabelRender, argsData);
-            if (!argsData.cancel) {
-                axis.visibleLabels.push(new VisibleLabels(
-                    argsData.text, i
-                ));
-            }
+            this.gauge.trigger('axisLabelRender', argsData, (observedArgs: IAxisLabelRenderEventArgs) => {
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(
+                        argsData.text, i
+                    ));
+                }
+            });
         }
         let lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal: number = axis.visibleRange.max;
@@ -277,12 +279,13 @@ export class AxisLayoutPanel {
                     format(maxVal),
                 value: maxVal
             };
-            this.gauge.trigger(axisLabelRender, argsData);
-            if (!argsData.cancel) {
-                axis.visibleLabels.push(new VisibleLabels(
-                argsData.text, maxVal
-                ));
-            }
+            this.gauge.trigger('axisLabelRender', argsData, (observedArgs: IAxisLabelRenderEventArgs) => {
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(
+                    argsData.text, maxVal
+                    ));
+                }
+            });
         }
         this.getMaxLabelWidth(this.gauge, axis);
     }

@@ -7,6 +7,7 @@ let gauge: LinearGauge = new LinearGauge({
         roundedCornerRadius: 5,
         type: 'Thermometer'
     },
+	 format: 'C',
     axes: [{
         minimum: 0,
         maximum: 180,

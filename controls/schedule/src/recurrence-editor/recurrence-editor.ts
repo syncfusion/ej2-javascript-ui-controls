@@ -212,8 +212,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
      * Constructor for creating the widget
      * @param  {object} options?
      */
-    constructor(options?: RecurrenceEditorModel, element?: string | HTMLButtonElement) {
-        super(options, <string | HTMLButtonElement>element);
+    constructor(options?: RecurrenceEditorModel, element?: string | HTMLElement) {
+        super(options, <string | HTMLElement>element);
     }
     public localeObj: L10n;
     private defaultLocale: Object = {
@@ -306,8 +306,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private triggerChangeEvent(): void {
         if (this.renderStatus) {
             let value: string = this.getRecurrenceRule();
-            this.trigger('change', { value: value });
-            this.setProperties({ value: value }, false);
+            this.trigger('change', { value: value }, (args: { [key: string]: string }) => this.setProperties({ value: args.value }, false));
         }
     }
     private resetDayButton(): void {

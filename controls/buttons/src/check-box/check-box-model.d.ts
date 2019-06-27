@@ -10,12 +10,14 @@ export interface CheckBoxModel extends ComponentModel{
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

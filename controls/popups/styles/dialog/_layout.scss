@@ -333,6 +333,17 @@
 
 }
 
+.e-content-placeholder.e-dialog.e-placeholder-dialog {
+  background-size: 400px 210px;
+  min-height: 210px;
+}
+
+.e-bigger .e-content-placeholder.e-dialog.e-placeholder-dialog,
+.e-bigger.e-content-placeholder.e-dialog.e-placeholder-dialog {
+  background-size: 400px 220px;
+  min-height: 220px;
+}
+
 @media (min-width: 768px) {
   .e-alert-dialog.e-dialog.e-popup,
   .e-confirm-dialog.e-dialog.e-popup {

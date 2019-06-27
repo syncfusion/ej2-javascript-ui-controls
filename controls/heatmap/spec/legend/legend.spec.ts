@@ -7,6 +7,7 @@ import { Tooltip } from '../../src/heatmap/utils/tooltip';
 import { MouseEvents } from '../base/event.spec'
 import { profile , inMB, getMemoryProfile } from '../../spec/common.spec';
 import { CellSettings } from '../../src';
+import { ILegendRenderEventArgs } from '../../src/heatmap/model/interface';
 HeatMap.Inject(Legend, Tooltip);
 
 // export class MouseEvents {
@@ -387,6 +388,26 @@ describe('Heatmap Control', () => {
             heatmap.dataBind();
             legendElement = document.getElementById('heatmapContainer_Legend_Label3');
             expect(legendElement.textContent == '100 %');
+        });
+        it('Checking legend label customization', function () {
+            heatmap.legendRender = function (args:ILegendRenderEventArgs) {
+                args.cancel = false;
+            };
+            heatmap.refresh();            
+            legendElement = document.getElementById('heatmapContainer_Legend_Label0');
+            if(heatmap.paletteSettings.type == 'Gradient'){
+                if (heatmap.legendRender) {
+                    expect(legendElement.textContent == '0 %').toBe(true);
+                } else{
+                    expect(legendElement.textContent == '').toBe(true);
+                }
+            } else {
+                if (heatmap.legendRender) {
+                    expect(legendElement.textContent == '0 %').toBe(true);
+                }else{
+                    expect(legendElement.textContent == '').toBe(true);
+                }
+            }
         });
         it('Checking cell toggle for smart legend', function () {
             legendElement = document.getElementById('heatmapContainer_Smart_Legend1');

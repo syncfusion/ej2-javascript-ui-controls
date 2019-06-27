@@ -1282,6 +1282,11 @@ export class TextSelection {
      * @private
      */
     public initiateTouchSelection(event: TouchEvent, x: number, y: number): void {
+        if (this.pdfViewerBase.isShapeAnnotationModule() || this.pdfViewerBase.isCalibrateAnnotationModule()) {
+            if (this.pdfViewer.selectedItems.annotations.length > 0) {
+                this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
+            }
+        }
         // tslint:disable-next-line
         let element: any = event.target;
         let belowElements: Element[] = document.elementsFromPoint(event.touches[0].clientX, event.touches[0].clientY);
@@ -1731,6 +1736,9 @@ export class TextSelection {
             }
         }
         if (selectionText.length > 0) {
+            if (this.pdfViewerBase.isShapeAnnotationModule()) {
+                this.pdfViewer.annotation.isShapeCopied = false;
+            }
             let textArea: HTMLElement = document.createElement('textarea');
             textArea.contentEditable = 'true';
             textArea.textContent = selectionText;

@@ -14,11 +14,12 @@ import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { Category } from '../../../src/chart/axis/category-axis';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, ITooltipRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, ColumnSeries, DateTime, Category);
-Chart.Inject(Crosshair, Tooltip);
+Chart.Inject(Crosshair, Tooltip, DataEditing);
 
 
 describe('Chart Trackball', () => {
@@ -186,16 +187,16 @@ describe('Chart Trackball', () => {
             loaded = (args: Object): void => {
                 let target: HTMLElement = document.getElementById('container_Series_0_Point_4');
                 let series: Series = <Series>chartObj.series[0];
-
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
                 y = series.points[2].regions[0].y + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
                 x = series.points[2].regions[0].x + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
-
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(tooltip.offsetLeft > x).toBe(true);
-
+                // let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
+                // let translateX: string[] = transform[1].split(',');
+                // expect(parseFloat(translateX[0]) > x).toBe(true);
                 let group: HTMLElement = tooltip.childNodes[0].childNodes[0] as HTMLElement;
                 expect(group.childNodes[1].childNodes.length == 13).toBe(true);
                 done();
@@ -223,7 +224,9 @@ describe('Chart Trackball', () => {
 
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
-                expect(tooltip.offsetLeft < x).toBe(true);
+                let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
+                let translateX: string[] = transform[1].split(',');
+                expect(parseFloat(translateX[0]) < x).toBe(true);
 
                 let group: HTMLElement = tooltip.childNodes[0].childNodes[0] as HTMLElement;
                 expect(group.childNodes[4].childNodes.length == 1).toBe(true);
@@ -284,6 +287,9 @@ describe('Chart Trackball', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(tooltip.offsetLeft + elem.offsetLeft - 0.5 == x).toBe(true);
+                // let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
+                // let translateX: string[] = transform[1].split(',');
+                // expect(parseFloat(translateX[0]) + elem.offsetLeft === x).toBe(true);
                 tooltip = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 done();
@@ -437,7 +443,7 @@ describe('Chart Trackball', () => {
                         name: 'Japan', fill: '#B82E3D', width: 2,
                         type: 'Column', pointColorMapping: 'color'
                     }]);
-             
+
         });
         it('Trackball with shared tooltip and marker false for column series', (done: Function) => {
             loaded = (args: Object): void => {
@@ -458,7 +464,110 @@ describe('Chart Trackball', () => {
             chartObj.series[0].type = 'Column';
             chartObj.series[0].marker.visible = false;
             chartObj.series[1].marker.visible = false;
-            chartObj.loaded = loaded;  
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+        /**
+     * Cheacking point drag and drop with trackball
+     */
+    describe('Line series point drag and drop with trackball', () => {
+        let chartObj: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let element1: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element1);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        labelFormat: 'y',
+                        intervalType: 'Years',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 }
+                    },
+
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Line',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24 },
+                                { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                                { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                                { x: new Date(2011, 0, 1), y: 70 }
+                            ],
+                            animation: { enable: false },
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 20,
+                                height: 20
+                            },
+                            yName: 'y', name: 'Germany', dragSettings: { enable: true }
+                        },
+                        {
+                            type: 'Line',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 28 }, { x: new Date(2006, 0, 1), y: 44 },
+                                { x: new Date(2007, 0, 1), y: 48 }, { x: new Date(2008, 0, 1), y: 50 },
+                                { x: new Date(2009, 0, 1), y: 66 }, { x: new Date(2010, 0, 1), y: 78 }, { x: new Date(2011, 0, 1), y: 84 }
+                            ],
+                            animation: { enable: false },
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 20,
+                                height: 20
+                            },
+                            yName: 'y', name: 'England', dragSettings: { enable: true }
+                        }
+                    ],
+
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                    //Initializing User Interaction Tooltip
+                    tooltip: { enable: true, shared: true },
+                    crosshair: { enable: true, lineType: 'Vertical' },
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element1.remove();
+        });
+
+        it('line series drag and drop with trackball', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('container_Series_1_Point_0_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + element1.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + element1.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(element1, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) - 108);
+                let yValue: number = chartObj.visibleSeries[1].points[0].yValue;
+                expect(yValue == 60.24 || yValue == 59.65).toBe(true);
+                chartObj.loaded = null;
+                done();
+            };
+            chartObj.loaded = loaded;
             chartObj.refresh();
         });
     });

@@ -99,7 +99,6 @@ export interface IChangedEventArgs extends IRangeEventArgs {
     /** Defined the zoomFactor of the range navigator */
     zoomFactor: number;
 }
-
 export interface IResizeRangeNavigatorEventArgs  {
     /** Defines the name of the Event */
     name: string;

@@ -11,10 +11,15 @@ $icon-border-radius: 50% !default;
 // Mouse
 
 $panel-header-height: 28px !default;
-$panel-header-padding: 0 12px !default;
-$panel-header-color: $grey-cc !default;
+$panel-header-padding: 4px 12px !default;
+$panel-header-color: $grey-dark-font !default;
 $panel-header-font-size: 14px !default;
 $panel-header-font-weight: 500 !default;
+$panel-header-border-bottom: 1px solid $grey-99 !default;
+$panel-header-font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif, '-apple-system', 'BlinkMacSystemFont' !default;
+$panel-header-white-space: nowrap !default;
+$panel-header-overflow: hidden !default;
+$panel-header-text-overflow: ellipsis !default;
 
 // Touch
 

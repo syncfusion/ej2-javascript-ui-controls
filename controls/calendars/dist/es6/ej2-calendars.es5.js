@@ -58,6 +58,7 @@ var BTN = 'e-btn';
 var FLAT = 'e-flat';
 var CSS = 'e-css';
 var PRIMARY = 'e-primary';
+var DAYHEADERLONG = 'e-calendar-day-header-lg';
 var dayMilliSeconds = 86400000;
 var minutesMilliSeconds = 60000;
 /**
@@ -241,6 +242,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         else {
             this.calendarElement.appendChild(this.headerElement);
         }
+        this.adjustLongHeaderSize();
     };
     CalendarBase.prototype.createContent = function () {
         this.contentElement = this.createElement('div', { className: CONTENT });
@@ -261,8 +263,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     CalendarBase.prototype.getCultureValues = function () {
         var culShortNames = [];
         var cldrObj;
+        var dayFormat = 'days.stand-alone.' + this.dayHeaderFormat.toLowerCase();
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = (getValue('days.stand-alone.short', getDefaultDateObject()));
+            cldrObj = (getValue(dayFormat, getDefaultDateObject()));
         }
         else {
             cldrObj = (this.getCultureObjects(cldrData, '' + this.locale));
@@ -1099,6 +1102,11 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                     break;
+                case 'dayHeaderFormat':
+                    this.getCultureValues();
+                    this.createContentHeader();
+                    this.adjustLongHeaderSize();
+                    break;
                 case 'min':
                 case 'max':
                     this.rangeValidation(this.min, this.max);
@@ -1190,9 +1198,11 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         }
     };
     CalendarBase.prototype.setValueUpdate = function () {
-        detach(this.tableBodyElement);
-        this.setProperties({ start: this.currentView() }, true);
-        this.createContentBody();
+        if (!isNullOrUndefined(this.tableBodyElement)) {
+            detach(this.tableBodyElement);
+            this.setProperties({ start: this.currentView() }, true);
+            this.createContentBody();
+        }
     };
     CalendarBase.prototype.copyValues = function (values) {
         var copyValues = [];
@@ -1410,11 +1420,13 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             && date.getMonth() === (value).getMonth() && date.getFullYear() === (value).getFullYear());
     };
     CalendarBase.prototype.getCultureObjects = function (ld, c) {
+        var gregorianFormat = '.dates.calendars.gregorian.days.format.' + this.dayHeaderFormat.toLowerCase();
+        var islamicFormat = '.dates.calendars.islamic.days.format.' + this.dayHeaderFormat.toLowerCase();
         if (this.calendarMode === 'Gregorian') {
-            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.format.short', ld);
+            return getValue('main.' + '' + this.locale + gregorianFormat, ld);
         }
         else {
-            return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.days.format.short', ld);
+            return getValue('main.' + '' + this.locale + islamicFormat, ld);
         }
     };
     
@@ -1469,6 +1481,12 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var value = date.valueOf() - date.valueOf() % 1000;
         return new Date(value);
         //return this.globalize.parseDate(dateString, dateFormatOptions);
+    };
+    CalendarBase.prototype.adjustLongHeaderSize = function () {
+        removeClass([this.element], DAYHEADERLONG);
+        if (this.dayHeaderFormat === 'Wide') {
+            addClass([this.getModuleName() === 'calendar' ? this.element : this.calendarElement], DAYHEADERLONG);
+        }
     };
     CalendarBase.prototype.selectDate = function (e, date, node, multiSelection, values) {
         var element = node || e.currentTarget;
@@ -1772,6 +1790,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(true)
     ], CalendarBase.prototype, "showTodayButton", void 0);
+    __decorate([
+        Property('Short')
+    ], CalendarBase.prototype, "dayHeaderFormat", void 0);
     __decorate([
         Property(false)
     ], CalendarBase.prototype, "enablePersistence", void 0);
@@ -2768,6 +2789,7 @@ var OPENDURATION = 300;
 var OFFSETVALUE = 4;
 var SELECTED$2 = 'e-selected';
 var NONEDIT = 'e-non-edit';
+var containerAttr = ['title', 'class', 'style'];
 /**
  * Represents the DatePicker component that allows user to select
  * or enter a date value.
@@ -2791,6 +2813,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         _this.previousElementValue = '';
         _this.isDateIconClicked = false;
         _this.isAltKeyPressed = false;
+        _this.isInteracted = true;
         _this.invalidValueString = null;
         _this.checkPreviousValue = null;
         _this.keyConfigs = {
@@ -2820,6 +2843,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             enter: 'enter',
             tab: 'tab'
         };
+        _this.datepickerOptions = options;
         return _this;
     }
     /**
@@ -2858,6 +2882,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.initialize = function () {
         this.checkInvalidValue(this.value);
         this.createInput();
+        this.updateHtmlAttributeToWrapper();
         this.setAllowEdit();
         this.updateInput();
         this.previousElementValue = this.inputElement.value;
@@ -3184,6 +3209,22 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    DatePicker.prototype.updateHtmlAttributeToWrapper = function () {
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (containerAttr.indexOf(key) > -1) {
+                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    };
+    DatePicker.prototype.updateHtmlAttributeToElement = function () {
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (containerAttr.indexOf(key) < 0) {
+                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    };
     DatePicker.prototype.CalendarKeyActionHandle = function (e) {
         switch (e.action) {
             case 'escape':
@@ -3302,9 +3343,6 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.changeTrigger(e);
                 this.errorClass();
                 this.hide(e);
-                break;
-            case 'select':
-                (!this.isAltKeyPressed) ? this.hide(e) : this.defaultAction(e);
                 break;
             default:
                 this.defaultAction(e);
@@ -3478,6 +3516,16 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.popupObj.element.className += ' ' + this.cssClass;
         this.setAriaAttributes();
     };
+    DatePicker.prototype.setAriaDisabled = function () {
+        if (!this.enabled) {
+            this.inputElement.setAttribute('aria-disabled', 'true');
+            this.inputElement.tabIndex = -1;
+        }
+        else {
+            this.inputElement.setAttribute('aria-disabled', 'false');
+            this.inputElement.setAttribute('tabindex', this.tabIndex);
+        }
+    };
     DatePicker.prototype.modelHeader = function () {
         var dateOptions;
         var modelHeader = this.createElement('div', { className: 'e-model-header' });
@@ -3522,6 +3570,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.trigger('change', this.changedArgs);
                 this.previousElementValue = this.inputElement.value;
                 this.previousDate = !isNaN(+new Date(this.checkValue(this.value))) ? new Date(this.checkValue(this.value)) : null;
+                this.isInteracted = true;
             }
         }
     };
@@ -3533,7 +3582,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             this.selectCalendar(event);
             this.changedArgs.event = event ? event : null;
             this.changedArgs.element = this.element;
-            this.changedArgs.isInteracted = !isNullOrUndefined(event);
+            this.changedArgs.isInteracted = this.isInteracted;
             this.trigger('change', this.changedArgs);
             this.previousDate = this.value && new Date(+this.value);
             this.hide(event);
@@ -3604,6 +3653,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     DatePicker.prototype.show = function (type, e) {
+        var _this = this;
         if ((this.enabled && this.readonly) || !this.enabled || this.popupObj) {
             return;
         }
@@ -3636,29 +3686,32 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 cancel: false,
                 appendTo: Browser.isDevice ? this.mobilePopupWrapper : document.body
             };
-            this.trigger('open', this.preventArgs);
-            if (prevent_1 && !this.preventArgs.cancel) {
-                addClass(this.inputWrapper.buttons, ACTIVE);
-                this.preventArgs.appendTo.appendChild(this.popupWrapper);
-                this.popupObj.refreshPosition(this.inputElement);
-                var openAnimation = {
-                    name: 'FadeIn',
-                    duration: Browser.isDevice ? 0 : OPENDURATION,
-                };
-                if (this.zIndex === 1000) {
-                    this.popupObj.show(new Animation(openAnimation), this.element);
+            var eventArgs = this.preventArgs;
+            this.trigger('open', eventArgs, function (eventArgs) {
+                _this.preventArgs = eventArgs;
+                if (prevent_1 && !_this.preventArgs.cancel) {
+                    addClass(_this.inputWrapper.buttons, ACTIVE);
+                    _this.preventArgs.appendTo.appendChild(_this.popupWrapper);
+                    _this.popupObj.refreshPosition(_this.inputElement);
+                    var openAnimation = {
+                        name: 'FadeIn',
+                        duration: Browser.isDevice ? 0 : OPENDURATION,
+                    };
+                    if (_this.zIndex === 1000) {
+                        _this.popupObj.show(new Animation(openAnimation), _this.element);
+                    }
+                    else {
+                        _this.popupObj.show(new Animation(openAnimation), null);
+                    }
+                    _super.prototype.setOverlayIndex.call(_this, _this.mobilePopupWrapper, _this.popupObj.element, _this.modal, Browser.isDevice);
+                    _this.setAriaAttributes();
                 }
                 else {
-                    this.popupObj.show(new Animation(openAnimation), null);
+                    _this.popupObj.destroy();
+                    _this.popupWrapper = _this.popupObj = null;
                 }
-                _super.prototype.setOverlayIndex.call(this, this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice);
-                this.setAriaAttributes();
-            }
-            else {
-                this.popupObj.destroy();
-                this.popupWrapper = this.popupObj = null;
-            }
-            EventHandler.add(document, 'mousedown touchstart', this.documentHandler, this);
+                EventHandler.add(document, 'mousedown touchstart', _this.documentHandler, _this);
+            });
         }
     };
     /**
@@ -3666,6 +3719,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     DatePicker.prototype.hide = function (event) {
+        var _this = this;
         if (!isNullOrUndefined(this.popupWrapper)) {
             var prevent_2 = true;
             this.preventArgs = {
@@ -3678,27 +3732,42 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             };
             removeClass(this.inputWrapper.buttons, ACTIVE);
             removeClass([document.body], OVERFLOW);
+            var eventArgs = this.preventArgs;
             if (this.isCalendar()) {
-                this.trigger('close', this.preventArgs);
+                this.trigger('close', eventArgs, function (eventArgs) {
+                    _this.closeEventCallback(prevent_2, eventArgs);
+                });
             }
-            if (this.isCalendar() && (prevent_2 && !this.preventArgs.cancel)) {
-                this.popupObj.hide();
-                this.isAltKeyPressed = false;
-                this.keyboardModule.destroy();
-                removeClass(this.inputWrapper.buttons, ACTIVE);
+            else {
+                this.closeEventCallback(prevent_2, eventArgs);
             }
-            this.setAriaAttributes();
-            if (Browser.isDevice && this.modal) {
-                this.modal.style.display = 'none';
-                this.modal.outerHTML = '';
-                this.modal = null;
-                if (!isNullOrUndefined(this.mobilePopupWrapper)) {
-                    this.mobilePopupWrapper.remove();
-                    this.mobilePopupWrapper = null;
-                }
-            }
-            EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }
+        else {
+            if (Browser.isDevice && this.allowEdit && !this.readonly) {
+                this.inputElement.removeAttribute('readonly');
+            }
+            this.setAllowEdit();
+        }
+    };
+    DatePicker.prototype.closeEventCallback = function (prevent, eventArgs) {
+        this.preventArgs = eventArgs;
+        if (this.isCalendar() && (prevent && !this.preventArgs.cancel)) {
+            this.popupObj.hide();
+            this.isAltKeyPressed = false;
+            this.keyboardModule.destroy();
+            removeClass(this.inputWrapper.buttons, ACTIVE);
+        }
+        this.setAriaAttributes();
+        if (Browser.isDevice && this.modal) {
+            this.modal.style.display = 'none';
+            this.modal.outerHTML = '';
+            this.modal = null;
+            if (!isNullOrUndefined(this.mobilePopupWrapper)) {
+                this.mobilePopupWrapper.remove();
+                this.mobilePopupWrapper = null;
+            }
+        }
+        EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.inputElement.removeAttribute('readonly');
         }
@@ -3721,12 +3790,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
      */
     DatePicker.prototype.focusOut = function () {
         if (document.activeElement === this.inputElement) {
-            this.inputElement.blur();
             removeClass([this.inputWrapper.container], [INPUTFOCUS]);
-            var blurArguments = {
-                model: this
-            };
-            this.trigger('blur', blurArguments);
+            this.inputElement.blur();
         }
     };
     /**
@@ -3854,7 +3919,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.ngTag !== null) {
             this.validationAttribute(this.element, this.inputElement);
         }
-        this.checkHtmlAttributes();
+        this.updateHtmlAttributeToElement();
+        this.checkHtmlAttributes(true);
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.removeAttribute('tabindex');
         _super.prototype.preRender.call(this);
@@ -3902,7 +3968,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             this.formatString = null;
         }
     };
-    DatePicker.prototype.checkHtmlAttributes = function () {
+    DatePicker.prototype.checkHtmlAttributes = function (dynamic) {
         this.globalize = new Internationalization(this.locale);
         this.checkFormat();
         this.checkView();
@@ -3935,19 +4001,26 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
-                        var enabled = this.inputElement.getAttribute(prop) === 'disabled' ||
-                            this.inputElement.getAttribute(prop) === '';
-                        this.setProperties({ enabled: !enabled }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['enabled'] === undefined)) || !dynamic) {
+                            var enabled = this.inputElement.getAttribute(prop) === 'disabled' || this.inputElement.getAttribute(prop) === '' ||
+                                this.inputElement.getAttribute(prop) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, dynamic);
+                        }
                         break;
                     case 'readonly':
-                        var readonly = this.inputElement.getAttribute(prop) === 'readonly' ||
-                            this.inputElement.getAttribute(prop) === '';
-                        this.setProperties({ readonly: readonly }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['readonly'] === undefined)) || !dynamic) {
+                            var readonly = this.inputElement.getAttribute(prop) === 'readonly' || this.inputElement.getAttribute(prop) === '' ||
+                                this.inputElement.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, dynamic);
+                        }
                         break;
                     case 'placeholder':
-                        if (this.placeholder === null) {
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['placeholder'] === undefined)) || !dynamic) {
                             var placeholder = this.inputElement.getAttribute(prop);
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, true);
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, dynamic);
                         }
                         break;
                     case 'style':
@@ -3957,19 +4030,20 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                         this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
                         break;
                     case 'value':
-                        if (!this.value) {
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || !dynamic) {
                             var value = this.inputElement.getAttribute(prop);
-                            this.setProperties(setValue(prop, this.globalize.parseDate(value, options), {}), true);
+                            this.setProperties(setValue(prop, this.globalize.parseDate(value, options), {}), dynamic);
                         }
                         break;
                     case 'min':
-                        if (+this.min === +new Date(1900, 0, 1)) {
-                            this.setProperties(setValue(prop, this.globalize.parseDate(this.inputElement.getAttribute(prop)), {}), true);
+                        if ((+this.min === +new Date(1900, 0, 1)) || !dynamic) {
+                            this.setProperties(setValue(prop, this.globalize.parseDate(this.inputElement.getAttribute(prop)), {}), dynamic);
                         }
                         break;
                     case 'max':
-                        if (+this.max === +new Date(2099, 11, 31)) {
-                            this.setProperties(setValue(prop, this.globalize.parseDate(this.inputElement.getAttribute(prop)), {}), true);
+                        if ((+this.max === +new Date(2099, 11, 31)) || !dynamic) {
+                            this.setProperties(setValue(prop, this.globalize.parseDate(this.inputElement.getAttribute(prop)), {}), dynamic);
                         }
                         break;
                     case 'type':
@@ -4088,6 +4162,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'value':
+                    this.isInteracted = false;
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
                     newProp.value = this.value;
@@ -4117,15 +4192,13 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'enabled':
                     Input.setEnabled(this.enabled, this.inputElement);
-                    if (!this.enabled) {
-                        this.inputElement.setAttribute('aria-disabled', 'true');
-                        this.inputElement.tabIndex = -1;
-                    }
-                    else {
-                        this.inputElement.setAttribute('aria-disabled', 'false');
-                        this.inputElement.setAttribute('tabindex', this.tabIndex);
-                    }
+                    this.setAriaDisabled();
                     this.bindEvents();
+                    break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToElement();
+                    this.updateHtmlAttributeToWrapper();
+                    this.checkHtmlAttributes(false);
                     break;
                 case 'locale':
                     this.globalize = new Internationalization(this.locale);
@@ -4193,6 +4266,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(true)
     ], DatePicker.prototype, "enabled", void 0);
+    __decorate$1([
+        Property({})
+    ], DatePicker.prototype, "htmlAttributes", void 0);
     __decorate$1([
         Property(null)
     ], DatePicker.prototype, "values", void 0);
@@ -4328,6 +4404,8 @@ var FLAT$1 = 'e-flat';
 var CSS$1 = 'e-css';
 var ZOOMIN$1 = 'e-zoomin';
 var NONEDITABLE = 'e-non-edit';
+var DAYHEADERLONG$1 = 'e-daterange-day-header-lg';
+var wrapperAttr = ['title', 'class', 'style'];
 var Presets = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Presets, _super);
     function Presets() {
@@ -4377,6 +4455,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         _this.preventBlur = false;
         _this.preventFocus = false;
         _this.invalidValueString = null;
+        _this.dateRangeOptions = options;
         return _this;
     }
     /**
@@ -4434,6 +4513,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         this.cloneElement = this.element.cloneNode(true);
         removeClass([this.cloneElement], [ROOT$2, CONTROL$1, LIBRARY$1]);
+        this.updateHtmlAttributeToElement();
         if (this.element.getAttribute('id')) {
             if (this.angularTag !== null) {
                 this.inputElement.id = this.element.getAttribute('id') + '_input';
@@ -4570,7 +4650,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.angularTag !== null) {
             this.validationAttribute(this.element, this.inputElement);
         }
-        this.checkHtmlAttributes();
+        this.checkHtmlAttributes(true);
         merge(this.keyConfigs, { shiftTab: 'shift+tab' });
         var start = this.checkDateValue(new Date(this.checkValue(this.startValue)));
         this.setProperties({ startDate: start }, true); // persist the value propeerty.
@@ -4583,6 +4663,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         this.processPresets();
         this.createInput();
+        this.updateHtmlAttributeToWrapper();
         this.setRangeAllowEdit();
         this.bindEvents();
     };
@@ -4622,6 +4703,22 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             var attr = element.getAttribute(attributes$$1[i]);
             input.setAttribute(attributes$$1[i], attr);
             element.removeAttribute(attributes$$1[i]);
+        }
+    };
+    DateRangePicker.prototype.updateHtmlAttributeToWrapper = function () {
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (wrapperAttr.indexOf(key) > -1) {
+                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    };
+    DateRangePicker.prototype.updateHtmlAttributeToElement = function () {
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (wrapperAttr.indexOf(key) < 0) {
+                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+            }
         }
     };
     DateRangePicker.prototype.processPresets = function () {
@@ -4806,47 +4903,61 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             addClass([this.inputWrapper.container], [INPUTFOCUS$1]);
         }
     };
-    DateRangePicker.prototype.checkHtmlAttributes = function () {
+    DateRangePicker.prototype.checkHtmlAttributes = function (isDynamic) {
         this.globalize = new Internationalization(this.locale);
         var attributes$$1;
         attributes$$1 = ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled',
-            'readonly', 'style', 'name', 'placeholder', 'type'];
+            'readonly', 'style', 'name', 'placeholder', 'type', 'value'];
         var format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
-                        var disabled = this.inputElement.getAttribute(prop) === 'disabled' ||
-                            this.inputElement.getAttribute(prop) === '';
-                        this.setProperties({ enabled: !disabled }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['enabled'] === undefined)) || !isDynamic) {
+                            var disabled = this.inputElement.getAttribute(prop) === 'disabled' ||
+                                this.inputElement.getAttribute(prop) === '';
+                            this.setProperties({ enabled: !disabled }, isDynamic);
+                        }
                         break;
                     case 'readonly':
-                        var readonly = this.inputElement.getAttribute(prop) === 'readonly' ||
-                            this.inputElement.getAttribute(prop) === '';
-                        this.setProperties({ readonly: readonly }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['readonly'] === undefined)) || !isDynamic) {
+                            var readonly = this.inputElement.getAttribute(prop) === 'readonly' ||
+                                this.inputElement.getAttribute(prop) === '';
+                            this.setProperties({ readonly: readonly }, isDynamic);
+                        }
                         break;
                     case 'placeholder':
-                        if (isNullOrUndefined(this.placeholder) || this.placeholder.trim() === '') {
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['value'] === undefined)) || !isDynamic) {
+                            var value = this.inputElement.getAttribute(prop);
+                            this.setProperties(setValue(prop, value, {}), isDynamic);
                         }
                         break;
                     case 'style':
                         this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
                         break;
                     case 'min':
-                        if (isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1)) {
+                        if ((isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1)) || !isDynamic) {
                             var dateValue = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.setProperties(setValue(prop, dateValue, {}), true);
+                            this.setProperties(setValue(prop, dateValue, {}), isDynamic);
                         }
                         break;
                     case 'name':
                         this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
                         break;
                     case 'max':
-                        if (isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31)) {
+                        if ((isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31)) || !isDynamic) {
                             var dateValue = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.setProperties(setValue(prop, dateValue, {}), true);
+                            this.setProperties(setValue(prop, dateValue, {}), isDynamic);
                         }
                         break;
                     case 'startDate':
@@ -4902,6 +5013,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.popupWrapper = createElement('div', { id: this.element.id + '_popup', className: ROOT$2 + ' ' + POPUP$1 });
+        this.adjustLongHeaderWidth();
         var isPreset = (!this.isCustomRange || this.isMobile);
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
             this.isCustomWindow = false;
@@ -6849,6 +6961,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.changeTrigger(eve);
             this.hide(eve ? eve : null);
             this.errorClass();
+            isValueChanged = true;
         }
         else {
             this.hide(eve ? eve : null);
@@ -7423,6 +7536,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.inputWrapper.container.style.width = '100%';
         }
     };
+    DateRangePicker.prototype.adjustLongHeaderWidth = function () {
+        if (this.dayHeaderFormat === 'Wide') {
+            addClass([this.popupWrapper], DAYHEADERLONG$1);
+        }
+    };
     DateRangePicker.prototype.refreshControl = function () {
         this.validateMinMax();
         if (this.strictMode) {
@@ -7905,6 +8023,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     DateRangePicker.prototype.show = function (element, event) {
+        var _this = this;
         if (this.isMobile && this.popupObj) {
             this.popupObj.refreshPosition();
         }
@@ -7929,23 +8048,26 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     event: event ? event : null,
                     appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
-                this.trigger('open', this.openEventArgs);
-                if (!this.openEventArgs.cancel) {
-                    this.openEventArgs.appendTo.appendChild(this.popupWrapper);
-                    this.showPopup(element, event);
-                    var isPreset = (!this.isCustomRange || (this.isMobile && this.isCustomRange));
-                    if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
-                        this.setScrollPosition();
+                var eventArgs = this.openEventArgs;
+                this.trigger('open', eventArgs, function (eventArgs) {
+                    _this.openEventArgs = eventArgs;
+                    if (!_this.openEventArgs.cancel) {
+                        _this.openEventArgs.appendTo.appendChild(_this.popupWrapper);
+                        _this.showPopup(element, event);
+                        var isPreset = (!_this.isCustomRange || (_this.isMobile && _this.isCustomRange));
+                        if (!isUndefined(_this.presets[0].start && _this.presets[0].end && _this.presets[0].label) && isPreset) {
+                            _this.setScrollPosition();
+                        }
+                        _this.checkMinMaxDays();
+                        if ((_this.isMobile) && (!isNullOrUndefined(_this.startDate)) && (isNullOrUndefined(_this.endDate))) {
+                            _this.endButton.element.classList.add(ACTIVE$1);
+                            _this.startButton.element.classList.remove(ACTIVE$1);
+                            _this.endButton.element.removeAttribute('disabled');
+                            _this.selectableDates();
+                        }
+                        _super.prototype.setOverlayIndex.call(_this, _this.mobileRangePopupWrap, _this.popupObj.element, _this.modal, _this.isMobile || Browser.isDevice);
                     }
-                    this.checkMinMaxDays();
-                    if ((this.isMobile) && (!isNullOrUndefined(this.startDate)) && (isNullOrUndefined(this.endDate))) {
-                        this.endButton.element.classList.add(ACTIVE$1);
-                        this.startButton.element.classList.remove(ACTIVE$1);
-                        this.endButton.element.removeAttribute('disabled');
-                        this.selectableDates();
-                    }
-                    _super.prototype.setOverlayIndex.call(this, this.mobileRangePopupWrap, this.popupObj.element, this.modal, this.isMobile || Browser.isDevice);
-                }
+                });
             }
         }
     };
@@ -7954,6 +8076,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     DateRangePicker.prototype.hide = function (event) {
+        var _this = this;
         if (this.popupObj) {
             if (isNullOrUndefined(this.previousEndValue) && isNullOrUndefined(this.previousStartValue)) {
                 this.clearRange();
@@ -7985,56 +8108,66 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     model: this,
                     event: event ? event : null
                 };
-                this.trigger('close', this.closeEventArgs);
-                if (!this.closeEventArgs.cancel) {
-                    if (this.isMobile) {
-                        if (!isNullOrUndefined(this.startButton) && !isNullOrUndefined(this.endButton)) {
-                            EventHandler.remove(this.startButton.element, 'click touchstart', this.deviceHeaderClick);
-                            EventHandler.remove(this.endButton.element, 'click touchstart', this.deviceHeaderClick);
+                var eventArgs = this.closeEventArgs;
+                this.trigger('close', eventArgs, function (eventArgs) {
+                    _this.closeEventArgs = eventArgs;
+                    if (!_this.closeEventArgs.cancel) {
+                        if (_this.isMobile) {
+                            if (!isNullOrUndefined(_this.startButton) && !isNullOrUndefined(_this.endButton)) {
+                                EventHandler.remove(_this.startButton.element, 'click touchstart', _this.deviceHeaderClick);
+                                EventHandler.remove(_this.endButton.element, 'click touchstart', _this.deviceHeaderClick);
+                            }
                         }
+                        if (_this.popupObj) {
+                            _this.popupObj.hide();
+                            if (_this.preventBlur) {
+                                _this.inputElement.focus();
+                                addClass([_this.inputWrapper.container], [INPUTFOCUS$1]);
+                            }
+                        }
+                        if (!_this.isMobile) {
+                            if (!isNullOrUndefined(_this.leftKeyboardModule) && !isNullOrUndefined(_this.rightKeyboardModule)) {
+                                _this.leftKeyboardModule.destroy();
+                                _this.rightKeyboardModule.destroy();
+                            }
+                            if (!isNullOrUndefined(_this.presetElement)) {
+                                _this.presetKeyboardModule.destroy();
+                            }
+                            if (!isNullOrUndefined(_this.cancelButton)) {
+                                _this.btnKeyboardModule.destroy();
+                            }
+                        }
+                        _this.targetElement = null;
+                        removeClass([document.body], OVERFLOW$1);
+                        EventHandler.remove(document, 'mousedown touchstart', _this.documentHandler);
+                        if (_this.isMobile && _this.modal) {
+                            _this.modal.style.display = 'none';
+                            _this.modal.outerHTML = '';
+                            _this.modal = null;
+                            if (!isNullOrUndefined(_this.mobileRangePopupWrap)) {
+                                _this.mobileRangePopupWrap.remove();
+                                _this.mobileRangePopupWrap = null;
+                            }
+                        }
+                        _this.isKeyPopup = _this.dateDisabled = false;
                     }
-                    if (this.popupObj) {
-                        this.popupObj.hide();
-                        if (this.preventBlur) {
-                            this.inputElement.focus();
-                            addClass([this.inputWrapper.container], [INPUTFOCUS$1]);
-                        }
+                    else {
+                        removeClass([_this.inputWrapper.buttons[0]], ACTIVE$1);
                     }
-                    if (!this.isMobile) {
-                        if (!isNullOrUndefined(this.leftKeyboardModule) && !isNullOrUndefined(this.rightKeyboardModule)) {
-                            this.leftKeyboardModule.destroy();
-                            this.rightKeyboardModule.destroy();
-                        }
-                        if (!isNullOrUndefined(this.presetElement)) {
-                            this.presetKeyboardModule.destroy();
-                        }
-                        if (!isNullOrUndefined(this.cancelButton)) {
-                            this.btnKeyboardModule.destroy();
-                        }
+                    _this.updateClearIconState();
+                    _this.updateHiddenInput();
+                    if (_this.isMobile && _this.allowEdit && !_this.readonly) {
+                        _this.inputElement.removeAttribute('readonly');
                     }
-                    this.targetElement = null;
-                    removeClass([document.body], OVERFLOW$1);
-                    EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
-                    if (this.isMobile && this.modal) {
-                        this.modal.style.display = 'none';
-                        this.modal.outerHTML = '';
-                        this.modal = null;
-                        if (!isNullOrUndefined(this.mobileRangePopupWrap)) {
-                            this.mobileRangePopupWrap.remove();
-                            this.mobileRangePopupWrap = null;
-                        }
-                    }
-                    this.isKeyPopup = this.dateDisabled = false;
-                }
-                else {
-                    removeClass([this.inputWrapper.buttons[0]], ACTIVE$1);
-                }
+                });
             }
         }
-        this.updateClearIconState();
-        this.updateHiddenInput();
-        if (this.isMobile && this.allowEdit && !this.readonly) {
-            this.inputElement.removeAttribute('readonly');
+        else {
+            this.updateClearIconState();
+            this.updateHiddenInput();
+            if (this.isMobile && this.allowEdit && !this.readonly) {
+                this.inputElement.removeAttribute('readonly');
+            }
         }
     };
     DateRangePicker.prototype.setLocale = function () {
@@ -8165,6 +8298,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
                     Input.setPlaceholder(this.placeholder, this.inputElement);
                     this.setLocale();
+                    break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToElement();
+                    this.updateHtmlAttributeToWrapper();
+                    this.checkHtmlAttributes(false);
                     break;
                 case 'showClearButton':
                     Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
@@ -8386,6 +8524,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], DateRangePicker.prototype, "placeholder", void 0);
     __decorate$2([
+        Property({})
+    ], DateRangePicker.prototype, "htmlAttributes", void 0);
+    __decorate$2([
         Event()
     ], DateRangePicker.prototype, "open", void 0);
     __decorate$2([
@@ -8452,6 +8593,7 @@ var ANIMATIONDURATION = 50;
 var OVERFLOW$2 = 'e-time-overflow';
 var OFFSETVAL = 4;
 var EDITABLE = 'e-non-edit';
+var wrapperAttributes = ['title', 'class', 'style'];
 var TimePickerBase;
 (function (TimePickerBase) {
     // tslint:disable-next-line
@@ -8501,6 +8643,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         _this.timeCollections = [];
         _this.disableItemCollection = [];
         _this.invalidValueString = null;
+        _this.timeOptions = options;
         return _this;
     }
     /**
@@ -8541,6 +8684,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.render = function () {
         this.initialize();
         this.createInputElement();
+        this.updateHtmlAttributeToWrapper();
         this.setTimeAllowEdit();
         this.setEnable();
         this.validateInterval();
@@ -8620,7 +8764,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.angularTag !== null) {
             this.validationAttribute(this.element, this.inputElement);
         }
-        this.checkAttributes(); //check the input element attributes
+        this.updateHtmlAttributeToElement();
+        this.checkAttributes(true); //check the input element attributes
         var localeText = { placeholder: this.placeholder };
         this.l10n = new L10n('timepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -8908,6 +9053,22 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return null;
+    };
+    TimePicker.prototype.updateHtmlAttributeToWrapper = function () {
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (wrapperAttributes.indexOf(key) > -1) {
+                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    };
+    TimePicker.prototype.updateHtmlAttributeToElement = function () {
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (wrapperAttributes.indexOf(key) < 0) {
+                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
     };
     TimePicker.prototype.removeErrorClass = function () {
         removeClass([this.inputWrapper.container], ERROR$2);
@@ -9245,6 +9406,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TimePicker.prototype.closePopup = function (delay, e) {
+        var _this = this;
         if (this.isPopupOpen() && this.popupWrapper) {
             var args = {
                 popup: this.popupObj,
@@ -9253,26 +9415,32 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 name: 'open'
             };
             removeClass([document.body], OVERFLOW$2);
-            this.trigger('close', args);
-            if (!args.cancel) {
-                var animModel = {
-                    name: 'FadeOut',
-                    duration: ANIMATIONDURATION,
-                    delay: delay ? delay : 0
-                };
-                this.popupObj.hide(new Animation(animModel));
-                removeClass([this.inputWrapper.container], [ICONANIMATION]);
-                attributes(this.inputElement, { 'aria-expanded': 'false' });
-                EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
-            }
-            if (Browser.isDevice && this.modal) {
-                this.modal.style.display = 'none';
-                this.modal.outerHTML = '';
-                this.modal = null;
-            }
+            this.trigger('close', args, function (args) {
+                if (!args.cancel) {
+                    var animModel = {
+                        name: 'FadeOut',
+                        duration: ANIMATIONDURATION,
+                        delay: delay ? delay : 0
+                    };
+                    _this.popupObj.hide(new Animation(animModel));
+                    removeClass([_this.inputWrapper.container], [ICONANIMATION]);
+                    attributes(_this.inputElement, { 'aria-expanded': 'false' });
+                    EventHandler.remove(document, 'mousedown touchstart', _this.documentClickHandler);
+                }
+                if (Browser.isDevice && _this.modal) {
+                    _this.modal.style.display = 'none';
+                    _this.modal.outerHTML = '';
+                    _this.modal = null;
+                }
+                if (Browser.isDevice && _this.allowEdit && !_this.readonly) {
+                    _this.inputElement.removeAttribute('readonly');
+                }
+            });
         }
-        if (Browser.isDevice && this.allowEdit && !this.readonly) {
-            this.inputElement.removeAttribute('readonly');
+        else {
+            if (Browser.isDevice && this.allowEdit && !this.readonly) {
+                this.inputElement.removeAttribute('readonly');
+            }
         }
     };
     TimePicker.prototype.checkValueChange = function (event, isNavigation) {
@@ -9513,7 +9681,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             this.popupObj.dataBind();
         }
     };
-    TimePicker.prototype.checkAttributes = function () {
+    TimePicker.prototype.checkAttributes = function (isDynamic) {
         var attributes$$1 = ['step', 'disabled', 'readonly', 'style', 'name', 'value', 'min', 'max', 'placeholder'];
         var value;
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
@@ -9521,15 +9689,23 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
-                        var enabled = isNullOrUndefined(this.inputElement.getAttribute(prop));
-                        this.setProperties({ enabled: enabled }, true);
-                        break;
-                    case 'readonly':
-                        var readonly = !isNullOrUndefined(this.inputElement.getAttribute(prop));
-                        this.setProperties({ readonly: readonly }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['enabled'] === undefined)) || !isDynamic) {
+                            var enabled = this.inputElement.getAttribute(prop) === 'disabled' || this.inputElement.getAttribute(prop) === '' ||
+                                this.inputElement.getAttribute(prop) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, isDynamic);
+                        }
                         break;
                     case 'style':
                         this.inputStyle = this.inputElement.getAttribute(prop);
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['readonly'] === undefined)) || !isDynamic) {
+                            var readonly = this.inputElement.getAttribute(prop) === 'readonly' || this.inputElement.getAttribute(prop) === '' ||
+                                this.inputElement.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, isDynamic);
+                        }
                         break;
                     case 'name':
                         this.inputElement.setAttribute('name', this.inputElement.getAttribute(prop));
@@ -9538,25 +9714,38 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                         this.step = parseInt(this.inputElement.getAttribute(prop), 10);
                         break;
                     case 'placeholder':
-                        this.placeholder = this.inputElement.getAttribute(prop);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        }
                         break;
                     case 'min':
-                        value = new Date(this.inputElement.getAttribute(prop));
-                        if (!isNullOrUndefined(this.checkDateValue(value))) {
-                            this.setProperties({ min: value }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                this.setProperties({ min: value }, isDynamic);
+                            }
                         }
                         break;
                     case 'max':
-                        value = new Date(this.inputElement.getAttribute(prop));
-                        if (!isNullOrUndefined(this.checkDateValue(value))) {
-                            this.setProperties({ max: value }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                this.setProperties({ max: value }, isDynamic);
+                            }
                         }
                         break;
                     case 'value':
-                        value = new Date(this.inputElement.getAttribute(prop));
-                        if (!isNullOrUndefined(this.checkDateValue(value))) {
-                            this.initValue = value;
-                            this.updateInput(false, this.initValue);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!isNullOrUndefined(this.checkDateValue(value))) {
+                                this.initValue = value;
+                                this.updateInput(false, this.initValue);
+                                this.setProperties({ value: value }, isDynamic);
+                            }
                         }
                         break;
                 }
@@ -9990,13 +10179,14 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     element: args.item,
                     text: args.text, value: _this.getDateObject(args.text), isDisabled: false
                 };
-                _this.trigger('itemRender', eventArgs);
-                if (eventArgs.isDisabled) {
-                    eventArgs.element.classList.add(DISABLED$3);
-                }
-                if (eventArgs.element.classList.contains(DISABLED$3)) {
-                    _this.disableItemCollection.push(eventArgs.element.getAttribute('data-value'));
-                }
+                _this.trigger('itemRender', eventArgs, function (eventArgs) {
+                    if (eventArgs.isDisabled) {
+                        eventArgs.element.classList.add(DISABLED$3);
+                    }
+                    if (eventArgs.element.classList.contains(DISABLED$3)) {
+                        _this.disableItemCollection.push(eventArgs.element.getAttribute('data-value'));
+                    }
+                });
             }
         };
         this.listTag = ListBase.createList(this.createElement, listItems, listBaseOptions, true);
@@ -10138,6 +10328,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     TimePicker.prototype.show = function (event) {
+        var _this = this;
         if ((this.enabled && this.readonly) || !this.enabled || this.popupWrapper) {
             return;
         }
@@ -10156,36 +10347,39 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 name: 'open',
                 appendTo: document.body
             };
-            this.trigger('open', this.openPopupEventArgs);
-            if (!this.openPopupEventArgs.cancel && !this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
-                this.openPopupEventArgs.appendTo.appendChild(this.popupWrapper);
-                this.popupAlignment(this.openPopupEventArgs);
-                this.setScrollPosition();
-                if (!Browser.isDevice) {
-                    this.inputElement.focus();
-                }
-                var openAnimation = {
-                    name: 'FadeIn',
-                    duration: ANIMATIONDURATION,
-                };
-                this.popupObj.refreshPosition(this.anchor);
-                if (this.zIndex === 1000) {
-                    this.popupObj.show(new Animation(openAnimation), this.element);
+            var eventArgs = this.openPopupEventArgs;
+            this.trigger('open', eventArgs, function (eventArgs) {
+                _this.openPopupEventArgs = eventArgs;
+                if (!_this.openPopupEventArgs.cancel && !_this.inputWrapper.buttons[0].classList.contains(DISABLED$3)) {
+                    _this.openPopupEventArgs.appendTo.appendChild(_this.popupWrapper);
+                    _this.popupAlignment(_this.openPopupEventArgs);
+                    _this.setScrollPosition();
+                    if (!Browser.isDevice) {
+                        _this.inputElement.focus();
+                    }
+                    var openAnimation = {
+                        name: 'FadeIn',
+                        duration: ANIMATIONDURATION,
+                    };
+                    _this.popupObj.refreshPosition(_this.anchor);
+                    if (_this.zIndex === 1000) {
+                        _this.popupObj.show(new Animation(openAnimation), _this.element);
+                    }
+                    else {
+                        _this.popupObj.show(new Animation(openAnimation), null);
+                    }
+                    _this.setActiveDescendant();
+                    attributes(_this.inputElement, { 'aria-expanded': 'true' });
+                    addClass([_this.inputWrapper.container], FOCUS);
+                    EventHandler.add(document, 'mousedown touchstart', _this.documentClickHandler, _this);
                 }
                 else {
-                    this.popupObj.show(new Animation(openAnimation), null);
+                    _this.popupObj.destroy();
+                    _this.popupWrapper = _this.listTag = undefined;
+                    _this.liCollections = _this.timeCollections = _this.disableItemCollection = [];
+                    _this.popupObj = null;
                 }
-                this.setActiveDescendant();
-                attributes(this.inputElement, { 'aria-expanded': 'true' });
-                addClass([this.inputWrapper.container], FOCUS);
-                EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
-            }
-            else {
-                this.popupObj.destroy();
-                this.popupWrapper = this.listTag = undefined;
-                this.liCollections = this.timeCollections = this.disableItemCollection = [];
-                this.popupObj = null;
-            }
+            });
         }
     };
     TimePicker.prototype.formatValues = function (type) {
@@ -10304,6 +10498,11 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     this.setZIndex();
                     break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToElement();
+                    this.updateHtmlAttributeToWrapper();
+                    this.checkAttributes(false);
+                    break;
                 case 'min':
                 case 'max':
                     this.getProperty(newProp, prop);
@@ -10405,6 +10604,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$3([
         Property(false)
     ], TimePicker.prototype, "readonly", void 0);
+    __decorate$3([
+        Property({})
+    ], TimePicker.prototype, "htmlAttributes", void 0);
     __decorate$3([
         Property('Never')
     ], TimePicker.prototype, "floatLabelType", void 0);
@@ -10544,6 +10746,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.valueWithMinutes = null;
         _this.previousDateTime = null;
+        _this.dateTimeOptions = options;
         return _this;
     }
     DateTimePicker.prototype.focusHandler = function () {
@@ -10638,12 +10841,14 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         this.cloneElement = this.element.cloneNode(true);
         this.dateTimeFormat = this.cldrDateTimeFormat();
         this.initValue = this.value;
-        this.checkAttributes();
+        _super.prototype.updateHtmlAttributeToElement.call(this);
+        this.checkAttributes(true);
         var localeText = { placeholder: this.placeholder };
         this.l10n = new L10n('datetimepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         _super.prototype.render.call(this);
         this.createInputElement();
+        _super.prototype.updateHtmlAttributeToWrapper.call(this);
         this.bindInputEvents();
         this.setValue();
         this.previousDateTime = this.value && new Date(+this.value);
@@ -10966,27 +11171,31 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateTimePicker.prototype.openPopup = function (e) {
+        var _this = this;
         this.preventArgs = {
             cancel: false,
             popup: this.popupObject,
             event: e || null
         };
-        this.trigger('open', this.preventArgs);
-        if (!this.preventArgs.cancel && !this.readonly) {
-            var openAnimation = {
-                name: 'FadeIn',
-                duration: ANIMATIONDURATION$1,
-            };
-            if (this.zIndex === 1000) {
-                this.popupObject.show(new Animation(openAnimation), this.element);
+        var eventArgs = this.preventArgs;
+        this.trigger('open', eventArgs, function (eventArgs) {
+            _this.preventArgs = eventArgs;
+            if (!_this.preventArgs.cancel && !_this.readonly) {
+                var openAnimation = {
+                    name: 'FadeIn',
+                    duration: ANIMATIONDURATION$1,
+                };
+                if (_this.zIndex === 1000) {
+                    _this.popupObject.show(new Animation(openAnimation), _this.element);
+                }
+                else {
+                    _this.popupObject.show(new Animation(openAnimation), null);
+                }
+                addClass([_this.inputWrapper.container], [ICONANIMATION$1]);
+                attributes(_this.inputElement, { 'aria-expanded': 'true' });
+                EventHandler.add(document, 'mousedown touchstart', _this.documentClickHandler, _this);
             }
-            else {
-                this.popupObject.show(new Animation(openAnimation), null);
-            }
-            addClass([this.inputWrapper.container], [ICONANIMATION$1]);
-            attributes(this.inputElement, { 'aria-expanded': 'true' });
-            EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
-        }
+        });
     };
     DateTimePicker.prototype.documentClickHandler = function (event) {
         if (event.type !== 'touchstart') {
@@ -11357,29 +11566,45 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         return this.calculateStartEnd(tempEndValue, end, 'endtime');
     };
     DateTimePicker.prototype.hide = function (e) {
+        var _this = this;
         if (this.popupObj || this.dateTimeWrapper) {
             this.preventArgs = {
                 cancel: false,
                 popup: this.popupObj || this.popupObject,
                 event: e || null
             };
+            var eventArgs = this.preventArgs;
             if (isNullOrUndefined(this.popupObj)) {
-                this.trigger('close', this.preventArgs);
+                this.trigger('close', eventArgs, function (eventArgs) {
+                    _this.dateTimeCloseEventCallback(e, eventArgs);
+                });
             }
-            if (!this.preventArgs.cancel) {
-                if (this.isDatePopupOpen()) {
-                    _super.prototype.hide.call(this, e);
+            else {
+                this.dateTimeCloseEventCallback(e, eventArgs);
+            }
+        }
+        else {
+            if (Browser.isDevice && this.allowEdit && !this.readonly) {
+                this.inputElement.removeAttribute('readonly');
+            }
+            this.setAllowEdit();
+        }
+    };
+    DateTimePicker.prototype.dateTimeCloseEventCallback = function (e, eventArgs) {
+        this.preventArgs = eventArgs;
+        if (!this.preventArgs.cancel) {
+            if (this.isDatePopupOpen()) {
+                _super.prototype.hide.call(this, e);
+            }
+            else if (this.isTimePopupOpen()) {
+                this.closePopup(e);
+                removeClass([document.body], OVERFLOW$3);
+                if (Browser.isDevice && this.timeModal) {
+                    this.timeModal.style.display = 'none';
+                    this.timeModal.outerHTML = '';
+                    this.timeModal = null;
                 }
-                else if (this.isTimePopupOpen()) {
-                    this.closePopup(e);
-                    removeClass([document.body], OVERFLOW$3);
-                    if (Browser.isDevice && this.timeModal) {
-                        this.timeModal.style.display = 'none';
-                        this.timeModal.outerHTML = '';
-                        this.timeModal = null;
-                    }
-                    this.setTimeActiveDescendant();
-                }
+                this.setTimeActiveDescendant();
             }
         }
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
@@ -11415,7 +11640,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ max: this.validateValue(date.max) }, true);
         }
     };
-    DateTimePicker.prototype.checkAttributes = function () {
+    DateTimePicker.prototype.checkAttributes = function (isDynamic) {
         var attributes$$1 = ['style', 'name', 'step', 'disabled', 'readonly', 'value', 'min', 'max', 'placeholder', 'type'];
         var value;
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
@@ -11429,26 +11654,52 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                         this.step = parseInt(this.inputElement.getAttribute(prop), 10);
                         break;
                     case 'readonly':
-                        var readonly = !isNullOrUndefined(this.inputElement.getAttribute(prop));
-                        this.setProperties({ readonly: readonly }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['readonly'] === undefined)) || !isDynamic) {
+                            var readonly = this.inputElement.getAttribute(prop) === 'disabled' ||
+                                this.inputElement.getAttribute(prop) === '';
+                            this.setProperties({ readonly: readonly }, isDynamic);
+                        }
                         break;
                     case 'placeholder':
-                        this.placeholder = this.inputElement.getAttribute(prop);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        }
                         break;
                     case 'min':
-                        value = new Date(this.inputElement.getAttribute(prop));
-                        if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                            this.setProperties({ min: value }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['min'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
+                                this.setProperties({ min: value }, isDynamic);
+                            }
                         }
                         break;
                     case 'disabled':
-                        var enabled = isNullOrUndefined(this.inputElement.getAttribute(prop));
-                        this.setProperties({ enabled: enabled }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['enabled'] === undefined)) || !isDynamic) {
+                            var enabled = this.inputElement.getAttribute(prop) === 'disabled' ||
+                                this.inputElement.getAttribute(prop) === '';
+                            this.setProperties({ enabled: enabled }, isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['value'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
+                                this.setProperties({ value: value }, isDynamic);
+                            }
+                        }
                         break;
                     case 'max':
-                        value = new Date(this.inputElement.getAttribute(prop));
-                        if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                            this.setProperties({ max: value }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['max'] === undefined)) || !isDynamic) {
+                            value = new Date(this.inputElement.getAttribute(prop));
+                            if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
+                                this.setProperties({ max: value }, isDynamic);
+                            }
                         }
                         break;
                 }
@@ -11705,6 +11956,11 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.dateTimeFormat = this.cldrDateTimeFormat();
                     _super.prototype.updateInput.call(this);
                     break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToElement();
+                    this.updateHtmlAttributeToWrapper();
+                    this.checkAttributes(false);
+                    break;
                 case 'format':
                     this.setProperties({ format: newProp.format }, true);
                     this.checkFormat();
@@ -11782,6 +12038,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(1000)
     ], DateTimePicker.prototype, "zIndex", void 0);
+    __decorate$4([
+        Property({})
+    ], DateTimePicker.prototype, "htmlAttributes", void 0);
     __decorate$4([
         Property(false)
     ], DateTimePicker.prototype, "enablePersistence", void 0);

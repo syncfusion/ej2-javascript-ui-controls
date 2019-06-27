@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';import { addClass, isVisible, closest, attributes, classList, detach, select } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, Complex  } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';import { addClass, isVisible, closest, attributes, classList, detach, select } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate, resetBlazorTemplate  } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
 import {ExpandMode,AccordionClickArgs,ExpandEventArgs} from "./accordion";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -169,30 +169,35 @@ export interface AccordionModel extends ComponentModel{
     /**
      * The event will be fired while clicking anywhere within the Accordion.
      * @event
+     * @blazorProperty 'Clicked'
      */
     clicked?: EmitType<AccordionClickArgs>;
 
     /**
      * The event will be fired before the item gets collapsed/expanded.
      * @event
+     * @blazorProperty 'Expanding'
      */
     expanding?: EmitType<ExpandEventArgs>;
 
     /**
      * The event will be fired after the item gets collapsed/expanded.
      * @event
+     * @blazorProperty 'Expanded'
      */
     expanded?: EmitType<ExpandEventArgs>;
 
     /**
      * The event will be fired once the control rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 
     /**
      * The event will be fired when the control gets destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Event>;
 

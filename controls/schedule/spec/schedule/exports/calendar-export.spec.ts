@@ -1,13 +1,13 @@
 /**
  * Schedule calendar export spec
  */
-import { EmitType, extend } from '@syncfusion/ej2-base';
+import { extend } from '@syncfusion/ej2-base';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth,
     MonthAgenda, ScheduleModel, ICalendarExport
 } from '../../../src/schedule/index';
 import { createSchedule, createGroupSchedule, destroy } from '../util.spec';
-import { timezoneData, readonlyEventsData, blockData } from '../base/datasource.spec';
+import { readonlyEventsData, blockData } from '../base/datasource.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, ICalendarExport);
@@ -27,31 +27,24 @@ describe('ICS calendar export', () => {
     describe('Export checking', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            let events: Object[] = [
-                {
-                    Id: 10,
-                    Subject: 'recurrence event',
-                    StartTime: new Date(2017, 9, 19, 10, 0),
-                    EndTime: new Date(2017, 9, 19, 11, 0),
-                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
-                }, {
-                    Id: 11,
-                    StartTime: new Date(2017, 9, 19, 11, 0),
-                    EndTime: new Date(2017, 9, 19, 12, 30)
-                }, {
-                    Id: 12,
-                    Subject: 'event 2',
-                    StartTime: new Date(2017, 9, 20, 11, 0),
-                    EndTime: new Date(2017, 9, 20, 12, 30)
-                }
-            ];
-            let dataBound: EmitType<Object> = () => { done(); };
-            let options: ScheduleModel = {
-                eventSettings: { dataSource: events },
-                selectedDate: new Date(2017, 9, 19), dataBound: dataBound
-            };
-
-            schObj = createSchedule(options, timezoneData, done);
+            let events: Object[] = [{
+                Id: 10,
+                Subject: 'recurrence event',
+                StartTime: new Date(2017, 9, 19, 10, 0),
+                EndTime: new Date(2017, 9, 19, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            }, {
+                Id: 11,
+                StartTime: new Date(2017, 9, 19, 11, 0),
+                EndTime: new Date(2017, 9, 19, 12, 30)
+            }, {
+                Id: 12,
+                Subject: 'event 2',
+                StartTime: new Date(2017, 9, 20, 11, 0),
+                EndTime: new Date(2017, 9, 20, 12, 30)
+            }];
+            let options: ScheduleModel = { selectedDate: new Date(2017, 9, 19) };
+            schObj = createSchedule(options, events, done);
         });
         afterAll(() => {
             destroy(schObj);
@@ -77,7 +70,7 @@ describe('ICS calendar export', () => {
             schObj.saveEvent(data, schObj.currentAction);
         });
 
-        it('Export checking for edited occurrence', (done) => {
+        it('Export checking for edited occurrence', (done: Function) => {
             schObj.exportToICalendar('icsFile');
             setTimeout(() => done(), 50);
         });
@@ -102,7 +95,7 @@ describe('ICS calendar export', () => {
             schObj.deleteEvent(occurence, schObj.currentAction);
         });
 
-        it('Event export checking', (done) => {
+        it('Event export checking', (done: Function) => {
             schObj.exportToICalendar('icsFile');
             setTimeout(() => done(), 50);
         });
@@ -132,17 +125,14 @@ describe('ICS calendar export', () => {
             OwnerId: 2
         }];
         beforeAll((done: Function) => {
-            let options: ScheduleModel = {
-                height: '550px', width: '50%',
-                selectedDate: new Date(2018, 4, 1)
-            };
+            let options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
             schObj = createGroupSchedule(1, options, data, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Export checking', (done) => {
+        it('Export checking', (done: Function) => {
             (schObj.eventsData[0] as { [key: string]: Object }).RoomId = undefined;
             schObj.exportToICalendar();
             setTimeout(() => done(), 50);
@@ -173,17 +163,14 @@ describe('ICS calendar export', () => {
             OwnerId: 2
         }];
         beforeAll((done: Function) => {
-            let options: ScheduleModel = {
-                height: '550px', width: '50%',
-                selectedDate: new Date(2018, 4, 1)
-            };
+            let options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
             schObj = createGroupSchedule(1, options, data, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Export checking', (done) => {
+        it('Export checking', (done: Function) => {
             (schObj.eventsData[0] as { [key: string]: Object }).RoomId = undefined;
             schObj.exportToICalendar();
             setTimeout(() => done(), 50);
@@ -193,17 +180,14 @@ describe('ICS calendar export', () => {
     describe('ICS Export Checing for Readonly events', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            let options: ScheduleModel = {
-                height: '550px', width: '50%',
-                selectedDate: new Date(2018, 4, 1)
-            };
+            let options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
             schObj = createGroupSchedule(1, options, readonlyEventsData, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Export checking for Readonly events', (done) => {
+        it('Export checking for Readonly events', (done: Function) => {
             schObj.exportToICalendar('ReadOnlyEvents');
             setTimeout(() => done(), 50);
         });
@@ -212,17 +196,14 @@ describe('ICS calendar export', () => {
     describe('ICS Export Checing for Blocked events', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            let options: ScheduleModel = {
-                height: '550px', width: '50%',
-                selectedDate: new Date(2018, 4, 1)
-            };
+            let options: ScheduleModel = { height: '550px', width: '50%', selectedDate: new Date(2018, 4, 1) };
             schObj = createGroupSchedule(1, options, blockData, done);
         });
         afterAll(() => {
             destroy(schObj);
         });
 
-        it('Export checking for Blocked events', (done) => {
+        it('Export checking for Blocked events', (done: Function) => {
             schObj.exportToICalendar('Blocked');
             setTimeout(() => done(), 50);
         });

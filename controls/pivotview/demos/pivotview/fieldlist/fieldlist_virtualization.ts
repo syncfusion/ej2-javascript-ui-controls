@@ -13,8 +13,8 @@ import { VirtualScroll } from '../../../src/pivotview/actions';
 //335 or 315
 PivotView.Inject(FieldList, CalculatedField, VirtualScroll);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: true,
         enableSorting: true,
         rows: [{ name: 'index' }, { name: 'gender' }],

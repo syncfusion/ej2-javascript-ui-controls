@@ -66,7 +66,7 @@ describe('Diagram Control', () => {
                     type: 'OrganizationalChart', root: '15'
                 },
                 dataSourceSettings: {
-                    id: 'id', parentId: 'parentId', dataManager: items
+                    id: 'id', parentId: 'parentId', dataSource: items
                 },
                 getNodeDefaults: (node: NodeModel, diagram: Diagram) => {
                     let obj: NodeModel = {};

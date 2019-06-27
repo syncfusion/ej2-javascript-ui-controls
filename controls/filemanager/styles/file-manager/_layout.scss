@@ -54,6 +54,18 @@
       display: none;
     }
 
+    &.e-fe-drop,
+    &.e-fe-drop .e-treeview .e-text-content,
+    &.e-fe-drop .e-treeview .e-fullrow,
+    &.e-fe-drop .e-address .e-address-list-item:last-child .e-list-text,
+    &.e-fe-drop .e-grid .e-columnheader {
+      cursor: grab;
+    }
+
+    &.e-no-drop {
+      cursor: no-drop;
+    }
+
     .e-toolbar {
       border-bottom-style: solid;
       @if $fm-skin-name == 'bootstrap-dark' {
@@ -111,22 +123,6 @@
         }
       }
 
-      .e-status {
-        //Based on icon size modify the font-size 
-        font-size: $fe-tbr-text-font-size;
-        padding: $fe-tb-text-padding;
-      }
-
-      .e-fe-clear {
-        //Based on icon size modify the font-size
-        font-size: 14px;
-
-        &::before {
-          display: inline-block;
-          padding: $fe-bc-icon-padding;
-        }
-      }
-
       .e-toolbar-pop {
         width: max-content;
       }
@@ -140,6 +136,7 @@
       }
 
       .e-list-parent {
+        margin-bottom: 0;
         margin-top: 0;
 
         .e-list-item {
@@ -153,6 +150,11 @@
           .e-list-text {
             height: $fe-tv-node-height;
             line-height: $fe-tv-node-height;
+          }
+
+          &.e-fe-drop-folder > .e-fullrow {
+            border: 1px solid;
+            box-sizing: border-box;
           }
         }
       }
@@ -298,6 +300,11 @@
         display: none;
       }
 
+      .e-gridcontent tr.e-emptyrow td.e-lastrowcell:first-child:empty {
+        height: 0;
+        padding: 0;
+      }
+
       .e-gridheader {
         border-width: 0 1px 1px;
 
@@ -350,15 +357,22 @@
             font-size: $fe-grid-content-name-font-size;
           }
         }
+
+        tr.e-row.e-fe-drop-folder .e-rowcell:first-child {
+          box-shadow: 1px 0 0 1px $fe-drop-folder-bg-color inset;
+        }
+
+        tr.e-row.e-fe-drop-folder .e-rowcell:last-child {
+          box-shadow: -1px 0 0 1px $fe-drop-folder-bg-color inset;
+        }
+
+        tr.e-row.e-fe-drop-folder .e-rowcell {
+          box-shadow: 0 2px 0 -1px $fe-drop-folder-bg-color inset, 0 -2px 0 -1px $fe-drop-folder-bg-color inset;
+        }
       }
 
       .e-empty {
-        height: $fe-grid-empty-height;
-        left: $fe-grid-empty-left;
         min-width: $fe-grid-empty-min-width;
-        position: $fe-grid-empty-position;
-        top: $fe-grid-empty-top;
-        transform: $fe-grid-empty-transform;
       }
 
       .e-empty-content {
@@ -416,10 +430,10 @@
         .e-active {
           @include visibility(visible);
         }
-      }
 
-      .e-focused:not(.e-menu-item) {
-        box-shadow: none;
+        &.e-fe-drop-file:hover {
+          @include visibility(hidden);
+        }
       }
 
       &.e-horizontallines,
@@ -461,9 +475,21 @@
         word-break: break-all;
       }
 
+      .e-fe-retrycontent {
+        padding: 16px 0;
+      }
+
       .e-image {
         height: 100%;
         width: 100%;
+      }
+
+      &.e-rtl {
+
+        td {
+          padding: $fe-dg-rtl-td-padding;
+        }
+
       }
     }
 
@@ -474,12 +500,7 @@
       width: 100%;
 
       .e-empty {
-        height: $fe-lg-icon-empty-height;
-        left: $fe-lg-icon-empty-left;
         min-width: $fe-lg-icon-empty-min-width;
-        position: $fe-lg-icon-empty-position;
-        top: $fe-lg-icon-empty-top;
-        transform: $fe-lg-icon-empty-transform;
       }
 
       .e-empty-content {
@@ -571,6 +592,58 @@
       }
     }
 
+    .e-fe-error {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .e-fe-clone {
+      pointer-events: none;
+      z-index: 20;
+
+      .e-fe-content {
+        border: $fe-clone-border;
+        box-shadow: $fe-clone-box-shadow;
+        display: inline-flex;
+        height: 36px;
+        padding: 4px 8px;
+
+        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'bootstrap' {
+          border-radius: 4px;
+        }
+
+        .e-fe-name {
+          display: inline-block;
+          font-size: 13px;
+          margin: auto 8px;
+          max-width: 70px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .e-fe-icon {
+          display: inline-block;
+          height: 18px;
+          margin: auto 8px;
+          width: 18px;
+        }
+      }
+
+      .e-fe-count {
+        border: 1px solid;
+        border-radius: 50%;
+        font-size: 12px;
+        height: 22px;
+        line-height: 22px;
+        margin-left: -12px;
+        position: absolute;
+        text-align: center;
+        top: 0;
+        width: 22px;
+      }
+    }
+
     &.e-rtl {
 
       .e-treeview {
@@ -588,12 +661,9 @@
         }
       }
 
-      .e-splitter {
-
-        .e-splitter-horizontal.e-rtl {
-          -ms-flex-direction: row;
-          flex-direction: row;
-        }
+      .e-splitter.e-splitter-horizontal {
+        -ms-flex-direction: row-reverse;
+        flex-direction: row-reverse;
       }
 
       .e-address {
@@ -659,6 +729,11 @@
           float: right;
         }
       }
+
+      .e-fe-clone .e-fe-count {
+        margin-left: 0;
+        margin-right: -12px;
+      }
     }
 
     .e-upload {
@@ -666,6 +741,10 @@
       border-top-width: 0;
 
       .e-file-select-wrap {
+        display: none;
+      }
+
+      .e-icons.e-file-delete-btn {
         display: none;
       }
 
@@ -1174,12 +1253,7 @@
       }
 
       .e-empty {
-        height: $fe-big-grid-empty-height;
-        left: $fe-big-grid-empty-left;
         min-width: $fe-big-grid-empty-min-width;
-        position: $fe-big-grid-empty-position;
-        top: $fe-big-grid-empty-top;
-        transform: $fe-big-grid-empty-transform;
     }
 
       .e-empty-content {
@@ -1254,12 +1328,7 @@
       }
 
       .e-empty {
-        height: $fe-big-lg-icon-empty-height;
-        left: $fe-big-lg-icon-empty-left;
         min-width: $fe-big-lg-icon-empty-min-width;
-        position: $fe-big-lg-icon-empty-position;
-        top: $fe-big-lg-icon-empty-top;
-        transform: $fe-big-lg-icon-empty-transform;
     }
 
       .e-empty-content {
@@ -1328,5 +1397,10 @@
         width: $fe-mobile-lg-item-width-three;
       }
     }
+  }
+
+  .e-content-placeholder.e-filemanager.e-placeholder-filemanager {
+    height: 100%;
+    width: 100%;
   }
 }

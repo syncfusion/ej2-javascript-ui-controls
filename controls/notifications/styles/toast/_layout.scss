@@ -331,4 +331,15 @@
       }
     }
   }
+
+  .e-content-placeholder.e-toast.e-placeholder-toast {
+    background-size: 400px 100px;
+    min-height: 100px;
+  }
+
+  .e-bigger .e-content-placeholder.e-toast.e-placeholder-toast,
+  .e-bigger.e-content-placeholder.e-toast.e-placeholder-toast {
+    background-size: 400px 100px;
+    min-height: 100px;
+  }
 }

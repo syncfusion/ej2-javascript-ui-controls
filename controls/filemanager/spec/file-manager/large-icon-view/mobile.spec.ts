@@ -26,12 +26,14 @@ describe('FileManager control LargeIcons view', () => {
             document.body.appendChild(ele);
             feObj = new FileManager({
                 view: 'LargeIcons',
+                searchSettings: { allowSearchOnTyping: false },
                 ajaxSettings: {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -311,12 +313,14 @@ describe('FileManager control LargeIcons view', () => {
             document.body.appendChild(ele);
             feObj = new FileManager({
                 view: 'LargeIcons',
+                searchSettings: { allowSearchOnTyping: false },
                 ajaxSettings: {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -357,7 +361,7 @@ describe('FileManager control LargeIcons view', () => {
             searchEle.value = 'doc';
             searchObj.value = 'doc';
             let eventArgs: any = { value: 'doc', container: searchEle };
-            searchObj.input(eventArgs);
+            searchObj.change(eventArgs);
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -370,7 +374,7 @@ describe('FileManager control LargeIcons view', () => {
                 searchEle.value = '';
                 searchObj.value = '';
                 eventArgs = { value: '', container: searchEle };
-                searchObj.input(eventArgs);
+                searchObj.change(eventArgs);
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
@@ -392,7 +396,7 @@ describe('FileManager control LargeIcons view', () => {
             searchEle.value = 'doc';
             searchObj.value = 'doc';
             let eventArgs: any = { value: 'doc', container: searchEle };
-            searchObj.input(eventArgs);
+            searchObj.change(eventArgs);
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,

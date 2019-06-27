@@ -12,8 +12,9 @@ import { LargeIconsView } from '../layout';
 import { NavigationPaneSettingsModel } from '../models/navigation-pane-settings-model';
 import { Uploader } from '@syncfusion/ej2-inputs';
 import { BreadCrumbBar } from '../actions';
+import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 
-export type viewType = 'LargeIcons' | 'Details';
+export type ViewType = 'LargeIcons' | 'Details';
 export type SortOrder = 'Ascending' | 'Descending';
 
 /**
@@ -50,6 +51,11 @@ export interface UploadArgs {
     details?: Object;
 }
 
+export interface RetryArgs {
+    action: string;
+    file: FileInfo;
+}
+
 export interface ErrorArgs {
     code?: string;
     message?: string;
@@ -61,6 +67,7 @@ export interface DialogOptions {
     content?: string;
     buttons?: ButtonPropsModel[];
     open?: EmitType<Object>;
+    close?: EmitType<Object>;
 }
 export interface SearchArgs {
     files?: { [key: string]: Object; }[];
@@ -77,6 +84,7 @@ export interface FileDetails {
     size: number;
     icon: string;
     multipleFiles: boolean;
+    permission: Object;
 }
 export interface DownloadArgs {
     files?: { [key: string]: Object; }[];
@@ -84,22 +92,48 @@ export interface DownloadArgs {
     details?: Object;
 }
 
-export interface FileBeforeSendEventArgs {
+/**
+ * Drag Event arguments
+ */
+export interface FileDragEventArgs {
+    /**
+     * Return the current items as an array of JSON object.
+     */
+    fileDetails?: Object[];
+    /**
+     * Specifies the actual event.
+     */
+    event?: MouseEvent & TouchEvent;
+    /**
+     * Specifies the current drag element.
+     */
+    element?: HTMLElement;
+    /**
+     * Specifies the current target element.
+     */
+    target?: HTMLElement;
+    /**
+     * If you want to cancel this event then, set cancel to true. Otherwise, false.
+     */
+    cancel?: Boolean;
+}
+
+export interface BeforeSendEventArgs {
     /**
      * Return the name of the AJAX action will be performed.
      */
     action?: string;
     /**
-     * Return the AJAX details which are send to server.
+     * Return the AJAX details, which are send to server.
      */
     ajaxSettings?: Object;
     /**
-     * If you want to cancel this event then, set cancel as true. Otherwise, false.
+     * If you want to cancel this event then, set cancel to true. Otherwise, false.
      */
     cancel?: boolean;
 }
 
-export interface FileOnSuccessEventArgs {
+export interface SuccessEventArgs {
     /**
      * Return the name of the AJAX action will be performed.
      */
@@ -110,18 +144,18 @@ export interface FileOnSuccessEventArgs {
     result?: Object;
 }
 
-export interface FileOnErrorEventArgs {
+export interface FailureEventArgs {
     /**
      * Return the name of the AJAX action will be performed.
      */
     action?: string;
     /**
-     * Return the AJAX details which are send to server.
+     * Return the AJAX details, which are send to server.
      */
     error?: Object;
 }
 
-export interface FileBeforeLoadEventArgs {
+export interface FileLoadEventArgs {
     /**
      * Return the current rendering item.
      */
@@ -138,7 +172,7 @@ export interface FileBeforeLoadEventArgs {
 
 export interface FileOpenEventArgs {
     /**
-     * If you want to cancel this event then, set cancel as true. Otherwise, false.
+     * If you want to cancel this event then, set cancel to true. Otherwise, false.
      */
     cancel?: boolean;
     /**
@@ -149,7 +183,7 @@ export interface FileOpenEventArgs {
 
 export interface FileSelectEventArgs {
     /**
-     * Return the name of action like select or un-select.
+     * Return the name of action like select or unselect.
      */
     action?: string;
     /**
@@ -158,24 +192,31 @@ export interface FileSelectEventArgs {
     fileDetails?: Object;
 }
 
-export interface FileToolbarClickEventArgs {
+export interface ToolbarCreateEventArgs {
     /**
-     * If you want to cancel this event then, set cancel as true. Otherwise, false.
+     * Return an array of items that is used to configure toolbar content.
+     */
+    items: ItemModel[];
+}
+
+export interface ToolbarClickEventArgs {
+    /**
+     * If you want to cancel this event then, set cancel to true. Otherwise, false.
      */
     cancel: boolean;
     /**
-     * Return the currently selected folder/file item as JSON object.
+     * Return the currently selected folder/file items as an array of JSON object.
      */
-    fileDetails: Object;
+    fileDetails: Object[];
     /**
      * Return the currently clicked toolbar item as JSON object.
      */
     item: ItemModel;
 }
 
-export interface FileMenuClickEventArgs {
+export interface MenuClickEventArgs {
     /**
-     * If you want to cancel this event then, set cancel as true. Otherwise, false.
+     * If you want to cancel this event then, set cancel to true. Otherwise, false.
      */
     cancel?: Boolean;
     /**
@@ -183,18 +224,18 @@ export interface FileMenuClickEventArgs {
      */
     element?: HTMLElement;
     /**
-     * Return the currently selected folder/file item as JSON object.
+     * Return the currently selected folder/file items as an array of JSON object.
      */
-    fileDetails?: Object;
+    fileDetails?: Object[];
     /**
      * Return the currently clicked context menu item as JSON object.
      */
     item?: MenuItemModel;
 }
 
-export interface FileMenuOpenEventArgs {
+export interface MenuOpenEventArgs {
     /**
-     * If you want to cancel this event then, set cancel as true. Otherwise, false.
+     * If you want to cancel this event then, set cancel to true. Otherwise, false.
      */
     cancel?: boolean;
     /**
@@ -202,9 +243,9 @@ export interface FileMenuOpenEventArgs {
      */
     element?: HTMLElement;
     /**
-     * Returns the currently selected folder/file item as JSON object.
+     * Returns the target folder/file item as an array of JSON object.
      */
-    fileDetails?: Object;
+    fileDetails?: Object[];
     /**
      * Returns the current context menu items as JSON object.
      */
@@ -217,11 +258,82 @@ export interface FileMenuOpenEventArgs {
      * Returns the target element of context menu.
      */
     target?: Element;
+    /**
+     * Returns the current context menu type based on current target.
+     */
+    menuType?: string;
 }
 
+export interface UploadListCreateArgs {
+    /**
+     * Return the current file item element.
+     */
+    element: HTMLElement;
+    /**
+     * Return the current rendering file item data as file object.
+     */
+    fileInfo: FileInfo;
+    /**
+     * Return the index of the file item in the file list.
+     */
+    index: number;
+    /**
+     * Return whether the file is preloaded.
+     */
+    isPreload: boolean;
+}
+
+export interface FileInfo {
+    /**
+     * Returns the upload file name.
+     */
+    name: string;
+    /**
+     * Returns the details about upload file.
+     */
+    rawFile: string | Blob;
+    /**
+     * Returns the size of file in bytes.
+     */
+    size: number;
+    /**
+     * Returns the status of the file.
+     */
+    status: string;
+    /**
+     * Returns the MIME type of file as a string. Returns empty string if the file's type is not determined.
+     */
+    type: string;
+    /**
+     * Returns the list of validation errors (if any).
+     */
+    validationMessages: ValidationMessages;
+    /**
+     * Returns the current state of the file such as Failed, Canceled, Selected, Uploaded, or Uploading.
+     */
+    statusCode: string;
+    /**
+     * Returns where the file selected from, to upload.
+     */
+    fileSource?: string;
+}
+
+export interface ValidationMessages {
+    /**
+     * Returns the minimum file size validation message, if selected file size is less than the specified minFileSize property.
+     */
+    minSize?: string;
+    /**
+     * Returns the maximum file size validation message, if selected file size is less than specified maxFileSize property.
+     */
+    maxSize?: string;
+}
+
+/** @hidden */
 export interface IFileManager extends Component<HTMLElement> {
     pathId: string[];
     originalPath: string;
+    filterPath: string;
     expandedId: string;
     itemData: Object[];
     visitedData: Object;
@@ -236,28 +348,26 @@ export interface IFileManager extends Component<HTMLElement> {
     splitterObj: Splitter;
     breadCrumbBarNavigation: HTMLElement;
     searchSettings: SearchSettingsModel;
-    activeElements: NodeListOf<Element>;
+    activeElements: Element[];
     contextMenuSettings: ContextMenuSettingsModel;
     contextmenuModule?: IContextMenu;
     navigationPaneSettings: NavigationPaneSettingsModel;
     targetPath: string;
     activeModule: string;
     selectedNodes: string[];
-    deleteHandler: Function;
     previousPath: string[];
     nextPath: string[];
     navigationpaneModule: ITreeView;
     largeiconsviewModule: LargeIconsView;
     breadcrumbbarModule: BreadCrumbBar;
     toolbarSelection: boolean;
-    fileOperation: Function;
-    getDetails: Function;
-    pasteHandler: Function;
     duplicateItems: string[];
+    duplicateRecords: Object[];
     fileAction: string;
     replaceItems: string[];
     createdItem: { [key: string]: Object; };
     renamedItem: { [key: string]: Object; };
+    renamedNodeId: string;
     uploadItem: string[];
     fileLength: number;
     detailsviewModule: DetailsView;
@@ -269,47 +379,69 @@ export interface IFileManager extends Component<HTMLElement> {
     isFile: boolean;
     allowMultiSelection: boolean;
     selectedItems: string[];
-    nodeNames: Object[];
+    layoutSelectedItems: string[];
     sortOrder: SortOrder;
     sortBy: string;
-    cutNodes: Object[];
-    pasteNodes: Object[];
+    actionRecords: Object[];
+    activeRecords: Object[];
+    pasteNodes: string[];
+    isCut: boolean;
+    isSearchCut: boolean;
+    isPasteError: boolean;
+    isSameAction: boolean;
     currentItemText: string;
     renameText: string;
-    parentPath: string;
-    view: viewType;
+    view: ViewType;
+    isPathDrag: boolean;
     enablePaste: boolean;
     showThumbnail: boolean;
+    allowDragAndDrop: boolean;
     enableRtl: boolean;
     path: string;
+    folderPath: string;
     showFileExtension: boolean;
     enablePersistence: boolean;
     showHiddenItems: boolean;
     persistData: boolean;
-    singleSelection: string;
     localeObj: L10n;
     uploadObj: Uploader;
     cssClass: string;
     searchedItems: Object[];
+    searchWord: string;
+    retryFiles: FileInfo[];
+    retryArgs: RetryArgs[];
+    isApplySame: boolean;
+    isRetryOpened: boolean;
+    dragData: { [key: string]: Object; }[];
+    dragNodes: string[];
+    dragPath: string;
+    dropPath: string;
+    dropData: Object;
+    virtualDragElement: HTMLElement;
+    isDragDrop: boolean;
+    isSearchDrag: boolean;
+    targetModule: string;
+    treeExpandTimer: number;
+    dragCursorPosition: PositionModel;
+    isDropEnd: boolean;
+    droppedObjects: Object[];
+    uploadEventArgs: BeforeSendEventArgs;
 }
 
+/** @hidden */
 export interface ITreeView extends Component<HTMLElement> {
     treeObj: TreeView;
-    treeNodes: string[];
-    moveNode: Function;
     removeNode: Function;
     removeNodes: string[];
-    copyNode: Function;
     duplicateFiles: Function;
-    copyNodes: { [key: string]: Object }[];
     rootNode: string;
     rootID: string;
     activeNode: Element;
 }
 
+/** @hidden */
 export interface IContextMenu extends Component<HTMLElement> {
     contextMenu: ContextMenu;
     contextMenuBeforeOpen: Function;
     items: MenuItemModel[];
 }
-

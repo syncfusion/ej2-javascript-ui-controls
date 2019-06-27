@@ -1,5 +1,5 @@
 /**
- * AutoComplete AddItem Sample 
+ * AutoComplete AddItem Sample
  */
 import { AutoComplete } from '../../src/auto-complete/index';
 import { Button } from '@syncfusion/ej2-buttons';

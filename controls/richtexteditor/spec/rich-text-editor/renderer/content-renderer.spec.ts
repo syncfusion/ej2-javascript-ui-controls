@@ -51,4 +51,24 @@ describe('Content renderer module', () => {
             destroy(rteObj);
         });
     });
+    
+        describe('Click action on readonly mode with RTE editpanel focus testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                readonly: true,
+                value: 'RichTextEdit'
+            });
+        });
+
+        it('click action to editpanel focus testing', () => {
+            expect(document.activeElement.nodeName).toBe('BODY');
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            expect(document.activeElement.classList.contains('e-content')).toBe(false);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

@@ -10,6 +10,7 @@ import { MarkdownToolbarStatus } from './markdown-toolbar-status';
 import { MarkdownRender } from '../renderer/markdown-renderer';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
+import { RichTextEditorModel } from '../base/rich-text-editor-model';
 
 /**
  * `MarkdownEditor` module is used to markdown editor
@@ -149,8 +150,13 @@ export class MarkdownEditor {
      * Called internally if any of the property value changed.
      * @hidden
      */
-    protected onPropertyChanged(e: NotifyArgs): void {
+    protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         // On property code change here
+        if (!isNullOrUndefined(e.newProp.formatter)) {
+            let editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
+            let option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
+            this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
+        }
     }
 
     /**

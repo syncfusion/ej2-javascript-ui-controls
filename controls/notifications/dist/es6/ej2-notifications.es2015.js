@@ -512,20 +512,20 @@ let Toast = class Toast extends Component {
             element: this.toastEle,
             cancel: false
         };
-        this.trigger('beforeOpen', toastBeforeOpen);
-        if (toastBeforeOpen.cancel) {
-            return;
-        }
-        this.toastEle.style.display = 'none';
-        if (this.newestOnTop && this.toastContainer.childElementCount !== 0) {
-            this.toastContainer.insertBefore(this.toastEle, this.toastContainer.children[0]);
-        }
-        else {
-            this.toastContainer.appendChild(this.toastEle);
-        }
-        EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
-        this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
-        this.displayToast(this.toastEle);
+        this.trigger('beforeOpen', toastBeforeOpen, (toastBeforeOpenArgs) => {
+            if (!toastBeforeOpenArgs.cancel) {
+                this.toastEle.style.display = 'none';
+                if (this.newestOnTop && this.toastContainer.childElementCount !== 0) {
+                    this.toastContainer.insertBefore(this.toastEle, this.toastContainer.children[0]);
+                }
+                else {
+                    this.toastContainer.appendChild(this.toastEle);
+                }
+                EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
+                this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
+                this.displayToast(this.toastEle);
+            }
+        });
     }
     clickHandler(e) {
         e.stopPropagation();
@@ -535,10 +535,11 @@ let Toast = class Toast extends Component {
             element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this
         };
         let isCloseIcon = target.classList.contains(CLOSEBTN);
-        this.trigger('click', clickArgs);
-        if ((isCloseIcon && !clickArgs.cancel) || clickArgs.clickToClose) {
-            this.destroyToast(toastEle);
-        }
+        this.trigger('click', clickArgs, (toastClickArgs) => {
+            if ((isCloseIcon && !toastClickArgs.cancel) || toastClickArgs.clickToClose) {
+                this.destroyToast(toastEle);
+            }
+        });
     }
     displayToast(toastEle) {
         let showAnimate = this.animation.show;

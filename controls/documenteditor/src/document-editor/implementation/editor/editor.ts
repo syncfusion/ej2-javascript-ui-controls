@@ -4,12 +4,12 @@ import { TextPosition, ImageFormat } from '../selection/selection-helper';
 import {
     IWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, Margin, Page, ImageElementBox,
     BlockWidget, BlockContainer, BodyWidget, TableWidget, TableCellWidget, TableRowWidget, Widget, ListTextElementBox,
-    BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox
+    BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox
 } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import {
     ElementInfo, HelperMethods, CellInfo, HyperlinkTextInfo,
-    ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo
+    ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo, PositionInfo
 } from './editor-helper';
 import { isNullOrUndefined, Browser, classList } from '@syncfusion/ej2-base';
 import {
@@ -25,7 +25,7 @@ import { FieldElementBox } from '../viewer/page';
 import {
     HighlightColor, BaselineAlignment, Strikethrough, Underline,
     LineSpacingType, TextAlignment, ListLevelPattern, RowPlacement, ColumnPlacement,
-    FollowCharacterType, HeaderFooterType
+    FollowCharacterType, HeaderFooterType, XmlHttpRequestHandler
 } from '../../base/index';
 import { SelectionCharacterFormat } from '../index';
 import { Action } from '../../index';
@@ -38,9 +38,10 @@ import { Dictionary } from '../../base/dictionary';
 import { WParagraphStyle } from '../format/style';
 import {
     TableAlignment, WidthType, HeightType, CellVerticalAlignment, BorderType, LineStyle,
-    TabLeader, OutlineLevel, AutoFitType
+    TabLeader, OutlineLevel, AutoFitType, ProtectionType, PasteOptions
 } from '../../base/types';
 import { DocumentEditor } from '../../document-editor';
+import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 
 /** 
  * Editor module 
@@ -55,6 +56,7 @@ export class Editor {
     private startOffset: number;
     private startParagraph: ParagraphWidget = undefined;
     private endOffset: number;
+    private pasteRequestHandler: XmlHttpRequestHandler;
     private endParagraph: ParagraphWidget = undefined;
     /**
      * @private
@@ -86,6 +88,31 @@ export class Editor {
      * @private
      */
     public isInsertingTOC: boolean = false;
+    private editStartRangeCollection: EditRangeStartElementBox[] = [];
+
+    /**
+     * @private
+     */
+    get restrictFormatting(): boolean {
+        return this.viewer.isDocumentProtected && (this.viewer.restrictFormatting
+            || (!this.viewer.restrictFormatting && !this.selection.isSelectionIsAtEditRegion(false)));
+    }
+
+    /**
+     * @private
+     */
+    get restrictEditing(): boolean {
+        return this.viewer.isDocumentProtected && this.viewer.protectionType === 'ReadOnly'
+            && !this.selection.isSelectionIsAtEditRegion(false);
+    }
+    /* tslint:disable:no-any */
+    public copiedContent: any = '';
+    /* tslint:enable:no-any */
+    private copiedTextContent: string = '';
+    private currentPasteOptions: PasteOptions = 'KeepSourceFormatting';
+    private pasteTextPosition: PositionInfo = undefined;
+    public isSkipHistory: boolean = false;
+    public isPaste: boolean = false;
 
     /**
      * Initialize the editor module
@@ -195,6 +222,15 @@ export class Editor {
      * @private
      */
     public fireContentChange(): void {
+        if (this.selection.isHighlightEditRegion) {
+            this.selection.onHighlight();
+        }
+        if (!this.isPaste) {
+            this.copiedContent = undefined;
+            this.copiedTextContent = '';
+            this.selection.isViewPasteOptions = false;
+            this.selection.showHidePasteOptions(undefined, undefined);
+        }
         if (this.viewer.owner.isLayoutEnabled && !this.viewer.owner.isShiftingEnabled) {
             this.viewer.owner.fireContentChange();
         }
@@ -670,7 +706,9 @@ export class Editor {
                     break;
                 case 13:
                     event.preventDefault();
+                    this.viewer.triggerSpellCheck = true;
                     this.handleEnterKey();
+                    this.viewer.triggerSpellCheck = false;
                     break;
                 case 46:
                     this.handleDelete();
@@ -844,9 +882,20 @@ export class Editor {
                 this.viewer.layout.reLayoutParagraph(insertPosition.paragraph, 0, 0);
             } else {
                 let indexInInline: number = 0;
-                let inlineObj: ElementInfo = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi);
+                // tslint:disable-next-line:max-line-length
+                let inlineObj: ElementInfo = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi, (isReplace) ? false : true);
                 let inline: ElementBox = inlineObj.element;
                 indexInInline = inlineObj.index;
+                inline.ischangeDetected = true;
+                if (inline instanceof TextElementBox && text !== ' ' && this.viewer.owner.enableSpellCheck) {
+                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+                    if (!isReplace) {
+                        (inline as TextElementBox).ignoreOnceItems = [];
+                    }
+                }
+                if (inline.canTrigger && (inline as TextElementBox).text.length <= 1) {
+                    inline.canTrigger = false;
+                }
                 // Todo: compare selection format
                 let insertFormat: WCharacterFormat = this.copyInsertFormat(inline.characterFormat, true);
                 let isBidi: boolean = this.viewer.textHelper.getRtlLanguage(text).isRtl;
@@ -857,8 +906,11 @@ export class Editor {
                     inlineLangId = this.viewer.textHelper.getRtlLanguage(inline.text).id;
                     isRtl = this.viewer.textHelper.getRtlLanguage(inline.text).isRtl;
                 }
-                insertFormat.bidi = isBidi;
-                if (insertFormat.isSameFormat(inline.characterFormat) && (!isBidi || (isBidi && insertLangId === inlineLangId))
+                if (isBidi || !this.viewer.owner.enableSpellCheck) {
+                    insertFormat.bidi = isBidi;
+                }
+                // tslint:disable-next-line:max-line-length
+                if ((!this.viewer.owner.enableSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && (!isBidi || (isBidi && insertLangId === inlineLangId))
                     || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                 } else {
@@ -889,6 +941,9 @@ export class Editor {
                             } else {
                                 splittedSpan.text = (inline as TextElementBox).text.substring(indexInInline);
                                 (inline as TextElementBox).text = (inline as TextElementBox).text.slice(0, indexInInline);
+                            }
+                            if (this.owner.enableSpellCheck) {
+                                this.owner.spellChecker.updateSplittedElementError(inline, splittedSpan);
                             }
                             inline.line.children.splice(insertIndex + 1, 0, splittedSpan);
                         }
@@ -1934,23 +1989,73 @@ export class Editor {
      */
     /* tslint:disable:no-any */
     public pasteInternal(event: ClipboardEvent, pasteWindow?: any): void {
+        this.currentPasteOptions = 'KeepSourceFormatting';
         if (this.viewer.owner.enableLocalPaste) {
             this.pasteLocal();
         } else {
+            this.selection.isViewPasteOptions = true;
             if (isNullOrUndefined(pasteWindow)) {
                 pasteWindow = window;
             }
             /* tslint:enable:no-any */
             let textContent: string = '';
+            let htmlContent: string = '';
+            let rtfContent: string = '';
             let clipbordData: DataTransfer = pasteWindow.clipboardData ? pasteWindow.clipboardData : event.clipboardData;
-            textContent = clipbordData.getData('Text');
-            if (textContent !== '') {
+            rtfContent = clipbordData.getData('Text/Rtf');
+            htmlContent = clipbordData.getData('Text/Html');
+            this.copiedTextContent = textContent = clipbordData.getData('Text');
+
+            if (rtfContent !== '') {
+                this.pasteAjax(rtfContent, '.rtf');
+            } else if (htmlContent !== '') {
+                let doc: Document = new DOMParser().parseFromString(htmlContent, 'text/html');
+                let result: string = new XMLSerializer().serializeToString(doc);
+                result = result.replace(/<!--StartFragment-->/gi, '');
+                result = result.replace(/<!--EndFragment-->/gi, '');
+                this.pasteAjax(result, '.html');
+            } else if (textContent !== '') {
                 this.pasteContents(textContent);
                 this.viewer.editableDiv.innerHTML = '';
             }
+            // if (textContent !== '') {
+            //     this.pasteContents(textContent);
+            //     this.viewer.editableDiv.innerHTML = '';
+            // }
         }
         this.viewer.updateFocus();
     }
+    /**
+     * @private
+     */
+    public pasteAjax(content: string, type: string): void {
+        let proxy: Editor = this;
+        /* tslint:disable:no-any */
+        let formObject: any = {
+            content: content,
+            type: type
+        };
+        let editor: any = this;
+        this.pasteRequestHandler = new XmlHttpRequestHandler();
+        this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
+        this.pasteRequestHandler.responseType = 'json';
+        this.pasteRequestHandler.contentType = 'application/json;charset=UTF-8';
+        this.pasteRequestHandler.send(formObject);
+        showSpinner(this.owner.element);
+        this.pasteRequestHandler.onSuccess = this.pasteFormattedContent.bind(this);
+        this.pasteRequestHandler.onFailure = this.onPasteFailure.bind(this);
+        this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
+    }
+
+    private pasteFormattedContent(result: any): void {
+        this.pasteContents(result.data);
+        hideSpinner(this.owner.element);
+    }
+    private onPasteFailure(result: any): void {
+        console.error(result.status, result.statusText);
+        hideSpinner(this.owner.element);
+    }
+
     /**
      * Pastes the data present in local clipboard if any.
      */
@@ -1973,7 +2078,10 @@ export class Editor {
             txt = txt.replace(/\r\n/g, '\r');
             arr = txt.split('\r');
             for (let i: number = 0; i < arr.length; i++) {
-                let insertFormat: WCharacterFormat = this.copyInsertFormat(startParagraph.characterFormat, false);
+                let currentInline: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
+                let element: ElementBox = this.selection.getPreviousValidElement(currentInline.element);
+                let insertFormat: WCharacterFormat = element ? element.characterFormat :
+                    this.copyInsertFormat(startParagraph.characterFormat, false);
                 let insertParaFormat: WParagraphFormat = this.viewer.selection.copySelectionParagraphFormat();
                 let paragraph: ParagraphWidget = new ParagraphWidget();
                 paragraph.paragraphFormat.copyFormat(insertParaFormat);
@@ -1993,29 +2101,119 @@ export class Editor {
                 this.viewer.owner.parser.parseBody(pasteContent.sections[i].blocks, widgets);
             }
         }
+
+        if (this.currentPasteOptions === 'MergeWithExistingFormatting') {
+            this.applyMergeFormat(widgets);
+        }
         return widgets;
 
     }
-    private pasteContents(content: any): void {
-        this.pasteContentsInternal(this.getBlocks(content));
+    private applyMergeFormat(widgets: BlockWidget[]): void {
+        let startParagraph: ParagraphWidget = this.selection.start.paragraph;
+        let currentInline: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
+        let element: ElementBox = this.selection.getPreviousValidElement(currentInline.element);
+        let insertFormat: WCharacterFormat = element ? element.characterFormat :
+            this.copyInsertFormat(startParagraph.characterFormat, false);
+        let insertParaFormat: WParagraphFormat = this.viewer.selection.copySelectionParagraphFormat();
+        for (let i: number = 0; i < widgets.length; i++) {
+            let widget: BlockWidget = widgets[i];
+            if (widget instanceof ParagraphWidget) {
+                widget.paragraphFormat.copyFormat(insertParaFormat);
+                this.applyFormatInternal(widget, insertFormat);
+            } else {
+                for (let j: number = 0; j < widget.childWidgets.length; j++) {
+                    let row: TableRowWidget = widget.childWidgets[j] as TableRowWidget;
+                    for (let k: number = 0; k < row.childWidgets.length; k++) {
+                        let cell: TableCellWidget = row.childWidgets[k] as TableCellWidget;
+                        for (let l: number = 0; l < cell.childWidgets.length; l++) {
+                            this.applyFormatInternal(cell.childWidgets[l] as BlockWidget, insertFormat);
+                        }
+                    }
+                }
+            }
+        }
     }
-    private pasteContentsInternal(widgets: BlockWidget[]): void {
+    private applyFormatInternal(widget: BlockWidget, insertFormat: WCharacterFormat): void {
+        if (widget instanceof ParagraphWidget) {
+            for (let j: number = 0; j < widget.childWidgets.length; j++) {
+                let lineWidget: LineWidget = widget.childWidgets[j] as LineWidget;
+                for (let k: number = 0; k < lineWidget.children.length; k++) {
+                    let inlineCharacterFormat: WCharacterFormat = lineWidget.children[k].characterFormat;
+                    let characterFormat: WCharacterFormat = inlineCharacterFormat.cloneFormat();
+                    inlineCharacterFormat.copyFormat(insertFormat);
+                    if (characterFormat.bold) {
+                        inlineCharacterFormat.bold = characterFormat.bold;
+                    }
+                    if (characterFormat.italic) {
+                        inlineCharacterFormat.italic = characterFormat.italic;
+                    }
+
+                }
+            }
+        } else {
+            for (let j: number = 0; j < widget.childWidgets.length; j++) {
+                let rowWidget: TableRowWidget = widget.childWidgets[j] as TableRowWidget;
+                for (let k: number = 0; k < rowWidget.childWidgets.length; k++) {
+                    let cellWidget: TableCellWidget = rowWidget.childWidgets[k] as TableCellWidget;
+                    for (let l: number = 0; l < cellWidget.childWidgets.length; l++) {
+                        this.applyFormatInternal(cellWidget.childWidgets[l] as BlockWidget, insertFormat);
+                    }
+                }
+            }
+        }
+    }
+    public applyPasteOptions(options: PasteOptions): void {
+        if (isNullOrUndefined(this.copiedContent) || this.copiedTextContent === ''
+            || this.currentPasteOptions === options) {
+            return;
+        }
+        this.isSkipHistory = true;
+        this.currentPasteOptions = options;
+        this.selection.start.setPositionInternal(this.pasteTextPosition.startPosition);
+        this.selection.end.setPositionInternal(this.pasteTextPosition.endPosition);
+        switch (options) {
+            case 'KeepSourceFormatting':
+                this.pasteContents(this.copiedContent);
+                break;
+            case 'MergeWithExistingFormatting':
+                let start: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
+                let currentFormat: WParagraphFormat = start.paragraph.paragraphFormat;
+                this.pasteContents(this.copiedContent, currentFormat);
+                break;
+            case 'KeepTextOnly':
+                this.pasteContents(this.copiedTextContent);
+                break;
+        }
+        this.isSkipHistory = false;
+    }
+    private pasteContents(content: any, currentFormat?: WParagraphFormat): void {
+        if (typeof (content) !== 'string') {
+            this.copiedContent = content;
+        }
+        this.pasteContentsInternal(this.getBlocks(content), currentFormat);
+    }
+    private pasteContentsInternal(widgets: BlockWidget[], currentFormat?: WParagraphFormat): void {
+        this.isPaste = true;
         /* tslint:enable:no-any */
         let selection: Selection = this.viewer.selection;
         let isRemoved: boolean = true;
-        this.initComplexHistory('Paste');
+        if (!this.isSkipHistory) {
+            this.initComplexHistory('Paste');
+        }
         if (this.viewer.isListTextSelected) {
             let paragraph: ParagraphWidget = selection.start.paragraph;
             if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1) {
                 this.onApplyList(undefined);
             }
         }
-        this.initHistory('Paste');
+        if (!this.isSkipHistory) {
+            this.initHistory('Paste');
+        }
         if (!selection.isEmpty || this.viewer.isListTextSelected) {
             isRemoved = this.removeSelectedContentInternal(selection, selection.start, selection.end);
         }
         if (isRemoved) {
-            this.pasteContent(widgets);
+            this.pasteContent(widgets, currentFormat);
         } else if (this.editorHistory) {
             this.editorHistory.currentBaseHistoryInfo = undefined;
         }
@@ -2026,24 +2224,57 @@ export class Editor {
         } else {
             this.reLayout(selection, selection.isEmpty);
         }
+        this.isPaste = false;
     }
     /* tslint:disable:no-any */
-    private pasteContent(widgets: BlockWidget[]): void {
+    private pasteContent(widgets: BlockWidget[], currentFormat?: WParagraphFormat): void {
         /* tslint:enable:no-any */
         this.viewer.owner.isShiftingEnabled = true;
+        let insertPosition: string = '';
+
         this.updateInsertPosition();
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            insertPosition = this.editorHistory.currentBaseHistoryInfo.insertPosition;
+        } else {
+            let position: TextPosition = this.selection.start;
+            if (!this.selection.isForward) {
+                position = this.selection.end;
+            }
+            let blockInfo: ParagraphInfo = this.getParagraphInfo(position);
+            insertPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        }
         this.viewer.owner.isLayoutEnabled = true;
         this.viewer.owner.isPastingContent = true;
-        this.pasteCopiedData(widgets);
+        this.pasteCopiedData(widgets, currentFormat);
+
+        let endPosition: string = '';
+
         this.updateEndPosition();
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            endPosition = this.editorHistory.currentBaseHistoryInfo.endPosition;
+        } else {
+            let blockInfo: ParagraphInfo = this.getParagraphInfo(this.selection.start);
+            endPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        }
+        let startPosition: TextPosition = new TextPosition(this.viewer.owner);
+        this.setPositionForCurrentIndex(startPosition, insertPosition);
+        let end: TextPosition = new TextPosition(this.viewer.owner);
+        this.setPositionForCurrentIndex(end, endPosition);
+        this.pasteTextPosition = { startPosition: startPosition, endPosition: end };
         this.viewer.owner.isPastingContent = false;
         this.viewer.selection.fireSelectionChanged(true);
     }
-    private pasteCopiedData(widgets: BlockWidget[]): void {
+    private pasteCopiedData(widgets: BlockWidget[], currentFormat?: WParagraphFormat): void {
+
         for (let j: number = 0; j < widgets.length; j++) {
             let widget: BlockWidget = widgets[j];
             if (widget instanceof ParagraphWidget && widget.childWidgets.length === 0) {
                 widget.childWidgets[0] = new LineWidget(widget as ParagraphWidget);
+            }
+            if (widget instanceof ParagraphWidget && !isNullOrUndefined(currentFormat)) {
+                widget.paragraphFormat.copyFormat(currentFormat);
+                let insertFormat: WCharacterFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, false);
+                widget.characterFormat.mergeFormat(insertFormat);
             }
             if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
                 let newParagraph: ParagraphWidget = widget as ParagraphWidget;
@@ -2248,6 +2479,10 @@ export class Editor {
         }
         for (let i: number = 0; i < element.length; i++) {
             length += element[i].length;
+            if (element[i] instanceof TextElementBox && (element[i] as TextElementBox).text.indexOf(' ') >= 0) {
+                this.viewer.triggerSpellCheck = true;
+            }
+            element[i].ischangeDetected = true;
             lineWidget.children.splice(insertIndex, 0, element[i]);
             element[i].line = lineWidget;
             element[i].linkFieldCharacter(this.viewer);
@@ -3321,10 +3556,13 @@ export class Editor {
                 let span: TextElementBox = new TextElementBox();
                 span.characterFormat.copyFormat(inline.characterFormat);
                 span.text = inline.text.substr(startIndex, endIndex - startIndex);
+                inline.ischangeDetected = true;
+                span.ischangeDetected = true;
                 (paragraph.firstChild as LineWidget).children.splice(insertIndex, 0, span);
                 span.line = (paragraph.firstChild as LineWidget);
                 insertIndex++;
                 inline.text = inline.text.slice(0, startIndex) + inline.text.slice(endIndex);
+                inline.ischangeDetected = true;
             }
             if (endOffset <= count + endIndex - startIndex) {
                 break;
@@ -3633,6 +3871,9 @@ export class Editor {
      * @private
      */
     public onApplyCharacterFormat(property: string, value: Object, update?: boolean): void {
+        if (this.restrictFormatting) {
+            return;
+        }
         this.viewer.layout.isBidiReLayout = true;
         let selection: Selection = this.viewer.selection;
         if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
@@ -4607,6 +4848,9 @@ export class Editor {
      * @private
      */
     public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean): void {
+        if (this.restrictFormatting) {
+            return;
+        }
         let action: Action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1)) as Action;
         this.viewer.owner.isShiftingEnabled = true;
         let selection: Selection = this.viewer.selection;
@@ -4771,6 +5015,9 @@ export class Editor {
                 this.updateParagraphFormat('bidi', value, false);
                 this.viewer.layout.isBidiReLayout = false;
                 break;
+            case 'contextualSpacing':
+                this.updateParagraphFormat('contextualSpacing', value, false);
+                break;
         }
     }
     /**
@@ -4887,6 +5134,8 @@ export class Editor {
             return;
         } else if (property === 'bidi') {
             format.bidi = value as boolean;
+        } else if (property === 'contextualSpacing') {
+            format.contextualSpacing = value as boolean;
         }
     }
     private copyParagraphFormat(sourceFormat: WParagraphFormat, destFormat: WParagraphFormat): void {
@@ -5295,6 +5544,9 @@ export class Editor {
      * @private
      */
     public onApplySectionFormat(property: string, value: Object): void {
+        if (this.restrictFormatting) {
+            return;
+        }
         if (!isNullOrUndefined(property)) {
             let action: Action = (property[0].toUpperCase() + property.slice(1)) as Action;
             this.initHistory(action);
@@ -5365,6 +5617,9 @@ export class Editor {
      * @private
      */
     public onApplyTableFormat(property: string, value: Object): void {
+        if (this.restrictFormatting) {
+            return;
+        }
         let action: Action = this.getTableFormatAction(property);
         this.viewer.owner.isShiftingEnabled = true;
         let selection: Selection = this.viewer.selection;
@@ -5415,6 +5670,9 @@ export class Editor {
      * @private
      */
     public onApplyTableRowFormat(property: string, value: Object): void {
+        if (this.restrictFormatting) {
+            return;
+        }
         let action: Action = this.getRowAction(property);
         this.viewer.owner.isShiftingEnabled = true;
         let selection: Selection = this.viewer.selection;
@@ -5446,6 +5704,9 @@ export class Editor {
      * @private
      */
     public onApplyTableCellFormat(property: string, value: Object): void {
+        if (this.restrictFormatting) {
+            return;
+        }
         let action: Action = this.getTableCellAction(property);
         this.viewer.owner.isShiftingEnabled = true;
         let selection: Selection = this.viewer.selection;
@@ -7155,6 +7416,18 @@ export class Editor {
             //     this.updateComplexHistory();
             // } else {
             this.reLayout(selection);
+            // tslint:disable-next-line:max-line-length
+            let currentPara: ParagraphWidget = this.selection.start.paragraph.containerWidget.firstChild as ParagraphWidget;
+            if (!isNullOrUndefined(currentPara)) {
+                currentPara.isChangeDetected = false;
+                let nextPara: ParagraphWidget = currentPara.nextRenderedWidget as ParagraphWidget;
+                // tslint:disable-next-line:max-line-length
+                while (this.owner.enableSpellCheck && !isNullOrUndefined(nextPara)) {
+                    currentPara = nextPara;
+                    currentPara.isChangeDetected = false;
+                    nextPara = currentPara.nextRenderedWidget as ParagraphWidget;
+                }
+            }
             // }
             let paragraph: ParagraphWidget = selection.start.paragraph.previousWidget as ParagraphWidget;
             if (!isNullOrUndefined(paragraph) && !paragraph.isEmpty() &&
@@ -7167,6 +7440,12 @@ export class Editor {
     private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number): void {
         let insertIndex: number = 0;
         let blockIndex: number = paragraphAdv.index;
+        let currentPara: ParagraphWidget = paragraphAdv;
+        currentPara.isChangeDetected = (offset === 0) ? true : false;
+        while (this.owner.enableSpellCheck && !isNullOrUndefined(currentPara.nextRenderedWidget)) {
+            currentPara = currentPara.nextRenderedWidget as ParagraphWidget;
+            currentPara.isChangeDetected = true;
+        }
         let paragraph: ParagraphWidget = new ParagraphWidget();
         let lineWidget: LineWidget = new LineWidget(paragraph);
         paragraph.childWidgets.push(lineWidget);
@@ -7280,6 +7559,7 @@ export class Editor {
      */
     public onBackSpace(): void {
         let selection: Selection = this.viewer.selection;
+        this.viewer.triggerSpellCheck = true;
         if (selection.isEmpty) {
             this.singleBackspace(selection, false);
         } else {
@@ -7295,6 +7575,7 @@ export class Editor {
                     this.reLayout(selection);
                 }
             }
+            this.viewer.triggerSpellCheck = false;
         }
 
     }
@@ -7374,6 +7655,12 @@ export class Editor {
         let inlineObj: ElementInfo = currentLineWidget.getInline(offset, indexInInline);
         let inline: ElementBox = inlineObj.element;
         indexInInline = inlineObj.index;
+        if (inline instanceof TextElementBox) {
+            (inline as TextElementBox).ignoreOnceItems = [];
+        }
+        if (inline instanceof TextElementBox) {
+            (inline as TextElementBox).ignoreOnceItems = [];
+        }
         let previousInline: ElementBox = inline;
         if (inline instanceof FieldElementBox && inline.fieldType === 2) {
             if (HelperMethods.isLinkedFieldCharacter(inline)) {
@@ -7520,6 +7807,13 @@ export class Editor {
             }
             if (offset < count + inline.length) {
                 let indexInInline: number = offset - count;
+                inline.ischangeDetected = true;
+                if (this.owner.enableSpellCheck) {
+                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+                }
+                if (!inline.canTrigger) {
+                    this.viewer.triggerSpellCheck = false;
+                }
                 if (offset === count && inline.length === 1) {
                     this.unLinkFieldCharacter(inline);
                     lineWidget.children.splice(i, 1);
@@ -8452,6 +8746,10 @@ export class Editor {
         }
         let startElementInfo: ElementInfo = start.currentWidget.getInline(start.offset, 0);
         let endElementInfo: ElementInfo = end.currentWidget.getInline(end.offset, 0);
+        if (!(end.offset === this.selection.getLineLength(end.currentWidget) + 1
+            && this.selection.isParagraphLastLine(end.currentWidget))) {
+            end.offset += 1;
+        }
         // tslint:disable-next-line:max-line-length
         return { 'start': start.clone(), 'end': end.clone(), 'startElementInfo': startElementInfo, 'endElementInfo': endElementInfo, 'isEmpty': isEmpty };
     }
@@ -9176,11 +9474,23 @@ export class Editor {
      * @param  {WTableFormat} format
      * @private
      */
-    public onTableFormat(format: WTableFormat): void {
+    public onTableFormat(format: WTableFormat, isShading?: boolean): void {
         if (!isNullOrUndefined(this.selection.tableFormat)) {
+            if (isNullOrUndefined(isShading)) {
+                isShading = false;
+            }
             this.viewer.owner.isShiftingEnabled = true;
             this.editorHistory.initializeHistory('TableFormat');
             let table: TableWidget = this.selection.start.paragraph.associatedCell.ownerTable.combineWidget(this.viewer) as TableWidget;
+            if (isShading) {
+                for (let i: number = 0; i < table.childWidgets.length; i++) {
+                    let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
+                        let cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                        cellWidget.cellFormat.shading.copyFormat(format.shading);
+                    }
+                }
+            }
             this.applyTableFormat(table, undefined, format);
             this.reLayout(this.selection, false);
         }
@@ -10100,7 +10410,273 @@ export class Editor {
         }
     }
 
+    //Restrict editing implementation starts
+    /**
+     * @private
+     */
+    public insertEditRangeElement(user: string): void {
+        if (this.viewer.isDocumentProtected || this.viewer.selection.isEmpty) {
+            return;
+        }
+        this.initComplexHistory('RestrictEditing');
+        this.selection.skipEditRangeRetrieval = true;
+        let selection: Selection = this.viewer.selection;
+        let startPos: TextPosition = this.selection.start;
+        let endPos: TextPosition = this.selection.end;
+        if (!this.selection.isForward) {
+            startPos = this.selection.end;
+            endPos = this.selection.start;
+        }
+        if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable
+            && selection.start.paragraph.associatedCell.ownerTable.contains(selection.end.paragraph.associatedCell)) {
+            let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward);
+            let endCell: TableCellWidget = this.getOwnerCell(!this.selection.isForward);
+            if (startCell.rowIndex === endCell.rowIndex) {
+                let startIndex: number = startCell.ownerRow.childWidgets.indexOf(startCell);
+                let endIndex: number = startCell.ownerRow.childWidgets.indexOf(endCell);
+                let startElement: ElementBox[] = [];
+                let endElement: ElementBox[] = [];
 
+                for (let i: number = startIndex; i <= endIndex; i++) {
+                    let editStart: EditRangeStartElementBox = this.addEditElement(user);
+                    editStart.columnFirst = i;
+                    editStart.columnLast = i;
+                    editStart.line = selection.start.currentWidget;
+                    let editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
+                    editEnd.line = selection.end.currentWidget;
+                    startElement.push(editStart);
+                    endElement.push(editEnd);
+                }
+                this.insertElements(endElement, startElement);
+                let offset: number = startElement[0].line.getOffset(startElement[0], 1);
+                this.selection.start.setPositionParagraph(startElement[0].line, offset);
+                offset = endElement[0].line.getOffset(endElement[0], 1);
+                this.selection.end.setPositionParagraph(endElement[0].line, offset);
+                this.selection.fireSelectionChanged(true);
+                this.fireContentChange();
+            } else {
+                this.insertEditRangeInsideTable(startCell, endCell, user);
+                let startLine: LineWidget = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
+                let endLine: LineWidget = this.selection.getLastParagraph(endCell).childWidgets[0] as LineWidget;
+                let offset: number = startLine.getOffset(startLine.children[0], 1);
+                this.selection.start.setPositionParagraph(startLine, offset);
+                offset = endLine.getOffset(endLine.children[0], 1);
+                this.selection.end.setPositionParagraph(endLine, offset);
+                this.selection.fireSelectionChanged(true);
+                this.fireContentChange();
+
+            }
+        } else {
+            this.addRestrictEditingForSelectedArea(user);
+        }
+        this.selection.skipEditRangeRetrieval = false;
+
+    }
+    /**
+     * @private
+     */
+    private insertEditRangeInsideTable(startCell: TableCellWidget, endCell: TableCellWidget, user: string): void {
+        let table: TableWidget = startCell.ownerTable;
+        let count: number = table.childWidgets.indexOf(endCell.ownerRow);
+        let rowStartIndex: number = table.childWidgets.indexOf(startCell.ownerRow);
+        let startLeft: number = this.selection.getCellLeft(startCell.ownerRow, startCell);
+        let endLeft: number = startLeft + startCell.cellFormat.cellWidth;
+        let endCellLeft: number = this.selection.getCellLeft(endCell.ownerRow, endCell);
+        let endCellRight: number = endCellLeft + endCell.cellFormat.cellWidth;
+        let cellInfo: CellInfo = this.updateSelectedCellsInTable(startLeft, endLeft, endCellLeft, endCellRight);
+        startLeft = cellInfo.start;
+        endLeft = cellInfo.end;
+        let endElement: EditRangeEndElementBox[] = [];
+        for (let i: number = rowStartIndex; i <= count; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            let cellSelectionStartIndex: number = -1;
+            let cellSelectionEndIndex: number = -1;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                let cellStart: number = this.selection.getCellLeft(row, cell);
+                if (this.checkCellWithInSelection(startLeft, endLeft, cellStart)) {
+                    if (cellSelectionStartIndex === -1) {
+                        cellSelectionStartIndex = j;
+                    }
+                    cellSelectionEndIndex = j;
+                }
+            }
+            let newEndElement: EditRangeEndElementBox[] = [];
+            for (let z: number = cellSelectionStartIndex; z <= cellSelectionEndIndex; z++) {
+                let index: number = 0;
+                let startCell: TableCellWidget;
+                let startParagraph: LineWidget;
+                if (z === cellSelectionStartIndex) {
+                    startCell = row.childWidgets[cellSelectionStartIndex] as TableCellWidget;
+                    startParagraph = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
+                }
+                let editStart: EditRangeStartElementBox = this.addEditElement(user);
+                editStart.columnFirst = z;
+                editStart.columnLast = z;
+                editStart.line = startParagraph;
+                editStart.line.children.splice(index, 0, editStart);
+                index++;
+                let editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
+                newEndElement.push(editEnd);
+                if (endElement.length > 0 && z === cellSelectionEndIndex) {
+                    for (let l: number = 0; l < endElement.length; l++) {
+                        endElement[l].line = editStart.line;
+                        editStart.line.children.splice(index, 0, endElement[l]);
+                        index++;
+                    }
+                    endElement = [];
+                }
+            }
+            endElement = newEndElement;
+            if (i === count && endElement.length > 0) {
+                let cellWidget: TableCellWidget = row.childWidgets[cellSelectionEndIndex] as TableCellWidget;
+                let lastLine: LineWidget = this.selection.getLastParagraph(cellWidget).lastChild as LineWidget;
+                let index: number = lastLine.children.length - 1;
+                for (let l: number = 0; l < endElement.length; l++) {
+                    endElement[l].line = lastLine;
+                    lastLine.children.splice(index, 0, endElement[l]);
+                    index++;
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public addRestrictEditingForSelectedArea(user: string): void {
+        let editStart: EditRangeStartElementBox = this.addEditElement(user);
+        let editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+            this.editorHistory.currentHistoryInfo.editRangeStart = editStart;
+        }
+        this.insertElements([editEnd], [editStart]);
+        if (this.editorHistory) {
+            this.editorHistory.updateComplexHistoryInternal();
+        }
+        let offset: number = editStart.line.getOffset(editStart, 1);
+        this.selection.start.setPositionParagraph(editStart.line, offset);
+        offset = editEnd.line.getOffset(editEnd, 1);
+        this.selection.end.setPositionParagraph(editEnd.line, offset);
+        this.selection.fireSelectionChanged(true);
+        this.fireContentChange();
+
+    }
+    /**
+     * @private
+     */
+    public addEditElement(user: string): EditRangeStartElementBox {
+        let editStart: EditRangeStartElementBox = new EditRangeStartElementBox();
+        if (user.toLocaleLowerCase() === 'everyone') {
+            editStart.group = user;
+        } else {
+            editStart.user = user;
+        }
+        let editEnd: EditRangeEndElementBox = new EditRangeEndElementBox();
+        editEnd.editRangeStart = editStart;
+        editStart.editRangeEnd = editEnd;
+        this.editStartRangeCollection.push(editStart);
+        this.addEditCollectionToDocument();
+        this.editStartRangeCollection = [];
+        return editStart;
+    }
+    /**
+     * @private
+     */
+    public protect(protectionType: ProtectionType): void {
+        this.viewer.isDocumentProtected = true;
+        this.viewer.protectionType = protectionType;
+        this.selection.highlightEditRegion();
+    }
+
+    /**
+     * @private
+     */
+    public addEditCollectionToDocument(): void {
+        for (let i: number = 0; i < this.editStartRangeCollection.length; i++) {
+            let editStart: EditRangeStartElementBox = this.editStartRangeCollection[i];
+            let user: string = editStart.user === '' ? editStart.group : editStart.user;
+            if (this.viewer.editRanges.length > 0 && this.viewer.editRanges.containsKey(user)) {
+                this.viewer.editRanges.get(user).push(editStart);
+            } else {
+                let collection: EditRangeStartElementBox[] = [];
+                collection.push(editStart);
+                this.viewer.editRanges.add(user, collection);
+            }
+        }
+        this.selection.updateEditRangeCollection();
+    }
+    /**
+     * @private
+     */
+    public updateRangeCollection(editStart: EditRangeStartElementBox, user: string): void {
+        if (this.viewer.editRanges.length > 0 && this.viewer.editRanges.containsKey(user)) {
+            this.viewer.editRanges.get(user).push(editStart);
+        } else {
+            let collection: EditRangeStartElementBox[] = [];
+            collection.push(editStart);
+            this.viewer.editRanges.add(user, collection);
+        }
+    }
+    /**
+     * @private
+     */
+    public removeUserRestrictions(user: string): void {
+        if (!this.selection.checkSelectionIsAtEditRegion()) {
+            return;
+        }
+        this.selection.skipEditRangeRetrieval = true;
+        let editStart: EditRangeStartElementBox = this.selection.getEditRangeStartElement();
+        this.initHistory('RemoveEditRange');
+        if (this.editorHistory) {
+            this.editorHistory.currentBaseHistoryInfo.setEditRangeInfo(editStart);
+            this.editorHistory.updateHistory();
+        }
+        if (editStart.user === user || editStart.group === user) {
+            this.removeUserRestrictionsInternal(editStart, user);
+        }
+        this.selection.updateEditRangeCollection();
+        this.fireContentChange();
+        this.selection.skipEditRangeRetrieval = false;
+    }
+    /**
+     * @private
+     */
+    public removeUserRestrictionsInternal(editStart: EditRangeStartElementBox, currentUser?: string): void {
+        let user: string = currentUser;
+        if (isNullOrUndefined(currentUser)) {
+            user = editStart.user === '' ? editStart.group : editStart.user;
+        }
+        let index: number = this.viewer.editRanges.get(user).indexOf(editStart);
+        this.viewer.editRanges.get(user).splice(index, 1);
+        editStart.editRangeEnd.line.children.splice(editStart.editRangeEnd.indexInOwner, 1);
+        editStart.line.children.splice(editStart.indexInOwner, 1);
+    }
+    /**
+     * @private
+     */
+    public removeAllEditRestrictions(): void {
+        this.selection.skipEditRangeRetrieval = true;
+        let startPosition: TextPosition = this.selection.start;
+        let endPosition: TextPosition = this.selection.end;
+        let editStart: EditRangeStartElementBox[] = [];
+        let keys: string[] = this.viewer.editRanges.keys;
+        for (let j: number = 0; j < keys.length; j++) {
+            editStart = this.viewer.editRanges.get(keys[j]);
+            for (let i: number = 0; i < editStart.length; i++) {
+                editStart[i].editRangeEnd.line.children.splice(editStart[i].editRangeEnd.indexInOwner, 1);
+                editStart[i].line.children.splice(editStart[i].indexInOwner, 1);
+            }
+        }
+        this.viewer.editRanges.clear();
+        this.selection.updateEditRangeCollection();
+        this.selection.start.setPositionInternal(startPosition);
+        this.selection.end.setPositionInternal(endPosition);
+        this.selection.editRegionHighlighters.clear();
+        this.viewer.updateScrollBars();
+        this.selection.fireSelectionChanged(false);
+        this.selection.skipEditRangeRetrieval = false;
+    }
+    //Restrict editing implementation end
 }
 /**
  * @private

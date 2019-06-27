@@ -2,8 +2,8 @@
  * FileManager spec document
  */
 import { FileManager } from '../../../src/file-manager/base/file-manager';
-import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
-import {DetailsView} from '../../../src/file-manager/layout/details-view';
+import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
+import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { toolbarItems, toolbarItems1, data1, data2, data3, data11, data15, data16 } from '../data';
@@ -34,7 +34,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 cssClass: 'custom'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -51,12 +52,13 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 cssClass: null
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data1)
-        });
+            });
             expect(feObj.element.classList.contains('null')).toEqual(false);
         });
         it('for height', () => {
@@ -68,7 +70,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 height: '500px'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -85,7 +88,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 height: 400
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -102,7 +106,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 height: '100%'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -119,7 +124,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 height: 'auto'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -136,7 +142,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 height: null
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -153,7 +160,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 toolbarSettings: { visible: false }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -170,7 +178,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 toolbarSettings: { items: toolbarItems1 }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -196,7 +205,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 width: '500px'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -214,7 +224,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 width: 400
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -231,7 +242,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 width: '100%'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -248,7 +260,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 width: 'auto'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -265,7 +278,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 width: null
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -281,7 +295,8 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 enableRtl: true
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -293,7 +308,7 @@ describe('FileManager control Grid view', () => {
             expect(feObj.element.querySelector('.e-grid').classList.contains('e-rtl')).toEqual(true);
             expect(feObj.contextmenuModule.contextMenu.element.parentElement.classList.contains('e-rtl')).toEqual(true);
             feObj.destroy();
-            expect(feObj.element.classList.contains('e-rtl')).toEqual(false);            
+            expect(feObj.element.classList.contains('e-rtl')).toEqual(false);
         });
         it('for enableRtl', () => {
             feObj = new FileManager({
@@ -303,7 +318,8 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 enableRtl: false
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -315,7 +331,7 @@ describe('FileManager control Grid view', () => {
             expect(feObj.element.querySelector('.e-grid').classList.contains('e-rtl')).toEqual(false);
             expect(feObj.contextmenuModule.contextMenu.element.parentElement.classList.contains('e-rtl')).toEqual(false);
             feObj.destroy();
-            expect(feObj.element.classList.contains('e-rtl')).toEqual(false);            
+            expect(feObj.element.classList.contains('e-rtl')).toEqual(false);
         });
         it('for showFileExtension', () => {
             feObj = new FileManager({
@@ -325,13 +341,14 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showFileExtension: false
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            expect(data1.files[0].name.substr(0,data1.files[0].name.lastIndexOf('.'))).toEqual('1');
+            expect(data1.files[0].name.substr(0, data1.files[0].name.lastIndexOf('.'))).toEqual('1');
             expect(data11.files[0].name.substr(0, data11.files[0].name.lastIndexOf('.'))).toEqual('image');
             expect(data11.files[4].name.substr(0, data11.files[4].name.lastIndexOf('.'))).toEqual('video');
             feObj.showFileExtension = true;
@@ -349,14 +366,15 @@ describe('FileManager control Grid view', () => {
                 },
                 showHiddenItems: false,
                 path: '/Food/'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
             expect(data15.files.length).toEqual(3);
-            expect(data15.files[0].name.substr(0,data15.files[0].name.lastIndexOf('.'))).toEqual('Bread');
+            expect(data15.files[0].name.substr(0, data15.files[0].name.lastIndexOf('.'))).toEqual('Bread');
             feObj.showHiddenItems = true;
             feObj.dataBind();
             expect(data11.files.length).toEqual(5);
@@ -369,7 +387,8 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 path: '/Employees/'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,

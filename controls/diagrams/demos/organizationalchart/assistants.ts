@@ -49,7 +49,7 @@ let diagram: Diagram = new Diagram({
         }
     },
     dataSourceSettings: {
-        id: 'Id', parentId: 'Manager', dataManager: items
+        id: 'Id', parentId: 'Manager', dataSource: items
     },
 
     getNodeDefaults: (obj: Node, diagram: Diagram) => {

@@ -24,77 +24,64 @@ describe('Virtual scroll', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let model: ScheduleModel = {
-                height: '550px', width: '100%',
-                currentView: 'TimelineMonth',
+                height: '550px', width: '100%', currentView: 'TimelineMonth',
                 views: [
                     { option: 'TimelineDay' },
                     { option: 'TimelineWeek', allowVirtualScrolling: true },
                     { option: 'TimelineMonth', allowVirtualScrolling: true }
                 ],
-                group: {
-                    resources: ['Floors', 'Halls', 'Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'FId', title: 'Floor',
-                        name: 'Floors', allowMultiple: false,
-                        dataSource: [
-                            { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2', Expand: false },
-                            { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
-                        ],
-                        textField: 'FloorText', idField: 'Id', colorField: 'FloorColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'HallId', title: 'Hall',
-                        name: 'Halls', allowMultiple: false,
-                        dataSource: [
-                            { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2', Expand: false },
-                            { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' },
-                            { HallText: 'Hall 3', Id: 3, HallGroupId: 2, HallColor: '#56ca85' }
-                        ],
-                        textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
-                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 4', Id: 4, RoomGroupId: 2, RoomColor: '#56ca85' },
-                            { RoomText: 'ROOM 5', Id: 5, RoomGroupId: 3, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
-                    },
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00', Expand: false },
-                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398', Expand: false },
-                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1', Expand: false },
-                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 3, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 2, OwnerColor: '#7499e1' },
-                            { OwnerText: 'John', Id: 10, OwnerGroupId: 4, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Barry', Id: 11, OwnerGroupId: 4, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 12, OwnerGroupId: 4, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 13, OwnerGroupId: 4, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 14, OwnerGroupId: 4, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Barry', Id: 15, OwnerGroupId: 5, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Felicity', Id: 16, OwnerGroupId: 5, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Cisco', Id: 17, OwnerGroupId: 5, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Sara', Id: 18, OwnerGroupId: 5, OwnerColor: '#7499e1' }
-                        ],
-                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
-                        colorField: 'OwnerColor', expandedField: 'Expand'
-                    }
-                ],
-                selectedDate: new Date(2018, 4, 1),
-                eventSettings: { dataSource: timelineResourceData }
+                group: { resources: ['Floors', 'Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'FId', title: 'Floor', name: 'Floors', allowMultiple: false,
+                    dataSource: [
+                        { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2', Expand: false },
+                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' },
+                    ],
+                    textField: 'FloorText', idField: 'Id', colorField: 'FloorColor', expandedField: 'Expand'
+                }, {
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2', Expand: false },
+                        { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' },
+                        { HallText: 'Hall 3', Id: 3, HallGroupId: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor', expandedField: 'Expand'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2', Expand: false },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 4', Id: 4, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 5', Id: 5, RoomGroupId: 3, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor', expandedField: 'Expand'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00', Expand: false },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398', Expand: false },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1', Expand: false },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 3, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 2, OwnerColor: '#7499e1' },
+                        { OwnerText: 'John', Id: 10, OwnerGroupId: 4, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 11, OwnerGroupId: 4, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 12, OwnerGroupId: 4, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 13, OwnerGroupId: 4, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 14, OwnerGroupId: 4, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Barry', Id: 15, OwnerGroupId: 5, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 16, OwnerGroupId: 5, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 17, OwnerGroupId: 5, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 18, OwnerGroupId: 5, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
+                    colorField: 'OwnerColor', expandedField: 'Expand'
+                }],
+                selectedDate: new Date(2018, 4, 1)
             };
             schObj = createSchedule(model, timelineResourceData, done);
         });
@@ -306,7 +293,7 @@ describe('Virtual scroll', () => {
         it('checking elements with rowAutoHeight property', (done: Function) => {
             let viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-month');
             viewElement.click();
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(5);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -317,7 +304,6 @@ describe('Virtual scroll', () => {
             };
             schObj.selectedDate = new Date(2018, 4, 1);
             schObj.rowAutoHeight = true;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
         it('scroll checking with rowAutoHeight property', () => {
@@ -336,7 +322,7 @@ describe('Virtual scroll', () => {
             expect(moreIndicatorList.length).toEqual(0);
         });
         it('checking more indicator rowAutoHeight false', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(3);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -346,7 +332,6 @@ describe('Virtual scroll', () => {
                 done();
             };
             schObj.rowAutoHeight = false;
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });

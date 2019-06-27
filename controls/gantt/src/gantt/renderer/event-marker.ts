@@ -2,7 +2,7 @@
  * To render and update event markers in Gantt
  */
 import { Gantt } from '../base/gantt';
-import { createElement, formatUnit, remove } from '@syncfusion/ej2-base';
+import { createElement, formatUnit, remove, isNullOrUndefined  } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 export class EventMarker {
     public parent: Gantt;
@@ -64,6 +64,13 @@ export class EventMarker {
             }
             if (this.parent.eventMarkers[i].cssClass) {
                 eventMarkerElement.classList.add(this.parent.eventMarkers[i].cssClass);
+            }
+            eventMarkerElement.setAttribute('tabindex', '-1');
+            if (!isNullOrUndefined(this.parent.eventMarkers[i].day)) {
+                eventMarkerElement.setAttribute('aria-label', this.parent.localeObj.getConstant('eventMarkers') + ' '
+                    + (typeof this.parent.eventMarkers[i].day === 'string' ?
+                        this.parent.eventMarkers[i].day : this.parent.getFormatedDate(this.parent.eventMarkers[i].day as Date))
+                    + ' ' + this.parent.eventMarkers[i].label);
             }
             container.appendChild(eventMarkerElement);
         }

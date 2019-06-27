@@ -4,7 +4,7 @@ import {
     getTemplateFunction, convertElement, findLabelLocation, PathOption, textFormatter, ColorValue, colorNameToHex, convertHexToColor,
     colorMap, measureElement, convertToContainer, convertToRect, getShortestEdge, getArea, orderByArea, isParentItem
 } from '../utils/helper';
-import { isNullOrUndefined, createElement, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Location, findChildren, renderTextElement } from '../utils/helper';
 import { LevelSettings, Font, LeafItemSettings } from '../model/base';
@@ -475,30 +475,40 @@ export class LayoutPanel {
                 cancel: false, name: itemRendering, treemap: this.treemap,
                 currentItem: item, RenderItems: this.renderItems, options: item['options']
             };
-            this.treemap.trigger(itemRendering, eventArgs);
-            if (!eventArgs.cancel) {
-                rectPath = ' M ' + rect.x + ' ' + rect.y + ' L ' + (rect.x + rect.width) + ' ' + rect.y +
-                    ' L ' + (rect.x + rect.width) + ' ' + (rect.y + rect.height) + ' L ' + rect.x + ' ' + (rect.y + rect.height) + 'z';
-                pathOptions = new PathOption(groupId + '_RectPath', fill, border.width, border.color, opacity, null, rectPath);
-                let path: Element = this.renderer.drawPath(pathOptions);
-                itemGroup.appendChild(path);
-                if (txtVisible) {
-                    this.renderItemText(
-                        renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill,
-                        position as LabelPosition, connectorText
-                    );
+            this.treemap.trigger(itemRendering, eventArgs, (observedArgs: IItemRenderingEventArgs) => {
+                if (!observedArgs.cancel) {
+                    rectPath = ' M ' + rect.x + ' ' + rect.y + ' L ' + (rect.x + rect.width) + ' ' + rect.y +
+                        ' L ' + (rect.x + rect.width) + ' ' + (rect.y + rect.height) + ' L ' + rect.x + ' ' + (rect.y + rect.height) + 'z';
+                    pathOptions = new PathOption(groupId + '_RectPath', fill, border.width, border.color, opacity, null, rectPath);
+                    let path: Element = this.renderer.drawPath(pathOptions);
+                    itemGroup.appendChild(path);
+                    if (txtVisible) {
+                        this.renderItemText(
+                            renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill,
+                            position as LabelPosition, connectorText
+                        );
+                    }
+                    if (template) {
+                        templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
+                        templateGroup.appendChild(templateEle);
+                    }
+                    itemGroup.setAttribute('aria-label', item['name']);
+                    itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
+                    this.layoutGroup.appendChild(itemGroup);
                 }
-                if (template) {
-                    templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
-                    templateGroup.appendChild(templateEle);
-                }
-                itemGroup.setAttribute('aria-label', item['name']);
-                itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
-                this.layoutGroup.appendChild(itemGroup);
-            }
+            });
         }
         if (templateGroup.childNodes.length > 0) {
             secondaryEle.appendChild(templateGroup);
+            if (leaf.labelTemplate) {
+                for (let i: number = 0; i < templateGroup.childElementCount; i++) {
+                    updateBlazorTemplate(templateGroup.children[i].id, 'LabelTemplate');
+                }
+            } else {
+                for (let j: number = 0; j < templateGroup.childElementCount; j++) {
+                    updateBlazorTemplate(templateGroup.children[j].id, 'HeaderTemplate');
+                }
+            }
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);
     }

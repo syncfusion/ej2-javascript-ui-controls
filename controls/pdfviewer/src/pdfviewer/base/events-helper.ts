@@ -192,9 +192,65 @@ export interface AnnotationPropertiesChangeEventArgs extends BaseEventArgs {
     /**
      * Specifies that the color of the annotation is changed.
      */
-    isColorChanged: boolean;
+    isColorChanged?: boolean;
     /**
      * Specifies that the opacity of the annotation is changed.
      */
     isOpacityChanged: boolean;
+    /**
+     * Specifies that the stroke color of the annotation is changed.
+     */
+    isStrokeColorChanged?: boolean;
+    /**
+     * Specifies that the thickness of the annotation is changed.
+     */
+    isThicknessChanged?: boolean;
+    /**
+     * Specifies that the line head start style of the annotation is changed.
+     */
+    isLineHeadStartStyleChanged?: boolean;
+    /**
+     * Specifies that the line head end style of the annotation is changed.
+     */
+    isLineHeadEndStyleChanged?: boolean;
+    /**
+     * Specifies that the border dash array of the annotation is changed.
+     */
+    isBorderDashArrayChanged?: boolean;
+    /**
+     * Specifies that the Text of the annotation is changed.
+     */
+    isTextChanged?: boolean;
+    /**
+     * Specifies that the comments of the annotation is changed.
+     */
+    isCommentsChanged?: boolean;
+}
+
+/**
+ * This event arguments provides the necessary information about annotation resize event.
+ */
+export interface AnnotationResizeEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the annotation resized in the page of the PDF document.
+     */
+    annotationId: number;
+    /**
+     * Defines the page number in which the annotation is resized.
+     */
+    pageIndex: number;
+    /**
+     * Defines the settings of the annotation resized in the PDF document.
+     */
+    // tslint:disable-next-line
+    annotationSettings: any;
+    /**
+     * Defines the bounds of the annotation resized in the page of the PDF document.
+     */
+    // tslint:disable-next-line
+    annotationBound: any;
+    /**
+     * Defines the type of the annotation resized in the page of the PDF document.
+     */
+    annotationType: AnnotationType;
 }

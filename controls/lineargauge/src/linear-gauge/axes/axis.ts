@@ -316,8 +316,9 @@ export class Pointer extends ChildProperty<Pointer> {
 
 }
 
-
-
+/**
+ * Options for customizing the axis of a gauge.
+ */
 
 export class Axis extends ChildProperty<Axis> {
     /**

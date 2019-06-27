@@ -1,4 +1,4 @@
-import { createElement, KeyboardEventArgs, L10n } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEventArgs, L10n, classList } from '@syncfusion/ej2-base';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DocumentEditorContainer } from '../document-editor-container';
@@ -32,7 +32,16 @@ export class ImageProperties {
         this.isRtl = isRtl;
         this.initializeImageProperties();
     }
-
+    /**
+     * @private
+     */
+    public enableDisableElements(enable: boolean): void {
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        } else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    }
     private initializeImageProperties = (): void => {
         // tslint:disable-next-line:max-line-length
         this.element = createElement('div', { id: this.elementId + '_imageProperties', className: 'e-de-prop-pane' });

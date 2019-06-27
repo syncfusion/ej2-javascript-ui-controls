@@ -1540,6 +1540,58 @@ describe('Recurrence Date Generator Specs', () => {
             let dates: number[] = generate(startDate, 'FREQ=DAILY;', null, 0);
             expect(dates.length).toBe(43);
         });
+    });  
+
+    describe('Schedule - recurrence rule with end date as never and recurrence excecption', () => {
+        let startDate: Date = new Date('Tue, 04 May 2014');
+        it('DAILY with max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=DAILY;','20140505T043000Z,20140517T043000Z', 0, 90);
+            expect(dates.length).toBe(90);
+        });
+        it('DAILY with max count and Until Date', () => {
+            let dates: number[] = generate(startDate, 'FREQ=DAILY;INTERVAL=1;UNTIL=20140531T043000Z;','20140505T043000Z,20140516T043000Z', 0, 28);
+            expect(dates.length).toBe(26);
+        });
+        it('DAILY with max count and Count property', () => {
+            let dates: number[] = generate(startDate, 'FREQ=DAILY;INTERVAL=1;COUNT=20','20140505T043000Z,20140516T043000Z', 0, 20);
+            expect(dates.length).toBe(18);
+        });
+        it('WEEKLY with max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;', '20140511T053000Z,20140608T053000Z,20141019T053000Z', 0, 20);
+            expect(dates.length).toBe(20);
+        });
+        it('WEEKLY with max count and Until Date', () => {
+            let dates: number[] = generate(startDate, 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;UNTIL=20140531T043000Z;', '20140511T053000Z', 0, 4);
+            expect(dates.length).toBe(3);
+        });
+        it('WEEKLY with max count and Count property', () => {
+            let dates: number[] = generate(startDate, 'FREQ=WEEKLY;BYDAY=SU;INTERVAL=1;COUNT=15', '20140511T053000Z', 0, 15);
+            expect(dates.length).toBe(14);
+        });
+        it('MONTHLY with max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;', '20140701T043000Z', 0, 20);
+            expect(dates.length).toBe(20);
+        });
+        it('MONTHLY with max count and Until Date', () => {
+            let dates: number[] = generate(startDate, 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;UNTIL=20140731T043000Z;', '20140604T043000Z', 0, 3);
+            expect(dates.length).toBe(2);
+        });
+        it('MONTHLY with max count and Count property', () => {
+            let dates: number[] = generate(startDate, 'FREQ=MONTHLY;BYMONTHDAY=4;INTERVAL=1;COUNT=10;', '20140604T043000Z', 0, 10);
+            expect(dates.length).toBe(9);
+        });
+        it('YEARLY with max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;', '20150504T043000Z', 0, 30);
+            expect(dates.length).toBe(30);
+        });
+        it('YEARLY with max count and Until Date', () => {
+            let dates: number[] = generate(startDate, 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;UNTIL=20180531T050000Z;', '20150504T050000Z', 0, 5);
+            expect(dates.length).toBe(4);
+        });
+        it('YEARLY with max count and Count property', () => {
+            let dates: number[] = generate(startDate, 'FREQ=YEARLY;BYMONTHDAY=4;BYMONTH=5;INTERVAL=1;COUNT=10;', '20150504T050000Z', 0, 10);
+            expect(dates.length).toBe(9);
+        });
     });
 
     it('memory leak', () => {

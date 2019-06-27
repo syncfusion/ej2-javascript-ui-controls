@@ -8,7 +8,7 @@ import { drawBalloon, drawCircle, drawCross, drawDiamond, drawHorizontalLine, dr
 import { drawPattern, drawPolygon, CircleOption, LineOption, Line, PathOption, PatternOptions } from '../../../src/maps/utils/helper';
 import { PolygonOption, PolylineOption, drawPolyline, drawRectangle, drawTriangle, drawVerticalLine } from '../../../src/maps/utils/helper';
 import { drawStar, MapLocation, measureText, Rect, RectOption, TextOption, Size, renderTextElement } from '../../../src/maps/utils/helper';
-import { checkShapeDataFields, findMidPointOfPolygon, getFieldData, removeElement } from '../../../src/maps/utils/helper';
+import { checkShapeDataFields, findMidPointOfPolygon, getFieldData, removeElement, getElement } from '../../../src/maps/utils/helper';
 import { getShapeColor } from '../../../src/maps/model/theme';
 import { LayerSettingsModel } from '../../../src/maps/index';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
@@ -579,6 +579,74 @@ describe('Maps Component Base Spec', () => {
             maps.refresh();
         });
     });
+
+    describe('Maps click event testing spec', () => {
+        let element: Element;
+        let maps: Maps;
+        let id: string = 'map-container';
+        let spec: Element;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '0px';
+            document.body.appendChild(element);
+            maps = new Maps({
+                titleSettings: {
+                    text: 'World Map'
+                },
+                layers: [{
+                    shapeData: World_Map,
+                    markerSettings: [
+                        {
+                            visible: true,
+                            dataSource: [
+                                { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai'},
+                                { latitude: 51.5326602, longitude: -0.1262422, name: 'London'}
+                            ],
+                            animationDuration: 0
+                        },
+                    ]
+                }]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            maps.destroy();
+            removeElement(id);
+        });
+
+        it('check dynamic marker element', (done: Function) => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(maps.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0');
+                let ele: object = {};
+                ele['type'] = 'touchend';
+                ele['target'] = spec;
+                ele['x'] = spec.getBoundingClientRect().left;
+                ele['y'] = spec.getBoundingClientRect().top;
+                maps['mouseDownOnMap'](<PointerEvent>ele);
+                maps['mapsOnClick'](<PointerEvent>ele);
+                done();
+            };
+            maps.refresh();
+        });
+
+        it('check OSM dynamic marker element', (done: Function) => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(maps.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_1');
+                let ele: object = {};
+                ele['type'] = 'touchend';
+                ele['target'] = spec;
+                ele['x'] = spec.getBoundingClientRect().left;
+                ele['y'] = spec.getBoundingClientRect().top;
+                maps['mouseDownOnMap'](<PointerEvent>ele);
+                maps['mapsOnClick'](<PointerEvent>ele);
+                done();
+            };
+            maps.layers[0].layerType = 'OSM';
+            maps.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

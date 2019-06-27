@@ -540,7 +540,8 @@ export namespace ListBase {
             if (isHeader) {
                 li.innerText = fieldData[curFields.text] as string;
             } else {
-                append(compiledString(curItem), li);
+                const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
+                append(compiledString(curItem, null, null, currentID), li);
                 li.setAttribute('data-value', value);
                 li.setAttribute('role', 'option');
             }
@@ -568,16 +569,19 @@ export namespace ListBase {
      * @param  {Element[]} headerItems? - Specifies listbase header items.
      */
     export function renderGroupTemplate(
-        groupTemplate: string, groupDataSource: { [key: string]: Object }[], fields: FieldsMapping, headerItems: Element[]):
-        Element[] {
+        groupTemplate: string,
+        groupDataSource: { [key: string]: Object }[],
+        fields: FieldsMapping,
+        headerItems: Element[], options?: ListBaseOptions): Element[] {
         let compiledString: Function = compile(groupTemplate);
         let curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
+        let curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         let category: string = curFields.groupBy;
         for (let header of headerItems) {
             let headerData: { [key: string]: string; } = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData), header);
+            append(compiledString(headerData, null, null, curOpt.groupTemplateID), header);
         }
         return headerItems;
     }
@@ -701,7 +705,7 @@ export namespace ListBase {
         if (fieldData.hasOwnProperty(fields.urlAttributes) && fieldData[fields.urlAttributes]) {
             merge(attr, fieldData[fields.urlAttributes]);
             attr.href = <string>fieldData[fields.url] ? <string>fieldData[fields.url] :
-             (fieldData[fields.urlAttributes] as { [key: string]: Object }).href as string;
+                (fieldData[fields.urlAttributes] as { [key: string]: Object }).href as string;
         }
         let anchorTag: HTMLElement = createElement('a', { className: cssClass.text + ' ' + cssClass.url, innerHTML: text });
         setAttribute(anchorTag, attr);
@@ -736,10 +740,10 @@ export namespace ListBase {
 
         if (grpLI && options && options.groupTemplate) {
             let compiledString: Function = compile(options.groupTemplate);
-            append(compiledString(item), li);
+            append(compiledString(item, null, null, curOpt.groupTemplateID), li);
         } else if (!grpLI && options && options.template) {
             let compiledString: Function = compile(options.template);
-            append(compiledString(item), li);
+            append(compiledString(item, null, null, curOpt.templateID), li);
         } else {
             let innerDiv: HTMLElement = createElement('div', {
                 className: cssClass.textContent,
@@ -912,6 +916,14 @@ export interface ListBaseOptions {
      * Specifies the expand/collapse icon position
      */
     expandIconPosition?: Position;
+    /**
+     * Specifies the template ID
+     */
+    templateID?: string;
+    /**
+     * Specifies the groupTemplate ID
+     */
+    groupTemplateID?: string;
 }
 
 /**

@@ -67,4 +67,11 @@ export class EventSettings extends ChildProperty<EventSettings> {
      */
     @Property()
     public resourceColorField: string;
+
+    /**
+     * When set to `true` will edit the future events only instead of editing entire series.
+     * @default false
+     */
+    @Property(false)
+    public editFollowingEvents: boolean;
 }

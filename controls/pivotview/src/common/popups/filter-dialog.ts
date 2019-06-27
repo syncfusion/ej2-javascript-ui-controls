@@ -95,6 +95,7 @@ export class FilterDialog {
             open: this.dialogOpen.bind(this)
         });
         this.dialogPopUp.appendTo(editorDialog);
+        this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = (this.allowExcelLikeFilter ? headerTemplate : filterCaption);
         if (this.allowExcelLikeFilter) {
             this.createTabMenu(treeData, fieldCaption, fieldName);
             addClass([this.dialogPopUp.element], 'e-excel-filter');
@@ -230,8 +231,8 @@ export class FilterDialog {
             }
         ];
         for (let type of types) {
-            if (((type === 'Label') && this.parent.dataSource.allowLabelFilter) ||
-                (type === 'Value' && this.parent.dataSource.allowValueFilter)) {
+            if (((type === 'Label') && this.parent.dataSourceSettings.allowLabelFilter) ||
+                (type === 'Value' && this.parent.dataSourceSettings.allowValueFilter)) {
                 let filterType: FilterType = (type === 'Label' && ((member).match(regx) &&
                     (member).match(regx)[0].length === (member).length) && fieldType === 'number') ? 'Number' :
                     (type === 'Label' && (new Date(member).toString() !== 'Invalid Date') &&
@@ -251,7 +252,7 @@ export class FilterDialog {
         let selectedIndex: number =
             (this.filterObject ? ((['Label', 'Date', 'Number'] as FilterType[]).indexOf(this.filterObject.type) >= 0) ?
                 1 : this.filterObject.type === 'Value' ?
-                    (this.parent.dataSource.allowLabelFilter && this.parent.dataSource.allowValueFilter) ? 2 : 1 : 0 : 0);
+                    (this.parent.dataSourceSettings.allowLabelFilter && this.parent.dataSourceSettings.allowValueFilter) ? 2 : 1 : 0 : 0);
         this.tabObj = new Tab({
             heightAdjustMode: 'Auto',
             items: items,
@@ -262,13 +263,13 @@ export class FilterDialog {
         this.tabObj.appendTo(wrapper);
         if (selectedIndex > 0) {
             /* tslint:disable-next-line:max-line-length */
-            addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (selectedIndex === 1 && this.parent.dataSource.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
+            addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (selectedIndex === 1 && this.parent.dataSourceSettings.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
         }
     }
     private createCustomFilter(fieldName: string, filterObject: IFilter, type: string): HTMLElement {
         let dataSource: { [key: string]: Object }[] = [];
         let valueOptions: { [key: string]: Object }[] = [];
-        let measures: IFieldOptions[] = this.parent.dataSource.values;
+        let measures: IFieldOptions[] = this.parent.dataSourceSettings.values;
         let selectedOption: string = 'DoesNotEquals';
         let selectedValueIndex: number = 0;
         let options: { label: string[], value: string[], date: string[] } = {
@@ -300,7 +301,8 @@ export class FilterDialog {
             id: this.parent.parentID + '_' + type + '_filter_div_content',
             attrs: {
                 'data-type': type, 'data-fieldName': fieldName, 'data-operator': selectedOption,
-                'data-measure': (this.parent.dataSource.values.length > 0 ? this.parent.dataSource.values[selectedValueIndex].name : ''),
+                'data-measure': (this.parent.dataSourceSettings.values.length > 0 ?
+                    this.parent.dataSourceSettings.values[selectedValueIndex].name : ''),
                 'data-value1': (filterObject && selectedOption === filterObject.condition ? filterObject.value1.toString() : ''),
                 'data-value2': (filterObject && selectedOption === filterObject.condition ? filterObject.value1.toString() : '')
             }
@@ -574,13 +576,13 @@ export class FilterDialog {
     }
     private isExcelFilter(fieldName: string): boolean {
         let isFilterField: boolean = false;
-        for (let field of this.parent.dataSource.filters) {
+        for (let field of this.parent.dataSourceSettings.filters) {
             if (field.name === fieldName) {
                 isFilterField = true;
                 break;
             }
         }
-        if (!isFilterField && (this.parent.dataSource.allowLabelFilter || this.parent.dataSource.allowValueFilter)) {
+        if (!isFilterField && (this.parent.dataSourceSettings.allowLabelFilter || this.parent.dataSourceSettings.allowValueFilter)) {
             return true;
         } else {
             return false;
@@ -589,7 +591,8 @@ export class FilterDialog {
     private getFilterObject(fieldName: string): IFilter {
         let filterObj: IFilter = this.parent.eventBase.getFilterItemByName(fieldName);
         if (filterObj && ((((['Label', 'Date', 'Number'] as FilterType[]).indexOf(filterObj.type) >= 0) &&
-            this.parent.dataSource.allowLabelFilter) || (filterObj.type === 'Value' && this.parent.dataSource.allowValueFilter) ||
+            this.parent.dataSourceSettings.allowLabelFilter) ||
+            (filterObj.type === 'Value' && this.parent.dataSourceSettings.allowValueFilter) ||
             ((['Include', 'Exclude'] as FilterType[]).indexOf(filterObj.type) >= 0))) {
             return filterObj;
         }

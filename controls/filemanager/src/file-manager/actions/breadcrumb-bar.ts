@@ -1,12 +1,13 @@
-import { EventHandler, closest, isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, createElement } from '@syncfusion/ej2-base';
-import { getValue, addClass, removeClass, remove } from '@syncfusion/ej2-base';
+import { EventHandler, closest, isNullOrUndefined, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { getValue, addClass, removeClass, remove, createElement, DragEventArgs } from '@syncfusion/ej2-base';
 import { TextBox, ChangedEventArgs } from '@syncfusion/ej2-inputs';
-import { IFileManager, ITreeView, NotifyArgs, ReadArgs } from '../base/interface';
+import { IFileManager, NotifyArgs, ReadArgs } from '../base/interface';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { Search, read } from '../common/operations';
-import { getLocaleText } from '../common/utility';
+import { read } from '../common/operations';
+import { getLocaleText, searchWordHandler } from '../common/utility';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
+import { SearchSettingsModel } from '../models';
 
 /**
  * BreadCrumbBar module
@@ -17,10 +18,10 @@ export class BreadCrumbBar {
     private parent: IFileManager;
     public addressPath: string = '';
     public addressBarLink: string = '';
-    private treeView: ITreeView;
     public searchObj: TextBox;
     private subMenuObj: DropDownButton;
     private keyboardModule: KeyboardEvents;
+    private searchTimer: number = null;
     private keyConfigs: { [key: string]: string };
     /**
      * constructor for addressbar module
@@ -28,7 +29,6 @@ export class BreadCrumbBar {
      */
     constructor(parent?: IFileManager) {
         this.parent = parent;
-        this.treeView = this.parent.navigationpaneModule;
         this.keyConfigs = {
             enter: 'enter'
         };
@@ -41,8 +41,14 @@ export class BreadCrumbBar {
         for (let prop of Object.keys(e.newProp)) {
             switch (prop) {
                 case 'searchSettings':
-                    if (!isNullOrUndefined(e.newProp.searchSettings.allowSearchOnTyping)) {
-                        this.searchEventBind(e.newProp.searchSettings.allowSearchOnTyping);
+                    let value: SearchSettingsModel = e.newProp.searchSettings;
+                    if (!isNullOrUndefined(value.allowSearchOnTyping)) {
+                        this.searchEventBind(value.allowSearchOnTyping);
+                    }
+                    if (this.parent.breadcrumbbarModule.searchObj.value && this.parent.breadcrumbbarModule.searchObj.value !== '' &&
+                        !(!isNullOrUndefined(value.allowSearchOnTyping) && isNullOrUndefined(value.filterType) &&
+                            isNullOrUndefined(value.ignoreCase))) {
+                        searchWordHandler(this.parent, this.parent.breadcrumbbarModule.searchObj.value, false);
                     }
                     break;
             }
@@ -229,23 +235,11 @@ export class BreadCrumbBar {
     }
     private searchChangeHandler(args?: ChangedEventArgs): void {
         if (!isNullOrUndefined(args.value)) {
-            let searchWord: string;
-            if (args.value.length === 0) {
-                this.parent.notify(events.pathColumn, { args: this.parent });
-            }
-            if (this.parent.searchSettings.filterType === 'startWith') {
-                searchWord = '*' + args.value;
-            } else if (this.parent.searchSettings.filterType === 'endsWith') {
-                searchWord = args.value + '*';
+            if (this.parent.searchSettings.allowSearchOnTyping) {
+                window.clearTimeout(this.searchTimer);
+                this.searchTimer = window.setTimeout(() => { searchWordHandler(this.parent, args.value, false); }, 300);
             } else {
-                searchWord = '*' + args.value + '*';
-            }
-            if (this.searchObj.element.value.length > 0) {
-                let caseSensitive: boolean = this.parent.searchSettings.ignoreCase;
-                let hiddenItems: boolean = this.parent.showHiddenItems;
-                Search(this.parent, events.search, this.parent.path, searchWord, hiddenItems, !caseSensitive);
-            } else {
-                read(this.parent, events.search, this.parent.path);
+                searchWordHandler(this.parent, args.value, false);
             }
         }
     }
@@ -292,11 +286,15 @@ export class BreadCrumbBar {
         this.removeSearchValue();
     }
 
-    private onCreateEnd(args: ReadArgs): void {
+    private onCreateEnd(): void {
         let path: string = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
         if (path !== this.parent.path) {
             this.onPathChange();
         }
+    }
+
+    private onRenameEnd(): void {
+        this.onPathChange();
     }
 
     /* istanbul ignore next */
@@ -319,8 +317,14 @@ export class BreadCrumbBar {
     private onResize(): void {
         this.onPathChange();
     }
+    private onPasteEnd(args: ReadArgs): void {
+        if (this.parent.isPathDrag) {
+            this.onPathChange();
+        }
+    }
 
     private liClick(currentPath: string): void {
+        this.parent.itemData = [getValue(currentPath, this.parent.feParent)];
         read(this.parent, events.pathChanged, currentPath);
     }
     private addEventListener(): void {
@@ -340,11 +344,14 @@ export class BreadCrumbBar {
         this.parent.on(events.refreshEnd, this.onUpdatePath, this);
         this.parent.on(events.openEnd, this.onUpdatePath, this);
         this.parent.on(events.createEnd, this.onCreateEnd, this);
-        this.parent.on(events.renameEnd, this.onUpdatePath, this);
+        this.parent.on(events.renameEnd, this.onRenameEnd, this);
         this.parent.on(events.deleteEnd, this.onDeleteEnd, this);
         this.parent.on(events.splitterResize, this.onResize, this);
+        this.parent.on(events.pasteEnd, this.onPasteEnd, this);
         this.parent.on(events.resizeEnd, this.onResize, this);
         this.parent.on(events.searchTextChange, this.onSearchTextChange, this);
+        this.parent.on(events.dropInit, this.onDropInit, this);
+        this.parent.on(events.layoutRefresh, this.onResize, this);
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {
@@ -361,12 +368,25 @@ export class BreadCrumbBar {
         this.parent.off(events.finalizeEnd, this.onUpdatePath);
         this.parent.off(events.refreshEnd, this.onUpdatePath);
         this.parent.off(events.openEnd, this.onUpdatePath);
+        this.parent.off(events.pasteEnd, this.onPasteEnd);
         this.parent.off(events.createEnd, this.onCreateEnd);
-        this.parent.off(events.renameEnd, this.onUpdatePath);
+        this.parent.off(events.renameEnd, this.onRenameEnd);
         this.parent.off(events.deleteEnd, this.onDeleteEnd);
         this.parent.off(events.splitterResize, this.onResize);
         this.parent.off(events.resizeEnd, this.onResize);
         this.parent.off(events.searchTextChange, this.onSearchTextChange);
+        this.parent.off(events.dropInit, this.onDropInit);
+        this.parent.off(events.layoutRefresh, this.onResize);
+    }
+
+    /* istanbul ignore next */
+    private onDropInit(args: DragEventArgs): void {
+        if (this.parent.targetModule === this.getModuleName()) {
+            let liEle: Element = args.target.closest('li');
+            let dropLi: string = liEle.getAttribute('data-utext');
+            this.parent.dropPath = dropLi.substring(dropLi.indexOf('/'));
+            this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+        }
     }
 
     /**
@@ -377,14 +397,10 @@ export class BreadCrumbBar {
         return 'breadcrumbbar';
     }
 
-    /**
-     * Destroys the PopUpMenu module.
-     * @method destroy
-     * @return {void}
-     */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
         this.removeEventListener();
+        /* istanbul ignore next */
         if (!isNullOrUndefined(this.subMenuObj)) {
             this.subMenuObj.destroy();
         }

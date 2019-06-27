@@ -1,4 +1,4 @@
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Pointer } from '../axes/axis';
 import { TooltipSettings } from '../model/base';
@@ -88,43 +88,51 @@ export class GaugeTooltip {
             let tooltipPos: string = this.getTooltipPosition();
             location.y += (this.tooltip.template && tooltipPos === 'Top') ? 20 : 0;
             location.x += (this.tooltip.template && tooltipPos === 'Right') ? 20 : 0;
-            this.gauge.trigger(tooltipRender, args);
-            let template: string = args.tooltip.template;
-            if (template !== null && Object.keys(template).length === 1) {
-                template = template[Object.keys(template)[0]];
-            }
-            let themes: string = this.gauge.theme.toLowerCase();
-            if (!args.cancel) {
-                args['tooltip']['properties']['textStyle']['color'] = this.tooltip.textStyle.color ||
-                    this.gauge.themeStyle.tooltipFontColor;
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    header: '',
-                    data: { value: args.pointer.currentValue },
-                    template: template,
-                    content: [args.content],
-                    shapes: [],
-                    location: args.location,
-                    palette: [],
-                    inverted: !(args.gauge.orientation === 'Horizontal'),
-                    enableAnimation: args.tooltip.enableAnimation,
-                    fill: this.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
-                    areaBounds: new Rect(
-                        areaRect.left,
-                        tooltipPos === 'Bottom' ? location.y : areaRect.top,
-                        tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width,
-                        areaRect.height
-                    ),
-                    textStyle: args.tooltip.textStyle,
-                    border: args.tooltip.border,
-                    theme: args.gauge.theme as TooltipTheme
-                });
-                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(tooltipEle);
-            }
+            this.gauge.trigger('tooltipRender', args, (observedArgs: ITooltipRenderEventArgs) => {
+                let template: string = args.tooltip.template;
+                if (template !== null && Object.keys(template).length === 1) {
+                    template = template[Object.keys(template)[0]];
+                }
+                let themes: string = this.gauge.theme.toLowerCase();
+                if (!args.cancel) {
+                    args['tooltip']['properties']['textStyle']['color'] = this.tooltip.textStyle.color ||
+                        this.gauge.themeStyle.tooltipFontColor;
+                    this.svgTooltip = new Tooltip({
+                        enable: true,
+                        header: '',
+                        data: { value: args.pointer.currentValue },
+                        template: template,
+                        content: [args.content],
+                        shapes: [],
+                        location: args.location,
+                        palette: [],
+                        inverted: !(args.gauge.orientation === 'Horizontal'),
+                        enableAnimation: args.tooltip.enableAnimation,
+                        fill: this.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
+                        availableSize: this.gauge.availableSize,
+                        areaBounds: new Rect(
+                            areaRect.left,
+                            tooltipPos === 'Bottom' ? location.y : areaRect.top,
+                            tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width,
+                            areaRect.height
+                        ),
+                        textStyle: args.tooltip.textStyle,
+                        border: args.tooltip.border,
+                        theme: args.gauge.theme as TooltipTheme
+                    });
+                    this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                    this.svgTooltip.appendTo(tooltipEle);
+                    if (this.gauge.tooltip.template) {
+                        updateBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+                    }
+                }
+            });
         } else {
             clearTimeout(this.clearTimeout);
             this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+            if (this.gauge.tooltip.template) {
+                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+            }
         }
     }
 
@@ -177,6 +185,7 @@ export class GaugeTooltip {
         if (document.getElementsByClassName('EJ2-LinearGauge-Tooltip').length > 0) {
             document.getElementsByClassName('EJ2-LinearGauge-Tooltip')[0].remove();
         }
+        resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
     }
 
     public mouseUpHandler(e: PointerEvent): void {

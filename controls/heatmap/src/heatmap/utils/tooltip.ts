@@ -24,20 +24,20 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     @Property('')
     public template: string;
     /**
-     * Specifies the color collection for heat map cell.
+     * Specifies the color collection for heat map cell. 
      * @default ''
      */
     @Property('')
     public fill: string;
     /**
-     * Specifies the cell border style.
+     * Specifies the cell border style. 
      * @default ''
      */
     @Complex<TooltipBorderModel>({}, TooltipBorder)
     public border: TooltipBorderModel;
 
     /**
-     * Specifies the cell label style.
+     * Specifies the cell label style. 
      * @default ''
      */
     @Complex<FontModel>(Theme.tooltipFont, Font)
@@ -45,7 +45,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
 }
 /**
- *
+ * 
  * The `Tooltip` module is used to render the tooltip for heatmap series.
  */
 export class Tooltip {
@@ -119,6 +119,7 @@ export class Tooltip {
                 enableAnimation: false,
                 offset: offset,
                 location: { x: x, y: y },
+                availableSize: this.heatMap.availableSize,
                 data: {
                     xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
                     yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
@@ -131,7 +132,7 @@ export class Tooltip {
                 theme: this.heatMap.theme,
                 content: tempTooltipText,
                 fill: this.heatMap.tooltipSettings.fill,
-                template: this.heatMap.tooltipSettings.template,
+                template: this.heatMap.tooltipSettings.template === '' ? null : this.heatMap.tooltipSettings.template,
                 border: {
                     width: this.heatMap.tooltipSettings.border.width,
                     color: this.heatMap.tooltipSettings.border.color
@@ -160,9 +161,11 @@ export class Tooltip {
      * @private
      */
     public createTooltipDiv(heatMap: HeatMap): void {
+        let position: string = heatMap.enableCanvasRendering && heatMap.allowSelection  ? 'relative' : 'absolute';
+        let top: number = heatMap.enableCanvasRendering && heatMap.allowSelection ? heatMap.availableSize.height : 0;
         let element2: Element = <HTMLElement>createElement('div', {
             id: this.heatMap.element.id + 'Celltooltipcontainer',
-            styles: 'position:absolute; z-index: 3'
+            styles: 'position:' + position + '; z-index: 3;top:-' + top + 'px'
         });
         this.heatMap.element.appendChild(
             createElement(

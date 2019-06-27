@@ -47,7 +47,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 cssClass: 'custom'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -79,7 +80,8 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -112,7 +114,8 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -149,7 +152,8 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -183,7 +187,8 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 enableRtl: true
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -219,7 +224,8 @@ describe('FileManager control Grid view', () => {
                 },
                 showThumbnail: false,
                 navigationPaneSettings: { visible: false }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -784,7 +790,8 @@ describe('FileManager control Grid view', () => {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -810,7 +817,8 @@ describe('FileManager control Grid view', () => {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -829,7 +837,8 @@ describe('FileManager control Grid view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 path: 'Employees/'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -850,7 +859,10 @@ describe('FileManager control Grid view', () => {
                 expect(treeLi.length).toEqual(6);
                 expect(gridLi.length).toEqual(1);
                 expect(feObj.path).toBe('/Employees/');
+                feObj.detailsviewModule.gridObj.selectRows([0]);
+                expect(gridLi[0].getAttribute('aria-selected')).toBe('true');
                 feObj.path = '/Documents';
+                expect(feObj.selectedItems.length).toBe(1);
                 feObj.dataBind();
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
@@ -872,6 +884,8 @@ describe('FileManager control Grid view', () => {
                     expect(treeLi.length).toEqual(6);
                     expect(gridLi.length).toEqual(1);
                     expect(feObj.path).toBe('/Documents/');
+                    expect(feObj.selectedItems.length).toBe(0);
+                    expect(gridLi[0].getAttribute('aria-selected')).toBe(null);
                     done();
                 }, 500);
             }, 500);

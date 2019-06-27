@@ -721,4 +721,31 @@ describe('CSV-Export', () => {
             }
         });
     });
+    it('DoubleQuote', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Rows Add',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: 'Jones, John "JR"' },
+                        { index: 2, value: 'Phillips, Suzy "Suz"' } ,
+                        { index: 3, value: '"Phillips, "Suzy "Suz""' }] },
+                    ],
+
+                }]
+        }, 'csv');
+        book.saveAsBlob("text/csv").then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'DoubleQuote.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
 });

@@ -246,7 +246,7 @@ describe('Diagram Control', () => {
             };
             diagram = new Diagram({
                 width: '1000px', height: '1000px', nodes: [node, node2]
-
+                
             });
             diagram.appendTo('#diagramannotation');
         });
@@ -267,6 +267,7 @@ describe('Diagram Control', () => {
             mouseEvents.dblclickEvent(diagramCanvas, 550, 200);
             mouseEvents.clickEvent(diagramCanvas, 420, 300);
             let innerHtmlTextElement = document.getElementById('text_content_text');
+            console.log(innerHtmlTextElement.innerHTML);
             expect(innerHtmlTextElement.innerHTML === '<tspan x="12.765625" y="53.6">Text Element</tspan>' ||
             innerHtmlTextElement.innerHTML === '<tspan x="14.9921875" y="53.6">Text Element</tspan>' || innerHtmlTextElement.innerHTML === '<tspan x="14.984375" y="53.6">Text Element</tspan>').toBe(true);
             done();
@@ -3612,5 +3613,5 @@ describe('Diagram constraints TestCases', () => {
             ele.remove();
         });
     });
-
+  
 });

@@ -1798,6 +1798,70 @@ describe('Datepicker', () => {
             expect(datepicker.element.parentElement.classList.contains('e-input-focus')).toBe(false);
         });
     });
+    describe('Change the value via keyboard to check isInteracted', () => {
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: ():void=>{/** NO Code */},
+            action: 'altDownArrow'
+        };
+        let datepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            datepicker = new DatePicker({ value: new Date("12/12/2016") });
+            datepicker.appendTo('#date');
+        });
+        afterEach(() => {
+            if (datepicker) {
+                datepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Key events enter after changing value', () => {
+            datepicker.inputElement.value = '1/1/1900';
+            keyEventArgs.action = 'enter';
+            datepicker.inputKeyActionHandle(keyEventArgs);
+            expect(datepicker.changedArgs.isInteracted).toBe(true);
+            datepicker.value = new Date('2/2/2000');
+            datepicker.dataBind();
+            datepicker.changeEvent(keyEventArgs);
+            expect(datepicker.changedArgs.isInteracted).toBe(false);
+            datepicker.inputElement.value = '3/3/2010';
+            keyEventArgs.action = 'tab';
+            datepicker.inputKeyActionHandle(keyEventArgs);
+            expect(datepicker.changedArgs.isInteracted).toBe(true);
+            datepicker.inputElement.value = '5/5/2020';
+            datepicker.inputBlurHandler();
+            expect(datepicker.changedArgs.isInteracted).toBe(true);
+        });
+    });
+    describe('Change the value via mouse to check isInteracted', () => {
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let datepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            datepicker = new DatePicker({ value: new Date("12/12/2016") });
+            datepicker.appendTo('#date');
+        });
+        afterEach(() => {
+            if (datepicker) {
+                datepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Key events enter after changing value', () => {
+            datepicker.clear(mouseEventArgs);
+            expect(datepicker.changedArgs.isInteracted).toBe(true);
+            datepicker.value = new Date('2/2/2000');
+            datepicker.dataBind();
+            datepicker.changeEvent(mouseEventArgs);
+            expect(datepicker.changedArgs.isInteracted).toBe(false);
+            datepicker.inputElement.value = '5/5/2020';
+            datepicker.inputBlurHandler();
+            expect(datepicker.changedArgs.isInteracted).toBe(true);
+        });
+    });
     describe('clear button related testing', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         let date: DatePicker;
@@ -2008,6 +2072,200 @@ describe('Datepicker', () => {
             expect(datePicker.value.valueOf()).toBe(new Date('12/12/2116').valueOf());
             expect((document.querySelectorAll('.e-selected')).length == 0);
             expect((datePicker.popupObj) !== null).toBe(true);
+        });
+    });
+    describe('HTML attributes at inline element testing', () => {
+        let datePicker: any;
+        beforeEach((): void => {
+            datePicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'date' });
+            ele.setAttribute('placeholder','Enter a date');
+            ele.setAttribute('readonly', '');
+            ele.setAttribute('disabled', '');
+            ele.setAttribute('value', '5/4/2017');
+            ele.setAttribute('min', '1/1/2019');
+            ele.setAttribute('max', '10/10/2019');
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Inline element testing', () => {
+            datePicker = new DatePicker();
+            datePicker.appendTo('#date');
+            expect(datePicker.placeholder).toBe("Enter a date");
+            expect(datePicker.element.hasAttribute('readonly')).toBe(true);
+            expect(datePicker.element.hasAttribute('enabled')).toBe(false);
+            expect(datePicker.element.getAttribute('value')).toBe('5/4/2017');
+            expect(datePicker.element.getAttribute('min')).toBe('1/1/2019');
+            expect(datePicker.element.getAttribute('max')).toBe('10/10/2019');
+        });
+        it('Inline and API testing', () => {
+            datePicker = new DatePicker({placeholder:"Select a date", readonly: false, enabled: true, value: new Date('7/4/2017'), min: new Date('2/2/2019'), max: new Date('9/9/2019')});
+            datePicker.appendTo('#date');
+            expect(datePicker.placeholder).toBe("Select a date");
+            expect(datePicker.element.hasAttribute('readonly')).toBe(false);
+            expect(datePicker.element.hasAttribute('disabled')).toBe(false);
+            expect(datePicker.element.value).toBe('7/4/2017');
+            expect(datePicker.min.toDateString()).toBe(new Date('2/2/2019').toDateString());
+            expect(datePicker.max.toDateString()).toBe(new Date('9/9/2019').toDateString());
+        });
+        it('Inline and html attributes API testing', () => {
+            datePicker = new DatePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false", disabled: "false", value: '10/4/2017', min: '3/3/2019', max: '8/8/2019'}});
+            datePicker.appendTo('#date');
+            expect(datePicker.placeholder).toBe("Choose a date");
+            expect(datePicker.element.hasAttribute('readonly')).toBe(false);
+            expect(datePicker.element.hasAttribute('disabled')).toBe(false);
+            expect(datePicker.element.value).toBe('10/4/2017');
+            expect(datePicker.element.min).toBe('3/3/2019');
+            expect(datePicker.element.max).toBe('8/8/2019');
+        });
+        it('Inline, API and html attributes API testing', () => {
+            datePicker = new DatePicker({ htmlAttributes:{placeholder:"Choose a date", disabled: "true", value: "10/4/2017", min: '3/3/2019', max: '8/8/2019'}, placeholder: "Select a date", readonly: false, enabled: true, value: new Date('7/4/2017'), min: new Date('2/2/2019'), max: new Date('9/9/2019')});
+            datePicker.appendTo('#date');
+            expect(datePicker.placeholder).toBe("Select a date");
+            expect(datePicker.element.hasAttribute('enabled')).toBe(false);
+            expect(datePicker.element.value).toBe('7/4/2017');
+            expect(datePicker.min.toDateString()).toBe(new Date('2/2/2019').toDateString());
+            expect(datePicker.max.toDateString()).toBe(new Date('9/9/2019').toDateString());
+        });
+    });
+    
+    describe('HTML attribute API testing', () => {
+        let datePicker: any;
+        beforeEach((): void => {
+            datePicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('API testing', () => {
+            datePicker = new DatePicker({placeholder:"Select a date", readonly: false, enabled: true, value: new Date('7/4/2017')});
+            datePicker.appendTo('#date');
+            expect(datePicker.placeholder).toBe("Select a date");
+            expect(datePicker.element.hasAttribute('readonly')).toBe(false);
+            expect(datePicker.element.hasAttribute('disabled')).toBe(false);
+            expect(datePicker.element.value).toBe('7/4/2017');
+        });
+        it('HTML attributes API testing', () => {
+            datePicker = new DatePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false", disabled: "false", value: "10/4/2017"}});
+            datePicker.appendTo('#date');
+            expect(datePicker.placeholder).toBe("Choose a date");
+            expect(datePicker.element.hasAttribute('readonly')).toBe(false);
+            expect(datePicker.element.hasAttribute('disabled')).toBe(false);
+            expect(datePicker.element.value).toBe('10/4/2017');
+        });
+        it('API and HTML attributes API testing', () => {
+            datePicker = new DatePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: "", value: "10/4/2017"}, placeholder: "Select a date", readonly: false, enabled: true, value: new Date('7/4/2017')});
+            datePicker.appendTo('#date');
+            expect(datePicker.placeholder).toBe("Select a date");
+            expect(datePicker.element.hasAttribute('readonly')).toBe(false);
+            expect(datePicker.element.hasAttribute('enabled')).toBe(false);
+            expect(datePicker.element.value).toBe('7/4/2017');
+        });
+        it('Other attribute testing with htmlAttributes API', () => {
+            datePicker = new DatePicker({ htmlAttributes:{name:"picker", class: "test", title:"sample"}});
+            datePicker.appendTo('#date');
+            expect(datePicker.element.getAttribute('name')).toBe('picker');
+            expect(datePicker.inputWrapper.container.getAttribute('title')).toBe('sample');
+            expect(datePicker.inputWrapper.container.getAttribute('class')).toBe('test');
+        });
+    });
+
+    describe('HTML attribute API dynamic testing', () => {
+        let datePicker: any;
+        beforeEach((): void => {
+            datePicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            datePicker = new DatePicker({ htmlAttributes:{placeholder:"Enter a date", readonly: "true", disabled: "true", value: "2/20/2018", max: "2/25/2018", min: "2/10/2018", class: "test", title:"sample", style: 'background-color:yellow'}});
+            datePicker.appendTo('#date');
+            expect(datePicker.element.getAttribute('placeholder')).toBe('Enter a date');
+            expect(datePicker.element.hasAttribute('readonly')).toBe(true);
+            expect(datePicker.element.hasAttribute('disabled')).toBe(true);
+            expect(datePicker.element.value).toBe('2/20/2018');
+            expect(datePicker.element.min).toBe('2/10/2018');
+            expect(datePicker.element.max).toBe('2/25/2018');
+            expect(datePicker.inputWrapper.container.getAttribute('title')).toBe('sample');
+            expect(datePicker.inputWrapper.container.getAttribute('class')).toBe('test');
+            expect(datePicker.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+            datePicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "4/20/18", max: "4/25/18", min: "4/10/18", class: "multiple", title:"heading", style: 'background-color:red'};
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe('choose a date');
+            expect(datePicker.element.hasAttribute('readonly')).toBe(false);
+            expect(datePicker.element.hasAttribute('disabled')).toBe(false);
+            expect(datePicker.element.value).toBe('4/20/2018');
+            expect(datePicker.element.min).toBe('4/10/18');
+            expect(datePicker.element.max).toBe('4/25/18');
+            expect(datePicker.inputWrapper.container.getAttribute('title')).toBe('heading');
+            expect(datePicker.inputWrapper.container.getAttribute('class')).toBe('multiple');
+            expect(datePicker.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
+        });
+        it('Placeholder testing in auto case', () => {
+            datePicker = new DatePicker({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
+            datePicker.appendTo('#date');
+            expect(datePicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            datePicker.htmlAttributes = { placeholder:"choose a date"};
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datePicker.floatLabelType = "Always";
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datePicker.floatLabelType = "Never";
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in always case', () => {
+            datePicker = new DatePicker({ floatLabelType: "Always", htmlAttributes:{placeholder:"Enter a name" }});
+            datePicker.appendTo('#date');
+            expect(datePicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            datePicker.htmlAttributes = { placeholder:"choose a date"};
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datePicker.floatLabelType = "Auto";
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datePicker.floatLabelType = "Never";
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in never case', () => {
+            datePicker = new DatePicker({ floatLabelType: "Never", htmlAttributes:{placeholder:"Enter a name" }});
+            datePicker.appendTo('#date');
+            expect(datePicker.element.getAttribute('placeholder')).toBe('Enter a name');
+            datePicker.htmlAttributes = { placeholder:"choose a date"};
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe('choose a date');
+            datePicker.floatLabelType = "Always";
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datePicker.floatLabelType = "Auto";
+            datePicker.dataBind();
+            expect(datePicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
         });
     });
 

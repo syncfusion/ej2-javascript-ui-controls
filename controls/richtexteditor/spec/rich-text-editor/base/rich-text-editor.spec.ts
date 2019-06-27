@@ -1,4 +1,4 @@
-import { Toolbar, ActionBeginEventArgs, PasteCleanup } from '../../../src/rich-text-editor/index';
+import { Toolbar, ActionBeginEventArgs, PasteCleanup, HTMLFormatter } from '../../../src/rich-text-editor/index';
 import { dispatchEvent } from '../../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
 import { NodeSelection } from '../../../src/selection/index';
@@ -500,6 +500,19 @@ describe('RTE base module', () => {
             (<any>rteObj.htmlEditorModule).onKeyDown({ args: keyboardEventArgs });
             expect(actionBegin).toBe(false);
             actionBegin = false;
+        });
+
+        it('Link Spacing', function () {
+            rteObj.contentModule.getEditPanel().innerHTML = 'datamanager https://www.google.com';
+            let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0];
+            let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, nodetext.textContent.length, nodetext.textContent.length);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            let expectedElement: string = `datamanager <a class="e-rte-anchor" href="https://www.google.com" title="https://www.google.com" target="">https://www.google.com</a>`;
+            let expectedString: string = `datamanager https://www.google.com`;
+            expect(rteObj.contentModule.getEditPanel().innerHTML === expectedElement).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().textContent === expectedString).toBe(true);
         });
 
         it('space key', function () {
@@ -2177,7 +2190,7 @@ describe('RTE base module', () => {
         });
         it('Ensure Width property', () => {
             expect(rteObj.value).toBe('<p>testing</p>');
-            rteObj.value = '<p>testing</p>';
+            rteObj.value = '<p>changed</p>';
             rteObj.dataBind();
         });
     });
@@ -2333,7 +2346,9 @@ describe("RTE ExecuteCommand public method testing", () => {
             value: '<p id="pnode1">Sample</p>' +
                 '<p id="pnode4">Sample</p>' +
                 '<p id="pnode2">Sample</p>' +
-                '<p id="pnode3">Sample</p>'
+                '<p id="pnode3">Sample</p>' +
+                '<p id="createLink">CreateLinkSample</p>'
+                
         });
         rteEle = rteObj.element;
     });
@@ -2389,6 +2404,18 @@ describe("RTE ExecuteCommand public method testing", () => {
         rteObj.executeCommand('insertText', 'RichTextEditor');
         expect(nodes[1].textContent === 'SampleRichTextEditor').toBe(true);
     });
+    
+    it(' EJ2-27469: createLink using executeCommand not working propery issue', () => {
+        let nodeSelection: NodeSelection = new NodeSelection();
+        let node: HTMLElement = document.getElementById("createLink");
+        nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 0, 10);
+        let range = nodeSelection.getRange(rteObj.contentModule.getDocument());
+        let save: NodeSelection = nodeSelection.save(range, rteObj.contentModule.getDocument());
+        rteObj.executeCommand('createLink',{url: 'www.google.com', text: '', selection: nodeSelection});
+        expect(node.firstElementChild.tagName.toLocaleLowerCase() === 'a').toBe(true);
+        expect(node.firstElementChild.textContent === 'www.google.com').toBe(true);
+    });
+
 });
 
 describe("RTE content remove issue", () => {
@@ -2727,6 +2754,10 @@ describe('EJ2-12731 - RTE -  Textarea heights are not auto adjusted based conten
 describe('EJ2-18684 - RTE - Focus event not raised in readonly mode', () => {
     let rteObj: RichTextEditor;
     let elem: HTMLElement;
+    let argsName: string = '';
+    function onFocus(args: { [key: string]: string }): void {
+        argsName = args.name;
+    }
     beforeAll((done: Function) => {
         elem = document.createElement('div');
         elem.innerHTML = ` <p><b>Description:</b></p>
@@ -2755,17 +2786,16 @@ describe('EJ2-18684 - RTE - Focus event not raised in readonly mode', () => {
         document.body.appendChild(elem);
         rteObj = new RichTextEditor({
             readonly: true,
-            width: 200
+            width: 200,
+            focus: onFocus
         });
         rteObj.appendTo("#defaultRTE");
         done();
     });
     it('check focus event trigger', (done) => {
-        rteObj.focus = (args: { [key: string]: string }): void => {
-            expect(args.name).toBe('focus');
-            done();
-        }
         rteObj.focusIn();
+        expect(argsName).toBe('');
+        done();
     });
     afterAll(() => {
         destroy(rteObj);
@@ -3050,6 +3080,39 @@ describe('EJ2-23854 - Redo action occurs for keyboard shortcuts copy command wit
         expect(item.parentElement.classList.contains("e-overlay")).toBe(true);
     });
 });
+
+
+describe('EJ2-26042 - ExecuteCommand method performs wrongly to insert the bold command while focusing the outside of RTE. ', () => {
+    let rteObj: RichTextEditor;
+    it(' apply bold command through executeCommand - EditorMode as HTML ', () => {
+        rteObj = renderRTE({});
+        rteObj.executeCommand('bold');
+        let strong: any = rteObj.inputElement.querySelectorAll('strong');
+        expect(strong.length === 1).toBe(true);
+    });
+    it(' apply bold command through executeCommand - EditorMode as markdown ', () => {
+        rteObj = renderRTE({
+            editorMode: 'Markdown'
+        });
+        rteObj.executeCommand('bold');
+        expect((rteObj.inputElement as HTMLTextAreaElement).value === '****').toBe(true);
+    });
+    it(' apply bold command through executeCommand - EditorMode as HTML and  Iframe ', () => {
+        rteObj = renderRTE({
+            iframeSettings: {
+                enable: true
+            }
+        });
+        rteObj.executeCommand('bold');
+        let strong: any = rteObj.inputElement.querySelectorAll('strong');
+        expect(strong.length === 1).toBe(true);
+    });
+    afterEach((done) => {
+        destroy(rteObj);
+        document.body.innerHTML = '';
+        done();
+    });
+});
 describe("keyConfig property testing", () => {
     let rteObj: RichTextEditor;
     let rteEle: HTMLElement;
@@ -3083,5 +3146,84 @@ describe("keyConfig property testing", () => {
         nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
         (<any>rteObj).keyDown(keyboardEventArgs);
         expect(node.childNodes[0].nodeName.toLocaleLowerCase()).toBe('strong');
+    });
+});
+
+describe('EJ2-26359 Clear Format is not working after applied selection and parent based tags', () => {
+    let expectHtml: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><p>column 1<br>column 2</p><p><br></p><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`;
+    let innerHtml: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a> of the content</p><p><strong>Table</strong></p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p><b>Toolbar</b></p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><ol><li><p>Toolbar is fully customizable</p></li></ol><p><b>Image.</b></p><p><span>Allows you to insert images from an online source as well as the local computer</span></p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`;
+    let rteObj: RichTextEditor;
+    let controlId: string;
+    let rteElement: HTMLElement;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innerHtml,
+            toolbarSettings: {
+                items: ['ClearFormat']
+            }
+        });
+        controlId = rteObj.element.id;
+        rteElement = rteObj.element;
+        done();
+    });
+
+    it(' Clear the inline and block nodes ', () => {
+        rteObj.selectAll();
+        let item: HTMLElement = rteElement.querySelector("#" + controlId + '_toolbar_ClearFormat');
+        dispatchEvent(item, 'mousedown');
+        item.click();
+        expect(expectHtml === rteObj.inputElement.innerHTML).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-26545 Empty P tag create while give the value with empty space in RichTextEditor', () => {
+    let innerHtml: string = `<p class="e-one-paragraph">EJ2 RichTextEditor with HtmlEditor</p>
+    <p class="e-one-paragraph">EJ2 RichTextEditor with Markdown</p>
+     <p class="e-two-paragraph">EJ2 RichTextEditor with IframeEditor</p>ss`;
+    let rteObj: RichTextEditor;
+    let controlId: string;
+    let rteElement: HTMLElement;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innerHtml
+        });
+        controlId = rteObj.element.id;
+        rteElement = rteObj.element;
+        done();
+    });
+
+    it("don't create the p tag to empty text node ", () => {
+       let emptyNode:NodeListOf<Element> = <NodeListOf<Element>>rteObj.inputElement.querySelectorAll("p:empty");
+        expect(emptyNode.length === 0).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('To change the keyconfig API property', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let editNode: HTMLElement;
+    let selectNode: Element;
+    let curDocument: Document;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline', 'Print']
+            }
+        });
+        rteEle = rteObj.element;
+        editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+        curDocument = rteObj.contentModule.getDocument();
+    });
+
+    it(' To trigger onproperty change method in HTMLEditor', () => {
+        expect(rteObj.formatter.keyConfig.bold === 'ctrl+b').toBe(true);
+        rteObj.formatter = new HTMLFormatter ({ keyConfig: { 'bold': 'ctrl+q' } });
+        expect(rteObj.formatter.keyConfig.bold === 'ctrl+q').toBe(true);
     });
 });

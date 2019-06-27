@@ -26,7 +26,6 @@ export class Export {
      * Handles the export method for chart control.
      * @param type
      * @param fileName
-     * @param isVertical
      */
     public export(
         type: ExportType, fileName: string,

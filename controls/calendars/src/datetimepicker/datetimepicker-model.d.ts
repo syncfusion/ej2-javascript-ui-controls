@@ -34,6 +34,13 @@ export interface DateTimePickerModel extends DatePickerModel{
     zIndex?: number;
 
     /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string; };
+
+    /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
      * @default false
@@ -90,36 +97,42 @@ export interface DateTimePickerModel extends DatePickerModel{
     /**
      * Triggers when popup is opened.
      * @event 
+     * @blazorProperty 'OnOpen'
      */
     open?: EmitType<Object>;
 
     /**
      * Triggers when popup is closed.
      * @event 
+     * @blazorProperty 'OnClose'
      */
     close?: EmitType<Object>;
 
     /**
      * Triggers when input loses the focus.
      * @event 
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<Object>;
 
     /**
      * Triggers when input gets focus.
      * @event 
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<Object>;
 
     /**
      * Triggers when DateTimePicker is created.
      * @event 
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when DateTimePicker is destroyed.
      * @event 
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

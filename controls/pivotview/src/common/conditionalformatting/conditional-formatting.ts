@@ -5,7 +5,7 @@ import { PivotView } from '../../pivotview/base/pivotview';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DropDownList, ChangeEventArgs as DropDownArgs } from '@syncfusion/ej2-dropdowns';
-import { ConditionalFormatSettingsModel } from '../../pivotview/model/dataSource-model';
+import { ConditionalFormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
 import { Condition } from '../../base';
 import * as cls from '../../common/base/css-constant';
 
@@ -102,6 +102,7 @@ export class ConditionalFormatting {
             });
         }
         this.dialog.appendTo('#' + this.parentID + 'conditionalformatting');
+        this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('conditionalFormating');
     }
 
     private beforeOpen(args: BeforeOpenEventArgs): void {
@@ -127,7 +128,7 @@ export class ConditionalFormatting {
 
     private applyButtonClick(): void {
         if (this.refreshConditionValues()) {
-            this.parent.setProperties({ dataSource: { conditionalFormatSettings: this.newFormat } }, true);
+            this.parent.setProperties({ dataSourceSettings: { conditionalFormatSettings: this.newFormat } }, true);
             this.parent.renderPivotGrid();
             this.destroy();
         }
@@ -285,16 +286,16 @@ export class ConditionalFormatting {
             index: 0, name: this.parent.localeObj.getConstant('AllValues'),
             field: this.parent.localeObj.getConstant('AllValues')
         });
-        for (let i: number = 0; i < this.parent.dataSource.values.length; i++) {
+        for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
             fields.push({
                 index: i + 1,
-                name: this.parent.dataSource.values[i].caption || this.parent.dataSource.values[i].name,
-                field: this.parent.dataSource.values[i].name
+                name: this.parent.dataSourceSettings.values[i].caption || this.parent.dataSourceSettings.values[i].name,
+                field: this.parent.dataSourceSettings.values[i].name
             });
         }
         let value: string = isNaN(format.measure) ? this.parent.localeObj.getConstant('AllValues') : format.measure;
         this.fieldsDropDown[i] = new DropDownList({
-            dataSource: fields, fields: { text: 'name' },
+            dataSource: fields, fields: { text: 'name', value: 'field' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             popupHeight: '200px', popupWidth: 'auto',
             change: this.measureChange.bind(this, i)
@@ -512,11 +513,11 @@ export class ConditionalFormatting {
      */
     public showConditionalFormattingDialog(): void {
         this.newFormat = [];
-        for (let i: number = 0; i < this.parent.dataSource.conditionalFormatSettings.length; i++) {
+        for (let i: number = 0; i < this.parent.dataSourceSettings.conditionalFormatSettings.length; i++) {
             this.newFormat.push(
                 extend(
                     {},
-                    (<{ [key: string]: Object }>this.parent.dataSource.conditionalFormatSettings[i]).properties,
+                    (<{ [key: string]: Object }>this.parent.dataSourceSettings.conditionalFormatSettings[i]).properties,
                     null, true) as IConditionalFormatSettings);
         }
         this.createDialog();

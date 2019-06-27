@@ -151,7 +151,7 @@ describe('Diagram Control', () => {
                     type: 'OrganizationalChart',
                 },
                 dataSourceSettings: {
-                    id: 'id', parentId: 'parentId', dataManager: items
+                    id: 'id', parentId: 'parentId', dataSource: items
                 },
                 getNodeDefaults: (node: NodeModel, diagram: Diagram) => {
                     let obj: NodeModel = {};
@@ -599,7 +599,7 @@ describe('Diagram Control', () => {
         it('Checking multiple roots', (done: Function) => {
             diagram.layout.type = 'HierarchicalTree';
             diagram.layout.orientation = 'TopToBottom';
-            diagram.dataSourceSettings.dataManager = new DataManager({ json: multipleRoot });
+            diagram.dataSourceSettings.dataSource = new DataManager({ json: multipleRoot });
             diagram.dataSourceSettings.id = 'Name';
             diagram.dataSourceSettings.parentId = 'Category';
 
@@ -642,7 +642,7 @@ describe('Diagram Control', () => {
         it('Checking balanced tree - Multiple Levels', (done: Function) => {
             diagram.layout.type = 'OrganizationalChart';
             diagram.layout.orientation = 'TopToBottom';
-            diagram.dataSourceSettings.dataManager = new DataManager({ json: balancedTree });
+            diagram.dataSourceSettings.dataSource = new DataManager({ json: balancedTree });
             diagram.dataSourceSettings.id = 'Name';
             diagram.dataSourceSettings.parentId = 'Category';
             diagram.layout.getLayoutInfo = (node: NodeModel, options: TreeInfo) => {
@@ -715,7 +715,7 @@ describe('Diagram Control', () => {
         it('Checking Assistants', (done: Function) => {
             diagram.layout.type = 'OrganizationalChart';
             diagram.layout.orientation = 'TopToBottom';
-            diagram.dataSourceSettings.dataManager = new DataManager({ json: assitants });
+            diagram.dataSourceSettings.dataSource = new DataManager({ json: assitants });
             diagram.dataSourceSettings.id = 'Id';
             diagram.dataSourceSettings.parentId = 'Manager';
             diagram.layout.getLayoutInfo = (node: NodeModel, options: TreeInfo) => {
@@ -761,7 +761,7 @@ describe('Diagram Control', () => {
         it('Checking with two Assistants', (done: Function) => {
             diagram.layout.type = 'OrganizationalChart';
             diagram.layout.orientation = 'TopToBottom';
-            diagram.dataSourceSettings.dataManager = new DataManager({ json: assitants });
+            diagram.dataSourceSettings.dataSource = new DataManager({ json: assitants });
             diagram.dataSourceSettings.id = 'Id';
             diagram.dataSourceSettings.parentId = 'Manager';
             diagram.layout.getLayoutInfo = (node: NodeModel, options: TreeInfo) => {
@@ -801,7 +801,7 @@ describe('Diagram Control', () => {
         it('Checking single column with vertical tree', (done: Function) => {
             diagram.layout.type = 'OrganizationalChart';
             diagram.layout.orientation = 'TopToBottom';
-            diagram.dataSourceSettings.dataManager = new DataManager({ json: singleChild });
+            diagram.dataSourceSettings.dataSource = new DataManager({ json: singleChild });
             diagram.dataSourceSettings.id = 'Name';
             diagram.dataSourceSettings.parentId = 'Category';
             diagram.dataBind();
@@ -812,7 +812,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking with empty diagram', (done: Function) => {
-            diagram.dataSourceSettings.dataManager = new DataManager({ json: [] });
+            diagram.dataSourceSettings.dataSource = new DataManager({ json: [] });
 
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
@@ -822,7 +822,7 @@ describe('Diagram Control', () => {
         it('Checking complete vertical tree', (done: Function) => {
             diagram.layout.type = 'OrganizationalChart';
             diagram.layout.orientation = 'TopToBottom';
-            diagram.dataSourceSettings.dataManager = new DataManager({ json: completeVerticalTree });
+            diagram.dataSourceSettings.dataSource = new DataManager({ json: completeVerticalTree });
             diagram.dataSourceSettings.id = 'Name';
             diagram.dataSourceSettings.parentId = 'Category';
             diagram.layout.getLayoutInfo = (node: NodeModel, options: TreeInfo) => {
@@ -859,7 +859,7 @@ describe('Diagram Control', () => {
                     type: 'HierarchicalTree',
                 },
                 dataSourceSettings: {
-                    id: 'id', parentId: 'parentId', dataManager: items
+                    id: 'id', parentId: 'parentId', dataSource: items
                 },
                 getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
                     obj.shape = { type: 'Text', content: (obj.data as { Label: 'string' }).Label };
@@ -948,7 +948,7 @@ describe('Tree Layout', () => {
                 }
             },
             dataSourceSettings: {
-                id: 'Id', parentId: 'ReportingPerson', dataManager: items1
+                id: 'Id', parentId: 'ReportingPerson', dataSource: items1
             },
 
             getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
@@ -1104,7 +1104,7 @@ describe('Organization chart', () => {
                 }
             },
             dataSourceSettings: {
-                id: 'Id', parentId: 'Manager', dataManager: items
+                id: 'Id', parentId: 'Manager', dataSource: items
             },
 
             getNodeDefaults: (obj: Node, diagram: Diagram) => {
@@ -1296,7 +1296,7 @@ describe('Tree Layout', () => {
                 }
             },
             dataSourceSettings: {
-                id: 'Id', parentId: 'ReportingPerson', dataManager: items1
+                id: 'Id', parentId: 'ReportingPerson', dataSource: items1
             },
 
             getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
@@ -1376,7 +1376,7 @@ describe('Tree Layout', () => {
                 }
             },
             dataSourceSettings: {
-                id: 'Id', parentId: 'ReportingPerson', dataManager: items1
+                id: 'Id', parentId: 'ReportingPerson', dataSource: items1
             },
 
             getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
@@ -1476,7 +1476,7 @@ describe('Tree Layout', () => {
                 }
             },
             dataSourceSettings: {
-                id: 'Id', parentId: 'ReportingPerson', dataManager: items1
+                id: 'Id', parentId: 'ReportingPerson', dataSource: items1
             },
 
             getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
@@ -1593,7 +1593,7 @@ describe('Tree Layout', () => {
                 }
             },
             dataSourceSettings: {
-                id: 'Id', parentId: 'ReportingPerson', dataManager: items1
+                id: 'Id', parentId: 'ReportingPerson', dataSource: items1
             },
 
             getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
@@ -1753,7 +1753,7 @@ describe('Layout collapse  ', () => {
                 }
             },
             dataSourceSettings: {
-                id: 'Id', parentId: 'ReportingPerson', dataManager: items1
+                id: 'Id', parentId: 'ReportingPerson', dataSource: items1
             },
 
             getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
@@ -1842,7 +1842,7 @@ describe('Connector Update in Layout Issue', () => {
         diagram = new Diagram({
             width: '900px', height: '550px',
             layout: { type: 'HierarchicalTree' },
-            dataSourceSettings: { id: 'id', parentId: 'parentId', dataManager: items },
+            dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: items },
             getNodeDefaults: (obj: Node) => {
                 obj.shape = { type: 'Text', content: (obj.data as { Label: 'string' }).Label };
                 obj.style = { fill: 'lightgrey', strokeColor: 'none', strokeWidth: 2 };
@@ -1922,7 +1922,7 @@ describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
             height: "600px",
             // bind the data to diagram and map the columns.
             dataSourceSettings: {
-                id: 'id', parentId: 'manager', dataManager: items,
+                id: 'id', parentId: 'manager', dataSource: items,
                 doBinding: function (node: any, data: any) {
                     node.id = data.role,
                         // You will get the employee information in data argument and bind that value directly to node's built-in properties for customization.

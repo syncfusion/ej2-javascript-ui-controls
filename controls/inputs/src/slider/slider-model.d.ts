@@ -266,6 +266,7 @@ export interface SliderModel extends ComponentModel{
     /**
      * We can trigger created event when the Slider is created.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -273,6 +274,7 @@ export interface SliderModel extends ComponentModel{
      * We can trigger change event whenever Slider value is changed.
      *  In other term, this event will be triggered while drag the slider thumb.
      * @event
+     * @blazorProperty 'OnChange'
      */
     change?: EmitType<SliderChangeEventArgs>;
 
@@ -280,25 +282,31 @@ export interface SliderModel extends ComponentModel{
      * We can trigger changed event when Slider component action is completed while we change the Slider value.
      *  In other term, this event will be triggered, while drag the slider thumb completed.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     changed?: EmitType<SliderChangeEventArgs>;
 
     /**
      * We can trigger renderingTicks event when the ticks rendered on Slider,
      *  which is used to customize the ticks labels dynamically.
+     * @deprecated
      * @event
+     * @blazorProperty 'TicksRendering'
      */
     renderingTicks?: EmitType<SliderTickEventArgs>;
 
     /**
      * We can trigger renderedTicks event when the ticks are rendered on the Slider.
      * @event
+     * @blazorProperty 'TicksRendered'
      */
     renderedTicks?: EmitType<SliderTickRenderedEventArgs>;
 
     /**
      * We can trigger tooltipChange event when we change the Sider tooltip value.
+     * @deprecated
      * @event
+     * @blazorProperty 'OnTooltipChange'
      */
     tooltipChange?: EmitType<SliderTooltipEventArgs>;
 

@@ -27,6 +27,7 @@ export interface OverviewModel extends ComponentModel{
     /**
      * Triggers after render the diagram elements
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 

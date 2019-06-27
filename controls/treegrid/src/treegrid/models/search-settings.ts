@@ -1,5 +1,4 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
-import { ICustomOptr } from '@syncfusion/ej2-grids';
 import { FilterHierarchyMode } from '../enum';
 
 
@@ -21,13 +20,40 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      */
     @Property(false)
     public ignoreCase: boolean;
-    /**
-     * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
-     * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
-     * @default null
+    /**   
+     * Defines the operator to search records. The available operators are:
+     * <table> 
+     * <tr> 
+     * <td colspan=1 rowspan=1> 
+     * Operator<br/></td><td colspan=1 rowspan=1> 
+     * Description<br/></td></tr> 
+     * <tr> 
+     * <td colspan=1 rowspan=1> 
+     * startswith<br/></td><td colspan=1 rowspan=1> 
+     * Checks whether the string begins with the specified string.<br/></td></tr> 
+     * <tr> 
+     * <td colspan=1 rowspan=1> 
+     * endswith<br/></td><td colspan=1 rowspan=1> 
+     * Checks whether the string ends with the specified string.<br/></td></tr> 
+     * <tr> 
+     * <td colspan=1 rowspan=1> 
+     * contains<br/></td><td colspan=1 rowspan=1> 
+     * Checks whether the string contains the specified string. <br/></td></tr> 
+     * <tr> 
+     * <td colspan=1 rowspan=1> 
+     * equal<br/></td><td colspan=1 rowspan=1> 
+     * Checks whether the string is equal to the specified string.<br/></td></tr> 
+     * <tr> 
+     * <td colspan=1 rowspan=1> 
+     * notequal<br/></td><td colspan=1 rowspan=1> 
+     * Checks for strings not equal to the specified string. <br/></td></tr> 
+     * </table> 
+     * @default 'contains' 
      */
-    @Property()
-    public operators: ICustomOptr;
+    @Property('contains')
+    public operator: string;
+
+
     /**
      * A key word for searching the TreeGrid content.
      */

@@ -26,9 +26,6 @@ describe('TextBox ', () => {
         afterAll((): void => {
             document.body.innerHTML = '';
         });
-        it('get value from HTML tag element', () => {
-            expect(inputObj.value).toBe(inputObj.element.value);
-        });
         it('get module name', () => {
             expect(inputObj.getModuleName()).toBe('textbox');
         });
@@ -168,6 +165,44 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('id')).not.toBe('textbox');
             expect(inputObj.textboxWrapper.container.parentElement.hasAttribute('name')).toBe(false);
             expect(inputObj.element.getAttribute('name')).toBe('sample');
+        });
+    });
+    describe('Role attribute testing- ', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+        })
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Attribute testing for textbox', () => {
+            inputObj = new TextBox({showClearButton: true});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.getAttribute('role')).toBe('textbox');
+            expect(inputObj.textboxWrapper.clearButton.getAttribute('role')).toBe('button');
+        });
+        it('Attribute testing for multiline', () => {
+            inputObj = new TextBox({multiline: true});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.hasAttribute('role')).toBe(false);
+            expect(inputObj.textarea.getAttribute('role')).toBe('textbox');
+        });
+    });
+    describe('Destroyed multiline textbox - ', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+        })
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('destroy method', () => {
+            inputObj = new TextBox({multiline: true});
+            inputObj.appendTo('#textbox');
+            inputObj.destroy();
+            expect(inputObj.element.hasAttribute('type')).toBe(false);
         });
     });
     describe('MultiLine structure testing with textarea element- ', () => {
@@ -1879,6 +1914,209 @@ describe('TextBox ', () => {
         });
     });
 
+    describe('HTML attributes at inline element testing', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            inputObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            ele.setAttribute('placeholder','Enter a number');
+            ele.setAttribute('readonly', '');
+            ele.setAttribute('disabled', '');
+            ele.setAttribute('value', '50');
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (inputObj) {
+                inputObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Inline element testing', () => {
+            inputObj = new TextBox();
+            inputObj.appendTo('#textbox');
+            expect(inputObj.placeholder).toBe("Enter a number");
+            expect(inputObj.element.hasAttribute('readonly')).toBe(true);
+            expect(inputObj.element.hasAttribute('enabled')).toBe(false);
+            expect(inputObj.element.getAttribute('value')).toBe('50');
+        });
+        it('Inline and API testing', () => {
+            inputObj = new TextBox({placeholder:"Enter your mark", readonly: false, enabled: true, value: "70"});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.placeholder).toBe("Enter your mark");
+            expect(inputObj.element.hasAttribute('readonly')).toBe(false);
+            expect(inputObj.element.hasAttribute('disabled')).toBe(false);
+            expect(inputObj.element.getAttribute('value')).toBe('70');
+        });
+        it('Inline and html attributes API testing', () => {
+            inputObj = new TextBox({ htmlAttributes:{placeholder:"Number of states", readonly: "false", disabled: "false", value: "100"}});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.placeholder).toBe("Number of states");
+            expect(inputObj.element.hasAttribute('readonly')).toBe(false);
+            expect(inputObj.element.hasAttribute('disabled')).toBe(false);
+            expect(inputObj.element.getAttribute('value')).toBe('100');
+        });
+        it('Inline, API and html attributes API testing', () => {
+            inputObj = new TextBox({ htmlAttributes:{placeholder:"Number of states", readonly: "true", disabled: "", value: "100", type:"text"}, placeholder: "Enter your mark", readonly: false, enabled: true, value: "70", type:"number"});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.placeholder).toBe("Enter your mark");
+            expect(inputObj.element.hasAttribute('readonly')).toBe(false);
+            expect(inputObj.element.hasAttribute('enabled')).toBe(false);
+            expect(inputObj.element.getAttribute('value')).toBe('70');
+        });
+    });
+    
+    describe('HTML attribute API testing', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            inputObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (inputObj) {
+                inputObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('API testing', () => {
+            inputObj = new TextBox({placeholder:"Enter your mark", readonly: false, enabled: true, value: "70"});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.placeholder).toBe("Enter your mark");
+            expect(inputObj.element.hasAttribute('readonly')).toBe(false);
+            expect(inputObj.element.hasAttribute('disabled')).toBe(false);
+            expect(inputObj.element.getAttribute('value')).toBe('70');
+        });
+        it('HTML attributes API testing', () => {
+            inputObj = new TextBox({ htmlAttributes:{placeholder:"Number of states", readonly: "false", disabled: "false", value: "100"}});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.placeholder).toBe("Number of states");
+            expect(inputObj.element.hasAttribute('readonly')).toBe(false);
+            expect(inputObj.element.hasAttribute('disabled')).toBe(false);
+            expect(inputObj.element.getAttribute('value')).toBe('100');
+        });
+        it('API and HTML attributes API testing', () => {
+            inputObj = new TextBox({ htmlAttributes:{placeholder:"Number of states", readonly: "true", disabled: "", value: "100", type:"text"}, placeholder: "Enter your mark", readonly: false, enabled: true, value: "70", type:"number"});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.placeholder).toBe("Enter your mark");
+            expect(inputObj.element.hasAttribute('readonly')).toBe(false);
+            expect(inputObj.element.hasAttribute('enabled')).toBe(false);
+            expect(inputObj.element.getAttribute('value')).toBe('70');
+        });
+        it('Other attribute testing with htmlAttributes API', () => {
+            inputObj = new TextBox({ htmlAttributes:{name:"numeric", maxlength: "50", minlength: "10", class: "test", title:"sample", style: 'background-color:yellow'}});
+            inputObj.appendTo('#textbox');
+            inputObj.updateHTMLAttrToWrapper();
+            expect(inputObj.element.getAttribute('name')).toBe('numeric');
+            expect(inputObj.element.getAttribute('maxlength')).toBe('50');
+            expect(inputObj.element.getAttribute('minlength')).toBe('10');
+            expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
+            expect(inputObj.textboxWrapper.container.getAttribute('class')).toBe('test');
+            expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            inputObj = new TextBox({});
+            inputObj.appendTo('#textbox');
+            inputObj.htmlAttributes = { class: "test", title: 'sample', disabled: 'disabled', readonly: 'readonly', placeholder: "Number of states", style: 'background-color:yellow'};
+            inputObj.dataBind();
+            inputObj.updateHTMLAttrToElement();
+            inputObj.updateHTMLAttrToWrapper();
+            expect(inputObj.element.hasAttribute('readonly')).toBe(true);
+            expect(inputObj.element.hasAttribute('disabled')).toBe(true);
+            expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
+            expect(inputObj.textboxWrapper.container.getAttribute('class')).toBe('test');
+            expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+            expect(inputObj.element.getAttribute('placeholder')).toBe('Number of states');
+        });
+    });
+    describe('HTML attribute API dynamic testing', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            inputObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (inputObj) {
+                inputObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            inputObj = new TextBox({ htmlAttributes:{placeholder:"Enter a name", readonly: "true", disabled: "true", value: "100", type: "text", maxlength: "50", minlength: "10", class: "test", title:"sample", style: 'background-color:yellow'}});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.getAttribute('placeholder')).toBe('Enter a name');
+            expect(inputObj.element.hasAttribute('readonly')).toBe(true);
+            expect(inputObj.element.hasAttribute('disabled')).toBe(true);
+            expect(inputObj.element.getAttribute('value')).toBe('100');
+            expect(inputObj.element.getAttribute('type')).toBe('text');
+            expect(inputObj.element.getAttribute('maxlength')).toBe('50');
+            expect(inputObj.element.getAttribute('minlength')).toBe('10');
+            expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
+            expect(inputObj.textboxWrapper.container.getAttribute('class')).toBe('test');
+            expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+            inputObj.htmlAttributes = { placeholder:"Enter a number", readonly: "false", value: "50", type: "number", maxlength: "60", minlength: "5", class: "multiple", title:"heading", style: 'background-color:red'};
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe('Enter a number');
+            expect(inputObj.element.hasAttribute('readonly')).toBe(false);
+            expect(inputObj.element.getAttribute('value')).toBe('50');
+            expect(inputObj.element.getAttribute('type')).toBe('number');
+            expect(inputObj.element.getAttribute('maxlength')).toBe('60');
+            expect(inputObj.element.getAttribute('minlength')).toBe('5');
+            expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('heading');
+            expect(inputObj.textboxWrapper.container.getAttribute('class')).toBe('multiple');
+            expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:red');
+        });
+        it('Placeholder testing in auto case', () => {
+            inputObj = new TextBox({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            inputObj.htmlAttributes = { placeholder:"choose a date"};
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            inputObj.floatLabelType = "Always";
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            inputObj.floatLabelType = "Never";
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in always case', () => {
+            inputObj = new TextBox({ floatLabelType: "Always", htmlAttributes:{placeholder:"Enter a name" }});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            inputObj.htmlAttributes = { placeholder:"choose a date"};
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            inputObj.floatLabelType = "Always";
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            inputObj.floatLabelType = "Never";
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in never case', () => {
+            inputObj = new TextBox({ floatLabelType: "Never", htmlAttributes:{placeholder:"Enter a name" }});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.getAttribute('placeholder')).toBe('Enter a name');
+            inputObj.htmlAttributes = { placeholder:"choose a date"};
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe('choose a date');
+            inputObj.floatLabelType = "Always";
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            inputObj.floatLabelType = "Never";
+            inputObj.dataBind();
+            expect(inputObj.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+    });
+
     describe('isInteracted event testing', () => {
         let inputObj: any;
         let originalTimeout: number;
@@ -1972,14 +2210,26 @@ describe('TextBox ', () => {
             form.appendChild(element);
             form.appendChild(resetButton);
             document.body.appendChild(form);
-            inputObj = new TextBox({showClearButton: true, floatLabelType: 'Auto'});
+            inputObj = new TextBox({showClearButton: true, placeholder:'enter value', floatLabelType: 'Never'});
             inputObj.appendTo(document.getElementById('textbox'));
         })
         afterAll((): void => {
             inputObj.destroy();
             document.body.innerHTML = '';
         });
-        it('Check element value ', () => {
+        it('Check element value with Never FloatLabel type', () => {
+            inputObj.value = 'Content changed';
+            inputObj.dataBind();
+            expect(inputObj.element.value).toBe('Content changed');
+            (document.querySelector('#reset') as HTMLButtonElement).click();
+            expect(inputObj.element.value).toBe('');
+            expect(isNullOrUndefined(inputObj.value)).toBe(true);
+            expect(isNullOrUndefined(inputObj.textboxWrapper.container.querySelector('.e-label-bottom'))).toBe(true);
+            expect(isNullOrUndefined(inputObj.textboxWrapper.container.querySelector('.e-label-top'))).toBe(true);
+        });
+        it('Check element value with Auto FloatLabel type', () => {
+            inputObj.floatLabelType = "Auto";
+            inputObj.dataBind();
             inputObj.value = 'Content changed';
             inputObj.dataBind();
             expect(inputObj.element.value).toBe('Content changed');

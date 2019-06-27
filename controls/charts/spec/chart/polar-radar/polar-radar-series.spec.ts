@@ -28,8 +28,7 @@ import { loaded, chartMouseUp, load } from '../../../src/common/model/constants'
 import { tool1, tool2, datetimeData, negativeDataPoint } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
-import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(DateTime, SplineAreaSeries, ScatterSeries, StackingAreaSeries, Selection, RangeColumnSeries, LineSeries, Category, Tooltip, AreaSeries, Logarithmic, PolarSeries, RadarSeries, DataLabel, Legend, SplineSeries);
 let data: any = tool1;
 let data2: any = tool2;

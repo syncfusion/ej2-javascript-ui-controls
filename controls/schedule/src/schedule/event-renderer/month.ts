@@ -250,17 +250,20 @@ export class MonthEvent extends EventBase {
         }
     }
 
-    public createAppointmentElement(record: { [key: string]: Object }, resIndex: number): HTMLElement {
+    public createAppointmentElement(record: { [key: string]: Object }, resIndex: number, isCloneElement: boolean = false): HTMLElement {
         let eventSubject: string = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
         let appointmentWrapper: HTMLElement = createElement('div', {
             className: cls.APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
-                'data-guid': record.Guid as string, 'role': 'button', 'tabindex': '0',
+                'role': 'button', 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
                 'aria-label': eventSubject
             }
         });
+        if (!isCloneElement) {
+            appointmentWrapper.setAttribute('data-guid', record.Guid as string);
+        }
         if (!isNullOrUndefined(this.cssClass)) {
             addClass([appointmentWrapper], this.cssClass);
         }
@@ -275,7 +278,8 @@ export class MonthEvent extends EventBase {
         let templateElement: HTMLElement[];
         let eventData: { [key: string]: Object } = record.data as { [key: string]: Object };
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            templateElement = this.parent.getAppointmentTemplate()(record);
+            let templateId: string = this.parent.element.id + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId);
         } else {
             let eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
             let appointmentSubject: HTMLElement = createElement('div', {
@@ -478,12 +482,13 @@ export class MonthEvent extends EventBase {
     public renderEventElement(event: { [key: string]: Object }, appointmentElement: HTMLElement, cellTd: Element): void {
         let eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
         let args: EventRenderedArgs = { data: event, element: appointmentElement, cancel: false, type: eventType };
-        this.parent.trigger(events.eventRendered, args);
-        if (args.cancel) {
-            this.renderedEvents.pop();
-            return;
-        }
-        this.renderElement(cellTd, appointmentElement);
+        this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
+            if (eventArgs.cancel) {
+                this.renderedEvents.pop();
+            } else {
+                this.renderElement(cellTd, appointmentElement);
+            }
+        });
     }
 
     public renderElement(cellTd: HTMLElement | Element, element: HTMLElement): void {

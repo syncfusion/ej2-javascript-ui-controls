@@ -83,6 +83,7 @@ export interface ColorPickerModel extends ComponentModel{
     /**
      * Triggers while selecting the color in picker / palette, when showButtons property is enabled.
      * @event
+     * @blazorProperty 'Selected'
      */
     select?: EmitType<ColorPickerEventArgs>;
 
@@ -91,42 +92,49 @@ export interface ColorPickerModel extends ComponentModel{
      * If the property is false, the event will be triggered while selecting the colors.
      * If the property is true, the event will be triggered while apply the selected color.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ColorPickerEventArgs>;
 
     /**
      * Trigger while rendering each palette tile.
-     * @event
+     * @event 
+     * @blazorProperty 'OnTileRender'
      */
     beforeTileRender?: EmitType<PaletteTileEventArgs>;
 
     /**
      * Triggers before opening the ColorPicker popup.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<BeforeOpenCloseEventArgs>;
 
     /**
      * Triggers while opening the ColorPicker popup.
      * @event
+     * @blazorProperty 'Opened'
      */
     open?: EmitType<OpenEventArgs>;
 
     /**
      * Triggers before closing the ColorPicker popup.
      * @event
+     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<BeforeOpenCloseEventArgs>;
 
     /**
      * Triggers before Switching between ColorPicker mode.
      * @event
+     * @blazorProperty 'OnModeSwitch'
      */
     beforeModeSwitch?: EmitType<ModeSwitchEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

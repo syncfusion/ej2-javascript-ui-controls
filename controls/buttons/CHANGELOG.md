@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### Chips
+
+#### Breaking Changes
+
+- Property selection enum type name changed from "selection" to "Selection".
+
 ## 17.1.50 (2019-06-04)
 
 ### Button

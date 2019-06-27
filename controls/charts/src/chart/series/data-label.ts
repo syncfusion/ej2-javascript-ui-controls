@@ -2,7 +2,7 @@ import { ChartLocation, ColorValue, RectOption, isCollide } from '../../common/u
 import { markerAnimate, appendChildElement } from '../../common/utils/helper';
 import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
 import { Chart } from '../chart';
-import { Size, measureText, TextOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { Size, measureText, TextOption, Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { BorderModel, MarginModel, FontModel } from '../../common/model/base-model';
 import { DataLabelSettingsModel, MarkerSettingsModel } from '../series/chart-series-model';
 import { LabelPosition, ErrorBarDirection } from '../utils/enum';
@@ -47,7 +47,7 @@ export class DataLabel {
 
     private initPrivateVariables(series: Series, marker: MarkerSettingsModel): void {
         let transform: string;
-        let render: SvgRenderer = series.chart.renderer;
+        let render: SvgRenderer | CanvasRenderer = series.chart.renderer;
         let index: number | string = (series.index === undefined) ? series.category : series.index;
         transform = series.chart.chartAreaType === 'Cartesian' ? 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')' : '';
         if (marker.dataLabel.visible) {
@@ -144,6 +144,7 @@ export class DataLabel {
             let labelText: string[] = [];
             let labelLength: number;
             let clip: Rect = series.clipRect;
+            let shapeRect: HTMLElement;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             let argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
             if (
@@ -173,17 +174,22 @@ export class DataLabel {
                                     rect.x + clip.x, rect.y + clip.y, rect.width, rect.height
                                 ));
                                 if (this.isShape) {
-                                    series.shapeElement.appendChild(chart.renderer.drawRectangle(
+                                    shapeRect = chart.renderer.drawRectangle(
                                         new RectOption(
                                             this.commonId + index + '_TextShape_' + i,
                                             argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx,
                                             dataLabel.ry
-                                        )) as HTMLElement);
+                                        ),
+                                        new Int32Array([clip.x, clip.y])) as HTMLElement;
+                                    if (series.shapeElement) {
+                                        series.shapeElement.appendChild(shapeRect);
+                                    }
                                 }
                                 // Checking the font color
                                 rgbValue = convertHexToColor(colorNameToHex(this.fontBackground));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
                                 textElement(
+                                    chart.renderer,
                                     new TextOption(
                                         this.commonId + index + '_Text_' + i,
                                         rect.x + this.margin.left + textSize.width / 2, rect.y + this.margin.top + textSize.height * 3 / 4,
@@ -191,7 +197,7 @@ export class DataLabel {
                                     ),
                                     argsData.font, argsData.font.color ||
                                     ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
-                                    series.textElement, false, redraw, true, false , series.chart.duration
+                                    series.textElement, false, redraw, true, false , series.chart.duration, series.clipRect
                                 );
                             }
                         }
@@ -200,7 +206,7 @@ export class DataLabel {
             }
         });
         if (element.childElementCount) {
-            appendChildElement(getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw,
+            appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw,
                                false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     }
@@ -247,7 +253,7 @@ export class DataLabel {
             this.chart.dataLabelCollections.push(new Rect(
                 rect.x + clip.x, rect.y + clip.y, rect.width, rect.height
             ));
-            appendChildElement(parentElement, childElement, redraw, true, 'left', 'top');
+            appendChildElement(this.chart.enableCanvas, parentElement, childElement, redraw, true, 'left', 'top');
             if (series.animation.enable && this.chart.animateSeries) {
                 this.doDataLabelAnimation(series, childElement);
             }

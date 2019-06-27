@@ -29,7 +29,7 @@ export function measureText(text: string, font: FontModel): Size {
         document.body.appendChild(htmlObject);
     }
 
-    htmlObject.innerHTML = text;
+    htmlObject.innerText = text;
     htmlObject.style.position = 'absolute';
     htmlObject.style.visibility = 'hidden';
     htmlObject.style.fontSize = (font.size).indexOf('px') !== -1 ? font.size : font.size + 'px';
@@ -74,16 +74,16 @@ export function titlePositionX(width: number, leftPadding: number, rightPadding:
 }
 
 /**
- * Height and width of heatmap
- * @public
+ * Internal class size for height and width
+ * @private
  */
 export class Size {
     /**
-     * height of the heatmap
+     * height of the size
      */
     public height: number;
     /**
-     * width of the heatmap
+     * width of the size
      */
     public width: number;
     constructor(width: number, height: number) {
@@ -165,21 +165,15 @@ export class CurrentRect {
 
 
 /**
- * Selected cell details in heatmap.
- * @public
+ * Class to define the details of selected cell.
+ * @private
  */
 export class SelectedCellDetails {
-    /** Selected heatmap cell value */
     public value: number | BubbleTooltipData[];
-    /** Defines x-axis label for selected cell */
     public xLabel: string;
-    /** Defines y-axis label for selected cell */
     public yLabel: string;
-    /** Defines x-axis value for selected cell */
     public xValue: string | number | Date;
-    /** Defines y-axis value for selected cell */
     public yValue: string | number | Date;
-    /** Element of selected heatmap cell */
     public cellElement: Element;
     /** @private */
     public xPosition: number;
@@ -553,7 +547,7 @@ export class DrawSvgCanvas {
         if (!this.heatMap.enableCanvasRendering) {
             htmlObject = this.heatMap.renderer.createText(renderOptions, text);
         } else {
-            this.heatMap.canvasRenderer.drawText(options, text);
+            this.heatMap.canvasRenderer.createText(options, text);
         }
         if (typeof options.text !== 'string' && options.text.length > 1) {
             for (let i: number = 1, len: number = options.text.length; i < len; i++) {
@@ -570,7 +564,7 @@ export class DrawSvgCanvas {
                 } else {
                     options.id = options.id + i;
                     options.y += height;
-                    this.heatMap.canvasRenderer.drawText(options, options.text[i]);
+                    this.heatMap.canvasRenderer.createText(options, options.text[i]);
                 }
             }
         }
@@ -844,16 +838,16 @@ export function showTooltip(
     x = x < 0 ? 5 : x;
     if (!tooltip) {
         tooltip = createElement('div', {
-            innerHTML: text,
             id: id,
             styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
                 'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: Segoe UI'
         });
+        tooltip.innerText = text;
         element.appendChild(tooltip);
     } else {
-        tooltip.innerHTML = text;
+        tooltip.innerText = text;
         tooltip.style.top = (y + 15).toString() + 'px';
         tooltip.style.left = (x + 15).toString() + 'px';
     }

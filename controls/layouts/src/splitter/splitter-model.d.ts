@@ -110,48 +110,56 @@ export interface SplitterModel extends ComponentModel{
     /**
      * Triggers after creating the splitter component with its panes.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the split pane is started to resize.
      * @event
+     * @blazorProperty 'OnResizeStart'
      */
     resizeStart?: EmitType<ResizeEventArgs>;
 
     /**
      * Triggers when a split pane is being resized.
      * @event
+     * @blazorProperty 'Resizing'
      */
     resizing?: EmitType<ResizingEventArgs>;
 
     /**
      * Triggers when the resizing of split pane is stopped.
      * @event
+     * @blazorProperty 'OnResizeStop'
      */
     resizeStop?: EmitType<ResizingEventArgs>;
 
     /**
      * Triggers when before panes get collapsed.
      * @event 
+     * @blazorProperty 'OnCollapse'
      */
     beforeCollapse?: EmitType<BeforeExpandEventArgs>;
 
     /**
      * Triggers when before panes get expanded.
      * @event 
+     * @blazorProperty 'OnExpand'
      */
     beforeExpand?: EmitType<BeforeExpandEventArgs>;
 
     /**
      * Triggers when after panes get collapsed.
      * @event 
+     * @blazorProperty 'Collapsed'
      */
     collapsed?: EmitType<ExpandedEventArgs>;
 
     /**
      * Triggers when after panes get expanded.
      * @event 
+     * @blazorProperty 'Expanded'
      */
     expanded?: EmitType<ExpandedEventArgs>;
 

@@ -1,4 +1,4 @@
-import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, onIntlChange, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
@@ -50,6 +50,7 @@ var Input;
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
             args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
             setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
+            inputObject.clearButton.setAttribute('role', 'button');
             if (inputObject.container.classList.contains(CLASSNAMES.FLOATINPUT)) {
                 addClass([inputObject.container], CLASSNAMES.INPUTGROUP);
             }
@@ -268,7 +269,7 @@ var Input;
         if (!isNullOrUndefined(placeholder) && placeholder !== '') {
             let spanEle = document.createElement('span');
             spanEle.innerHTML = placeholder;
-            result = spanEle.textContent;
+            result = spanEle.innerHTML;
         }
         return result;
     }
@@ -333,6 +334,7 @@ var Input;
             if (!isNullOrUndefined(placeholder) && placeholder !== '') {
                 parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;
                 parentElement.classList.remove(CLASSNAMES.NOFLOATLABEL);
+                element.removeAttribute('placeholder');
             }
             else {
                 parentElement.classList.add(CLASSNAMES.NOFLOATLABEL);
@@ -630,6 +632,7 @@ const DECIMALSEPARATOR = '.';
 const COMPONENT = 'e-numerictextbox';
 const CONTROL = 'e-control';
 const NUMERIC_FOCUS = 'e-input-focus';
+const wrapperAttributes = ['title', 'style', 'class'];
 /**
  * Represents the NumericTextBox component that allows the user to enter only numeric values.
  * ```html
@@ -645,6 +648,7 @@ const NUMERIC_FOCUS = 'e-input-focus';
 let NumericTextBox = class NumericTextBox extends Component {
     constructor(options, element) {
         super(options, element);
+        this.numericOptions = options;
     }
     preRender() {
         this.isPrevFocused = false;
@@ -661,11 +665,11 @@ let NumericTextBox = class NumericTextBox extends Component {
             let input = this.createElement('input');
             let index = 0;
             for (index; index < this.element.attributes.length; index++) {
-                input.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
-                input.innerHTML = this.element.innerHTML;
-            }
-            if (this.element.hasAttribute('id')) {
-                this.element.removeAttribute('id');
+                let attributeName = this.element.attributes[index].nodeName;
+                if (attributeName !== 'id') {
+                    input.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    input.innerHTML = this.element.innerHTML;
+                }
             }
             if (this.element.hasAttribute('name')) {
                 this.element.removeAttribute('name');
@@ -684,7 +688,8 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.cultureInfo = {};
         this.initCultureInfo();
         this.initCultureFunc();
-        this.checkAttributes();
+        this.updateHTMLAttrToElement();
+        this.checkAttributes(true);
         this.prevValue = this.value;
         if (this.formEle) {
             this.inputEleValue = this.value;
@@ -723,20 +728,66 @@ let NumericTextBox = class NumericTextBox extends Component {
             }
         }
     }
-    checkAttributes() {
-        let attributes$$1 = ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name'];
+    checkAttributes(isDynamic) {
+        let attributes$$1 = ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
-                        let enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === '' ||
-                            this.element.getAttribute(prop) === 'true' ? false : true;
-                        this.setProperties({ enabled: enabled }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || !isDynamic) {
+                            let enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === ''
+                                || this.element.getAttribute(prop) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, isDynamic);
+                        }
                         break;
                     case 'readonly':
-                        let readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
-                            || this.element.getAttribute(prop) === 'true' ? true : false;
-                        this.setProperties({ readonly: readonly }, true);
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || !isDynamic) {
+                            let readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
+                                || this.element.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, isDynamic);
+                        }
+                        break;
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || !isDynamic) {
+                            let setNumber = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                            this.setProperties(setValue(prop, setNumber, {}), isDynamic);
+                        }
+                        break;
+                    case 'min':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || !isDynamic) {
+                            let minValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                            if (minValue !== null && !isNaN(minValue)) {
+                                this.setProperties(setValue(prop, minValue, {}), isDynamic);
+                            }
+                        }
+                        break;
+                    case 'max':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || !isDynamic) {
+                            let maxValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                            if (maxValue !== null && !isNaN(maxValue)) {
+                                this.setProperties(setValue(prop, maxValue, {}), isDynamic);
+                            }
+                        }
+                        break;
+                    case 'step':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || !isDynamic) {
+                            let stepValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                            if (stepValue !== null && !isNaN(stepValue)) {
+                                this.setProperties(setValue(prop, stepValue, {}), isDynamic);
+                            }
+                        }
                         break;
                     case 'style':
                         this.inputStyle = this.element.getAttribute(prop);
@@ -784,6 +835,7 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.inputWrapper = inputObj;
         this.container = inputObj.container;
         this.container.setAttribute('class', ROOT + ' ' + this.container.getAttribute('class'));
+        this.updateHTMLAttrToWrapper();
         if (this.readonly) {
             attributes(this.element, { 'aria-readonly': 'true' });
         }
@@ -794,6 +846,20 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.container.insertBefore(this.hiddenInput, this.container.childNodes[1]);
         if (this.inputStyle !== null) {
             attributes(this.container, { 'style': this.inputStyle });
+        }
+    }
+    updateHTMLAttrToElement() {
+        for (let pro of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttributes.indexOf(pro) < 0) {
+                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+            }
+        }
+    }
+    updateHTMLAttrToWrapper() {
+        for (let pro of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttributes.indexOf(pro) > -1) {
+                this.container.setAttribute(pro, this.htmlAttributes[pro]);
+            }
         }
     }
     /* Spinner creation */
@@ -877,6 +943,20 @@ let NumericTextBox = class NumericTextBox extends Component {
         }
         else {
             this.updateValue(this.inputEleValue);
+        }
+    }
+    setSpinButton() {
+        if (!isNullOrUndefined(this.spinDown)) {
+            attributes(this.spinDown, {
+                'title': this.l10n.getConstant('decrementTitle'),
+                'aria-label': this.l10n.getConstant('decrementTitle')
+            });
+        }
+        if (!isNullOrUndefined(this.spinUp)) {
+            attributes(this.spinUp, {
+                'title': this.l10n.getConstant('incrementTitle'),
+                'aria-label': this.l10n.getConstant('incrementTitle')
+            });
         }
     }
     wireEvents() {
@@ -1040,6 +1120,16 @@ let NumericTextBox = class NumericTextBox extends Component {
         if (!iOS && Browser.isDevice) {
             this.preventHandler();
         }
+        let parseValue = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+        parseValue = parseValue === null || isNaN(parseValue) ? null : parseValue;
+        this.hiddenInput.value = parseValue || parseValue === 0 ? parseValue.toString() : null;
+        let formElement = closest(this.element, 'form');
+        if (formElement) {
+            let element = this.element.nextElementSibling;
+            let keyupEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
     }
     ;
     inputHandler(event) {
@@ -1138,7 +1228,7 @@ let NumericTextBox = class NumericTextBox extends Component {
             let elementValue = this.isFocused ? value : this.instance.getNumberFormat(this.cultureInfo)(this.value);
             this.setElementValue(elementValue);
             attributes(this.element, { 'aria-valuenow': value });
-            this.hiddenInput.value = value;
+            this.hiddenInput.value = this.value.toString();
         }
         else {
             this.setElementValue('');
@@ -1353,6 +1443,13 @@ let NumericTextBox = class NumericTextBox extends Component {
         }
         this.isCalled = false;
         EventHandler.remove(document, 'mouseup', this.mouseUpClick);
+        let formElement = closest(this.element, 'form');
+        if (formElement) {
+            let element = this.element.nextElementSibling;
+            let keyupEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
     }
     getElementData(event) {
         if ((event.which && event.which === 3) || (event.button && event.button === 2)
@@ -1484,6 +1581,11 @@ let NumericTextBox = class NumericTextBox extends Component {
                         this.element.removeAttribute('aria-readonly');
                     }
                     break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    this.checkAttributes(false);
+                    break;
                 case 'placeholder':
                     Input.setPlaceholder(newProp.placeholder, this.element);
                     break;
@@ -1525,18 +1627,7 @@ let NumericTextBox = class NumericTextBox extends Component {
                 case 'locale':
                     this.initCultureFunc();
                     this.l10n.setLocale(this.locale);
-                    if (!isNullOrUndefined(this.spinDown)) {
-                        attributes(this.spinDown, {
-                            'title': this.l10n.getConstant('decrementTitle'),
-                            'aria-label': this.l10n.getConstant('decrementTitle')
-                        });
-                    }
-                    if (!isNullOrUndefined(this.spinUp)) {
-                        attributes(this.spinUp, {
-                            'title': this.l10n.getConstant('incrementTitle'),
-                            'aria-label': this.l10n.getConstant('incrementTitle')
-                        });
-                    }
+                    this.setSpinButton();
                     this.updatePlaceholder();
                     Input.setPlaceholder(this.placeholder, this.element);
                     this.updateValue(this.value);
@@ -1591,6 +1682,9 @@ __decorate([
 __decorate([
     Property(null)
 ], NumericTextBox.prototype, "placeholder", void 0);
+__decorate([
+    Property({})
+], NumericTextBox.prototype, "htmlAttributes", void 0);
 __decorate([
     Property(true)
 ], NumericTextBox.prototype, "showSpinButton", void 0);
@@ -2694,6 +2788,7 @@ const INPUT = 'e-input';
 const COMPONENT$1 = 'e-maskedtextbox';
 const CONTROL$1 = 'e-control';
 const MASKINPUT_FOCUS = 'e-input-focus';
+const wrapperAttr = ['title', 'style', 'class'];
 /**
  * The MaskedTextBox allows the user to enter the valid input only based on the provided mask.
  * ```html
@@ -2710,6 +2805,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
     constructor(options, element) {
         super(options, element);
         this.initInputValue = '';
+        this.maskOptions = options;
     }
     /**
      * Gets the component name
@@ -2758,6 +2854,8 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             this.element = input;
             setValue('ej2_instances', ejInstance, this.element);
         }
+        this.updateHTMLAttrToElement();
+        this.checkHtmlAttributes(true);
         if (this.formElement) {
             this.initInputValue = this.value;
         }
@@ -2780,6 +2878,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                 addClass([this.element], INPUT);
             }
             this.createWrapper();
+            this.updateHTMLAttrToWrapper();
             if (this.element.name === '') {
                 this.element.setAttribute('name', this.element.id);
             }
@@ -2794,6 +2893,20 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             }
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
+            }
+        }
+    }
+    updateHTMLAttrToElement() {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttr.indexOf(key) < 0) {
+                this.element.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    }
+    updateHTMLAttrToWrapper() {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttr.indexOf(key) > -1) {
+                this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
             }
         }
     }
@@ -2840,6 +2953,35 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         if (!isNullOrUndefined(width)) {
             this.element.style.width = formatUnit(width);
             this.inputObj.container.style.width = formatUnit(width);
+        }
+    }
+    checkHtmlAttributes(isDynamic) {
+        let attributes$$1 = ['placeholder', 'disabled', 'value'];
+        for (let key of attributes$$1) {
+            if (!isNullOrUndefined(this.element.getAttribute(key))) {
+                switch (key) {
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
+                        }
+                        break;
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || !isDynamic) {
+                            let enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                                this.element.getAttribute(key) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || !isDynamic) {
+                            this.setProperties({ value: this.element.value }, isDynamic);
+                        }
+                        break;
+                }
+            }
         }
     }
     createWrapper() {
@@ -2896,6 +3038,11 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                     this.floatLabelType = newProp.floatLabelType;
                     Input.removeFloating(this.inputObj);
                     Input.addFloating(this.element, this.floatLabelType, this.placeholder, this.createElement);
+                    break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    this.checkHtmlAttributes(false);
                     break;
                 case 'mask':
                     let strippedValue$$1 = this.value;
@@ -2988,6 +3135,9 @@ __decorate$1([
 __decorate$1([
     Property('Never')
 ], MaskedTextBox.prototype, "floatLabelType", void 0);
+__decorate$1([
+    Property({})
+], MaskedTextBox.prototype, "htmlAttributes", void 0);
 __decorate$1([
     Property(true)
 ], MaskedTextBox.prototype, "enabled", void 0);
@@ -3624,16 +3774,17 @@ let Slider = class Slider extends Component {
         };
         this.setTooltipContent();
         args.text = text = this.tooltipObj.content;
-        this.trigger('tooltipChange', args);
-        this.addTooltipClass(args.text);
-        if (text !== args.text) {
-            this.customAriaText = args.text;
-            this.tooltipObj.content = args.text;
-            this.setAriaAttrValue(this.firstHandle);
-            if (this.type === 'Range') {
-                this.setAriaAttrValue(this.secondHandle);
+        this.trigger('tooltipChange', args, (observedArgs) => {
+            this.addTooltipClass(observedArgs.text);
+            if (text !== observedArgs.text) {
+                this.customAriaText = observedArgs.text;
+                this.tooltipObj.content = observedArgs.text;
+                this.setAriaAttrValue(this.firstHandle);
+                if (this.type === 'Range') {
+                    this.setAriaAttrValue(this.secondHandle);
+                }
             }
-        }
+        });
     }
     setTooltipContent() {
         let content;
@@ -4111,16 +4262,24 @@ let Slider = class Slider extends Component {
             attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
         });
         li.appendChild(span);
-        span.innerHTML = isNullOrUndefined(this.customValues) ? this.formatTicksValue(li, start) : start;
+        if (isNullOrUndefined(this.customValues)) {
+            this.formatTicksValue(li, start, span);
+        }
+        else {
+            span.innerHTML = start.toString();
+        }
     }
-    formatTicksValue(li, start) {
-        let tickText = this.formatNumber(start);
-        let text = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
+    formatTicksValue(li, start, spanElement) {
+        const tickText = this.formatNumber(start);
+        const text = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
             this.formatString(start, this.ticksFormatInfo).formatString : tickText;
-        let eventArgs = { value: start, text: text, tickElement: li };
-        this.trigger('renderingTicks', eventArgs);
-        li.setAttribute('title', eventArgs.text.toString());
-        return eventArgs.text.toString();
+        const eventArgs = { value: start, text: text, tickElement: li };
+        this.trigger('renderingTicks', eventArgs, (observedArgs) => {
+            li.setAttribute('title', observedArgs.text.toString());
+            if (spanElement) {
+                spanElement.innerHTML = observedArgs.text.toString();
+            }
+        });
     }
     scaleAlignment() {
         this.tickValuePosition();
@@ -6503,6 +6662,7 @@ const PROGRESS_INNER_WRAPPER = 'e-progress-inner-wrap';
 const PAUSE_UPLOAD = 'e-file-pause-btn';
 const RESUME_UPLOAD = 'e-file-play-btn';
 const RESTRICT_RETRY = 'e-restrict-retry';
+const wrapperAttr$1 = ['title', 'style', 'class'];
 class FilesProp extends ChildProperty {
 }
 __decorate$4([
@@ -6575,6 +6735,7 @@ let Uploader = class Uploader extends Component {
         this.actionCompleteCount = 0;
         this.flag = true;
         this.selectedFiles = [];
+        this.uploaderOptions = options;
     }
     /**
      * Calls internally if any of the property value is changed.
@@ -6606,6 +6767,11 @@ let Uploader = class Uploader extends Component {
                 case 'dropArea':
                     this.unBindDropEvents();
                     this.setDropArea();
+                    break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    this.checkHTMLAttributes(false);
                     break;
                 case 'files':
                     this.renderPreLoadFiles();
@@ -6710,7 +6876,8 @@ let Uploader = class Uploader extends Component {
         };
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
-        this.checkHTMLAttributes();
+        this.updateHTMLAttrToElement();
+        this.checkHTMLAttributes(true);
         let parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
@@ -6792,6 +6959,7 @@ let Uploader = class Uploader extends Component {
     render() {
         this.renderBrowseButton();
         this.initializeUpload();
+        this.updateHTMLAttrToWrapper();
         this.wireEvents();
         this.setMultipleSelection();
         this.setExtensions(this.allowedExtensions);
@@ -6967,6 +7135,20 @@ let Uploader = class Uploader extends Component {
             dropTextArea.textContent = this.localizedTexts('dropFilesHint');
         }
         this.bindDropEvents();
+    }
+    updateHTMLAttrToElement() {
+        for (let pro of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttr$1.indexOf(pro) < 0) {
+                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+            }
+        }
+    }
+    updateHTMLAttrToWrapper() {
+        for (let pro of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttr$1.indexOf(pro) > -1) {
+                this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+            }
+        }
     }
     setMultipleSelection() {
         if (this.multiple && !this.element.hasAttribute('multiple')) {
@@ -7238,41 +7420,46 @@ let Uploader = class Uploader extends Component {
     }
     removeUploadedFile(file, eventArgs, removeDirectly, custom) {
         let selectedFiles = file;
-        let name = this.element.getAttribute('name');
         let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
         ajax.emitError = false;
         let formData = new FormData();
-        let liElement = this.getLiElement(file);
         ajax.beforeSend = (e) => {
             eventArgs.currentRequest = ajax.httpRequest;
             if (!removeDirectly) {
-                this.trigger('removing', eventArgs);
-            }
-            /* istanbul ignore next */
-            if (eventArgs.cancel) {
-                e.cancel = true;
-                return;
-            }
-            if (!isNullOrUndefined(liElement) && (!isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON)) ||
-                !isNullOrUndefined(liElement.querySelector('.' + REMOVE_ICON)))) {
-                let spinnerTarget;
-                spinnerTarget = liElement.querySelector('.' + DELETE_ICON) ? liElement.querySelector('.' + DELETE_ICON) :
-                    liElement.querySelector('.' + REMOVE_ICON);
-                createSpinner({ target: spinnerTarget, width: '20px' });
-                showSpinner(spinnerTarget);
-            }
-            if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
-                formData.append(name, selectedFiles.rawFile);
+                this.trigger('removing', eventArgs, (eventArgs) => {
+                    if (!eventArgs.cancel) {
+                        this.removingEventCallback(eventArgs, formData, selectedFiles, file);
+                    }
+                });
             }
             else {
-                formData.append(name, selectedFiles.name);
+                this.removingEventCallback(eventArgs, formData, selectedFiles, file);
             }
-            this.updateFormData(formData, eventArgs.customFormData);
         };
         ajax.onLoad = (e) => { this.removeCompleted(e, selectedFiles, custom); return {}; };
         /* istanbul ignore next */
         ajax.onError = (e) => { this.removeFailed(e, selectedFiles, custom); return {}; };
         ajax.send(formData);
+    }
+    removingEventCallback(eventArgs, formData, selectedFiles, file) {
+        /* istanbul ignore next */
+        let name = this.element.getAttribute('name');
+        let liElement = this.getLiElement(file);
+        if (!isNullOrUndefined(liElement) && (!isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON)) ||
+            !isNullOrUndefined(liElement.querySelector('.' + REMOVE_ICON)))) {
+            let spinnerTarget;
+            spinnerTarget = liElement.querySelector('.' + DELETE_ICON) ? liElement.querySelector('.' + DELETE_ICON) :
+                liElement.querySelector('.' + REMOVE_ICON);
+            createSpinner({ target: spinnerTarget, width: '20px' });
+            showSpinner(spinnerTarget);
+        }
+        if (eventArgs.postRawFile && !isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+            formData.append(name, selectedFiles.rawFile);
+        }
+        else {
+            formData.append(name, selectedFiles.name);
+        }
+        this.updateFormData(formData, eventArgs.customFormData);
     }
     /* istanbul ignore next */
     updateFormData(formData, customData) {
@@ -7471,40 +7658,40 @@ let Uploader = class Uploader extends Component {
         if (!this.allTypes) {
             fileData = this.checkExtension(fileData);
         }
-        this.trigger('selected', eventArgs);
-        this.selectedFiles = fileData;
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
-        if (this.showFileList) {
-            if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
-                let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
-                    this.checkExtension(eventArgs.modifiedFilesData);
-                this.updateSortedFileList(dataFiles);
-                this.filesData = dataFiles;
-                if (!this.isForm || this.allowUpload()) {
-                    this.checkAutoUpload(dataFiles);
+        this.trigger('selected', eventArgs, (eventArgs) => {
+            if (!eventArgs.cancel) {
+                this.selectedFiles = fileData;
+                this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
+                if (this.showFileList) {
+                    if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                        let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
+                            this.checkExtension(eventArgs.modifiedFilesData);
+                        this.updateSortedFileList(dataFiles);
+                        this.filesData = dataFiles;
+                        if (!this.isForm || this.allowUpload()) {
+                            this.checkAutoUpload(dataFiles);
+                        }
+                    }
+                    else {
+                        this.createFileList(fileData);
+                        this.filesData = this.filesData.concat(fileData);
+                        if (!this.isForm || this.allowUpload()) {
+                            this.checkAutoUpload(fileData);
+                        }
+                    }
+                    if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                        this.progressInterval = eventArgs.progressInterval;
+                    }
                 }
-            }
-            else {
-                this.createFileList(fileData);
-                this.filesData = this.filesData.concat(fileData);
-                if (!this.isForm || this.allowUpload()) {
-                    this.checkAutoUpload(fileData);
+                else {
+                    this.filesData = this.filesData.concat(fileData);
+                    if (this.autoUpload) {
+                        this.upload(this.filesData, true);
+                    }
                 }
+                this.raiseActionComplete();
             }
-            if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
-                this.progressInterval = eventArgs.progressInterval;
-            }
-        }
-        else {
-            this.filesData = this.filesData.concat(fileData);
-            if (this.autoUpload) {
-                this.upload(this.filesData, true);
-            }
-        }
-        this.raiseActionComplete();
+        });
     }
     allowUpload() {
         let allowFormUpload = false;
@@ -7609,12 +7796,14 @@ let Uploader = class Uploader extends Component {
     }
     createCustomfileList(fileData) {
         this.createParentUL();
+        resetBlazorTemplate(this.element.id + 'Template', 'Template');
         for (let listItem of fileData) {
             let liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
             let fromElements = [].slice.call(this.uploadTemplateFn(listItem));
             let index = fileData.indexOf(listItem);
             append(fromElements, liElement);
+            updateBlazorTemplate(this.element.id + 'Template', 'Template');
             let eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -7856,30 +8045,32 @@ let Uploader = class Uploader extends Component {
                 fileData: files,
                 cancel: false
             };
-            this.trigger('canceling', eventArgs);
-            if (eventArgs.cancel) {
-                files.statusCode = '3';
-                if (!isNullOrUndefined(li)) {
-                    let spinnerTarget = li.querySelector('.' + ABORT_ICON);
-                    if (!isNullOrUndefined(spinnerTarget)) {
-                        hideSpinner(spinnerTarget);
-                        detach(li.querySelector('.e-spinner-pane'));
+            this.trigger('canceling', eventArgs, (eventArgs) => {
+                if (eventArgs.cancel) {
+                    files.statusCode = '3';
+                    if (!isNullOrUndefined(li)) {
+                        let spinnerTarget = li.querySelector('.' + ABORT_ICON);
+                        if (!isNullOrUndefined(spinnerTarget)) {
+                            hideSpinner(spinnerTarget);
+                            detach(li.querySelector('.e-spinner-pane'));
+                        }
                     }
                 }
-                return;
-            }
-            request.emitError = false;
-            request.httpRequest.abort();
-            let formData = new FormData();
-            if (files.statusCode === '5') {
-                let name = this.element.getAttribute('name');
-                formData.append(name, files.name);
-                formData.append('cancel-uploading', files.name);
-                let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
-                ajax.emitError = false;
-                ajax.onLoad = (e) => { this.removecanceledFile(e, files); return {}; };
-                ajax.send(formData);
-            }
+                else {
+                    request.emitError = false;
+                    request.httpRequest.abort();
+                    let formData = new FormData();
+                    if (files.statusCode === '5') {
+                        let name = this.element.getAttribute('name');
+                        formData.append(name, files.name);
+                        formData.append('cancel-uploading', files.name);
+                        let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+                        ajax.emitError = false;
+                        ajax.onLoad = (e) => { this.removecanceledFile(e, files); return {}; };
+                        ajax.send(formData);
+                    }
+                }
+            });
         }
     }
     removecanceledFile(e, file) {
@@ -7975,22 +8166,23 @@ let Uploader = class Uploader extends Component {
         let args = {
             e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
         };
-        this.trigger('success', args);
-        // tslint:disable-next-line
-        this.updateStatus(file, args.statusText, '2');
-        this.uploadedFilesData.push(file);
-        this.trigger('change', { file: this.uploadedFilesData });
-        this.checkActionButtonStatus();
-        if (this.fileList.length > 0) {
-            if ((!(this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
-                this.uploadSequential();
-                this.checkActionComplete(true);
+        this.trigger('success', args, (args) => {
+            // tslint:disable-next-line
+            this.updateStatus(file, args.statusText, '2');
+            this.uploadedFilesData.push(file);
+            this.trigger('change', { file: this.uploadedFilesData });
+            this.checkActionButtonStatus();
+            if (this.fileList.length > 0) {
+                if ((!(this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
+                    this.uploadSequential();
+                    this.checkActionComplete(true);
+                }
+                else {
+                    /* istanbul ignore next */
+                    (this.getLiElement(file)).classList.remove(RESTRICT_RETRY);
+                }
             }
-            else {
-                /* istanbul ignore next */
-                (this.getLiElement(file)).classList.remove(RESTRICT_RETRY);
-            }
-        }
+        });
     }
     uploadFailed(e, file) {
         let li = this.getLiElement(file);
@@ -8002,12 +8194,13 @@ let Uploader = class Uploader extends Component {
         if (!isNullOrUndefined(li)) {
             this.renderFailureState(e, file, li);
         }
-        this.trigger('failure', args);
-        // tslint:disable-next-line
-        this.updateStatus(file, args.statusText, '0');
-        this.checkActionButtonStatus();
-        this.uploadSequential();
-        this.checkActionComplete(true);
+        this.trigger('failure', args, (args) => {
+            // tslint:disable-next-line
+            this.updateStatus(file, args.statusText, '0');
+            this.checkActionButtonStatus();
+            this.uploadSequential();
+            this.checkActionComplete(true);
+        });
     }
     uploadSequential() {
         if (this.sequentialUpload) {
@@ -8139,18 +8332,38 @@ let Uploader = class Uploader extends Component {
             }
         }
     }
-    checkHTMLAttributes() {
-        if (this.element.hasAttribute('accept')) {
-            this.allowedExtensions = this.element.getAttribute('accept');
-            this.initialAttr.accept = this.allowedExtensions;
-        }
-        if (this.element.hasAttribute('multiple')) {
-            this.multiple = true;
-            this.initialAttr.multiple = true;
-        }
-        if (this.element.hasAttribute('disabled')) {
-            this.enabled = false;
-            this.initialAttr.disabled = true;
+    checkHTMLAttributes(isDynamic) {
+        let attributes$$1 = ['accept', 'multiple', 'disabled'];
+        for (let prop of attributes$$1) {
+            if (!isNullOrUndefined(this.element.getAttribute(prop))) {
+                switch (prop) {
+                    case 'accept':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['allowedExtensions'] === undefined))
+                            || !isDynamic) {
+                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, isDynamic);
+                            this.initialAttr.accept = this.allowedExtensions;
+                        }
+                        break;
+                    case 'multiple':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || !isDynamic) {
+                            let isMutiple = this.element.getAttribute(prop) === 'multiple' ||
+                                this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ multiple: isMutiple }, isDynamic);
+                            this.initialAttr.multiple = true;
+                        }
+                        break;
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || !isDynamic) {
+                            let isDisabled = this.element.getAttribute(prop) === 'disabled' ||
+                                this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? false : true;
+                            this.setProperties({ enabled: isDisabled }, isDynamic);
+                            this.initialAttr.disabled = true;
+                        }
+                }
+            }
         }
     }
     chunkUpload(file, custom) {
@@ -8188,20 +8401,28 @@ let Uploader = class Uploader extends Component {
             eventArgs.currentChunkIndex = metaData.chunkIndex;
             if (eventArgs.currentChunkIndex === 0) {
                 // This event is currently not required but to avoid breaking changes for previous customer, we have included.
-                this.trigger('uploading', eventArgs);
-            }
-            this.trigger('chunkUploading', eventArgs);
-            if (eventArgs.cancel) {
-                this.eventCancelByArgs(e, eventArgs, file);
+                this.trigger('uploading', eventArgs, (eventArgs) => {
+                    this.uploadingEventCallback(formData, eventArgs, e, file);
+                });
             }
             else {
-                this.updateFormData(formData, eventArgs.customFormData);
+                this.trigger('chunkUploading', eventArgs, (eventArgs) => {
+                    this.uploadingEventCallback(formData, eventArgs, e, file);
+                });
             }
         };
         /* istanbul ignore next */
         ajax.onError = (e) => { this.chunkUploadFailed(e, metaData, custom); return {}; };
         ajax.send(formData);
         metaData.request = ajax;
+    }
+    uploadingEventCallback(formData, eventArgs, e, file) {
+        if (eventArgs.cancel) {
+            this.eventCancelByArgs(e, eventArgs, file);
+        }
+        else {
+            this.updateFormData(formData, eventArgs.customFormData);
+        }
     }
     eventCancelByArgs(e, eventArgs, file) {
         e.cancel = true;
@@ -8247,29 +8468,31 @@ let Uploader = class Uploader extends Component {
             }
             if (metaData.file.statusCode === '5') {
                 let eventArgs = { event: e, fileData: metaData.file, cancel: false };
-                this.trigger('canceling', eventArgs);
-                /* istanbul ignore next */
-                if (eventArgs.cancel) {
-                    metaData.file.statusCode = '3';
-                    let spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
-                    if (!isNullOrUndefined(liElement) && !isNullOrUndefined(spinnerTarget)) {
-                        hideSpinner(spinnerTarget);
-                        detach(liElement.querySelector('.e-spinner-pane'));
+                this.trigger('canceling', eventArgs, (eventArgs) => {
+                    /* istanbul ignore next */
+                    if (eventArgs.cancel) {
+                        metaData.file.statusCode = '3';
+                        let spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
+                        if (!isNullOrUndefined(liElement) && !isNullOrUndefined(spinnerTarget)) {
+                            hideSpinner(spinnerTarget);
+                            detach(liElement.querySelector('.e-spinner-pane'));
+                        }
+                        this.sendNextRequest(metaData);
                     }
-                    this.sendNextRequest(metaData);
-                    return;
-                }
-                metaData.request.emitError = false;
-                response.abort();
-                let formData = new FormData();
-                let name = this.element.getAttribute('name');
-                formData.append(name, metaData.file.name);
-                formData.append('cancel-uploading', metaData.file.name);
-                formData.append('cancelUploading', metaData.file.name);
-                let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
-                ajax.emitError = false;
-                ajax.onLoad = (e) => { this.removeChunkFile(e, metaData, custom); return {}; };
-                ajax.send(formData);
+                    else {
+                        metaData.request.emitError = false;
+                        response.abort();
+                        let formData = new FormData();
+                        let name = this.element.getAttribute('name');
+                        formData.append(name, metaData.file.name);
+                        formData.append('cancel-uploading', metaData.file.name);
+                        formData.append('cancelUploading', metaData.file.name);
+                        let ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+                        ajax.emitError = false;
+                        ajax.onLoad = (e) => { this.removeChunkFile(e, metaData, custom); return {}; };
+                        ajax.send(formData);
+                    }
+                });
             }
             else {
                 if ((totalChunk - 1) === metaData.chunkIndex && totalChunk > metaData.chunkIndex) {
@@ -8433,54 +8656,56 @@ let Uploader = class Uploader extends Component {
             cancel: false,
             response: requestResponse
         };
-        this.trigger('chunkFailure', eventArgs);
-        // To prevent triggering of failure event
-        // tslint:disable-next-line
-        if (!eventArgs.cancel) {
-            if (metaData.retryCount < this.asyncSettings.retryCount) {
-                setTimeout(() => { this.retryRequest(liElement, metaData, custom); }, this.asyncSettings.retryAfterDelay);
-            }
-            else {
-                if (!isNullOrUndefined(liElement)) {
-                    let pauseButton = liElement.querySelector('.' + PAUSE_UPLOAD) ?
-                        liElement.querySelector('.' + PAUSE_UPLOAD) : liElement.querySelector('.' + RESUME_UPLOAD);
-                    if (!isNullOrUndefined(pauseButton)) {
-                        pauseButton.classList.add(RETRY_ICON);
-                        pauseButton.classList.remove(PAUSE_UPLOAD, RESUME_UPLOAD);
-                    }
-                    this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
-                    this.removeProgressbar(liElement, 'failure');
-                    liElement.querySelector('.e-icons').classList.remove(UPLOAD_INPROGRESS);
-                    let iconElement = liElement.querySelector('.' + ABORT_ICON);
-                    iconElement.classList.remove(ABORT_ICON);
-                    if (!isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD))) {
-                        detach(liElement.querySelector('.' + PAUSE_UPLOAD));
-                    }
-                    if (metaData.start > 0) {
-                        iconElement.classList.add(DELETE_ICON);
-                        iconElement.setAttribute('title', this.localizedTexts('delete'));
-                    }
-                    else {
-                        iconElement.classList.add(REMOVE_ICON);
-                        iconElement.setAttribute('title', this.localizedTexts('remove'));
-                    }
+        this.trigger('chunkFailure', eventArgs, (eventArgs) => {
+            // To prevent triggering of failure event
+            // tslint:disable-next-line
+            if (!eventArgs.cancel) {
+                if (metaData.retryCount < this.asyncSettings.retryCount) {
+                    setTimeout(() => { this.retryRequest(liElement, metaData, custom); }, this.asyncSettings.retryAfterDelay);
                 }
-                metaData.retryCount = 0;
-                let file = metaData.file;
-                let failureMessage = this.localizedTexts('uploadFailedMessage');
-                let args = {
-                    e, response: requestResponse,
-                    operation: 'upload',
-                    file: this.updateStatus(file, failureMessage, '0', false),
-                    statusText: failureMessage
-                };
-                this.trigger('failure', args);
-                // tslint:disable-next-line
-                this.updateStatus(file, args.statusText, '0');
-                this.uploadSequential();
-                this.checkActionComplete(true);
+                else {
+                    if (!isNullOrUndefined(liElement)) {
+                        let pauseButton = liElement.querySelector('.' + PAUSE_UPLOAD) ?
+                            liElement.querySelector('.' + PAUSE_UPLOAD) : liElement.querySelector('.' + RESUME_UPLOAD);
+                        if (!isNullOrUndefined(pauseButton)) {
+                            pauseButton.classList.add(RETRY_ICON);
+                            pauseButton.classList.remove(PAUSE_UPLOAD, RESUME_UPLOAD);
+                        }
+                        this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
+                        this.removeProgressbar(liElement, 'failure');
+                        liElement.querySelector('.e-icons').classList.remove(UPLOAD_INPROGRESS);
+                        let iconElement = liElement.querySelector('.' + ABORT_ICON);
+                        iconElement.classList.remove(ABORT_ICON);
+                        if (!isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD))) {
+                            detach(liElement.querySelector('.' + PAUSE_UPLOAD));
+                        }
+                        if (metaData.start > 0) {
+                            iconElement.classList.add(DELETE_ICON);
+                            iconElement.setAttribute('title', this.localizedTexts('delete'));
+                        }
+                        else {
+                            iconElement.classList.add(REMOVE_ICON);
+                            iconElement.setAttribute('title', this.localizedTexts('remove'));
+                        }
+                    }
+                    metaData.retryCount = 0;
+                    let file = metaData.file;
+                    let failureMessage = this.localizedTexts('uploadFailedMessage');
+                    let args = {
+                        e, response: requestResponse,
+                        operation: 'upload',
+                        file: this.updateStatus(file, failureMessage, '0', false),
+                        statusText: failureMessage
+                    };
+                    this.trigger('failure', args, (args) => {
+                        // tslint:disable-next-line
+                        this.updateStatus(file, args.statusText, '0');
+                        this.uploadSequential();
+                        this.checkActionComplete(true);
+                    });
+                }
             }
-        }
+        });
     }
     retryRequest(liElement, metaData, custom) {
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom) && liElement) {
@@ -8703,11 +8928,12 @@ let Uploader = class Uploader extends Component {
             let formData = new FormData();
             ajax.beforeSend = (e) => {
                 eventArgs.currentRequest = ajax.httpRequest;
-                this.trigger('uploading', eventArgs);
-                if (eventArgs.cancel) {
-                    this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
-                }
-                this.updateFormData(formData, eventArgs.customFormData);
+                this.trigger('uploading', eventArgs, (eventArgs) => {
+                    if (eventArgs.cancel) {
+                        this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
+                    }
+                    this.updateFormData(formData, eventArgs.customFormData);
+                });
             };
             if (selectedFiles[i].statusCode === '1') {
                 let name = this.element.getAttribute('name');
@@ -8748,45 +8974,50 @@ let Uploader = class Uploader extends Component {
         let index;
         if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
             eventArgs.filesData = this.getFilesData();
-            this.trigger('removing', eventArgs);
-            if (!eventArgs.cancel) {
-                this.clearAll();
-            }
-            return;
-        }
-        let removeFiles = [];
-        fileData = !isNullOrUndefined(fileData) ? fileData : this.filesData;
-        if (fileData instanceof Array) {
-            removeFiles = fileData;
+            this.trigger('removing', eventArgs, (eventArgs) => {
+                if (!eventArgs.cancel) {
+                    this.clearAll();
+                }
+            });
         }
         else {
-            removeFiles.push(fileData);
-        }
-        eventArgs.filesData = removeFiles;
-        let removeUrl = this.asyncSettings.removeUrl;
-        let validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
-        for (let files of removeFiles) {
-            index = this.filesData.indexOf(files);
-            if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
-                this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+            let removeFiles = [];
+            fileData = !isNullOrUndefined(fileData) ? fileData : this.filesData;
+            if (fileData instanceof Array) {
+                removeFiles = fileData;
             }
             else {
-                if (!removeDirectly) {
-                    this.trigger('removing', eventArgs);
-                }
-                if (eventArgs.cancel) {
-                    return;
-                }
-                this.removeFilesData(files, customTemplate);
+                removeFiles.push(fileData);
             }
-            if (this.sequentialUpload) {
-                /* istanbul ignore next */
-                if (index <= this.actionCompleteCount) {
+            eventArgs.filesData = removeFiles;
+            let removeUrl = this.asyncSettings.removeUrl;
+            let validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
+            for (let files of removeFiles) {
+                index = this.filesData.indexOf(files);
+                if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
+                    this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                }
+                else {
+                    if (!removeDirectly) {
+                        this.trigger('removing', eventArgs, (eventArgs) => {
+                            if (!eventArgs.cancel) {
+                                this.removeFilesData(files, customTemplate);
+                            }
+                        });
+                    }
+                    else {
+                        this.removeFilesData(files, customTemplate);
+                    }
+                }
+                if (this.sequentialUpload) {
+                    /* istanbul ignore next */
+                    if (index <= this.actionCompleteCount) {
+                        this.checkActionComplete(false);
+                    }
+                }
+                else {
                     this.checkActionComplete(false);
                 }
-            }
-            else {
-                this.checkActionComplete(false);
             }
         }
     }
@@ -8806,13 +9037,13 @@ let Uploader = class Uploader extends Component {
             cancel: false,
             filesData: this.filesData
         };
-        this.trigger('clearing', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.clearData();
-        this.actionCompleteCount = 0;
-        this.count = -1;
+        this.trigger('clearing', eventArgs, (eventArgs) => {
+            if (!eventArgs.cancel) {
+                this.clearData();
+                this.actionCompleteCount = 0;
+                this.count = -1;
+            }
+        });
     }
     /**
      * Get the data of files which are shown in file list.
@@ -8942,6 +9173,9 @@ __decorate$4([
 __decorate$4([
     Property(false)
 ], Uploader.prototype, "sequentialUpload", void 0);
+__decorate$4([
+    Property({})
+], Uploader.prototype, "htmlAttributes", void 0);
 __decorate$4([
     Property('')
 ], Uploader.prototype, "cssClass", void 0);
@@ -9234,37 +9468,39 @@ let ColorPicker = class ColorPicker extends Component {
     }
     beforeOpenFn(args) {
         let beforeOpenArgs = { element: this.container, event: args.event, cancel: false };
-        this.trigger('beforeOpen', beforeOpenArgs);
-        args.cancel = beforeOpenArgs.cancel;
-        if (!args.cancel) {
-            let popupEle = this.getPopupEle();
-            popupEle.style.top = formatUnit(0 + pageYOffset);
-            popupEle.style.left = formatUnit(0 + pageXOffset);
-            popupEle.style.display = 'block';
-            this.createWidget();
-            popupEle.style.display = '';
-            if (Browser.isDevice) {
-                this.modal = this.createElement('div');
-                this.modal.className = 'e-' + this.getModuleName() + ' e-modal';
-                this.modal.style.display = 'none';
-                document.body.insertBefore(this.modal, popupEle);
-                document.body.className += ' e-colorpicker-overflow';
-                this.modal.style.display = 'block';
-                this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+        this.trigger('beforeOpen', beforeOpenArgs, (observeOpenArgs) => {
+            args.cancel = observeOpenArgs.cancel;
+            if (!observeOpenArgs.cancel) {
+                let popupEle = this.getPopupEle();
+                popupEle.style.top = formatUnit(0 + pageYOffset);
+                popupEle.style.left = formatUnit(0 + pageXOffset);
+                popupEle.style.display = 'block';
+                this.createWidget();
+                popupEle.style.display = '';
+                if (Browser.isDevice) {
+                    this.modal = this.createElement('div');
+                    this.modal.className = 'e-' + this.getModuleName() + ' e-modal';
+                    this.modal.style.display = 'none';
+                    document.body.insertBefore(this.modal, popupEle);
+                    document.body.className += ' e-colorpicker-overflow';
+                    this.modal.style.display = 'block';
+                    this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+                }
             }
-        }
+        });
     }
     beforePopupClose(args) {
         if (!isNullOrUndefined(args.event)) {
             let beforeCloseArgs = { element: this.container, event: args.event, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs);
-            if (Browser.isDevice && args.event.target === this.modal) {
-                beforeCloseArgs.cancel = true;
-            }
-            args.cancel = beforeCloseArgs.cancel;
-            if (!args.cancel) {
-                this.onPopupClose();
-            }
+            this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs) => {
+                if (Browser.isDevice && args.event.target === this.modal) {
+                    observedCloseArgs.cancel = true;
+                }
+                args.cancel = observedCloseArgs.cancel;
+                if (!observedCloseArgs.cancel) {
+                    this.onPopupClose();
+                }
+            });
         }
     }
     onPopupClose() {
@@ -9839,11 +10075,12 @@ let ColorPicker = class ColorPicker extends Component {
     }
     closePopup(e) {
         let beforeCloseArgs = { element: this.container, event: e, cancel: false };
-        this.trigger('beforeClose', beforeCloseArgs);
-        if (!beforeCloseArgs.cancel) {
-            this.splitBtn.toggle();
-            this.onPopupClose();
-        }
+        this.trigger('beforeClose', beforeCloseArgs, (observedcloseArgs) => {
+            if (!observedcloseArgs.cancel) {
+                this.splitBtn.toggle();
+                this.onPopupClose();
+            }
+        });
     }
     triggerChangeEvent(value) {
         let hex = value.slice(0, 7);
@@ -10822,6 +11059,7 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
 };
 const HIDE_CLEAR = 'e-clear-icon-hide';
 const TEXTBOX_FOCUS = 'e-input-focus';
+const containerAttr = ['title', 'style', 'class'];
 /**
  * Represents the TextBox component that allows the user to enter the values based on it's type.
  * ```html
@@ -10841,6 +11079,7 @@ let TextBox = class TextBox extends Component {
         this.isAngular = false;
         this.isHiddenInput = false;
         this.isForm = false;
+        this.textboxOptions = options;
     }
     /**
      * Calls internally if any of the property value is changed.
@@ -10876,6 +11115,12 @@ let TextBox = class TextBox extends Component {
                         || (this.isAngular && !this.preventChange) || (this.isAngular && isNullOrUndefined(this.preventChange))) {
                         this.raiseChangeEvent();
                     }
+                    break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    let attributes$$1 = this.element.attributes;
+                    this.checkAttributes(attributes$$1, false);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -10947,11 +11192,13 @@ let TextBox = class TextBox extends Component {
             this.element = inputElement;
             setValue('ej2_instances', ejInstance, this.element);
         }
+        this.updateHTMLAttrToElement();
         let attributes$$1 = this.element.attributes;
-        this.checkAttributes(attributes$$1);
+        this.checkAttributes(attributes$$1, true);
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
+        this.element.setAttribute('role', 'textbox');
         this.globalize = new Internationalization(this.locale);
         let localeText = { placeholder: this.placeholder };
         this.l10n = new L10n('textbox', localeText, this.locale);
@@ -10971,6 +11218,8 @@ let TextBox = class TextBox extends Component {
             this.element.setAttribute('type', 'hidden');
             this.textarea.setAttribute('name', this.element.getAttribute('name'));
             this.element.removeAttribute('name');
+            this.textarea.setAttribute('role', this.element.getAttribute('role'));
+            this.element.removeAttribute('role');
             let attribute = ['required', 'minlength', 'maxlength'];
             for (let i = 0; i < attribute.length; i++) {
                 if (this.element.hasAttribute(attribute[i])) {
@@ -10981,17 +11230,44 @@ let TextBox = class TextBox extends Component {
             }
         }
     }
-    checkAttributes(attrs) {
+    checkAttributes(attrs, isDynamic) {
         for (let i = 0; i < attrs.length; i++) {
             let key = attrs[i].nodeName;
-            if (key === 'disabled') {
-                this.setProperties({ enabled: false }, true);
-            }
-            else if (key === 'readonly') {
-                this.setProperties({ readonly: true }, true);
-            }
-            else if (key === 'placeholder') {
-                this.setProperties({ placeholder: attrs[i].nodeValue }, true);
+            switch (key) {
+                case 'disabled':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || !isDynamic) {
+                        let enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                            this.element.getAttribute(key) === 'true' ? false : true;
+                        this.setProperties({ enabled: enabled }, isDynamic);
+                    }
+                    break;
+                case 'readonly':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || !isDynamic) {
+                        let readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                            || this.element.getAttribute(key) === 'true' ? true : false;
+                        this.setProperties({ readonly: readonly }, isDynamic);
+                    }
+                    break;
+                case 'placeholder':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || !isDynamic) {
+                        this.setProperties({ placeholder: attrs[i].nodeValue }, isDynamic);
+                    }
+                    break;
+                case 'value':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || !isDynamic) {
+                        this.setProperties({ value: attrs[i].nodeValue }, isDynamic);
+                    }
+                    break;
+                case 'type':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || !isDynamic) {
+                        this.setProperties({ type: attrs[i].nodeValue }, isDynamic);
+                    }
+                    break;
             }
         }
     }
@@ -11013,13 +11289,11 @@ let TextBox = class TextBox extends Component {
                 showClearButton: this.showClearButton
             }
         });
+        this.updateHTMLAttrToWrapper();
         if (this.isHiddenInput) {
             this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
         }
         this.wireEvents();
-        if (this.respectiveElement.value !== '') {
-            this.value = this.respectiveElement.value;
-        }
         if (!isNullOrUndefined(this.value)) {
             Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
             if (this.isHiddenInput) {
@@ -11031,6 +11305,20 @@ let TextBox = class TextBox extends Component {
             this.setInitialValue();
         }
         this.previousValue = this.value;
+    }
+    updateHTMLAttrToWrapper() {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (containerAttr.indexOf(key) > -1) {
+                this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    }
+    updateHTMLAttrToElement() {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (containerAttr.indexOf(key) < 0) {
+                this.element.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
     }
     setInitialValue() {
         if (!this.isAngular) {
@@ -11063,13 +11351,15 @@ let TextBox = class TextBox extends Component {
             this.resetValue(this.initialValue);
         }
         let label = this.textboxWrapper.container.querySelector('.e-float-text');
-        if (isNullOrUndefined(this.initialValue) || this.initialValue === '') {
-            label.classList.add('e-label-bottom');
-            label.classList.remove('e-label-top');
-        }
-        else if (this.initialValue !== '') {
-            label.classList.add('e-label-top');
-            label.classList.remove('e-label-bottom');
+        if (!isNullOrUndefined(label)) {
+            if ((isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
+                label.classList.add('e-label-bottom');
+                label.classList.remove('e-label-top');
+            }
+            else if (this.initialValue !== '') {
+                label.classList.add('e-label-top');
+                label.classList.remove('e-label-bottom');
+            }
         }
     }
     focusHandler(args) {
@@ -11168,6 +11458,11 @@ let TextBox = class TextBox extends Component {
      */
     destroy() {
         this.unWireEvents();
+        if (this.element.tagName === 'INPUT' && this.multiline) {
+            detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
+            this.respectiveElement = this.element;
+            this.element.removeAttribute('type');
+        }
         this.respectiveElement.classList.remove('e-input');
         this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
         this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
@@ -11276,6 +11571,9 @@ __decorate$6([
 __decorate$6([
     Property(null)
 ], TextBox.prototype, "placeholder", void 0);
+__decorate$6([
+    Property({})
+], TextBox.prototype, "htmlAttributes", void 0);
 __decorate$6([
     Property(false)
 ], TextBox.prototype, "multiline", void 0);

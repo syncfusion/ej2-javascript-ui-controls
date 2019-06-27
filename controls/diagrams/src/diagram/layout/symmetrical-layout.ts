@@ -740,7 +740,7 @@ interface SizeF {
 
 
 export interface ITreeInfo extends INode, IConnector {
-    graphType?: graphType;
+    graphType?: GraphObjectType;
     parents?: IGraphObject[];
     children?: IGraphObject[];
     tag?: GraphForceNode;
@@ -760,7 +760,7 @@ export interface IGraphObject extends INode, IConnector {
     treeInfo?: ITreeInfo;
 }
 
-export type graphType = 'Node' | 'Connector';
+export type GraphObjectType = 'Node' | 'Connector';
 
 
 function getGraphBounds(node: IGraphObject): Rect {

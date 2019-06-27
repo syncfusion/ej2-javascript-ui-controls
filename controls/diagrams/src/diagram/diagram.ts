@@ -1,6 +1,6 @@
 import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax } from '@syncfusion/ej2-base';
 import { Browser, ModuleDeclaration, Event, EmitType } from '@syncfusion/ej2-base';
-import { INotifyPropertyChanged } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { DiagramModel } from './diagram-model';
 import { CanvasRenderer } from './rendering/canvas-renderer';
 import { SvgRenderer } from './rendering/svg-renderer';
@@ -13,6 +13,7 @@ import { ServiceLocator } from './objects/service';
 import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IClickEventArgs, ScrollValues } from './objects/interface/IElement';
 import { ISizeChangeEventArgs, IConnectionChangeEventArgs, IEndChangeEventArgs, IDoubleClickEventArgs } from './objects/interface/IElement';
 import { ICollectionChangeEventArgs, IPropertyChangeEventArgs, IDraggingEventArgs, IRotationEventArgs } from './objects/interface/IElement';
+import { ISegmentCollectionChangeEventArgs } from './objects/interface/IElement';
 import { IDragEnterEventArgs, IDragLeaveEventArgs, IDragOverEventArgs, IDropEventArgs } from './objects/interface/IElement';
 import { ITextEditEventArgs, IHistoryChangeArgs, IScrollChangeEventArgs, IMouseEventArgs } from './objects/interface/IElement';
 import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interface/IElement';
@@ -30,7 +31,7 @@ import { removeRulerElements, updateRuler, getRulerSize } from './ruler/ruler';
 import { renderRuler, renderOverlapElement } from './ruler/ruler';
 import { RulerSettingsModel } from './diagram/ruler-settings-model';
 import { SnapSettingsModel } from './diagram/grid-lines-model';
-import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel } from './objects/node-model';
+import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';
 import { Size } from './primitives/size';
 import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, RendererAction } from './enum/enum';
@@ -143,6 +144,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * `radialTreeModule` is used to arrange the nodes in a radial tree like structure
+     * @ignoreapilink
      */
     public radialTreeModule: RadialTree;
 
@@ -545,6 +547,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public getNodeDefaults: Function | string;
@@ -574,6 +577,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated 
      */
     @Property()
     public getConnectorDefaults: Function | string;
@@ -628,6 +632,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * }
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public setNodeTemplate: Function | string;
@@ -673,6 +678,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * return value;
      * }
      * ```
+     * @deprecated
      */
     @Property()
     public getDescription: Function | string;
@@ -712,6 +718,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public getCustomProperty: Function | string;
@@ -764,6 +771,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @deprecated
      */
     @Property()
     public getCustomTool: Function | string;
@@ -808,6 +816,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @deprecated
      */
     @Property()
     public getCustomCursor: Function | string;
@@ -837,6 +846,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public updateSelection: Function | string;
@@ -875,13 +885,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after diagram is populated from the external data source
      * @event
+     * @blazorProperty 'DataLoaded'
      */
     @Event()
     public dataLoaded: EmitType<IDataLoadedEventArgs>;
 
     /**
      * Triggers when a symbol is dragged into diagram from symbol palette
+     * @deprecated
      * @event
+     * @blazorProperty 'OnDragEnter'
      */
     @Event()
     public dragEnter: EmitType<IDragEnterEventArgs>;
@@ -889,6 +902,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a symbol is dragged outside of the diagram.
      * @event
+     * @blazorProperty 'OnDragLeave'
      */
     @Event()
     public dragLeave: EmitType<IDragLeaveEventArgs>;
@@ -896,6 +910,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a symbol is dragged over diagram
      * @event
+     * @blazorProperty 'OnDragOver'
      */
     @Event()
     public dragOver: EmitType<IDragOverEventArgs>;
@@ -903,6 +918,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a node, connector or diagram is clicked
      * @event
+     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<IClickEventArgs>;
@@ -910,6 +926,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a change is reverted or restored(undo/redo)
      * @event
+     * @blazorProperty 'HistoryChanged'
      */
     @Event()
     public historyChange: EmitType<IHistoryChangeArgs>;
@@ -917,13 +934,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a node, connector or diagram model is clicked twice
      * @event
+     * @blazorProperty 'OnDoubleClick'
      */
     @Event()
     public doubleClick: EmitType<IDoubleClickEventArgs>;
 
     /**
      * Triggers when editor got focus at the time of node’s label or text node editing.
+     * @deprecated
      * @event
+     * @blazorProperty 'TextEdited'
      */
     @Event()
     public textEdit: EmitType<ITextEditEventArgs>;
@@ -931,27 +951,34 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when the diagram is zoomed or panned
      * @event
+     * @blazorProperty 'ScrollChanged'
      */
     @Event()
     public scrollChange: EmitType<IScrollChangeEventArgs>;
 
     /**
      * Triggers when the selection is changed in diagram
+     * @deprecated
      * @event
+     * @blazorProperty 'OnSelectionChange'
      */
     @Event()
     public selectionChange: EmitType<ISelectionChangeEventArgs>;
 
     /**
      * Triggers when a node is resized
+     * @deprecated
      * @event
+     * @blazorProperty 'OnSizeChange'
      */
     @Event()
     public sizeChange: EmitType<ISizeChangeEventArgs>;
 
     /**
      * Triggers when the connection is changed
+     * @deprecated
      * @event
+     * @blazorProperty 'OnConnectionChange'
      */
     @Event()
     public connectionChange: EmitType<IConnectionChangeEventArgs>;
@@ -959,6 +986,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when the connector's source point is changed
      * @event
+     * @blazorProperty 'OnSourcePointChange'
      */
     @Event()
     public sourcePointChange: EmitType<IEndChangeEventArgs>;
@@ -966,6 +994,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when the connector's target point is changed
      * @event
+     * @blazorProperty 'OnTargetPointChange'
      */
     @Event()
     public targetPointChange: EmitType<IEndChangeEventArgs>;
@@ -973,6 +1002,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers once the node or connector property changed.
      * @event
+     * @blazorProperty 'PropertyChanged'
      */
     @Event()
     public propertyChange: EmitType<IPropertyChangeEventArgs>;
@@ -980,6 +1010,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers while dragging the elements in diagram
      * @event
+     * @blazorProperty 'OnPositionChange'
      */
     @Event()
     public positionChange: EmitType<IDraggingEventArgs>;
@@ -987,13 +1018,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after animation is completed for the diagram elements.
      * @event
+     * @blazorProperty 'OnAnimationComplete'
      */
     @Event()
     public animationComplete: EmitType<Object>;
 
     /**
      * Triggers when the diagram elements are rotated
+     * @deprecated
      * @event
+     * @blazorProperty 'OnRotateChange'
      */
     @Event()
     public rotateChange: EmitType<IRotationEventArgs>;
@@ -1001,14 +1035,25 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers when a node/connector is added/removed to/from the diagram.
+     * @deprecated
      * @event
+     * @blazorProperty 'OnCollectionChange'
      */
     @Event()
     public collectionChange: EmitType<ICollectionChangeEventArgs>;
 
     /**
+     * Triggers when a segment is added/removed to/from the connector.
+     * @event
+     * @blazorProperty 'OnSegmentCollectionChange'
+     */
+    @Event()
+    public segmentCollectionChange: EmitType<ISegmentCollectionChangeEventArgs>;
+
+    /**
      * Triggers when the state of the expand and collapse icon change for a node.
      * @event
+     * @blazorProperty 'OnExpandStateChange'
      */
     @Event()
     public expandStateChange: EmitType<IExpandStateChangeEventArgs>;
@@ -1016,6 +1061,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggered when the diagram is rendered completely.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -1023,6 +1069,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggered when mouse enters a node/connector.
      * @event
+     * @blazorProperty 'OnMouseEnter'
      */
     @Event()
     public mouseEnter: EmitType<IMouseEventArgs>;
@@ -1030,6 +1077,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggered when mouse leaves node/connector.
      * @event
+     * @blazorProperty 'OnMouseLeave'
      */
     @Event()
     public mouseLeave: EmitType<IMouseEventArgs>;
@@ -1037,6 +1085,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggered when mouse hovers a node/connector.
      * @event
+     * @blazorProperty 'OnMouseOver'
      */
     @Event()
     public mouseOver: EmitType<IMouseEventArgs>;
@@ -1044,6 +1093,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before opening the context menu
      * @event
+     * @blazorProperty 'OnContextMenuOpen'
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -1051,6 +1101,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before rendering the context menu item
      * @event
+     * @blazorProperty 'OnContextMenuItemRender'
      */
     @Event()
     public contextMenuBeforeItemRender: EmitType<MenuEventArgs>;
@@ -1058,6 +1109,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when a context menu item is clicked
      * @event
+     * @blazorProperty 'ContextMenuItemClicked'
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1071,7 +1123,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers when a symbol is dragged and dropped from symbol palette to drawing area
+     * @deprecated
      * @event
+     * @blazorProperty 'OnDrop'
      */
     @Event()
     public drop: EmitType<IDropEventArgs>;
@@ -1370,6 +1424,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.initObjects(true);
             this.refreshDiagramLayer();
         }
+        this.resetTemplate();
     }
     /* tslint:enable */
     private updateSnapSettings(newProp: DiagramModel): void {
@@ -1435,6 +1490,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             window[measureElement] = null;
         }
         this.initDiagram();
+        this.updateTemplate();
         this.initViews();
         this.unWireEvents();
         this.wireEvents();
@@ -1547,6 +1603,72 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.isLoading = false;
     }
 
+    private updateTemplate(): void {
+        let node: NodeModel;
+        let annotation: ShapeAnnotationModel;
+        let pathAnnotation: PathAnnotationModel;
+        for (let i: number = 0; i < this.nodes.length; i++) {
+            node = this.nodes[i];
+            annotation = node.annotations[0];
+            if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    updateBlazorTemplate(this.element.id + 'content_diagram', 'Content');
+                    // tslint:disable-next-line:align
+                }, 5);
+            } else if (annotation && annotation.template instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    updateBlazorTemplate(this.element.id + 'template_diagram', 'Template');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+        }
+        for (let i: number = 0; i < this.connectors.length; i++) {
+            pathAnnotation = this.connectors[i].annotations[0];
+            if (pathAnnotation && pathAnnotation.template instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    updateBlazorTemplate(this.element.id + 'template_diagram', 'Template');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+        }
+    }
+
+    private resetTemplate(): void {
+        let htmlNode: NodeModel;
+        let templateAnnotation: ShapeAnnotationModel;
+        let path: PathAnnotationModel;
+        for (let i: number = 0; i < this.nodes.length; i++) {
+            htmlNode = this.nodes[i];
+            templateAnnotation = htmlNode.annotations[0];
+            if (htmlNode.shape.type === 'HTML' && (htmlNode.shape as HtmlModel).content instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    resetBlazorTemplate(this.element.id + 'content', 'Content');
+                    // tslint:disable-next-line:align
+                }, 5);
+            } else if (templateAnnotation && templateAnnotation.template instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    resetBlazorTemplate(this.element.id + 'template', 'Template');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+        }
+        for (let i: number = 0; i < this.connectors.length; i++) {
+            path = this.connectors[i].annotations[0];
+            if (path && path.template instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    resetBlazorTemplate(this.element.id + 'template', 'Template');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+        }
+    }
+
     private renderInitialCrud(): void {
         let tempObj: Diagram = this;
         if (tempObj.dataSourceSettings.crudAction.read) {
@@ -1554,7 +1676,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 tempObj.dataSourceSettings.crudAction.read, 'GET', false
             );
             callback.onSuccess = (data: string): void => {
-                tempObj.dataSourceSettings.dataManager = JSON.parse(data);
+                if (tempObj.dataSourceSettings.dataManager) {
+                    tempObj.dataSourceSettings.dataManager = JSON.parse(data);
+                } else {
+                    tempObj.dataSourceSettings.dataSource = JSON.parse(data);
+                }
                 tempObj.dataBind();
             };
             callback.send().then();
@@ -1676,7 +1802,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             });
         }
 
-        if (this.dataSourceSettings.dataManager ||
+        if (this.dataSourceSettings.dataManager || this.dataSourceSettings.dataSource ||
             this.dataSourceSettings.crudAction.read || this.dataSourceSettings.connectionDataSource.crudAction.read) {
             modules.push({
                 member: 'DataBinding',
@@ -2449,11 +2575,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /** @private */
-    public triggerEvent(eventName: DiagramEvent, args: Object): void {
+    public triggerEvent(eventName: DiagramEvent, args: Object, onSuccessCallBack?: Function, onFailureCallback?: Function): void {
         if (args) {
             this.updateEventValue(args as IDropEventArgs);
         }
-        this.trigger(DiagramEvent[eventName], args);
+        this.trigger(DiagramEvent[eventName], args, onSuccessCallBack, onFailureCallback);
     }
 
     private updateEventValue(args: IDropEventArgs): void {
@@ -2462,6 +2588,39 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             args.element = (element.nodes.length === 1) ? element.nodes[0] : element.connectors[0];
         }
     }
+
+    /**
+     * Shows tooltip for corresponding diagram object
+     * @param obj Defines the object for that tooltip has to be shown
+     */
+
+    public showTooltip(obj: NodeModel | ConnectorModel): void {
+        let bounds: Rect = getBounds(obj.wrapper);
+        let position: PointModel = { x: 0, y: 0 };
+        let content: string | HTMLElement = obj.tooltip.content ?
+            obj.tooltip.content : 'X:' + Math.round(bounds.x) + ' ' + 'Y:' + Math.round(bounds.y);
+        if (obj && obj.tooltip.openOn === 'Custom') {
+            if (obj instanceof Node) {
+                position = { x: obj.offsetX + (obj.width / 2), y: obj.offsetY + (obj.height / 2) };
+            } else {
+                position = { x: (obj as ConnectorModel).targetPoint.x, y: (obj as ConnectorModel).targetPoint.x };
+            }
+            this.commandHandler.showTooltip(
+                obj as IElement, position, content, 'SelectTool', true);
+        }
+    }
+
+    /**
+     * hides tooltip for corresponding diagram object
+     * @param obj Defines the object for that tooltip has to be hide
+     */
+
+    public hideTooltip(obj: NodeModel | ConnectorModel): void {
+        if (obj && obj.tooltip.openOn === 'Custom') {
+            this.tooltipObject.close();
+        }
+    }
+
     /**
      * Adds the given object to diagram control
      * @param obj Defines the object that has to be added to diagram
@@ -2713,6 +2872,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private removeCommand(): void {
         this.remove();
     }
+
+
+    /** @private */
+    private removeCollectionParameters: object = {};
+
     /**
      * Removes the given object from diagram
      * @param obj Defines the object that has to be removed from diagram
@@ -2733,118 +2897,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     element: obj, cause: this.diagramActions,
                     state: 'Changing', type: 'Removal', cancel: false
                 };
+                this.removeCollectionParameters = { groupAction: groupAction, obj: obj, selectedItems: selectedItems };
                 if (!(this.diagramActions & DiagramAction.Clear) && (obj.id !== 'helper')) {
-                    this.triggerEvent(DiagramEvent.collectionChange, args);
-                }
-                if (!args.cancel) {
-                    if (this.bpmnModule) {
-                        if (this.bpmnModule.checkAndRemoveAnnotations(obj as NodeModel, this)) {
-                            this.refreshCanvasLayers();
-                            return;
-                        }
-                    }
-                    if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
-                        (obj instanceof Node || obj instanceof Connector)) {
-                        let entry: HistoryEntry = {
-                            type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
-                            redoObject: cloneObject(obj), category: 'Internal'
-                        };
-                        if (!(this.diagramActions & DiagramAction.Clear)) {
-                            if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
-                                this.historyManager.startGroupAction();
-                                groupAction = true;
-                            }
-                        }
-                        if (obj instanceof Node) {
-                            this.removeDependentConnector(obj);
-                        }
-                        if (!(obj as Node).isLane && !(obj as Node).isPhase) {
-                            if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj as Node)) {
-                                this.addHistoryEntry(entry);
-                            }
-                        }
-                    }
-                    if ((obj as Node).children && !(obj as Node).isLane && !(obj as Node).isPhase) {
-                        this.deleteGroup(obj as Node);
-                    }
-                    if ((obj as Node | Connector).parentId) {
-                        this.deleteChild(obj);
-                        if (this.nameTable[(obj as Node | Connector).parentId] && this.nameTable[(obj as Node | Connector).parentId].shape.type === 'UmlClassifier') {
-                            this.updateDiagramObject(this.nameTable[(obj as Node | Connector).parentId]);
-                            this.updateConnectorEdges(this.nameTable[(obj as Node | Connector).parentId]);
-                        }
-                    }
-                    let index: number;
-                    this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
-                    let currentObj: NodeModel | ConnectorModel = this.nameTable[obj.id];
-                    if (currentObj instanceof Node) {
-                        if (currentObj.shape.type === 'Bpmn' && this.bpmnModule) {
-                            this.bpmnModule.removeBpmnProcesses(currentObj, this);
-                        }
-                        if (currentObj.isLane || currentObj.isPhase || currentObj.shape.type === 'SwimLane') {
-                            let swimLaneNode: NodeModel = (currentObj.isLane || currentObj.isPhase) ?
-                                this.nameTable[(currentObj as Node).parentId] : this.nameTable[currentObj.id];
-                            let grid: GridPanel = swimLaneNode.wrapper.children[0] as GridPanel;
-                            if (currentObj.isLane) {
-                                removeLane(this, currentObj, swimLaneNode);
-                            } else if (currentObj.isPhase) {
-                                removePhase(this, currentObj, swimLaneNode);
-                            }
-                        }
-                        index = (this.nodes as NodeModel[]).indexOf(currentObj);
-                        if (index !== -1) {
-                            this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
-                            this.nodes.splice(index, 1);
-                            this.updateNodeEdges(currentObj);
-                        }
-                    } else {
-                        index = this.connectors.indexOf(currentObj as ConnectorModel);
-                        if (index !== -1) {
-                            this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
-                            this.connectors.splice(index, 1);
-                        }
-                        this.updateEdges(currentObj as Connector);
-                        this.spliceConnectorEdges(obj as ConnectorModel, true);
-                        this.spliceConnectorEdges(obj as ConnectorModel, false);
-                    }
-                    if (groupAction) {
-                        this.historyManager.endGroupAction();
-                    }
-                    if (isSelected(this, currentObj)) {
-                        this.unSelect(currentObj);
-                    }
-                    if (!(currentObj as Node).isPhase) {
-                        this.removeObjectsFromLayer(obj);
-                        if (this.currentDrawingObject) {
-                            this.currentDrawingObject.wrapper = undefined;
-                        }
-                        delete this.nameTable[obj.id];
-                        if (selectedItems.length > 0 && selectedItems[0].id === currentObj.id && (currentObj as Node).parentId) {
-                            let parentnode = this.nameTable[(currentObj as Node).parentId];
-                            if (parentnode && parentnode.isLane && this.nameTable[parentnode.parentId].shape.type === 'SwimLane') {
-                                let swimLaneNode: NodeModel = this.nameTable[parentnode.parentId]
-                                removeLaneChildNode(this, swimLaneNode, parentnode, currentObj as NodeModel);
-                            }
-
-                        }
-                        this.removeElements(currentObj);
-                        this.updateBridging();
-                        if (this.mode !== 'SVG') {
-                            this.refreshDiagramLayer();
-                        }
-                        if (!(this.diagramActions & DiagramAction.Clear)) {
-                            this.removeFromAQuad(currentObj as IElement);
-                            args = {
-                                element: obj, cause: this.diagramActions,
-                                state: 'Changed', type: 'Removal', cancel: false
-                            };
-                            if (obj.id !== 'helper') {
-                                this.triggerEvent(DiagramEvent.collectionChange, args);
-                            }
-                            this.resetTool();
-                        }
-                    }
-                }
+                    this.triggerEvent(DiagramEvent.collectionChange, args, this.onRemoveCollectionChangeSuccess.bind(this));
+                } else this.onRemoveCollectionChangeSuccess(args)
             }
         } else if (selectedItems.length > 0) {
             if (this.undoRedoModule) {
@@ -2867,10 +2923,132 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.clearSelection();
         }
+        this.tooltipObject.close();
     }
     /* tslint:enable */
+    /* tslint:disable */
+    private onRemoveCollectionChangeSuccess(args: ICollectionChangeEventArgs): void {
+        if (!args.cancel) {
+            let objChart: string = 'obj'
+            let groupActionChar: string = 'groupAction';
+            let selectedItemsChar: string = 'selectedItems';
+            let groupAction: boolean = this.removeCollectionParameters[groupActionChar];
+            let obj = this.removeCollectionParameters[objChart];
+            let selectedItems: (NodeModel | ConnectorModel)[] = this.removeCollectionParameters[selectedItemsChar];
 
+            if (this.bpmnModule) {
+                if (this.bpmnModule.checkAndRemoveAnnotations(obj as NodeModel, this)) {
+                    this.refreshCanvasLayers();
+                    return;
+                }
+            }
+            if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
+                (obj instanceof Node || obj instanceof Connector)) {
+                let entry: HistoryEntry = {
+                    type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
+                    redoObject: cloneObject(obj), category: 'Internal'
+                };
+                if (!(this.diagramActions & DiagramAction.Clear)) {
+                    if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
+                        this.historyManager.startGroupAction();
+                        groupAction = true;
+                    }
+                }
+                if (obj instanceof Node) {
+                    this.removeDependentConnector(obj);
+                }
+                if (!(obj as Node).isLane && !(obj as Node).isPhase) {
+                    if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj as Node)) {
+                        this.addHistoryEntry(entry);
+                    }
+                }
+            }
+            if ((obj as Node).children && !(obj as Node).isLane && !(obj as Node).isPhase) {
+                this.deleteGroup(obj as Node);
+            }
+            if ((obj as Node | Connector).parentId) {
+                this.deleteChild(obj);
+                if (this.nameTable[(obj as Node | Connector).parentId] &&
+                    this.nameTable[(obj as Node | Connector).parentId].shape.type === 'UmlClassifier') {
+                    this.updateDiagramObject(this.nameTable[(obj as Node | Connector).parentId]);
+                    this.updateConnectorEdges(this.nameTable[(obj as Node | Connector).parentId]);
+                }
+            }
+            let index: number;
+            this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
+            let currentObj: NodeModel | ConnectorModel = this.nameTable[obj.id];
+            if (currentObj instanceof Node) {
+                if (currentObj.shape.type === 'Bpmn' && this.bpmnModule) {
+                    this.bpmnModule.removeBpmnProcesses(currentObj, this);
+                }
+                if (currentObj.isLane || currentObj.isPhase || currentObj.shape.type === 'SwimLane') {
+                    let swimLaneNode: NodeModel = (currentObj.isLane || currentObj.isPhase) ?
+                        this.nameTable[(currentObj as Node).parentId] : this.nameTable[currentObj.id];
+                    let grid: GridPanel = swimLaneNode.wrapper.children[0] as GridPanel;
+                    if (currentObj.isLane) {
+                        removeLane(this, currentObj, swimLaneNode);
+                    } else if (currentObj.isPhase) {
+                        removePhase(this, currentObj, swimLaneNode);
+                    }
+                }
+                index = (this.nodes as NodeModel[]).indexOf(currentObj);
+                if (index !== -1) {
+                    this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
+                    this.nodes.splice(index, 1);
+                    this.updateNodeEdges(currentObj);
+                }
+            } else {
+                index = this.connectors.indexOf(currentObj as ConnectorModel);
+                if (index !== -1) {
+                    this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
+                    this.connectors.splice(index, 1);
+                }
+                this.updateEdges(currentObj as Connector);
+                this.spliceConnectorEdges(obj as ConnectorModel, true);
+                this.spliceConnectorEdges(obj as ConnectorModel, false);
+            }
+            if (groupAction) {
+                this.historyManager.endGroupAction();
+            }
+            if (isSelected(this, currentObj)) {
+                this.unSelect(currentObj);
+            }
+            if (!(currentObj as Node).isPhase) {
+                this.removeObjectsFromLayer(obj);
+                if (this.currentDrawingObject) {
+                    this.currentDrawingObject.wrapper = undefined;
+                }
+                delete this.nameTable[obj.id];
+                if (selectedItems.length > 0 && selectedItems[0].id === currentObj.id && (currentObj as Node).parentId) {
+                    let parentnode = this.nameTable[(currentObj as Node).parentId];
+                    if (parentnode && parentnode.isLane && this.nameTable[parentnode.parentId].shape.type === 'SwimLane') {
+                        let swimLaneNode: NodeModel = this.nameTable[parentnode.parentId]
+                        removeLaneChildNode(this, swimLaneNode, parentnode, currentObj as NodeModel);
+                    }
 
+                }
+                this.removeElements(currentObj);
+                this.updateBridging();
+                if (this.mode !== 'SVG') {
+                    this.refreshDiagramLayer();
+                }
+                if (!(this.diagramActions & DiagramAction.Clear)) {
+                    this.removeFromAQuad(currentObj as IElement);
+                    args = {
+                        element: obj, cause: this.diagramActions,
+                        state: 'Changed', type: 'Removal', cancel: false
+                    };
+                    if (obj.id !== 'helper') {
+                        this.triggerEvent(DiagramEvent.collectionChange, args);
+                    }
+                    this.resetTool();
+                }
+            }
+        }
+        this.removeCollectionParameters = {};
+        return null;
+    }
+    /* tslint:enable */
     private isStackChild(obj: Node): boolean {
         let isstack: boolean;
         let parent: Node = this.nameTable[obj.parentId];
@@ -3188,8 +3366,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             update = true;
         } else if (this.complexHierarchicalTreeModule) {
             let nodes: INode[] = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes as INode[]);
-            this.complexHierarchicalTreeModule.doLayout(
-                nodes, this.nameTable, this.layout as Layout, viewPort);
+            this.complexHierarchicalTreeModule.doLayout(nodes, this.nameTable, this.layout as Layout, viewPort);
             update = true;
         }
         if (update) {
@@ -3740,6 +3917,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.scroller.scrollerWidth = scrollerSize;
         this.scroller.setViewPortSize(bounds.width, bounds.height);
         this.renderRulers();
+        let measureElement: string = 'measureElement';
+        if (window[measureElement]) {
+            window[measureElement] = null;
+            let measureElements: HTMLElement = document.getElementById('measureElement');
+            measureElements.remove();
+        }
         createMeasureElements();
         // this.renderBackgroundImageLayer(bounds, commonStyle);
         this.renderBackgroundLayer(bounds, commonStyle);
@@ -3952,14 +4135,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private initData(): void {
-        let dataSourceSettings: IDataSource = {} as IDataSource;
+        let dataSourceSettings: DataManager = this.dataSourceSettings.dataManager || this.dataSourceSettings.dataSource;
+        let adapter: string = 'adaptorName';
         if (this.dataBindingModule && !(this.realActions & RealAction.PreventDataInit)) {
-            if (this.dataSourceSettings.dataManager && this.dataSourceSettings.connectionDataSource.dataManager) {
-                this.nodes = this.generateData(this.dataSourceSettings.dataManager, true) as NodeModel[];
+            if (dataSourceSettings && this.dataSourceSettings.connectionDataSource.dataManager) {
+                let dataManager: DataManager = this.dataSourceSettings.dataManager || this.dataSourceSettings.dataSource;
+                this.nodes = this.generateData(dataManager, true) as NodeModel[];
                 this.connectors = this.generateData(
                     this.dataSourceSettings.connectionDataSource.dataManager, false) as ConnectorModel[];
-            } else if (this.dataSourceSettings.dataManager && this.dataSourceSettings.dataManager.dataSource &&
-                this.dataSourceSettings.dataManager.dataSource.url !== undefined) {
+            } else if (dataSourceSettings && dataSourceSettings.dataSource &&
+                (dataSourceSettings.dataSource.url || (dataSourceSettings[adapter] === 'BlazorAdaptor' &&
+                    !dataSourceSettings.dataSource.url))) {
                 this.dataBindingModule.initSource(this.dataSourceSettings, this);
             } else {
                 this.dataBindingModule.initData(this.dataSourceSettings, this);
@@ -3967,7 +4153,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private generateData(dataSource: DataManager | DataSourceModel, isNode: boolean): (NodeModel | ConnectorModel)[] {
+    private generateData(dataSource: DataSourceModel | DataManager, isNode: boolean): (NodeModel | ConnectorModel)[] {
         let nodes: (NodeModel | ConnectorModel)[] = [];
         let i: number;
         for (i = 0; i < (dataSource as object[]).length; i++) {
@@ -5473,7 +5659,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-
     /** @private */
     public getWrapper(nodes: Container, id: string): DiagramElement {
         let wrapper: DiagramElement;
@@ -5526,6 +5711,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.endEdit();
         this.textEditing = false;
     }
+
+    private textEditEvent: object = {};
     /**
      * @private
      */
@@ -5547,10 +5734,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 bpmnAnnotation = node ? true : false;
                 if (bpmnAnnotation) {
                     if (element.textContent !== text || text !== this.activeLabel.text) {
-                        this.triggerEvent(DiagramEvent.textEdit, args);
-                        if (!args.cancel) {
-                            this.bpmnModule.updateTextAnnotationContent(node, this.activeLabel, text, this);
-                        }
+                        this.textEditEvent = { node: node, text: text };
+                        this.triggerEvent(DiagramEvent.textEdit, args, this.successTextEdit.bind(this));
                     }
                 }
             }
@@ -5627,6 +5812,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
         }
     }
+
+    private successTextEdit(args: ITextEditEventArgs): void {
+        let node: string = 'node';
+        let text: string = 'text';
+        if (!args.cancel) {
+            this.bpmnModule.updateTextAnnotationContent(this.textEditEvent[node], this.activeLabel, this.textEditEvent[text], this);
+        }
+    }
+
     /** @private */
     public canLogChange(): boolean {
         if ((this.diagramActions & DiagramAction.Render) && (!(this.diagramActions & DiagramAction.ToolAction)) &&
@@ -6837,6 +7031,151 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             node.margin.right = changes.margin.right;
         }
     }
+    /** @private */
+    public dragEnterEvent: object = {};
+
+    public successDragEnter(arg: IDragEnterEventArgs): Function {
+        let newObj: Node = arg.element as Node;
+        let headerChar: string = 'header';
+        let argsChar: string = 'args';
+        let laneChar: string = 'lane';
+        let entryTableChar: string = 'entryTable';
+        let selectedSymbolChar: string = 'selectedSymbol';
+
+        let header: NodeModel = this.dragEnterEvent[headerChar];
+        let isHorizontal: boolean;
+        let position: PointModel = this.eventHandler.getMousePosition(this.dragEnterEvent[argsChar].event);
+        let lane: NodeModel = this.dragEnterEvent[laneChar];
+        if ((newObj instanceof Node) && newObj.shape.type === 'SwimLane' && (newObj.shape as SwimLane).isLane) {
+            let swimLaneObj: NodeModel = arg.element as NodeModel;
+            let laneObj: LaneModel = (swimLaneObj.shape as SwimLane).lanes[0];
+            let child1: NodeModel; let child2: NodeModel;
+            isHorizontal = ((swimLaneObj.shape as SwimLane).orientation === 'Horizontal') ? true : false;
+            child1 = this.nameTable[newObj.children[0]];
+            child2 = this.nameTable[newObj.children[1]];
+            if (isHorizontal) {
+                header.width = laneObj.header.width;
+                header.height = laneObj.height;
+                lane.width = laneObj.width - header.width;
+                lane.height = laneObj.height;
+                lane.offsetX = position.x + 5 + (laneObj.header.width + (child2.width / 2));
+                lane.offsetY = position.y + child2.height / 2;
+            } else {
+                header.width = laneObj.width;
+                header.height = laneObj.header.height;
+                lane.width = laneObj.width;
+                lane.height = laneObj.height - header.height;
+                lane.offsetX = position.x + 5 + child2.width / 2;
+                lane.offsetY = position.y + (laneObj.header.height + (child2.height / 2));
+            }
+            header.offsetX = position.x + 5 + child1.width / 2;
+            header.offsetY = position.y + child1.height / 2;
+            newObj.width = laneObj.width;
+            newObj.height = laneObj.height;
+        }
+        if ((newObj instanceof Node) && (newObj.shape as SwimLane).isPhase) {
+            if (isHorizontal) {
+                newObj.height = 1;
+            } else {
+                newObj.width = 1;
+            }
+        }
+        if (!this.activeLayer.lock && !arg.cancel) {
+            this.preventUpdate = true;
+            if ((newObj as Node).children) {
+                this.findChild((newObj as Node), this.dragEnterEvent[entryTableChar]);
+            }
+            this.preventUpdate = true;
+            if (newObj.zIndex !== -1) {
+                newObj.zIndex = -1;
+            }
+            this.initObject(newObj as IElement, undefined, undefined, true);
+            this.currentSymbol = newObj as Node | Connector;
+            if (this.mode !== 'SVG') {
+                this.refreshDiagramLayer();
+            }
+            this.commandHandler.select(newObj);
+            this.eventHandler.mouseDown(this.dragEnterEvent[argsChar].event);
+            this.eventHandler.mouseMove(this.dragEnterEvent[argsChar].event, this.dragEnterEvent[argsChar]);
+            this.preventUpdate = false; this.updatePage();
+            this.dragEnterEvent[selectedSymbolChar].style.opacity = '0';
+        }
+        return null;
+    }
+
+    // /** @private */
+    // dropEventParameters: object = {};
+
+    private onDropEventSuccess(arg: IDropEventArgs): void {
+        let value: NodeModel | ConnectorModel;
+        let isPhase: boolean = false; let orientation: Orientation; let isConnector: boolean;
+        let source: string = 'sourceElement';
+        let newObj: NodeModel | Connector; let node: Node; let conn: Connector;
+        isConnector = (this.currentSymbol instanceof Connector) ? true : false;
+        let clonedObject: Object; let id: string = 'id';
+        let hasTargetArgs: string = 'hasTarget';
+        clonedObject = cloneObject(this.currentSymbol); clonedObject[hasTargetArgs] = this.currentSymbol[hasTargetArgs];
+        this.removeFromAQuad(this.currentSymbol);
+        this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
+        this.removeElements(this.currentSymbol);
+        if ((this.currentSymbol.shape as SwimLaneModel).isLane ||
+            (this.currentSymbol.shape as SwimLaneModel).isPhase) {
+            this.removeChildInNodes(this.currentSymbol as Node);
+        }
+        if (arg.cancel) { removeChildNodes(this.currentSymbol as Node, this); }
+        if ((this.currentSymbol.shape as SwimLaneModel).isPhase) {
+            isPhase = true;
+            orientation = (this.currentSymbol.shape as SwimLaneModel).orientation;
+        }
+        delete this.nameTable[this.currentSymbol.id]; this.currentSymbol = null;
+        this.protectPropertyChange(true);
+        if (!arg.cancel) {
+            this.startGroupAction();
+            if (clonedObject && (((clonedObject as Node).shape as SwimLaneModel).isLane || isPhase)) {
+                if (isPhase) {
+                    ((clonedObject as Node).shape as SwimLaneModel).isPhase = isPhase;
+                    ((clonedObject as Node).shape as SwimLaneModel).orientation = orientation;
+                }
+                this.eventHandler.addSwimLaneObject(clonedObject);
+            }
+            let hasTargetArgs: string = 'hasTarget';
+            if (((clonedObject as Node).shape as BpmnShape).type === 'Bpmn' && ((clonedObject as Node).shape as BpmnShape).annotation
+                && clonedObject[hasTargetArgs]) {
+                let nodeId: string = (((clonedObject as Node).shape as BpmnShape).annotation as BpmnAnnotation).nodeId;
+                ((clonedObject as Node).shape as BpmnShape).annotation.id = (clonedObject as Node).id;
+                this.addTextAnnotation(((clonedObject as Node).shape as BpmnShape).annotation, this.nameTable[nodeId]);
+                (clonedObject as BpmnAnnotation).nodeId = '';
+            }
+            if (!((clonedObject as Node).shape as SwimLaneModel).isLane && !isPhase) {
+                if ((clonedObject as Node).children) {
+                    this.addChildNodes(clonedObject);
+                }
+                if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(this, arg.target)
+                    && canAllowDrop(arg.target)) {
+                    addChildToContainer(this, arg.target, clonedObject);
+                } else {
+                    value = this.add(clonedObject, true);
+                }
+                if ((clonedObject || value) && canSingleSelect(this)) {
+                    this.select([this.nameTable[clonedObject[id]]]);
+                }
+            }
+        }
+        this.protectPropertyChange(false);
+        newObj = this.nameTable[clonedObject[id]];
+        if (clonedObject[hasTargetArgs]) {
+            (clonedObject as BpmnAnnotation).nodeId = clonedObject[hasTargetArgs];
+            this.remove(clonedObject);
+        }
+        if (this.bpmnModule && newObj instanceof Node && (clonedObject as Node).processId) {
+            newObj.processId = (clonedObject as Node).processId;
+            this.bpmnModule.dropBPMNchild(this.nameTable[newObj.processId], newObj, this);
+        }
+        this.endGroupAction();
+        if (this.mode !== 'SVG') { this.refreshDiagramLayer(); }
+        delete this.droppable[source];
+        let selectedSymbols: string = 'selectedSymbols'; remove(this.droppable[selectedSymbols]);
+    }
 
     //property changes - end region
     /* tslint:disable */
@@ -6965,59 +7304,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             this['enterObject'] = newObj;
                             this['enterTable'] = entryTable;
                             this.triggerEvent(DiagramEvent.dragEnter, arg);
-                            if ((newObj instanceof Node) && newObj.shape.type === 'SwimLane' && (newObj.shape as SwimLane).isLane) {
-                                let swimLaneObj: NodeModel = arg.element as NodeModel;
-                                let laneObj: LaneModel = (swimLaneObj.shape as SwimLane).lanes[0];
-                                let child1: NodeModel; let child2: NodeModel;
-                                isHorizontal = ((swimLaneObj.shape as SwimLane).orientation === 'Horizontal') ? true : false;
-                                child1 = this.nameTable[newObj.children[0]];
-                                child2 = this.nameTable[newObj.children[1]];
-                                if (isHorizontal) {
-                                    header.width = laneObj.header.width;
-                                    header.height = laneObj.height;
-                                    lane.width = laneObj.width - header.width;
-                                    lane.height = laneObj.height;
-                                    lane.offsetX = position.x + 5 + (laneObj.header.width + (child2.width / 2));
-                                    lane.offsetY = position.y + child2.height / 2;
-                                } else {
-                                    header.width = laneObj.width;
-                                    header.height = laneObj.header.height;
-                                    lane.width = laneObj.width;
-                                    lane.height = laneObj.height - header.height;
-                                    lane.offsetX = position.x + 5 + child2.width / 2;
-                                    lane.offsetY = position.y + (laneObj.header.height + (child2.height / 2));
-                                }
-                                header.offsetX = position.x + 5 + child1.width / 2;
-                                header.offsetY = position.y + child1.height / 2;
-                                newObj.width = laneObj.width;
-                                newObj.height = laneObj.height;
-                            }
-                            if ((newObj instanceof Node) && (newObj.shape as SwimLane).isPhase) {
-                                if (isHorizontal) {
-                                    newObj.height = 1;
-                                } else {
-                                    newObj.width = 1;
-                                }
-                            }
-                            if (!this.activeLayer.lock && !arg.cancel) {
-                                this.preventUpdate = true;
-                                if ((newObj as Node).children) {
-                                    this.findChild((newObj as Node), entryTable);
-                                }
-                                this.preventUpdate = true;
-                                if (newObj.zIndex !== -1) {
-                                    newObj.zIndex = -1;
-                                }
-                                this.initObject(newObj as IElement, undefined, undefined, true);
-                                this.currentSymbol = newObj as Node | Connector;
-                                if (this.mode !== 'SVG') {
-                                    this.refreshDiagramLayer();
-                                }
-                                this.commandHandler.select(newObj);
-                                this.eventHandler.mouseDown(args.event);
-                                this.eventHandler.mouseMove(args.event, args);
-                                this.preventUpdate = false; this.updatePage(); selectedSymbol.style.opacity = '0';
-                            }
+                            this.dragEnterEvent = { args: args, entryTable: entryTable, selectedSymbol: selectedSymbol, header: header, lane: lane };
+                            this.triggerEvent(DiagramEvent.dragEnter, arg, this.successDragEnter.bind(this));
                             delete this['enterObject'];
                             delete this['enterTable'];
                         }
@@ -7033,81 +7321,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         // tslint:disable-next-line:no-any
         this.droppable.drop = (args: any) => {
             let source: string = 'sourceElement';
-            let value: NodeModel | ConnectorModel;
+
             if (this.currentSymbol) {
-                let isPhase: boolean = false; let orientation: Orientation; let isConnector: boolean;
-                isConnector = (this.currentSymbol instanceof Connector) ? true : false;
                 if (args.event.touches) {
                     this.eventHandler.mouseUp(args.event);
                 }
-                let newObj: NodeModel | Connector; let node: Node; let conn: Connector;
                 let arg: IDropEventArgs = {
                     source: this.droppable[source],
                     element: this.currentSymbol,
                     target: this.eventHandler['hoverNode'] || this.eventHandler['lastObjectUnderMouse'] || this, cancel: false,
                     position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
                 };
-                this.triggerEvent(DiagramEvent.drop, arg); let clonedObject: Object; let id: string = 'id';
-                clonedObject = cloneObject(this.currentSymbol); clonedObject['hasTarget'] = this.currentSymbol['hasTarget'];
-                this.removeFromAQuad(this.currentSymbol);
-                this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
-                this.removeElements(this.currentSymbol);
-                if ((this.currentSymbol.shape as SwimLaneModel).isLane ||
-                    (this.currentSymbol.shape as SwimLaneModel).isPhase) {
-                    this.removeChildInNodes(this.currentSymbol as Node);
-                }
-                if (arg.cancel) { removeChildNodes(this.currentSymbol as Node, this) }
-                if ((this.currentSymbol.shape as SwimLaneModel).isPhase) {
-                    isPhase = true;
-                    orientation = (this.currentSymbol.shape as SwimLaneModel).orientation;
-                }
-                delete this.nameTable[this.currentSymbol.id]; this.currentSymbol = null;
-                this.protectPropertyChange(true);
-                if (!arg.cancel) {
-                    this.startGroupAction();
-                    if (clonedObject && (((clonedObject as Node).shape as SwimLaneModel).isLane || isPhase)) {
-                        if (isPhase) {
-                            ((clonedObject as Node).shape as SwimLaneModel).isPhase = isPhase;
-                            ((clonedObject as Node).shape as SwimLaneModel).orientation = orientation;
-                        }
-                        this.eventHandler.addSwimLaneObject(clonedObject);
-                    }
-                    if (((clonedObject as Node).shape as BpmnShape).type === 'Bpmn' && ((clonedObject as Node).shape as BpmnShape).annotation
-                        && clonedObject['hasTarget']) {
-                        let nodeId: string = (((clonedObject as Node).shape as BpmnShape).annotation as BpmnAnnotation).nodeId;
-                        ((clonedObject as Node).shape as BpmnShape).annotation.id = (clonedObject as Node).id;
-                        this.addTextAnnotation(((clonedObject as Node).shape as BpmnShape).annotation, this.nameTable[nodeId]);
-                        (clonedObject as BpmnAnnotation).nodeId = '';
-                    }
-                    if (!((clonedObject as Node).shape as SwimLaneModel).isLane && !isPhase) {
-                        if ((clonedObject as Node).children) {
-                            this.addChildNodes(clonedObject);
-                        }
-                        if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(this, arg.target)
-                            && canAllowDrop(arg.target)) {
-                            addChildToContainer(this, arg.target, clonedObject);
-                        } else {
-                            value = this.add(clonedObject, true);
-                        }
-                        if ((clonedObject || value) && canSingleSelect(this)) {
-                            this.select([this.nameTable[clonedObject[id]]]);
-                        }
-                    }
-                }
-                this.protectPropertyChange(false);
-                newObj = this.nameTable[clonedObject[id]];
-                if (clonedObject['hasTarget']) {
-                    (clonedObject as BpmnAnnotation).nodeId = clonedObject['hasTarget'];
-                    this.remove(clonedObject);
-                }
-                if (this.bpmnModule && newObj instanceof Node && (clonedObject as Node).processId) {
-                    newObj.processId = (clonedObject as Node).processId;
-                    this.bpmnModule.dropBPMNchild(this.nameTable[newObj.processId], newObj, this);
-                }
-                this.endGroupAction();
-                if (this.mode !== 'SVG') { this.refreshDiagramLayer(); }
-                delete this.droppable[source];
-                let selectedSymbols: string = 'selectedSymbols'; remove(this.droppable[selectedSymbols]);
+                this.triggerEvent(DiagramEvent.drop, arg, this.onDropEventSuccess.bind(this));
             }
             else {
                 let arg: IDropEventArgs = {
@@ -7144,6 +7369,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         };
     }
+
+
 
     private removeChildInNodes(node: NodeModel) {
         if (node) {

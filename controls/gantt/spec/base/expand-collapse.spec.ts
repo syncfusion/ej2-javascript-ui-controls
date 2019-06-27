@@ -65,6 +65,18 @@ describe('Gantt expand collapse support', () => {
             expect(secondElement.style.display).toBe('table-row');
             done();
         });
+        it('Collapse by collapseall method', (done: Function) => {
+            ganttObj.collapseAll();
+            let secondElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[1]) as HTMLElement;
+            expect(secondElement.style.display).toBe('none');
+            done();
+        });
+        it('Expand by expandall method', (done: Function) => {
+            ganttObj.expandAll();
+            let secondElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[1]) as HTMLElement;
+            expect(secondElement.style.display).toBe('table-row');
+            done();
+        });
         it('Collapse at level', (done: Function) => {
             ganttObj.ganttChartModule.collapseAtLevel(1);
             let rowElement: HTMLElement = (ganttObj.element.querySelectorAll('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr')[7]) as HTMLElement;

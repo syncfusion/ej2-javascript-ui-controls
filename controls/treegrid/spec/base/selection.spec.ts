@@ -211,7 +211,7 @@ describe('Selection module', () => {
   });
 
 
-  describe('TreeGrid CheckBoxSelection', () => {
+  describe('TreeGrid CheckBoxSelection1', () => {
     let gridObj: TreeGrid;
     let rowSelected: () => void;
     beforeAll((done: Function) => {
@@ -268,7 +268,7 @@ describe('Selection module', () => {
     });
   });
 
-  describe('TreeGrid CheckBoxSelection', () => {
+  describe('TreeGrid CheckBoxSelection2', () => {
     let gridObj: TreeGrid;
     let rowSelected: () => void;
     let rowDeselected: () => void;
@@ -326,7 +326,7 @@ describe('Selection module', () => {
     });
   });
 
-  describe('TreeGrid CheckBoxSelection', () => {
+  describe('TreeGrid CheckBoxSelection3', () => {
     let gridObj: TreeGrid;
     let rowSelected: () => void;
     beforeAll((done: Function) => {
@@ -382,7 +382,7 @@ describe('Selection module', () => {
     });
   });
 
-  describe('TreeGrid CheckBoxSelection', () => {
+  describe('TreeGrid CheckBoxSelection4', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
@@ -432,7 +432,7 @@ describe('Selection module', () => {
     });
   });
 
-  describe('TreeGrid CheckBoxSelection', () => {
+  describe('TreeGrid CheckBoxSelection5', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
       gridObj = createGrid(
@@ -466,7 +466,7 @@ describe('Selection module', () => {
     });
   });
 
-  describe('TreeGrid CheckBoxSelection', () => {
+  describe('TreeGrid CheckBoxSelection6', () => {
     let gridObj: TreeGrid;
     let rowSelected: () => void;
     beforeAll((done: Function) => {
@@ -591,7 +591,7 @@ describe('Selection module', () => {
     });
   });
 
-  describe('TreeGrid CheckBoxSelection', () => {
+  describe('TreeGrid CheckBoxSelection7', () => {
     let gridObj: TreeGrid;
     let rowSelected: () => void;
     let actionComplete: () => void;

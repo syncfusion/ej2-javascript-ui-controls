@@ -116,7 +116,19 @@ export class CsvHelper {
         }
         this.csvStr = csv;
     }
-    private parseCellValue(value: string): any {
+    private parseCellValue(value: String): any {
+        let val: string = '';
+
+        let length: number = value.length;
+
+        for (let start: number = 0; start < length ; start++) {
+            if (value[start] === '\"') {
+                val += value[start].replace('\"', '\"\"');
+            } else {
+                val += value[start];
+            }
+        }
+        value = val;
         if (value.indexOf(',') !== -1 || value.indexOf('\n') !== -1) {
             return value = '\"' + value + '\"';
         } else {

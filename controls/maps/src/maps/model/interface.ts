@@ -5,7 +5,7 @@ import { Maps, FontModel, BorderModel } from '../../index';
 import { Size } from '../utils/helper';
 import {
     LayerSettingsModel, MarkerSettingsModel, DataLabelSettingsModel, ShapeSettingsModel,
-    MarkerType, LegendShape, Annotation
+    MarkerType, LegendShape, Annotation, MarkerClusterSettingsModel
 } from '../index';
 /**
  * Specifies Maps Events
@@ -32,6 +32,7 @@ export interface ILoadedEventArgs extends IMapsEventArgs {
 }
 /**
  * Specifies the Load Event arguments.
+ * @deprecated
  */
 export interface ILoadEventArgs extends IMapsEventArgs {
     /** Defines the current Maps instance */
@@ -58,6 +59,19 @@ export interface IMouseEventArgs extends IMapsEventArgs {
     x: number;
     /** Defines current mouse y location */
     y: number;
+    /** Defines current latitude value of maps location */
+    latitude?: number;
+    /** Defines current longitude value of maps location */
+    longitude?: number;
+}
+/**
+ * Specifies the geo location. 
+ */
+export interface GeoPosition {
+    /** Defines current latitude value of maps location */
+    latitude?: number;
+    /** Defines current longitude value of maps location */
+    longitude?: number;
 }
 /**
  * Maps Resize event arguments.
@@ -83,6 +97,7 @@ export interface IFontMapping {
 }
 /**
  * Specifies TooltipRender event arguments for maps.
+ * @deprecated
  */
 export interface ITooltipRenderEventArgs extends IMapsEventArgs {
     /** Defines the current TreeMap instance */
@@ -118,6 +133,7 @@ export interface ITooltipRenderEventArgs extends IMapsEventArgs {
 }
 /**
  * Specifies itemSelection event arguments for maps.
+ * @deprecated
  */
 export interface ISelectionEventArgs extends IMapsEventArgs {
     /**
@@ -187,6 +203,7 @@ export interface IShapes {
 }
 /**
  * Specifies layerRendering event arguments for maps.
+ * @deprecated
  */
 export interface ILayerRenderingEventArgs extends IMapsEventArgs {
     /**
@@ -205,6 +222,7 @@ export interface ILayerRenderingEventArgs extends IMapsEventArgs {
 
 /**
  * Specifies shapeRendering event arguments for maps.
+ * @deprecated
  */
 export interface IShapeRenderingEventArgs extends IMapsEventArgs {
     /**
@@ -234,6 +252,7 @@ export interface IShapeRenderingEventArgs extends IMapsEventArgs {
 }
 /**
  * Specifies markerRendering event arguments for maps.
+ * @deprecated
  */
 export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
     /**
@@ -284,6 +303,52 @@ export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
 }
 
 /**
+ * Specifies markerClusterRendering event arguments for maps.
+ */
+export interface IMarkerClusterRenderingEventArgs extends IMapsEventArgs {
+    /**
+     * maps instance event argument
+     */
+    maps?: Maps;
+    /**
+     * marker instance. This is Read Only option.
+     */
+    cluster?: MarkerClusterSettingsModel;
+    /**
+     * Marker fill.
+     */
+    fill?: string;
+
+    /**
+     * To customize the height of the marker.
+     */
+    height?: number;
+
+    /**
+     * To customize the width of the marker.
+     */
+    width?: number;
+
+    /**
+     * To customize the shape of the marker.
+     */
+    shape?: MarkerType;
+
+    /**
+     * To provide the image url for rendering marker image
+     */
+    imageUrl?: string;
+    /**
+     * Configures the marker border
+     */
+    border?: BorderModel;
+    /**
+     * marker data event argument
+     */
+    data?: object;
+}
+
+/**
  * Specifies markerClick event arguments for maps.
  */
 export interface IMarkerClickEventArgs extends IMouseEventArgs {
@@ -316,7 +381,36 @@ export interface IMarkerMoveEventArgs extends IMouseEventArgs {
 }
 
 /**
+ * Specifies clusterClick event arguments for maps.
+ */
+export interface IMarkerClusterClickEventArgs extends IMouseEventArgs {
+    /**
+     * marker data event argument
+     */
+    data?: object;
+    /**
+     * maps instance event argument
+     */
+    maps?: Maps;
+}
+
+/**
+ * Specifies markerClusterMove event arguments for maps.
+ */
+export interface IMarkerClusterMoveEventArgs extends IMouseEventArgs {
+    /**
+     * maps instance event argument
+     */
+    maps?: Maps;
+    /**
+     * marker data event argument. This is Read Only option.
+     */
+    data?: object;
+}
+
+/**
  * Specifies labelRendering event arguments for maps.
+ * @deprecated
  */
 export interface ILabelRenderingEventArgs extends IMapsEventArgs {
     /**
@@ -445,6 +539,7 @@ export interface ILegendRenderingEventArgs extends IMapsEventArgs {
 
 /**
  * Specifies annotationRendering event arguments for maps.
+ * @deprecated
  */
 export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
     /**

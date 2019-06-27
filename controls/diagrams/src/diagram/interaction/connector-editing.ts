@@ -7,7 +7,7 @@ import { Rect } from '../primitives/rect';
 import { intersect3 } from '../utility/diagram-util';
 import { cloneObject } from '../utility/base-util';
 import { HistoryEntry } from '../diagram/history';
-import { Direction } from './../enum/enum';
+import { Direction, DiagramEvent } from './../enum/enum';
 import { contains } from './actions';
 import { SelectorModel } from './selector-model';
 import { MouseEventArgs } from './event-handlers';
@@ -16,6 +16,7 @@ import { StraightSegment, BezierSegment, OrthogonalSegment } from '../objects/co
 import { ToolBase } from './tool';
 import { Corners } from '../core/elements/diagram-element';
 import { Segment } from './scroller';
+import { ISegmentCollectionChangeEventArgs } from '../objects/interface/IElement';
 
 /**
  * Multiple segments editing for Connector
@@ -72,7 +73,7 @@ export class ConnectorEditing extends ToolBase {
             if (args.source && (args.source as SelectorModel).connectors) {
                 connector = (args.source as SelectorModel).connectors[0];
             }
-            if (this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
+            if ((this.inAction  && this.selectedSegment !== undefined && this.endPoint !== undefined) && (diffX !== 0 || diffY !== 0)) {
                 if (this.endPoint === 'OrthoThumb') {
                     this.blocked = !this.dragOrthogonalSegment(
                         connector, this.selectedSegment as OrthogonalSegment, this.currentPosition, this.segmentIndex);
@@ -139,20 +140,27 @@ export class ConnectorEditing extends ToolBase {
         let next: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
         let length: number = (next.length || next.length === 0) ? next.length : Point.distancePoints(next.points[0], next.points[1]);
         if (!(length <= 5)) {
-            let last: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
-            connector.segments.splice(index - 1, 2);
-            let segment: OrthogonalSegment = this.selectedSegment as OrthogonalSegment;
-            if (segment.direction === 'Left' || segment.direction === 'Right') {
-                first.points[first.points.length - 1].x = last.points[0].x;
-                last.points[0].y = first.points[first.points.length - 1].y;
-            } else {
-                first.points[first.points.length - 1].y = last.points[0].y;
-                last.points[0].x = first.points[first.points.length - 1].x;
+            let removeSegments: OrthogonalSegmentModel[] = connector.segments.slice(index - 1, index + 1);
+            let args: ISegmentCollectionChangeEventArgs = {
+                element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
+            };
+            this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+            if (!args.cancel) {
+                let last: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
+                connector.segments.splice(index - 1, 2);
+                let segment: OrthogonalSegment = this.selectedSegment as OrthogonalSegment;
+                if (segment.direction === 'Left' || segment.direction === 'Right') {
+                    first.points[first.points.length - 1].x = last.points[0].x;
+                    last.points[0].y = first.points[first.points.length - 1].y;
+                } else {
+                    first.points[first.points.length - 1].y = last.points[0].y;
+                    last.points[0].x = first.points[first.points.length - 1].x;
+                }
+                if (segment.length || segment.length === 0) {
+                    this.findSegmentDirection(first);
+                }
+                this.findSegmentDirection(last);
             }
-            if (segment.length || segment.length === 0) {
-                this.findSegmentDirection(first);
-            }
-            this.findSegmentDirection(last);
         }
     }
 
@@ -168,26 +176,41 @@ export class ConnectorEditing extends ToolBase {
         let first: OrthogonalSegment = connector.segments[index - 1] as OrthogonalSegment;
         let last: OrthogonalSegment = connector.segments[index + 2] as OrthogonalSegment;
         let next: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
+        let removeSegments: OrthogonalSegmentModel[]; let args: ISegmentCollectionChangeEventArgs;
         if (next.length || next.length === 0) {
-            connector.segments.splice(index, 2);
-            if (segment.direction === 'Top' || segment.direction === 'Bottom') {
-                last.points[0].y = segment.points[0].y;
-                first.points[first.points.length - 1].x = last.points[0].x;
-            } else {
-                last.points[0].x = segment.points[0].x;
-                first.points[first.points.length - 1].y = last.points[0].y;
+            removeSegments = connector.segments.slice(index, 2);
+            args = {
+                element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
+            };
+            this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+            if (!args.cancel) {
+                connector.segments.splice(index, 2);
+                if (segment.direction === 'Top' || segment.direction === 'Bottom') {
+                    last.points[0].y = segment.points[0].y;
+                    first.points[first.points.length - 1].x = last.points[0].x;
+                } else {
+                    last.points[0].x = segment.points[0].x;
+                    first.points[first.points.length - 1].y = last.points[0].y;
+                }
             }
         } else {
-            connector.segments.splice(index + 1, 1);
-            if (segment.direction === 'Top' || segment.direction === 'Bottom') {
-                first.points[first.points.length - 1].x = next.points[next.points.length - 1].x;
-            } else {
-                first.points[first.points.length - 1].y = next.points[next.points.length - 1].y;
+            removeSegments = connector.segments.slice(index + 1, 1);
+            args = {
+                element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
+            };
+            this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+            if (!args.cancel) {
+                connector.segments.splice(index + 1, 1);
+                if (segment.direction === 'Top' || segment.direction === 'Bottom') {
+                    first.points[first.points.length - 1].x = next.points[next.points.length - 1].x;
+                } else {
+                    first.points[first.points.length - 1].y = next.points[next.points.length - 1].y;
+                }
+                this.findSegmentDirection(first);
+                segment.length = segment.direction = null;
             }
-            this.findSegmentDirection(first);
-            segment.length = segment.direction = null;
         }
-        if (first && last) {
+        if (first && last && !args.cancel) {
             first.length = Point.distancePoints(first.points[0], last.points[0]);
             first.direction = Point.direction(first.points[0], last.points[0]) as Direction;
             if (last.length || last.length === 0) {
@@ -284,12 +307,14 @@ export class ConnectorEditing extends ToolBase {
                 index = this.insertFirstSegment(obj, segment, tx, ty, index);
                 update = true;
             }
-            if (update) {
-                this.selectedSegment = segment = obj.segments[index] as OrthogonalSegment;
-                this.segmentIndex = 0;
+            if (index) {
+                if (update) {
+                    this.selectedSegment = segment = obj.segments[index] as OrthogonalSegment;
+                    this.segmentIndex = 0;
+                }
+                this.updateAdjacentSegments(obj as Connector, index, tx, ty);
+                this.commandHandler.updateEndPoint(obj as Connector, oldValues);
             }
-            this.updateAdjacentSegments(obj as Connector, index, tx, ty);
-            this.commandHandler.updateEndPoint(obj as Connector, oldValues);
         }
         return true;
     }
@@ -308,8 +333,14 @@ export class ConnectorEditing extends ToolBase {
         segments.push(
             new OrthogonalSegment(
                 obj, 'segments', { type: 'Orthogonal', direction: segmentDirection, length: length / 2 }, true));
-        obj.segments = segments.concat(obj.segments);
-        index = coll + 2;
+        let args: ISegmentCollectionChangeEventArgs = {
+            element: obj, addSegments: segments, type: 'Addition', cancel: false
+        };
+        this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+        if (!args.cancel) {
+            obj.segments = segments.concat(obj.segments);
+            index = coll + 2;
+        }
         return index;
     }
 
@@ -317,7 +348,6 @@ export class ConnectorEditing extends ToolBase {
         let direction: Direction; let length: number; let segments: OrthogonalSegmentModel[] = [];
         let segValues: Object; let index: number; let insertseg: OrthogonalSegment;
         if (obj.sourcePortID && segment.length && (obj.segments[0] as OrthogonalSegment).points.length > 2) {
-            obj.segments.splice(0, 1);
             let prev: OrthogonalSegment;
             for (let i: number = 0; i < segment.points.length - 1; i++) {
                 let len: number = Point.distancePoints(segment.points[i], segment.points[i + 1]);
@@ -334,8 +364,6 @@ export class ConnectorEditing extends ToolBase {
                 prev = insertseg;
                 segments.push(insertseg);
             }
-            obj.segments = segments.concat(obj.segments);
-            index = 1;
         } else {
             segValues = { type: 'Orthogonal', direction: segment.direction, length: segment.length / 3 };
             segments.push(new OrthogonalSegment(obj, 'segments', segValues, true));
@@ -349,12 +377,23 @@ export class ConnectorEditing extends ToolBase {
             insertseg = new OrthogonalSegment(
                 obj, 'segments', { type: 'Orthogonal', direction: direction, length: length }, true);
             segments.push(insertseg);
-            let nextseg: OrthogonalSegmentModel = obj.segments[1];
-            if (nextseg && nextseg.length) {
-                nextseg.length = (direction !== nextseg.direction) ? nextseg.length + length : nextseg.length - length;
+
+        }
+        let args: ISegmentCollectionChangeEventArgs = {
+            element: obj, addSegments: segments, type: 'Addition', cancel: false
+        };
+        this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+        if (!args.cancel) {
+
+            if (obj.sourcePortID && segment.length && (obj.segments[0] as OrthogonalSegment).points.length > 2) {
+                obj.segments.splice(0, 1); index = 1;
+            } else {
+                let nextseg: OrthogonalSegmentModel = obj.segments[1];
+                if (nextseg && nextseg.length) {
+                    nextseg.length = (direction !== nextseg.direction) ? nextseg.length + length : nextseg.length - length;
+                }
+                index = 2; segment.length = 2 * segment.length / 3;
             }
-            index = 2;
-            segment.length = 2 * segment.length / 3;
             obj.segments = segments.concat(obj.segments);
         }
         return index;
@@ -382,8 +421,8 @@ export class ConnectorEditing extends ToolBase {
         : number {
         let oldValues: Connector = { segments: connector.segments } as Connector;
         let index: number = connector.segments.indexOf(segment); let first: OrthogonalSegment; let insertseg: OrthogonalSegment;
-        let len: number; let dir: Direction;
-        connector.segments.pop();
+        let len: number; let dir: Direction; let segments: OrthogonalSegmentModel[] = [];
+        let removeSegment: OrthogonalSegmentModel = connector.segments.pop();
         let last: OrthogonalSegment = connector.segments[connector.segments.length - 1] as OrthogonalSegment;
         first = (last && last.type === 'Orthogonal') ? last : null;
         for (let i: number = 0; i < segment.points.length - 2; i++) {
@@ -391,7 +430,7 @@ export class ConnectorEditing extends ToolBase {
             dir = Point.direction(segment.points[i], segment.points[i + 1]) as Direction;
             insertseg = new OrthogonalSegment(
                 connector, 'segments', { type: 'Orthogonal', length: len, direction: dir }, true);
-            connector.segments.push(insertseg); first = insertseg;
+            segments.push(insertseg); first = insertseg;
         }
         let sec: number = segmentIndex;
         if (segment.points.length === 2 || sec === segment.points.length - 2) {
@@ -404,15 +443,24 @@ export class ConnectorEditing extends ToolBase {
                 dir = Point.direction(segment.points[segment.points.length - 2], segment.points[segment.points.length - 1]) as Direction;
                 newseg = new OrthogonalSegment(
                     connector, 'segments', { type: 'Orthogonal', length: len, direction: dir });
-                connector.segments.push(newseg);
-
+                segments.push(newseg);
             }
         }
         let lastseg: OrthogonalSegment = new OrthogonalSegment(
             connector, 'segments', { type: 'Orthogonal' }, true);
-        connector.segments.push(lastseg);
-        this.commandHandler.updateEndPoint(connector as Connector, oldValues);
-        index = index + segmentIndex;
+        segments.push(lastseg);
+        let args: ISegmentCollectionChangeEventArgs = {
+            element: connector, addSegments: segments, type: 'Addition', cancel: false
+        };
+        this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+        if (!args.cancel) {
+            connector.segments = connector.segments.concat(segments);
+            index = index + segmentIndex;
+        } else {
+            connector.segments.push(removeSegment);
+        }
+        this.commandHandler.updateEndPoint(connector as Connector);
+
         return index;
     }
 

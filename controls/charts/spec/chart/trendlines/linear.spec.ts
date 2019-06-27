@@ -356,6 +356,18 @@ describe('Chart', () => {
             chartObj.series[0].dataSource = series2;
             chartObj.refresh();
         });
+        it('Linear Trendlines with canvas mode', (done: Function) => {
+            loaded = (args: Object): void => {
+                // let stroke: string = document.getElementById('container_Series_0_TrendLine_0').getAttribute('stroke');
+                // expect(stroke === 'blue');
+
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.enableCanvas = true;
+            chartObj.series[0].dataSource = series2;
+            chartObj.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

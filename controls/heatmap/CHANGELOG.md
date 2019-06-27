@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### HeatMap
+
+#### New Features
+
+- Now it is possible to customize the legend label using legendRender event.
+
 ## 17.1.47 (2019-05-14)
 
 ### HeatMap

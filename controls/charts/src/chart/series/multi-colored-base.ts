@@ -1,5 +1,5 @@
 import { getPoint, ChartLocation, appendClipElement, pathAnimation } from '../../common/utils/helper';
-import { PathOption } from '@syncfusion/ej2-svg-base';
+import { PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { Axis } from '../../chart/axis/axis';
@@ -196,7 +196,7 @@ export class MultiColoredSeries extends LineBase {
                 }
             );
             series.seriesElement.appendChild(
-                appendClipElement(series.chart.redraw, options, series.chart.renderer)
+                appendClipElement(series.chart.redraw, options, series.chart.renderer as SvgRenderer)
             );
             return 'url(#' + series.chart.element.id + '_ChartSegmentClipRect_' + index + ')';
         }

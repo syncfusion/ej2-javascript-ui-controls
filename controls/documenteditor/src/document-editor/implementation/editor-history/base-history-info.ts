@@ -4,11 +4,11 @@ import { WCharacterFormat } from '../format/character-format';
 import { WListFormat } from '../format/list-format';
 import { WListLevel } from '../list/list-level';
 import { Editor, EditorHistory, Selection } from '../index';
-import { ModifiedLevel, RowHistoryFormat, TableHistoryInfo } from './history-helper';
+import { ModifiedLevel, RowHistoryFormat, TableHistoryInfo, EditRangeInfo } from './history-helper';
 import {
     IWidget, BlockWidget,
     ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
-    FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget
+    FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget, EditRangeStartElementBox
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -39,6 +39,7 @@ export class BaseHistoryInfo {
     private currentPropertyIndex: number;
     private ignoredWord: string;
     private viewer: LayoutViewer;
+
     //Properties
     //gets owner control
     /**
@@ -121,6 +122,10 @@ export class BaseHistoryInfo {
     public setBookmarkInfo(bookmark: BookmarkElementBox): void {
         this.removedNodes.push({ 'bookmark': bookmark, 'startIndex': bookmark.indexInOwner, 'endIndex': bookmark.reference.indexInOwner });
     }
+    public setEditRangeInfo(editStart: EditRangeStartElementBox): void {
+        // tslint:disable-next-line:max-line-length
+        this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
+    }
     private revertBookmark(): void {
         let bookmarkInfo: BookmarkInfo = this.removedNodes[0] as BookmarkInfo;
         let bookmark: BookmarkElementBox = bookmarkInfo.bookmark;
@@ -134,6 +139,21 @@ export class BaseHistoryInfo {
             this.editorHistory.undoStack.push(this);
         }
     }
+    private revertEditRangeRegion(): void {
+        let editRangeInfo: EditRangeInfo = this.removedNodes[0] as EditRangeInfo;
+        let editStart: EditRangeStartElementBox = editRangeInfo.editStart;
+        if (this.editorHistory.isUndoing) {
+            let user: string = editStart.user === '' ? editStart.group : editStart.user;
+            this.owner.editor.updateRangeCollection(editStart, user);
+            editStart.line.children.splice(editRangeInfo.startIndex, 0, editStart);
+            editStart.editRangeEnd.line.children.splice(editRangeInfo.endIndex, 0, editStart.editRangeEnd);
+            this.editorHistory.recordChanges(this);
+        } else {
+            this.owner.editorModule.removeUserRestrictionsInternal(editStart);
+            this.editorHistory.undoStack.push(this);
+        }
+        this.owner.editor.fireContentChange();
+    }
     /**
      * Reverts this instance
      * @private
@@ -142,6 +162,10 @@ export class BaseHistoryInfo {
     public revert(): void {
         if (this.action === 'DeleteBookmark') {
             this.revertBookmark();
+            return;
+        }
+        if (this.action === 'RemoveEditRange') {
+            this.revertEditRangeRegion();
             return;
         }
         this.owner.isShiftingEnabled = true;
@@ -979,6 +1003,8 @@ export class BaseHistoryInfo {
             case 'ParagraphBidi':
             case 'TableBidi':
                 return 'bidi';
+                case 'ContextualSpacing':
+                return 'contextualSpacing';
         }
         return undefined;
     }

@@ -19,27 +19,27 @@ describe('Gantt taskbar rendering', () => {
         }
 
         let lefttasklabel: Element = createElement('div', { id: 'lefttasklabelTS', styles: 'visibility:hidden' });
-        lefttasklabel.innerHTML = '<div>Progress - ${ganttProperties.progress}%</div>';
+        lefttasklabel.innerHTML = '<div>Progress - ${Progress}%</div>';
         document.body.appendChild(lefttasklabel);
 
         let righttasklabel: Element = createElement('div', { id: 'righttasklabelTS', styles: 'visibility:hidden' });
-        righttasklabel.innerHTML = '<div>Task Name  - ${ganttProperties.taskName}</div>';
+        righttasklabel.innerHTML = '<div>Task Name  - ${TaskName}</div>';
         document.body.appendChild(righttasklabel);
 
         let parentTaskTemplate: Element = createElement('div', { id: 'demoParentTaskTemplate', className: cls.traceParentTaskBar + ' ' + cls.parentTaskBarInnerDiv, styles: 'visibility:hidden' });
-        parentTaskTemplate.innerHTML = '<div class="' + cls.parentProgressBarInnerDiv + ' ' + cls.traceParentProgressBar + '" style="width:${ganttProperties.progressWidth}px;height:${getheight()}px;"><span class="e-task-label" style="color:white">ParentTemplate</span></div>';
+        parentTaskTemplate.innerHTML = '<div class="' + cls.parentProgressBarInnerDiv + ' ' + cls.traceParentProgressBar + '" style="width:${progressWidth}px;height:${getheight()}px;"><span class="e-task-label" style="color:white">ParentTemplate</span></div>';
         document.body.appendChild(parentTaskTemplate);
 
         let childTaskTemplate: Element = createElement('div', { id: 'demoChildTaskTemplate', className: cls.childTaskBarInnerDiv + ' ' + cls.traceChildTaskBar, styles: 'visibility:hidden' });
-        childTaskTemplate.innerHTML = '<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildProgressBar + '" style="width:${ganttProperties.progressWidth}px;"><span class="e-task-label" style="color:white">ChildTemplate</span></div>';
+        childTaskTemplate.innerHTML = '<div class="' + cls.childProgressBarInnerDiv + ' ' + cls.traceChildProgressBar + '" style="width:${progressWidth}px;"><span class="e-task-label" style="color:white">ChildTemplate</span></div>';
         document.body.appendChild(childTaskTemplate);
 
         let parentTaskTemplateCustom: Element = createElement('div', { id: 'demoParentTaskTemplateCustom', className: cls.traceParentTaskBar, styles: 'visibility:hidden' });
-        parentTaskTemplateCustom.innerHTML = '<div class="' + cls.traceParentProgressBar + '"style="width:${ganttProperties.progressWidth}px;height:${getheight()}px;"><span class="e-task-label" style="color:black">ParentTemplate-custom</span></div>';
+        parentTaskTemplateCustom.innerHTML = '<div class="' + cls.traceParentProgressBar + '"style="width:${progressWidth}px;height:${getheight()}px;"><span class="e-task-label" style="color:black">ParentTemplate-custom</span></div>';
         document.body.appendChild(parentTaskTemplateCustom);
 
         let childTaskTemplateCustom: Element = createElement('div', { id: 'demoChildTaskTemplateCustom', className: cls.traceChildTaskBar, styles: 'visibility:hidden' });
-        childTaskTemplateCustom.innerHTML = '<div class="' + cls.traceChildProgressBar + '" style="width:${ganttProperties.progressWidth}px;"><span class="e-task-label" style="color:black">ChildTemplate-custom</span></div>';
+        childTaskTemplateCustom.innerHTML = '<div class="' + cls.traceChildProgressBar + '" style="width:${progressWidth}px;"><span class="e-task-label" style="color:black">ChildTemplate-custom</span></div>';
         document.body.appendChild(childTaskTemplateCustom);
 
         let milestoneTemplate: Element = createElement('div', { id: 'milestoneTemplate', className: cls.traceMilestone, styles: 'visibility:hidden' });
@@ -168,8 +168,8 @@ describe('Gantt taskbar rendering', () => {
             ganttObj.refresh();
         });
         it('Left/Right label with string template', (done: Function) => {
-            ganttObj.labelSettings.leftLabel = '<div>${ganttProperties.taskName}</div>';
-            ganttObj.labelSettings.rightLabel = '<div>${ganttProperties.taskId}</div>';
+            ganttObj.labelSettings.leftLabel = '<div>${TaskName}</div>';
+            ganttObj.labelSettings.rightLabel = '<div>${TaskId}</div>';
             ganttObj.dataBound = () => {
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('Child task 1');
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('2');
@@ -261,6 +261,19 @@ describe('Gantt taskbar rendering', () => {
             ganttObj.dataBound = () => {
                 expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).style.left).toBe("0px");
                 ganttObj.chartRowsModule.refreshRecords([ganttObj.flatData[2]]);
+                done();
+            }
+            ganttObj.refresh();
+        });
+        it('Aria-label testing', (done: Function) => {
+            ganttObj.projectStartDate = new Date('10/15/2017');
+            ganttObj.projectEndDate = new Date('12/30/2017');
+            ganttObj.labelSettings.leftLabel = 'TaskId';
+            ganttObj.labelSettings.rightLabel = 'TaskName';
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(1)').getAttribute('aria-label').indexOf('Left task label 1')> -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(2)').getAttribute('aria-label').indexOf('Name Task 1 Start Date 10/23/2017 End Date 11/06/2017 Duration 11 days')> -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(3)').getAttribute('aria-label').indexOf('Right task label Task 1')> -1).toBeTruthy();
                 done();
             }
             ganttObj.refresh();

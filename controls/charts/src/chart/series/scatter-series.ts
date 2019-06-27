@@ -71,9 +71,10 @@ export class ScatterSeries {
             previousPath = getElement(shapeOption.id).getAttribute('d');
         }
         appendChildElement(
-            series.seriesElement, drawSymbol(
+            false, series.seriesElement, drawSymbol(
                 point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
-                marker.imageUrl, shapeOption, point.x.toString() + ':' + point.yValue.toString()
+                marker.imageUrl, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
+                series.chart.svgRenderer, series.clipRect
             ),
             chart.redraw, true, circlePath + 'x', circlePath + 'y',
             startLocation, previousPath

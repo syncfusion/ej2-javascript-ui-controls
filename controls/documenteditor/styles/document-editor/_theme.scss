@@ -81,6 +81,15 @@
     width: $de-para-dlg-width;
   }
 
+  .e-de-para-dlg-cs-check-box {
+    margin-bottom: 8px;
+    margin-top: 8px;
+  }
+
+  .e-de-para-dlg-spacing-div {
+    margin-left: 40px;
+  }
+
   .e-de-toc-dlg-heading {
     color: $de-dlg-heading-main-header;
     display: block;
@@ -95,6 +104,10 @@
     font-size: $de-toc-dlg-heading-font-size;
     font-weight: $de-toc-dlg-main-heading-font-weight;
     margin-bottom: $de-toc-title-bottom-margin;
+  }
+
+  .e-content-placeholder.e-documenteditor.e-placeholder-documenteditor {
+    background-size: 100%;
   }
 
   .e-de-toc-reset-button {
@@ -335,6 +348,7 @@
     margin-right: $de-dropdown-margin-right;
   }
 
+  .e-de-restrict-pane,
   .e-de-op {
     border-right: 1px solid $de-op-border-clr;
     padding-left: $de-op-padding-left;
@@ -842,10 +856,12 @@
     margin-top: $de-op-result-container-margin-top;
   }
 
+  .e-de-restrict-pane,
   .e-de-op {
     background-color: $de-op-bg-color;
   }
 
+  .e-de-restrict-pane,
   .e-de-op {
     .e-tab-header .e-toolbar-items {
       margin-bottom: $de-op-tab-header-margin-bottom;
@@ -1156,6 +1172,65 @@
     width: $de-insert-table-width;
   }
 
+  .e-de-insert-spellchecker {
+    height: $de-insert-spellchecker-height;
+    width: $de-insert-spellchecker-width;
+  }
+
+  // sass-lint:disable-all
+  .e-de-dlg-spellcheck-listview {
+    border: 1px solid $de-spellcheck-listview-border-color;
+    border-radius: 2px !important;
+    height: $de-spellcheck-listview-height !important;
+    margin-top: 8px;
+    position: relative;
+    float: left;
+    width: 343px;
+   }
+
+   .e-de-spellcheck-error-container {
+     height:$de-spellcheck-container-height;
+     margin-bottom: $de-spellcheck-container-gap;
+   }
+
+   .e-de-spellcheck-suggestion-container {
+    height: 140px;
+  }
+
+   // sass-lint:disable-all
+  .e-dlg-spellcheck-listitem {
+    font-size: 15px !important;
+  }
+
+  //  .e-de-dlg-suggestListView {
+  //   position:absolute;
+  //   width: 343px;
+  //   height: 124px !important;
+  //   margin-top: 8px;
+  // }
+
+  .e-de-spellcheck-btncontainer {
+    margin-top: 8px;
+    position: relative;
+    width: 154px;
+    float: right;
+   }
+
+  .e-de-spellcheck-btn {
+    height: 36px;
+    margin-bottom: 8px;
+    width: 154px;
+  }
+
+  .e-de-dlg-spellchecker-subheader {
+    font-size: 15px;
+    margin-top: 8px;
+  }
+
+  .e-de-dlg-spellchecker-subheaderbtm {
+    font-size: 15px;
+  }
+
   .e-de-list-dlg {
     height: $de-list-dlg-height;
     width: $de-list-dlg-width;
@@ -1453,7 +1528,7 @@
     .e-de-style-font-color-picker,
     .e-de-style-icon-button-size,
     .e-de-style-icon-button-first-size,
-    .e-de-style-icon-button-last-size, {
+    .e-de-style-icon-button-last-size {
       height: 35px;
     }
 
@@ -2010,4 +2085,194 @@
       width: 173px;
     }
   }
+
+  .e-de-restrict-format {
+    margin-top: 16px;
+  }
+
+  .e-de-rp-format {
+    font-size: 13px;
+    margin-bottom: 12px;
+    opacity: .65;
+  }
+
+  .e-de-rp-checkbox {
+    font-size: 12px;
+  }
+
+  .e-de-rp-border {
+    margin-bottom: 12px;
+    margin-top: 12px;
+  }
+
+  .e-de-rp-header {
+    font-size: 15px;
+    font-weight: 500;
+    opacity: .87;
+  }
+
+  .e-de-restrict-pane {
+    .e-checkbox-wrapper .e-label {
+      color: $de-checkbox-wrapper-color;
+      font-size: 12px;
+    }
+
+    .e-checkbox-wrapper .e-frame {
+      height: 16px;
+      width: 16px;
+    }
+
+    .e-checkbox-wrapper {
+      margin-bottom: 8px;
+    }
+  }
+
+  .e-de-rp-user .e-checkbox-wrapper {
+    width: auto;
+  }  
+
+  .e-de-rp-nav-btn,
+  .e-de-rp-btn-enforce {
+    background: $de-rp-btn-bg-color;
+    border-radius: 2px;
+    box-shadow: 0 2px 2px 0 $de-rp-btn-nav-box-shadow, 0 2px 4px 0 $de-rp-btn-nav-box-shadow-next;
+    font-size: 13px;
+    height: 36px;
+    opacity: .87;
+  }
+
+  .e-de-rp-nav-btn {
+    margin: 0 12px;
+    width: 210px;
+  }
+  .e-de-rp-btn-stop-enforce {
+    background: $de-rp-btn-bg-color;
+    border-radius: 2px;
+    box-shadow: 0 2px 2px 0 $de-rp-btn-nav-box-shadow, 0 2px 4px 0 $de-rp-btn-nav-box-shadow-next;
+    font-size: 13px;
+    height: 36px;
+    margin: 0 46px;
+    opacity: .87;
+  }
+
+  .e-de-rp-nav-lbl {
+    font-size: 13px;
+    margin: 0 28px;
+  }
+
+
+  .e-de-rp-sub-div {
+    border-bottom: 1px solid $de-list-view;
+    padding: 12px;
+  }
+
+  .e-de-restrict-pane {
+    padding-left: 0;
+    padding-top: 0;
+  }
+
+  .e-de-rp-whole-header {
+    padding: 12px;
+  }
+
+  .e-de-rp-user {
+    background: $de-numbering-list-background-color;
+    border: 1px solid $de-list-view;
+    border-radius: 2px;
+    font-size: 12px;
+    height: 110px;
+    width: 238px;
+  }
+
+  .e-de-rp-enforce {
+    padding-top: 12px;
+  }
+
+  .e-de-rp-enforce-nav {
+    margin: 12px 0;
+  }
+
+  .e-de-enforce-dlg-title {
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: $de-hyperlink-dlg-margin-bottom;
+    margin-top: 8px;
+  }
+
+  .e-de-enforce .e-de-enforce-dlg-input {
+    height: $de-hyperlink-dlg-input-height;
+    margin-bottom: 8px;
+    width: 300px;
+  }
+
+  .e-de-user-add-btn {
+    background: $de-style-toggle-btn-color;
+    border-radius: 2px;
+    width: 74px;
+  }
+
+  .e-de-user-dlg .e-de-user-dlg-textbox-input {
+    margin-right: 16px;
+    width: 304px;
+  }
+
+  .e-de-user-dlg-list {
+    margin-bottom: 15px;
+  }
+
+  .e-de-user-listview {
+    border: 1px solid $de-list-view;
+    border-radius: 2px;
+    height: 106px;
+  }
+
+  .e-de-user-dlg-user {
+    margin-bottom: 12px;
+  }
+
+  .e-user-delete {
+    float: left;
+  }
+
+  .e-de-unprotect-dlg-title {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .e-de-rp-stop-div1 {
+    opacity: .87;
+    padding: 12px 12px 6px 12px;
+    font-weight: 500;
+    border-bottom: 1px solid #E0E0E0;
+  }
+
+  .e-de-rp-stop-div2 {
+    padding: 12px 12px 24px;
+  }
+
+  .e-de-rp-stop-div3 {
+    padding: 0 0 12px 12px;
+  }
+
+  .e-de-rp-close-icon {
+    float: right;
+    position: relative;
+    top: -7px;
+  }
+
+  .e-de-restrict-pane {
+    height: 100%;
+    overflow: auto;
+    width: 268px;
+  }
+
+  .e-de-rp-nav-lbl {
+    font-size: 13px;
+    margin: 0 28px;
+  }
+
+  .e-documenteditor-optionspane {
+    height: 100%;
+  }
+
 }

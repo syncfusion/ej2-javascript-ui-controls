@@ -1,7 +1,7 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';
-import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append } from '@syncfusion/ej2-base';
-import { EmitType, Event, formatUnit, ChildProperty, compile, closest } from '@syncfusion/ej2-base';
-import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler } from '@syncfusion/ej2-base';
+import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { EmitType, Event, formatUnit, ChildProperty, compile, closest, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser } from '@syncfusion/ej2-base';
 import { DashboardLayoutModel, PanelModel } from './dashboard-layout-model';
 
 
@@ -367,6 +367,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers whenever the panels positions are changed.
      * @event
+     * @blazorProperty 'Changed'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -374,6 +375,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a panel is about to drag.
      * @event
+     * @blazorProperty 'OnDragStart'
      */
     @Event()
     public dragStart: EmitType<DragStartArgs>;
@@ -381,6 +383,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers while a panel is dragged continuously.
      * @event
+     * @blazorProperty 'Dragging'
      */
     @Event()
     public drag: EmitType<DraggedEventArgs>;
@@ -388,6 +391,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a dragged panel is dropped.
      * @event
+     * @blazorProperty 'OnDragStop'
      */
     @Event()
     public dragStop: EmitType<DragStopArgs>;
@@ -395,6 +399,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a panel is about to resize.
      * @event
+     * @blazorProperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
@@ -402,6 +407,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a panel is being resized continuously.
      * @event
+     * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<ResizeArgs>;
@@ -409,6 +415,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Triggers when a panel resize ends.
      * @event
+     * @blazorProperty 'OnResizeStop'
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
@@ -416,12 +423,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /** 
      * Triggers when Dashboard Layout is created.
      * @event 
+     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when Dashboard Layout is destroyed.
      * @event 
+     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -632,10 +641,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         return undefined;
     }
 
-    protected renderTemplate(content: string, appendElement: HTMLElement): void {
+    protected renderTemplate(content: string, appendElement: HTMLElement, type: string): void {
         let templateFn: Function = this.templateParser(content);
         let templateElements: HTMLElement[] = [];
-        for (let item of templateFn({})) {
+        for (let item of templateFn({}, null, null, this.element.id + type)) {
             templateElements.push(item);
         }
         append([].slice.call(templateElements), appendElement);
@@ -653,8 +662,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 cellElement.querySelector('.e-panel-header') : this.createSubElement('', cellElement.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             if (!cellElement.querySelector('.e-panel-header')) {
-                this.renderTemplate(<string>panelModel.header, headerTemplateElement);
+                this.renderTemplate(<string>panelModel.header, headerTemplateElement, 'header');
                 this.panelContent.appendChild(headerTemplateElement);
+                setTimeout(() => { updateBlazorTemplate(this.element.id + 'header', 'Header'); }, 0);
             }
         }
         if (panelModel.content) {
@@ -665,8 +675,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             let contentHeightValue: string = 'calc( 100% - ' + headerHeight + ')';
             setStyle(this.panelBody, { height: contentHeightValue });
             if (!cellElement.querySelector('.e-panel-content')) {
-                this.renderTemplate(<string>panelModel.content, this.panelBody);
+                this.renderTemplate(<string>panelModel.content, this.panelBody, 'content');
                 this.panelContent.appendChild(this.panelBody);
+                setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'content'); }, 0);
             }
 
         }
@@ -708,7 +719,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     private resizeEvents(): void {
         if (this.allowResizing) {
             for (let i: number = 0; i < document.querySelectorAll('.e-resize').length; i++) {
-                EventHandler.add(document.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+                let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
+                EventHandler.add(document.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
+                if (Browser.info.name !== 'mise') {
+                    EventHandler.add(document.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
+                }
             }
         }
     }
@@ -717,8 +732,20 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         window.addEventListener('resize', this.refresh.bind(this));
         this.resizeEvents();
     }
-
     protected downResizeHandler(e: MouseEvent): void {
+        this.downHandler(e);
+        this.lastMouseX = e.pageX;
+        this.lastMouseY = e.pageY;
+        let moveEventName: string = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
+        let upEventName: string = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
+        EventHandler.add(document, moveEventName, this.moveResizeHandler, this);
+        if (!this.isMouseUpBound) {
+            EventHandler.add(document, upEventName, this.upResizeHandler, this);
+            this.isMouseUpBound = true;
+        }
+    };
+
+    protected downHandler(e: MouseEvent | TouchEvent): void {
         this.resizeCalled = false;
         let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(<HTMLElement>(e.currentTarget)), '.e-panel'));
         let args: ResizeArgs = { event: e, element: el };
@@ -728,111 +755,143 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.shadowEle.classList.add('e-holder');
         addClass([this.element], [preventSelect]);
         this.element.appendChild(this.shadowEle);
-        this.lastMouseX = e.pageX;
-        this.lastMouseY = e.pageY;
         this.elementX = parseInt(el.style.left, 10);
         this.elementY = parseInt(el.style.top, 10);
         this.elementWidth = el.offsetWidth;
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
         this.originalHeight = this.getCellInstance(el.id).sizeY;
-        EventHandler.add(document, 'mousemove', this.moveResizeHandler, this);
+    }
+
+    protected touchDownResizeHandler(e: TouchEvent): void {
+        this.downHandler(e);
+        this.lastMouseX = e.changedTouches[0].pageX;
+        this.lastMouseY = e.changedTouches[0].pageY;
+        EventHandler.add(document, 'touchmove', this.touchMoveResizeHandler, this);
         if (!this.isMouseUpBound) {
-            EventHandler.add(document, 'mouseup', this.upResizeHandler, this);
+            EventHandler.add(document, 'touchend', this.upResizeHandler, this);
             this.isMouseUpBound = true;
         }
-    };
+    }
 
     private getCellSize(): number[] {
         return [parseInt(<string>(this.cellSize[0]), 10), parseInt(<string>this.cellSize[1], 10)];
     }
 
-    /* istanbul ignore next */
-    // tslint:disable-next-line:max-func-body-length
-    protected moveResizeHandler(e: MouseEvent): void {
+    protected updateMaxTopLeft(e: MouseEvent | TouchEvent): void {
         this.moveTarget = this.downTarget;
         let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.moveTarget), '.e-panel'));
         let args: ResizeArgs = { event: e, element: el };
         this.trigger('resize', args);
-        if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
-            return;
-        }
+    }
+
+    protected updateResizeElement(el: HTMLElement): void {
         this.maxLeft = this.element.offsetWidth - 1;
         this.maxTop = <number>this.cellSize[1] * this.maxRows - 1;
         removeClass([el], 'e-panel-transition');
         addClass([el], [dragging]);
-        let oldSizeX: number = this.getCellInstance(el.id).sizeX;
-        let oldSizeY: number = this.getCellInstance(el.id).sizeY;
         let handleArray: string[] = [east, west, north, south, southEast, northEast, northWest, southWest];
-        let oldProp: number[] = [this.elementWidth, this.elementHeight];
         for (let i: number = 0; i < (<HTMLElement>this.moveTarget).classList.length; i++) {
             if (handleArray.indexOf((<HTMLElement>this.moveTarget).classList[i]) !== -1) {
                 this.handleClass = ((<HTMLElement>this.moveTarget).classList[i]);
             }
         }
+    }
+
+    protected moveResizeHandler(e: MouseEvent): void {
+        this.updateMaxTopLeft(e);
+        let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.moveTarget), '.e-panel'));
+        if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
+            return;
+        }
+        this.updateResizeElement(el);
         let panelModel: PanelModel = this.getCellInstance(el.getAttribute('id'));
         this.mouseX = e.pageX;
         this.mouseY = e.pageY;
+        let diffY: number = this.mouseY - this.lastMouseY + this.mOffY;
+        let diffX: number = this.mouseX - this.lastMouseX + this.mOffX;
+        this.mOffX = this.mOffY = 0;
+        this.lastMouseY = this.mouseY;
+        this.lastMouseX = this.mouseX;
+        this.resizingPanel(el, panelModel, diffX, diffY);
+    }
+
+    protected touchMoveResizeHandler(e: TouchEvent): void {
+        this.updateMaxTopLeft(e);
+        let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.moveTarget), '.e-panel'));
+        if (this.lastMouseX === e.changedTouches[0].pageX || this.lastMouseY === e.changedTouches[0].pageY) {
+            return;
+        }
+        this.updateResizeElement(el);
+        let panelModel: PanelModel = this.getCellInstance(el.getAttribute('id'));
+        this.mouseX = e.changedTouches[0].pageX;
+        this.mouseY = e.changedTouches[0].pageY;
         let diffX: number = this.mouseX - this.lastMouseX + this.mOffX;
         let diffY: number = this.mouseY - this.lastMouseY + this.mOffY;
         this.mOffX = this.mOffY = 0;
         this.lastMouseX = this.mouseX;
         this.lastMouseY = this.mouseY;
-        let dY: number = diffY;
-        let dX: number = diffX;
+        this.resizingPanel(el, panelModel, diffX, diffY);
+    }
+    /* istanbul ignore next */
+    protected resizingPanel(el: HTMLElement, panelModel: PanelModel, currentX: number, currentY: number): void {
+        let oldSizeX: number = this.getCellInstance(el.id).sizeX;
+        let oldSizeY: number = this.getCellInstance(el.id).sizeY;
+        let dY: number = currentY;
+        let dX: number = currentX;
         if (this.handleClass.indexOf('north') >= 0) {
             if (this.elementHeight - dY < this.getMinHeight(panelModel)) {
-                diffY = this.elementHeight - this.getMinHeight(panelModel);
-                this.mOffY = dY - diffY;
+                currentY = this.elementHeight - this.getMinHeight(panelModel);
+                this.mOffY = dY - currentY;
             } else if (panelModel.maxSizeY && this.elementHeight - dY > this.getMaxHeight(panelModel)) {
-                diffY = this.elementHeight - this.getMaxHeight(panelModel);
-                this.mOffY = dY - diffY;
+                currentY = this.elementHeight - this.getMaxHeight(panelModel);
+                this.mOffY = dY - currentY;
             } else if (this.elementY + dY < this.minTop) {
-                diffY = this.minTop - this.elementY;
-                this.mOffY = dY - diffY;
+                currentY = this.minTop - this.elementY;
+                this.mOffY = dY - currentY;
             }
-            this.elementY += diffY;
-            this.elementHeight -= diffY;
+            this.elementY += currentY;
+            this.elementHeight -= currentY;
         }
         if (this.handleClass.indexOf('south') >= 0) {
             if (this.elementHeight + dY < this.getMinHeight(panelModel)) {
-                diffY = this.getMinHeight(panelModel) - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.getMinHeight(panelModel) - this.elementHeight;
+                this.mOffY = dY - currentY;
             } else if (panelModel.maxSizeY && this.elementHeight + dY > this.getMaxHeight(panelModel)) {
-                diffY = this.getMaxHeight(panelModel) - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.getMaxHeight(panelModel) - this.elementHeight;
+                this.mOffY = dY - currentY;
             } else if (this.elementY + this.elementHeight + dY > this.maxTop) {
-                diffY = this.maxTop - this.elementY - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.maxTop - this.elementY - this.elementHeight;
+                this.mOffY = dY - currentY;
             }
-            this.elementHeight += diffY;
+            this.elementHeight += currentY;
         }
         if (this.handleClass.indexOf('west') >= 0) {
             if (this.elementWidth - dX < this.getMinWidth(panelModel)) {
-                diffX = this.elementWidth - this.getMinWidth(panelModel);
-                this.mOffX = dX - diffX;
+                currentX = this.elementWidth - this.getMinWidth(panelModel);
+                this.mOffX = dX - currentX;
             } else if (panelModel.maxSizeX && this.elementWidth - dX > this.getMaxWidth(panelModel)) {
-                diffX = this.elementWidth - this.getMaxWidth(panelModel);
-                this.mOffX = dX - diffX;
+                currentX = this.elementWidth - this.getMaxWidth(panelModel);
+                this.mOffX = dX - currentX;
             } else if (this.elementX + dX < this.minLeft) {
-                diffX = this.minLeft - this.elementX;
-                this.mOffX = dX - diffX;
+                currentX = this.minLeft - this.elementX;
+                this.mOffX = dX - currentX;
             }
-            this.elementX += diffX;
-            this.elementWidth -= diffX;
+            this.elementX += currentX;
+            this.elementWidth -= currentX;
         }
         if (this.handleClass.indexOf('east') >= 0) {
             if (this.elementWidth + dX < this.getMinWidth(panelModel)) {
-                diffX = this.getMinWidth(panelModel) - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.getMinWidth(panelModel) - this.elementWidth;
+                this.mOffX = dX - currentX;
             } else if (panelModel.maxSizeX && this.elementWidth + dX > this.getMaxWidth(panelModel)) {
-                diffX = this.getMaxWidth(panelModel) - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.getMaxWidth(panelModel) - this.elementWidth;
+                this.mOffX = dX - currentX;
             } else if (this.elementX + this.elementWidth + dX > this.maxLeft) {
-                diffX = this.maxLeft - this.elementX - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.maxLeft - this.elementX - this.elementWidth;
+                this.mOffX = dX - currentX;
             }
-            this.elementWidth += diffX;
+            this.elementWidth += currentX;
         }
         el.style.top = this.elementY + 'px';
         el.style.left = this.elementX + 'px';
@@ -866,7 +925,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
     }
 
-    protected upResizeHandler(e: MouseEvent): void {
+    protected upResizeHandler(e: MouseEvent | TouchEvent): void {
         if (isNullOrUndefined(this.downTarget)) {
             return;
         }
@@ -876,8 +935,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
-            EventHandler.remove(document, 'mousemove', this.moveResizeHandler);
-            EventHandler.remove(document, 'mouseup', this.upResizeHandler);
+            let moveEventName: string = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
+            let upEventName: string = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
+            EventHandler.remove(document, moveEventName, this.moveResizeHandler);
+            EventHandler.remove(document, upEventName, this.upResizeHandler);
+            if (Browser.info.name !== 'mise') {
+                EventHandler.remove(document, 'touchmove', this.touchMoveResizeHandler);
+                EventHandler.remove(document, 'touchend', this.upResizeHandler);
+            }
             this.isMouseUpBound = false;
             if (this.shadowEle) {
                 detach(this.shadowEle);
@@ -1049,9 +1114,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.sortedPanel();
     };
 
-    /**
-     * Refresh the panels of DashboardLayout component. 
-     */
     public refresh(): void {
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -1923,7 +1985,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     if (this.mainElement && collisionModels.indexOf(this.mainElement) !== -1) {
                         collisionModels.splice(collisionModels.indexOf(this.mainElement), 1);
                     }
-                    this.updatePanel(collisionModels, eleCol, eleRow, ele);
+                    this.collisionPanel(collisionModels, eleCol, eleRow, ele);
                 }
                 this.isSubValue = false;
             } else {
@@ -1944,12 +2006,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 this.oldRowCol[(this.overlapElementClone[i].id)] = { row: updatedRow, col: colValue };
                 let panelModel: PanelModel = this.getCellInstance(this.overlapElementClone[i].id);
                 this.panelPropertyChange(panelModel, { col: colValue, row: updatedRow });
-                this.updatePanel(collisionModels, colValue, updatedRow, this.overlapElementClone[i]);
+                this.collisionPanel(collisionModels, colValue, updatedRow, this.overlapElementClone[i]);
             }
         }
     }
 
-    protected updatePanel(collisionModels: HTMLElement[], colValue: number, updatedRow: number, clone: HTMLElement): void {
+    protected collisionPanel(collisionModels: HTMLElement[], colValue: number, updatedRow: number, clone: HTMLElement): void {
         let panelModel: PanelModel = this.getCellInstance(clone.id);
         this.panelPropertyChange(panelModel, { row: updatedRow, col: colValue });
         if (collisionModels.length > 0) {
@@ -2036,14 +2098,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected setXYAttributes(element: HTMLElement, panelModel: PanelModel): void {
         let value: IAttributes = {
             value: {
-                sizeX: !isNullOrUndefined(panelModel.sizeX) ? panelModel.sizeX.toString() : undefined,
-                sizeY: !isNullOrUndefined(panelModel.sizeY) ? panelModel.sizeY.toString() : undefined,
-                minSizeX: !isNullOrUndefined(panelModel.minSizeX) ? panelModel.minSizeX.toString() : 1,
-                minSizeY: !isNullOrUndefined(panelModel.minSizeY) ? panelModel.minSizeY.toString() : 1,
+                sizeX: panelModel.sizeX.toString(),
+                sizeY: panelModel.sizeY.toString(),
+                minSizeX: panelModel.minSizeX.toString(),
+                minSizeY: panelModel.minSizeY.toString(),
                 maxSizeX: !isNullOrUndefined(panelModel.maxSizeX) ? panelModel.maxSizeX.toString() : undefined,
                 maxSizeY: !isNullOrUndefined(panelModel.maxSizeY) ? panelModel.maxSizeY.toString() : undefined,
-                row: !isNullOrUndefined(panelModel.row) ? panelModel.row.toString() : undefined,
-                col: !isNullOrUndefined(panelModel.col) ? panelModel.col.toString() : undefined,
+                row: panelModel.row.toString(),
+                col: panelModel.col.toString(),
             }
         };
         this.setAttributes(value, element);
@@ -2392,9 +2454,77 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updateCloneArrayObject();
         if (this.allowResizing) {
             for (let i: number = 0; i < cell.querySelectorAll('.e-resize').length; i++) {
-                EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+                let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
+                EventHandler.add(cell.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
+                if (Browser.info.name !== 'mise') {
+                    EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
+                }
             }
         }
+    }
+
+    /**
+     * Allows to update a panel in the DashboardLayout.
+     */
+    public updatePanel(panel: PanelModel): void {
+        if (!panel.id) {
+            return;
+        }
+        let panelInstance: PanelModel = this.getCellInstance(panel.id);
+        if (!panelInstance) {
+            return;
+        }
+        this.maxCol();
+        panel.col = (panel.col < 1) ? 0 : ((panel.col > this.columns)) ? this.columns - 1 : panel.col;
+        if (isNullOrUndefined(panel.col)) {
+            panel.col = panelInstance.col;
+        }
+        this.panelPropertyChange(panelInstance, panel);
+        this.setMinMaxValues(panelInstance);
+        let cell: HTMLElement = document.getElementById(panel.id);
+        this.mainElement = cell;
+        this.panelContent = cell.querySelector('.e-panel-container') ?
+            cell.querySelector('.e-panel-container') :
+            this.createSubElement(panelInstance.cssClass, cell.id + '_content', panelContainer);
+        cell.appendChild(this.panelContent);
+        if (panelInstance.header) {
+            let headerTemplateElement: HTMLElement = cell.querySelector('.e-panel-header') ?
+                cell.querySelector('.e-panel-header') : this.createSubElement('', cell.id + 'template', '');
+            addClass([headerTemplateElement], [header]);
+            headerTemplateElement.innerHTML = '';
+            this.renderTemplate(<string>panelInstance.header, headerTemplateElement, 'header');
+            this.panelContent.appendChild(headerTemplateElement);
+            resetBlazorTemplate(this.element.id + 'header', 'Header');
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'header', 'Header'); }, 0);
+        } else {
+            if (cell.querySelector('.e-panel-header')) {
+                detach(cell.querySelector('.e-panel-header'));
+            }
+        }
+        if (panelInstance.content) {
+            this.panelBody = cell.querySelector('.e-panel-content') ? cell.querySelector('.e-panel-content') :
+                this.createSubElement(panelInstance.cssClass, cell.id + '_body', panelContent);
+            this.panelBody.innerHTML = '';
+            let headerHeight: string = this.panelContent.querySelector('.e-panel-header') ?
+                window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
+            let contentHeightValue: string = 'calc( 100% - ' + headerHeight + ')';
+            setStyle(this.panelBody, { height: contentHeightValue });
+            this.renderTemplate(<string>panelInstance.content, this.panelBody, 'content');
+            this.panelContent.appendChild(this.panelBody);
+            resetBlazorTemplate(this.element.id + 'content', 'Content');
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'Content'); }, 0);
+        } else {
+            if (cell.querySelector('.e-panel-content')) {
+                detach(cell.querySelector('.e-panel-content'));
+            }
+        }
+        this.setXYAttributes(cell, panelInstance);
+        this.setHeightAndWidth(cell, panelInstance);
+        this.setPanelPosition(cell, panelInstance.row, panelInstance.col);
+        this.updatePanelLayout(cell, panelInstance);
+        this.mainElement = null;
+        this.updatePanels();
+        this.updateCloneArrayObject();
     }
 
     protected updateCloneArrayObject(): void {
@@ -2623,8 +2753,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.resizeEvents();
                     } else {
                         for (let i: number = 0; i < document.querySelectorAll('.e-resize').length; i++) {
+                            let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                             let element: HTMLElement = <HTMLElement>document.querySelectorAll('.e-resize')[i];
-                            EventHandler.remove(element, 'mousedown', this.downResizeHandler);
+                            EventHandler.remove(element, eventName, this.downResizeHandler);
+                            if (Browser.info.name !== 'mise') {
+                                EventHandler.remove(element, 'touchstart', this.touchDownResizeHandler);
+                            }
                         }
                         this.removeResizeClasses(this.panelCollection);
                     }
@@ -2651,9 +2785,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.setProperties({ showGridLines: newProp.showGridLines }, true);
                         this.initGridLines();
                     } else {
-                        if (this.table) {
-                            detach(this.table);
-                        }
+                        if (this.table) { detach(this.table); }
                     }
                     break;
                 case 'allowPushing':
@@ -2798,7 +2930,7 @@ export interface ResizeArgs {
     /**
      * Specifies the original event.
      */
-    event: MouseEvent;
+    event: MouseEvent | TouchEvent;
 
     /**
      * Specifies the cell element being resized.
@@ -2829,4 +2961,6 @@ interface IChangePanel {
     row?: number;
     col?: number;
     id?: string;
+    header?: string | HTMLElement;
+    content?: string | HTMLElement;
 }

@@ -2077,5 +2077,30 @@ describe('Tooltip Control', () => {
             expect(isVisible(tooltipEle)).toBe(true);
             triggerMouseEvent(tooltipEle, 'mouseleave');
         });
-    })
+    });
+    describe('Check the tooltip template', () => {
+        let tooltip: Tooltip;
+        beforeEach((): void => {
+            tooltip = undefined;
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="tstooltip" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:150px;top:150px;">property changes</div></div>';
+            document.body.appendChild(elem.firstChild);
+        });
+        afterEach((): void => {
+            if (tooltip) {
+                tooltip.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Tooltip template', () => {
+            tooltip = new Tooltip({ animation: { open: { effect: 'None' }, close: { effect: 'None' } } }, '#tstooltip');
+            tooltip.content = '<div>Blazor Content</div>';
+            tooltip.dataBind();
+            tooltip.open(document.getElementById('tstooltip'));
+            let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            console.log(element.querySelector('.e-tip-content').innerHTML);
+            expect(element.querySelector('.e-tip-content').innerHTML).toEqual('<div>Blazor Content</div>');
+            tooltip.close();
+        });
+    });
 });

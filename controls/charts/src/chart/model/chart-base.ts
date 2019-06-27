@@ -1,5 +1,5 @@
 import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
-import { ZIndex, Anchor, BorderType, sizeType } from '../utils/enum';
+import { ZIndex, Anchor, BorderType, SizeType } from '../utils/enum';
 import { Theme } from '../../common/model/theme';
 import { Font, Border } from '../../common/model/base';
 import { BorderModel, FontModel } from '../../common/model/base-model';
@@ -168,6 +168,27 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
     @Property(null)
     public maximumTextWidth: number;
 
+    /**
+     * multi level labels custom data.
+     * @default null
+     */
+    @Property(null)
+    public customAttributes: object;
+
+    /**
+     * Border type for labels
+     * * Rectangle
+     * * Without Top Border
+     * * Without Top and BottomBorder
+     * * Without Border
+     * * Brace
+     * * CurlyBrace
+     * @default ''
+     * @aspDefaultValueIgnore
+     */
+    @Property('')
+    public type: BorderType;
+
 }
 /**
  * Strip line properties
@@ -232,7 +253,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * @default Auto
      */
     @Property('Auto')
-    public sizeType: sizeType;
+    public sizeType: SizeType;
 
     /**
      * isRepeat value of the strip line.

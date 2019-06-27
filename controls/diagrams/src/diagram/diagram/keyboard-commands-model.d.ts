@@ -110,6 +110,7 @@ export interface CommandModel {
      * Check the command is executable at the moment or not
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     canExecute?: Function | string;
 
@@ -117,6 +118,7 @@ export interface CommandModel {
      * Defines what to be executed when the key combination is recognized
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     execute?: Function | string;
 

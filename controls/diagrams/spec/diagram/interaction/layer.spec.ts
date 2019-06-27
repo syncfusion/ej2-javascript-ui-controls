@@ -549,6 +549,13 @@ describe('Diagram Control', () => {
             expect(diagram.commandHandler.getLayer('Layer2').zIndex === 0).toBe(true);
             done();
         });
+        it('Checking object send forward', (done: Function) => {
+            let node: NodeModel = diagram.getObject('node2');
+            diagram.select([node]);
+            diagram.moveForward();
+            expect(node.zIndex === 1).toBe(true);
+            done();
+        });
         it('Checking the order commands', (done: Function) => {
             diagram.select([diagram.nodes[0]]);
             diagram.sendToBack();

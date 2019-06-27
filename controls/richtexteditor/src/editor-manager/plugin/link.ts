@@ -45,7 +45,7 @@ export class LinkCommand {
             let anchorEle: HTMLElement = closestAnchor as HTMLElement;
             anchorEle.setAttribute('href', e.item.url);
             anchorEle.setAttribute('title', e.item.title);
-            anchorEle.innerHTML = e.item.text;
+            anchorEle.innerText = e.item.text;
             if (!isNullOrUndefined(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
             } else {
@@ -93,7 +93,7 @@ export class LinkCommand {
                 i--;
             }
         }
-        return arr.join(' ');
+        return arr.join(' ') + ' ';
     }
 
     private openLink(e: IHtmlItem): void {

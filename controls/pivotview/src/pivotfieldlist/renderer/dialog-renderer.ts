@@ -153,7 +153,7 @@ export class DialogRenderer {
     }
     private onCheckChange(args: ChangeEventArgs): void {
         if (args.checked) {
-            this.parent.clonedDataSource = extend({}, this.parent.dataSource, null, true) as IDataOptions;
+            this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
             this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
         }
         this.parent.allowDeferLayoutUpdate = !this.parent.allowDeferLayoutUpdate;
@@ -176,12 +176,15 @@ export class DialogRenderer {
     private applyButtonClick(): void {
         this.parent.updateDataSource(false);
         this.parent.axisFieldModule.render();
-        this.parent.clonedDataSource = extend({}, this.parent.dataSource, null, true) as IDataOptions;
+        this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
         this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
     }
     private cancelButtonClick(): void {
+        /* tslint:disable:align */
         this.parent.
-            setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions }, true);
+            setProperties({
+                dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+            }, true);
         this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
         this.parent.updateDataSource(false, true);
     }
@@ -234,6 +237,7 @@ export class DialogRenderer {
                 close: this.removeFieldListIcon.bind(this)
             });
             this.fieldListDialog.appendTo(fieldListWrappper);
+            this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_dialog-content') as HTMLElement, {
                 'padding': '0'
             });
@@ -265,6 +269,8 @@ export class DialogRenderer {
                 close: this.removeFieldListIcon.bind(this)
             });
             this.fieldListDialog.appendTo(fieldListWrappper);
+            this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
+            this.fieldListDialog.element.querySelector('.e-footer-content').innerHTML = template;
             this.renderDeferUpdateButtons();
             setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_title') as HTMLElement, { 'width': '100%' });
             fieldListWrappper.querySelector('.' + cls.TITLE_HEADER_CLASS).appendChild(this.createCalculatedButton());
@@ -444,7 +450,7 @@ export class DialogRenderer {
             if (this.parent.isAdaptive) {
                 this.parent.axisFieldModule.render();
             }
-            this.parent.clonedDataSource = extend({}, this.parent.dataSource, null, true) as IDataOptions;
+            this.parent.clonedDataSource = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
             this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
         }
         addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
@@ -456,11 +462,14 @@ export class DialogRenderer {
 
     private onCloseFieldList(): void {
         if (this.parent.allowDeferLayoutUpdate) {
-            this.parent.dataSource =
+            this.parent.dataSourceSettings =
                 extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;
             this.parent.pivotGridModule.engineModule = this.parent.engineModule;
+            /* tslint:disable:align */
             this.parent.pivotGridModule.
-                setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions }, true);
+                setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+                }, true);
             this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
             this.parent.pivotGridModule.notify(events.uiUpdate, this);
             this.parent.pivotGridModule.notify(events.contentReady, this);

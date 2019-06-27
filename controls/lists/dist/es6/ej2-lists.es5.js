@@ -1,4 +1,4 @@
-import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -483,7 +483,8 @@ var ListBase;
                 li.innerText = fieldData[curFields.text];
             }
             else {
-                append(compiledString(curItem), li);
+                var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
+                append(compiledString(curItem, null, null, currentID), li);
                 li.setAttribute('data-value', value);
                 li.setAttribute('role', 'option');
             }
@@ -511,16 +512,17 @@ var ListBase;
      * @param  {FieldsMapping} fields - Specifies fields for mapping the dataSource.
      * @param  {Element[]} headerItems? - Specifies listbase header items.
      */
-    function renderGroupTemplate(groupTemplate, groupDataSource, fields, headerItems) {
+    function renderGroupTemplate(groupTemplate, groupDataSource, fields, headerItems, options) {
         var compiledString = compile(groupTemplate);
         var curFields = extend({}, ListBase.defaultMappedFields, fields);
+        var curOpt = extend({}, defaultListBaseOptions, options);
         var category = curFields.groupBy;
         for (var _i = 0, headerItems_1 = headerItems; _i < headerItems_1.length; _i++) {
             var header = headerItems_1[_i];
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData), header);
+            append(compiledString(headerData, null, null, curOpt.groupTemplateID), header);
         }
         return headerItems;
     }
@@ -660,11 +662,11 @@ var ListBase;
         !isNullOrUndefined(uID) ? li.setAttribute('data-uid', uID) : li.setAttribute('data-uid', generateId());
         if (grpLI && options && options.groupTemplate) {
             var compiledString = compile(options.groupTemplate);
-            append(compiledString(item), li);
+            append(compiledString(item, null, null, curOpt.groupTemplateID), li);
         }
         else if (!grpLI && options && options.template) {
             var compiledString = compile(options.template);
-            append(compiledString(item), li);
+            append(compiledString(item, null, null, curOpt.templateID), li);
         }
         else {
             var innerDiv = createElement('div', {
@@ -812,6 +814,9 @@ var classNames = {
     listviewCheckbox: 'e-listview-checkbox',
     itemCheckList: 'e-checklist'
 };
+var LISTVIEW_TEMPLATE_PROPERTY = 'Template';
+var LISTVIEW_GROUPTEMPLATE_PROPERTY = 'GroupTemplate';
+var LISTVIEW_HEADERTEMPLATE_PROPERTY = 'HeaderTemplate';
 var FieldSettings = /** @__PURE__ @class */ (function (_super) {
     __extends(FieldSettings, _super);
     function FieldSettings() {
@@ -1008,8 +1013,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             if (this.headerTemplate) {
                 var compiledString = compile(this.headerTemplate);
                 var headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
-                append(compiledString({}), headerTemplateEle);
+                append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                 append([headerTemplateEle], this.headerEle);
+                this.updateBlazorTemplates(false, true);
             }
             if (this.headerTemplate && this.headerTitle) {
                 textEle.classList.add('header');
@@ -1097,7 +1103,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 groupItemRole: 'group', wrapperRole: 'presentation'
             },
             fields: this.fields.properties, sortOrder: this.sortOrder, showIcon: this.showIcon,
-            itemCreated: this.renderCheckbox.bind(this)
+            itemCreated: this.renderCheckbox.bind(this),
+            templateID: "" + this.element.id + LISTVIEW_TEMPLATE_PROPERTY,
+            groupTemplateID: "" + this.element.id + LISTVIEW_GROUPTEMPLATE_PROPERTY
         };
         this.initialization();
     };
@@ -1109,6 +1117,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.isNestedList = false;
         this.selectedData = [];
         this.selectedId = [];
+        this.LISTVIEW_TEMPLATE_ID = "" + this.element.id + LISTVIEW_TEMPLATE_PROPERTY;
+        this.LISTVIEW_GROUPTEMPLATE_ID = "" + this.element.id + LISTVIEW_GROUPTEMPLATE_PROPERTY;
+        this.LISTVIEW_HEADERTEMPLATE_ID = "" + this.element.id + LISTVIEW_HEADERTEMPLATE_PROPERTY;
         this.aniObj = new Animation(this.animateOptions);
     };
     ListView.prototype.renderCheckbox = function (args) {
@@ -1375,6 +1386,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     };
     ListView.prototype.arrowKeyHandler = function (e, prev) {
         var _this = this;
+        e.preventDefault();
         if (Object.keys(this.dataSource).length && this.curUL) {
             var siblingLI = this.onArrowKeyDown(e, prev);
             var elementTop = this.element.getBoundingClientRect().top;
@@ -1393,15 +1405,15 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     heightDiff = this.isWindow ? (siblingTop + siblingHeight) :
                         ((siblingTop - elementTop) + siblingHeight);
                     if (heightDiff > height) {
-                        this.isWindow ? window.scrollTo(0, pageYOffset + (heightDiff - height)) :
-                            this.element.scrollTo(0, this.element.scrollTop + (heightDiff - height));
+                        this.isWindow ? window.scroll(0, pageYOffset + (heightDiff - height)) :
+                            this.element.scrollTop = this.element.scrollTop + (heightDiff - height);
                     }
                 }
                 else {
                     heightDiff = this.isWindow ? siblingTop : (siblingTop - elementTop);
                     if (heightDiff < 0) {
-                        this.isWindow ? window.scrollTo(0, pageYOffset + heightDiff) :
-                            this.element.scrollTo(0, this.element.scrollTop + heightDiff);
+                        this.isWindow ? window.scroll(0, pageYOffset + heightDiff) :
+                            this.element.scrollTop = this.element.scrollTop + heightDiff;
                     }
                 }
             }
@@ -1411,22 +1423,22 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     _this.onUIScrolled = undefined;
                 };
                 heightDiff = this.virtualizationModule.listItemHeight;
-                this.isWindow ? window.scrollTo(0, pageYOffset - heightDiff) :
-                    this.element.scrollTo(0, this.element.scrollTop - heightDiff);
+                this.isWindow ? window.scroll(0, pageYOffset - heightDiff) :
+                    this.element.scrollTop = this.element.scrollTop - heightDiff;
             }
             else if (prev) {
                 if (this.showHeader && this.headerEle) {
                     var topHeight = groupItemBounds ? groupItemBounds.top : firstItemBounds.top;
                     var headerBounds = this.headerEle.getBoundingClientRect();
                     heightDiff = headerBounds.top < 0 ? (headerBounds.height - topHeight) : 0;
-                    this.isWindow ? window.scrollTo(0, pageYOffset - heightDiff)
-                        : this.element.scrollTo(0, 0);
+                    this.isWindow ? window.scroll(0, pageYOffset - heightDiff)
+                        : this.element.scrollTop = 0;
                 }
                 else if (this.fields.groupBy) {
                     heightDiff = this.isWindow ? (groupItemBounds.top < 0 ? groupItemBounds.top : 0) :
                         (elementTop - firstItemBounds.top) + groupItemBounds.height;
-                    this.isWindow ? window.scrollTo(0, pageYOffset + heightDiff) :
-                        this.element.scrollTo(0, this.element.scrollTop - heightDiff);
+                    this.isWindow ? window.scroll(0, pageYOffset + heightDiff) :
+                        this.element.scrollTop = this.element.scrollTop - heightDiff;
                 }
             }
         }
@@ -1484,9 +1496,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.back();
                 break;
-            case 9:
-                this.tabFocus(e);
-                break;
             case 32:
                 this.spaceKeyHandler(e);
                 break;
@@ -1531,31 +1540,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
         this.touchModule.destroy();
-    };
-    ListView.prototype.tabFocus = function (e) {
-        if (this.curUL && ((!this.curUL.querySelector('.' + classNames.focused) && this.showCheckBox) ||
-            (!this.curUL.querySelector('.' + classNames.selected) && !this.showCheckBox &&
-                !this.curUL.querySelector('.' + classNames.hasChild)) ||
-            (this.curUL.querySelector('.' + classNames.hasChild) &&
-                !this.curUL.querySelector('.' + classNames.focused) &&
-                !this.curUL.querySelector('.' + classNames.selected)))) {
-            e.preventDefault();
-        }
-        if (Object.keys(this.dataSource).length && this.curUL) {
-            var selectedList = this.curUL.querySelector('.' + classNames.selected);
-            if ((!selectedList && this.curUL) || this.showCheckBox) {
-                var li = selectedList || this.curUL.querySelector('.' + classNames.listItem);
-                if (li.classList.contains(classNames.hasChild) || this.showCheckBox) {
-                    var focusedElement = this.curUL.querySelector('.' + classNames.focused);
-                    if (isNullOrUndefined(focusedElement)) {
-                        li.classList.add(classNames.focused);
-                    }
-                }
-                else {
-                    this.setSelectLI(li, e);
-                }
-            }
-        }
     };
     ListView.prototype.removeFocus = function () {
         var focusedLI = this.element.querySelectorAll('.' + classNames.focused);
@@ -1831,12 +1815,14 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.reRender = function () {
+        this.resetBlazorTemplates();
         this.element.innerHTML = '';
         this.headerEle = this.ulElement = this.liCollection = undefined;
         this.setLocalData();
         this.header();
     };
     ListView.prototype.resetCurrentList = function () {
+        this.resetBlazorTemplates();
         this.setViewDataSource(this.curViewDS);
         this.contentContainer.innerHTML = '';
         this.createList();
@@ -1847,6 +1833,38 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.isNestedList = false;
         this.ulElement = this.curUL = ListBase.createList(this.createElement, this.curViewDS, this.listBaseOption);
         this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+        this.updateBlazorTemplates(true);
+    };
+    ListView.prototype.resetBlazorTemplates = function () {
+        if (this.template) {
+            resetBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
+        }
+        if (this.groupTemplate) {
+            resetBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
+        }
+        if (this.headerTemplate) {
+            resetBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
+        }
+    };
+    ListView.prototype.updateBlazorTemplates = function (template, headerTemplate) {
+        var _this = this;
+        if (template === void 0) { template = false; }
+        if (headerTemplate === void 0) { headerTemplate = false; }
+        if (this.template && template) {
+            setTimeout(function () {
+                updateBlazorTemplate(_this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
+            }, 0);
+        }
+        if (this.groupTemplate && template) {
+            setTimeout(function () {
+                updateBlazorTemplate(_this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
+            }, 0);
+        }
+        if (this.headerTemplate && headerTemplate) {
+            setTimeout(function () {
+                updateBlazorTemplate(_this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
+            }, 0);
+        }
     };
     ListView.prototype.renderSubList = function (li) {
         var uID = li.getAttribute('data-uid');
@@ -1857,10 +1875,12 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 var data = this.curViewDS;
+                this.resetBlazorTemplates();
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
                 ele.setAttribute('pID', uID);
                 ele.style.display = 'none';
                 this.renderIntoDom(ele);
+                this.updateBlazorTemplates(true);
             }
             this.switchView(ul, ele);
             this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
@@ -1925,6 +1945,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
      * It is used to destroy the ListView component.
      */
     ListView.prototype.destroy = function () {
+        this.resetBlazorTemplates();
         this.unWireEvents();
         var classAr = [classNames.root, classNames.disable, 'e-rtl',
             'e-has-header', 'e-lib'].concat(this.cssClass.split(' ').filter(function (css) { return css; }));
@@ -2056,7 +2077,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return parentId;
     };
     /**
-     * It is used to get the currently [here](./selectedItem)
+     * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
      */
     ListView.prototype.getSelectedItems = function () {
@@ -2235,6 +2256,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     }
                     child = child.concat(data);
                     if (ds instanceof Array) {
+                        this.resetBlazorTemplates();
                         data.forEach(function (dataSource) {
                             _this.dataSource.push(dataSource);
                             _this.setViewDataSource(_this.dataSource);
@@ -2250,6 +2272,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                                 _this.reRender();
                             }
                         });
+                        if (this.ulElement) {
+                            this.updateBlazorTemplates(true);
+                        }
                         this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
                     }
                     else {
@@ -2276,7 +2301,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 this.virtualizationModule.removeItem(obj);
             }
             else {
+                this.resetBlazorTemplates();
                 this.removeItemFromList(obj);
+                this.updateBlazorTemplates(true);
             }
         }
     };
@@ -2319,6 +2346,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     ListView.prototype.removeMultipleItems = function (obj) {
         if (!(this.dataSource instanceof DataManager)) {
             if (obj.length) {
+                this.resetBlazorTemplates();
                 for (var i = 0; i < obj.length; i++) {
                     if (this.enableVirtualization) {
                         this.removeItem(obj[i]);
@@ -2327,6 +2355,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                         this.removeItemFromList(obj[i]);
                     }
                 }
+                this.updateBlazorTemplates(true);
             }
         }
     };
@@ -3450,15 +3479,13 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                 (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
                 _this.curTarget = target;
                 var oldIdx = _this.getIndex(newInst.placeHolderElement, newInst);
-                var isPlaceHolder = isNullOrUndefined(oldIdx);
-                oldIdx = isPlaceHolder ? _this.getIndex(_this.target) :
+                oldIdx = isNullOrUndefined(oldIdx) ? _this.getIndex(_this.target) :
                     _this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
                 newInst.placeHolderElement = _this.getPlaceHolder(target, newInst);
                 var newIdx = _this.getIndex(target, newInst);
-                var idx = newInst.element !== _this.element && isPlaceHolder ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
+                var idx = newInst.element !== _this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                 if (newInst.placeHolderElement) {
-                    var len = newInst.element.childElementCount;
-                    if (newInst.element !== _this.element && (idx === len - 1 || idx === len) && (isPlaceHolder || idx === len)) {
+                    if (newInst.element !== _this.element && idx === newInst.element.childElementCount - 1) {
                         newInst.element.appendChild(newInst.placeHolderElement);
                     }
                     else {
@@ -3475,16 +3502,8 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                         target: e.target, helper: newInst.element.lastChild, droppedElement: _this.target, scope: _this.scope });
                 }
             }
-            if (newInst.element === e.target) {
-                if (!_this.isPlaceHolderPresent(newInst)) {
-                    newInst.placeHolderElement = _this.getPlaceHolder(target, newInst);
-                }
-                if (newInst.placeHolderElement) {
-                    newInst.element.appendChild(newInst.placeHolderElement);
-                }
-            }
             newInst = _this.getSortableInstance(_this.curTarget);
-            if (isNullOrUndefined(target) && newInst.element !== e.target && e.target !== newInst.placeHolderElement) {
+            if (isNullOrUndefined(target) && e.target !== newInst.placeHolderElement) {
                 if (_this.isPlaceHolderPresent(newInst)) {
                     _this.removePlaceHolder(newInst);
                 }
@@ -3501,7 +3520,6 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             }
         };
         _this.onDragStart = function (e) {
-            _this.element.style.touchAction = 'none';
             _this.target = _this.getSortableElement(e.target);
             _this.target.classList.add('e-grabbed');
             _this.curTarget = _this.target;
@@ -3520,17 +3538,14 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                     target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
                 remove(dropInst.placeHolderElement);
             }
-            var newInst = _this.getSortableInstance(e.target);
-            if (newInst.element === e.target && newInst !== dropInst && _this.isPlaceHolderPresent(newInst)) {
+            dropInst = _this.getSortableInstance(e.target);
+            if (dropInst.element === e.target && !dropInst.element.childElementCount) {
                 prevIdx = _this.getIndex(_this.target);
-                _this.updateItemClass(newInst);
-                newInst.element.appendChild(_this.target);
-                remove(newInst.placeHolderElement);
-                _this.trigger('drop', { event: e.event, element: newInst.element, previousIndex: prevIdx,
-                    currentIndex: newInst.element.childElementCount, target: e.target, helper: e.helper,
-                    droppedElement: _this.target, scopeName: _this.scope });
+                _this.updateItemClass(dropInst);
+                dropInst.element.appendChild(_this.target);
+                _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: 0,
+                    target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
             }
-            _this.element.style.touchAction = '';
             _this.target.classList.remove('e-grabbed');
             _this.target = null;
             _this.curTarget = null;

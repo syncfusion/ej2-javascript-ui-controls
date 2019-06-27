@@ -1,5 +1,5 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isNullOrUndefined, merge, print, remove, setValue } from '@syncfusion/ej2-base';
-import { PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, measureText } from '@syncfusion/ej2-svg-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { CanvasRenderer, PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, measureText, removeElement } from '@syncfusion/ej2-svg-base';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
 import { Toolbar } from '@syncfusion/ej2-navigations';
@@ -102,6 +102,7 @@ function getSeriesColor(theme) {
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
         case 'HighContrastLight':
+        case 'Highcontrast':
         case 'HighContrast':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
@@ -134,6 +135,7 @@ function getThemeColor(theme) {
     let darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     switch (theme) {
         case 'HighContrastLight':
+        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 axisLabel: '#ffffff',
@@ -443,6 +445,23 @@ __decorate$1([
     Property('Gap')
 ], EmptyPointSettings.prototype, "mode", void 0);
 /**
+ * Configures the drag settings of series
+ */
+class DragSettings extends ChildProperty {
+}
+__decorate$1([
+    Property(false)
+], DragSettings.prototype, "enable", void 0);
+__decorate$1([
+    Property(null)
+], DragSettings.prototype, "minY", void 0);
+__decorate$1([
+    Property(null)
+], DragSettings.prototype, "maxY", void 0);
+__decorate$1([
+    Property(null)
+], DragSettings.prototype, "fill", void 0);
+/**
  * Configures the ToolTips in the chart.
  * @public
  */
@@ -653,13 +672,13 @@ class Double {
                     || (series.type.indexOf('Bar') > -1 && axis.orientation === 'Vertical')) {
                     if ((series.xAxis.valueType === 'Double' || series.xAxis.valueType === 'DateTime')
                         && series.xAxis.rangePadding === 'Auto') {
-                        this.paddingInterval = getMinPointsDelta(series.xAxis, axis.series) / 2;
+                        this.paddingInterval = getMinPointsDelta(series.xAxis, axis.series) * 0.5;
                     }
                 }
                 //For xRange
                 if (axis.orientation === 'Horizontal') {
                     if (this.chart.requireInvertedAxis) {
-                        this.findMinMax(series.yMin, series.yMax);
+                        this.yAxisRange(axis, series);
                     }
                     else {
                         this.findMinMax(series.xMin - this.paddingInterval, series.xMax + this.paddingInterval);
@@ -671,11 +690,22 @@ class Double {
                         this.findMinMax(series.xMin - this.paddingInterval, series.xMax + this.paddingInterval);
                     }
                     else {
-                        this.findMinMax(series.yMin, series.yMax);
+                        this.yAxisRange(axis, series);
                     }
                 }
             }
         }
+    }
+    yAxisRange(axis, series) {
+        if (series.dragSettings.enable && this.chart.dragY) {
+            if (this.chart.dragY >= axis.visibleRange.max) {
+                series.yMax = this.chart.dragY + axis.visibleRange.interval;
+            }
+            if (this.chart.dragY <= axis.visibleRange.min) {
+                series.yMin = this.chart.dragY - axis.visibleRange.interval;
+            }
+        }
+        this.findMinMax(series.yMin, series.yMax);
     }
     findMinMax(min, max) {
         if (this.min === null || this.min > min) {
@@ -709,9 +739,12 @@ class Double {
         this.calculateVisibleRange(size, axis);
     }
     updateActualRange(axis, minimum, maximum, interval) {
-        axis.actualRange.min = axis.minimum != null ? axis.minimum : minimum;
-        axis.actualRange.max = axis.maximum != null ? axis.maximum : maximum;
-        axis.actualRange.interval = axis.interval != null ? axis.interval : interval;
+        axis.actualRange = {
+            min: axis.minimum != null ? axis.minimum : minimum,
+            max: axis.maximum != null ? axis.maximum : maximum,
+            interval: axis.interval != null ? axis.interval : interval,
+            delta: axis.actualRange.delta
+        };
     }
     findAdditional(axis, start, end, interval) {
         let minimum;
@@ -731,7 +764,7 @@ class Double {
         let startValue = start;
         if (start < 0) {
             startValue = 0;
-            minimum = start + (start / 20);
+            minimum = start + (start * 0.05);
             remaining = interval + (minimum % interval);
             if ((0.365 * interval) >= remaining) {
                 minimum -= interval;
@@ -741,12 +774,12 @@ class Double {
             }
         }
         else {
-            minimum = start < ((5.0 / 6.0) * end) ? 0 : (start - (end - start) / 2);
+            minimum = start < ((5.0 / 6.0) * end) ? 0 : (start - (end - start) * 0.5);
             if (minimum % interval > 0) {
                 minimum -= (minimum % interval);
             }
         }
-        maximum = (end > 0) ? (end + (end - startValue) / 20) : (end - (end - startValue) / 20);
+        maximum = (end > 0) ? (end + (end - startValue) * 0.05) : (end - (end - startValue) * 0.05);
         remaining = interval - (maximum % interval);
         if ((0.365 * interval) >= remaining) {
             maximum += interval;
@@ -850,6 +883,8 @@ class Double {
 /** @private */
 const loaded = 'loaded';
 /** @private */
+const legendClick = 'legendClick';
+/** @private */
 const load = 'load';
 /** @private */
 const animationComplete = 'animationComplete';
@@ -901,6 +936,14 @@ const scrollEnd = 'scrollEnd';
 const scrollChanged = 'scrollChanged';
 /** @private */
 const stockEventRender = 'stockEventRender';
+/** @private */
+const multiLevelLabelClick = 'multiLevelLabelClick';
+/** @private */
+const dragStart = 'dragStart';
+/** @private */
+const drag = 'drag';
+/** @private */
+const dragEnd = 'dragEnd';
 
 var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -974,6 +1017,12 @@ __decorate$3([
 __decorate$3([
     Property(null)
 ], MultiLevelCategories.prototype, "maximumTextWidth", void 0);
+__decorate$3([
+    Property(null)
+], MultiLevelCategories.prototype, "customAttributes", void 0);
+__decorate$3([
+    Property('')
+], MultiLevelCategories.prototype, "type", void 0);
 /**
  * Strip line properties
  */
@@ -1130,7 +1179,7 @@ class Row extends ChildProperty {
         let innerPadding = 5;
         if (axis.visible) {
             width += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
-                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width / 2);
+                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
         }
         if (axis.opposedPosition) {
             this.farSizes.push(width);
@@ -1176,7 +1225,7 @@ class Column extends ChildProperty {
         let innerPadding = 5;
         if (axis.visible) {
             height += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
-                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width / 2);
+                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
         }
         if (axis.opposedPosition) {
             this.farSizes.push(height);
@@ -1414,8 +1463,14 @@ class Axis extends ChildProperty {
             let baseRange = this.actualRange;
             let start;
             let end;
-            start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
-            end = start + this.zoomFactor * this.actualRange.delta;
+            if (!this.isInversed) {
+                start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
+                end = start + this.zoomFactor * this.actualRange.delta;
+            }
+            else {
+                start = this.actualRange.max - (this.zoomPosition * this.actualRange.delta);
+                end = start - (this.zoomFactor * this.actualRange.delta);
+            }
             if (start < baseRange.min) {
                 end = end + (baseRange.min - start);
                 start = baseRange.min;
@@ -1425,9 +1480,8 @@ class Axis extends ChildProperty {
                 end = baseRange.max;
             }
             this.doubleRange = new DoubleRange(start, end);
-            this.visibleRange.min = this.doubleRange.start;
-            this.visibleRange.max = this.doubleRange.end;
-            this.visibleRange.delta = this.doubleRange.delta;
+            this.visibleRange = { min: this.doubleRange.start, max: this.doubleRange.end,
+                delta: this.doubleRange.delta, interval: this.visibleRange.interval };
         }
     }
     /**
@@ -1443,10 +1497,8 @@ class Axis extends ChildProperty {
         };
         chart.trigger(axisRangeCalculated, argsData);
         if (!argsData.cancel) {
-            this.visibleRange.min = argsData.minimum;
-            this.visibleRange.max = argsData.maximum;
-            this.visibleRange.interval = argsData.interval;
-            this.visibleRange.delta = argsData.maximum - argsData.minimum;
+            this.visibleRange = { min: argsData.minimum, max: argsData.maximum, interval: argsData.interval,
+                delta: argsData.maximum - argsData.minimum };
         }
     }
     /**
@@ -1480,7 +1532,7 @@ class Axis extends ChildProperty {
         return padding;
     }
     /**
-     * Calculate maximum label width for the axis
+     * Calculate maximum label width for the axis.
      * @return {void}
      * @private
      */
@@ -1493,7 +1545,7 @@ class Axis extends ChildProperty {
         this.maxLabelSize = new Size(0, 0);
         let action = this.labelIntersectAction;
         let label;
-        for (let i = 0; i < this.visibleLabels.length; i++) {
+        for (let i = 0, len = this.visibleLabels.length; i < len; i++) {
             label = this.visibleLabels[i];
             isAxisLabelBreak = isBreakLabel(label.originalText);
             if (isAxisLabelBreak) {
@@ -1578,8 +1630,7 @@ class Axis extends ChildProperty {
         }
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
             if (isBreakLabel(this.rotatedLabel)) {
-                this.maxLabelSize.height = measureText(this.rotatedLabel, this.labelStyle).width;
-                this.maxLabelSize.width = measureText(this.rotatedLabel, this.labelStyle).height;
+                this.maxLabelSize = measureText(this.rotatedLabel, this.labelStyle);
             }
             else {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
@@ -1603,8 +1654,8 @@ class Axis extends ChildProperty {
             label = this.visibleLabels[i];
             width2 = isBreakLabels ? label.breakLabelSize.width : label.size.width;
             pointX = (valueToCoefficient(label.value, this) * this.rect.width) + this.rect.x;
-            isMultiRows = !this.isInversed ? currentX < (pointX + width2 / 2) :
-                currentX + (isBreakLabels ? currentLabel.breakLabelSize.width : currentLabel.size.width) > (pointX - width2 / 2);
+            isMultiRows = !this.isInversed ? currentX < (pointX + width2 * 0.5) :
+                currentX + currentLabel.size.width > (pointX - width2 * 0.5);
             if (isMultiRows) {
                 store.push(label.index);
                 currentLabel.index = (currentLabel.index > label.index) ? currentLabel.index : label.index + 1;
@@ -1862,7 +1913,7 @@ function rotateTextSize(font, text, angle, chart) {
     return new Size((box.right - box.left), (box.bottom - box.top));
 }
 /** @private */
-function removeElement(id) {
+function removeElement$1(id) {
     if (!id) {
         return null;
     }
@@ -1901,7 +1952,7 @@ function showTooltip(text, x, y, areaWidth, id, element, isTouch) {
         tooltip.style.left = (x + 15).toString() + 'px';
     }
     if (isTouch) {
-        setTimeout(() => { removeElement(id); }, 1500);
+        setTimeout(() => { removeElement$1(id); }, 1500);
     }
 }
 /** @private */
@@ -2092,7 +2143,7 @@ function createTooltip(id, text, top, left, fontSize) {
         'left:' + left.toString() + 'px;' +
         'color:black !important; ' +
         'background:#FFFFFF !important; ' +
-        'position:absolute;border:1px solid #707070;font-size:' + fontSize + ';border-radius:2px;';
+        'position:absolute;border:1px solid #707070;font-size:' + fontSize + ';border-radius:2px; z-index:1';
     if (!tooltip) {
         tooltip = createElement('div', {
             id: id, innerHTML: '&nbsp;' + text + '&nbsp;', styles: style
@@ -2138,7 +2189,7 @@ function createZoomingLabels(chart, axis, parent, index, isVertical, rect) {
         x = x + (margin / 2);
         y = y + (3 * (size.height / 4)) + (margin / 2);
         parent.appendChild(chart.renderer.drawPath(new PathOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_Shape_' + i, chart.themeStyle.crosshairFill, 2, chart.themeStyle.crosshairFill, 1, null, direction)));
-        textElement(new TextOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel), { color: chart.themeStyle.crosshairLabel, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' }, chart.themeStyle.crosshairLabel, parent);
+        textElement(chart.renderer, new TextOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel), { color: chart.themeStyle.crosshairLabel, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' }, chart.themeStyle.crosshairLabel, parent);
     }
     return parent;
 }
@@ -2177,6 +2228,26 @@ function findClipRect(series) {
 /** @private */
 function firstToLowerCase(str) {
     return str.substr(0, 1).toLowerCase() + str.substr(1);
+}
+/** @private */
+function getTransform(xAxis, yAxis, invertedAxis) {
+    let x;
+    let y;
+    let width;
+    let height;
+    if (invertedAxis) {
+        x = yAxis.rect.x;
+        y = xAxis.rect.y;
+        width = yAxis.rect.width;
+        height = xAxis.rect.height;
+    }
+    else {
+        x = xAxis.rect.x;
+        y = yAxis.rect.y;
+        width = xAxis.rect.width;
+        height = yAxis.rect.height;
+    }
+    return new Rect(x, y, width, height);
 }
 /** @private */
 function getMinPointsDelta(axis, seriesCollection) {
@@ -2296,13 +2367,13 @@ function animateRectElement(element, delay, duration, currentRect, previousRect)
  * @param direction current direction of the path
  * @param previousDirection previous direction of the path
  */
-function pathAnimation(element, direction, redraw, previousDirection, animateduration) {
+function pathAnimation(element, direction, redraw, previousDirection, animateDuration) {
     if (!redraw || (!previousDirection && !element)) {
         return null;
     }
     let duration = 300;
-    if (animateduration) {
-        duration = animateduration;
+    if (animateDuration) {
+        duration = animateDuration;
     }
     let startDirections = previousDirection || element.getAttribute('d');
     let splitDirections = startDirections.split(/(?=[LMCZAQ])/);
@@ -2435,11 +2506,11 @@ function templateAnimate(element, delay, duration, name, isRemove) {
     });
 }
 /** @private */
-function drawSymbol(location, shape, size, url, options, label) {
-    let chartRenderer = new SvgRenderer('');
+function drawSymbol(location, shape, size, url, options, label, renderer, clipRect) {
+    let chartRenderer = renderer ? renderer : new SvgRenderer('');
     let shapeOption = calculateShapes(location, size, shape, options, url);
-    let drawElement = chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption);
-    drawElement.setAttribute('aria-label', label);
+    let drawElement = chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null);
+    //drawElement.setAttribute('aria-label', label);
     return drawElement;
 }
 /** @private */
@@ -2574,7 +2645,9 @@ function createTemplate(childElement, pointIndex, content, chart, point, series)
     let templateElement;
     templateFn = getTemplateFunction(content);
     try {
-        let elementData = templateFn ? templateFn({ chart: chart, series: series, point: point }) : [];
+        let blazor = 'Blazor';
+        let tempObject = window[blazor] ? {} : { chart: chart, series: series, point: point };
+        let elementData = templateFn ? templateFn(tempObject, null, null, childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
             let len = templateElement.length;
@@ -2606,7 +2679,7 @@ function measureElementRect(element, redraw = false) {
         remove(element);
     }
     else {
-        removeElement(element.id);
+        removeElement$1(element.id);
     }
     return bounds;
 }
@@ -2636,7 +2709,7 @@ function getPoint(x, y, xAxis, yAxis, isInverted, series) {
 /** @private */
 function appendElement(child, parent, redraw = false, animate = false, x = 'x', y = 'y') {
     if (child && child.hasChildNodes() && parent) {
-        appendChildElement(parent, child, redraw, animate, x, y);
+        appendChildElement(false, parent, child, redraw, animate, x, y);
     }
     else {
         return null;
@@ -2648,11 +2721,14 @@ function appendElement(child, parent, redraw = false, animate = false, x = 'x', 
  * @param childElement
  * @param isReplace
  */
-function appendChildElement(parent, childElement, redraw, isAnimate = false, x = 'x', y = 'y', start, direction, forceAnimate = false, isRect = false, previousRect = null, animateduration) {
+function appendChildElement(isCanvas, parent, childElement, redraw, isAnimate = false, x = 'x', y = 'y', start, direction, forceAnimate = false, isRect = false, previousRect = null, animateDuration) {
+    if (isCanvas) {
+        return null;
+    }
     let existChild = parent.querySelector('#' + childElement.id);
     let element = (existChild || getElement(childElement.id));
     let child = childElement;
-    let duration = animateduration ? animateduration : 300;
+    let duration = animateDuration ? animateDuration : 300;
     if (redraw && isAnimate && element) {
         start = start || (element.tagName === 'DIV' ?
             new ChartLocation(+(element.style[x].split('px')[0]), +(element.style[y].split('px')[0])) :
@@ -3030,29 +3106,30 @@ function animateRedrawElement(element, duration, start, end, x = 'x', y = 'y') {
     });
 }
 /** @private */
-function textElement(option, font, color, parent, isMinus = false, redraw, isAnimate, forceAnimate = false, animateduration) {
+function textElement(renderer, option, font, color, parent, isMinus = false, redraw, isAnimate, forceAnimate = false, animateDuration, seriesClipRect) {
     let renderOptions = {};
     let htmlObject;
     let tspanElement;
-    let renderer = new SvgRenderer('');
+    //let renderer: SvgRenderer = new SvgRenderer('');
     let text;
     let height;
     renderOptions = {
         'id': option.id,
         'x': option.x,
         'y': option.y,
-        'fill': color,
+        'fill': color ? color : 'black',
         'font-size': font.size,
         'font-style': font.fontStyle,
         'font-family': font.fontFamily,
         'font-weight': font.fontWeight,
         'text-anchor': option.anchor,
+        'labelRotation': option.labelRotation,
         'transform': option.transform,
         'opacity': font.opacity,
         'dominant-baseline': option.baseLine
     };
     text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
-    htmlObject = renderer.createText(renderOptions, text);
+    htmlObject = renderer.createText(renderOptions, text, seriesClipRect ? seriesClipRect.x : 0, seriesClipRect ? seriesClipRect.y : 0);
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i = 1, len = option.text.length; i < len; i++) {
             height = (measureText(option.text[i], font).height);
@@ -3063,7 +3140,7 @@ function textElement(option, font, color, parent, isMinus = false, redraw, isAni
             htmlObject.appendChild(tspanElement);
         }
     }
-    appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateduration);
+    appendChildElement(renderer instanceof CanvasRenderer, parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateDuration);
     return htmlObject;
 }
 /**
@@ -3095,7 +3172,8 @@ function calculateSize(chart) {
     chart.availableSize = new Size(stringToNumber(chart.width, containerWidth) || containerWidth || 600, stringToNumber(chart.height, containerHeight) || containerHeight || height);
 }
 function createSvg(chart) {
-    chart.renderer = new SvgRenderer(chart.element.id);
+    chart.canvasRender = new CanvasRenderer(chart.element.id);
+    chart.renderer = chart.enableCanvas ? chart.canvasRender : new SvgRenderer(chart.element.id);
     calculateSize(chart);
     if (chart.stockChart && chart.getModuleName() === 'chart') {
         chart.svgObject = chart.stockChart.chartObject;
@@ -3104,11 +3182,20 @@ function createSvg(chart) {
         chart.svgObject = chart.stockChart.selectorObject;
     }
     else {
-        chart.svgObject = chart.renderer.createSvg({
-            id: chart.element.id + '_svg',
-            width: chart.availableSize.width,
-            height: chart.availableSize.height
-        });
+        if (chart.enableCanvas) {
+            chart.svgObject = chart.renderer.createCanvas({
+                id: chart.element.id + '_canvas',
+                width: chart.availableSize.width,
+                height: chart.availableSize.height
+            });
+        }
+        else {
+            chart.svgObject = chart.renderer.createSvg({
+                id: chart.element.id + '_svg',
+                width: chart.availableSize.width,
+                height: chart.availableSize.height
+            });
+        }
     }
 }
 /**
@@ -3177,6 +3264,14 @@ function textWrap(currentLabel, maximumWidth, font) {
     }
     return labelCollection;
 }
+/**
+ * Method to reset the blazor templates
+ */
+function blazorTemplatesReset(control) {
+    for (let i = 0; i < control.annotations.length; i++) {
+        resetBlazorTemplate((control.element.id + '_Annotation_' + i).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate');
+    }
+}
 /** @private */
 class CustomizeOption {
     constructor(id) {
@@ -3201,6 +3296,7 @@ class RectOption extends PathOption {
         this.rx = rx ? rx : 0;
         this.ry = ry ? ry : 0;
         this.transform = transform ? transform : '';
+        this.stroke = (border.width !== 0 && this.stroke !== '') ? border.color : 'transparent';
     }
 }
 /** @private */
@@ -3492,7 +3588,6 @@ class CartesianAxisLayoutPanel {
             if (axis.crossesAt === null) {
                 continue;
             }
-            let isTransposed = chart.isTransposed;
             if (!axis.crossesInAxis) {
                 if (chart.requireInvertedAxis) {
                     axis.crossInAxis = ((axis.orientation === 'Horizontal')) ? chart.primaryXAxis : chart.primaryYAxis;
@@ -3658,9 +3753,11 @@ class CartesianAxisLayoutPanel {
                     this.drawYAxisTitle(axis, i, isInside ? outsideElement : this.element, (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect));
                 }
             }
-            axisElement.appendChild(this.element);
-            if (outsideElement && outsideElement.childNodes.length > 0) {
-                axisLineElement.appendChild(outsideElement);
+            if (!this.chart.enableCanvas) {
+                axisElement.appendChild(this.element);
+                if (outsideElement && outsideElement.childNodes.length > 0) {
+                    axisLineElement.appendChild(outsideElement);
+                }
             }
             if (chart.scrollBarModule && (chart.zoomSettings.enableScrollbar || axis.scrollbarSettings.enable)) {
                 this.renderScrollbar(chart, axis);
@@ -3679,8 +3776,10 @@ class CartesianAxisLayoutPanel {
                 this.drawBottomLine(column, j, false);
             }
         }
-        axisElement.appendChild(this.element);
-        appendChildElement(chart.svgObject, axisElement, chart.redraw);
+        if (!this.chart.enableCanvas) {
+            axisElement.appendChild(this.element);
+        }
+        appendChildElement(chart.enableCanvas, chart.svgObject, axisElement, chart.redraw);
         return axisLineElement;
     }
     /**
@@ -3695,7 +3794,7 @@ class CartesianAxisLayoutPanel {
             if (!chart.scrollElement) {
                 chart.scrollElement = redrawElement(chart.redraw, chart.element.id + '_scrollElement') || createElement('div', { id: chart.element.id + '_scrollElement' });
             }
-            appendChildElement(chart.scrollElement, axis.zoomingScrollBar.render(true), true);
+            appendChildElement(false, chart.scrollElement, axis.zoomingScrollBar.render(true), true);
         }
         else if (axis.zoomFactor === 1 && axis.zoomPosition === 0 && axis.zoomingScrollBar.svgObject && !axis.scrollbarSettings.enable) {
             axis.zoomingScrollBar.destroy();
@@ -3775,7 +3874,7 @@ class CartesianAxisLayoutPanel {
             'stroke': axis.lineStyle.color || chart.themeStyle.axisLine
         };
         this.htmlObject = chart.renderer.drawPath(optionsLine);
-        appendChildElement(parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction);
+        appendChildElement(chart.enableCanvas, parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction);
     }
     /**
      * To render the yAxis grid line
@@ -3791,7 +3890,7 @@ class CartesianAxisLayoutPanel {
         let majorTick = '';
         let minorGridDirection;
         let tickSize = axis.opposedPosition ? axis.majorTickLines.height : -axis.majorTickLines.height;
-        let axisLineSize = (axis.opposedPosition) ? axis.lineStyle.width / 2 : -axis.lineStyle.width / 2;
+        let axisLineSize = (axis.opposedPosition) ? axis.lineStyle.width * 0.5 : -axis.lineStyle.width * 0.5;
         let ticksbwtLabel = (axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks') ?
             0.5 : 0;
         let scrollBarHeight = isNullOrUndefined(axis.crossesAt) ? axis.opposedPosition ? axis.scrollBarHeight :
@@ -3871,7 +3970,7 @@ class CartesianAxisLayoutPanel {
         let isLabelInside = axis.labelPosition === 'Inside';
         let isOpposed = axis.opposedPosition;
         let tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        let padding = tickSpace + this.padding + axis.lineStyle.width / 2;
+        let padding = tickSpace + this.padding + axis.lineStyle.width * 0.5;
         padding = (axis.opposedPosition) ? padding : -padding;
         let anchor = ((isOpposed && isLabelInside) || (!isOpposed && !isLabelInside)) ? 'end' : 'start';
         let labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
@@ -3891,7 +3990,7 @@ class CartesianAxisLayoutPanel {
                         break;
                     case 'Hide':
                         if (((i === 0 || (axis.isInversed && i === len - 1)) && options.y > rect.y + rect.height) ||
-                            (((i === len - 1) || (axis.isInversed && i === 0)) && options.y - elementSize.height / 2 < rect.y)) {
+                            (((i === len - 1) || (axis.isInversed && i === 0)) && options.y - elementSize.height * 0.5 < rect.y)) {
                             options.text = '';
                         }
                         break;
@@ -3899,19 +3998,21 @@ class CartesianAxisLayoutPanel {
                         if ((i === 0 || (axis.isInversed && i === len - 1)) && options.y > rect.y + rect.height) {
                             options.y = pointY = rect.y + rect.height;
                         }
-                        else if (((i === len - 1) || (axis.isInversed && i === 0)) && (options.y - elementSize.height / 2 < rect.y)) {
-                            options.y = pointY = rect.y + elementSize.height / 2;
+                        else if (((i === len - 1) || (axis.isInversed && i === 0)) && (options.y - elementSize.height * 0.5 < rect.y)) {
+                            options.y = pointY = rect.y + elementSize.height * 0.5;
                         }
                         break;
                 }
             }
-            textElement(options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true).setAttribute('text-content', options.text);
+            textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
-        if (!chart.delayRedraw) {
-            appendChildElement(parent, labelElement, chart.redraw);
-        }
-        else if (axis.visible) {
-            this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
+        if (!this.chart.enableCanvas) {
+            if (!chart.delayRedraw) {
+                appendChildElement(chart.enableCanvas, parent, labelElement, chart.redraw);
+            }
+            else if (axis.visible) {
+                this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
+            }
         }
     }
     /**
@@ -3936,16 +4037,16 @@ class CartesianAxisLayoutPanel {
             let ticksbwtLabel = (axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks') ? -0.5 : 0;
             let endX = ((axis.opposedPosition && axis.labelPosition === 'Inside') || (!axis.opposedPosition
                 && axis.labelPosition === 'Outside')) ? rect.x - length + scrollBarHeight : rect.x + length + scrollBarHeight;
-            for (let i = 0; i < axis.visibleLabels.length; i++) {
+            for (let i = 0, len = axis.visibleLabels.length; i < len; i++) {
                 pointY = valueToCoefficient(axis.visibleLabels[i].value + ticksbwtLabel, axis);
                 pointY = (axis.isInversed ? (1 - pointY) : pointY) * rect.height;
                 if (axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks') {
-                    startY = Math.floor((pointY * -1) + (rect.y + rect.height));
-                    endY = Math.floor((pointY * -1) - (gap) + (rect.y + rect.height));
+                    startY = (pointY * -1) + (rect.y + rect.height);
+                    endY = (pointY * -1) - (gap) + (rect.y + rect.height);
                 }
                 else {
-                    startY = Math.floor((pointY * -1) + gap / 2 + (rect.y + rect.height));
-                    endY = Math.floor((pointY * -1) - gap / 2 + (rect.y + rect.height));
+                    startY = (pointY * -1) + gap / 2 + (rect.y + rect.height);
+                    endY = (pointY * -1) - gap / 2 + (rect.y + rect.height);
                 }
                 switch (axis.border.type) {
                     case 'Rectangle':
@@ -4000,9 +4101,9 @@ class CartesianAxisLayoutPanel {
                 (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
         padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
         let x = rect.x + padding;
-        let y = rect.y + rect.height / 2;
-        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')');
-        let element = textElement(options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+        let y = rect.y + rect.height * 0.5;
+        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
+        let element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('tabindex', axis.tabIndex.toString());
         element.setAttribute('aria-label', axis.description || axis.title);
     }
@@ -4020,7 +4121,7 @@ class CartesianAxisLayoutPanel {
         let majorTick = '';
         let minorDirection;
         let tickSize = (axis.opposedPosition) ? -axis.majorTickLines.height : axis.majorTickLines.height;
-        let axisLineSize = (axis.opposedPosition) ? -axis.lineStyle.width / 2 : axis.lineStyle.width / 2;
+        let axisLineSize = (axis.opposedPosition) ? -axis.lineStyle.width * 0.5 : axis.lineStyle.width * 0.5;
         let scrollBarHeight = isNullOrUndefined(axis.crossesAt) ? axis.opposedPosition ? -axis.scrollBarHeight :
             axis.scrollBarHeight : 0;
         let ticksbwtLabel = (axis.valueType.indexOf('Category') > -1 && axis.labelPlacement === 'BetweenTicks') ?
@@ -4172,7 +4273,7 @@ class CartesianAxisLayoutPanel {
         let islabelInside = axis.labelPosition === 'Inside';
         let isOpposed = axis.opposedPosition;
         let tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        let padding = tickSpace + this.padding + axis.lineStyle.width / 2;
+        let padding = tickSpace + this.padding + axis.lineStyle.width * 0.5;
         let rotateSize;
         let diffHeight;
         let angle = axis.angle % 360;
@@ -4195,17 +4296,17 @@ class CartesianAxisLayoutPanel {
             elementSize = label.size;
             intervalLength = rect.width / length;
             labelWidth = isAxisBreakLabel ? label.breakLabelSize.width : elementSize.width;
-            width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0
-                && labelWidth > intervalLength) ? intervalLength : labelWidth;
+            width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0 &&
+                labelWidth > intervalLength) ? intervalLength : labelWidth;
             pointX -= width / 2;
             if (islabelInside && angle) {
                 pointY = isOpposed ? (rect.y + padding) : (rect.y - padding);
             }
             else {
                 labelPadding = ((isOpposed && !islabelInside) || (!isOpposed && islabelInside)) ?
-                    -(padding + scrollBarHeight + (angle ? ((elementSize.height / 2) + (2 * axis.maxLabelSize.height / 5)) :
+                    -(padding + scrollBarHeight + (angle ? ((elementSize.height * 0.5) + (2 * axis.maxLabelSize.height / 5)) :
                         (label.index > 1 ? (2 * (elementSize.height / 4)) : 0))) :
-                    padding + scrollBarHeight + (angle ? (axis.maxLabelSize.height / 2) : (3 * (elementSize.height / 4)));
+                    padding + scrollBarHeight + (angle ? (axis.maxLabelSize.height * 0.5) : (3 * (elementSize.height / 4)));
                 pointY = (rect.y + (labelPadding * label.index));
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, '');
@@ -4246,39 +4347,26 @@ class CartesianAxisLayoutPanel {
                 rotateSize = this.getRotateText(isAxisBreakLabel, axis, label, angle, chart);
                 diffHeight = islabelInside ? rotateSize.height :
                     axis.maxLabelSize.height - Math.ceil(rotateSize.height);
-                yLocation = axis.opposedPosition ? diffHeight / 2 : -diffHeight / 2;
-                options.transform = 'rotate(' + angle + ',' + (pointX + width / 2 + anglePadding) + ','
+                yLocation = axis.opposedPosition ? diffHeight * 0.5 : -diffHeight * 0.5;
+                options.transform = 'rotate(' + angle + ',' + (pointX + width * 0.5 + anglePadding) + ','
                     + (pointY + yLocation) + ')';
                 options.y = isAxisBreakLabel ? options.y +
                     (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y + yLocation;
             }
-            textElement(options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true).setAttribute('style', 'cursor: default');
+            textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true);
         }
-        if (!chart.delayRedraw) {
-            parent.appendChild(labelElement);
-        }
-        else if (axis.visible) {
-            this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
-        }
-    }
-    /**
-     * To get rotate text size
-     * @param isBreakLabel
-     * @param axis
-     * @param label
-     * @param angle
-     * @param chart
-     */
-    getRotateText(isBreakLabel$$1, axis, label, angle, chart) {
-        if (isBreakLabel$$1) {
-            return new Size(measureText(label.originalText, axis.labelStyle).height, measureText(label.originalText, axis.labelStyle).width);
-        }
-        else {
-            return rotateTextSize(axis.labelStyle, label.text, angle, chart);
+        if (!this.chart.enableCanvas) {
+            if (!chart.delayRedraw) {
+                parent.appendChild(labelElement);
+            }
+            else if (axis.visible) {
+                this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
+            }
         }
     }
     /**
      * To get axis label text
+     * @param breakLabels
      * @param label
      * @param axis
      * @param intervalLength
@@ -4321,7 +4409,7 @@ class CartesianAxisLayoutPanel {
             let endY = ((axis.opposedPosition && axis.labelPosition === 'Inside') ||
                 (!axis.opposedPosition && axis.labelPosition === 'Outside')) ?
                 (axisRect.y + length + padding + scrollBarHeight) : (axisRect.y - length - padding - scrollBarHeight);
-            for (let i = 0; i < axis.visibleLabels.length; i++) {
+            for (let i = 0, len = axis.visibleLabels.length; i < len; i++) {
                 pointX = valueToCoefficient(axis.visibleLabels[i].value + ticksbwtLabel, axis);
                 pointX = (axis.isInversed ? (1 - pointX) : pointX) * axisRect.width;
                 if (axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks') {
@@ -4329,8 +4417,8 @@ class CartesianAxisLayoutPanel {
                     endX = pointX + (gap) + axisRect.x;
                 }
                 else {
-                    startX = pointX - gap / 2 + axisRect.x;
-                    endX = pointX + gap / 2 + axisRect.x;
+                    startX = pointX - gap * 0.5 + axisRect.x;
+                    endX = pointX + gap * 0.5 + axisRect.x;
                 }
                 switch (axis.border.type) {
                     case 'Rectangle':
@@ -4381,7 +4469,7 @@ class CartesianAxisLayoutPanel {
         let direction = element ? element.getAttribute('d') : '';
         let borderElement = this.chart.renderer.drawPath(new PathOption(this.chart.element.id + '_BorderLine_' + index, 'transparent', axis.border.width, axis.border.color || this.chart.themeStyle.axisLine, 1, '', labelBorder));
         borderElement.setAttribute('style', 'pointer-events: none');
-        appendChildElement(parent, borderElement, this.chart.redraw, true, 'x', 'y', null, direction, true);
+        appendChildElement(this.chart.enableCanvas, parent, borderElement, this.chart.redraw, true, 'x', 'y', null, direction, true);
     }
     /**
      * To find the axis label of the intersect action
@@ -4390,12 +4478,8 @@ class CartesianAxisLayoutPanel {
      * @param width
      */
     findAxisLabel(axis, label, width) {
-        switch (axis.labelIntersectAction) {
-            case 'Trim':
-                return (axis.angle === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle) : label;
-            default:
-                return label;
-        }
+        return (axis.labelIntersectAction === 'Trim' ?
+            ((axis.angle === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle) : label) : label);
     }
     /**
      * X-Axis Title function performed
@@ -4413,8 +4497,8 @@ class CartesianAxisLayoutPanel {
                 axis.maxLabelSize.height + axis.multiLevelLabelHeight + this.padding);
         padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight) : (padding + (3 *
             elementSize.height / 4) + scrollBarHeight);
-        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width / 2, rect.y + padding, 'middle', axis.title);
-        let element = textElement(options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.title);
+        let element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('aria-label', axis.description || axis.title);
         element.setAttribute('tabindex', axis.tabIndex.toString());
     }
@@ -4439,7 +4523,7 @@ class CartesianAxisLayoutPanel {
             direction = element ? element.getAttribute('d') : null;
             element = null;
             this.htmlObject = chart.renderer.drawPath(new PathOption(chart.element.id + gridId + index + '_' + gridIndex, 'transparent', gridModel.width, gridModel.color || themeColor, null, dashArray, gridDirection));
-            appendChildElement(parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction, true);
+            appendChildElement(chart.enableCanvas, parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction, true);
         }
     }
     /**
@@ -4483,6 +4567,22 @@ class CartesianAxisLayoutPanel {
             parentNode.appendChild(zoomElement);
         }
     }
+    /**
+     * To get Rotate text size
+     * @param isBreakLabel
+     * @param axis
+     * @param label
+     * @param angle
+     * @param chart
+     */
+    getRotateText(isBreakLabel$$1, axis, label, angle, chart) {
+        if (isBreakLabel$$1) {
+            return new Size(measureText(label.originalText, axis.labelStyle).height, measureText(label.originalText, axis.labelStyle).width);
+        }
+        else {
+            return rotateTextSize(axis.labelStyle, label.text, angle, chart);
+        }
+    }
 }
 
 /**
@@ -4499,6 +4599,7 @@ class ChartData {
         this.currentPoints = [];
         /** @private */
         this.previousPoints = [];
+        this.insideRegion = false;
         this.chart = chart;
         this.lierIndex = 0;
     }
@@ -4512,14 +4613,28 @@ class ChartData {
         let series = null;
         let width;
         let height;
+        let mouseX;
+        let mouseY;
         for (let len = chart.visibleSeries.length, i = len - 1; i >= 0; i--) {
             series = chart.visibleSeries[i];
             width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
                 ? (series.marker.height + 5) / 2 : 0;
             height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
                 ? (series.marker.width + 5) / 2 : 0;
-            if (series.visible && withInBounds(chart.mouseX, chart.mouseY, series.clipRect, width, height)) {
-                point = this.getRectPoint(series, series.clipRect, chart.mouseX, chart.mouseY);
+            mouseX = chart.mouseX;
+            mouseY = chart.mouseY;
+            if (series.dragSettings.enable && series.isRectSeries) {
+                if (!(series.type === 'Bar' && chart.isTransposed) && (chart.isTransposed || series.type === 'Bar')) {
+                    let markerWidth = series.marker.width / 2;
+                    mouseX = series.yAxis.isInversed ? mouseX + markerWidth : mouseX - markerWidth;
+                }
+                else {
+                    let markerHeight = series.marker.height / 2;
+                    mouseY = series.yAxis.isInversed ? mouseY - markerHeight : mouseY + markerHeight;
+                }
+            }
+            if (series.visible && withInBounds(mouseX, mouseY, series.clipRect, width, height)) {
+                point = this.getRectPoint(series, series.clipRect, mouseX, mouseY);
             }
             if (point) {
                 return new PointData(point, series);
@@ -4531,6 +4646,7 @@ class ChartData {
         return (chart.selectionMode.indexOf('Drag') > -1 && chart.selectionModule && chart.selectionModule.rectPoints !== null);
     }
     getRectPoint(series, rect, x, y) {
+        let chart = this.chart;
         let fromCenterX;
         let fromCenterY;
         let clickAngle;
@@ -4538,6 +4654,9 @@ class ChartData {
         let startAngle;
         let endAngle;
         let distanceFromCenter;
+        if (chart.isScrolling) {
+            return null;
+        }
         for (let point of series.points) {
             if (!point.regionData) {
                 if (!point.regions || !point.regions.length) {
@@ -4566,7 +4685,16 @@ class ChartData {
                     return point;
                 }
             }
-            else if (this.checkRegionContainsPoint(point.regions, rect, x, y)) {
+            if (series.dragSettings.enable && series.isRectSeries) {
+                if (this.rectRegion(x, y, point, rect, series)) {
+                    this.insideRegion = true;
+                    return point;
+                }
+            }
+            if (!this.insideRegion && this.checkRegionContainsPoint(point.regions, rect, x, y)) {
+                return point;
+            }
+            else if (this.insideRegion && this.checkRegionContainsPoint(point.regions, rect, x, y)) {
                 return point;
             }
         }
@@ -4579,6 +4707,67 @@ class ChartData {
         return regionRect.some((region, index) => {
             this.lierIndex = index;
             return withInBounds(x, y, new Rect((this.chart.chartAreaType === 'Cartesian' ? rect.x : 0) + region.x, (this.chart.chartAreaType === 'Cartesian' ? rect.y : 0) + region.y, region.width, region.height));
+        });
+    }
+    /**
+     * To find drag region for column and bar series
+     * @param x
+     * @param y
+     * @param point
+     * @param rect
+     * @param series
+     */
+    rectRegion(x, y, point, rect, series) {
+        let isBar = series.type === 'Bar';
+        let isInversed = series.yAxis.isInversed;
+        let isTransposed = series.chart.isTransposed;
+        let heightValue = 10;
+        let yValue = 0;
+        let xValue = 0;
+        let width;
+        let height = width = 2 * heightValue;
+        if (isInversed && isTransposed) {
+            if (isBar) {
+                yValue = point.regions[0].height - heightValue;
+                width = point.regions[0].width;
+            }
+            else {
+                xValue = -heightValue;
+                height = point.regions[0].height;
+            }
+        }
+        else if (isInversed || point.yValue < 0) {
+            if (isBar) {
+                xValue = -heightValue;
+                height = point.regions[0].height;
+            }
+            else {
+                yValue = point.regions[0].height - heightValue;
+                width = point.regions[0].width;
+            }
+        }
+        else if (isTransposed) {
+            if (isBar) {
+                yValue = -heightValue;
+                width = point.regions[0].width;
+            }
+            else {
+                xValue = point.regions[0].width - heightValue;
+                height = point.regions[0].height;
+            }
+        }
+        else {
+            if (isBar) {
+                xValue = point.regions[0].width - heightValue;
+                height = point.regions[0].height;
+            }
+            else {
+                yValue = -heightValue;
+                width = point.regions[0].width;
+            }
+        }
+        return point.regions.some((region) => {
+            return withInBounds(x, y, new Rect((this.chart.chartAreaType === 'Cartesian' ? rect.x : 0) + region.x + xValue, (this.chart.chartAreaType === 'Cartesian' ? rect.y : 0) + region.y + yValue, width, height));
         });
     }
     /**
@@ -4876,10 +5065,10 @@ class SeriesBase extends ChildProperty {
         if (this instanceof Series) {
             if ((this.type === 'Waterfall' || this.type === 'Histogram')) {
                 this.currentViewData = this.chart[firstToLowerCase(this.type) + 'SeriesModule'].
-                    processInternalData(this.currentViewData, this);
+                    processInternalData(extend([], this.currentViewData, null, true), this);
             }
             if (this.category === 'Pareto') {
-                this.currentViewData = sort(this.currentViewData, [this.yName], true);
+                this.currentViewData = sort(extend([], this.currentViewData, null, true), [this.yName], true);
                 if (this.type === 'Line') {
                     this.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(this.currentViewData, this);
                 }
@@ -5134,7 +5323,7 @@ class SeriesBase extends ChildProperty {
         dataManager.then((e) => this.dataManagerSuccess(e, chart));
     }
     dataManagerSuccess(e, chart, isRemoteData = true) {
-        this.currentViewData = e.result !== '' ? extend([], e.result, null, true) : [];
+        this.currentViewData = e.result !== '' ? e.result : [];
         if (this instanceof Series) {
             let argsData = {
                 name: seriesRender, series: this, data: this.currentViewData, fill: this.interior
@@ -5146,6 +5335,11 @@ class SeriesBase extends ChildProperty {
         this.processJsonData();
         this.recordsCount = e.count;
         this.refreshChart(isRemoteData);
+        if (chart.stockChart) {
+            if (isNullOrUndefined(chart.stockChart.blazorDataSource[this.index])) {
+                chart.stockChart.blazorDataSource.splice(this.index, 0, this.currentViewData);
+            }
+        }
         this.currentViewData = null;
     }
     refreshChart(isRemoteData) {
@@ -5163,6 +5357,10 @@ class SeriesBase extends ChildProperty {
         if (chart.visibleSeries.length === (chart.visibleSeriesCount)) {
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });
+            if (this.chart.stockChart && this.chart.stockChart.initialRender) {
+                this.chart.stockChart.stockChartDataManagerSuccess();
+                this.chart.stockChart.initialRender = false;
+            }
         }
         if (this instanceof Series) {
             chart.visibleSeriesCount += isRemoteData ? 0 : 1;
@@ -5435,7 +5633,9 @@ class Series extends SeriesBase {
                 }
                 this.appendSeriesElement(chart.seriesElements, chart);
             }
-            this.performAnimation(chart, seriesType, this.errorBar, this.marker, this.marker.dataLabel);
+            if (!this.chart.enableCanvas) {
+                this.performAnimation(chart, seriesType, this.errorBar, this.marker, this.marker.dataLabel);
+            }
         }
     }
     /**
@@ -5448,7 +5648,8 @@ class Series extends SeriesBase {
             let elementId = chart.element.id;
             // 8 for extend border value 5 for extend size value
             let explodeValue = this.marker.border.width + 8 + 5;
-            let render = chart.renderer;
+            let render = (this.type === 'Scatter' || this.type === 'Bubble') ?
+                chart.svgRenderer : chart.renderer;
             let index = this.index === undefined ? this.category : this.index;
             let markerHeight = (this.type === 'Scatter') ? (this.marker.height + explodeValue) / 2 : 0;
             let markerWidth = (this.type === 'Scatter') ? (this.marker.width + explodeValue) / 2 : 0;
@@ -5474,7 +5675,9 @@ class Series extends SeriesBase {
                 'transform': transform,
                 'clip-path': 'url(#' + elementId + '_ChartSeriesClipRect_' + index + ')'
             });
-            this.seriesElement.appendChild(this.clipRectElement);
+            if (!this.chart.enableCanvas || this.type === 'Scatter' || this.type === 'Bubble') {
+                this.seriesElement.appendChild(this.clipRectElement);
+            }
         }
     }
     /**
@@ -5487,30 +5690,30 @@ class Series extends SeriesBase {
         let dataLabel = marker.dataLabel;
         let redraw = chart.redraw;
         if (this.category !== 'TrendLine') {
-            appendChildElement(chart.seriesElements, this.seriesElement, redraw);
+            appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
             let errorBar = this.errorBar;
             if (errorBar.visible) {
                 if (chart.chartAreaType === 'PolarRadar') {
-                    appendChildElement(chart.seriesElements, this.seriesElement, redraw);
+                    appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
                 }
                 else {
-                    appendChildElement(chart.seriesElements, this.errorBarElement, redraw);
+                    appendChildElement(chart.enableCanvas, chart.seriesElements, this.errorBarElement, redraw);
                 }
             }
             if (this.type === 'Scatter' || this.type === 'Bubble') {
-                appendChildElement(chart.seriesElements, this.seriesElement, redraw);
+                appendChildElement(false, chart.seriesElements, this.seriesElement, redraw);
             }
         }
         if (marker.visible && (chart.chartAreaType === 'Cartesian' ||
             ((this.drawType !== 'Scatter') && chart.chartAreaType === 'PolarRadar')) && this.type !== 'Scatter' &&
             this.type !== 'Bubble' && this.type !== 'Candle' && this.type !== 'Hilo' && this.type !== 'HiloOpenClose') {
-            appendChildElement(chart.seriesElements, this.symbolElement, redraw);
+            appendChildElement(chart.enableCanvas, chart.seriesElements, this.symbolElement, redraw);
         }
         if (dataLabel.visible) {
-            appendChildElement(chart.dataLabelElements, this.shapeElement, redraw);
-            appendChildElement(chart.dataLabelElements, this.textElement, redraw);
+            appendChildElement(chart.enableCanvas, chart.dataLabelElements, this.shapeElement, redraw);
+            appendChildElement(chart.enableCanvas, chart.dataLabelElements, this.textElement, redraw);
         }
-        if (chart.dataLabelElements.hasChildNodes()) {
+        if (!chart.enableCanvas && chart.dataLabelElements.hasChildNodes()) {
             chart.seriesElements.appendChild(chart.dataLabelElements);
         }
     }
@@ -5606,6 +5809,9 @@ __decorate$4([
 __decorate$4([
     Complex(null, MarkerSettings)
 ], Series.prototype, "marker", void 0);
+__decorate$4([
+    Complex({}, DragSettings)
+], Series.prototype, "dragSettings", void 0);
 __decorate$4([
     Collection([], Trendline)
 ], Series.prototype, "trendlines", void 0);
@@ -5776,6 +5982,9 @@ class MarkerExplode extends ChartData {
                 (previous && previous.lierIndex > 3 && previous.lierIndex !== this.lierIndex))) {
                 this.currentPoints.push(data);
             }
+            if (data.point && explodeSeries && chart.isPointMouseDown) {
+                this.currentPoints.push(data);
+            }
         }
         else {
             if (!withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
@@ -5802,7 +6011,7 @@ class MarkerExplode extends ChartData {
         }
         let length = this.previousPoints.length;
         if (this.currentPoints.length > 0) {
-            if (length === 0 || (length > 0 && this.previousPoints[0].point !== this.currentPoints[0].point)) {
+            if (length === 0 || chart.isPointMouseDown || (length > 0 && this.previousPoints[0].point !== this.currentPoints[0].point)) {
                 if (this.previousPoints.length > 0) {
                     this.removeHighlightedMarker();
                 }
@@ -5848,7 +6057,7 @@ class MarkerExplode extends ChartData {
             'rgba(' + colorValue.r + ',' + colorValue.g + ',' + colorValue.b + ',0.2)';
         for (let i = 0; i < 2; i++) {
             let options = new PathOption(symbolId + '_' + i, i ? (marker.fill || point.color || (explodeSeries ? series.interior : '#ffffff')) : 'transparent', borderWidth + (i ? 0 : 8), i ? borderColor : markerShadow, (marker.opacity || seriesMarker.opacity), null, null);
-            let symbol = drawSymbol(location, shape, size, seriesMarker.imageUrl, options, '');
+            let symbol = drawSymbol(location, shape, size, seriesMarker.imageUrl, options, '', this.chart.svgRenderer, series.clipRect);
             symbol.setAttribute('style', 'pointer-events:none');
             symbol.setAttribute('class', 'EJ2-Trackball');
             element.appendChild(symbol);
@@ -5949,7 +6158,7 @@ class Marker extends MarkerExplode {
                 y = point.y;
             }
             shapeOption = new PathOption(symbolId, argsData.fill, argsData.border.width, argsData.border.color, marker.opacity, null);
-            if (parentElement !== undefined && parentElement !== null) {
+            if ((parentElement !== undefined && parentElement !== null) || this.chart.enableCanvas) {
                 if (redraw && getElement(shapeOption.id)) {
                     markerElement = getElement(shapeOption.id);
                     circlePath = argsData.shape === 'Circle' ? 'c' : '';
@@ -5958,8 +6167,8 @@ class Marker extends MarkerExplode {
                     };
                     previousPath = markerElement.getAttribute('d');
                 }
-                markerElement = drawSymbol(location, argsData.shape, new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + y.toString());
-                appendChildElement(parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y', previousLocation, previousPath, false, false, null, series.chart.duration);
+                markerElement = drawSymbol(location, argsData.shape, new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect);
+                appendChildElement(this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y', previousLocation, previousPath, false, false, null, series.chart.duration);
             }
             point.marker = {
                 border: argsData.border,
@@ -5982,7 +6191,7 @@ class Marker extends MarkerExplode {
         let marker = series.marker;
         // 8 for extend border value 5 for extend size value
         let explodeValue = marker.border.width + 8 + 5;
-        let render = series.chart.renderer;
+        let render = series.chart.svgRenderer;
         let transform;
         let index = series.index === undefined ? series.category : series.index;
         let options;
@@ -6009,6 +6218,10 @@ class Marker extends MarkerExplode {
             };
             series.symbolElement = render.createGroup(options);
             series.symbolElement.appendChild(markerClipRect);
+            if (this.chart.enableCanvas) {
+                let element = document.getElementById(this.chart.element.id + '_tooltip_svg');
+                element.appendChild(series.symbolElement);
+            }
         }
     }
     getRangeLowPoint(region, series) {
@@ -6138,14 +6351,17 @@ class BaseLegend {
      * @private
      */
     constructor(chart) {
-        this.rowCount = 0; // legend row counts per page 
-        this.columnCount = 0; // legend column counts per page 
+        this.rowCount = 0; // legend row counts per page
+        this.columnCount = 0; // legend column counts per page
         this.pageButtonSize = 8;
         this.pageXCollections = []; // pages of x locations
         this.maxColumns = 0;
         this.isTrimmed = false;
         this.maxWidth = 0;
         this.currentPage = 1;
+        this.currentPageNumber = 1;
+        this.legendRegions = [];
+        this.pagingRegions = [];
         this.chart = chart;
         this.legend = chart.legendSettings;
         this.legendID = chart.element.id + '_chart_legend';
@@ -6254,6 +6470,7 @@ class BaseLegend {
     renderLegend(chart, legend, legendBounds, redraw) {
         let firstLegend = this.findFirstLegendPosition(this.legendCollections);
         let padding = legend.padding;
+        this.legendRegions = [];
         this.maxItemHeight = Math.max(this.legendCollections[0].textSize.height, legend.shapeHeight);
         let legendGroup = chart.renderer.createGroup({ id: this.legendID + '_g' });
         let legendTranslateGroup = this.createLegendElements(chart, legendBounds, legendGroup, legend, this.legendID, redraw);
@@ -6277,13 +6494,20 @@ class BaseLegend {
                     legendSeriesGroup = chart.renderer.createGroup({
                         id: this.legendID + this.generateId(legendOption, '_g_', count)
                     });
-                    legendSeriesGroup.setAttribute('tabindex', legend.tabIndex.toString());
-                    legendSeriesGroup.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
+                    if (legendSeriesGroup) {
+                        legendSeriesGroup.setAttribute('tabindex', legend.tabIndex.toString());
+                        legendSeriesGroup.setAttribute('aria-label', legend.description ||
+                            'Click to show or hide the ' + legendOption.text + ' series');
+                    }
                     this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, legendBounds, count, firstLegend);
                     this.renderSymbol(legendOption, legendSeriesGroup, count);
                     this.renderText(chart, legendOption, legendSeriesGroup, textOptions, count);
-                    legendSeriesGroup.setAttribute('style', 'cursor: ' + ((!legend.toggleVisibility && chart.selectionMode === 'None') ? 'auto' : 'pointer'));
-                    legendTranslateGroup.appendChild(legendSeriesGroup);
+                    if (legendSeriesGroup) {
+                        legendSeriesGroup.setAttribute('style', 'cursor: ' + ((!legend.toggleVisibility && chart.selectionMode === 'None') ? 'auto' : 'pointer'));
+                    }
+                    if (legendTranslateGroup) {
+                        legendTranslateGroup.appendChild(legendSeriesGroup);
+                    }
                     previousLegend = legendOption;
                 }
                 count++;
@@ -6295,7 +6519,7 @@ class BaseLegend {
                 this.totalPages = 1;
             }
         }
-        appendChildElement(chart.svgObject, legendGroup, redraw);
+        appendChildElement(chart.enableCanvas, chart.svgObject, legendGroup, redraw);
     }
     /**
      * To find first valid legend text index for chart and accumulation chart
@@ -6316,19 +6540,31 @@ class BaseLegend {
     createLegendElements(chart, legendBounds, legendGroup, legend, id, redraw) {
         let padding = legend.padding;
         let options = new RectOption(id + '_element', legend.background, legend.border, legend.opacity, legendBounds);
-        legendGroup.appendChild(chart.renderer.drawRectangle(options));
+        legendGroup ? legendGroup.appendChild(chart.renderer.drawRectangle(options)) : chart.renderer.drawRectangle(options);
         let legendItemsGroup = chart.renderer.createGroup({ id: id + '_collections' });
-        legendGroup.appendChild(legendItemsGroup);
+        let isCanvas = chart.enableCanvas;
+        if (!isCanvas) {
+            legendGroup.appendChild(legendItemsGroup);
+        }
         this.legendTranslateGroup = chart.renderer.createGroup({ id: id + '_translate_g' });
-        legendItemsGroup.appendChild(this.legendTranslateGroup);
+        if (!isCanvas) {
+            legendItemsGroup.appendChild(this.legendTranslateGroup);
+        }
         let clippath = chart.renderer.createClipPath({ id: id + '_clipPath' });
         options.y += padding;
         options.id += '_clipPath_rect';
         options.width = (!this.isChartControl && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
-        this.clipRect = chart.renderer.drawRectangle(options);
-        clippath.appendChild(this.clipRect);
-        appendChildElement(chart.svgObject, clippath, redraw);
-        legendItemsGroup.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+        if (!isCanvas) {
+            this.clipRect = chart.renderer.drawRectangle(options);
+            clippath.appendChild(this.clipRect);
+        }
+        else {
+            this.pagingClipRect = options;
+        }
+        appendChildElement(isCanvas, chart.svgObject, clippath, redraw);
+        if (!isCanvas) {
+            legendItemsGroup.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+        }
         return this.legendTranslateGroup;
     }
     /**
@@ -6342,13 +6578,28 @@ class BaseLegend {
             (legendOption.type.toLowerCase().indexOf('line') > -1) && (legendOption.type.toLowerCase().indexOf('area') === -1));
         let strokewidth = isStrokeWidth ? this.chart.visibleSeries[i].width : 1;
         let symbolOption = new PathOption(this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth, symbolColor, 1, '', '');
-        group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series'));
+        let regionPadding;
+        let isCanvas = this.chart.enableCanvas;
+        if (!isCanvas) {
+            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer));
+        }
+        else {
+            regionPadding = -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber);
+            drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer, this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null);
+            this.legendRegions.push({ rect: new Rect(legendOption.location.x, legendOption.location.y, this.legend.shapeWidth, this.legend.shapeHeight + regionPadding), index: i });
+        }
         if (shape === 'Line' && legendOption.markerVisibility && legendOption.markerShape !== 'Image' ||
             legendOption.type === 'Doughnut') {
             symbolOption.id = this.legendID + this.generateId(legendOption, '_shape_marker_', i);
             shape = legendOption.type === 'Doughnut' ? 'Circle' : legendOption.markerShape;
             symbolOption.fill = legendOption.type === 'Doughnut' ? '#FFFFFF' : symbolOption.fill;
-            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series'));
+            if (!isCanvas) {
+                group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series'));
+            }
+            else {
+                drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2), '', symbolOption, 'Click to show or hide the ' + legendOption.text + ' series', this.chart.renderer, this.currentPageNumber ?
+                    new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
+            }
         }
     }
     /**
@@ -6362,15 +6613,30 @@ class BaseLegend {
         textOptions.text = legendOption.text;
         textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
-        let element = textElement(textOptions, legend.textStyle, fontcolor, group);
-        element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
+        let isCanvas = this.chart.enableCanvas;
+        let element = textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false, null, this.currentPageNumber && isCanvas ?
+            new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
+        if (element) {
+            element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
+        }
+        if (isCanvas) {
+            let textSize = measureText(textOptions.text, legend.textStyle);
+            this.legendRegions[i].rect.y = textOptions.y < this.legendRegions[i].rect.y ? textOptions.y : this.legendRegions[i].rect.y;
+            this.legendRegions[i].rect.width += textSize.width;
+            this.legendRegions[i].rect.height = textSize.height;
+            this.legendRegions[i].rect.y -= textSize.height * 0.5;
+        }
     }
     /**
      * To render legend paging elements for chart and accumulation chart
      */
     renderPagingElements(chart, bounds, textOption, legendGroup) {
         let paginggroup = chart.renderer.createGroup({ id: this.legendID + '_navigation' });
-        legendGroup.appendChild(paginggroup);
+        this.pagingRegions = [];
+        let isCanvas = chart.enableCanvas;
+        if (!isCanvas) {
+            legendGroup.appendChild(paginggroup);
+        }
         let grayColor = '#545454';
         let legend = chart.legendSettings; // to solve parameter lint error, legend declaration is here
         let padding = 8; // const padding for paging elements
@@ -6382,27 +6648,63 @@ class BaseLegend {
         }
         let symbolOption = new PathOption(this.legendID + '_pageup', 'transparent', 5, grayColor, 1, '', '');
         let iconSize = this.pageButtonSize;
-        paginggroup.setAttribute('style', 'cursor: pointer');
+        if (paginggroup) {
+            paginggroup.setAttribute('style', 'cursor: pointer');
+        }
         // Page left arrow drawing calculation started here
         this.clipPathHeight = (this.rowCount - 1) * (this.maxItemHeight + legend.padding);
-        this.clipRect.setAttribute('height', this.clipPathHeight.toString());
+        if (!isCanvas) {
+            this.clipRect.setAttribute('height', this.clipPathHeight.toString());
+        }
+        else {
+            //paging clipRect only for canvas mode
+            this.pagingClipRect.height = this.legendBounds.height - this.clipPathHeight -
+                (this.pagingClipRect.y - this.legendBounds.y) - legend.border.width;
+            this.pagingClipRect.y = this.pagingClipRect.y + this.clipPathHeight;
+            this.pagingClipRect.x += legend.border.width;
+            this.pagingClipRect.width -= (legend.border.width + legend.border.width / 2);
+            this.chart.renderer.clearRect(new Rect(this.pagingClipRect.x, this.pagingClipRect.y, this.pagingClipRect.width, this.pagingClipRect.height));
+        }
         let x = bounds.x + iconSize / 2;
         let y = bounds.y + this.clipPathHeight + ((bounds.height - this.clipPathHeight) / 2);
-        paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'LeftArrow', new Size(iconSize, iconSize), '', symbolOption, 'LeftArrow'));
+        let size = measureText(this.totalPages + '/' + this.totalPages, legend.textStyle);
+        if (!isCanvas) {
+            paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'LeftArrow', new Size(iconSize, iconSize), '', symbolOption, 'LeftArrow'));
+        }
+        else {
+            drawSymbol({ x: x, y: y }, 'LeftArrow', new Size(iconSize, iconSize), '', symbolOption, 'LeftArrow', this.chart.renderer, new Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
+        }
+        this.pagingRegions.push(new Rect(x + bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5, y - iconSize * 0.5, iconSize, iconSize));
         // Page numbering rendering calculation started here
         textOption.x = x + (iconSize / 2) + padding;
-        let size = measureText(this.totalPages + '/' + this.totalPages, legend.textStyle);
         textOption.y = y + (size.height / 4);
         textOption.id = this.legendID + '_pagenumber';
         textOption.text = '1/' + this.totalPages;
-        let pageTextElement = textElement(textOption, legend.textStyle, legend.textStyle.color, paginggroup);
+        if (isCanvas && this.totalNoOfPages) {
+            textOption.text = this.currentPageNumber + '/' + this.totalNoOfPages;
+        }
+        let pageTextElement = textElement(chart.renderer, textOption, legend.textStyle, legend.textStyle.color, paginggroup, false, false, false, false, null, new Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
         // Page right arrow rendering calculation started here
         x = (textOption.x + padding + (iconSize / 2) + size.width);
         symbolOption.id = this.legendID + '_pagedown';
-        paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'RightArrow', new Size(iconSize, iconSize), '', symbolOption, 'RightArrow'));
-        // placing the navigation buttons and page numbering in legend right corner
-        paginggroup.setAttribute('transform', 'translate(' + (bounds.width - (2 * (iconSize + padding) +
-            padding + size.width)) + ', ' + 0 + ')');
+        if (!isCanvas) {
+            paginggroup.appendChild(drawSymbol({ x: x, y: y }, 'RightArrow', new Size(iconSize, iconSize), '', symbolOption, 'RightArrow'));
+        }
+        else {
+            drawSymbol({ x: x, y: y }, 'RightArrow', new Size(iconSize, iconSize), '', symbolOption, 'RightArrow', this.chart.renderer, new Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
+        }
+        this.pagingRegions.push(new Rect(x + (bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5), y - iconSize * 0.5, iconSize, iconSize));
+        if (!isCanvas) {
+            //placing the navigation buttons and page numbering in legend right corner
+            paginggroup.setAttribute('transform', 'translate(' + (bounds.width - (2 * (iconSize + padding) +
+                padding + size.width)) + ', ' + 0 + ')');
+        }
+        else {
+            if (this.currentPageNumber === 1 && this.calTotalPage) {
+                this.totalNoOfPages = this.totalPages;
+                this.calTotalPage = false;
+            }
+        }
         this.translatePage(pageTextElement, this.currentPage - 1, this.currentPage);
     }
     /**
@@ -6417,9 +6719,14 @@ class BaseLegend {
             size = size < 0 ? 0 : size; // to avoid small pixel variation
             translate = 'translate(-' + size + ',0)';
         }
-        this.legendTranslateGroup.setAttribute('transform', translate);
-        pagingText.textContent = (pageNumber) + '/' + this.totalPages;
+        if (!this.chart.enableCanvas) {
+            this.legendTranslateGroup.setAttribute('transform', translate);
+        }
+        if (!this.chart.enableCanvas) {
+            pagingText.textContent = (pageNumber) + '/' + this.totalPages;
+        }
         this.currentPage = pageNumber;
+        return size;
     }
     /**
      * To change legend pages for chart and accumulation chart
@@ -6461,7 +6768,7 @@ class BaseLegend {
                 let element = this.chart.element;
                 if (!isNaN(index)) {
                     if (this.chart.isTouch) {
-                        removeElement(this.chart.element.id + '_EJ2_Legend_Tooltip');
+                        removeElement$1(this.chart.element.id + '_EJ2_Legend_Tooltip');
                     }
                     if (this.isChartControl) {
                         showTooltip(this.chart.series[index].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement(this.chart.element.id + '_Secondary_Element'));
@@ -6473,11 +6780,11 @@ class BaseLegend {
             }
         }
         else {
-            removeElement(this.chart.element.id + '_EJ2_Legend_Tooltip');
+            removeElement$1(this.chart.element.id + '_EJ2_Legend_Tooltip');
         }
         if (this.chart.isTouch) {
             clearTimeout(this.clearTooltip);
-            this.clearTooltip = setTimeout(() => { removeElement(this.chart.element.id + '_EJ2_Legend_Tooltip'); }, 1000);
+            this.clearTooltip = setTimeout(() => { removeElement$1(this.chart.element.id + '_EJ2_Legend_Tooltip'); }, 1000);
         }
     }
 }
@@ -6642,7 +6949,6 @@ class ExportUtils {
      * To export the file as image/svg format
      * @param type
      * @param fileName
-     * @param isVertical
      */
     export(type, fileName, orientation, controls, width, height, isVertical) {
         let controlValue = this.getControlsValue(controls, isVertical);
@@ -6836,6 +7142,10 @@ let Chart = class Chart extends Component {
         /** @public */
         this.animated = false;
         /** @private */
+        this.isPointMouseDown = false;
+        /** @private */
+        this.isScrolling = false;
+        /** @private */
         this.chartAreaType = 'Cartesian';
         this.chartid = 57723;
         setValue('mergePersistData', this.mergePersistChartData, this);
@@ -6885,12 +7195,14 @@ let Chart = class Chart extends Component {
             this.element.id = 'chart_' + this.chartid + '_' + collection;
         }
         //seperate ID to differentiate chart and stock chart
-        this.svgId = this.stockChart ? this.stockChart.element.id + '_stockChart_chart' : this.element.id + '_svg';
+        this.svgId = this.stockChart ? this.stockChart.element.id + '_stockChart_chart' :
+            this.element.id + (this.enableCanvas ? '_canvas' : '_svg');
     }
     /**
      * To Initialize the control rendering.
      */
     render() {
+        this.svgRenderer = new SvgRenderer(this.element.id);
         this.trigger(load, { chart: this });
         this.createChartSvg();
         this.setTheme();
@@ -6930,7 +7242,7 @@ let Chart = class Chart extends Component {
         this.calculateStackValues();
         this.calculateBounds();
         this.renderElements();
-        removeElement('chartmeasuretext');
+        removeElement$1('chartmeasuretext');
     }
     /**
      * To calcualte the stack values
@@ -6979,7 +7291,18 @@ let Chart = class Chart extends Component {
      */
     renderLegend() {
         if (this.legendModule && this.legendModule.legendCollections.length) {
-            this.legendModule.renderLegend(this, this.legendSettings, this.legendModule.legendBounds);
+            this.legendModule.calTotalPage = true;
+            let borderWidth = this.legendSettings.border.width;
+            let bounds = this.legendModule.legendBounds;
+            let rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
+            if (this.enableCanvas) {
+                rect = new Rect(rect.x - borderWidth / 2, rect.y - borderWidth / 2, rect.width + borderWidth, rect.height + borderWidth);
+                this.renderer.canvasClip(rect);
+            }
+            this.legendModule.renderLegend(this, this.legendSettings, bounds);
+            if (this.enableCanvas) {
+                this.renderer.canvasRestore();
+            }
         }
         if (!this.redraw) {
             if (!this.stockChart) {
@@ -7007,15 +7330,19 @@ let Chart = class Chart extends Component {
     }
     initializeModuleElements() {
         this.dataLabelCollections = [];
-        let elementID = this.element.id;
-        this.seriesElements = this.renderer.createGroup({ id: elementID + 'SeriesCollection' });
+        let elementId = this.element.id;
+        if (this.series.length) {
+            this.seriesElements = (this.series[0].type === 'Scatter' || this.series[0].type === 'Bubble') ?
+                this.svgRenderer.createGroup({ id: elementId + 'SeriesCollection' }) :
+                this.renderer.createGroup({ id: elementId + 'SeriesCollection' });
+        }
         if (this.indicators.length) {
-            this.indicatorElements = this.renderer.createGroup({ id: elementID + 'IndicatorCollection' });
+            this.indicatorElements = this.renderer.createGroup({ id: elementId + 'IndicatorCollection' });
         }
         if (this.hasTrendlines()) {
-            this.trendLineElements = this.renderer.createGroup({ id: elementID + 'TrendLineCollection' });
+            this.trendLineElements = this.renderer.createGroup({ id: elementId + 'TrendLineCollection' });
         }
-        this.dataLabelElements = this.renderer.createGroup({ id: elementID + 'DataLabelCollection' });
+        this.dataLabelElements = this.renderer.createGroup({ id: elementId + 'DataLabelCollection' });
     }
     hasTrendlines() {
         let isTrendline;
@@ -7030,17 +7357,30 @@ let Chart = class Chart extends Component {
     renderSeriesElements(axisElement) {
         // Initialize the series elements values
         this.initializeModuleElements();
-        let elementID = this.element.id;
+        let elementId = this.element.id;
         if (this.element.tagName !== 'g') {
-            let tooltipDiv = redrawElement(this.redraw, elementID + '_Secondary_Element') ||
+            let tooltipDiv = redrawElement(this.redraw, elementId + '_Secondary_Element') ||
                 this.createElement('div');
-            tooltipDiv.id = elementID + '_Secondary_Element';
+            tooltipDiv.id = elementId + '_Secondary_Element';
             tooltipDiv.setAttribute('style', 'position: relative');
-            appendChildElement(this.element, tooltipDiv, this.redraw);
+            appendChildElement(false, this.element, tooltipDiv, this.redraw);
+        }
+        // For canvas
+        if (this.enableCanvas) {
+            let tooltipdiv = document.getElementById(elementId + '_Secondary_Element');
+            tooltipdiv = !tooltipdiv ? this.createElement('div', { id: elementId + '_Secondary_Element',
+                attrs: { 'style': 'position: relative; left:0px; top:0px' } }) : tooltipdiv;
+            let svg = this.svgRenderer.createSvg({
+                id: elementId + '_tooltip_svg',
+                width: this.availableSize.width,
+                height: this.availableSize.height
+            });
+            svg.setAttribute('style', 'position: absolute; pointer-events: none');
+            tooltipdiv.appendChild(svg);
         }
         // For userInteraction
         if (this.tooltip.enable) {
-            appendChildElement(this.svgObject, this.renderer.createGroup({ id: elementID + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
+            appendChildElement(this.enableCanvas, this.svgObject, this.renderer.createGroup({ id: elementId + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
         }
         if (this.rows.length > 0 && this.columns.length > 0) {
             this.initializeIndicator();
@@ -7056,7 +7396,16 @@ let Chart = class Chart extends Component {
         for (let item of this.visibleSeries) {
             if (item.visible) {
                 findClipRect(item);
+                if (this.enableCanvas) {
+                    // To render scatter and bubble series in canvas
+                    this.renderCanvasSeries(item);
+                    // To clip the series rect for canvas
+                    this.renderer.canvasClip(this.chartAxisLayoutPanel.seriesClipRect);
+                }
                 item.renderSeries(this);
+                if (this.enableCanvas) {
+                    this.renderer.canvasRestore();
+                }
             }
         }
         let options = {
@@ -7069,8 +7418,30 @@ let Chart = class Chart extends Component {
             'stroke-width': 1,
             'stroke': 'Gray'
         };
-        this.seriesElements.appendChild(appendClipElement(this.redraw, options, this.renderer));
-        appendChildElement(this.svgObject, this.seriesElements, this.redraw);
+        if (!this.enableCanvas) {
+            this.seriesElements.appendChild(appendClipElement(this.redraw, options, this.renderer));
+        }
+        let seriesSvg = document.getElementById(this.element.id + '_series_svg');
+        seriesSvg ? appendChildElement(false, seriesSvg, this.seriesElements, this.redraw) :
+            appendChildElement(this.enableCanvas, this.svgObject, this.seriesElements, this.redraw);
+    }
+    renderCanvasSeries(item) {
+        let svgElement;
+        let divElement;
+        let canvas;
+        if ((item.type === 'Bubble' || item.type === 'Scatter')) {
+            svgElement = !svgElement ? this.svgRenderer.createSvg({ id: this.element.id + '_series_svg',
+                width: this.availableSize.width, height: this.availableSize.height }) : svgElement;
+            divElement = !divElement ? this.createElement('div', { id: this.element.id + '_series' }) : divElement;
+            divElement.setAttribute('style', 'position: absolute');
+            let mainElement = document.getElementById(this.element.id + '_Secondary_Element');
+            divElement.appendChild(svgElement);
+            mainElement.appendChild(divElement);
+        }
+        svgElement = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter')) ?
+            svgElement : this.svgObject;
+        canvas = (this.enableCanvas && (item.type === 'Bubble' || item.type === 'Scatter')) ?
+            false : this.enableCanvas;
     }
     initializeIndicator() {
         for (let indicator of this.indicators) {
@@ -7079,7 +7450,7 @@ let Chart = class Chart extends Component {
             }
         }
         if (this.indicatorElements) {
-            appendChildElement(this.svgObject, this.indicatorElements, this.redraw);
+            appendChildElement(this.enableCanvas, this.svgObject, this.indicatorElements, this.redraw);
         }
     }
     initializeTrendLine() {
@@ -7089,23 +7460,23 @@ let Chart = class Chart extends Component {
             }
         }
         if (this.trendLineElements) {
-            appendChildElement(this.svgObject, this.trendLineElements, this.redraw);
+            appendChildElement(this.enableCanvas, this.svgObject, this.trendLineElements, this.redraw);
         }
     }
     appendElementsAfterSeries(axisElement) {
         if (this.chartAreaType === 'PolarRadar') {
-            appendChildElement(this.svgObject, this.yAxisElements, this.redraw);
+            appendChildElement(this.enableCanvas, this.svgObject, this.yAxisElements, this.redraw);
         }
-        appendChildElement(this.svgObject, axisElement, this.redraw);
+        appendChildElement(this.enableCanvas, this.svgObject, axisElement, this.redraw);
         if ((this.zoomModule && this.zoomSettings.enableScrollbar && this.scrollElement.childElementCount) ||
             (this.scrollElement && this.scrollElement.childElementCount)) {
-            appendChildElement(getElement(this.element.id + '_Secondary_Element'), this.scrollElement, this.redraw);
+            appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.scrollElement, this.redraw);
         }
         if (this.stripLineModule) {
             this.stripLineModule.renderStripLine(this, 'Over', this.axisCollections);
         }
         if (!this.tooltip.enable) {
-            appendChildElement(this.svgObject, this.renderer.createGroup({ id: this.element.id + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
+            appendChildElement(this.enableCanvas, this.svgObject, this.renderer.createGroup({ id: this.element.id + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
         }
         if (this.stockChart) {
             this.stockChart.calculateStockEvents();
@@ -7197,7 +7568,7 @@ let Chart = class Chart extends Component {
                     padding;
             }
         }
-        let top = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width / 2;
+        let top = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
         let height = this.availableSize.height - top - this.border.width - margin.bottom;
         this.initialClipRect = new Rect(left, top, width, height);
         if (this.legendModule) {
@@ -7397,9 +7768,11 @@ let Chart = class Chart extends Component {
             rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
             let options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), this.margin.top + ((elementSize.height) * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
             let element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
-                textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject);
-            element.setAttribute('aria-label', this.description || this.title);
-            element.setAttribute('tabindex', this.tabIndex.toString());
+                textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject);
+            if (element) {
+                element.setAttribute('aria-label', this.description || this.title);
+                element.setAttribute('tabindex', this.tabIndex.toString());
+            }
             if (this.subTitle) {
                 this.renderSubTitle(options);
             }
@@ -7419,19 +7792,21 @@ let Chart = class Chart extends Component {
             maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
         }
         let subTitleElementSize = measureText(this.subTitle, this.subTitleStyle);
-        rect = new Rect(alignment === 'Center' ? (options.x - maxWidth / 2) : alignment === 'Far' ? options.x - maxWidth : options.x, 0, maxWidth, 0);
+        rect = new Rect(alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment === 'Far' ? options.x - maxWidth : options.x, 0, maxWidth, 0);
         let subTitleOptions = new TextOption(this.element.id + '_ChartSubTitle', titlePositionX(rect, this.subTitleStyle), options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding, anchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto');
         let element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
-            textElement(subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject);
-        element.setAttribute('aria-label', this.description || this.subTitle);
-        element.setAttribute('tabindex', this.tabIndex.toString());
+            textElement(this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject);
+        if (element) {
+            element.setAttribute('aria-label', this.description || this.subTitle);
+            element.setAttribute('tabindex', this.tabIndex.toString());
+        }
     }
     renderBorder() {
         let width = this.border.width;
-        let rect = new RectOption(this.element.id + '_ChartBorder', this.background || this.themeStyle.background, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
+        let rect = new RectOption(this.element.id + '_ChartBorder', this.background || this.themeStyle.background, this.border, 1, new Rect(width * 0.5, width * 0.5, this.availableSize.width - width, this.availableSize.height - width));
         this.htmlObject = redrawElement(this.redraw, this.element.id + '_ChartBorder', rect, this.renderer)
             || this.renderer.drawRectangle(rect);
-        appendChildElement(this.svgObject, this.htmlObject, this.redraw);
+        appendChildElement(this.enableCanvas, this.svgObject, this.htmlObject, this.redraw);
     }
     /**
      * @private
@@ -7446,7 +7821,7 @@ let Chart = class Chart extends Component {
                 new Rect(+element.getAttribute('x'), +element.getAttribute('y'), +element.getAttribute('width'), +element.getAttribute('height')) : null;
             let rect = new RectOption(this.element.id + '_ChartAreaBorder', this.chartArea.background, { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder }, this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
             this.htmlObject = this.renderer.drawRectangle(rect);
-            appendChildElement(this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y', null, null, true, true, previousRect);
+            appendChildElement(this.enableCanvas, this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y', null, null, true, true, previousRect);
             this.htmlObject = null;
         }
     }
@@ -7487,10 +7862,10 @@ let Chart = class Chart extends Component {
         }
         this.unWireEvents();
         super.destroy();
-        this.removeSvg();
-        this.svgObject = null;
-        this.element.classList.remove('e-chart');
-        this.element.innerHTML = '';
+        if (!this.enableCanvas) {
+            this.removeSvg();
+            this.svgObject = null;
+        }
         this.horizontalAxes = [];
         this.verticalAxes = [];
         this.visibleSeries = [];
@@ -7498,7 +7873,6 @@ let Chart = class Chart extends Component {
         this.chartAxisLayoutPanel = null;
         this.dataLabelCollections = null;
         this.dataLabelElements = null;
-        this.renderer = null;
         this.yAxisElements = null;
     }
     /**
@@ -7711,7 +8085,7 @@ let Chart = class Chart extends Component {
         let element = e.target;
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
-        this.isChartDrag = false;
+        this.isChartDrag = this.isPointMouseDown = false;
         this.notify(cancelEvent, e);
         return false;
     }
@@ -7757,6 +8131,9 @@ let Chart = class Chart extends Component {
             this.titleTooltip(e, this.mouseX, this.mouseY);
             this.axisTooltip(e, this.mouseX, this.mouseY);
         }
+        if (this.dataEditingModule) {
+            this.dataEditingModule.pointMouseMove(e);
+        }
         this.notify(Browser.touchMoveEvent, e);
         this.isTouch = false;
         return false;
@@ -7769,7 +8146,7 @@ let Chart = class Chart extends Component {
             showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
-            removeElement(this.element.id + '_EJ2_Title_Tooltip');
+            removeElement$1(this.element.id + '_EJ2_Title_Tooltip');
         }
     }
     axisTooltip(event, x, y, isTouch) {
@@ -7779,7 +8156,7 @@ let Chart = class Chart extends Component {
             showTooltip(this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
-            removeElement(this.element.id + '_EJ2_AxisLabel_Tooltip');
+            removeElement$1(this.element.id + '_EJ2_AxisLabel_Tooltip');
         }
     }
     findAxisLabel(text) {
@@ -7831,6 +8208,9 @@ let Chart = class Chart extends Component {
                 (this.mouseX - offset >= this.mouseDownX || this.mouseX + offset >= this.mouseDownX) &&
                 (this.mouseY - offset >= this.mouseDownY || this.mouseY + offset >= this.mouseDownY));
         }
+        if (this.dataEditingModule) {
+            this.dataEditingModule.pointMouseDown();
+        }
         this.notify(Browser.touchStartEvent, e);
         return false;
     }
@@ -7872,7 +8252,12 @@ let Chart = class Chart extends Component {
             this.axisTooltip(e, this.mouseX, this.mouseY, this.isTouch);
             this.threshold = new Date().getTime() + 300;
         }
-        this.seriesElements.removeAttribute('clip-path');
+        if (this.dataEditingModule) {
+            this.dataEditingModule.pointMouseUp();
+        }
+        if (!this.enableCanvas) {
+            this.seriesElements.removeAttribute('clip-path');
+        }
         this.notify(Browser.touchEndEvent, e);
         return false;
     }
@@ -7894,7 +8279,7 @@ let Chart = class Chart extends Component {
         if (content !== null) {
             annotation.content = content;
             if (parentNode) {
-                removeElement(this.element.id + '_Annotation_' + annotationIndex);
+                removeElement$1(this.element.id + '_Annotation_' + annotationIndex);
                 element = this.createElement('div');
                 this.annotationModule.processAnnotation(annotation, annotationIndex, element);
                 parentNode.appendChild(element.children[0]);
@@ -7936,6 +8321,7 @@ let Chart = class Chart extends Component {
         let enableAnnotation = false;
         let moduleName;
         let errorBarVisible = false;
+        let isPointDrag = false;
         let dataLabelEnable = false;
         let zooming = this.zoomSettings;
         this.chartAreaType = (series.length > 0 && (series[0].type === 'Polar' || series[0].type === 'Radar')) ? 'PolarRadar' : 'Cartesian';
@@ -7950,6 +8336,7 @@ let Chart = class Chart extends Component {
             moduleName = value.type.indexOf('100') !== -1 ? value.type.replace('100', '') + 'Series' : value.type + 'Series';
             errorBarVisible = value.errorBar.visible || errorBarVisible;
             dataLabelEnable = value.marker.dataLabel.visible || dataLabelEnable;
+            isPointDrag = value.dragSettings.enable || isPointDrag;
             if (!modules.some((currentModule) => {
                 return currentModule.member === moduleName;
             })) {
@@ -8023,6 +8410,12 @@ let Chart = class Chart extends Component {
             modules.push({
                 member: 'DataLabel',
                 args: [this, series]
+            });
+        }
+        if (isPointDrag) {
+            modules.push({
+                member: 'DataEditing',
+                args: [this]
             });
         }
         if (enableAnnotation) {
@@ -8191,7 +8584,13 @@ let Chart = class Chart extends Component {
         if (this.redraw) {
             return null;
         }
-        removeElement(this.element.id + '_Secondary_Element');
+        blazorTemplatesReset(this);
+        if (this.enableCanvas && this.svgObject && this.svgObject.tagName === 'CANVAS') {
+            this.renderer.clearRect(new Rect(0, 0, this.availableSize.width, this.availableSize.height));
+            remove(this.svgObject);
+            return null;
+        }
+        removeElement$1(this.element.id + '_Secondary_Element');
         let removeLength = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -8419,7 +8818,7 @@ let Chart = class Chart extends Component {
                 this.trigger('loaded', { chart: this });
             }
             if (refreshBounds) {
-                this.removeSvg();
+                this.enableCanvas ? this.createChartSvg() : this.removeSvg();
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this });
@@ -8520,6 +8919,9 @@ __decorate([
     Property(false)
 ], Chart.prototype, "isTransposed", void 0);
 __decorate([
+    Property(false)
+], Chart.prototype, "enableCanvas", void 0);
+__decorate([
     Collection([], TechnicalIndicator)
 ], Chart.prototype, "indicators", void 0);
 __decorate([
@@ -8575,6 +8977,12 @@ __decorate([
 ], Chart.prototype, "axisMultiLabelRender", void 0);
 __decorate([
     Event()
+], Chart.prototype, "legendClick", void 0);
+__decorate([
+    Event()
+], Chart.prototype, "multiLevelLabelClick", void 0);
+__decorate([
+    Event()
 ], Chart.prototype, "tooltipRender", void 0);
 __decorate([
     Event()
@@ -8612,6 +9020,15 @@ __decorate([
 __decorate([
     Event()
 ], Chart.prototype, "scrollChanged", void 0);
+__decorate([
+    Event()
+], Chart.prototype, "dragStart", void 0);
+__decorate([
+    Event()
+], Chart.prototype, "drag", void 0);
+__decorate([
+    Event()
+], Chart.prototype, "dragEnd", void 0);
 __decorate([
     Property('USD')
 ], Chart.prototype, "currencyCode", void 0);
@@ -9627,7 +10044,7 @@ class StripLine {
                 }
             }
         }
-        appendChildElement(chart.svgObject, striplineGroup, chart.redraw);
+        appendChildElement(chart.enableCanvas, chart.svgObject, striplineGroup, chart.redraw);
     }
     /**
      * To draw the single line strip line
@@ -9644,7 +10061,7 @@ class StripLine {
         let d = (axis.orientation === 'Vertical') ? ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + (rect.x + rect.width)
             + ' ' + rect.y) :
             ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + rect.x + ' ' + (rect.y + rect.height));
-        appendChildElement(parent, chart.renderer.drawPath(new PathOption(id, '', stripline.size, stripline.color, stripline.opacity, stripline.dashArray, d)), chart.redraw, true, 'x', 'y', null, direction, true);
+        appendChildElement(chart.enableCanvas, parent, chart.renderer.drawPath(new PathOption(id, '', stripline.size, stripline.color, stripline.opacity, stripline.dashArray, d)), chart.redraw, true, 'x', 'y', null, direction, true);
     }
     ;
     /**
@@ -9658,7 +10075,7 @@ class StripLine {
     renderRectangle(stripline, rect, id, parent, chart) {
         let element = getElement(id);
         let previousRect = element ? new Rect(+element.getAttribute('x'), +element.getAttribute('y'), +element.getAttribute('width'), +element.getAttribute('height')) : null;
-        appendChildElement(parent, chart.renderer.drawRectangle(new RectOption(id, stripline.color, stripline.border, stripline.opacity, rect, 0, 0, '', stripline.dashArray)), chart.redraw, true, 'x', 'y', null, null, true, true, previousRect);
+        appendChildElement(chart.enableCanvas, parent, chart.renderer.drawRectangle(new RectOption(id, stripline.color, stripline.border, stripline.opacity, rect, 0, 0, '', stripline.dashArray)), chart.redraw, true, 'x', 'y', null, null, true, true, previousRect);
     }
     /**
      * To create the text on strip line
@@ -9687,7 +10104,7 @@ class StripLine {
             ty = this.getTextStart(ty + (textMid * this.factor(stripline.verticalAlignment)) - padding, rect.height, stripline.verticalAlignment);
             anchor = stripline.horizontalAlignment;
         }
-        textElement(new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'), stripline.textStyle, stripline.textStyle.color, parent);
+        textElement(chart.renderer, new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'), stripline.textStyle, stripline.textStyle.color, parent);
     }
     invertAlignment(anchor) {
         switch (anchor) {
@@ -9817,7 +10234,6 @@ class LineBase {
     /** @private */
     constructor(chartModule) {
         this.chart = chartModule;
-        this.padding = 5;
     }
     /**
      * To improve the chart performance.
@@ -9876,10 +10292,14 @@ class LineBase {
         let element = getElement(options.id);
         let chart = series.chart;
         let previousDirection = element ? element.getAttribute('d') : null;
-        let htmlObject = series.chart.renderer.drawPath(options);
-        htmlObject.setAttribute('clip-path', clipRect);
+        let htmlObject = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
+        if (htmlObject) {
+            htmlObject.setAttribute('clip-path', clipRect);
+        }
         series.pathElement = htmlObject;
-        series.seriesElement.appendChild(htmlObject);
+        if (!series.chart.enableCanvas) {
+            series.seriesElement.appendChild(htmlObject);
+        }
         series.isRectSeries = false;
         pathAnimation(element, options.d, series.chart.redraw, previousDirection, chart.duration);
     }
@@ -10238,7 +10658,7 @@ class ColumnBase {
         let previousElement = redrawElement(chart.redraw, name);
         let previousDirection = previousElement ? previousElement.getAttribute('d') : '';
         let options = new PathOption(name, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
-        let element = chart.renderer.drawPath(options);
+        let element = chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
         switch (series.seriesType) {
             case 'XY':
                 element.setAttribute('aria-label', point.x.toString() + ':' + point.yValue.toString());
@@ -10247,8 +10667,10 @@ class ColumnBase {
                 element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString() + ':' + point.low.toString());
                 break;
         }
-        appendChildElement(series.seriesElement, element, chart.redraw);
-        pathAnimation(element, direction, chart.redraw, previousDirection, chart.duration);
+        appendChildElement(series.chart.enableCanvas, series.seriesElement, element, chart.redraw);
+        if (!series.chart.enableCanvas) {
+            pathAnimation(element, direction, chart.redraw, previousDirection, chart.duration);
+        }
     }
     /**
      * To animate the series.
@@ -10871,7 +11293,7 @@ class PolarRadarPanel extends LineBase {
             axisElement.appendChild(this.element);
         }
         axisElement.appendChild(this.element);
-        appendChildElement(chart.svgObject, axisElement, chart.redraw);
+        appendChildElement(chart.enableCanvas, chart.svgObject, axisElement, chart.redraw);
         return axisLineElement;
     }
     drawYAxisLine(axis, index, plotX, plotY) {
@@ -10911,7 +11333,7 @@ class PolarRadarPanel extends LineBase {
             pointY = (this.centerY + radius * vector.y) + ((axis.majorTickLines.height + elementSize.height / 2)
                 * (Math.sin(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' ? 1 : -1));
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY + (elementSize.height / 4), anchor, axis.visibleLabels[i].text);
-            textElement(options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         chart.yAxisElements.appendChild(labelElement);
     }
@@ -10942,7 +11364,7 @@ class PolarRadarPanel extends LineBase {
                     previousValue = element ? element.getAttribute('r') : null;
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);
                     options = new CircleOption(chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', border, axis.majorGridLines.width, this.centerX, this.centerY, radius);
-                    appendChildElement(this.element, chart.renderer.drawCircle(options), chart.redraw, true, 'r', 'r', new ChartLocation(+previousValue, +previousValue), null, true);
+                    appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawCircle(options), chart.redraw, true, 'r', 'r', new ChartLocation(+previousValue, +previousValue), null, true);
                 }
             }
             else {
@@ -10966,7 +11388,7 @@ class PolarRadarPanel extends LineBase {
                     element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('d') : null;
                     options = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid);
-                    appendChildElement(this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true);
+                    appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true);
                 }
             }
         }
@@ -11088,7 +11510,7 @@ class PolarRadarPanel extends LineBase {
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
-            textElement(options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         this.element.appendChild(labelElement);
     }
@@ -11101,13 +11523,13 @@ class PolarRadarPanel extends LineBase {
             element = getElement(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             tickOptions = new PathOption(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex, 'transparent', axis.majorTickLines.width, axis.majorTickLines.color || chart.themeStyle.majorTickLine, null, null, majorTickLine);
-            appendChildElement(chart.yAxisElements, chart.renderer.drawPath(tickOptions), chart.redraw, true, 'x', 'y', null, direction);
+            appendChildElement(chart.enableCanvas, chart.yAxisElements, chart.renderer.drawPath(tickOptions), chart.redraw, true, 'x', 'y', null, direction);
         }
         if (axis.minorTickLines.width > 0) {
             element = getElement(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             tickOptions = new PathOption(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex, 'transparent', axis.minorTickLines.width, axis.minorTickLines.color || chart.themeStyle.minorTickLine, null, null, minorTickLine);
-            appendChildElement(chart.yAxisElements, chart.renderer.drawPath(tickOptions), chart.redraw, true, 'x', 'y', null, direction);
+            appendChildElement(chart.enableCanvas, chart.yAxisElements, chart.renderer.drawPath(tickOptions), chart.redraw, true, 'x', 'y', null, direction);
         }
     }
     renderGridLine(axis, index, majorGrid, minorGird, gridIndex) {
@@ -11119,13 +11541,13 @@ class PolarRadarPanel extends LineBase {
             element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             gridOptions = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + gridIndex, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, axis.majorGridLines.dashArray, majorGrid);
-            appendChildElement(this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
+            appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
         }
         if (axis.minorGridLines.width > 0) {
             element = getElement(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             gridOptions = new PathOption(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex, 'transparent', axis.minorGridLines.width, axis.minorGridLines.color || chart.themeStyle.minorGridLine, null, axis.minorGridLines.dashArray, minorGird);
-            appendChildElement(this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
+            appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
         }
     }
 }
@@ -11625,10 +12047,12 @@ class CandleSeries extends ColumnBase {
         let options = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index, fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
         let element = getElement(options.id);
         let previousDirection = element ? element.getAttribute('d') : null;
-        let candleElement = series.chart.renderer.drawPath(options);
+        let candleElement = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
         candleElement.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
-        series.seriesElement.appendChild(candleElement);
+        if (!series.chart.enableCanvas) {
+            series.seriesElement.appendChild(candleElement);
+        }
         pathAnimation(element, direction, series.chart.redraw, previousDirection);
     }
     /**
@@ -11747,7 +12171,7 @@ class StepLineSeries extends LineBase {
                     point2 = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     point1 = getPoint(prevPoint.xValue, prevPoint.yValue, xAxis, yAxis, isInverted);
                     direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ' + 'L' + ' ' +
-                        (point2.x) + ' ' + (point1.y) + 'L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+                        (point2.x) + ' ' + (point1.y) + ' L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
                     startPoint = 'L';
                 }
                 else {
@@ -11845,7 +12269,7 @@ class StepAreaSeries extends LineBase {
                     currentPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, prevPoint.yValue, xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' +
-                        (currentPoint.x) + ' ' + (secondPoint.y) + 'L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+                        (currentPoint.x) + ' ' + (secondPoint.y) + ' L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
                 }
                 else if (series.emptyPointSettings.mode === 'Gap') {
                     currentPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
@@ -12150,7 +12574,7 @@ class ScatterSeries {
             circlePath = argsData.shape === 'Circle' ? 'c' : '';
             previousPath = getElement(shapeOption.id).getAttribute('d');
         }
-        appendChildElement(series.seriesElement, drawSymbol(point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + point.yValue.toString()), chart.redraw, true, circlePath + 'x', circlePath + 'y', startLocation, previousPath);
+        appendChildElement(false, series.seriesElement, drawSymbol(point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + point.yValue.toString(), series.chart.svgRenderer, series.clipRect), chart.redraw, true, circlePath + 'x', circlePath + 'y', startLocation, previousPath);
         point.regions.push(new Rect(point.symbolLocations[0].x - marker.width, point.symbolLocations[0].y - marker.height, 2 * marker.width, 2 * marker.height));
         point.marker = {
             border: argsData.border, fill: argsData.fill,
@@ -12328,9 +12752,10 @@ class WaterfallSeries extends ColumnBase {
             direction = getElement(options.id).getAttribute('d');
         }
         let element = (redrawElement(redraw, options.id, options, series.chart.renderer) ||
-            series.chart.renderer.drawPath(options));
-        element.style.visibility = (series.animation.enable && series.chart.animateSeries) ? 'hidden' : 'visible';
-        appendChildElement(series.seriesElement, element, redraw, true, null, null, null, direction);
+            series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])));
+        element.style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable && series.chart.animateSeries) ?
+            'hidden' : 'visible') : null;
+        appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw, true, null, null, null, direction);
         this.renderMarker(series);
     }
     /**
@@ -12610,10 +13035,12 @@ class HiloOpenCloseSeries extends ColumnBase {
         }
         options = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill, argsData.border.width, argsData.fill, series.opacity, series.dashArray, direction);
         pathAnimation(getElement(options.id), direction, series.chart.redraw);
-        let element = series.chart.renderer.drawPath(options);
+        let element = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
         element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
-        series.seriesElement.appendChild(element);
+        if (!series.chart.enableCanvas) {
+            series.seriesElement.appendChild(element);
+        }
     }
     /**
      * Get module name.
@@ -12822,8 +13249,8 @@ class BubbleSeries {
                     bubblePoint.symbolLocations.push(getPoint(bubblePoint.xValue, bubblePoint.yValue, xAxis, yAxis, isInverted));
                     bubblePoint.color = argsData.fill;
                     shapeOption = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + bubblePoint.index, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, null);
-                    element = drawSymbol(bubblePoint.symbolLocations[0], 'Circle', new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, bubblePoint.x.toString() + ':' + bubblePoint.yValue.toString());
-                    appendChildElement(series.seriesElement, element, redraw);
+                    element = drawSymbol(bubblePoint.symbolLocations[0], 'Circle', new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, bubblePoint.x.toString() + ':' + bubblePoint.yValue.toString(), series.chart.svgRenderer, series.clipRect);
+                    appendChildElement(false, series.seriesElement, element, redraw);
                     bubblePoint.regions.push(new Rect(bubblePoint.symbolLocations[0].x - segmentRadius, bubblePoint.symbolLocations[0].y - segmentRadius, 2 * segmentRadius, 2 * segmentRadius));
                     bubblePoint.marker = {
                         border: argsData.border, fill: argsData.fill,
@@ -13295,10 +13722,12 @@ class HistogramSeries extends ColumnSeries {
             direction += startPoint + ' ' + (pointLocation.x) + ' ' + (pointLocation.y) + ' ';
             startPoint = 'L';
         }
-        distributionLine = series.chart.renderer.drawPath(new PathOption(series.chart.element.id + '_Series_' + series.index + '_NDLine', 'transparent', 2, series.chart.themeStyle.errorBar, series.opacity, series.dashArray, direction));
-        distributionLine.style.visibility = (series.animation.enable && series.chart.animateSeries) ?
-            'hidden' : 'visible';
-        series.seriesElement.appendChild(distributionLine);
+        distributionLine = series.chart.renderer.drawPath(new PathOption(series.chart.element.id + '_Series_' + series.index + '_NDLine', 'transparent', 2, series.chart.themeStyle.errorBar, series.opacity, series.dashArray, direction), new Int32Array([series.clipRect.x, series.clipRect.y]));
+        distributionLine.style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable &&
+            series.chart.animateSeries) ? 'hidden' : 'visible') : null;
+        if (!series.chart.enableCanvas) {
+            series.seriesElement.appendChild(distributionLine);
+        }
     }
     /**
      * Animates the series.
@@ -13373,7 +13802,7 @@ class SplineAreaSeries extends SplineBase {
                     pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
                     bpt1 = getCoordinate(controlPt1.x, controlPt1.y, xAxis, yAxis, isInverted, series);
                     bpt2 = getCoordinate(controlPt2.x, controlPt2.y, xAxis, yAxis, isInverted, series);
-                    direction = direction.concat(' C ' + bpt1.x + ' '
+                    direction = direction.concat('C ' + bpt1.x + ' '
                         + bpt1.y + ' ' + bpt2.x + ' ' + bpt2.y + ' ' + pt2.x + ' ' + pt2.y + ' ');
                 }
                 else {
@@ -14550,7 +14979,9 @@ class Trendlines {
         trendline.trendLineElement = element;
         trendline.targetSeries.clipRectElement = clipRectElement;
         trendline.targetSeries.seriesElement = element;
-        chart.trendLineElements.appendChild(trendline.trendLineElement);
+        if (chart.trendLineElements) {
+            chart.trendLineElements.appendChild(trendline.trendLineElement);
+        }
     }
     /**
      * Defines the data point of trendline
@@ -15070,7 +15501,9 @@ class Trendlines {
             'clip-path': 'url(#' + chart.element.id + '_ChartTrendlineClipRect_' + series.index + ')'
         });
         //defines the clip rect element
-        element.appendChild(clipRectElement);
+        if (element) {
+            element.appendChild(clipRectElement);
+        }
         for (let trendline of series.trendlines) {
             this.createTrendLineElements(chart, trendline, trendline.index, element, clipRectElement);
         }
@@ -15108,6 +15541,7 @@ class Crosshair {
         this.ry = 2;
         this.chart = chart;
         this.elementID = this.chart.element.id;
+        this.svgRenderer = new SvgRenderer(this.chart.element.id);
         this.addEventListener();
     }
     /**
@@ -15169,9 +15603,22 @@ class Crosshair {
         let horizontalCross = '';
         let verticalCross = '';
         let options;
+        let axisTooltipGroup = document.getElementById(this.elementID + '_crosshair_axis');
         let crosshair = chart.crosshair;
+        let tooltipdiv = document.getElementById(this.elementID + '_tooltip');
         let chartRect = chart.chartAxisLayoutPanel.seriesClipRect;
-        let crossGroup = document.getElementById(this.elementID + '_UserInteraction');
+        let crossGroup = chart.enableCanvas ? document.getElementById(this.elementID + '_Secondary_Element') :
+            document.getElementById(this.elementID + '_UserInteraction');
+        let crosshairsvg;
+        let cross = document.getElementById(this.elementID + '_Crosshair');
+        if (chart.enableCanvas) {
+            if (!cross) {
+                cross = createElement('div', {
+                    id: this.elementID + '_Crosshair', styles: 'position: absolute; pointer-events: none'
+                });
+                crossGroup.appendChild(cross);
+            }
+        }
         this.stopAnimation();
         if (chart.tooltip.enable && !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
             return null;
@@ -15182,7 +15629,9 @@ class Crosshair {
         }
         this.valueX = chart.tooltip.enable ? chart.tooltipModule.valueX : chart.mouseX;
         this.valueY = chart.tooltip.enable ? chart.tooltipModule.valueY : chart.mouseY;
-        crossGroup.setAttribute('opacity', '1');
+        if (!chart.enableCanvas) {
+            crossGroup.setAttribute('opacity', '1');
+        }
         if (crosshair.lineType === 'Both' || crosshair.lineType === 'Horizontal') {
             horizontalCross += 'M ' + chartRect.x + ' ' + this.valueY +
                 ' L ' + (chartRect.x + chartRect.width) + ' ' + this.valueY;
@@ -15191,25 +15640,77 @@ class Crosshair {
             verticalCross += 'M ' + this.valueX + ' ' + chartRect.y +
                 ' L ' + this.valueX + ' ' + (chartRect.y + chartRect.height);
         }
-        if (crossGroup.childNodes.length === 0) {
-            let axisTooltipGroup = chart.renderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
+        if (chart.enableCanvas) {
+            if (!axisTooltipGroup) {
+                axisTooltipGroup = this.svgRenderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
+            }
+            let elementID = chart.tooltip.enable ? chart.element.id + '_tooltip_svg' : chart.element.id + '_svg';
+            crosshairsvg = this.svgRenderer.createSvg({
+                id: elementID,
+                width: chart.availableSize.width,
+                height: chart.availableSize.height
+            });
+            if (chart.tooltip.enable) {
+                tooltipdiv = !tooltipdiv ? chart.tooltipModule.createElement() : tooltipdiv;
+                tooltipdiv.appendChild(crosshairsvg);
+                crossGroup.appendChild(tooltipdiv);
+            }
             options = new PathOption(this.elementID + '_HorizontalLine', 'none', crosshair.line.width, crosshair.line.color || chart.themeStyle.crosshairLine, 1, crosshair.dashArray, horizontalCross);
-            this.renderCrosshairLine(options, crossGroup);
+            this.drawCrosshairLine(options, cross, chartRect.x, this.valueY, chartRect.width, 0, horizontalCross);
             options.d = verticalCross;
             options.id = this.elementID + '_VerticalLine';
-            this.renderCrosshairLine(options, crossGroup);
-            crossGroup.appendChild(axisTooltipGroup);
-            this.renderAxisTooltip(chart, chartRect, crossGroup.lastChild);
+            this.drawCrosshairLine(options, cross, this.valueX, chartRect.y, 0, chartRect.height, verticalCross);
+            this.renderAxisTooltip(chart, chartRect, axisTooltipGroup);
+            crosshairsvg.appendChild(axisTooltipGroup);
+            if (!chart.tooltip.enable) {
+                cross.appendChild(crosshairsvg);
+            }
         }
         else {
-            document.getElementById(this.elementID + '_HorizontalLine').setAttribute('d', horizontalCross);
-            document.getElementById(this.elementID + '_VerticalLine').setAttribute('d', verticalCross);
-            this.renderAxisTooltip(chart, chartRect, crossGroup.lastChild);
+            if (crossGroup.childNodes.length === 0) {
+                axisTooltipGroup = chart.renderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
+                options = new PathOption(this.elementID + '_HorizontalLine', 'none', crosshair.line.width, crosshair.line.color || chart.themeStyle.crosshairLine, 1, crosshair.dashArray, horizontalCross);
+                this.renderCrosshairLine(options, crossGroup);
+                options.d = verticalCross;
+                options.id = this.elementID + '_VerticalLine';
+                this.renderCrosshairLine(options, crossGroup);
+                crossGroup.appendChild(axisTooltipGroup);
+                this.renderAxisTooltip(chart, chartRect, crossGroup.lastChild);
+            }
+            else {
+                document.getElementById(this.elementID + '_HorizontalLine').setAttribute('d', horizontalCross);
+                document.getElementById(this.elementID + '_VerticalLine').setAttribute('d', verticalCross);
+                this.renderAxisTooltip(chart, chartRect, crossGroup.lastChild);
+            }
         }
     }
     renderCrosshairLine(options, crossGroup) {
         let htmlObject = this.chart.renderer.drawPath(options);
         crossGroup.appendChild(htmlObject);
+    }
+    drawCrosshairLine(options, crossGroup, left, top, width, height, direction) {
+        if (!document.getElementById(options.id) && direction) {
+            let line = createElement('div', {
+                id: options.id
+            });
+            crossGroup.appendChild(line);
+        }
+        if (document.getElementById(options.id)) {
+            let style = 'top:' + top.toString() + 'px;' +
+                'left:' + left.toString() + 'px;' +
+                'width:' + width + 'px;' +
+                'height:' + height + 'px;' +
+                'fill:' + options.stroke + ';' +
+                'border: 0.5px solid black;' +
+                'position: absolute';
+            let crosshairline = document.getElementById(options.id);
+            let crosshairtooltip = document.getElementById(this.elementID + '_crosshair_axis');
+            crosshairline.setAttribute('style', style);
+            crossGroup.style.opacity = '1';
+            if (crosshairtooltip) {
+                crosshairtooltip.style.opacity = '1';
+            }
+        }
     }
     renderAxisTooltip(chart, chartRect, axisGroup) {
         let axis;
@@ -15235,13 +15736,22 @@ class Crosshair {
                     }
                     rect = this.tooltipLocation(text, axis, chartRect, axisRect);
                     if (pathElement === null) {
-                        pathElement = chart.renderer.drawPath({
-                            'id': this.elementID + '_axis_tooltip_' + k,
-                            'fill': axis.crosshairTooltip.fill || chart.themeStyle.crosshairFill
-                        });
+                        if (chart.enableCanvas) {
+                            pathElement = this.svgRenderer.drawPath({
+                                'id': this.elementID + '_axis_tooltip_' + k,
+                                'fill': axis.crosshairTooltip.fill || chart.themeStyle.crosshairFill
+                            }, null);
+                        }
+                        else {
+                            pathElement = chart.renderer.drawPath({
+                                'id': this.elementID + '_axis_tooltip_' + k,
+                                'fill': axis.crosshairTooltip.fill || chart.themeStyle.crosshairFill
+                            }, null);
+                        }
                         axisGroup.appendChild(pathElement);
                         options = new TextOption(this.elementID + '_axis_tooltip_text_' + k, 0, 0, 'start', text);
-                        textElem = textElement(options, axis.crosshairTooltip.textStyle, axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup);
+                        let render = chart.enableCanvas ? this.svgRenderer : chart.renderer;
+                        textElem = textElement(render, options, axis.crosshairTooltip.textStyle, axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup);
                     }
                     direction = findDirection(this.rx, this.ry, rect, this.arrowLocation, 10, this.isTop, this.isBottom, this.isLeft, this.valueX, this.valueY);
                     pathElement.setAttribute('d', direction);
@@ -15250,8 +15760,8 @@ class Crosshair {
                     textElem.setAttribute('y', (rect.y + padding + 3 * this.elementSize.height / 4).toString());
                 }
                 else {
-                    removeElement(this.elementID + '_axis_tooltip_' + k);
-                    removeElement(this.elementID + '_axis_tooltip_text_' + k);
+                    removeElement$1(this.elementID + '_axis_tooltip_' + k);
+                    removeElement$1(this.elementID + '_axis_tooltip_text_' + k);
                 }
             }
         }
@@ -15359,6 +15869,9 @@ class Crosshair {
     stopAnimation() {
         stopTimer(this.crosshairInterval);
     }
+    progressAnimation() {
+        stopTimer(this.crosshairInterval);
+    }
     /**
      * Removes the crosshair on mouse leave.
      * @return {void}
@@ -15366,7 +15879,9 @@ class Crosshair {
      */
     removeCrosshair(duration) {
         let chart = this.chart;
-        let crosshair = document.getElementById(this.elementID + '_UserInteraction');
+        let crosshair = chart.enableCanvas ? document.getElementById(this.elementID + '_Crosshair') :
+            document.getElementById(this.elementID + '_UserInteraction');
+        let crosshairtooltip = chart.enableCanvas ? document.getElementById(this.elementID + '_crosshair_axis') : null;
         this.stopAnimation();
         if (crosshair && crosshair.getAttribute('opacity') !== '0') {
             this.crosshairInterval = setTimeout(() => {
@@ -15375,10 +15890,22 @@ class Crosshair {
                     progress: (args) => {
                         // crosshair.removeAttribute('e-animate');
                         crosshair.style.animation = '';
-                        crosshair.setAttribute('opacity', (1 - (args.timeStamp / args.duration)).toString());
+                        if (!chart.enableCanvas) {
+                            crosshair.setAttribute('opacity', (1 - (args.timeStamp / args.duration)).toString());
+                        }
+                        else {
+                            crosshair.style.opacity = (1 - (args.timeStamp / args.duration)).toString();
+                            crosshairtooltip.style.opacity = (1 - (args.timeStamp / args.duration)).toString();
+                        }
                     },
                     end: (model) => {
-                        crosshair.setAttribute('opacity', '0');
+                        if (chart.enableCanvas) {
+                            crosshair.style.opacity = '0';
+                            crosshairtooltip.style.opacity = '0';
+                        }
+                        else {
+                            crosshair.setAttribute('opacity', '0');
+                        }
                         chart.startMove = false;
                         if (chart.tooltipModule) {
                             chart.tooltipModule.valueX = null;
@@ -15438,7 +15965,9 @@ class BaseTooltip extends ChartData {
             ((this.control.tooltip.shared) ? '<b>${point.x}</b>' : '<b>${series.name}</b>')
             : (this.control.tooltip.header);
         this.formattedText = [];
-        if (!isTooltip) {
+        let tooltipDiv = document.getElementById(this.chart.element.id + '_tooltip');
+        let isStockChart = this.chart.element.id.indexOf('stockChart') > -1;
+        if (!isTooltip && !tooltipDiv || isStockChart) {
             return this.createElement();
         }
         return null;
@@ -15516,6 +16045,8 @@ class BaseTooltip extends ChartData {
                 isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
                 inverted: this.chart.requireInvertedAxis && series.isRectSeries,
                 arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
+                availableSize: chart.availableSize,
+                isCanvas: this.chart.enableCanvas,
                 tooltipRender: () => {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -15570,7 +16101,8 @@ class BaseTooltip extends ChartData {
         this.previousPoints = extend([], this.currentPoints, null, true);
     }
     fadeOut(data, chart) {
-        let svgElement = this.getElement(this.element.id + '_tooltip_svg');
+        let svgElement = this.chart.enableCanvas ? this.getElement(this.element.id + '_tooltip_group') :
+            this.getElement(this.element.id + '_tooltip_svg');
         let isTooltip = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         if (!isTooltip) {
             this.valueX = null;
@@ -15588,7 +16120,7 @@ class BaseTooltip extends ChartData {
     removeHighlightedMarker(data) {
         if (this.chart.markerRender) {
             for (let item of data) {
-                removeElement(this.element.id + '_Series_' + item.series.index +
+                removeElement$1(this.element.id + '_Series_' + item.series.index +
                     '_Point_' + item.point.index + '_Trackball');
             }
             this.chart.markerRender.removeHighlightedMarker();
@@ -15723,9 +16255,15 @@ class Tooltip$1 extends BaseTooltip {
             this.removeTooltip(1000);
             return null;
         }
-        let svgElement = this.getElement(this.element.id + '_tooltip_svg');
+        let svgElement;
+        let elementId = this.chart.enableCanvas ? this.element.id + '_tooltip_group' : this.element.id + '_tooltip_svg';
+        svgElement = this.getElement(elementId);
         let isTooltip = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         let tooltipDiv = this.getTooltipElement(isTooltip);
+        if (this.chart.enableCanvas && tooltipDiv) {
+            document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+            tooltipDiv.appendChild(document.getElementById(this.chart.element.id + '_tooltip_svg'));
+        }
         if (!this.chart.tooltip.shared) {
             this.renderSeriesTooltip(this.chart, !isTooltip, tooltipDiv);
         }
@@ -15801,7 +16339,7 @@ class Tooltip$1 extends BaseTooltip {
     }
     findData(data, previous) {
         return data.point && ((!previous || (previous.point !== data.point)) ||
-            (previous && previous.lierIndex > 3 && previous.lierIndex !== this.lierIndex));
+            (previous && previous.lierIndex > 3 && previous.lierIndex !== this.lierIndex) || (previous.point === data.point));
     }
     getSymbolLocation(data) {
         let location;
@@ -15893,7 +16431,9 @@ class Tooltip$1 extends BaseTooltip {
         let headerContent = '';
         if (isFirst) {
             if (!chart.stockChart) {
-                document.getElementById(this.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                if (tooltipDiv) {
+                    document.getElementById(this.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                }
             }
             else {
                 document.getElementById(chart.stockChart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
@@ -16017,8 +16557,8 @@ class Tooltip$1 extends BaseTooltip {
                 if (series.category === 'Indicator') {
                     this.getIndicatorTooltipFormat(series, chart, chart.tooltip.format);
                 }
-                return format + ' : ' + ((series.type === 'Bubble') ? '<b>${point.y}</b>  Size : <b>${point.size}</b>'
-                    : '<b>${point.y}</b>');
+                return format + ' : ' + ((series.type === 'Bubble') ? '<b>${point.y}</b>  Size : <b>${point.size}</b>' :
+                    '<b>${point.y}</b>');
             case 'HighLow':
                 return format + ('<br/>High : <b>${point.high}</b><br/>Low : <b>${point.low}</b>');
             case 'HighLowOpenClose':
@@ -16047,7 +16587,7 @@ class Tooltip$1 extends BaseTooltip {
        */
     removeHighlightedMarker(data) {
         for (let item of data) {
-            removeElement(this.element.id + '_Series_' + item.series.index +
+            removeElement$1(this.element.id + '_Series_' + item.series.index +
                 '_Point_' + item.point.index + '_Trackball');
         }
         if (this.chart.markerRender) {
@@ -16087,6 +16627,7 @@ class Toolkit {
         this.iconRectSelectionFill = 'transparent';
         this.chart = chart;
         this.elementId = chart.element.id;
+        this.chart.svgRenderer = new SvgRenderer(this.elementId);
         this.selectionColor = chart.theme === 'Bootstrap4' ? '#FFFFFF' : '#ff4081';
         this.fillColor = chart.theme === 'Bootstrap4' ? '#495057' : '#737373';
         this.iconRectOverFill = chart.theme === 'Bootstrap4' ? '#5A6268' : this.iconRectOverFill;
@@ -16099,7 +16640,7 @@ class Toolkit {
      * @private
      */
     createPanButton(childElement, parentElement, chart) {
-        let render = this.chart.renderer;
+        let render = this.chart.svgRenderer;
         let fillColor = this.chart.zoomModule.isPanning ? this.selectionColor : this.fillColor;
         let direction = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
         direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
@@ -16107,7 +16648,7 @@ class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Pan'));
         this.panElements = childElement;
         childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, this.iconRect)));
-        childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_Pan_2', fillColor, null, null, 1, null, direction)));
+        childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_Pan_2', fillColor, null, null, 1, null, direction), null));
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.pan);
     }
@@ -16117,7 +16658,7 @@ class Toolkit {
      * @private
      */
     createZoomButton(childElement, parentElement, chart) {
-        let render = this.chart.renderer;
+        let render = this.chart.svgRenderer;
         let fillColor = this.chart.zoomModule.isPanning ? this.fillColor : this.selectionColor;
         let rectColor = this.chart.zoomModule.isPanning ? 'transparent' : this.iconRectSelectionFill;
         let direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
@@ -16138,7 +16679,7 @@ class Toolkit {
      * @private
      */
     createZoomInButton(childElement, parentElement, chart) {
-        let render = this.chart.renderer;
+        let render = this.chart.svgRenderer;
         let fillColor = this.fillColor;
         let direction = 'M10.103,0C6.812,0,4.16,2.651,4.16,5.943c0,1.509,0.503,2.834,1.417,3.885l-0.274,0.229H4.571L0,';
         direction += '14.628l0,0L1.372,16l4.571-4.572v-0.685l0.228-0.275c1.052,0.868,2.423,1.417,3.885,1.417c3.291,0,5.943-2.651,';
@@ -16147,7 +16688,7 @@ class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomIn'));
         let polygonDirection = '12.749,5.466 10.749,5.466 10.749,3.466 9.749,3.466 9.749,5.466 7.749,5.466 7.749,6.466';
         childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, this.iconRect)));
-        childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_ZoomIn_2', fillColor, null, null, 1, null, direction + '4.114-4.114c2.286,0,4.114,1.828,4.114,4.114C14.172,8.229,12.344,10.058,10.058,10.058z')));
+        childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_ZoomIn_2', fillColor, null, null, 1, null, direction + '4.114-4.114c2.286,0,4.114,1.828,4.114,4.114C14.172,8.229,12.344,10.058,10.058,10.058z'), null));
         childElement.appendChild(render.drawPolygon(new PolygonOption(this.elementId + '_Zooming_ZoomIn_3', polygonDirection + ' 9.749,6.466 9.749,8.466 10.749,8.466 10.749,6.466 12.749,6.466', fillColor)));
         this.zoomInElements = childElement;
         this.elementOpacity = chart.zoomModule.isPanning ? '0.2' : '1';
@@ -16161,7 +16702,7 @@ class Toolkit {
      * @private
      */
     createZoomOutButton(childElement, parentElement, chart) {
-        let render = this.chart.renderer;
+        let render = this.chart.svgRenderer;
         let fillColor = this.fillColor;
         let direction = 'M0,14.622L1.378,16l4.533-4.533v-0.711l0.266-0.266c1.022,0.889,2.4,1.422,3.866,';
         direction += '1.422c3.289,0,5.955-2.666,5.955-5.955S13.333,0,10.044,0S4.089,2.667,4.134,5.911c0,1.466,0.533,2.844,';
@@ -16169,7 +16710,7 @@ class Toolkit {
         childElement.id = this.elementId + '_Zooming_ZoomOut';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomOut'));
         childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.iconRect)));
-        childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_ZoomOut_2', fillColor, null, null, 1, null, direction + '4.133s-1.866,4.133-4.133,4.133S5.911,8.222,5.911,5.911z M12.567,6.466h-5v-1h5V6.466z')));
+        childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_ZoomOut_2', fillColor, null, null, 1, null, direction + '4.133s-1.866,4.133-4.133,4.133S5.911,8.222,5.911,5.911z M12.567,6.466h-5v-1h5V6.466z'), null));
         this.zoomOutElements = childElement;
         this.elementOpacity = chart.zoomModule.isPanning ? '0.2' : '1';
         childElement.setAttribute('opacity', this.elementOpacity);
@@ -16182,7 +16723,7 @@ class Toolkit {
      * @private
      */
     createResetButton(childElement, parentElement, chart, isDevice) {
-        let render = this.chart.renderer;
+        let render = this.chart.svgRenderer;
         let fillColor = this.fillColor;
         let size;
         let direction = 'M12.364,8h-2.182l2.909,3.25L16,8h-2.182c0-3.575-2.618-6.5-5.818-6.5c-1.128,0-2.218,0.366-3.091,';
@@ -16192,12 +16733,12 @@ class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Reset'));
         if (!isDevice) {
             childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.iconRect)));
-            childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_Reset_2', fillColor, null, null, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')));
+            childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_Reset_2', fillColor, null, null, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z'), null));
         }
         else {
             size = measureText(this.chart.getLocalizedLabel('ResetZoom'), { size: '12px' });
             childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new Rect(0, 0, size.width, size.height))));
-            textElement(new TextOption(this.elementId + '_Zooming_Reset_2', 0 + size.width / 2, 0 + size.height * 3 / 4, 'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'), { size: '12px' }, 'black', childElement);
+            textElement(chart.renderer, new TextOption(this.elementId + '_Zooming_Reset_2', 0 + size.width / 2, 0 + size.height * 3 / 4, 'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'), { size: '12px' }, 'black', childElement);
         }
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.reset);
@@ -16254,7 +16795,7 @@ class Toolkit {
             let iconColor = this.chart.zoomModule.isPanning ? this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
             icon3.setAttribute('fill', iconColor);
         }
-        removeElement('EJ2_Chart_ZoomTip');
+        removeElement$1('EJ2_Chart_ZoomTip');
     }
     // Toolkit events function calculation here.
     /** @private */
@@ -16438,7 +16979,8 @@ class Zoom {
                 rect.width = areaBounds.width;
                 rect.x = areaBounds.x;
             }
-            chart.svgObject.appendChild(chart.renderer.drawRectangle(new RectOption(this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill, { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')));
+            let svg = chart.enableCanvas ? document.getElementById(this.elementId + '_tooltip_svg') : chart.svgObject;
+            svg.appendChild(chart.svgRenderer.drawRectangle(new RectOption(this.elementId + '_ZoomArea', chart.themeStyle.selectionRectFill, { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, rect, 0, 0, '', '3')));
         }
     }
     // Panning performed here
@@ -16488,6 +17030,9 @@ class Zoom {
             }
             this.setTransform(translateX, translateY, null, null, chart, false);
             this.refreshAxis(chart.chartAxisLayoutPanel, chart, chart.axisCollections);
+            if (chart.enableCanvas) {
+                this.performZoomRedraw(chart);
+            }
         }
         else {
             this.performZoomRedraw(chart);
@@ -16513,7 +17058,7 @@ class Zoom {
             else if (chart.disableTrackTooltip) {
                 chart.disableTrackTooltip = false;
                 chart.delayRedraw = false;
-                chart.removeSvg();
+                chart.enableCanvas ? chart.createChartSvg() : chart.removeSvg();
                 chart.refreshAxis();
                 chart.refreshBound();
             }
@@ -16720,7 +17265,9 @@ class Zoom {
     }
     // Series transformation style applied here.
     setTransform(transX, transY, scaleX, scaleY, chart, isPinch) {
-        chart.seriesElements.setAttribute('clip-path', 'url(#' + this.elementId + '_ChartAreaClipRect_)');
+        if (!chart.enableCanvas) {
+            chart.seriesElements.setAttribute('clip-path', 'url(#' + this.elementId + '_ChartAreaClipRect_)');
+        }
         if (chart.indicatorElements) {
             chart.indicatorElements.setAttribute('clip-path', 'url(#' + this.elementId + '_ChartAreaClipRect_)');
         }
@@ -16740,7 +17287,9 @@ class Zoom {
                         value.seriesElement.parentNode.setAttribute('transform', translate);
                     }
                     else {
-                        value.seriesElement.setAttribute('transform', translate);
+                        if (!chart.enableCanvas) {
+                            value.seriesElement.setAttribute('transform', translate);
+                        }
                     }
                     element = getElement(chart.element.id + '_Series_' + value.index + '_DataLabelCollections');
                     if (value.errorBarElement) {
@@ -16787,7 +17336,7 @@ class Zoom {
         let toolboxItems = this.zooming.toolbarItems;
         let areaBounds = chart.chartAxisLayoutPanel.seriesClipRect;
         let spacing = 5;
-        let render = chart.renderer;
+        let render = chart.svgRenderer;
         let length = this.isDevice ? 1 : toolboxItems.length;
         let iconSize = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).width : 16;
         let height = this.isDevice ? measureText('Reset Zoom', { size: '12px' }).height : 22;
@@ -16844,7 +17393,24 @@ class Zoom {
         }
         this.toolkitElements.setAttribute('opacity', this.isDevice ? '1' : '' + this.zoomkitOpacity);
         this.toolkitElements.setAttribute('cursor', 'auto');
-        chart.svgObject.appendChild(this.toolkitElements);
+        if (chart.enableCanvas) {
+            let zoomDiv = document.createElement('div');
+            zoomDiv.id = chart.element.id + '_zoom';
+            zoomDiv.setAttribute('style', 'position:absolute; z-index:1');
+            let zoomheight = chart.availableSize.height / 2;
+            let svg = chart.svgRenderer.createSvg({
+                id: chart.element.id + '_zoomkit_svg',
+                width: chart.availableSize.width,
+                height: zoomheight
+            });
+            svg.setAttribute('style', 'position:absolute');
+            svg.appendChild(this.toolkitElements);
+            zoomDiv.appendChild(svg);
+            document.getElementById(this.elementId + '_Secondary_Element').appendChild(zoomDiv);
+        }
+        else {
+            chart.svgObject.appendChild(this.toolkitElements);
+        }
         if (!this.isDevice) {
             EventHandler.add(this.toolkitElements, 'mousemove touchstart', this.zoomToolkitMove, this);
             EventHandler.add(this.toolkitElements, 'mouseleave touchend', this.zoomToolkitLeave, this);
@@ -17190,7 +17756,7 @@ class Selection extends BaseSelection {
      */
     mousedown(e) {
         let chart = this.chart;
-        if (chart.selectionMode === 'None' || chart.isChartDrag) {
+        if (chart.isPointMouseDown || chart.selectionMode === 'None' || chart.isChartDrag) {
             return;
         }
         if (chart.isDoubleTap || !chart.isTouch || this.rectPoints) {
@@ -17586,32 +18152,33 @@ class Selection extends BaseSelection {
         }
         let element = getElement(this.draggedRect);
         if (this.closeIcon) {
-            removeElement(this.closeIconId);
+            removeElement$1(this.closeIconId);
         }
         if (element) {
             this.setAttributes(element, dragRect);
         }
         else {
-            let dragGroup = chart.renderer.createGroup({ id: this.draggedRectGroup });
-            chart.svgObject.appendChild(dragGroup);
-            element = chart.renderer.drawRectangle(new RectOption(this.draggedRect, chart.themeStyle.selectionRectFill, { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, dragRect));
+            let dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
+            let svgElement = document.getElementById(chart.element.id + '_series_svg');
+            chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
+            element = chart.svgRenderer.drawRectangle(new RectOption(this.draggedRect, chart.themeStyle.selectionRectFill, { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, dragRect));
             element.setAttribute('style', 'cursor:move;');
             dragGroup.appendChild(element);
         }
     }
     createCloseButton(x, y) {
-        let closeIcon = this.chart.renderer.createGroup({
+        let closeIcon = this.chart.svgRenderer.createGroup({
             id: this.closeIconId,
             style: 'cursor:pointer; visibility: visible;'
         });
-        closeIcon.appendChild(this.chart.renderer.drawCircle(new CircleOption(this.closeIconId + '_circle', '#FFFFFF', { color: this.chart.themeStyle.selectionCircleStroke, width: 1 }, 1, x, y, 10)));
+        closeIcon.appendChild(this.chart.svgRenderer.drawCircle(new CircleOption(this.closeIconId + '_circle', '#FFFFFF', { color: this.chart.themeStyle.selectionCircleStroke, width: 1 }, 1, x, y, 10)));
         let direction = 'M ' + (x - 4) + ' ' + (y - 4) + ' L ' + (x + 4) + ' ' + (y + 4) + ' M ' + (x - 4) + ' ' + (y + 4) +
             ' L ' + (x + 4) + ' ' + (y - 4);
-        closeIcon.appendChild(this.chart.renderer.drawPath({
+        closeIcon.appendChild(this.chart.svgRenderer.drawPath({
             id: this.closeIconId + '_cross', d: direction,
             stroke: this.chart.themeStyle.selectionCircleStroke,
             'stroke-width': 2, fill: this.chart.themeStyle.selectionCircleStroke
-        }));
+        }, null));
         this.closeIcon = closeIcon;
         getElement(this.draggedRectGroup).appendChild(closeIcon);
     }
@@ -17824,6 +18391,165 @@ class Selection extends BaseSelection {
 }
 
 /**
+ * `DataEditing` module handles data editing
+ */
+class DataEditing {
+    /**
+     * Constructor for DataEditing module.
+     * @private.
+     */
+    constructor(chart) {
+        this.chart = chart;
+    }
+    /**
+     * Point drag start here
+     */
+    pointMouseDown() {
+        let chart = this.chart;
+        let series;
+        let data = new ChartData(chart);
+        let pointData = data.getData();
+        if (pointData.point && (data.insideRegion || !pointData.series.isRectSeries)) {
+            this.seriesIndex = pointData.series.index;
+            this.pointIndex = pointData.point.index;
+            series = chart.series[this.seriesIndex];
+            if (series.dragSettings.enable && !chart.zoomModule) {
+                chart.trigger(dragStart, {
+                    series: pointData.series, seriesIndex: this.seriesIndex, pointIndex: this.pointIndex, point: pointData.point,
+                    oldValue: chart.visibleSeries[this.seriesIndex].yData[this.pointIndex],
+                    newValue: chart.visibleSeries[this.seriesIndex].points[this.pointIndex].yValue
+                });
+                chart.isPointMouseDown = true;
+                chart.zoomSettings.enableDeferredZooming = false;
+            }
+        }
+    }
+    /**
+     * Point dragging
+     */
+    pointMouseMove(event) {
+        let chart = this.chart;
+        let series;
+        if (event.type === 'touchmove' && event.preventDefault) {
+            event.preventDefault();
+        }
+        let data = new ChartData(chart);
+        let pointData = data.getData();
+        if (pointData.series.dragSettings.enable && pointData.point && (data.insideRegion || !pointData.series.isRectSeries)) {
+            this.getCursorStyle(pointData);
+        }
+        else {
+            chart.svgObject.setAttribute('style', 'cursor: null');
+        }
+        if (chart.isPointMouseDown) {
+            series = chart.series[this.seriesIndex];
+            if (series.type.indexOf('Spline') > -1) {
+                chart[firstToLowerCase(series.type) + 'SeriesModule'].findSplinePoint(series);
+            }
+            this.pointDragging(this.seriesIndex, this.pointIndex);
+        }
+    }
+    /**
+     * Get cursor style
+     */
+    getCursorStyle(pointData) {
+        let chart = this.chart;
+        if (pointData.series.type === 'Bar' && chart.isTransposed) {
+            chart.svgObject.setAttribute('style', 'cursor:ns-resize');
+        }
+        else if (chart.isTransposed || pointData.series.type === 'Bar') {
+            chart.svgObject.setAttribute('style', 'cursor:ew-resize');
+        }
+        else {
+            chart.svgObject.setAttribute('style', 'cursor:ns-resize');
+        }
+    }
+    /**
+     * Dragging calculation
+     */
+    pointDragging(si, pi) {
+        let chart = this.chart;
+        let yValueArray = [];
+        let y;
+        let ySize;
+        let yValue;
+        let series = chart.visibleSeries[si];
+        let pointDrag = series.dragSettings;
+        let xAxis = series.xAxis;
+        let yAxis = series.yAxis;
+        let minRange;
+        let maxRange;
+        // To get drag region for column and bar series
+        let extra = series.isRectSeries ? 1 : 0;
+        let axis = getTransform(xAxis, yAxis, chart.requireInvertedAxis);
+        if (series.type === 'Bar') {
+            y = chart.isTransposed ? (axis.y + axis.height) - chart.mouseY : chart.mouseX - axis.x;
+            ySize = chart.isTransposed ? axis.height : axis.width;
+        }
+        else {
+            y = chart.isTransposed ? chart.mouseX - axis.x : (axis.y + axis.height) - chart.mouseY;
+            ySize = chart.isTransposed ? axis.width : axis.height;
+        }
+        yValue = yAxis.isInversed ? (1 - (y / ySize)) : (y / ySize);
+        yValue = (yValue * yAxis.visibleRange.delta) + yAxis.visibleRange.min;
+        minRange = yAxis.minimum !== null ? yAxis.visibleRange.min + extra : (isNullOrUndefined(pointDrag.minY) ?
+            (yValue) : pointDrag.minY);
+        maxRange = yAxis.maximum !== null ? yAxis.visibleRange.max + extra : (isNullOrUndefined(pointDrag.maxY) ?
+            (yValue) : pointDrag.maxY);
+        if (maxRange >= yValue && minRange <= yValue) {
+            series.points[pi].yValue = series.points[pi].y = chart.dragY = (yAxis.valueType === 'Logarithmic') ?
+                Math.pow(yAxis.logBase, yValue) : parseFloat(yValue.toFixed(2));
+            series.points[pi].interior = pointDrag.fill;
+            for (let i = 0; i < series.points.length; i++) {
+                yValueArray[i] = series.points[i].yValue;
+            }
+            series.yMin = Math.min.apply(null, yValueArray);
+            series.yMax = Math.max.apply(null, yValueArray);
+            chart.refreshBound();
+            chart.trigger(drag, {
+                seriesIndex: si, pointIndex: pi, series: series, point: series.points[pi],
+                oldValue: chart.visibleSeries[this.seriesIndex].yData[this.pointIndex], newValue: series.points[pi].yValue
+            });
+        }
+    }
+    /**
+     * Point drag ends here
+     */
+    pointMouseUp() {
+        let chart = this.chart;
+        if (chart.isPointMouseDown) {
+            if (chart.series[this.seriesIndex].dragSettings.enable) {
+                chart.trigger(dragEnd, {
+                    series: chart.series[this.seriesIndex], point: chart.visibleSeries[this.seriesIndex].points[this.pointIndex],
+                    seriesIndex: this.seriesIndex,
+                    pointIndex: this.pointIndex, oldValue: chart.visibleSeries[this.seriesIndex].yData[this.pointIndex],
+                    newValue: chart.visibleSeries[this.seriesIndex].points[this.pointIndex].yValue
+                });
+                chart.visibleSeries[this.seriesIndex].points[this.pointIndex].y =
+                    chart.visibleSeries[this.seriesIndex].points[this.pointIndex].yValue;
+                chart.isPointMouseDown = false;
+                this.seriesIndex = this.pointIndex = undefined;
+            }
+        }
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        // Returns te module name
+        return 'DataEditing';
+    }
+    /**
+     * To destroy the DataEditing.
+     * @return {void}
+     * @private
+     */
+    destroy(chart) {
+        // Destroy method performed here
+    }
+}
+
+/**
  * `DataLabel` module is used to render data label for the data point.
  */
 class DataLabel {
@@ -17937,6 +18663,7 @@ class DataLabel {
             let labelText = [];
             let labelLength;
             let clip = series.clipRect;
+            let shapeRect;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             let argsFont = (extend({}, getValue('properties', dataLabel.font), null, true));
             if ((point.symbolLocations.length && point.symbolLocations[0]) ||
@@ -17963,13 +18690,16 @@ class DataLabel {
                             if (!isCollide(rect, chart.dataLabelCollections, clip)) {
                                 chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
                                 if (this.isShape) {
-                                    series.shapeElement.appendChild(chart.renderer.drawRectangle(new RectOption(this.commonId + index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry)));
+                                    shapeRect = chart.renderer.drawRectangle(new RectOption(this.commonId + index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
+                                    if (series.shapeElement) {
+                                        series.shapeElement.appendChild(shapeRect);
+                                    }
                                 }
                                 // Checking the font color
                                 rgbValue = convertHexToColor(colorNameToHex(this.fontBackground));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-                                textElement(new TextOption(this.commonId + index + '_Text_' + i, rect.x + this.margin.left + textSize.width / 2, rect.y + this.margin.top + textSize.height * 3 / 4, 'middle', argsData.text, 'rotate(0,' + (rect.x) + ',' + (rect.y) + ')', 'auto'), argsData.font, argsData.font.color ||
-                                    ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'), series.textElement, false, redraw, true, false, series.chart.duration);
+                                textElement(chart.renderer, new TextOption(this.commonId + index + '_Text_' + i, rect.x + this.margin.left + textSize.width / 2, rect.y + this.margin.top + textSize.height * 3 / 4, 'middle', argsData.text, 'rotate(0,' + (rect.x) + ',' + (rect.y) + ')', 'auto'), argsData.font, argsData.font.color ||
+                                    ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'), series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect);
                             }
                         }
                     }
@@ -17977,7 +18707,7 @@ class DataLabel {
             }
         });
         if (element.childElementCount) {
-            appendChildElement(getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
+            appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     }
     /**
@@ -18010,7 +18740,7 @@ class DataLabel {
             parseFloat(childElement.style.left) >= hAxis.rect.x && parseFloat(childElement.style.top) <= vAxis.rect.y + vAxis.rect.height &&
             parseFloat(childElement.style.left) <= hAxis.rect.x + hAxis.rect.width) {
             this.chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
-            appendChildElement(parentElement, childElement, redraw, true, 'left', 'top');
+            appendChildElement(this.chart.enableCanvas, parentElement, childElement, redraw, true, 'left', 'top');
             if (series.animation.enable && this.chart.animateSeries) {
                 this.doDataLabelAnimation(series, childElement);
             }
@@ -18538,7 +19268,7 @@ class ErrorBar {
                 let capOption = new PathOption(capId, '', errorBarCap.width, errorBarCap.color || this.chart.themeStyle.errorBar, null, '', errorDirection[1]);
                 element = getElement(capOption.id);
                 previousDirection = element ? element.getAttribute('d') : null;
-                appendChildElement(series.errorBarElement, this.chart.renderer.drawPath(capOption), redraw);
+                appendChildElement(this.chart.enableCanvas, series.errorBarElement, this.chart.renderer.drawPath(capOption), redraw);
                 pathAnimation(element, errorDirection[1], redraw, previousDirection);
             }
         }
@@ -18915,6 +19645,14 @@ class Legend extends BaseLegend {
         let chart = this.chart;
         let series = chart.visibleSeries[seriesIndex];
         let legend = this.legendCollections[seriesIndex];
+        let legendClickArgs = { legendText: legend.text, legendShape: legend.shape,
+            chart: chart, series: series, name: legendClick, cancel: false
+        };
+        this.chart.trigger(legendClick, legendClickArgs);
+        series.legendShape = legendClickArgs.legendShape;
+        if (series.fill !== null) {
+            chart.visibleSeries[seriesIndex].interior = series.fill;
+        }
         let selectedDataIndexes = [];
         if (chart.selectionModule) {
             selectedDataIndexes = extend([], chart.selectionModule.selectedDataIndexes, null, true);
@@ -18927,7 +19665,7 @@ class Legend extends BaseLegend {
                 series.visible = false;
             }
             legend.visible = (series.visible);
-            if (chart.svgObject.childNodes.length > 0 && !chart.enableAnimation) {
+            if ((chart.svgObject.childNodes.length > 0) && !chart.enableAnimation && !chart.enableCanvas) {
                 while (chart.svgObject.lastChild) {
                     chart.svgObject.removeChild(chart.svgObject.lastChild);
                 }
@@ -18935,7 +19673,7 @@ class Legend extends BaseLegend {
             }
             chart.animateSeries = false;
             chart.redraw = chart.enableAnimation;
-            removeElement(getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
+            removeElement$1(getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
             chart.refreshAxis();
@@ -18957,7 +19695,7 @@ class Legend extends BaseLegend {
         if (!chart.redraw) {
             return null;
         }
-        removeElement(chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index) +
+        removeElement$1(chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index) +
             '_DataLabelCollections');
     }
     refreshSeries(seriesCollection) {
@@ -18973,6 +19711,9 @@ class Legend extends BaseLegend {
         if (!this.chart.legendSettings.visible) {
             return;
         }
+        let pageX = event.pageX;
+        let pageY = event.pageY;
+        let legendRegion = [];
         let targetId = event.target.id;
         let legendItemsId = [this.legendID + '_text_', this.legendID + '_shape_marker_',
             this.legendID + '_shape_'];
@@ -18989,6 +19730,56 @@ class Legend extends BaseLegend {
         }
         else if (targetId.indexOf(this.legendID + '_pagedown') > -1) {
             this.changePage(event, false);
+        }
+        if (this.chart.enableCanvas && this.pagingRegions.length) {
+            this.checkWithinBounds(pageX, pageY);
+        }
+        legendRegion = this.legendRegions.filter((region) => {
+            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage(null, 1, 2) : 0)), region.rect));
+        });
+        if (legendRegion.length && this.chart.enableCanvas) {
+            this.LegendClick(legendRegion[0].index);
+        }
+    }
+    /**
+     * To check click position is within legend bounds
+     */
+    checkWithinBounds(pageX, pageY) {
+        let cRender = this.chart.renderer;
+        let bounds = this.legendBounds;
+        let borderWidth = this.chart.legendSettings.border.width;
+        let canvasRect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        canvasRect.x = canvasRect.x - borderWidth / 2;
+        canvasRect.y = canvasRect.y - borderWidth / 2;
+        canvasRect.width = canvasRect.width + borderWidth;
+        canvasRect.height = canvasRect.height + borderWidth;
+        if (withInBounds(pageX, pageY, this.pagingRegions[0])) {
+            // pagedown calculations are performing here
+            if (--this.currentPageNumber > 0) {
+                this.legendRegions = [];
+                cRender.clearRect(canvasRect);
+                cRender.canvasClip(new RectOption('legendClipPath', 'transparent', { width: 0, color: '' }, null, canvasRect));
+                this.renderLegend(this.chart, this.legend, bounds);
+                cRender.canvasRestore();
+            }
+            else {
+                ++this.currentPageNumber;
+            }
+            return null;
+        }
+        if (withInBounds(pageX, pageY, this.pagingRegions[1])) {
+            // pageUp calculations are performing here
+            if (++this.currentPageNumber > 0 && this.currentPageNumber <= this.totalNoOfPages) {
+                this.legendRegions = [];
+                cRender.clearRect(canvasRect);
+                cRender.canvasClip(new RectOption('legendClipPath', 'transpaent', { width: 0, color: '' }, null, canvasRect));
+                this.renderLegend(this.chart, this.legend, bounds);
+                cRender.canvasRestore();
+            }
+            else {
+                --this.currentPageNumber;
+            }
+            return null;
         }
     }
     /**
@@ -19125,8 +19916,9 @@ class AnnotationBase {
             this.setElementStyle(location, annotationElement, parentElement);
         }
         else if (this.control.redraw) {
-            removeElement(annotationElement.id);
+            removeElement$1(annotationElement.id);
         }
+        setTimeout(() => { updateBlazorTemplate((this.control.element.id + 'Annotation' + index), 'ContentTemplate'); }, 0);
     }
     /**
      * Method to calculate the location for annotation - coordinate unit as point in accumulation chart.
@@ -19750,6 +20542,16 @@ class MultiLevelLabel {
         /** @private */
         this.yAxisMultiLabelHeight = [];
         this.chart = chart;
+        this.addEventListener();
+    }
+    /**
+     * Binding events for multi level module.
+     */
+    addEventListener() {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.on('click', this.click, this);
     }
     /**
      * Finds multilevel label height
@@ -19808,6 +20610,7 @@ class MultiLevelLabel {
         let y;
         let padding = 10;
         let startX;
+        let pointIndex;
         let startY = (axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0) +
             (axis.maxLabelSize.height) + padding;
         let endX;
@@ -19821,7 +20624,6 @@ class MultiLevelLabel {
         let anchor;
         let isInversed = axis.isInversed;
         let argsData;
-        let labelElement;
         let opposedPosition = axis.opposedPosition;
         let scrollBarHeight = axis.scrollbarSettings.enable || (isOutside && isNullOrUndefined(axis.crossesAt)) ?
             axis.scrollBarHeight : 0;
@@ -19829,55 +20631,55 @@ class MultiLevelLabel {
             (axisRect.y + startY - axis.majorTickLines.width) : (axisRect.y - startY - axis.multiLevelLabelHeight);
         this.createClipRect(axisRect.x - axis.majorTickLines.width, clipY + scrollBarHeight, axis.multiLevelLabelHeight + padding, axisRect.width + 2 * axis.majorTickLines.width, this.chart.element.id + '_XAxis_Clippath_' + index, this.chart.element.id + 'XAxisMultiLevelLabel' + index);
         axis.multiLevelLabels.map((multiLevel, level) => {
-            pathRect = '';
+            pointIndex = 0;
+            this.labelElement = this.chart.renderer.createGroup({ id: this.chart.element.id + index + '_MultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel, i) => {
-                labelElement = this.chart.renderer.createGroup({ id: this.chart.element.id + index + '_MultiLevelLabel' + level });
+                pathRect = '';
                 start = typeof categoryLabel.start === 'string' ? Number(new Date(categoryLabel.start)) : categoryLabel.start;
                 end = typeof categoryLabel.end === 'string' ? Number(new Date(categoryLabel.end)) : categoryLabel.end;
-                if (((start >= axis.visibleRange.min && start <= axis.visibleRange.max)
-                    || (end >= axis.visibleRange.min && end <= axis.visibleRange.max))) {
-                    argsData = this.triggerMultiLabelRender(axis, categoryLabel.text, axis.multiLevelLabels[level].textStyle, axis.multiLevelLabels[level].alignment);
-                    if (!argsData.cancel) {
-                        startX = valueToCoefficient(start, axis) * axisRect.width;
-                        endX = valueToCoefficient(end, axis) * axisRect.width;
-                        endX = isInversed ? [startX, startX = endX][0] : endX;
-                        labelSize = measureText(argsData.text, argsData.textStyle);
-                        gap = ((categoryLabel.maximumTextWidth === null) ? endX - startX : categoryLabel.maximumTextWidth) - padding;
-                        x = startX + axisRect.x + padding;
-                        y = (((opposedPosition && !isOutside) || (!opposedPosition && isOutside)) ? (startY + axisRect.y +
-                            labelSize.height / 2 + padding + this.xAxisPrevHeight[level]) : (axisRect.y - startY + labelSize.height / 2 -
-                            this.xAxisMultiLabelHeight[level] - this.xAxisPrevHeight[level])) + scrollBarHeight;
-                        if (argsData.alignment === 'Center') {
-                            x += (endX - startX - padding) / 2;
-                            anchor = 'middle';
-                        }
-                        else if (argsData.alignment === 'Far') {
-                            x = x + (endX - startX - padding) - multiLevel.border.width / 2;
-                            anchor = 'end';
-                        }
-                        else {
-                            anchor = 'start';
-                            x += multiLevel.border.width / 2;
-                        }
-                        y = multiLevel.border.type === 'CurlyBrace' ?
-                            (((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? y + padding : y - padding / 2) : y;
-                        let options = new TextOption(this.chart.element.id + index + '_Axis_MultiLevelLabel_Level_' + level + '_Text_' + i, x, y, anchor, argsData.text);
-                        if (multiLevel.overflow !== 'None') {
-                            options.text = (multiLevel.overflow === 'Wrap') ?
-                                textWrap(argsData.text, gap, argsData.textStyle) : textTrim(gap, argsData.text, argsData.textStyle);
-                            options.x = options.x - padding / 2;
-                        }
-                        textElement(options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, labelElement, false, this.chart.redraw, true);
-                        if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
-                            pathRect = this.renderXAxisLabelBorder(level, endX - startX - padding, axis, startX, startY, labelSize, options, axisRect, argsData.alignment, pathRect, isOutside, opposedPosition);
-                        }
-                        this.multiElements.appendChild(labelElement);
+                argsData = this.triggerMultiLabelRender(axis, categoryLabel.text, axis.multiLevelLabels[level].textStyle, axis.multiLevelLabels[level].alignment, categoryLabel.customAttributes);
+                if (!argsData.cancel) {
+                    startX = valueToCoefficient(start, axis) * axisRect.width;
+                    endX = valueToCoefficient(end, axis) * axisRect.width;
+                    endX = isInversed ? [startX, startX = endX][0] : endX;
+                    labelSize = measureText(argsData.text, argsData.textStyle);
+                    gap = ((categoryLabel.maximumTextWidth === null) ? endX - startX : categoryLabel.maximumTextWidth) - padding;
+                    x = startX + axisRect.x + padding;
+                    y = (((opposedPosition && !isOutside) || (!opposedPosition && isOutside)) ? (startY + axisRect.y +
+                        labelSize.height / 2 + padding + this.xAxisPrevHeight[level]) : (axisRect.y - startY + labelSize.height / 2 -
+                        this.xAxisMultiLabelHeight[level] - this.xAxisPrevHeight[level])) + scrollBarHeight;
+                    if (argsData.alignment === 'Center') {
+                        x += (endX - startX - padding) / 2;
+                        anchor = 'middle';
                     }
+                    else if (argsData.alignment === 'Far') {
+                        x = x + (endX - startX - padding) - multiLevel.border.width / 2;
+                        anchor = 'end';
+                    }
+                    else {
+                        anchor = 'start';
+                        x += multiLevel.border.width / 2;
+                    }
+                    y = multiLevel.border.type === 'CurlyBrace' ?
+                        (((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? y + padding : y - padding / 2) : y;
+                    let options = new TextOption(this.chart.element.id + index + '_Axis_MultiLevelLabel_Level_' + level + '_Text_' + i, x, y, anchor, argsData.text);
+                    if (multiLevel.overflow !== 'None') {
+                        options.text = (multiLevel.overflow === 'Wrap') ?
+                            textWrap(argsData.text, gap, argsData.textStyle) : textTrim(gap, argsData.text, argsData.textStyle);
+                        options.x = options.x - padding / 2;
+                    }
+                    textElement(this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, this.labelElement, false, this.chart.redraw, true);
+                    if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
+                        pathRect = this.renderXAxisLabelBorder(level, endX - startX - padding, axis, startX, startY, labelSize, options, axisRect, argsData.alignment, pathRect, isOutside, opposedPosition, pointIndex);
+                        // fix for generating seperate rect 
+                        if (pathRect !== '') {
+                            this.createBorderElement(level, index, axis, pathRect, pointIndex);
+                            pointIndex++;
+                        }
+                    }
+                    this.multiElements.appendChild(this.labelElement);
                 }
             });
-            if (pathRect !== '') {
-                this.createBorderElement(level, index, axis, pathRect);
-            }
         });
         parent.appendChild(this.multiElements);
     }
@@ -19886,13 +20688,14 @@ class MultiLevelLabel {
      * @private
      * @return {void}
      */
-    renderXAxisLabelBorder(labelIndex, gap, axis, startX, startY, labelSize, textOptions, axisRect, alignment, path, isOutside, opposedPosition) {
+    renderXAxisLabelBorder(labelIndex, gap, axis, startX, startY, labelSize, textOptions, axisRect, alignment, path, isOutside, opposedPosition, categoryIndex) {
         let padding = 10;
         let padding1;
         let padding2;
         let value;
         let value1;
         let groupLabel = axis.multiLevelLabels[labelIndex];
+        let categoryType = groupLabel.categories[categoryIndex].type;
         let width = gap + padding;
         let height = this.xAxisMultiLabelHeight[labelIndex] + padding;
         let scrollBarHeight = axis.labelPosition === 'Outside' ? axis.scrollBarHeight : 0;
@@ -19900,15 +20703,16 @@ class MultiLevelLabel {
         let y = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? (startY + axisRect.y +
             this.xAxisPrevHeight[labelIndex] + scrollBarHeight) : (axisRect.y - startY -
             this.xAxisPrevHeight[labelIndex] - scrollBarHeight);
-        switch (groupLabel.border.type) {
+        let borderType = categoryType ? categoryType : groupLabel.border.type;
+        switch (borderType) {
             case 'WithoutTopandBottomBorder':
             case 'Rectangle':
             case 'WithoutTopBorder':
                 height = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? height : -height;
-                path += 'M ' + x + ' ' + y + ' L ' + x + ' ' + (y + height) +
-                    ' M ' + (x + width) + ' ' + y + ' L ' + (x + width) + ' ' + (y + height);
-                path += (groupLabel.border.type !== 'WithoutTopandBottomBorder') ? (' L' + ' ' + (x) + ' ' + (y + height) + ' ') : ' ';
-                path += groupLabel.border.type === 'Rectangle' ? (' M ' + x + ' ' + y + ' L ' + (x + width) + ' ' + y) : ' ';
+                path += 'M ' + x + ' ' + y + ' L ' + x + ' ' + (y + height) + ' M ' + (x + width) + ' '
+                    + y + ' L ' + (x + width) + ' ' + (y + height);
+                path += (borderType !== 'WithoutTopandBottomBorder') ? (' L' + ' ' + (x) + ' ' + (y + height) + ' ') : ' ';
+                path += (borderType === 'Rectangle') ? (' M ' + x + ' ' + y + ' L ' + (x + width) + ' ' + y) : ' ';
                 break;
             case 'Brace':
                 if (alignment === 'Near') {
@@ -19924,7 +20728,7 @@ class MultiLevelLabel {
                     value1 = textOptions.x;
                 }
                 height = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? height : -height;
-                path += ' M ' + x + ' ' + y + ' L ' + x + ' ' + (y + height / 2) +
+                path += 'M ' + x + ' ' + y + ' L ' + x + ' ' + (y + height / 2) +
                     ' M ' + x + ' ' + (y + height / 2) + ' L ' + (value - 2) + ' ' + (y + height / 2) +
                     ' M ' + (value1) + ' ' + (y + height / 2) + ' L ' + (x + width) + ' ' + (y + height / 2) +
                     ' M ' + (x + width) + ' ' + (y + height / 2) + ' L ' + (x + width) + ' ' + (y);
@@ -19941,19 +20745,19 @@ class MultiLevelLabel {
                     padding2 = -5;
                 }
                 if (alignment === 'Center') {
-                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
+                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
                         (y + padding) + ' L ' + (x + width / 2 - 5) + ' ' + (y + padding) + ' L ' + (x + width / 2) + ' ' + (y + padding1) +
                         ' L ' + (x + width / 2 + 5) + ' ' + (y + padding) + ' L ' + (x + width - 10) + ' ' + (y + padding) + ' C ' +
                         (x + width - 10) + ' ' + (y + padding) + ' ' + (x + width) + ' ' + (y + padding2) + ' ' + (x + width) + ' ' + (y);
                 }
                 else if (alignment === 'Near') {
-                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
+                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
                         (y + padding) + ' L ' + (x + 15) + ' ' + (y + padding1) + ' L ' + (x + 20) + ' ' + (y + padding) + ' L ' +
                         (x + width - 10) + ' ' + (y + padding) + ' C ' + (x + width - 10) + ' ' + (y + padding) + ' ' + (x + width) + ' '
                         + (y + padding2) + ' ' + (x + width) + ' ' + (y);
                 }
                 else {
-                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
+                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + 5) + ' ' + (y + padding) + ' ' + (x + 10) + ' ' +
                         (y + padding) + ' L ' + (x + width - 20) + ' ' + (y + padding) + ' L ' + (x + width - 15) + ' ' + (y + padding1) +
                         ' L ' + (x + width - 10) + ' ' + (y + padding) + ' L ' + (x + width - 10) + ' ' + (y + padding) + ' C '
                         + (x + width - 10) + ' ' + (y + padding) + ' ' + (x + width) + ' ' + (y + padding2) + ' ' + (x + width) + ' ' + (y);
@@ -19978,9 +20782,9 @@ class MultiLevelLabel {
             (axis.maxLabelSize.width) + padding;
         let startY;
         let path = '';
-        let labelElement;
         let endY;
         let argsData;
+        let pointIndex;
         let isInversed = axis.isInversed;
         let start;
         let end;
@@ -19994,58 +20798,57 @@ class MultiLevelLabel {
         this.createClipRect(clipX + scrollBarHeight, rect.y - axis.majorTickLines.width, rect.height + 2 * axis.majorTickLines.width, axis.multiLevelLabelHeight + padding, this.chart.element.id + '_YAxis_Clippath_' + index, this.chart.element.id
             + 'YAxisMultiLevelLabel' + index);
         axis.multiLevelLabels.map((multiLevel, level) => {
-            path = '';
+            this.labelElement = this.chart.renderer.createGroup({ id: this.chart.element.id + index + '_MultiLevelLabel' + level });
+            pointIndex = 0;
             multiLevel.categories.map((categoryLabel, i) => {
-                labelElement = this.chart.renderer.createGroup({ id: this.chart.element.id + index + '_MultiLevelLabel' + level });
+                path = '';
                 end = typeof categoryLabel.end === 'string' ? Number(new Date(categoryLabel.end)) : categoryLabel.end;
                 start = typeof categoryLabel.start === 'string' ? Number(new Date(categoryLabel.start)) : categoryLabel.start;
-                if (((start >= axis.visibleRange.min && start <= axis.visibleRange.max)
-                    || (end >= axis.visibleRange.min && end <= axis.visibleRange.max))) {
-                    startY = valueToCoefficient((start), axis) * (rect.height);
-                    endY = valueToCoefficient((end), axis) * (rect.height);
-                    endY = isInversed ? [startY, startY = endY][0] : endY;
-                    argsData = this.triggerMultiLabelRender(axis, categoryLabel.text, multiLevel.textStyle, multiLevel.alignment);
-                    if (!argsData.cancel) {
-                        labelSize = measureText(argsData.text, argsData.textStyle);
-                        gap = endY - startY;
-                        x = rect.x - startX - this.yAxisPrevHeight[level] -
-                            (this.yAxisMultiLabelHeight[level] / 2) - padding / 2;
-                        y = rect.height + rect.y - startY - (gap / 2);
-                        if (opposedPosition) {
-                            x = isOutside ? rect.x + startX + padding / 2 + (this.yAxisMultiLabelHeight[level] / 2) +
-                                this.yAxisPrevHeight[level] + scrollBarHeight : rect.x - startX - (this.yAxisMultiLabelHeight[level] / 2) -
-                                this.yAxisPrevHeight[level] - padding / 2;
-                        }
-                        else {
-                            x = isOutside ? x + scrollBarHeight : rect.x + startX + padding / 2 + (this.yAxisMultiLabelHeight[level] / 2) +
-                                this.yAxisPrevHeight[level];
-                        }
-                        if (argsData.alignment === 'Center') {
-                            y += labelSize.height / 4;
-                        }
-                        else if (argsData.alignment === 'Far') {
-                            y += gap / 2 - labelSize.height / 2;
-                        }
-                        else {
-                            y = y - gap / 2 + labelSize.height;
-                        }
-                        x = multiLevel.border.type === 'CurlyBrace' ? (((!opposedPosition && isOutside) ||
-                            (opposedPosition && !isOutside)) ? x - padding : x + padding) : x;
-                        let options = new TextOption(this.chart.element.id + index + '_Axis_MultiLevelLabel_Level_' + level + '_Text_' + i, x, y, anchor, argsData.text);
-                        options.text = (multiLevel.overflow === 'Trim') ?
-                            textTrim((categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level] :
-                                categoryLabel.maximumTextWidth), argsData.text, argsData.textStyle) : options.text;
-                        textElement(options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, labelElement, this.chart.redraw, true);
-                        if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
-                            path = this.renderYAxisLabelBorder(level, gap, axis, endY, startX, startY, labelSize, options, rect, argsData.alignment, path, isOutside, opposedPosition);
-                        }
-                        this.multiElements.appendChild(labelElement);
+                startY = valueToCoefficient((start), axis) * (rect.height);
+                endY = valueToCoefficient((end), axis) * (rect.height);
+                endY = isInversed ? [startY, startY = endY][0] : endY;
+                argsData = this.triggerMultiLabelRender(axis, categoryLabel.text, multiLevel.textStyle, multiLevel.alignment, categoryLabel.customAttributes);
+                if (!argsData.cancel) {
+                    labelSize = measureText(argsData.text, argsData.textStyle);
+                    gap = endY - startY;
+                    x = rect.x - startX - this.yAxisPrevHeight[level] -
+                        (this.yAxisMultiLabelHeight[level] / 2) - padding / 2;
+                    y = rect.height + rect.y - startY - (gap / 2);
+                    if (opposedPosition) {
+                        x = isOutside ? rect.x + startX + padding / 2 + (this.yAxisMultiLabelHeight[level] / 2) +
+                            this.yAxisPrevHeight[level] + scrollBarHeight : rect.x - startX - (this.yAxisMultiLabelHeight[level] / 2) -
+                            this.yAxisPrevHeight[level] - padding / 2;
                     }
+                    else {
+                        x = isOutside ? x + scrollBarHeight : rect.x + startX + padding / 2 + (this.yAxisMultiLabelHeight[level] / 2) +
+                            this.yAxisPrevHeight[level];
+                    }
+                    if (argsData.alignment === 'Center') {
+                        y += labelSize.height / 4;
+                    }
+                    else if (argsData.alignment === 'Far') {
+                        y += gap / 2 - labelSize.height / 2;
+                    }
+                    else {
+                        y = y - gap / 2 + labelSize.height;
+                    }
+                    x = multiLevel.border.type === 'CurlyBrace' ? (((!opposedPosition && isOutside) ||
+                        (opposedPosition && !isOutside)) ? x - padding : x + padding) : x;
+                    let options = new TextOption(this.chart.element.id + index + '_Axis_MultiLevelLabel_Level_' + level + '_Text_' + i, x, y, anchor, argsData.text);
+                    options.text = (multiLevel.overflow === 'Trim') ?
+                        textTrim((categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level] :
+                            categoryLabel.maximumTextWidth), argsData.text, argsData.textStyle) : options.text;
+                    textElement(this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, this.labelElement, this.chart.redraw, true);
+                    if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
+                        path = this.renderYAxisLabelBorder(level, gap, axis, endY, startX, startY, labelSize, options, rect, argsData.alignment, path, isOutside, opposedPosition, pointIndex);
+                        if (path !== '') {
+                            this.createBorderElement(level, index, axis, path, pointIndex);
+                            pointIndex++;
+                        }
+                    }
+                    this.multiElements.appendChild(this.labelElement);
                 }
             });
-            if (path !== '') {
-                this.createBorderElement(level, index, axis, path);
-            }
         });
         parent.appendChild(this.multiElements);
     }
@@ -20054,32 +20857,33 @@ class MultiLevelLabel {
      * @private
      * @return {void}
      */
-    renderYAxisLabelBorder(labelIndex, gap, axis, endY, startX, startY, labelSize, textOptions, rect, alignment, path, isOutside, opposedPosition) {
+    renderYAxisLabelBorder(labelIndex, gap, axis, endY, startX, startY, labelSize, textOptions, rect, alignment, path, isOutside, opposedPosition, categoryIndex) {
         let height = endY - startY;
         let padding = 10;
         let padding1;
         let padding2;
         let groupLabel = axis.multiLevelLabels[labelIndex];
+        let categoryType = groupLabel.categories[categoryIndex].type;
         let y = rect.y + rect.height - endY;
         let scrollBarHeight = isOutside && isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
         scrollBarHeight = scrollBarHeight * (opposedPosition ? 1 : -1);
         let width = this.yAxisMultiLabelHeight[labelIndex] + padding;
         let x = (((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? rect.x - startX -
             this.yAxisPrevHeight[labelIndex] : rect.x + startX + this.yAxisPrevHeight[labelIndex]) + scrollBarHeight;
-        switch (groupLabel.border.type) {
+        let borderType = categoryType ? categoryType : groupLabel.border.type;
+        switch (borderType) {
             case 'WithoutTopandBottomBorder':
             case 'Rectangle':
             case 'WithoutTopBorder':
                 width = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? -width : width;
-                path += ' M ' + x + ' ' + y + ' L ' + (x + width) + ' ' + y +
+                path += 'M ' + x + ' ' + y + ' L ' + (x + width) + ' ' + y +
                     ' M ' + x + ' ' + (y + height) + ' L ' + (x + width) + ' ' + (y + height);
-                path += (groupLabel.border.type !== 'WithoutTopandBottomBorder') ? (' L ' + ' ' + (x + width) + ' ' + y + ' ') : ' ';
-                path += (groupLabel.border.type === 'Rectangle') ?
-                    (' M' + (x) + ' ' + (y + height) + ' L ' + ' ' + (x) + ' ' + y + ' ') : ' ';
+                path += (borderType !== 'WithoutTopandBottomBorder') ? (' L' + ' ' + (x + width) + ' ' + y + ' ') : ' ';
+                path += (borderType === 'Rectangle') ? ('M ' + (x) + ' ' + (y + height) + 'L' + ' ' + (x) + ' ' + y + ' ') : ' ';
                 break;
             case 'Brace':
                 width = ((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? width : -width;
-                path += ' M ' + (x) + ' ' + y + ' L ' + (x - width / 2) + ' ' + y + ' L ' + (x - width / 2) + ' ' +
+                path += 'M ' + (x) + ' ' + y + ' L ' + (x - width / 2) + ' ' + y + ' L ' + (x - width / 2) + ' ' +
                     (textOptions.y - labelSize.height / 2 - 4) + ' M ' + (x - width / 2) + ' ' +
                     (textOptions.y + labelSize.height / 4 + 2) +
                     ' L ' + (x - width / 2) + ' ' + (y + height) + ' L ' + (x) + ' ' + (y + height);
@@ -20096,24 +20900,24 @@ class MultiLevelLabel {
                     padding2 = 5;
                 }
                 if (alignment === 'Center') {
-                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
+                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
                         + ' L ' + (x + padding) + ' ' + (y + (height - 10) / 2) + ' L ' + (x + padding1) + ' ' + (y + (height - 10) / 2 + 5)
                         + ' L ' + (x + padding) + ' ' + (y + (height - 10) / 2 + 10) + ' L ' + (x + padding) + ' ' + (y + (height - 10)) +
                         ' C ' + (x + padding) + ' ' + (y + (height - 10)) + ' ' + (x + padding2) + ' ' + (y + height) + ' '
                         + x + ' ' + (y + height);
                 }
                 else if (alignment === 'Far') {
-                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
+                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
                         + ' L ' + (x + padding) + ' ' + (y + height - 20) + ' ' + ' L ' + (x + padding1) + ' ' + (y + (height - 15)) +
                         ' L ' + (x + padding) + ' ' + (y + (height - 10)) + ' L ' + (x + padding) + ' ' + (y + (height - 10)) +
-                        ' C' + (x + padding) + ' ' + (y + (height - 10)) + ' ' + (x + padding) + ' ' + (y + height) + ' ' + x + ' '
+                        ' C ' + (x + padding) + ' ' + (y + (height - 10)) + ' ' + (x + padding) + ' ' + (y + height) + ' ' + x + ' '
                         + (y + height);
                 }
                 else {
-                    path += ' M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
+                    path += 'M ' + x + ' ' + y + ' C ' + x + ' ' + y + ' ' + (x + padding) + ' ' + y + ' ' + (x + padding) + ' ' + (y + 10)
                         + ' L ' + (x + padding1) + ' ' + (y + 15) +
                         ' L ' + (x + padding) + ' ' + (y + 20) + ' L ' + (x + padding) + ' ' + (y + (height - 10)) +
-                        ' C' + (x + padding) + ' ' + (y + (height - 10)) + ' ' + (x + padding2) + ' ' + (y + height) + ' ' + x +
+                        ' C ' + (x + padding) + ' ' + (y + (height - 10)) + ' ' + (x + padding2) + ' ' + (y + height) + ' ' + x +
                         ' ' + (y + height);
                 }
                 break;
@@ -20145,26 +20949,66 @@ class MultiLevelLabel {
      * @return {void}
      * @private
      */
-    createBorderElement(borderIndex, axisIndex, axis, path) {
-        let element = getElement(this.chart.element.id + axisIndex + '_Axis_MultiLevelLabel_Rect_' + borderIndex);
-        let direction = element ? element.getAttribute('d') : '';
-        let borderElement = this.chart.renderer.drawPath(new PathOption(this.chart.element.id + axisIndex + '_Axis_MultiLevelLabel_Rect_' + borderIndex, 'Transparent', axis.multiLevelLabels[borderIndex].border.width, axis.multiLevelLabels[borderIndex].border.color || this.chart.themeStyle.axisLine, 1, '', path));
+    createBorderElement(borderIndex, axisIndex, axis, path, pointIndex) {
+        let direction = path;
+        let borderElement = this.chart.renderer.drawPath(new PathOption(this.chart.element.id + axisIndex + '_Axis_MultiLevelLabel_Rect_' + borderIndex + '_' + pointIndex, 'Transparent', axis.multiLevelLabels[borderIndex].border.width, axis.multiLevelLabels[borderIndex].border.color || this.chart.themeStyle.axisLine, 1, '', path));
         borderElement.setAttribute('style', 'pointer-events: none');
-        appendChildElement(this.multiElements, borderElement, this.chart.redraw, true, 'x', 'y', null, direction);
+        appendChildElement(this.chart.enableCanvas, this.labelElement, borderElement, this.chart.redraw, true, 'x', 'y', null, direction);
     }
     /**
      * Triggers the event.
      * @return {void}
      * @private
      */
-    triggerMultiLabelRender(axis, text, textStyle, textAlignment) {
+    triggerMultiLabelRender(axis, text, textStyle, textAlignment, customAttributes) {
         let argsData;
         argsData = {
             cancel: false, name: axisMultiLabelRender, axis: axis,
-            text: text, textStyle: textStyle, alignment: textAlignment
+            text: text, textStyle: textStyle, alignment: textAlignment, customAttributes: customAttributes
         };
         this.chart.trigger(axisMultiLabelRender, argsData);
         return argsData;
+    }
+    /**
+     * Triggers the event.
+     * @return {void}
+     * @private
+     */
+    MultiLevelLabelClick(labelIndex, axisIndex) {
+        let level = parseInt(labelIndex.substr(0, 1), 10);
+        let textElement$$1 = parseInt(labelIndex.substr(7), 10);
+        let chart = this.chart;
+        let axis = chart.axisCollections[axisIndex];
+        let categories = axis.multiLevelLabels[level].categories;
+        let text = categories[textElement$$1].text;
+        let start = categories[textElement$$1].start;
+        let end = categories[textElement$$1].end;
+        let customAttributes = categories[textElement$$1].customAttributes;
+        let multilevelclickArgs;
+        multilevelclickArgs = {
+            axis: axis, level: level, text: text, customAttributes: customAttributes,
+            start: start, end: end, name: multiLevelLabelClick, cancel: false
+        };
+        this.chart.trigger(multiLevelLabelClick, multilevelclickArgs);
+        return multilevelclickArgs;
+    }
+    /**
+     * To click the multi level label
+     * @return {void}
+     * @private
+     */
+    click(event) {
+        let targetId = event.target.id;
+        let multiLevelID = '_Axis_MultiLevelLabel_Level_';
+        let textId;
+        let elementId;
+        let axisIndex;
+        if (targetId.indexOf(multiLevelID) > -1) {
+            textId = targetId.split(multiLevelID)[1];
+            elementId = targetId.split(multiLevelID)[0];
+            axisIndex = parseInt(elementId.charAt(elementId.length - 1), 10);
+            this.MultiLevelLabelClick(textId, axisIndex);
+        }
     }
     /**
      * To get the module name for `MultiLevelLabel`.
@@ -20529,6 +21373,7 @@ class ScrollBar {
         let zoomPosition = this.zoomPosition;
         let zoomFactor = this.zoomFactor;
         if (this.isThumbDrag) {
+            this.component.isScrolling = this.isThumbDrag;
             this.svgObject.style.cursor = '-webkit-grabbing';
             mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
             let currentX = elem.thumbRectX + (mouseXY - this.previousXY);
@@ -20636,6 +21481,7 @@ class ScrollBar {
         this.isResizeLeft = false;
         this.isResizeRight = false;
         this.isScrollEnd = false;
+        this.component.isScrolling = false;
         if (this.scrollStarted && !this.isLazyLoad) {
             this.component.trigger(scrollEnd, this.getArgs(scrollChanged, this.startRange, this.startZoomPosition, this.startZoomFactor));
             this.scrollStarted = false;
@@ -20741,9 +21587,9 @@ class ScrollBar {
         }
         this.getTheme();
         this.removeScrollSvg();
-        createScrollSvg(this, this.component.renderer);
+        createScrollSvg(this, this.component.svgRenderer);
         this.wireEvents(this.svgObject);
-        this.svgObject.appendChild(this.scrollElements.renderElements(this, this.component.renderer));
+        this.svgObject.appendChild(this.scrollElements.renderElements(this, this.component.svgRenderer));
         return this.svgObject;
     }
     /**
@@ -21115,7 +21961,6 @@ class Export {
      * Handles the export method for chart control.
      * @param type
      * @param fileName
-     * @param isVertical
      */
     export(type, fileName, orientation, controls, width, height, isVertical) {
         let exportChart = new ExportUtils(this.chart);
@@ -21471,7 +22316,7 @@ class AccumulationSeries extends ChildProperty {
             accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].
                 renderPoint(point, this, accumulation, option, seriesGroup, redraw);
         }
-        appendChildElement(accumulation.getSeriesElement(), seriesGroup, redraw);
+        appendChildElement(false, accumulation.getSeriesElement(), seriesGroup, redraw);
     }
     /**
      * Method render the datalabel elements for accumulation chart.
@@ -21487,9 +22332,9 @@ class AccumulationSeries extends ChildProperty {
             }
         }
         if (this.dataLabel.template !== null && element.childElementCount) {
-            appendChildElement(getElement(accumulation.element.id + '_Secondary_Element'), element, redraw);
+            appendChildElement(false, getElement(accumulation.element.id + '_Secondary_Element'), element, redraw);
         }
-        appendChildElement(accumulation.getSeriesElement(), datalabelGroup, redraw);
+        appendChildElement(false, accumulation.getSeriesElement(), datalabelGroup, redraw);
     }
     /**
      * To find maximum bounds for smart legend placing
@@ -21857,7 +22702,10 @@ class AccumulationBase {
         let pointId = this.accumulation.element.id + '_Series_0_Point_';
         let chart = this.accumulation;
         if (!this.isCircular()) {
-            translate = { x: chart.explodeDistance, y: 0 };
+            translate = {
+                x: ((point.labelRegion && point.labelRegion.x < point.region.x) ? -chart.explodeDistance :
+                    chart.explodeDistance), y: 0
+            };
         }
         else {
             translate = degreeToLocation(point.midAngle, chart.explodeDistance, this.center);
@@ -22317,7 +23165,7 @@ let AccumulationChart = class AccumulationChart extends Component {
             let missing = tempindex.filter((item) => tempindex1.indexOf(item) < 0);
             let interval = tempindex.length - missing.length;
             for (let i = (tempindex.length - 1); i >= interval; i--) {
-                removeElement('container_Series_0_Point_' + tempindex[i]);
+                removeElement$1('container_Series_0_Point_' + tempindex[i]);
             }
             for (let i = 0; i < currentSeries.points.length; i++) {
                 currentSeries.points[i].y = currentSeries.dataSource[i].y;
@@ -22539,7 +23387,7 @@ let AccumulationChart = class AccumulationChart extends Component {
             annotation.content = content;
             if (parentNode) {
                 element = this.createElement('div');
-                removeElement(this.element.id + '_Annotation_' + annotationIndex);
+                removeElement$1(this.element.id + '_Annotation_' + annotationIndex);
                 this.annotationModule.processAnnotation(annotation, annotationIndex, element);
                 parentNode.appendChild(element.children[0]);
             }
@@ -22579,7 +23427,7 @@ let AccumulationChart = class AccumulationChart extends Component {
             showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
-            removeElement(this.element.id + '_EJ2_Title_Tooltip');
+            removeElement$1(this.element.id + '_EJ2_Title_Tooltip');
         }
     }
     /**
@@ -22659,7 +23507,8 @@ let AccumulationChart = class AccumulationChart extends Component {
         if (this.redraw) {
             return null;
         }
-        removeElement(this.element.id + '_Secondary_Element');
+        blazorTemplatesReset(this);
+        removeElement$1(this.element.id + '_Secondary_Element');
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > 0) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
@@ -22668,8 +23517,8 @@ let AccumulationChart = class AccumulationChart extends Component {
                 remove(this.svgObject);
             }
         }
-        removeElement('EJ2_legend_tooltip');
-        removeElement('EJ2_datalabel_tooltip');
+        removeElement$1('EJ2_legend_tooltip');
+        removeElement$1('EJ2_datalabel_tooltip');
     }
     /**
      * Method to create the secondary element for tooltip, datalabel and annotaitons.
@@ -22680,7 +23529,7 @@ let AccumulationChart = class AccumulationChart extends Component {
                 id: this.element.id + '_Secondary_Element',
                 styles: 'position: relative'
             });
-        appendChildElement(this.element, element, this.redraw);
+        appendChildElement(false, this.element, element, this.redraw);
     }
     /**
      * Method to find visible series based on series types
@@ -22714,7 +23563,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         this.createPieSvg();
         this.calculateBounds();
         this.renderElements();
-        removeElement('chartmeasuretext');
+        removeElement$1('chartmeasuretext');
     }
     /**
      * Method to find groupped points
@@ -22770,7 +23619,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         this.renderSeries();
         this.renderTitle();
         this.renderLegend();
-        appendChildElement(this.element, this.svgObject, this.redraw);
+        appendChildElement(false, this.element, this.svgObject, this.redraw);
         this.processSelection();
         this.processExplode();
         this.renderAnnotation();
@@ -22833,7 +23682,7 @@ let AccumulationChart = class AccumulationChart extends Component {
      */
     renderBorder() {
         let padding = this.border.width;
-        appendChildElement(this.svgObject, this.renderer.drawRectangle(new RectOption(this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1, new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding))), this.redraw);
+        appendChildElement(false, this.svgObject, this.renderer.drawRectangle(new RectOption(this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1, new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding))), this.redraw);
     }
     /**
      * Method to render legend for accumulation chart
@@ -22878,7 +23727,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         let titleSize = measureText(this.title, this.titleStyle);
         rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
         let options = new TextOption(this.element.id + '_title', titlePositionX(rect, this.titleStyle), this.margin.top + (titleSize.height * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
-        let element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
+        let element = textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
         if (this.subTitle) {
             this.renderSubTitle(options);
         }
@@ -22899,7 +23748,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         }
         rect = new Rect(alignment === 'Center' ? (options.x - maxWidth / 2) : alignment === 'Far' ? options.x - maxWidth : options.x, 0, maxWidth, 0);
         let subTitleOption = new TextOption(this.element.id + '_subTitle', titlePositionX(rect, this.subTitleStyle), options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding, getAnchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto');
-        let element = textElement(subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
+        let element = textElement(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
     }
     /**
      * To get the series parent element
@@ -23009,18 +23858,6 @@ let AccumulationChart = class AccumulationChart extends Component {
         return false;
     }
     /**
-     * Get visible series for accumulation chart by index
-     */
-    changeVisibleSeries(visibleSeries, index) {
-        for (let series of visibleSeries) {
-            visibleSeries[0].dataSource = [];
-            if (index === series.index) {
-                return series;
-            }
-        }
-        return null;
-    }
-    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -23075,11 +23912,8 @@ let AccumulationChart = class AccumulationChart extends Component {
                     if (!this.animateselected) {
                         let len = this.series.length;
                         let seriesRefresh = false;
-                        let series;
                         for (let i = 0; i < len; i++) {
-                            series = newProp.series[i];
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
-                                extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                             if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
@@ -23194,6 +24028,9 @@ __decorate$7([
 __decorate$7([
     Property('Material')
 ], AccumulationChart.prototype, "theme", void 0);
+__decorate$7([
+    Property(false)
+], AccumulationChart.prototype, "useGroupingSeparator", void 0);
 __decorate$7([
     Property(true)
 ], AccumulationChart.prototype, "enableExport", void 0);
@@ -23428,13 +24265,13 @@ class FunnelSeries extends TriangularBase {
      */
     renderPoint(point, series, chart, options, seriesGroup, redraw) {
         if (!point.visible) {
-            removeElement(options.id);
+            removeElement$1(options.id);
             return null;
         }
         let direction = this.getSegmentData(point, series, chart);
         point.midAngle = 0;
         options.d = direction;
-        appendChildElement(seriesGroup, chart.renderer.drawPath(options), redraw);
+        appendChildElement(false, seriesGroup, chart.renderer.drawPath(options), redraw);
         if (point.isExplode) {
             chart.accBaseModule.explodePoints(point.index, chart, true);
         }
@@ -23455,297 +24292,6 @@ class FunnelSeries extends TriangularBase {
          * Destroys the funnel series
          */
     }
-}
-
-/**
- * Sparkline control helper file
- */
-/**
- * sparkline internal use of `Size` type
- */
-class Size$1 {
-    constructor(width, height) {
-        this.width = width;
-        this.height = height;
-    }
-}
-/**
- * To find the default colors based on theme.
- * @private
- */
-function getThemeColor$1(theme) {
-    let themeColors;
-    switch (theme.toLowerCase()) {
-        case 'bootstrapdark':
-        case 'fabricdark':
-        case 'materialdark':
-        case 'highcontrast':
-            themeColors = {
-                axisLineColor: '#ffffff',
-                dataLabelColor: '#ffffff',
-                rangeBandColor: '#ffffff',
-                tooltipFill: '#ffffff',
-                background: '#000000',
-                tooltipFontColor: '#363F4C',
-                trackerLineColor: '#ffffff'
-            };
-            break;
-        case 'bootstrap4':
-            themeColors = {
-                axisLineColor: '#6C757D',
-                dataLabelColor: '#212529',
-                rangeBandColor: '#212529',
-                tooltipFill: '#000000',
-                background: '#FFFFFF',
-                tooltipFontColor: '#FFFFFF',
-                trackerLineColor: '#212529',
-                fontFamily: 'HelveticaNeue-Medium',
-                tooltipFillOpacity: 1,
-                tooltipTextOpacity: 0.9,
-                labelFontFamily: 'HelveticaNeue'
-            };
-            break;
-        default: {
-            themeColors = {
-                axisLineColor: '#000000',
-                dataLabelColor: '#424242',
-                rangeBandColor: '#000000',
-                background: '#FFFFFF',
-                tooltipFill: '#363F4C',
-                tooltipFontColor: '#ffffff',
-                trackerLineColor: '#000000'
-            };
-            break;
-        }
-    }
-    return themeColors;
-}
-/**
- * To find number from string
- * @private
- */
-function stringToNumber$1(value, containerSize) {
-    if (value !== null && value !== undefined) {
-        return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
-    }
-    return null;
-}
-/**
- * Method to calculate the width and height of the sparkline
- */
-function calculateSize$1(sparkline) {
-    let containerWidth = sparkline.element.clientWidth;
-    let containerHeight = sparkline.element.clientHeight;
-    sparkline.availableSize = new Size$1(stringToNumber$1(sparkline.width, containerWidth) || containerWidth || 100, stringToNumber$1(sparkline.height, containerHeight) || containerHeight || (sparkline.isDevice ?
-        Math.min(window.innerWidth, window.innerHeight) : 50));
-}
-/**
- * Method to create svg for sparkline.
- */
-function createSvg$1(sparkline) {
-    sparkline.renderer = new SvgRenderer(sparkline.element.id);
-    calculateSize$1(sparkline);
-    sparkline.svgObject = sparkline.renderer.createSvg({
-        id: sparkline.element.id + '_svg',
-        width: sparkline.availableSize.width,
-        height: sparkline.availableSize.height
-    });
-}
-/**
- * Internal use of type rect
- * @private
- */
-class Rect$1 {
-    constructor(x, y, width, height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-    }
-}
-/**
- * Internal use of path options
- * @private
- */
-class PathOption$1 {
-    constructor(id, fill, width, color, opacity, dashArray, d) {
-        this.id = id;
-        this.fill = fill;
-        this.opacity = opacity;
-        this['stroke-width'] = width;
-        this.stroke = color;
-        this.d = d;
-        this['stroke-dasharray'] = dashArray;
-    }
-}
-/**
- * Internal use of rectangle options
- * @private
- */
-class RectOption$1 extends PathOption$1 {
-    constructor(id, fill, border, opacity, rect, tl = 0, tr = 0, bl = 0, br = 0) {
-        super(id, fill, border.width, border.color, opacity);
-        this.rect = rect;
-        this.topLeft = tl;
-        this.topRight = tr;
-        this.bottomLeft = bl;
-        this.bottomRight = br;
-    }
-}
-/**
- * Internal use of circle options
- * @private
- */
-class CircleOption$1 extends PathOption$1 {
-    constructor(id, fill, border, opacity, cx, cy, r, dashArray) {
-        super(id, fill, border.width, border.color, opacity);
-        this.cy = cy;
-        this.cx = cx;
-        this.r = r;
-        this['stroke-dasharray'] = dashArray;
-    }
-}
-/**
- * Internal use of append shape element
- * @private
- */
-function appendShape(shape, element) {
-    if (element) {
-        element.appendChild(shape);
-    }
-    return shape;
-}
-/**
- * Internal rendering of Circle
- * @private
- */
-function drawCircle(sparkline, options, element) {
-    return appendShape(sparkline.renderer.drawCircle(options), element);
-}
-/**
- * To get rounded rect path direction
- */
-function calculateRoundedRectPath(r, topLeft, topRight, bottomLeft, bottomRight) {
-    return 'M' + ' ' + r.x + ' ' + (topLeft + r.y) +
-        ' Q ' + r.x + ' ' + r.y + ' ' + (r.x + topLeft) + ' ' +
-        r.y + ' ' + 'L' + ' ' + (r.x + r.width - topRight) + ' ' + r.y +
-        ' Q ' + (r.x + r.width) + ' ' + r.y + ' ' +
-        (r.x + r.width) + ' ' + (r.y + topRight) + ' ' + 'L ' +
-        (r.x + r.width) + ' ' + (r.y + r.height - bottomRight)
-        + ' Q ' + (r.x + r.width) + ' ' + (r.y + r.height) + ' ' + (r.x + r.width - bottomRight) + ' ' +
-        (r.y + r.height) + ' ' + 'L ' + (r.x + bottomLeft) + ' ' + (r.y + r.height) + ' Q ' + r.x + ' ' +
-        (r.y + r.height) + ' ' + r.x + ' ' + (r.y + r.height - bottomLeft) + ' ' + 'L' + ' ' + r.x + ' ' +
-        (topLeft + r.y) + ' ' + 'Z';
-}
-/**
- * Internal rendering of Rectangle
- * @private
- */
-function drawRectangle(sparkline, options, element) {
-    options.d = calculateRoundedRectPath(options.rect, options.topLeft, options.topRight, options.bottomLeft, options.bottomRight);
-    return appendShape(sparkline.renderer.drawPath(options), element);
-}
-/**
- * Internal rendering of Path
- * @private
- */
-function drawPath(sparkline, options, element) {
-    return appendShape(sparkline.renderer.drawPath(options), element);
-}
-/**
- * Function to measure the height and width of the text.
- * @param  {string} text
- * @param  {SparklineFontModel} font
- * @param  {string} id
- * @returns no
- * @private
- */
-function measureText$1(text, font) {
-    let htmlObject = document.getElementById('sparklinesmeasuretext');
-    if (htmlObject === null) {
-        htmlObject = createElement('text', { id: 'sparklinesmeasuretext' });
-        document.body.appendChild(htmlObject);
-    }
-    htmlObject.innerHTML = text;
-    htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontFamily = font.fontFamily;
-    htmlObject.style.visibility = 'hidden';
-    htmlObject.style.top = '-100';
-    htmlObject.style.left = '0';
-    htmlObject.style.position = 'absolute';
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.whiteSpace = 'nowrap';
-    // For bootstrap line height issue
-    htmlObject.style.lineHeight = 'normal';
-    return new Size$1(htmlObject.clientWidth, htmlObject.clientHeight);
-}
-/**
- * Internal use of text options
- * @private
- */
-class TextOption$1 {
-    constructor(id, x, y, anchor, text, baseLine, transform = '') {
-        this.transform = '';
-        this.baseLine = 'auto';
-        this.id = id;
-        this.x = x;
-        this.y = y;
-        this.anchor = anchor;
-        this.text = text;
-        this.transform = transform;
-        this.baseLine = baseLine;
-    }
-}
-/**
- * Internal rendering of text
- * @private
- */
-function renderTextElement(options, font, color, parent) {
-    let textOptions = {
-        'id': options.id,
-        'x': options.x,
-        'y': options.y,
-        'transform': options.transform,
-        'opacity': font.opacity,
-        'fill': color,
-        'font-family': font.fontFamily,
-        'font-weight': font.fontWeight,
-        'font-size': font.size,
-        'font-style': font.fontStyle,
-        'text-anchor': options.anchor,
-        'dominant-baseline': options.baseLine
-    };
-    let renderer = new SvgRenderer('');
-    let htmlObject = renderer.createText(textOptions, options.text);
-    htmlObject.style['user-select'] = 'none';
-    htmlObject.style['-moz-user-select'] = 'none';
-    htmlObject.style['-webkit-touch-callout'] = 'none';
-    htmlObject.style['-webkit-user-select'] = 'none';
-    htmlObject.style['-khtml-user-select'] = 'none';
-    htmlObject.style['-ms-user-select'] = 'none';
-    htmlObject.style['-o-user-select'] = 'none';
-    parent.appendChild(htmlObject);
-    return htmlObject;
-}
-/**
- * To remove element by id
- */
-function removeElement$1(id) {
-    let element = document.getElementById(id);
-    return element ? remove(element) : null;
-}
-/**
- * To find the element by id
- */
-function getIdElement(id) {
-    return document.getElementById(id);
-}
-/**
- * To find point within the bounds.
- */
-function withInBounds$1(x, y, bounds) {
-    return (x >= bounds.x && x <= bounds.x + bounds.width && y >= bounds.y && y <= bounds.y + bounds.height);
 }
 
 /**
@@ -23860,12 +24406,12 @@ class PyramidSeries extends TriangularBase {
      */
     renderPoint(point, series, chart, options, seriesGroup, redraw) {
         if (!point.visible) {
-            removeElement$1(options.id);
+            removeElement(options.id);
             return null;
         }
         options.d = this.getSegmentData(point, series, chart);
         point.midAngle = 0;
-        appendChildElement(seriesGroup, chart.renderer.drawPath(options), redraw);
+        appendChildElement(false, seriesGroup, chart.renderer.drawPath(options), redraw);
         if (point.isExplode) {
             chart.accBaseModule.explodePoints(point.index, chart, true);
         }
@@ -24305,7 +24851,23 @@ class AccumulationDataLabel extends AccumulationBase {
                 this.setOuterSmartLabel(previousPoint, point, dataLabel.border.width, labelRadius, textSize, this.marginValue);
             }
         }
-        if (this.isOverlapping(point, points) || (this.titleRect && point.labelRegion && isOverlap(point.labelRegion, this.titleRect))) {
+        if (this.isOverlapping(point, points) && (this.accumulation.type === 'Pyramid' || this.accumulation.type === 'Funnel')) {
+            let position = 'OutsideLeft';
+            let space = 10;
+            let labelAngle = point.midAngle || 0;
+            let labelRadius = circular ? this.radius : this.getLabelDistance(point, dataLabel);
+            let location = degreeToLocation(labelAngle, -labelRadius, this.isCircular() ? this.center :
+                this.getLabelLocation(point, position));
+            point.labelRegion = new Rect(location.x, location.y, textSize.width + (this.marginValue * 2), textSize.height + (this.marginValue * 2));
+            point.labelRegion.y -= point.labelRegion.height / 2;
+            point.labelRegion.x = point.labelRegion.x - space - point.labelRegion.width;
+            if (previousPoint && previousPoint.labelRegion && (isOverlap(point.labelRegion, previousPoint.labelRegion)
+                || this.isOverlapping(point, points) || this.isConnectorLineOverlapping(point, previousPoint))) {
+                this.setOuterSmartLabel(previousPoint, point, dataLabel.border.width, labelRadius, textSize, this.marginValue);
+            }
+        }
+        if (this.isOverlapping(point, points) ||
+            (this.titleRect && point.labelRegion && isOverlap(point.labelRegion, this.titleRect))) {
             this.setPointVisibileFalse(point);
         }
         if (this.accumulation.accumulationLegendModule && point.labelVisible && point.labelRegion) {
@@ -24315,7 +24877,7 @@ class AccumulationDataLabel extends AccumulationBase {
         }
         if (point.labelVisible && point.labelRegion) {
             let position = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
-                'InsideRight';
+                (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
             this.textTrimming(point, this.areaRect, dataLabel.font, position);
         }
         if (point.labelVisible && point.labelRegion && ((point.labelRegion.y + point.labelRegion.height >
@@ -24337,7 +24899,7 @@ class AccumulationDataLabel extends AccumulationBase {
                 let pointIndex = parseInt(targetId[1].split('_text_')[1], 10);
                 if (!isNaN(seriesIndex) && !isNaN(pointIndex)) {
                     if (isTouch) {
-                        removeElement(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip');
+                        removeElement$1(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip');
                     }
                     let point = getSeriesFromIndex(seriesIndex, (this.accumulation).visibleSeries).points[pointIndex];
                     showTooltip(point.text || point.y.toString(), x, y, this.areaRect.width, this.accumulation.element.id + '_EJ2_Datalabel_Tooltip', getElement(this.accumulation.element.id + '_Secondary_Element'));
@@ -24345,11 +24907,11 @@ class AccumulationDataLabel extends AccumulationBase {
             }
         }
         else {
-            removeElement(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip');
+            removeElement$1(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip');
         }
         if (isTouch) {
             clearTimeout(this.clearTooltip);
-            this.clearTooltip = +setTimeout(() => { removeElement(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip'); }, 1000);
+            this.clearTooltip = +setTimeout(() => { removeElement$1(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip'); }, 1000);
         }
     }
     /**
@@ -24466,12 +25028,16 @@ class AccumulationDataLabel extends AccumulationBase {
      * To find connector line overlapping.
      */
     isConnectorLineOverlapping(point, previous) {
-        let start = this.getLabelLocation(point);
+        let position;
+        if (!this.isCircular() && point.labelRegion.x < point.region.x) {
+            position = 'outsideLeft';
+        }
+        let start = this.getLabelLocation(point, position);
         let end = new ChartLocation(0, 0);
-        this.getEdgeOfLabel(point.labelRegion, point.labelAngle, end);
+        this.getEdgeOfLabel(point.labelRegion, point.labelAngle, end, 0, point);
         let previousstart = this.getLabelLocation(previous);
         let previousend = new ChartLocation(0, 0);
-        this.getEdgeOfLabel(previous.labelRegion, previous.labelAngle, previousend);
+        this.getEdgeOfLabel(previous.labelRegion, previous.labelAngle, previousend, 0, point);
         return this.isLineRectangleIntersect(start, end, point.labelRegion) ||
             this.isLineRectangleIntersect(start, end, previous.labelRegion) ||
             this.isLineRectangleIntersect(previousstart, previousend, point.labelRegion);
@@ -24545,7 +25111,7 @@ class AccumulationDataLabel extends AccumulationBase {
         let start = this.getConnectorStartPoint(point, connector);
         let labelAngle = end || point.midAngle;
         let middle = new ChartLocation(0, 0);
-        let endPoint = this.getEdgeOfLabel(label, labelAngle, middle, connector.width);
+        let endPoint = this.getEdgeOfLabel(label, labelAngle, middle, connector.width, point);
         if (connector.type === 'Curve') {
             if (this.isCircular()) {
                 let r = labelRadius - (this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
@@ -24606,10 +25172,16 @@ class AccumulationDataLabel extends AccumulationBase {
     /**
      * To get label edges based on the center and label rect position.
      */
-    getEdgeOfLabel(labelshape, angle, middle, border = 1) {
+    getEdgeOfLabel(labelshape, angle, middle, border = 1, point) {
         let edge = new ChartLocation(labelshape.x, labelshape.y);
         if (angle >= 90 && angle <= 270) {
             edge.x += labelshape.width + border / 2;
+            edge.y += labelshape.height / 2;
+            middle.x = edge.x + 10;
+            middle.y = edge.y;
+        }
+        else if (point && point.region && point.region.x > point.labelRegion.x) {
+            edge.x += border * 2 + labelshape.width;
             edge.y += labelshape.height / 2;
             middle.x = edge.x + 10;
             middle.y = edge.y;
@@ -24649,7 +25221,7 @@ class AccumulationDataLabel extends AccumulationBase {
      */
     getLabelLocation(point, position = 'Outside') {
         if (this.accumulation.type !== 'Pie') {
-            position = point.labelPosition || position;
+            position = position === 'OutsideLeft' ? 'OutsideLeft' : point.labelPosition || position;
             let location = {
                 x: point.symbolLocation.x,
                 y: point.symbolLocation.y - point.labelOffset.y
@@ -24660,6 +25232,9 @@ class AccumulationDataLabel extends AccumulationBase {
                     break;
                 case 'Outside':
                     location.x += point.labelOffset.x;
+                    break;
+                case 'OutsideLeft':
+                    location.x -= point.labelOffset.x;
             }
             return location;
         }
@@ -24675,8 +25250,12 @@ class AccumulationDataLabel extends AccumulationBase {
     getConnectorStartPoint(point, connector) {
         // return this.isCircular() ? degreeToLocation(point.midAngle, this.radius - connector.width, this.center) :
         //     this.getLabelLocation(point);
+        let position;
+        if (!this.isCircular() && point.region.x > point.labelRegion.x) {
+            position = 'OutsideLeft';
+        }
         return this.isCircular() ? degreeToLocation(point.midAngle, (this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
-            this.radius) - connector.width, this.center) : this.getLabelLocation(point);
+            this.radius) - connector.width, this.center) : this.getLabelLocation(point, position);
     }
     /**
      * To find area rect based on margin, available size.
@@ -24704,6 +25283,11 @@ class AccumulationDataLabel extends AccumulationBase {
         let isTemplate = argsData.template !== null;
         point.labelVisible = !argsData.cancel;
         point.text = point.label = argsData.text;
+        if (Number(point.label)) {
+            point.label = this.accumulation.intl.formatNumber(+point.label, {
+                useGrouping: this.accumulation.useGroupingSeparator
+            });
+        }
         this.marginValue = argsData.border.width ? (5 + argsData.border.width) : 1;
         // Template element
         let childElement = createElement('div', {
@@ -24729,8 +25313,8 @@ class AccumulationDataLabel extends AccumulationBase {
                 element = getElement(id + 'shape_' + point.index);
                 let startLocation = element ? new ChartLocation(+element.getAttribute('x'), +element.getAttribute('y')) : null;
                 dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
-                appendChildElement(datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null, false, false, null, this.accumulation.duration);
-                textElement(new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, '', 'auto'), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
+                appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null, false, false, null, this.accumulation.duration);
+                textElement(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, '', 'auto'), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
                 element = null;
             }
             if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
@@ -24740,9 +25324,9 @@ class AccumulationDataLabel extends AccumulationBase {
                 let element = getElement(id + 'connector_' + point.index);
                 let previousDirection = element ? element.getAttribute('d') : '';
                 let pathElement = this.accumulation.renderer.drawPath(new PathOption(id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width, dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray, this.getConnectorPath(extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle)));
-                appendChildElement(datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection, false, false, null, this.accumulation.duration);
+                appendChildElement(false, datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection, false, false, null, this.accumulation.duration);
             }
-            appendChildElement(parent, datalabelGroup, redraw);
+            appendChildElement(false, parent, datalabelGroup, redraw);
         }
     }
     /**
@@ -24771,7 +25355,7 @@ class AccumulationDataLabel extends AccumulationBase {
         childElement.style.color = labelColor ||
             this.getSaturatedColor(point, fill);
         if (childElement.childElementCount) {
-            appendChildElement(parent, childElement, redraw, true, 'left', 'top');
+            appendChildElement(false, parent, childElement, redraw, true, 'left', 'top');
             this.doTemplateAnimation(this.accumulation, childElement);
         }
     }
@@ -24937,7 +25521,9 @@ class AccumulationTooltip extends BaseTooltip {
     }
     getTooltipText(data, tooltip) {
         let series = data.series;
-        let format = tooltip.format ? tooltip.format : '${point.x} : <b>${point.y}</b>';
+        let format = this.accumulation.useGroupingSeparator ? '${point.x} : <b>${point.label}</b>'
+            : '${point.x} : <b>${point.y}</b>';
+        format = tooltip.format ? tooltip.format : format;
         return this.parseTemplate(data.point, series, format);
     }
     findHeader(data) {
@@ -25892,7 +26478,7 @@ class RangeNavigatorAxis extends DateTime {
             else {
                 continue;
             }
-            textElement(new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
+            textElement(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
             prevX = pointX;
             prevLabel = label;
         }
@@ -26048,6 +26634,7 @@ function getRangeThemeColor(theme, range) {
                 thumbHeight: thumbHeight
             };
             break;
+        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 gridLineColor: darkGridlineColor,
@@ -26723,7 +27310,7 @@ let RangeNavigator = class RangeNavigator extends Component {
         this.createRangeSvg();
         this.calculateBounds();
         this.chartSeries.renderChart(this);
-        removeElement('chartmeasuretext');
+        removeElement$1('chartmeasuretext');
     }
     /**
      * Theming for rangeNavigator
@@ -26905,7 +27492,7 @@ let RangeNavigator = class RangeNavigator extends Component {
             }
             if (this.stockChart) {
                 for (let i = 0; i < arg.rangeNavigator.series.length; i++) {
-                    arg.rangeNavigator.series[i].dataSource = this.stockChart.tempDataSource[i];
+                    arg.rangeNavigator.series[i].dataSource = this.stockChart.tempDataSource[i] || this.stockChart.blazorDataSource[i];
                 }
                 if (this.stockChart.dataSource) {
                     arg.rangeNavigator.dataSource = this.stockChart.tempDataSource[0];
@@ -27068,6 +27655,8 @@ let RangeNavigator = class RangeNavigator extends Component {
                     super.refresh();
                     break;
                 case 'value':
+                    this.startValue = null;
+                    this.endValue = null;
                     refreshRange = true;
                     break;
             }
@@ -27723,6 +28312,7 @@ class RangeTooltip {
                 border: tooltip.border, opacity: tooltip.opacity,
                 template: tooltip.template,
                 textStyle: argsData.textStyle,
+                availableSize: control.availableSize,
                 data: {
                     'start': this.getTooltipContent(this.control.startValue)[0],
                     'end': this.getTooltipContent(this.control.endValue)[0],
@@ -27948,8 +28538,9 @@ class CartesianChart {
      */
     cartesianChartRefresh(stockChart, start, end, data) {
         stockChart.chart.series.forEach((series) => {
-            series.dataSource = data ? data : (stockChart.tempDataSource[series.index] ||
-                stockChart.dataSource).filter((data) => {
+            series.dataSource = data ? data : (stockChart.blazorDataSource[series.index] ||
+                this.checkDataSource(stockChart.tempDataSource[series.index]) || this.checkDataSource(stockChart.dataSource))
+                .filter((data) => {
                 return (new Date(Date.parse(data[series.xName])).getTime() >= start &&
                     new Date(Date.parse(data[series.xName])).getTime() <= end);
             });
@@ -27961,6 +28552,14 @@ class CartesianChart {
             }
         });
         stockChart.cartesianChart.initializeChart();
+    }
+    checkDataSource(data) {
+        if (data instanceof DataManager) {
+            return (data.dataSource.json);
+        }
+        else {
+            return data;
+        }
     }
     copyObject(originalObject) {
         return (extend({}, originalObject, {}, true));
@@ -28192,7 +28791,7 @@ class ToolBarSelector {
             this.stockChart.resizeTo = null;
             this.stockChart.zoomChange = false;
             for (let j = 0; j < this.stockChart.series.length; j++) {
-                this.stockChart.series[j].dataSource = this.stockChart.tempDataSource[j];
+                this.stockChart.series[j].dataSource = this.stockChart.tempDataSource[j] || this.stockChart.blazorDataSource[j];
             }
             this.stockChart.refresh();
         };
@@ -28409,15 +29008,19 @@ class ToolBarSelector {
                     additionalRect = stockChart.svgObject.firstElementChild.getBoundingClientRect();
                     this.stockChart.svgObject.setAttribute('height', (svgHeight.height + additionalRect.height).toString());
                     getElement(stockID + 'chart').style.transform = 'translateY(' + additionalRect.height + 'px)';
-                    getElement(stockID + 'rangeSelector').setAttribute('transform', 
-                    // tslint:disable-next-line:align
-                    'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
+                    if (stockChart.enableSelector) {
+                        getElement(stockID + 'rangeSelector').setAttribute('transform', 
+                        // tslint:disable-next-line:align
+                        'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
+                    }
                     stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
                     remove(getElement(this.stockChart.element.id + '_additionalExport'));
                     getElement(stockID + 'chart').style.transform = 'translateY(0px)';
-                    getElement(stockID + 'rangeSelector').setAttribute('transform', 
-                    // tslint:disable-next-line:align
-                    'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
+                    if (stockChart.enableSelector) {
+                        getElement(stockID + 'rangeSelector').setAttribute('transform', 
+                        // tslint:disable-next-line:align
+                        'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
+                    }
                     this.stockChart.svgObject.setAttribute('height', (svgHeight.height).toString());
                 }
             }
@@ -28466,7 +29069,7 @@ class ToolBarSelector {
         });
         let titleHeight = measureText(this.stockChart.title, this.stockChart.titleStyle).height;
         let options = new TextOption(exportElement.id + '_Title', titlePositionX(new Rect(0, 0, this.stockChart.availableSize.width, 0), this.stockChart.titleStyle), 0, 'middle', this.stockChart.title, '', 'text-before-edge');
-        textElement(options, this.stockChart.titleStyle, this.stockChart.titleStyle.color, exportElement);
+        textElement(this.stockChart.renderer, options, this.stockChart.titleStyle, this.stockChart.titleStyle.color, exportElement);
         let style = { size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' };
         let x = measureText('Series: ' + this.selectedSeries, style).width / 2;
         let y = titleHeight;
@@ -28482,7 +29085,7 @@ class ToolBarSelector {
         return exportElement;
     }
     /** @private */
-    textElementSpan(options, font, color, parent, isMinus = false, redraw, isAnimate, forceAnimate = false, animateduration) {
+    textElementSpan(options, font, color, parent, isMinus = false, redraw, isAnimate, forceAnimate = false, animateDuration) {
         let renderer = new SvgRenderer('');
         let renderOptions = {};
         let htmlObject;
@@ -28514,7 +29117,7 @@ class ToolBarSelector {
                 htmlObject.appendChild(tspanElement);
             }
         }
-        appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateduration);
+        appendChildElement(false, parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateDuration);
         return htmlObject;
     }
 }
@@ -29279,7 +29882,7 @@ class StockEvents extends BaseTooltip {
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '', new PathOption(stockId + '_Circle', 'transparent', border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '', new PathOption(stockId + '_Path', border.color, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height), stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
-                textElement(new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'ArrowUp':
             case 'ArrowDown':
@@ -29294,7 +29897,7 @@ class StockEvents extends BaseTooltip {
                 result.height = 3 * textSize.height;
                 result.width = textSize.width + (1.5 * textSize.width);
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
-                textElement(new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'Text':
                 textSize.height += 8; //padding for text height
@@ -29307,7 +29910,7 @@ class StockEvents extends BaseTooltip {
                     'L' + ' ' + (lx + 5) + ' ' + (ly - 5) + ' ' + 'Z';
                 pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
                 stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
-                textElement(new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             default:
                 //pin type calculation.
@@ -29319,7 +29922,7 @@ class StockEvents extends BaseTooltip {
                 pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
                 stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
                 //append text element
-                textElement(new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
         }
     }
     renderStockEventTooltip(targetId) {
@@ -29454,6 +30057,8 @@ class StockChart extends Component {
         /** @private */
         this.tempDataSource = [];
         /** @private */
+        this.blazorDataSource = [];
+        /** @private */
         this.tempSeriesType = [];
         /** private */
         this.zoomChange = false;
@@ -29465,6 +30070,8 @@ class StockChart extends Component {
         this.trendlinetriggered = true;
         /** @private */
         this.toolbarHeight = this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
+        /** @private */
+        this.initialRender = true;
     }
     /**
      * Called internally if any of the property value changed.
@@ -29472,7 +30079,7 @@ class StockChart extends Component {
      */
     // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
-        this.render();
+        // on property changes
     }
     /**
      * To change the range for chart
@@ -29568,6 +30175,15 @@ class StockChart extends Component {
         this.renderTitle();
         this.chartModuleInjection();
         this.chartRender();
+        if (!(this.dataSource instanceof DataManager) && !(this.series[0].dataSource instanceof DataManager)) {
+            this.stockChartDataManagerSuccess();
+            this.initialRender = false;
+        }
+    }
+    /**
+     * DataManager Success
+     */
+    stockChartDataManagerSuccess() {
         this.findRange();
         this.renderRangeSelector();
         this.renderPeriodSelector();
@@ -29617,7 +30233,7 @@ class StockChart extends Component {
         }
         let height = (this.enablePeriodSelector ? this.toolbarHeight : 0) + this.titleSize.height;
         tooltipDiv.setAttribute('style', 'position: relative; height:' + height + 'px');
-        appendChildElement(this.element, tooltipDiv, false);
+        appendChildElement(false, this.element, tooltipDiv, false);
     }
     /**
      * Render period selector
@@ -29687,13 +30303,13 @@ class StockChart extends Component {
         let moduleName;
         for (let modules of this.getInjectedModules()) {
             moduleName = modules.prototype.getModuleName().toLowerCase();
-            if (moduleName.indexOf('range') === -1) {
+            if (moduleName.indexOf('rangetooltip') === -1) {
                 Chart.Inject(modules);
             }
             else {
                 RangeNavigator.Inject(modules);
             }
-            if (moduleName === 'datetime' || moduleName === 'areaseries') {
+            if (moduleName === 'datetime' || moduleName === 'areaseries' || moduleName === 'steplineseries') {
                 RangeNavigator.Inject(modules);
             }
         }
@@ -29974,7 +30590,7 @@ class StockChart extends Component {
     stockChartOnMouseLeaveEvent(e) {
         let element = e.target;
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        this.trigger('stockChartMouseLeave', { target: element.id, x: this.mouseX, y: this.mouseY });
+        //this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.notify(cancelEvent, e);
         if (this.stockEvent) {
@@ -29997,7 +30613,7 @@ class StockChart extends Component {
             border.style.position = 'absolute';
             border.style.border = this.border.width + 'px solid ' + this.border.color;
             border.style.pointerEvents = 'none';
-            appendChildElement(getElement(this.element.id), border);
+            appendChildElement(false, getElement(this.element.id), border);
         }
     }
     /**
@@ -30006,7 +30622,7 @@ class StockChart extends Component {
     renderTitle() {
         let rect;
         if (this.title) {
-            appendChildElement(getElement(this.element.id + '_Secondary_Element'), this.renderer.createSvg({
+            appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.renderer.createSvg({
                 id: this.element.id + '_stockChart_Title',
                 width: this.availableSize.width,
                 height: this.titleSize.height,
@@ -30016,7 +30632,7 @@ class StockChart extends Component {
             let getAnchor = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
             rect = new Rect(0, 0, this.availableSize.width, 0);
             let options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), ((this.titleSize.height - 10)), getAnchor, this.title, '', 'auto');
-            let element = textElement(options, this.titleStyle, this.titleStyle.color || this.findTitleColor(), getElement(this.element.id + '_stockChart_Title'), false, false);
+            let element = textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.findTitleColor(), getElement(this.element.id + '_stockChart_Title'), false, false);
             this.availableSize.height -= (this.titleSize.height + 5);
         }
     }
@@ -30032,7 +30648,7 @@ class StockChart extends Component {
     calculateStockEvents() {
         if (this.stockEvents.length) {
             this.stockEvent = new StockEvents(this);
-            appendChildElement(this.chartObject, this.stockEvent.renderStockEvents());
+            appendChildElement(false, this.chartObject, this.stockEvent.renderStockEvents());
         }
     }
 }
@@ -30306,9 +30922,9 @@ class SmithchartSize {
 class GridArcPoints {
 }
 
-function createSvg$2(smithchart) {
+function createSvg$1(smithchart) {
     smithchart.renderer = new SvgRenderer(smithchart.element.id);
-    calculateSize$2(smithchart);
+    calculateSize$1(smithchart);
     smithchart.svgObject = smithchart.renderer.createSvg({
         id: smithchart.element.id + '_svg',
         width: smithchart.availableSize.width,
@@ -30324,12 +30940,12 @@ function getElement$1(id) {
  */
 function textTrim$1(maxwidth, text, font) {
     let label = text;
-    let size = measureText$2(text, font).width;
+    let size = measureText$1(text, font).width;
     if (size > maxwidth) {
         let textLength = text.length;
         for (let i = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i) + '...';
-            size = measureText$2(label, font).width;
+            size = measureText$1(label, font).width;
             if (size <= maxwidth || label.length < 4) {
                 if (label.length < 4) {
                     label = ' ';
@@ -30380,10 +30996,10 @@ function _getEpsilonValue() {
 /**
  * Method to calculate the width and height of the smithchart
  */
-function calculateSize$2(smithchart) {
+function calculateSize$1(smithchart) {
     let containerWidth = smithchart.element.clientWidth;
     let containerHeight = smithchart.element.clientHeight;
-    smithchart.availableSize = new SmithchartSize(stringToNumber$2(smithchart.width, containerWidth) || containerWidth || 600, stringToNumber$2(smithchart.height, containerHeight) || containerHeight || 450);
+    smithchart.availableSize = new SmithchartSize(stringToNumber$1(smithchart.width, containerWidth) || containerWidth || 600, stringToNumber$1(smithchart.height, containerHeight) || containerHeight || 450);
 }
 /**
  * Animation for template
@@ -30410,7 +31026,7 @@ function templateAnimate$1(smithchart, element, delay, duration, name) {
     });
 }
 /** @private */
-function stringToNumber$2(value, containerSize) {
+function stringToNumber$1(value, containerSize) {
     if (value !== null && value !== undefined) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
     }
@@ -30420,7 +31036,7 @@ function stringToNumber$2(value, containerSize) {
  * Internal use of path options
  * @private
  */
-class PathOption$2 {
+class PathOption$1 {
     constructor(id, fill, width, color, opacity, dashArray, d) {
         this.id = id;
         this.opacity = opacity;
@@ -30435,7 +31051,7 @@ class PathOption$2 {
  * Internal use of rectangle options
  * @private
  */
-class RectOption$2 extends PathOption$2 {
+class RectOption$1 extends PathOption$1 {
     constructor(id, fill, border, opacity, rect) {
         super(id, fill, border.width, border.color, opacity);
         this.y = rect.y;
@@ -30448,7 +31064,7 @@ class RectOption$2 extends PathOption$2 {
  * Internal use of circle options
  * @private
  */
-class CircleOption$2 extends PathOption$2 {
+class CircleOption$1 extends PathOption$1 {
     constructor(id, fill, border, opacity, cx, cy, r, dashArray) {
         super(id, fill, border.width, border.color, opacity);
         this.cy = cy;
@@ -30457,7 +31073,7 @@ class CircleOption$2 extends PathOption$2 {
         this['stroke-dasharray'] = dashArray;
     }
 }
-function measureText$2(text, font) {
+function measureText$1(text, font) {
     let htmlObject = document.getElementById('smithchartmeasuretext');
     if (htmlObject === null) {
         htmlObject = createElement('text', { id: 'smithchartmeasuretext' });
@@ -30481,7 +31097,7 @@ function measureText$2(text, font) {
  * Internal use of text options
  * @private
  */
-class TextOption$2 {
+class TextOption$1 {
     constructor(id, x, y, anchor, text) {
         this.id = id;
         this.x = x;
@@ -30528,7 +31144,7 @@ function getAnimationFunction$1(effect) {
  * Internal rendering of text
  * @private
  */
-function renderTextElement$1(options, font, color, parent) {
+function renderTextElement(options, font, color, parent) {
     let renderOptions = {
         'id': options.id,
         'x': options.x,
@@ -30615,7 +31231,7 @@ function getSeriesColor$1(theme) {
     return palette;
 }
 /** @private */
-function getThemeColor$2(theme) {
+function getThemeColor$1(theme) {
     let style;
     let themes = theme.toLowerCase();
     switch (themes) {
@@ -31150,11 +31766,11 @@ class AreaBounds {
             space = (bounds.width + (itemPadding / 2) + smithchart.elementSpacing + (2 * legendBorder));
             leftLegendWidth = position === 'left' ? space : 0;
             rightLegendWidth = position === 'right' ? space : 0;
-            ltheight = legend['title'].visible ? measureText$2(legend['title'].text, font)['height'] : 0;
+            ltheight = legend['title'].visible ? measureText$1(legend['title'].text, font)['height'] : 0;
             topLegendHeight = position === 'top' ? smithchart.elementSpacing + bounds.height + ltheight : 0;
             bottomLegendHeight = position === 'bottom' ? smithchart.elementSpacing + bounds.height + ltheight : 0;
         }
-        subtitleHeight = measureText$2(title.subtitle.text, font)['height'];
+        subtitleHeight = measureText$1(title.subtitle.text, font)['height'];
         modelTitleHeight = (title.text === '' || !title['visible']) ? 0 : (titleHeight);
         modelsubTitleHeight = (title['subtitle'].text === '' || !title['subtitle'].visible) ? 0 : (subtitleHeight);
         return {
@@ -31277,7 +31893,7 @@ class AxisRender {
         let textSize;
         for (let i = 0; i < this.radialLabels.length; i++) {
             label = this.radialLabels[i].toString();
-            textSize = measureText$2(label, font);
+            textSize = measureText$1(label, font);
             if (maximumLabelLength < textSize.width) {
                 maximumLabelLength = textSize.width;
             }
@@ -31668,7 +32284,7 @@ class AxisRender {
         let path;
         groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_horizontalAxisMajorGridLines' });
         path = this.calculateGridLinesPath(this.majorHGridArcPoints);
-        let haxismgoptions = new PathOption$2(smithchart.element.id + '_horizontalAxisMajorGridLines', 'none', majorGridLine['width'], majorGridLine.color ? majorGridLine.color : smithchart.themeStyle.majorGridLine, majorGridLine['opacity'], majorGridLine['dashArray'], path);
+        let haxismgoptions = new PathOption$1(smithchart.element.id + '_horizontalAxisMajorGridLines', 'none', majorGridLine['width'], majorGridLine.color ? majorGridLine.color : smithchart.themeStyle.majorGridLine, majorGridLine['opacity'], majorGridLine['dashArray'], path);
         element = smithchart.renderer.drawPath(haxismgoptions);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
@@ -31680,7 +32296,7 @@ class AxisRender {
         let path;
         groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_radialAxisMajorGridLines' });
         path = this.calculateGridLinesPath(this.majorRGridArcPoints);
-        let raxismgoptions = new PathOption$2(smithchart.element.id + '_radialAxisMajorGridLines', 'none', majorGridLine['width'], majorGridLine.color ? majorGridLine.color : smithchart.themeStyle.majorGridLine, majorGridLine['opacity'], majorGridLine['dashArray'], path);
+        let raxismgoptions = new PathOption$1(smithchart.element.id + '_radialAxisMajorGridLines', 'none', majorGridLine['width'], majorGridLine.color ? majorGridLine.color : smithchart.themeStyle.majorGridLine, majorGridLine['opacity'], majorGridLine['dashArray'], path);
         element = smithchart.renderer.drawPath(raxismgoptions);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
@@ -31704,7 +32320,7 @@ class AxisRender {
         angle = Math.PI * 2;
         direction = 'M' + '' + point1.x + ' ' + point1.y + ' ' + 'A' + ' ' + size.width +
             ' ' + size.height + ' ' + angle + ' ' + isLargeArc + ' ' + sweep + ' ' + point2.x + ' ' + point2.y + '';
-        let options = new PathOption$2(smithchart.element.id + '_horizontalAxisLine', 'none', axisLine.width, axisLine.color ? axisLine.color : smithchart.themeStyle.axisLine, 1, axisLine.dashArray, direction);
+        let options = new PathOption$1(smithchart.element.id + '_horizontalAxisLine', 'none', axisLine.width, axisLine.color ? axisLine.color : smithchart.themeStyle.axisLine, 1, axisLine.dashArray, direction);
         let element = smithchart.renderer.drawPath(options);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
@@ -31728,7 +32344,7 @@ class AxisRender {
         direction = 'M' + ' ' + point1.x + ' ' + point1.y + ' ' + 'A' + ' ' +
             size.width + ' ' + size.height + ' ' + angle + ' ' + isLargeArc + ' ' + sweep + ' ' +
             point2.x + ' ' + point2.y + '';
-        let options = new PathOption$2(smithchart.element.id + '_radialAxisLine', 'none', axisLine.width, axisLine.color ? axisLine.color : smithchart.themeStyle.axisLine, 1, axisLine.dashArray, direction);
+        let options = new PathOption$1(smithchart.element.id + '_radialAxisLine', 'none', axisLine.width, axisLine.color ? axisLine.color : smithchart.themeStyle.axisLine, 1, axisLine.dashArray, direction);
         let groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_rAxisLine' });
         let element = smithchart.renderer.drawPath(options);
         groupElement.appendChild(element);
@@ -31759,7 +32375,7 @@ class AxisRender {
                 x = (smithchart.renderType === 'Impedance') ?
                     circleAxis.centerX - circleAxis.radius : circleAxis.centerX + circleAxis.radius;
                 y = circleAxis.centerY;
-                textSize = measureText$2(label, font);
+                textSize = measureText$1(label, font);
                 x = (smithchart.renderType === 'Impedance') ? x - textSize.width : x;
                 if (hAxis.labelPosition === 'Outside') {
                     y -= textSize.height / 4;
@@ -31791,10 +32407,10 @@ class AxisRender {
                 let axisLabelRenderEventArgs = { text: label.toString(), x: x, y: y,
                     name: 'axisLabelRender', cancel: false };
                 smithchart.trigger('axisLabelRender', axisLabelRenderEventArgs);
-                let options = new TextOption$2(smithchart.element.id + '_HLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
+                let options = new TextOption$1(smithchart.element.id + '_HLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
                 let color = font.color ? font.color : smithchart.themeStyle.axisLabel;
                 font.fontFamily = font.fontFamily || smithchart.themeStyle.labelFontFamily;
-                let element = renderTextElement$1(options, font, color, groupEle);
+                let element = renderTextElement(options, font, color, groupEle);
                 groupEle.appendChild(element);
             }
         }
@@ -31827,7 +32443,7 @@ class AxisRender {
         for (let i = 0; i < this.labelCollections.length; i++) {
             interSectPoint = this.labelCollections[i];
             label = interSectPoint.value.toString();
-            textSize = measureText$2(label, font);
+            textSize = measureText$1(label, font);
             angle = Math.round(interSectPoint.angle * 100) / 100;
             if (rAxis.labelPosition === 'Outside') {
                 position = this.circlePointPosition(this.circleCenterX, this.circleCenterY, interSectPoint['angle'], this.areaRadius + paddingRadius);
@@ -31861,10 +32477,10 @@ class AxisRender {
             let axisLabelRenderEventArgs = { text: label.toString(), x: textPosition.x,
                 y: textPosition.y, name: 'axisLabelRender', cancel: false };
             smithchart.trigger('axisLabelRender', axisLabelRenderEventArgs);
-            let options = new TextOption$2(smithchart.element.id + '_RLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
+            let options = new TextOption$1(smithchart.element.id + '_RLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
             let color = font.color ? font.color : smithchart.themeStyle.axisLabel;
             font.fontFamily = smithchart.themeStyle.labelFontFamily ? smithchart.themeStyle.labelFontFamily : font.fontFamily;
-            let element = renderTextElement$1(options, font, color, groupEle);
+            let element = renderTextElement(options, font, color, groupEle);
             groupEle.appendChild(element);
         }
         smithchart.svgObject.appendChild(groupEle);
@@ -31882,7 +32498,7 @@ class AxisRender {
         let path;
         groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_horizontalAxisMinorGridLines' });
         path = this.calculateGridLinesPath(this.minorHGridArcPoints);
-        let haxismioptions = new PathOption$2(smithchart.element.id + '_horizontalAxisMinorGridLines', 'none', minorGridLine['width'], minorGridLine.color ? minorGridLine.color : smithchart.themeStyle.minorGridLine, minorGridLine['opacity'], minorGridLine['dashArray'], path);
+        let haxismioptions = new PathOption$1(smithchart.element.id + '_horizontalAxisMinorGridLines', 'none', minorGridLine['width'], minorGridLine.color ? minorGridLine.color : smithchart.themeStyle.minorGridLine, minorGridLine['opacity'], minorGridLine['dashArray'], path);
         element = smithchart.renderer.drawPath(haxismioptions);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
@@ -31894,7 +32510,7 @@ class AxisRender {
         let path;
         groupElement = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_radialAxisMinorGridLines' });
         path = this.calculateGridLinesPath(this.minorGridArcPoints);
-        let raxismioptions = new PathOption$2(smithchart.element.id + '_radialAxisMinorGridLines', 'none', minorGridLine['width'], minorGridLine.color ? minorGridLine.color : smithchart.themeStyle.minorGridLine, minorGridLine['opacity'], minorGridLine['dashArray'], path);
+        let raxismioptions = new PathOption$1(smithchart.element.id + '_radialAxisMinorGridLines', 'none', minorGridLine['width'], minorGridLine.color ? minorGridLine.color : smithchart.themeStyle.minorGridLine, minorGridLine['opacity'], minorGridLine['dashArray'], path);
         element = smithchart.renderer.drawPath(raxismioptions);
         groupElement.appendChild(element);
         smithchart.svgObject.appendChild(groupElement);
@@ -32255,7 +32871,7 @@ class Marker$1 {
         let radius = Math.sqrt(size.height * size.height + size.width * size.width) / 2;
         switch (shape) {
             case 'circle':
-                circleOptions = new CircleOption$2(options['id'], options['fill'], border, opacity, location.x, location.y, radius, null);
+                circleOptions = new CircleOption$1(options['id'], options['fill'], border, opacity, location.x, location.y, radius, null);
                 markerEle = smithchart.renderer.drawCircle(circleOptions);
                 break;
             case 'rectangle':
@@ -32265,7 +32881,7 @@ class Marker$1 {
                     ' ' + 'L' + ' ' + (startX + (-size.width / 2)) +
                     ' ' + (startY + (size.height / 2)) + ' ' + 'L' + ' ' +
                     (startX + (-size.width / 2)) + ' ' + (startY + (-size.height / 2)) + 'z';
-                pathOptions = new PathOption$2(options['id'], options['fill'], border.width, border.color, opacity, '', path);
+                pathOptions = new PathOption$1(options['id'], options['fill'], border.width, border.color, opacity, '', path);
                 markerEle = smithchart.renderer.drawPath(pathOptions);
                 break;
             case 'triangle':
@@ -32273,7 +32889,7 @@ class Marker$1 {
                     (startY + (-size.height / 2)) + ' ' + 'L' + ' ' + (startX + (size.width / 2)) + ' ' +
                     (startY + (size.height / 2)) + ' ' + 'L' + ' ' +
                     (startX + (-size.width / 2)) + ' ' + (startY + (size.height / 2)) + 'z';
-                pathOptions = new PathOption$2(options['id'], options['fill'], border.width, border.color, opacity, '', path);
+                pathOptions = new PathOption$1(options['id'], options['fill'], border.width, border.color, opacity, '', path);
                 markerEle = smithchart.renderer.drawPath(pathOptions);
                 break;
             case 'diamond':
@@ -32281,7 +32897,7 @@ class Marker$1 {
                     (startX) + ' ' + (startY + (-size.height / 2)) + ' ' + 'L' + ' ' + (startX + (size.width / 2)) + ' ' +
                     (startY) + ' ' + 'L' + ' ' + (startX) + ' ' + (startY + (size.height / 2)) + ' ' + 'L' + ' ' +
                     (startX + (-size.width / 2)) + ' ' + (startY) + 'z';
-                pathOptions = new PathOption$2(options['id'], options['fill'], border.width, border.color, opacity, '', path);
+                pathOptions = new PathOption$1(options['id'], options['fill'], border.width, border.color, opacity, '', path);
                 markerEle = smithchart.renderer.drawPath(pathOptions);
                 break;
             case 'pentagon':
@@ -32297,7 +32913,7 @@ class Marker$1 {
                     }
                 }
                 path = path.concat('Z');
-                pathOptions = new PathOption$2(options['id'], options['fill'], border.width, border.color, opacity, '', path);
+                pathOptions = new PathOption$1(options['id'], options['fill'], border.width, border.color, opacity, '', path);
                 markerEle = smithchart.renderer.drawPath(pathOptions);
                 break;
         }
@@ -32355,7 +32971,7 @@ class DataLabel$1 {
         let count = pointsRegion.length;
         for (let i = 0; i < count; i++) {
             labelText = smithchart.series[seriesindex].points[i].reactance.toString();
-            textSize = measureText$2(labelText, font);
+            textSize = measureText$1(labelText, font);
             region = pointsRegion[i]['point'];
             let xPos = region.x - textSize.width / 2;
             let yPos = region.y - (textSize.height + marker['height'] + (margin.top));
@@ -32531,7 +33147,7 @@ class DataLabel$1 {
         let stroke = connectorLineValues.color ? connectorLineValues.color :
             (smithchart.series[seriesIndex].fill ||
                 smithchart.seriesColors[seriesIndex % smithchart.seriesColors.length]);
-        let options = new PathOption$2(smithchart.element.id + '_dataLabelConnectorLine' + '_series' + seriesIndex + '_point' + index, 'none', connectorLineValues.width, stroke, 1, 'none', connectorDirection);
+        let options = new PathOption$1(smithchart.element.id + '_dataLabelConnectorLine' + '_series' + seriesIndex + '_point' + index, 'none', connectorLineValues.width, stroke, 1, 'none', connectorDirection);
         let element = smithchart.renderer.drawPath(options);
         groupElement.appendChild(element);
     }
@@ -32559,6 +33175,8 @@ class DataLabel$1 {
                 labelElement.style.left = pointsRegion[i].point.x - labelElement.offsetWidth / 2 + 'px';
                 labelElement.style.top = pointsRegion[i].point.y - labelElement.offsetHeight -
                     smithchart.series[seriesindex].marker.height / 2 + 'px';
+                let blazorId = '_seriesIndex' + seriesindex + '_pointIndex' + i + smithchart.element.id;
+                updateBlazorTemplate(blazorId + 'Template', 'Template');
                 let left = parseInt(labelElement.style.left, 10);
                 let top = parseInt(labelElement.style.top, 10);
                 let width = labelElement.offsetWidth;
@@ -32711,15 +33329,15 @@ class SeriesRender {
                         let fill = dataLabel['fill'] ? dataLabel['fill'] : (smithchart.series[j].fill ||
                             smithchart.seriesColors[j % smithchart.seriesColors.length]);
                         let border = smithchart.series[j].marker.dataLabel.border;
-                        let rectOptions = new RectOption$2(id, fill, border, options['opacity'], new SmithchartRect(x, y, options['width'], options['height']));
+                        let rectOptions = new RectOption$1(id, fill, border, options['opacity'], new SmithchartRect(x, y, options['width'], options['height']));
                         let dataEle = smithchart.renderer.drawRectangle(rectOptions);
                         gdEle.appendChild(dataEle);
                         let textRenderEventArgs = { text: options['text'], x: options['x'], y: options['y'], seriesIndex: j,
                             pointIndex: k, name: 'textRender', cancel: false };
                         smithchart.trigger('textRender', textRenderEventArgs);
-                        let textoptions = new TextOption$2(options['id'], textRenderEventArgs.x, textRenderEventArgs.y, 'start', textRenderEventArgs.text);
+                        let textoptions = new TextOption$1(options['id'], textRenderEventArgs.x, textRenderEventArgs.y, 'start', textRenderEventArgs.text);
                         let color = font.color ? font.color : smithchart.themeStyle.dataLabel;
-                        let element = renderTextElement$1(textoptions, font, color, gdEle);
+                        let element = renderTextElement(textoptions, font, color, gdEle);
                         gdEle.appendChild(element);
                     }
                     else if (dataLabel.template) {
@@ -32763,8 +33381,8 @@ class SeriesRender {
         let seriesEventArgs = { text: smithchart.series[seriesindex].name, fill: fill,
             name: 'seriesRender', cancel: false };
         smithchart.trigger('seriesRender', seriesEventArgs);
-        let options = new PathOption$2(smithchart.element.id + '_series' + seriesindex + '_points', 'none', smithchart.series[seriesindex].width, seriesEventArgs.fill, smithchart.series[seriesindex].opacity, 'none', path);
-        this.clipRectElement = smithchart.renderer.drawClipPath(new RectOption$2(smithchart.element.id + '_ChartSeriesClipRect_' + seriesindex, 'transparent', { width: 1, color: 'Gray' }, 1, {
+        let options = new PathOption$1(smithchart.element.id + '_series' + seriesindex + '_points', 'none', smithchart.series[seriesindex].width, seriesEventArgs.fill, smithchart.series[seriesindex].opacity, 'none', path);
+        this.clipRectElement = smithchart.renderer.drawClipPath(new RectOption$1(smithchart.element.id + '_ChartSeriesClipRect_' + seriesindex, 'transparent', { width: 1, color: 'Gray' }, 1, {
             x: bounds.x, y: bounds.y,
             width: smithchart.availableSize.width,
             height: smithchart.availableSize.height
@@ -33014,11 +33632,11 @@ let Smithchart = class Smithchart extends Component {
      */
     createChartSvg() {
         this.removeSvg();
-        createSvg$2(this);
+        createSvg$1(this);
     }
     renderTitle(title, type, groupEle) {
         let font = title.font ? title.font : title.textStyle;
-        let textSize = measureText$2(title.text, font);
+        let textSize = measureText$1(title.text, font);
         let x;
         let y;
         let textAlignment = title.textAlignment;
@@ -33038,15 +33656,15 @@ let Smithchart = class Smithchart extends Component {
         y = this.margin.top + textSize['height'] / 2 + this.elementSpacing;
         if (title.enableTrim && titleWidthEnable) {
             titleText = textTrim$1(maxTitleWidth, title.text, font);
-            textSize = measureText$2(titleText, font);
+            textSize = measureText$1(titleText, font);
         }
         groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
         let titleEventArgs = { text: titleText, x: x, y: y, name: 'titleRender', cancel: false };
         this.trigger(titleRender, titleEventArgs);
-        let options = new TextOption$2(this.element.id + '_Smithchart_' + type, titleEventArgs.x, titleEventArgs.y, 'start', titleEventArgs.text);
+        let options = new TextOption$1(this.element.id + '_Smithchart_' + type, titleEventArgs.x, titleEventArgs.y, 'start', titleEventArgs.text);
         font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
         font.size = this.themeStyle.fontSize || title.textStyle.size;
-        let element = renderTextElement$1(options, font, this.themeStyle.chartTitle, groupEle);
+        let element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
         element.setAttribute('aria-label', title.description || title.text);
         let titleLocation = { x: x, y: y, textSize: textSize };
         this.svgObject.appendChild(groupEle);
@@ -33059,7 +33677,7 @@ let Smithchart = class Smithchart extends Component {
         let y;
         let font = title.subtitle.textStyle;
         let subTitle = title.subtitle;
-        let subTitleSize = measureText$2(subTitle.text, font);
+        let subTitleSize = measureText$1(subTitle.text, font);
         let textAnchor;
         let subTitleText = subTitle.text;
         let maxSubTitleWidth = isNullOrUndefined(subTitle.maximumWidth) ?
@@ -33075,8 +33693,8 @@ let Smithchart = class Smithchart extends Component {
             (title['subtitle'].textAlignment === 'Near') ? 'start' : 'middle';
         let subtitleEventArgs = { text: subTitleText, x: x, y: y, name: 'subtitleRender', cancel: false };
         this.trigger(subtitleRender, subtitleEventArgs);
-        let options = new TextOption$2(this.element.id + '_Smithchart_' + type, subtitleEventArgs.x, subtitleEventArgs.y, textAnchor, subtitleEventArgs.text);
-        let element = renderTextElement$1(options, font, this.themeStyle.chartTitle, groupEle);
+        let options = new TextOption$1(this.element.id + '_Smithchart_' + type, subtitleEventArgs.x, subtitleEventArgs.y, textAnchor, subtitleEventArgs.text);
+        let element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
         element.setAttribute('aria-label', subTitle.description || subTitle.text);
         groupEle.appendChild(element);
     }
@@ -33088,7 +33706,7 @@ let Smithchart = class Smithchart extends Component {
         let border = this.border;
         let color = this.theme.toLowerCase() === 'highcontrast' ? '#000000' : '#FFFFFF';
         this.background = this.background ? this.background : this.themeStyle.background;
-        let borderRect = new RectOption$2(this.element.id + '_SmithchartBorder', this.background, border, 1, new SmithchartRect(border.width / 2, border.width / 2, this.availableSize.width - border.width, this.availableSize.height - border.width));
+        let borderRect = new RectOption$1(this.element.id + '_SmithchartBorder', this.background, border, 1, new SmithchartRect(border.width / 2, border.width / 2, this.availableSize.width - border.width, this.availableSize.height - border.width));
         this.svgObject.appendChild(this.renderer.drawRectangle(borderRect));
     }
     /**
@@ -33137,7 +33755,7 @@ let Smithchart = class Smithchart extends Component {
      */
     setTheme() {
         /*! Set theme */
-        this.themeStyle = getThemeColor$2(this.theme);
+        this.themeStyle = getThemeColor$1(this.theme);
         this.seriesColors = getSeriesColor$1(this.theme);
         // let count: number = colors.length;
         // for (let i: number = 0; i < this.series.length; i++) {
@@ -33490,12 +34108,14 @@ class TooltipRender {
             areaBounds: new SmithchartRect(smithchart.bounds.x, smithchart.bounds.y, smithchart.bounds.width, smithchart.bounds.height),
             palette: [series.fill || smithchart.seriesColors[seriesindex % smithchart.seriesColors.length]],
             shapes: ['Circle'],
+            availableSize: smithchart.availableSize,
             theme: smithchart.theme
         });
         this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
         this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
         this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
         this.tooltipElement.appendTo(div);
+        updateBlazorTemplate(div.id + 'Template', 'Template');
     }
     closestPointXY(smithchart, x, y, series, seriesindex) {
         let pointIndex;
@@ -33565,7 +34185,7 @@ class SmithchartLegend {
             + (smithchart.border.width * 2));
         let rowCount = legend.rowCount;
         let columnCount = legend.columnCount;
-        let titleSize = measureText$2(smithchart.legendSettings['title']['text'], font);
+        let titleSize = measureText$1(smithchart.legendSettings['title']['text'], font);
         let maxRowWidth = 0;
         let totalRowHeight = 0;
         let curRowWidth = 0;
@@ -33652,7 +34272,7 @@ class SmithchartLegend {
         let legend = smithchart.legendSettings;
         let symbolWidth = legend.itemStyle.width;
         let symbolHeight = legend.itemStyle.height;
-        let textSize = measureText$2(series.text, legend.textStyle);
+        let textSize = measureText$1(series.text, legend.textStyle);
         let width = symbolWidth + textSize.width + legend.shapePadding;
         let height = Math.max(symbolHeight, textSize.height);
         return { width: width, height: height };
@@ -33667,8 +34287,8 @@ class SmithchartLegend {
         let startX;
         let startY;
         let titleFont = smithchart.title.font ? smithchart.title.font : smithchart.title.textStyle;
-        let smithchartTitleHeight = measureText$2(smithchart.title.text, titleFont).height;
-        let smithchartSubtitleHeight = measureText$2(smithchart.title.subtitle.text, smithchart.title.subtitle.textStyle).height;
+        let smithchartTitleHeight = measureText$1(smithchart.title.text, titleFont).height;
+        let smithchartSubtitleHeight = measureText$1(smithchart.title.subtitle.text, smithchart.title.subtitle.textStyle).height;
         let elementSpacing = smithchart.elementSpacing;
         let offset = smithchartTitleHeight + smithchartSubtitleHeight + elementSpacing + smithchart.margin.top;
         let itemPadding = legend.itemPadding > 0 ? legend.itemPadding : 0;
@@ -33676,7 +34296,7 @@ class SmithchartLegend {
         let svgObjectHeight = smithchart.availableSize.height;
         let legendBorder = legend.border.width;
         let legendWidth = 0;
-        let titleSize = measureText$2(legend['title']['text'], legend.title.textStyle);
+        let titleSize = measureText$1(legend['title']['text'], legend.title.textStyle);
         let legendTitleHeight = titleSize.height;
         let borderSize = smithchart.border.width;
         let svgWidth = svgObjectWidth - ((borderSize * 2));
@@ -33773,12 +34393,12 @@ class SmithchartLegend {
         this.drawLegendBorder(gLegendEle, smithchart, legend, legendBounds);
     }
     drawLegendBorder(gLegendEle, smithchart, legend, legendBounds) {
-        let borderRect = new RectOption$2(smithchart.element.id + '_svg' + '_legendRect', 'none', legend.border, 1, new SmithchartRect(0, 0, legendBounds.width, legendBounds.height));
+        let borderRect = new RectOption$1(smithchart.element.id + '_svg' + '_legendRect', 'none', legend.border, 1, new SmithchartRect(0, 0, legendBounds.width, legendBounds.height));
         gLegendEle.appendChild(smithchart.renderer.drawRectangle(borderRect));
     }
     drawLegendTitle(smithchart, legend, legendBounds, gLegendEle) {
         let elementSpacing = smithchart.elementSpacing;
-        let titleSize = measureText$2(legend.title.text, legend.title.textStyle);
+        let titleSize = measureText$1(legend.title.text, legend.title.textStyle);
         let titleWidth = titleSize.width;
         let titleHeight = titleSize.height;
         let textAlignment = legend.title.textAlignment;
@@ -33800,8 +34420,8 @@ class SmithchartLegend {
         if (legendBoundsWidth < titleWidth + startX) {
             legendBoundsWidth = titleWidth + startX;
         }
-        let options = new TextOption$2(smithchart.element.id + '_LegendTitleText', startX, startY, 'start', legend.title.text);
-        let element = renderTextElement$1(options, legend.title.textStyle, smithchart.themeStyle.legendLabel, gLegendEle);
+        let options = new TextOption$1(smithchart.element.id + '_LegendTitleText', startX, startY, 'start', legend.title.text);
+        let element = renderTextElement(options, legend.title.textStyle, smithchart.themeStyle.legendLabel, gLegendEle);
         element.setAttribute('aria-label', legend.title.description || legend.title.text);
         return element;
     }
@@ -33812,7 +34432,7 @@ class SmithchartLegend {
         let itemPadding = legend.itemPadding;
         let textHeight;
         radius = Math.sqrt(symbol['width'] * symbol['width'] + symbol['height'] * symbol['height']) / 2;
-        textHeight = measureText$2(legendSeries['text'], legend.textStyle).height;
+        textHeight = measureText$1(legendSeries['text'], legend.textStyle).height;
         location = {
             x: x + symbol['width'] / 2,
             y: (y + (textHeight > symbol['height'] ? textHeight : symbol['height']) / 2)
@@ -33824,10 +34444,10 @@ class SmithchartLegend {
         smithchart.trigger('legendRender', legendEventArgs);
         let shape = this.drawLegendShape(smithchart, legendSeries, location.x, location.y, k, legend, legendEventArgs);
         legendGroup.appendChild(shape);
-        let options = new TextOption$2(smithchart.element.id + '_LegendItemText' + k.toString(), location.x + symbol['width'] / 2 + legend.shapePadding, location.y + textHeight / 4, 'start', legendEventArgs.text);
+        let options = new TextOption$1(smithchart.element.id + '_LegendItemText' + k.toString(), location.x + symbol['width'] / 2 + legend.shapePadding, location.y + textHeight / 4, 'start', legendEventArgs.text);
         legend.textStyle.fontFamily = smithchart.themeStyle.fontFamily || legend.textStyle.fontFamily;
         legend.textStyle.size = smithchart.themeStyle.fontSize || legend.textStyle.size;
-        let element = renderTextElement$1(options, legend.textStyle, smithchart.themeStyle.legendLabel, legendGroup);
+        let element = renderTextElement(options, legend.textStyle, smithchart.themeStyle.legendLabel, legendGroup);
         element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + options.text + ' series');
         legendGroup.appendChild(element);
         this.legendItemGroup.appendChild(legendGroup);
@@ -33849,7 +34469,7 @@ class SmithchartLegend {
         let radius = Math.sqrt(height * height + width * width) / 2;
         switch (shape) {
             case 'circle':
-                circleOptions = new CircleOption$2(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border, opacity, locX, locY, radius, null);
+                circleOptions = new CircleOption$1(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border, opacity, locX, locY, radius, null);
                 element = smithchart.renderer.drawCircle(circleOptions);
                 break;
             case 'rectangle':
@@ -33858,7 +34478,7 @@ class SmithchartLegend {
                     'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
                     'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
                     'L' + ' ' + x + ' ' + (locY + (-height / 2)) + ' z';
-                pathOptions = new PathOption$2(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border.width, border.color, 1, '', path);
+                pathOptions = new PathOption$1(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border.width, border.color, 1, '', path);
                 element = smithchart.renderer.drawPath(pathOptions);
                 break;
             case 'diamond':
@@ -33867,7 +34487,7 @@ class SmithchartLegend {
                     'L' + ' ' + ((width / 2) + locX) + ' ' + locY + ' ' +
                     'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
                     'L' + ' ' + x + ' ' + locY + ' z';
-                pathOptions = new PathOption$2(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border.width, border.color, 1, '', path);
+                pathOptions = new PathOption$1(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border.width, border.color, 1, '', path);
                 element = smithchart.renderer.drawPath(pathOptions);
                 break;
             case 'pentagon':
@@ -33883,7 +34503,7 @@ class SmithchartLegend {
                     }
                 }
                 path = path.concat('Z');
-                pathOptions = new PathOption$2(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border.width, border.color, 1, '', path);
+                pathOptions = new PathOption$1(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border.width, border.color, 1, '', path);
                 element = smithchart.renderer.drawPath(pathOptions);
                 break;
             case 'triangle':
@@ -33891,7 +34511,7 @@ class SmithchartLegend {
                     'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
                     'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
                     'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' Z';
-                pathOptions = new PathOption$2(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border.width, border.color, 1, '', path);
+                pathOptions = new PathOption$1(smithchart.element.id + '_svg' + '_LegendItemShape' + index.toString(), fill, border.width, border.color, 1, '', path);
                 element = smithchart.renderer.drawPath(pathOptions);
                 break;
         }
@@ -34152,6 +34772,297 @@ __decorate$20([
 ], SparklineDataLabelSettings.prototype, "edgeLabelMode", void 0);
 
 /**
+ * Sparkline control helper file
+ */
+/**
+ * sparkline internal use of `Size` type
+ */
+class Size$1 {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
+    }
+}
+/**
+ * To find the default colors based on theme.
+ * @private
+ */
+function getThemeColor$2(theme) {
+    let themeColors;
+    switch (theme.toLowerCase()) {
+        case 'bootstrapdark':
+        case 'fabricdark':
+        case 'materialdark':
+        case 'highcontrast':
+            themeColors = {
+                axisLineColor: '#ffffff',
+                dataLabelColor: '#ffffff',
+                rangeBandColor: '#ffffff',
+                tooltipFill: '#ffffff',
+                background: '#000000',
+                tooltipFontColor: '#363F4C',
+                trackerLineColor: '#ffffff'
+            };
+            break;
+        case 'bootstrap4':
+            themeColors = {
+                axisLineColor: '#6C757D',
+                dataLabelColor: '#212529',
+                rangeBandColor: '#212529',
+                tooltipFill: '#000000',
+                background: '#FFFFFF',
+                tooltipFontColor: '#FFFFFF',
+                trackerLineColor: '#212529',
+                fontFamily: 'HelveticaNeue-Medium',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
+                labelFontFamily: 'HelveticaNeue'
+            };
+            break;
+        default: {
+            themeColors = {
+                axisLineColor: '#000000',
+                dataLabelColor: '#424242',
+                rangeBandColor: '#000000',
+                background: '#FFFFFF',
+                tooltipFill: '#363F4C',
+                tooltipFontColor: '#ffffff',
+                trackerLineColor: '#000000'
+            };
+            break;
+        }
+    }
+    return themeColors;
+}
+/**
+ * To find number from string
+ * @private
+ */
+function stringToNumber$2(value, containerSize) {
+    if (value !== null && value !== undefined) {
+        return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
+    }
+    return null;
+}
+/**
+ * Method to calculate the width and height of the sparkline
+ */
+function calculateSize$2(sparkline) {
+    let containerWidth = sparkline.element.clientWidth;
+    let containerHeight = sparkline.element.clientHeight;
+    sparkline.availableSize = new Size$1(stringToNumber$2(sparkline.width, containerWidth) || containerWidth || 100, stringToNumber$2(sparkline.height, containerHeight) || containerHeight || (sparkline.isDevice ?
+        Math.min(window.innerWidth, window.innerHeight) : 50));
+}
+/**
+ * Method to create svg for sparkline.
+ */
+function createSvg$2(sparkline) {
+    sparkline.renderer = new SvgRenderer(sparkline.element.id);
+    calculateSize$2(sparkline);
+    sparkline.svgObject = sparkline.renderer.createSvg({
+        id: sparkline.element.id + '_svg',
+        width: sparkline.availableSize.width,
+        height: sparkline.availableSize.height
+    });
+}
+/**
+ * Internal use of type rect
+ * @private
+ */
+class Rect$1 {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+}
+/**
+ * Internal use of path options
+ * @private
+ */
+class PathOption$2 {
+    constructor(id, fill, width, color, opacity, dashArray, d) {
+        this.id = id;
+        this.fill = fill;
+        this.opacity = opacity;
+        this['stroke-width'] = width;
+        this.stroke = color;
+        this.d = d;
+        this['stroke-dasharray'] = dashArray;
+    }
+}
+/**
+ * Internal use of rectangle options
+ * @private
+ */
+class RectOption$2 extends PathOption$2 {
+    constructor(id, fill, border, opacity, rect, tl = 0, tr = 0, bl = 0, br = 0) {
+        super(id, fill, border.width, border.color, opacity);
+        this.rect = rect;
+        this.topLeft = tl;
+        this.topRight = tr;
+        this.bottomLeft = bl;
+        this.bottomRight = br;
+    }
+}
+/**
+ * Internal use of circle options
+ * @private
+ */
+class CircleOption$2 extends PathOption$2 {
+    constructor(id, fill, border, opacity, cx, cy, r, dashArray) {
+        super(id, fill, border.width, border.color, opacity);
+        this.cy = cy;
+        this.cx = cx;
+        this.r = r;
+        this['stroke-dasharray'] = dashArray;
+    }
+}
+/**
+ * Internal use of append shape element
+ * @private
+ */
+function appendShape(shape, element) {
+    if (element) {
+        element.appendChild(shape);
+    }
+    return shape;
+}
+/**
+ * Internal rendering of Circle
+ * @private
+ */
+function drawCircle(sparkline, options, element) {
+    return appendShape(sparkline.renderer.drawCircle(options), element);
+}
+/**
+ * To get rounded rect path direction
+ */
+function calculateRoundedRectPath(r, topLeft, topRight, bottomLeft, bottomRight) {
+    return 'M' + ' ' + r.x + ' ' + (topLeft + r.y) +
+        ' Q ' + r.x + ' ' + r.y + ' ' + (r.x + topLeft) + ' ' +
+        r.y + ' ' + 'L' + ' ' + (r.x + r.width - topRight) + ' ' + r.y +
+        ' Q ' + (r.x + r.width) + ' ' + r.y + ' ' +
+        (r.x + r.width) + ' ' + (r.y + topRight) + ' ' + 'L ' +
+        (r.x + r.width) + ' ' + (r.y + r.height - bottomRight)
+        + ' Q ' + (r.x + r.width) + ' ' + (r.y + r.height) + ' ' + (r.x + r.width - bottomRight) + ' ' +
+        (r.y + r.height) + ' ' + 'L ' + (r.x + bottomLeft) + ' ' + (r.y + r.height) + ' Q ' + r.x + ' ' +
+        (r.y + r.height) + ' ' + r.x + ' ' + (r.y + r.height - bottomLeft) + ' ' + 'L' + ' ' + r.x + ' ' +
+        (topLeft + r.y) + ' ' + 'Z';
+}
+/**
+ * Internal rendering of Rectangle
+ * @private
+ */
+function drawRectangle(sparkline, options, element) {
+    options.d = calculateRoundedRectPath(options.rect, options.topLeft, options.topRight, options.bottomLeft, options.bottomRight);
+    return appendShape(sparkline.renderer.drawPath(options), element);
+}
+/**
+ * Internal rendering of Path
+ * @private
+ */
+function drawPath(sparkline, options, element) {
+    return appendShape(sparkline.renderer.drawPath(options), element);
+}
+/**
+ * Function to measure the height and width of the text.
+ * @param  {string} text
+ * @param  {SparklineFontModel} font
+ * @param  {string} id
+ * @returns no
+ * @private
+ */
+function measureText$2(text, font) {
+    let htmlObject = document.getElementById('sparklinesmeasuretext');
+    if (htmlObject === null) {
+        htmlObject = createElement('text', { id: 'sparklinesmeasuretext' });
+        document.body.appendChild(htmlObject);
+    }
+    htmlObject.innerHTML = text;
+    htmlObject.style.fontStyle = font.fontStyle;
+    htmlObject.style.fontFamily = font.fontFamily;
+    htmlObject.style.visibility = 'hidden';
+    htmlObject.style.top = '-100';
+    htmlObject.style.left = '0';
+    htmlObject.style.position = 'absolute';
+    htmlObject.style.fontSize = font.size;
+    htmlObject.style.fontWeight = font.fontWeight;
+    htmlObject.style.whiteSpace = 'nowrap';
+    // For bootstrap line height issue
+    htmlObject.style.lineHeight = 'normal';
+    return new Size$1(htmlObject.clientWidth, htmlObject.clientHeight);
+}
+/**
+ * Internal use of text options
+ * @private
+ */
+class TextOption$2 {
+    constructor(id, x, y, anchor, text, baseLine, transform = '') {
+        this.transform = '';
+        this.baseLine = 'auto';
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.anchor = anchor;
+        this.text = text;
+        this.transform = transform;
+        this.baseLine = baseLine;
+    }
+}
+/**
+ * Internal rendering of text
+ * @private
+ */
+function renderTextElement$1(options, font, color, parent) {
+    let textOptions = {
+        'id': options.id,
+        'x': options.x,
+        'y': options.y,
+        'transform': options.transform,
+        'opacity': font.opacity,
+        'fill': color,
+        'font-family': font.fontFamily,
+        'font-weight': font.fontWeight,
+        'font-size': font.size,
+        'font-style': font.fontStyle,
+        'text-anchor': options.anchor,
+        'dominant-baseline': options.baseLine
+    };
+    let renderer = new SvgRenderer('');
+    let htmlObject = renderer.createText(textOptions, options.text);
+    htmlObject.style['user-select'] = 'none';
+    htmlObject.style['-moz-user-select'] = 'none';
+    htmlObject.style['-webkit-touch-callout'] = 'none';
+    htmlObject.style['-webkit-user-select'] = 'none';
+    htmlObject.style['-khtml-user-select'] = 'none';
+    htmlObject.style['-ms-user-select'] = 'none';
+    htmlObject.style['-o-user-select'] = 'none';
+    parent.appendChild(htmlObject);
+    return htmlObject;
+}
+/**
+ * To remove element by id
+ */
+function removeElement$3(id) {
+    let element = document.getElementById(id);
+    return element ? remove(element) : null;
+}
+/**
+ * To find the element by id
+ */
+function getIdElement(id) {
+    return document.getElementById(id);
+}
+/**
+ * To find point within the bounds.
+ */
+function withInBounds$1(x, y, bounds) {
+    return (x >= bounds.x && x <= bounds.x + bounds.width && y >= bounds.y && y <= bounds.y + bounds.height);
+}
+
+/**
  * Sparkline rendering calculation file
  */
 class SparklineRenderer {
@@ -34302,7 +35213,7 @@ class SparklineRenderer {
         let color = this.sparkline.fill;
         color = (this.sparkline.fill === '#00bdae' && this.sparkline.theme === 'Bootstrap4')
             ? this.sparkline.sparkTheme.axisLineColor : color;
-        let pathOption = new PathOption$1(spark.element.id + '_sparkline_line', 'transparent', args.lineWidth, color, spark.opacity);
+        let pathOption = new PathOption$2(spark.element.id + '_sparkline_line', 'transparent', args.lineWidth, color, spark.opacity);
         let d = '';
         for (let i = 0, len = points.length; i < len; i++) {
             if (i === 0) {
@@ -34420,7 +35331,7 @@ class SparklineRenderer {
             id: spark.element.id + '_sparkline_g',
             'clip-path': 'url(#' + this.clipId + ')'
         });
-        let pathOption = new PathOption$1(spark.element.id + '_sparkline_area', args.fill, 0, 'transparent', spark.opacity);
+        let pathOption = new PathOption$2(spark.element.id + '_sparkline_area', args.fill, 0, 'transparent', spark.opacity);
         let d = '';
         let str = '';
         for (let i = 0, len = points.length; i < len; i++) {
@@ -34438,7 +35349,7 @@ class SparklineRenderer {
         }
         pathOption.d = d;
         drawPath(this.sparkline, pathOption, group);
-        pathOption = new PathOption$1(spark.element.id + '_sparkline_area_str', 'transparent', args.border.width, args.border.color, spark.opacity, '', str);
+        pathOption = new PathOption$2(spark.element.id + '_sparkline_area_str', 'transparent', args.border.width, args.border.color, spark.opacity, '', str);
         drawPath(this.sparkline, pathOption, group);
         this.sparkline.svgObject.appendChild(group);
     }
@@ -34460,7 +35371,7 @@ class SparklineRenderer {
             lowPos = Math.max.apply(null, pointsYPos);
         }
         let id = spark.element.id + '_sparkline_column_';
-        let rectOptions = new RectOption$1(id, '', args.border, spark.opacity, null);
+        let rectOptions = new RectOption$2(id, '', args.border, spark.opacity, null);
         let paletteLength = spark.palette.length;
         let temp;
         let len = points.length;
@@ -34495,7 +35406,7 @@ class SparklineRenderer {
             'clip-path': 'url(#' + this.clipId + ')'
         });
         let id = spark.element.id + '_sparkline_winloss_';
-        let options = new RectOption$1(id, '', args.border, spark.opacity, null);
+        let options = new RectOption$2(id, '', args.border, spark.opacity, null);
         let temp;
         let len = points.length;
         let paletteLength = spark.palette.length;
@@ -34533,7 +35444,7 @@ class SparklineRenderer {
         });
         let temp;
         let id = spark.element.id + '_sparkline_marker_';
-        let option = new CircleOption$1('', marker.fill, marker.border, marker.opacity, 0, 0, marker.size / 2, '');
+        let option = new CircleOption$2('', marker.fill, marker.border, marker.opacity, 0, 0, marker.size / 2, '');
         let highPos;
         let lowPos;
         let visible = marker.visible.join();
@@ -34619,15 +35530,15 @@ class SparklineRenderer {
         let temp;
         let textId = id + 'text_';
         let rectId = id + 'rect_';
-        let option = new TextOption$1('', 0, 0, 'middle', '', 'middle');
+        let option = new TextOption$2('', 0, 0, 'middle', '', 'middle');
         let labelStyle = dataLabel.textStyle;
         let pointsYPos = locations.map((a) => { return a.markerPosition; });
         let highPos = Math.min.apply(null, pointsYPos);
         let lowPos = Math.max.apply(null, pointsYPos);
         let space = 1;
         let padding = (dataLabel.fill !== 'transparent' || dataLabel.border.width) ? 2 : 0;
-        let size = measureText$1('sparkline_measure_text', labelStyle);
-        let rectOptions = new RectOption$1('', dataLabel.fill, dataLabel.border, dataLabel.opacity, null);
+        let size = measureText$2('sparkline_measure_text', labelStyle);
+        let rectOptions = new RectOption$2('', dataLabel.fill, dataLabel.border, dataLabel.opacity, null);
         let edgeLabelOption;
         labelStyle.fontFamily = spark.sparkTheme.labelFontFamily || labelStyle.fontFamily;
         for (let i = 0, length = points.length; i < length; i++) {
@@ -34643,7 +35554,7 @@ class SparklineRenderer {
                 sparkline: this.sparkline, x: option.x, y: option.y, text: option.text, color: color
             };
             this.sparkline.trigger(labelArgs.name, labelArgs);
-            size = measureText$1(labelArgs.text, labelStyle);
+            size = measureText$2(labelArgs.text, labelStyle);
             option.text = labelArgs.text;
             let render = (dataLabel.visible.join().toLowerCase().indexOf('all') > -1);
             render = this.getLabelVisible(render, temp, i, dataLabel, length, highPos, lowPos);
@@ -34658,7 +35569,7 @@ class SparklineRenderer {
                 rectOptions.rect = new Rect$1(option.x - ((size.width / 2) + padding), (option.y - padding - (size.height / 1.75)), size.width + (padding * 2), size.height + (padding * 2));
                 g = this.sparkline.renderer.createGroup({ id: id + 'g' + i });
                 drawRectangle(spark, rectOptions, g);
-                renderTextElement(option, labelStyle, labelArgs.color, g);
+                renderTextElement$1(option, labelStyle, labelArgs.color, g);
                 group.appendChild(g);
             }
         }
@@ -35003,7 +35914,7 @@ let Sparkline = class Sparkline extends Component {
     preRender() {
         this.unWireEvents();
         this.trigger('load', { sparkline: this });
-        this.sparkTheme = getThemeColor$1(this.theme);
+        this.sparkTheme = getThemeColor$2(this.theme);
         this.sparklineRenderer = new SparklineRenderer(this);
         this.createSVG();
         this.wireEvents();
@@ -35062,12 +35973,12 @@ let Sparkline = class Sparkline extends Component {
         let width = this.containerArea.border.width;
         let borderRect;
         if (width > 0 || this.containerArea.background !== 'transparent') {
-            borderRect = new RectOption$1(this.element.id + '_SparklineBorder', this.sparkTheme.background, this.containerArea.border, 1, new Rect$1(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
+            borderRect = new RectOption$2(this.element.id + '_SparklineBorder', this.sparkTheme.background, this.containerArea.border, 1, new Rect$1(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(drawRectangle(this, borderRect));
         }
         // Used to create clip path sparkline
         let padding = this.padding;
-        borderRect = new RectOption$1(this.element.id + '_sparkline_clip_rect', 'transparent', { color: 'transparent', width: 0 }, 1, new Rect$1(padding.left, padding.top, this.availableSize.width - (padding.left + padding.right), this.availableSize.height - (padding.top + padding.bottom)));
+        borderRect = new RectOption$2(this.element.id + '_sparkline_clip_rect', 'transparent', { color: 'transparent', width: 0 }, 1, new Rect$1(padding.left, padding.top, this.availableSize.width - (padding.left + padding.right), this.availableSize.height - (padding.top + padding.bottom)));
         let clipPath = this.renderer.createClipPath({ id: this.element.id + '_sparkline_clip_path' });
         drawRectangle(this, borderRect, clipPath);
         this.svgObject.appendChild(clipPath);
@@ -35077,7 +35988,7 @@ let Sparkline = class Sparkline extends Component {
      */
     createSVG() {
         this.removeSvg();
-        createSvg$1(this);
+        createSvg$2(this);
     }
     /**
      * To Remove the Sparkline SVG object
@@ -35091,7 +36002,7 @@ let Sparkline = class Sparkline extends Component {
                 remove(this.svgObject);
             }
         }
-        removeElement$1(this.element.id + '_Secondary_Element');
+        removeElement$3(this.element.id + '_Secondary_Element');
         if (this.sparklineTooltipModule) {
             this.sparklineTooltipModule.removeTooltipElements();
         }
@@ -35576,7 +36487,7 @@ class SparklineTooltip {
         let d = 'M ' + points.location.x + ' ' + spark.padding.top + ' L ' + points.location.x + ' ' +
             (spark.availableSize.height - spark.padding.bottom);
         if (isNullOrUndefined(pathEle)) {
-            let pathOption = new PathOption$1(spark.element.id + '_sparkline_tracker', 'transparent', tracker.width, color, 1);
+            let pathOption = new PathOption$2(spark.element.id + '_sparkline_tracker', 'transparent', tracker.width, color, 1);
             pathOption.d = d;
             drawPath(spark, pathOption, group);
         }
@@ -35642,11 +36553,13 @@ class SparklineTooltip {
             enableAnimation: false,
             location: { x: location.x, y: location.y },
             shared: false,
+            availableSize: this.sparkline.availableSize,
             areaBounds: new Rect$1(0, 0, spark.availableSize.width, spark.availableSize.height),
             theme: spark.theme
         });
         element.opacity = spark.sparkTheme.tooltipFillOpacity || element.opacity;
         element.appendTo(div);
+        updateBlazorTemplate(div.id + 'Template', 'Template');
     }
     /**
      * To get tooltip format.
@@ -35708,5 +36621,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, CustomizeOption, StackValues, RectOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

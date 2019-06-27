@@ -38,6 +38,7 @@ const IFRAMEHEADER: string = `
                 .e-mob-rte span.e-rte-imageboxmark { background: #fff; border: 1px solid #4a90e2; border-radius: 15px; height: 20px; width: 20px; }
                 .e-mob-rte.e-mob-span span.e-rte-imageboxmark { background: #4a90e2; border: 1px solid #fff; }
                 .e-rte-content .e-content img.e-resize { z-index: 1000; }
+                .e-img-caption .e-img-inner { outline: 0; }
                 .e-img-caption .e-rte-image.e-imgright, .e-img-caption .e-rte-image.e-imgleft { float: none; margin: 0;}
                 body{box-sizing: border-box;min-height: 100px;outline: 0 solid transparent;overflow-x: auto;padding: 16px;position: relative;text-align: inherit;z-index: 2;}
                 p{margin: 0 0 10px;margin-bottom: 10px;}
@@ -56,12 +57,12 @@ const IFRAMEHEADER: string = `
                 p:last-child, pre:last-child, blockquote:last-child{margin-bottom: 0;}
                 h3+h4, h4+h5, h5+h6{margin-top: 00.6em;}
                 ul:last-child{margin-bottom: 0;}
-                table.e-rte-table { border-collapse: collapse; empty-cells: show;}
-                table.e-rte-table td,table.e-rte-table th {border: 1px solid #BDBDBD; height: 20px; vertical-align: middle;}
+                table { border-collapse: collapse; empty-cells: show;}
+                table td,table th {border: 1px solid #BDBDBD; height: 20px; vertical-align: middle;}
                 table.e-alternate-border tbody tr:nth-child(2n) {background-color: #F5F5F5;}
-                table.e-rte-table th {background-color: #E0E0E0;}
+                table th {background-color: #E0E0E0;}
                 table.e-dashed-border td,table.e-dashed-border th { border: 1px dashed #BDBDBD} 
-                table.e-rte-table .e-cell-select {border: 1px double #4a90e2;}
+                table .e-cell-select {border: 1px double #4a90e2;}
                 span.e-table-box { cursor: nwse-resize; display: block; height: 10px; position: absolute; width: 10px; }
                 span.e-table-box.e-rmob {height: 14px;width: 14px;}
                 .e-row-resize, .e-column-resize { background-color: transparent; background-repeat: repeat; bottom: 0;cursor: col-resize;height: 1px;overflow: visible;position: absolute;width: 1px; }

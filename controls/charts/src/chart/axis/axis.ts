@@ -66,7 +66,7 @@ export class Row extends ChildProperty<Row> {
         let innerPadding: number = 5;
         if (axis.visible) {
             width += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
-                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width / 2);
+                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
         }
 
         if (axis.opposedPosition) {
@@ -122,7 +122,7 @@ export class Column extends ChildProperty<Column> {
         let innerPadding: number = 5;
         if (axis.visible) {
             height += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
-                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width / 2);
+                axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
         }
         if (axis.opposedPosition) {
             this.farSizes.push(height);
@@ -946,8 +946,13 @@ export class Axis extends ChildProperty<Axis> {
             let baseRange: VisibleRangeModel = this.actualRange;
             let start: number;
             let end: number;
-            start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
-            end = start + this.zoomFactor * this.actualRange.delta;
+            if (!this.isInversed) {
+                start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
+                end = start + this.zoomFactor * this.actualRange.delta;
+            } else {
+                start = this.actualRange.max - (this.zoomPosition * this.actualRange.delta);
+                end = start - (this.zoomFactor * this.actualRange.delta);
+            }
             if (start < baseRange.min) {
                 end = end + (baseRange.min - start);
                 start = baseRange.min;
@@ -957,9 +962,8 @@ export class Axis extends ChildProperty<Axis> {
                 end = baseRange.max;
             }
             this.doubleRange = new DoubleRange(start, end);
-            this.visibleRange.min = this.doubleRange.start;
-            this.visibleRange.max = this.doubleRange.end;
-            this.visibleRange.delta = this.doubleRange.delta;
+            this.visibleRange = { min: this.doubleRange.start, max : this.doubleRange.end,
+                                  delta: this.doubleRange.delta, interval : this.visibleRange.interval };
         }
     }
     /**
@@ -976,10 +980,8 @@ export class Axis extends ChildProperty<Axis> {
         };
         chart.trigger(axisRangeCalculated, argsData);
         if (!argsData.cancel) {
-            this.visibleRange.min = argsData.minimum;
-            this.visibleRange.max = argsData.maximum;
-            this.visibleRange.interval = argsData.interval;
-            this.visibleRange.delta = argsData.maximum - argsData.minimum;
+            this.visibleRange = { min: argsData.minimum, max: argsData.maximum, interval: argsData.interval,
+                                  delta : argsData.maximum - argsData.minimum };
         }
     }
 
@@ -1014,7 +1016,7 @@ export class Axis extends ChildProperty<Axis> {
     }
 
     /**
-     * Calculate maximum label width for the axis
+     * Calculate maximum label width for the axis.
      * @return {void}
      * @private
      */
@@ -1023,7 +1025,7 @@ export class Axis extends ChildProperty<Axis> {
         let isIntersect: boolean = false; let isAxisLabelBreak: boolean;
         this.angle = this.labelRotation; this.maxLabelSize = new Size(0, 0);
         let action: LabelIntersectAction = this.labelIntersectAction; let label: VisibleLabels;
-        for (let i: number = 0; i < this.visibleLabels.length; i++) {
+        for (let i: number = 0, len: number = this.visibleLabels.length; i < len; i++) {
             label = this.visibleLabels[i];
             isAxisLabelBreak = isBreakLabel(label.originalText);
             if (isAxisLabelBreak) {
@@ -1053,6 +1055,7 @@ export class Axis extends ChildProperty<Axis> {
                 this.rect.width > 0 && !isIntersect) {
                 let width1: number = isAxisLabelBreak ? label.breakLabelSize.width : label.size.width;
                 let height1: number = isAxisLabelBreak ? label.breakLabelSize.height : label.size.height;
+
                 pointX = (valueToCoefficient(label.value, this) * this.rect.width) + this.rect.x;
                 pointX -= width1 / 2;
                 if (this.edgeLabelPlacement === 'Shift') {
@@ -1071,7 +1074,7 @@ export class Axis extends ChildProperty<Axis> {
                         break;
                     case 'Rotate45':
                     case 'Rotate90':
-                        if (i > 0 && (!this.isInversed ? pointX <= previousEnd : pointX + width1 >= previousEnd)) {
+                    if (i > 0 && (!this.isInversed ? pointX <= previousEnd : pointX + width1 >= previousEnd)) {
                             this.angle = (action === 'Rotate45') ? 45 : 90;
                             isIntersect = true;
                         }
@@ -1109,8 +1112,7 @@ export class Axis extends ChildProperty<Axis> {
         }
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
             if (isBreakLabel(this.rotatedLabel)) {
-                this.maxLabelSize.height = measureText(this.rotatedLabel, this.labelStyle).width;
-                this.maxLabelSize.width = measureText(this.rotatedLabel, this.labelStyle).height;
+                this.maxLabelSize = measureText(this.rotatedLabel, this.labelStyle);
             } else {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
             }
@@ -1127,15 +1129,15 @@ export class Axis extends ChildProperty<Axis> {
 
     private findMultiRows(length: number, currentX: number, currentLabel: VisibleLabels, isBreakLabels: boolean): void {
         let label: VisibleLabels;
-        let pointX: number; let width2: number;
+        let pointX: number;  let width2: number;
         let store: number[] = [];
         let isMultiRows: boolean;
         for (let i: number = length - 1; i >= 0; i--) {
             label = this.visibleLabels[i];
             width2 = isBreakLabels ? label.breakLabelSize.width : label.size.width;
             pointX = (valueToCoefficient(label.value, this) * this.rect.width) + this.rect.x;
-            isMultiRows = !this.isInversed ? currentX < (pointX + width2 / 2) :
-                currentX + (isBreakLabels ? currentLabel.breakLabelSize.width : currentLabel.size.width) > (pointX - width2 / 2);
+            isMultiRows = !this.isInversed ? currentX < (pointX + width2 * 0.5) :
+                currentX + currentLabel.size.width > (pointX - width2 * 0.5);
             if (isMultiRows) {
                 store.push(label.index);
                 currentLabel.index = (currentLabel.index > label.index) ? currentLabel.index : label.index + 1;
@@ -1144,7 +1146,7 @@ export class Axis extends ChildProperty<Axis> {
             }
         }
         let height: number = ((isBreakLabels ? currentLabel.breakLabelSize.height : currentLabel.size.height) * currentLabel.index) +
-         (5 * (currentLabel.index - 1));
+            (5 * (currentLabel.index - 1));
         if (height > this.maxLabelSize.height) {
             this.maxLabelSize.height = height;
         }

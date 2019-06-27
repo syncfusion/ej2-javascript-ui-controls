@@ -354,6 +354,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers before the range navigator rendering
      * @event
+     * @deprecated
      */
     @Event()
     public load: EmitType<IRangeLoadedEventArgs>;
@@ -361,6 +362,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers after the range navigator rendering
      * @event
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<IRangeLoadedEventArgs>;
@@ -368,6 +370,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers after the range navigator resized
      * @event
+     * @blazorProperty 'Resized'
      */
     @Event()
     public resized: EmitType<IResizeRangeNavigatorEventArgs>;
@@ -375,18 +378,21 @@ export class RangeNavigator extends Component<HTMLElement> {
     /** 
      * Triggers before the label rendering
      * @event
+     * @deprecated
      */
     @Event()
     public labelRender: EmitType<ILabelRenderEventsArgs>;
     /**
      * Triggers after change the slider.
      * @event
+     * @blazorProperty 'Changed'
      */
     @Event()
     public changed: EmitType<IChangedEventArgs>;
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
+     * @deprecated
      */
 
     @Event()
@@ -395,6 +401,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers before the range navigator selector rendering
      * @event
+     * @deprecated
      */
     @Event()
     public selectorRender: EmitType<IRangeSelectorRenderEventArgs>;
@@ -402,6 +409,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
 
     @Event()
@@ -720,7 +728,7 @@ export class RangeNavigator extends Component<HTMLElement> {
                 }
                 if (this.stockChart) {
                     for (let i: number = 0; i < arg.rangeNavigator.series.length; i++) {
-                        arg.rangeNavigator.series[i].dataSource = this.stockChart.tempDataSource[i];
+                        arg.rangeNavigator.series[i].dataSource = this.stockChart.tempDataSource[i] || this.stockChart.blazorDataSource[i];
                     }
                     if (this.stockChart.dataSource) {
                         arg.rangeNavigator.dataSource = this.stockChart.tempDataSource[0];
@@ -781,7 +789,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public export(
         type: ExportType, fileName: string, orientation?: PdfPageOrientation,
         controls?: (Chart | AccumulationChart | RangeNavigator)[],
-        width?: number, height?: number, isVertical?: boolean
+        width?: number, height?: number, isVertical ?: boolean
     ): void {
         controls = controls ? controls : [this];
         new ExportUtils(this).export(type, fileName, orientation, controls, width, height, isVertical);
@@ -897,6 +905,7 @@ export class RangeNavigator extends Component<HTMLElement> {
                 case 'locale':
                     super.refresh(); break;
                 case 'value':
+                    this.startValue = null; this.endValue = null;
                     refreshRange = true;
                     break;
             }

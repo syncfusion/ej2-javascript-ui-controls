@@ -1,6 +1,6 @@
 import { TreeGrid } from '../base/treegrid';
 import { getObject, Filter as GridFilter, Grid } from '@syncfusion/ej2-grids';
-import { isNullOrUndefined, setValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base';
 import { getParentData } from '../utils';
 
@@ -143,9 +143,12 @@ export class Filter {
             let ischild: Object[] = childRec[count].childRecords;
             if ((this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'Both') ||
             (this.parent.searchSettings.hierarchyMode === 'Child' || this.parent.searchSettings.hierarchyMode === 'Both' )) {
+                let uniqueIDValue: Object = getValue('uniqueIDFilterCollection', this.parent);
+                if (!uniqueIDValue.hasOwnProperty(childRec[count].uniqueID)) {
                 this.filteredResult.push(childRec[count]);
                 setValue('uniqueIDFilterCollection.' + childRec[count].uniqueID, childRec[count], this.parent);
                 isExist = true;
+                }
             }
             if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None' ) {
                 if (this.flatFilteredData.indexOf(childRec[count] !== -1)) {

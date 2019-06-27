@@ -7,7 +7,7 @@ import { PathSegment, ImageAttributes, StyleAttributes } from './canvas-interfac
 import { BaseAttributes, LineAttributes, CircleAttributes, SubTextElement, TextBounds } from './canvas-interface';
 import { LinearGradientModel, RadialGradientModel, StopModel } from './../core/appearance-model';
 import { IRenderer } from './../rendering/IRenderer';
-import { setAttributeSvg } from './../utility/dom-util';
+import { setAttributeSvg, setChildPosition } from './../utility/dom-util';
 import { overFlow, wordBreakToString, cornersPointsBeforeRotation } from './../utility/base-util';
 import { CanvasRenderer } from './../rendering/canvas-renderer';
 import { DiagramNativeElement } from '../core/elements/native-element';
@@ -15,6 +15,7 @@ import { DiagramHtmlElement } from '../core/elements/html-element';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../utility/dom-util';
 import { removeGradient } from '../utility/diagram-util';
+import { Container } from '../core/containers/container';
 /** 
  * SVG Renderer
  */
@@ -278,7 +279,9 @@ export class SvgRenderer implements IRenderer {
     }
 
     /**   @private  */
-    public drawText(canvas: SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object, diagramId?: string): void {
+    public drawText(
+        canvas: SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement,
+        ariaLabel?: Object, diagramId?: string, scaleValue?: number, parentNode?: Container): void {
         if (options.content !== undefined) {
             let textNode: Text;
             let childNodes: SubTextElement[];
@@ -317,19 +320,34 @@ export class SvgRenderer implements IRenderer {
                 childNodes = options.childNodes;
                 wrapBounds = options.wrapBounds;
                 position = this.svgLabelAlign(options, wrapBounds, childNodes);
-                if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
+                if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap' && options.textWrapping === 'NoWrap') {
                     childNodes[0].text = overFlow(options.content, options);
                 }
                 for (i = 0; i < childNodes.length; i++) {
                     tspanElement = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
                     textNode = document.createTextNode(childNodes[i].text);
                     child = childNodes[i];
+                    child.x = setChildPosition(child, childNodes, i, options);
                     offsetX = position.x + child.x - wrapBounds.x;
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
-                    setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString() });
-                    text.setAttribute('fill', child.text);
-                    tspanElement.appendChild(textNode);
-                    text.appendChild(tspanElement);
+                    if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') && options.textWrapping === 'Wrap') {
+                        if (offsetY < parentNode.actualSize.height) {
+                            if (options.textOverflow === 'Ellipsis' && childNodes[i + 1]) {
+                                let temp: SubTextElement = childNodes[i + 1];
+                                let y: number = position.y + temp.dy * (i + 1) + ((options.fontSize) * 0.8);
+                                if (y > parentNode.actualSize.height) {
+                                    child.text = child.text.slice(0, child.text.length - 3);
+                                    child.text = child.text.concat('...');
+                                    textNode.data = child.text;
+                                }
+                            }
+                            this.setText(text, tspanElement, child, textNode, offsetX, offsetY);
+                        } else {
+                            break;
+                        }
+                    } else {
+                        this.setText(text, tspanElement, child, textNode, offsetX, offsetY);
+                    }
 
                 }
             }
@@ -346,6 +364,16 @@ export class SvgRenderer implements IRenderer {
             setAttributeSvg(text, attr);
         }
     }
+
+    private setText(
+        text: SVGTextElement, tspanElement: SVGElement, child: SubTextElement,
+        textNode: Text, offsetX: number, offsetY: number): void {
+        setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString() });
+        text.setAttribute('fill', child.text);
+        tspanElement.appendChild(textNode);
+        text.appendChild(tspanElement);
+    }
+
     /**   @private  */
     public drawImage(canvas: SVGElement | HTMLCanvasElement, obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
         let id: string = obj.id + '_image';
@@ -597,7 +625,11 @@ export class SvgRenderer implements IRenderer {
             pointX = 0;
         } else if (text.textAlign === 'center') {
             if (wrapBound.width > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
-                pointX = 0;
+                if (text.textWrapping === 'NoWrap') {
+                    pointX = 0;
+                } else {
+                    pointX = text.width * 0.5;
+                }
             } else {
                 pointX = text.width * 0.5;
             }

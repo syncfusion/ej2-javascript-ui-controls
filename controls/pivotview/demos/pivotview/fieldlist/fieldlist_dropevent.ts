@@ -14,8 +14,8 @@ import { FieldDroppedEventArgs } from '../../../src';
 //335 or 315
 PivotView.Inject(FieldList, CalculatedField, GroupingBar);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_nodata as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_nodata as IDataSet[],
         expandAll: false,
         enableSorting: true,
         rows: [{ name: 'Country' }, { name: 'State' }],

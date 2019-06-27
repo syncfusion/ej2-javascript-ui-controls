@@ -175,6 +175,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after gauge loaded.
      * @event
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -182,6 +183,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before gauge load.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
@@ -189,6 +192,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after complete the animation for pointer.
      * @event
+     * @blazorProperty 'AnimationCompleted'
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -196,6 +200,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before each axis label gets rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'AxisLabelRendering'
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
@@ -203,6 +209,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before each annotation gets rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'AnnotationRendering'
      */
     @Event()
     public annotationRender: EmitType<IAnnotationRenderEventArgs>;
@@ -210,6 +218,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the tooltip get rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'TooltipRendering'
      */
 
     @Event()
@@ -218,6 +228,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse move on gauge area.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnGaugeMouseMove'
      */
 
     @Event()
@@ -227,6 +239,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse leave from the gauge area .
      * @event
+     * @blazorProperty 'OnGaugeMouseLeave'
      */
 
     @Event()
@@ -235,6 +248,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse down on gauge area.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnGaugeMouseDown'
      */
 
     @Event()
@@ -243,6 +258,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse up on gauge area.
      * @event
+     * @blazorProperty 'OnGaugeMouseUp'
      */
 
     @Event()
@@ -251,6 +267,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers while drag the pointer.
      * @event
+     * @blazorProperty 'ValueChange'
      */
 
     @Event()
@@ -259,6 +276,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after window resize.
      * @event
+     * @blazorProperty 'Resizing'
      */
 
     @Event()
@@ -675,18 +693,19 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let pointerElement: Element; let svgPath: SVGPathElement;
         let dragProcess: boolean = false;
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger(gaugeMouseDown, args);
-        this.mouseX = args.x;
-        this.mouseY = args.y;
-        if (args.target) {
-            if (!args.cancel && ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1))) {
-                current = this.moveOnPointer(args.target as HTMLElement);
-                if (!(isNullOrUndefined(current)) && current.pointer) {
-                    this.pointerDrag = true;
-                    this.mouseElement = args.target;
+        this.trigger('gaugeMouseDown', args, (mouseArgs: IMouseEventArgs) => {
+            this.mouseX = args.x;
+            this.mouseY = args.y;
+            if (args.target) {
+                if (!args.cancel && ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1))) {
+                    current = this.moveOnPointer(args.target as HTMLElement);
+                    if (!(isNullOrUndefined(current)) && current.pointer) {
+                        this.pointerDrag = true;
+                        this.mouseElement = args.target;
+                    }
                 }
             }
-        }
+        });
         return true;
     }
 
@@ -699,20 +718,21 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let current: IMoveCursor;
         let element: Element;
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger(gaugeMouseMove, args);
-        this.mouseX = args.x;
-        this.mouseY = args.y;
-        if (args.target && !args.cancel) {
-            if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
-                current = this.moveOnPointer(args.target as HTMLElement);
-                if (!(isNullOrUndefined(current)) && current.pointer) {
-                    this.element.style.cursor = current.style;
+        this.trigger('gaugeMouseMove', args, (mouseArgs: IMouseEventArgs) => {
+            this.mouseX = args.x;
+            this.mouseY = args.y;
+            if (args.target && !args.cancel) {
+                if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
+                    current = this.moveOnPointer(args.target as HTMLElement);
+                    if (!(isNullOrUndefined(current)) && current.pointer) {
+                        this.element.style.cursor = current.style;
+                    }
+                } else {
+                    this.element.style.cursor = (this.pointerDrag) ? this.element.style.cursor : 'auto';
                 }
-            } else {
-                this.element.style.cursor = (this.pointerDrag) ? this.element.style.cursor : 'auto';
+                this.gaugeOnMouseMove(e);
             }
-            this.gaugeOnMouseMove(e);
-        }
+        });
         this.notify(Browser.touchMoveEvent, e);
         return false;
     }

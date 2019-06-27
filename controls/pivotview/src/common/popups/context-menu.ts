@@ -67,6 +67,8 @@ export class PivotContextMenu {
         if (menu.element.textContent !== null) {
             let fieldName: string = this.fieldElement.getAttribute('data-uid');
             let dropClass: string = menu.item.id.replace('Context_', '').toLowerCase();
+            this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
+                ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
             this.parent.pivotCommon.dataSourceUpdate.updateDataSource(fieldName, dropClass, -1);
             this.parent.updateDataSource(true);
             this.fieldElement = undefined;

@@ -3,14 +3,16 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L1
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
 import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { getScrollableParent } from '@syncfusion/ej2-popups';
+import { getScrollableParent, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
 import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';
+import { BeforeQuickToolbarOpenArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
+import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType, ToolbarType } from './enum';
@@ -40,7 +42,8 @@ import { FullScreen } from '../actions/full-screen';
 import { PasteCleanup } from '../actions/paste-clean-up';
 import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
-import { dispatchEvent, getEditValue, isIDevice, decode } from '../base/util';
+import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';
+import { DialogRenderer } from '../renderer/dialog-renderer';
 
 export interface ChangeEventArgs {
     /**
@@ -209,7 +212,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * {
      *  prompt: false,
      *  deniedAttrs: null,
-     *  allowedStyleProps: null,
+     *  allowedStyleProps: ['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius',
+     *  'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor',
+     *  'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style',
+     *  'height', 'left', 'line-height', 'margin', 'margin-top', 'margin-left',
+     *  'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width',
+     *  'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right',
+     *  'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-indent',
+     *  'top', 'vertical-align', 'visibility', 'white-space', 'width'],
      *  deniedTags: null,
      *  keepFormat: true,
      *  plainText:  false
@@ -525,71 +535,141 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * If you cancel this event, the command cannot be executed. 
      * Set the cancel argument to true to cancel the command execution.
      * @event
+     * @blazorProperty 'OnActionBegin'
      */
     @Event()
     public actionBegin: EmitType<ActionBeginEventArgs>;
     /** 
      * Triggers after command execution using toolbar items or executeCommand method.
      * @event
+     * @blazorProperty 'OnActionComplete'
      */
     @Event()
     public actionComplete: EmitType<ActionCompleteEventArgs>;
+    /**
+     * Event triggers when the dialog is being opened.
+     * If you cancel this event, the dialog remains closed. 
+     * Set the cancel argument to true to cancel the open of a dialog.
+     * @event
+     * @blazorProperty 'OnDialogOpen'
+     */
+
+    @Event()
+    public beforeDialogOpen: EmitType<BeforeOpenEventArgs>;
+    /**
+     * Event triggers when a dialog is opened.
+     * @event
+     * @blazorProperty 'DialogOpened'
+     */
+    @Event()
+    public dialogOpen: EmitType<Object>;
+    /**
+     * Event triggers after the dialog has been closed.
+     * @event
+     * @blazorProperty 'DialogClosed'
+     */
+    @Event()
+    public dialogClose: EmitType<Object>;
+    /**
+     * Event triggers when the quick toolbar is being opened.
+     * @event
+     * @blazorProperty 'OnQuickToolbarOpen'
+     */
+
+    @Event()
+    public beforeQuickToolbarOpen: EmitType<BeforeQuickToolbarOpenArgs>;
+    /**
+     * Event triggers when a quick toolbar is opened.
+     * @event
+     * @blazorProperty 'QuickToolbarOpened'
+     */
+    @Event()
+    public quickToolbarOpen: EmitType<Object>;
+    /**
+     * Event triggers after the quick toolbar has been closed.
+     * @event
+     * @blazorProperty 'QuickToolbarClosed'
+     */
+    @Event()
+    public quickToolbarClose: EmitType<Object>;
+    /** 
+     * Triggers when the undo and redo status is updated.
+     * @event 
+     */
+    @Event()
+    private toolbarStatusUpdate: EmitType<Object>;
     /** 
      * Triggers when the RichTextEditor is rendered.
      * @event 
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when the RichTextEditor is destroyed.
      * @event 
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
+    /** 
+     * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
+     * @event 
+     * @blazorProperty 'OnSanitizeHtml'
+     */
+    @Event()
+    public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
     /**
      * Triggers when RichTextEditor is focused out.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<Object>;
     /**
      * Triggers when RichTextEditor Toolbar items is clicked.
      * @event
+     * @blazorProperty 'OnToolbarClick'
      */
     @Event()
     public toolbarClick: EmitType<Object>;
     /** 
      * Triggers when RichTextEditor is focused in
      * @event
+     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<Object>;
     /** 
      * Triggers only when RichTextEditor is blurred and changes are done to the content.
      * @event 
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /** 
      * Triggers only when resizing the image.
      * @event 
+     * @blazorProperty 'Resizing'
      */
     @Event()
     public resizing: EmitType<ResizeArgs>;
     /** 
      * Triggers only when start resize the image.
      * @event 
+     * @blazorProperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
     /** 
      * Triggers only when stop resize the image.
      * @event 
+     * @blazorProperty 'OnResizeStop'
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
-    /**
-     * Customize keyCode to change the key value.
+    /**     
+     * Customize keyCode to change the key value. 
      * @default null 
      */
     @Property(null)
@@ -786,10 +866,23 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Executes the commands 
      * @param {CommandName} CommandName - Specifies the name of the command to be executed.
-     * @param {string | HTMLElement} value - Specifies the value that you want to execute.
+     * @param {string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs} value - Specifies the value that you want to execute.
      * @public
      */
-    public executeCommand(commandName: CommandName, value?: string | HTMLElement): void {
+    public executeCommand(
+        commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs): void {
+        value = this.htmlPurifier(commandName, value);
+        if (this.editorMode === 'HTML') {
+            let range: Range = this.getRange();
+            if (this.iframeSettings.enable) {
+                this.formatter.editorManager.nodeSelection.Clear(this.element.ownerDocument);
+            }
+            let toFocus: boolean = (this.iframeSettings.enable &&
+                range.startContainer === this.inputElement) ? true : !this.inputElement.contains(range.startContainer);
+            if (toFocus) {
+                this.focusIn();
+            }
+        }
         let tool: IExecutionGroup = executeGroup[commandName];
         this.formatter.editorManager.execCommand(
             tool.command,
@@ -799,6 +892,48 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             (value ? value : tool.value),
             (value ? value : tool.value)
         );
+    }
+
+    private htmlPurifier(
+        command: CommandName, value?: string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs): string {
+        if (this.editorMode === 'HTML') {
+            switch (command) {
+                case 'insertHTML':
+                    if (typeof value === 'string') {
+                        value = this.htmlEditorModule.sanitizeHelper(value);
+                    } else {
+                        value = this.htmlEditorModule.sanitizeHelper((value as HTMLElement).outerHTML);
+                    }
+                    break;
+                case 'insertImage':
+                    let temp: HTMLElement = this.createElement('img', {
+                        attrs: {
+                            src: (value as IImageCommandsArgs).url as string
+                        }
+                    });
+                    let imageValue: string = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                    let url: string = (imageValue !== '' && (this.createElement('div', {
+                        innerHTML: imageValue
+                    }).firstElementChild).getAttribute('src')) || null;
+                    url = !isNOU(url) ? url : '';
+                    (value as IImageCommandsArgs).url = url;
+                    break;
+                case 'createLink':
+                    let tempNode: HTMLElement = this.createElement('a', {
+                        attrs: {
+                            href: (value as ILinkCommandsArgs).url as string
+                        }
+                    });
+                    let linkValue: string = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
+                    let href: string = (linkValue !== '' && (this.createElement('div', {
+                        innerHTML: linkValue
+                    }).firstElementChild).getAttribute('href')) || null;
+                    href = !isNOU(href) ? href : '';
+                    (value as ILinkCommandsArgs).url = href;
+                    break;
+            }
+        }
+        return value as string;
     }
 
     private encode(value: string): string {
@@ -812,6 +947,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     protected render(): void {
+        if (this.value && !this.valueTemplate) {
+            this.setProperties({ value: this.serializeValue(this.value) }, true);
+        }
         this.renderModule = new Render(this, this.serviceLocator);
         this.sourceCodeModule = new ViewSource(this, this.serviceLocator);
         this.notify(events.initialLoad, {});
@@ -881,9 +1019,34 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.setPlaceHolder();
         }
     }
+    /** 
+     * @hidden
+     */
+    public serializeValue(value: string): string {
+        if (this.editorMode === 'HTML' && !isNOU(value)) {
+            if (this.enableHtmlEncode) {
+                value = this.htmlEditorModule.sanitizeHelper(decode(value));
+                value = this.encode(value);
+            } else {
+                value = this.htmlEditorModule.sanitizeHelper(value);
+            }
+        }
+        return value;
+    }
+    /**
+     * This method will clean up the HTML against cross-site scripting attack and return the HTML as string.
+     * It's only applicable to editorMode as `HTML`.
+     * @param {string} value - Specifies the value that you want to sanitize.
+     * @return {string}
+     */
+    public sanitizeHtml(value: string): string {
+        return this.serializeValue(value);
+    }
+
     public updateValue(value?: string): void {
         if (isNOU(value)) {
-            this.setProperties({ value: this.inputElement.innerHTML });
+            let inputVal: string = this.inputElement.innerHTML;
+            this.setProperties({ value: isEditableValueEmpty(inputVal) ? null : inputVal });
         } else {
             this.setProperties({ value: value });
         }
@@ -901,7 +1064,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private notifyMouseUp(e: MouseEvent | TouchEvent): void {
-        this.notify(events.mouseUp, { member: 'mouseUp', args: e });
+        let touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
+        this.notify(events.mouseUp, { member: 'mouseUp', args: e,
+            touchData: { prevClientX: this.clickPoints.clientX, prevClientY: this.clickPoints.clientY,
+                clientX: touch.clientX, clientY: touch.clientY }
+        });
         if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
             (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0))) {
             this.notify(events.toolbarRefresh, { args: e });
@@ -915,12 +1082,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             let closestTable: Element = closest(target, 'table');
             if (target && target.nodeName === 'A' || target.nodeName === 'IMG' || (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.contentModule.getEditPanel().contains(closestTable)))) {
-                    return;
+                return;
             }
         }
         this.notifyMouseUp(e);
     }
-
 
     /** 
      * @hidden
@@ -943,28 +1109,29 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             cancel: false,
             requestType: 'Paste'
         };
-        this.trigger(events.actionBegin, evenArgs);
-        if (!evenArgs.cancel) {
-            if (!isNOU(this.pasteCleanupModule)) {
-                this.notify(events.pasteClean, { args: e as ClipboardEvent });
-            } else {
-                let args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
-                let value: string = null;
-                if (e && !isNOU((e as ClipboardEvent).clipboardData)) {
-                    value = (e as ClipboardEvent).clipboardData.getData('text/plain');
+        this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
+            if (!pasteArgs.cancel) {
+                if (!isNOU(this.pasteCleanupModule)) {
+                    this.notify(events.pasteClean, { args: e as ClipboardEvent });
+                } else {
+                    let args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
+                    let value: string = null;
+                    if (e && !isNOU((e as ClipboardEvent).clipboardData)) {
+                        value = (e as ClipboardEvent).clipboardData.getData('text/plain');
+                    }
+                    let file: File = e && (e as ClipboardEvent).clipboardData && (e as ClipboardEvent).clipboardData.items.length > 0 ?
+                        (e as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
+                    if (value !== null) {
+                        this.notify(events.paste, {
+                            file: file,
+                            args: e,
+                            text: value
+                        });
+                    }
+                    setTimeout(() => { this.formatter.onSuccess(this, args); }, 0);
                 }
-                let file: File = e && (e as ClipboardEvent).clipboardData && (e as ClipboardEvent).clipboardData.items.length > 0 ?
-                    (e as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
-                if (value !== null) {
-                    this.notify(events.paste, {
-                        file: file,
-                        args: e,
-                        text: value
-                    });
-                }
-                setTimeout(() => { this.formatter.onSuccess(this, args); }, 0);
             }
-        }
+        });
     }
 
     /** 
@@ -1105,9 +1272,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
+                    let val: string;
                     let nVal: string = newProp[prop];
-                    let val: string = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
-                    if (!isNOU(nVal) && nVal !== '') { this.value = (this.enableHtmlEncode) ? this.encode(decode(val)) : val; }
+                    val = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
+                    if (!isNOU(nVal) && nVal !== '') {
+                        this.value = this.serializeValue(((this.enableHtmlEncode) ? this.encode(decode(val)) : val));
+                    }
                     this.updatePanelValue();
                     this.setPlaceHolder();
                     if (this.showCharCount) { this.countModule.refresh(); }
@@ -1127,18 +1297,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.setContentHeight();
                     this.autoResize();
                     break;
-                case 'readonly':
-                    this.setReadOnly(false);
+                case 'readonly': this.setReadOnly(false);
                     break;
                 case 'cssClass':
                     this.element.classList.remove(oldProp[prop]);
                     this.setCssClass(newProp[prop]);
                     break;
-                case 'enabled':
-                    this.setEnable();
+                case 'enabled': this.setEnable();
                     break;
-                case 'enableRtl':
-                    this.updateRTL();
+                case 'enableRtl': this.updateRTL();
                     break;
                 case 'placeholder':
                     this.placeholder = newProp[prop];
@@ -1164,8 +1331,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     }
                     this.setIframeSettings();
                     break;
-                case 'locale':
-                    super.refresh();
+                case 'locale': super.refresh();
                     break;
                 case 'inlineMode':
                     this.notify(events.modelChanged, { module: 'quickToolbar', newProp: newProp, oldProp: oldProp });
@@ -1182,7 +1348,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     if (newProp[prop] && this.countModule) {
                         this.countModule.renderCount();
                     } else if (newProp[prop] === false && this.countModule) {
-                        this.countModule.destroy(); }
+                        this.countModule.destroy();
+                    }
                     break;
                 case 'enableHtmlEncode':
                     this.updateValueData(); this.updatePanelValue(); this.setPlaceHolder();
@@ -1328,15 +1495,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             requestType: 'print',
             cancel: false
         };
-        this.trigger(events.actionBegin, printArgs);
-        printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth);
-        if (Browser.info.name === 'msie') { printWind.resizeTo(screen.availWidth, screen.availHeight); }
-        printWind = printWindow(this.inputElement, printWind);
-        if (printArgs.cancel) { return; }
-        let actionArgs: ActionCompleteEventArgs = {
-            requestType: 'print'
-        };
-        this.trigger(events.actionComplete, actionArgs);
+        this.trigger(events.actionBegin, printArgs, (printingArgs: PrintEventArgs) => {
+            printWind = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth);
+            if (Browser.info.name === 'msie') { printWind.resizeTo(screen.availWidth, screen.availHeight); }
+            printWind = printWindow(this.inputElement, printWind);
+            if (!printingArgs.cancel) {
+                let actionArgs: ActionCompleteEventArgs = {
+                    requestType: 'print'
+                };
+                this.trigger(events.actionComplete, actionArgs);
+             }
+        });
     }
 
     /**
@@ -1355,25 +1524,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Enables the give toolbar items in the RichTextEditor component.
+     * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
      * @param {string | string[]} items - Specifies the single or collection of items
      * that you want to be enable in Rich Text Editor’s Toolbar.
      * @public
      */
-    public enableToolbarItem(items: string | string[]): void {
-        this.toolbarModule.enableTBarItems(this.getBaseToolbarObject(), items, true);
+    public enableToolbarItem(items: string | string[], muteToolbarUpdate?: boolean): void {
+        this.toolbarModule.enableTBarItems(this.getBaseToolbarObject(), items, true, muteToolbarUpdate);
     }
     /**
      * Disables the given toolbar items in the RichTextEditor component.
+     * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
      * @param {string | string[]} items - Specifies the single or collection of items
      * that you want to be disable in Rich Text Editor’s Toolbar.
      * @public
      */
-    public disableToolbarItem(items: string | string[]): void {
-        this.toolbarModule.enableTBarItems(this.getBaseToolbarObject(), items, false);
+    public disableToolbarItem(items: string | string[], muteToolbarUpdate?: boolean): void {
+        this.toolbarModule.enableTBarItems(this.getBaseToolbarObject(), items, false, muteToolbarUpdate);
     }
     /**
      * Removes the give toolbar items from the RichTextEditor component.
-     * @param {string | string[]} items - Specifies the single or collection of items
+     * @param {string | string[]} items - Specifies the single or collection of items 
      * that you want to be remove from Rich Text Editor’s Toolbar.
      * @public
      */
@@ -1392,6 +1563,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private initializeServices(): void {
         this.serviceLocator.register('rendererFactory', new RendererFactory);
         this.serviceLocator.register('rteLocale', this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale));
+        this.serviceLocator.register('dialogRenderObject', new DialogRenderer(this));
     }
 
     private RTERender(): void {
@@ -1483,11 +1655,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 }
                 this.setProperties({ value: this.element.innerHTML.trim() });
             }
-        } else if (this.element.innerHTML.trim() !== '') {
-            if (this.element.tagName === 'TEXTAREA') {
-                this.setProperties({ value: decode(this.element.innerHTML.trim()) });
-            } else {
-                this.setProperties({ value: this.element.innerHTML.trim() });
+        } else {
+            let  innerHtml: string = !isNOU(this.element.innerHTML) && this.element.innerHTML.replace(/<(\/?|\!?)(!--!--)>/g, '').trim();
+            if (innerHtml !== '') {
+                if (this.element.tagName === 'TEXTAREA') {
+                    this.setProperties({ value: decode(innerHtml) });
+                } else {
+                    this.setProperties({ value: innerHtml });
+                }
             }
         }
     }
@@ -1618,7 +1793,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private focusHandler(e: FocusEvent): void {
-        if (!this.isRTE || this.isFocusOut) {
+        if ((!this.isRTE || this.isFocusOut) && !this.readonly) {
             this.isRTE = this.isFocusOut ? false : true;
             this.isFocusOut = false;
             addClass([this.element], [classes.CLS_FOCUS]);
@@ -1790,8 +1965,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private bindEvents(): void {
         this.keyboardModule = new KeyboardEvents(this.inputElement, {
-            keyAction: this.keyDown.bind(this), keyConfigs: {...this.formatter.keyConfig, ...this.keyConfig},
-            eventName: 'keydown'
+            keyAction: this.keyDown.bind(this), keyConfigs:
+                { ...this.formatter.keyConfig, ...this.keyConfig }, eventName: 'keydown'
         });
         let formElement: Element = closest(this.valueContainer, 'form');
         if (formElement) {

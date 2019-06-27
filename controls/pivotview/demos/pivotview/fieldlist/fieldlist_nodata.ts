@@ -18,8 +18,8 @@ let pivotGridObj: PivotView = new PivotView({
 });
 pivotGridObj.appendTo('#PivotView');
 let fieldlist: PivotFieldList = new PivotFieldList({
-    dataSource: {
-        data: pivot_nodata as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_nodata as IDataSet[],
         expandAll: true,
         enableSorting: true,
         rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: false }],

@@ -24,7 +24,7 @@ export interface ContextMenuSettingsModel {
     layout?: string[];
 
     /**
-     * Enable or disable the ContextMenu.
+     * Enables or disables the ContextMenu.
      * @default true
      */
     visible?: boolean;

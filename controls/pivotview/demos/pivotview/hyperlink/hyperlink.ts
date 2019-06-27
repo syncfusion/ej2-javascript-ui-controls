@@ -12,8 +12,8 @@ import { Dialog } from '@syncfusion/ej2-popups';
 
 //335 or 315
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: true,
         enableSorting: true,
         allowLabelFilter: true,

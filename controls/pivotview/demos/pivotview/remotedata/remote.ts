@@ -5,7 +5,7 @@ import { pivot_dataset } from '../../../spec/base/datasource.spec';
 import { PivotView } from '../../../src/pivotview/base/pivotview';
 import { FieldList } from '../../../src/common/actions/field-list';
 import { DataManager, ODataAdaptor, JsonAdaptor, ODataV4Adaptor, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
-import { DataSourceModel } from '../../../src/pivotview/model/dataSource-model';
+import { DataSourceSettingsModel } from '../../../src/pivotview/model/datasourcesettings-model';
 
 //335 or 315
 PivotView.Inject(FieldList);
@@ -27,32 +27,32 @@ let v4Data: DataManager = new DataManager({
     adaptor: new ODataV4Adaptor
 });
 
-let oDataReport: DataSourceModel = {
-    data: oData as DataManager,
+let oDataReport: DataSourceSettingsModel = {
+    dataSource: oData as DataManager,
     expandAll: true,
     rows: [{ name: 'OrderID' }, { name: 'CustomerID' }],
     columns: [{ name: 'OrderDate' }, { name: 'ShipCity' }],
     values: [{ name: 'Freight' }],
     filters: [],
 };
-let jsonReport: DataSourceModel = {
-    data: jsonData as DataManager,
+let jsonReport: DataSourceSettingsModel = {
+    dataSource: jsonData as DataManager,
     expandAll: true,
     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
     values: [{ name: 'balance' }, { name: 'quantity' }],
     filters: [],
 };
-let apiReport: DataSourceModel = {
-    data: apiData as DataManager,
+let apiReport: DataSourceSettingsModel = {
+    dataSource: apiData as DataManager,
     expandAll: true,
     rows: [{ name: 'OrderID' }, { name: 'CustomerID' }],
     columns: [{ name: 'OrderDate' }],
     values: [{ name: 'Freight' }],
     filters: [],
 };
-let v4Report: DataSourceModel = {
-    data: v4Data as DataManager,
+let v4Report: DataSourceSettingsModel = {
+    dataSource: v4Data as DataManager,
     expandAll: false,
     rows: [{ name: 'OrderID' }, { name: 'CustomerID' }],
     columns: [{ name: 'ShipCity' }],
@@ -62,21 +62,21 @@ let v4Report: DataSourceModel = {
 
 
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: oDataReport,
+    dataSourceSettings: oDataReport,
     showFieldList: true,
     height: 350,
     width: 1200
 });
 pivotGridObj.appendTo('#PivotView');
 document.getElementById('json').onclick = function () {
-    pivotGridObj.dataSource = jsonReport;
+    pivotGridObj.dataSourceSettings = jsonReport;
 };
 document.getElementById('webapi').onclick = function () {
-    pivotGridObj.dataSource = apiReport;
+    pivotGridObj.dataSourceSettings = apiReport;
 };
 document.getElementById('odata').onclick = function () {
-    pivotGridObj.dataSource = oDataReport;
+    pivotGridObj.dataSourceSettings = oDataReport;
 };
 document.getElementById('v4').onclick = function () {
-    pivotGridObj.dataSource = v4Report;
+    pivotGridObj.dataSourceSettings = v4Report;
 };

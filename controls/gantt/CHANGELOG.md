@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### Gantt
+
+#### Bug Fixes
+
+- #238228 - Issue while rendering tooltip with smaller duration has been fixed.
+
+#### New Features
+
+- Now Gantt supports context menu to perform various action.
+- Provided support to perform timeline zoom in, zoom out and zoom to fit actions in Gantt.
+- Provided key interaction support in Gantt.
+
 ## 17.1.49 (2019-05-29)
 
 ### Gantt

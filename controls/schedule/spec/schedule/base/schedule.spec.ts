@@ -5,7 +5,8 @@ import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel, TimelineViews } from '../../../src/schedule/index';
-import { triggerScrollEvent, loadCultureFiles, createSchedule, destroy, triggerMouseEvent } from '../util.spec';
+import * as util from '../util.spec';
+import { triggerScrollEvent, loadCultureFiles, createSchedule, destroy } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { readonlyEventsData } from './datasource.spec';
@@ -26,17 +27,11 @@ describe('Schedule base module', () => {
 
     describe('Default functionalities', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule();
-            schObj.appendTo('#Schedule');
+            schObj = util.createSchedule({}, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('control class testing', () => {
@@ -94,18 +89,14 @@ describe('Schedule base module', () => {
         });
         beforeEach((): void => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
 
         it('vietnamese test case', () => {
-            loadCultureFiles('vi');
+            util.loadCultureFiles('vi');
             schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), locale: 'vi' }, '#Schedule');
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
                 toEqual('01 - 07 Tháng 10 2017');
@@ -154,7 +145,7 @@ describe('Schedule base module', () => {
         });
 
         it('chinese test case', () => {
-            loadCultureFiles('zh');
+            util.loadCultureFiles('zh');
             schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), locale: 'zh' }, '#Schedule');
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
                 toEqual('2017年10月1日 - 2017年10月7日');
@@ -207,14 +198,10 @@ describe('Schedule base module', () => {
         let schObj: Schedule;
         beforeEach((): void => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
 
         it('desktop to mobile', () => {
@@ -266,14 +253,10 @@ describe('Schedule base module', () => {
         let schObj: Schedule;
         beforeEach((): void => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
 
         it('same view change in headerbar', () => {
@@ -289,13 +272,11 @@ describe('Schedule base module', () => {
         it('view', () => {
             schObj = new Schedule({
                 selectedDate: new Date(2017, 9, 4),
-                views: [{ option: 'Day', isSelected: true },
-                { option: 'Week' }, { option: 'Month' }]
+                views: [{ option: 'Day', isSelected: true }, { option: 'Week' }, { option: 'Month' }]
             });
             schObj.appendTo('#Schedule');
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(8);
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
-
             schObj.views = ['Day', 'Week'];
             schObj.dataBind();
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(7);
@@ -303,24 +284,16 @@ describe('Schedule base module', () => {
         });
 
         it('currentView', () => {
-            schObj = new Schedule({
-                selectedDate: new Date(2017, 9, 4),
-                views: ['Day', 'Week', 'Month']
-            });
+            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), views: ['Day', 'Week', 'Month'] });
             schObj.appendTo('#Schedule');
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-week');
-
             schObj.currentView = 'Month';
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
         });
 
         it('currentView not in views list', () => {
-            schObj = new Schedule({
-                selectedDate: new Date(2017, 9, 4),
-                views: ['Day', 'Month'],
-                currentView: 'Week'
-            });
+            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), views: ['Day', 'Month'], currentView: 'Week' });
             schObj.appendTo('#Schedule');
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
         });
@@ -330,13 +303,11 @@ describe('Schedule base module', () => {
             schObj.appendTo('#Schedule');
             expect(schObj.element.querySelectorAll('.e-views').length).toEqual(5);
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-week');
-
             schObj.views = ['Agenda', 'Month'];
             schObj.currentView = 'Agenda';
             schObj.dataBind();
             expect(schObj.element.querySelectorAll('.e-views').length).toEqual(2);
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-agenda');
-
             schObj.currentView = 'Day';
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-agenda');
@@ -397,7 +368,7 @@ describe('Schedule base module', () => {
             (calendarEle.querySelector('.e-selected') as HTMLElement).click();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             expect(calendarEle.querySelector('.e-header').classList.contains('e-month')).toEqual(true);
-            triggerMouseEvent(calendarEle.querySelector('.e-next') as HTMLElement, 'mousedown');
+            util.triggerMouseEvent(calendarEle.querySelector('.e-next') as HTMLElement, 'mousedown');
             (schObj.element.querySelectorAll('.e-content.e-month tr:last-child td')[2] as HTMLElement).click();
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-content.e-month tr:last-child td:nth-last-child(5) span').innerHTML).toEqual('31');
@@ -421,15 +392,11 @@ describe('Schedule base module', () => {
         let schObj: Schedule;
         beforeEach((): void => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
             jasmine.clock().install();
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
             jasmine.clock().uninstall();
         });
 
@@ -488,14 +455,10 @@ describe('Schedule base module', () => {
         let schObj: Schedule;
         beforeEach((): void => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule1' });
-            document.body.appendChild(elem);
+            document.body.appendChild(createElement('div', { id: 'Schedule1' }));
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule1'));
+            util.destroy(schObj);
         });
 
         it('enablePersistence with true', () => {
@@ -520,14 +483,10 @@ describe('Schedule base module', () => {
         let schObj: Schedule;
         beforeEach((): void => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
         it('cssClass at initial', () => {
             schObj = new Schedule({ cssClass: 'myCustomClass' });
@@ -559,14 +518,10 @@ describe('Schedule base module', () => {
         let schObj: Schedule;
         beforeEach((): void => {
             schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
         it('default auto width and height', () => {
             schObj = new Schedule();
@@ -612,26 +567,17 @@ describe('Schedule base module', () => {
 
     describe('Scroll', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '600px',
-                eventSettings: { fields: { subject: { name: 'Title' } } }
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { height: '600px', eventSettings: { fields: { subject: { name: 'Title' } } } };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
-
         it('check scroll content', () => {
             let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             let timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
-            triggerScrollEvent(contentArea, 400);
+            util.triggerScrollEvent(contentArea, 400);
             expect(contentArea.scrollTop).toEqual(400);
             expect(timeCellsArea.scrollTop).toEqual(400);
         });
@@ -639,38 +585,24 @@ describe('Schedule base module', () => {
 
     describe('Event Settings', () => {
         let schObj: Schedule;
+        let eventObj: Object[] = [{
+            'Subject': 'test event',
+            'StartTime': new Date(2017, 10, 6, 10),
+            'EndTime': new Date(2017, 10, 6, 12)
+        }];
         beforeAll((done: Function): void => {
-            schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '500px',
-                width: '500px',
-                selectedDate: new Date(2017, 10, 6),
-                eventSettings: {
-                    dataSource: [{
-                        'Subject': 'test event',
-                        'StartTime': new Date(2017, 10, 6, 10),
-                        'EndTime': new Date(2017, 10, 6, 12)
-                    }]
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { height: '500px', width: '500px', selectedDate: new Date(2017, 10, 6) };
+            schObj = util.createSchedule(model, eventObj, done);
         });
         afterAll((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
         it('check events', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(1);
         });
         it('change dataSource, query, fields through setmodel', (done: Function) => {
-            let dataBound: EmitType<Object> = () => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(2);
                 done();
@@ -698,7 +630,6 @@ describe('Schedule base module', () => {
                     endTime: { name: 'End' }
                 }
             };
-            schObj.dataBound = dataBound;
             schObj.dataBind();
         });
     });
@@ -706,15 +637,11 @@ describe('Schedule base module', () => {
     describe('showWeekNumber property testing', () => {
         let schObj: Schedule;
         beforeEach((): void => {
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
+            schObj = undefined;
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-                schObj = undefined;
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
 
         it('week view testing', (done: Function) => {
@@ -793,35 +720,21 @@ describe('Schedule base module', () => {
 
     describe('Public methods', () => {
         let schObj: Schedule;
+        let eventDatas: Object[] = [{
+            'Subject': 'test event',
+            'StartTime': new Date(2017, 10, 6, 10),
+            'EndTime': new Date(2017, 10, 6, 12)
+        }, {
+            'Subject': 'previous test event',
+            'StartTime': new Date(2017, 8, 6, 10),
+            'EndTime': new Date(2017, 8, 6, 12)
+        }];
         beforeAll((done: Function): void => {
-            schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                height: '500px',
-                width: '500px',
-                selectedDate: new Date(2017, 10, 6),
-                eventSettings: {
-                    dataSource: [{
-                        'Subject': 'test event',
-                        'StartTime': new Date(2017, 10, 6, 10),
-                        'EndTime': new Date(2017, 10, 6, 12)
-                    }, {
-                        'Subject': 'previous test event',
-                        'StartTime': new Date(2017, 8, 6, 10),
-                        'EndTime': new Date(2017, 8, 6, 12)
-                    }]
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { height: '500px', width: '500px', selectedDate: new Date(2017, 10, 6) };
+            schObj = util.createSchedule(model, eventDatas, done);
         });
         afterAll((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
 
         it('getEvents', () => {
@@ -850,8 +763,8 @@ describe('Schedule base module', () => {
 
         it('refreshEvents', (done: Function) => {
             schObj.dataBound = () => {
-                done();
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+                done();
             };
             schObj.refreshEvents();
         });
@@ -873,18 +786,177 @@ describe('Schedule base module', () => {
             expect(availablity).toEqual(false);
         });
 
-        it('getStartEndTime with valid time format'),() =>{
-            expect(schObj.getStartEndTime('08.30')).toEqual(new Date(new Date().setHours(8,30)));
-        } 
-        it('getStartEndTime with empty value'),() =>{
+        it('getStartEndTime with valid time format', () => {
+            expect(schObj.getStartEndTime('08:30')).toEqual(new Date(new Date().setHours(8, 30, 0, 0)));
+        });
+        it('getStartEndTime with empty value', () => {
             expect(schObj.getStartEndTime('')).toEqual(null);
-        }
-        it('getStartEndTime with null value'),() =>{
+        });
+        it('getStartEndTime with null value', () => {
             expect(schObj.getStartEndTime(null)).toEqual(null);
-        }
-        it('getStartEndTime with invalid time format'),() =>{
-            expect(schObj.getStartEndTime('08')).toEqual(new Date());
-        }
+        });
+        it('getStartEndTime with invalid time format', () => {
+            expect(schObj.getStartEndTime('08')).toEqual(new Date(new Date().setHours(0, 0, 0, 0)));
+        });
+    });
+
+    describe('Testing resetWorkHours without parameters in Vertical view', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function): void => {
+            let model: ScheduleModel = {
+                height: '560px', width: '100%',
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2019, 5, 12),
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('Checking cells that contain Work hours cells length before calling reset work hours method', () => {
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
+            expect(workCells.length).toEqual(90);
+        });
+        it('Checking cells that contain Work hours cells length after calling reset work hours method', () => {
+            schObj.resetWorkHours();
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
+            expect(workCells.length).toEqual(0);
+        });
+    });
+
+    describe('Testing resetWorkHours without parameters in Timeline view', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function): void => {
+            let model: ScheduleModel = {
+                height: '560px', width: '100%',
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2019, 5, 12),
+                currentView: 'TimelineWeek'
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('Checking cells that contain Work hours cells length before calling reset work hours method', () => {
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
+            expect(workCells.length).toEqual(90);
+        });
+        it('Checking cells that contain Work hours cells length after calling reset work hours method', () => {
+            schObj.resetWorkHours();
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS));
+            expect(workCells.length).toEqual(0);
+        });
+    });
+
+    describe('Testing resetWorkHours with parameteres in Vertical view', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function): void => {
+            let model: ScheduleModel = {
+                height: '560px', width: '100%',
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2019, 5, 12),
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('Checking Work hour class is avilable or not on particular cell', () => {
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            expect(workCells[136].classList.contains('e-work-hours')).toEqual(true);
+            expect(workCells[164].classList.contains('e-work-hours')).toEqual(true);
+        });
+        it('Removing the work cell class from the particular cell', () => {
+            let dates: Date[] = [new Date(2019, 5, 12)];
+            schObj.resetWorkHours(dates, '09:30', '12:00');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            expect(workCells[136].classList.contains('e-work-hours')).toEqual(false);
+            expect(workCells[164].classList.contains('e-work-hours')).toEqual(false);
+        });
+    });
+
+    describe('Testing resetWorkHours with parameteres in Timeline view', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function): void => {
+            let model: ScheduleModel = {
+                height: '560px', width: '100%',
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2019, 5, 12),
+                currentView: 'TimelineWeek'
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('Checking Work hour class is avilable or not on particular cell', () => {
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            expect(workCells[163].classList.contains('e-work-hours')).toEqual(true);
+            expect(workCells[166].classList.contains('e-work-hours')).toEqual(true);
+        });
+        it('Removing the work cell class from the particular cell', () => {
+            let dates: Date[] = [new Date(2019, 5, 12)];
+            schObj.resetWorkHours(dates, '09:30', '12:00');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            expect(workCells[163].classList.contains('e-work-hours')).toEqual(false);
+            expect(workCells[166].classList.contains('e-work-hours')).toEqual(false);
+        });
+    });
+
+    describe('Testing resetWorkHours on passing group index in Vertical view', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function): void => {
+            let model: ScheduleModel = {
+                height: '560px', width: '100%',
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2019, 5, 12),
+            };
+            schObj = util.createGroupSchedule(2, model, [], done);
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('Checking the particular cell contains a work hour class or not', () => {
+            let tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
+            expect(tableRows[80].children[10].classList.contains('e-work-hours')).toEqual(true);
+            expect(tableRows[82].children[10].classList.contains('e-work-hours')).toEqual(true);
+        });
+        it('Removing work hour class from particular cell by calling resetWorkHours', () => {
+            let dates: Date[] = [new Date(2019, 5, 12)];
+            schObj.resetWorkHours(dates, '09:30', '12:00', 1);
+            let tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
+            expect(tableRows[80].children[10].classList.contains('e-work-hours')).toEqual(false);
+            expect(tableRows[82].children[10].classList.contains('e-work-hours')).toEqual(false);
+        });
+    });
+
+    describe('Testing resetWorkHours on passing group index in Timeline view', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function): void => {
+            let model: ScheduleModel = {
+                height: '560px', width: '100%',
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2019, 5, 12),
+                currentView: 'TimelineWeek',
+            };
+            schObj = util.createGroupSchedule(2, model, [], done);
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('Checking the particular cell contains a work hour class or not', () => {
+            let tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
+            expect(tableRows[11].children[163].classList.contains('e-work-hours')).toEqual(true);
+            expect(tableRows[11].children[166].classList.contains('e-work-hours')).toEqual(true);
+        });
+        it('Removing work hour class from particular cell by calling resetWorkHours', () => {
+            let dates: Date[] = [new Date(2019, 5, 12)];
+            schObj.resetWorkHours(dates, '09:30', '12:00', 2);
+            let tableRows: NodeListOf<HTMLTableRowElement> = schObj.element.querySelectorAll('tr');
+            expect(tableRows[11].children[163].classList.contains('e-work-hours')).toEqual(false);
+            expect(tableRows[11].children[166].classList.contains('e-work-hours')).toEqual(false);
+        });
     });
 
     describe('CR Issue EJ2-16536 Schedule within hidden element', () => {
@@ -910,29 +982,17 @@ describe('Schedule base module', () => {
 
     describe('EJ2-23004-24 hours format is not displaying in time cells in adaptive mode only', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         let uA: string = Browser.userAgent;
         let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-        loadCultureFiles('fr-CH');
+        util.loadCultureFiles('fr-CH');
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
             Browser.userAgent = androidUserAgent;
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '550px',
-                width: '500px',
-                locale: 'fr-CH',
-                selectedDate: new Date(2017, 10, 6),
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { height: '550px', width: '500px', locale: 'fr-CH', selectedDate: new Date(2017, 10, 6) };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
             Browser.userAgent = uA;
         });
         it('Checking elements', () => {

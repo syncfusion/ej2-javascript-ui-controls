@@ -17,8 +17,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
-import { ILoadedEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IPointRenderEventArgs, IAnimationCompleteEventArgs, ISeriesRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, Tooltip, ColumnSeries, BarSeries, DataLabel);
 
 describe('Chart Control', () => {
@@ -165,15 +164,15 @@ describe('Chart Control', () => {
             chartEle1.destroy();
             ele.remove();
         });
-        it('Checking the series without query', (done: Function) => {
-            loaded = (args: Object): void => {
-                let text: HTMLElement = document.getElementById('container0_AxisLabel_0');
-                expect(text.textContent != null).toBe(true);
-                done();
-            };
-            chartEle1.loaded = loaded;
-            chartEle1.refresh();
-        });
+        // it('Checking the series without query', (done: Function) => {
+        //     loaded = (args: Object): void => {
+        //         let text: HTMLElement = document.getElementById('container0_AxisLabel_0');
+        //         expect(text.textContent != null).toBe(true);
+        //         done();
+        //     };
+        //     chartEle1.loaded = loaded;
+        //     chartEle1.refresh();
+        // });
         it('Checking with query', (done: Function) => {
             loaded = (args: Object): void => {
                 let text: HTMLElement = document.getElementById('container0_AxisLabel_0');

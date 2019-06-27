@@ -1,8 +1,9 @@
 import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend} from '@syncfusion/ej2-base';
-import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
-import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel}  from '@syncfusion/ej2-grids';
+import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
+import { DetailDataBoundEventArgs, Row}  from '@syncfusion/ej2-grids';
 import { SearchEventArgs, AddEventArgs, EditEventArgs, DeleteEventArgs}  from '@syncfusion/ej2-grids';
 import { SaveEventArgs, CellSaveArgs, BatchAddArgs, BatchCancelArgs,  BeginEditArgs, CellEditArgs}  from '@syncfusion/ej2-grids';
 import { FilterSettings } from '../models/filter-settings';
@@ -12,6 +13,7 @@ import { Reorder } from '../actions/reorder';
 import { Resize } from '../actions/resize';
 import { Selection as TreeGridSelection } from '../actions/selection';
 import { ColumnMenu } from '../actions/column-menu';
+import { DetailRow } from '../actions/detail-row';
 import { Print } from '../actions/print';
 import * as events from '../base/constant';
 import {TreeGridModel} from './treegrid-model';
@@ -121,6 +123,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
    * The `contextMenuModule` is used to handle context menu items and its action in the TreeGrid.
    */
   public contextMenuModule: ContextMenu;
+  /**
+   * `detailRowModule` is used to handle detail rows rendering in the TreeGrid.
+   * @hidden
+   */
+  public detailRowModule: DetailRow;
   /**
    * `resizeModule` is used to manipulate resizing in the TreeGrid.
    * @hidden
@@ -282,7 +289,7 @@ public pagerTemplate: string;
   /**    
    * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
    * 
-   * > Check the [`Column menu`](../../treegrid/columns/#column-menu) for its configuration.
+   * > Check the [`Column menu`](./columns.html#column-menu) for its configuration.
    * @default false    
    */
   @Property(false)
@@ -308,7 +315,7 @@ public pagerTemplate: string;
   public sortSettings: SortSettingsModel;
   /**
    * Configures the TreeGrid aggregate rows.
-   * > Check the [`Aggregates`](../../treegrid/aggregates/) for its configuration.
+   * > Check the [`Aggregates`](./aggregates.html) for its configuration.
    * @default []
    */
   @Collection<AggregateRowModel>([], AggregateRow)
@@ -326,6 +333,14 @@ public pagerTemplate: string;
    */
   @Property(false)
   public allowFiltering: boolean;
+  /**
+   * The detail template allows you to show or hide additional information about a particular row.
+   *
+   * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+   *
+   */
+  @Property()
+  public detailTemplate: string;
   /**
    * Configures the filter settings of the TreeGrid.
    * @default {columns: [], type: 'FilterBar', mode: 'Immediate', showFilterBarStatus: true, immediateModeDelay: 1500 , operators: {}}
@@ -433,7 +448,7 @@ public pagerTemplate: string;
   public rowHeight: number;
   /**     
    * If `enableAltRow` is set to true, the TreeGrid will render with `e-altrow` CSS class to the alternative tr elements.    
-   * > Check the [`AltRow`](../../treegrid/row/#styling-alternate-rows) to customize the styles of alternative rows.
+   * > Check the [`AltRow`](./row.html#styling-alternate-rows) to customize the styles of alternative rows.
    * @default true 
    */
   @Property(true)
@@ -447,9 +462,9 @@ public pagerTemplate: string;
   public allowKeyboard: boolean;
   /**     
    * If `enableHover` is set to true, the row hover is enabled in the TreeGrid.
-   * @default true     
+   * @default false 
    */
-  @Property(true)
+  @Property(false)
   public enableHover: boolean;
   /**    
    * Defines the scrollable height of the TreeGrid content.    
@@ -464,7 +479,13 @@ public pagerTemplate: string;
    */
   @Property('auto')
   public width: string | number;
-
+  /**
+   * If `enableVirtualization` set to true, then the TreeGrid will render only the rows visible within the view-port
+   * and load subsequent rows on vertical scrolling. This helps to load large dataset in TreeGrid.
+   * @default false
+   */
+  @Property(false)
+  public enableVirtualization: boolean;
     /**
      * `columnQueryMode`provides options to retrieves data from the data source.Their types are 
      * * `All`: It retrieves whole data source.
@@ -477,43 +498,57 @@ public pagerTemplate: string;
   /**
    * Triggers when the component is created.
    * @event
+   * @blazorproperty 'Created'
    */
   @Event()
   public created: EmitType<Object>;
   /**
    * This event allows customization of TreeGrid properties before rendering.
    * @event
+   * @blazorproperty 'OnLoad'
    */
   @Event()
   public load: EmitType<Object>;
   /**
    * Triggers while expanding the TreeGrid record
    * @event
+   * @blazorproperty 'Expanding'
    */
   @Event()
   public expanding: EmitType<RowExpandingEventArgs>;
   /**
    * Triggers after expand the record
    * @event
+   * @blazorproperty 'Expanded'
    */
   @Event()
   public expanded: EmitType<RowExpandedEventArgs>;
   /**
    * Triggers while collapsing the TreeGrid record
    * @event
+   * @blazorproperty 'Collapsing'
    */
   @Event()
   public collapsing: EmitType<RowExpandingEventArgs>;
   /**
    * Triggers after collapse the TreeGrid record
    * @event
+   * @blazorproperty 'Collapsed'
    */
   @Event()
   public collapsed: EmitType<RowExpandingEventArgs>;
+  /**
+   * Triggers when cell is saved.
+   * @event
+   * @deprecated
+   */
+  @Event()
+  public cellSave: EmitType<CellSaveArgs>;
   /* tslint:disable */
   /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc., starts.
    * @event
+   * @deprecated
    */
   @Event()
   public actionBegin: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
@@ -521,6 +556,7 @@ public pagerTemplate: string;
   /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
    * @event
+   * @deprecated
    */
 
   @Event()
@@ -529,12 +565,14 @@ public pagerTemplate: string;
   /** 
    * Triggers before the record is to be edit.
    * @event
+   * @deprecated
    */
   @Event()
   public beginEdit: EmitType<BeginEditArgs>;
   /** 
    * Triggers when the cell is being edited.
    * @event
+   * @deprecated
    */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
@@ -542,12 +580,14 @@ public pagerTemplate: string;
   /**
    * Triggers when any TreeGrid action failed to achieve the desired results.
    * @event
+   * @deprecated
    */
   @Event()
   public actionFailure: EmitType<FailureEventArgs>;
   /**
    * Triggers when data source is populated in the TreeGrid.
    * @event
+   * @blazorproperty 'DataBound'
    */
   @Event()
   public dataBound: EmitType<Object>;
@@ -556,6 +596,7 @@ public pagerTemplate: string;
    * Triggers when the TreeGrid data is added, deleted and updated.
    * Invoke the done method from the argument to start render after edit operation.
    * @event
+   * @deprecated
    * @blazorProperty 'dataSourceUpdated'
    */
   @Event()
@@ -565,6 +606,7 @@ public pagerTemplate: string;
    * Triggers when the TreeGrid actions such as Sorting, Paging etc., are done.
    * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
    * @event
+   * @deprecated
    */
   @Event()
   public dataStateChange: EmitType<DataStateChangeEventArgs>;
@@ -572,6 +614,7 @@ public pagerTemplate: string;
   /** 
    * Triggers when record is double clicked.
    * @event
+   * @deprecated
    */
   @Event()
   public recordDoubleClick: EmitType<RecordDoubleClickEventArgs>;
@@ -580,14 +623,23 @@ public pagerTemplate: string;
    * Triggered every time a request is made to access row information, element, or data.
    * This will be triggered before the row element is appended to the TreeGrid element.
    * @event
+   * @deprecated
    */
   @Event()
   public rowDataBound: EmitType<RowDataBoundEventArgs>;
-
+  /** 
+   * Triggers after detail row expands.
+   * > This event triggers at initial expand.  
+   * @event 
+   * @deprecated
+   */
+  @Event()
+  public detailDataBound: EmitType<DetailDataBoundEventArgs>;
   /**
    * Triggered every time a request is made to access cell information, element, or data.
    * This will be triggered before the cell element is appended to the TreeGrid element.
    * @event
+   * @deprecated
    */
   @Event()
   public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
@@ -600,6 +652,7 @@ public pagerTemplate: string;
     /**
      * Triggers before row selection occurs.
      * @event
+     * @deprecated
      */
   @Event()
   public rowSelecting: EmitType<RowSelectingEventArgs>;
@@ -607,6 +660,7 @@ public pagerTemplate: string;
     /**
      * Triggers after a row is selected.
      * @event
+     * @deprecated
      */
   @Event()
   public rowSelected: EmitType<RowSelectEventArgs>;
@@ -614,6 +668,7 @@ public pagerTemplate: string;
     /**
      * Triggers before deselecting the selected row.
      * @event
+     * @deprecated
      */
   @Event()
   public rowDeselecting: EmitType<RowDeselectEventArgs>;
@@ -621,6 +676,7 @@ public pagerTemplate: string;
     /**
      * Triggers when a selected row is deselected.
      * @event
+     * @deprecated
      */
   @Event()
   public rowDeselected: EmitType<RowDeselectEventArgs>;
@@ -634,18 +690,21 @@ public pagerTemplate: string;
       /**
        * Triggers before any cell selection occurs.
        * @event 
+       * @deprecated
        */
   @Event()
   public cellSelecting: EmitType<CellSelectingEventArgs>;
     /** 
      * Triggers before column menu opens.
      * @event
+     * @deprecated
      */
     @Event()
   public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
     /** 
      * Triggers when click on column menu.
      * @event
+     * @deprecated
      */
     @Event()
   public columnMenuClick: EmitType<MenuEventArgs>;
@@ -654,6 +713,7 @@ public pagerTemplate: string;
     /**
      * Triggers after a cell is selected.
      * @event 
+     * @deprecated
      */
   @Event()
   public cellSelected: EmitType<CellSelectEventArgs>;
@@ -661,6 +721,7 @@ public pagerTemplate: string;
     /**
      * Triggers before the selected cell is deselecting.
      * @event 
+     * @deprecated
      */
   @Event()
   public cellDeselecting: EmitType<CellDeselectEventArgs>;
@@ -668,6 +729,7 @@ public pagerTemplate: string;
   /**
    * Triggers when a particular selected cell is deselected.
    * @event 
+   * @deprecated
    */
   @Event()
   public cellDeselected: EmitType<CellDeselectEventArgs>;
@@ -675,6 +737,7 @@ public pagerTemplate: string;
   /** 
    * Triggers when column resize starts.
    * @event
+   * @deprecated
    */
   @Event()
   public resizeStart: EmitType<ResizeArgs>;
@@ -682,6 +745,7 @@ public pagerTemplate: string;
   /** 
    * Triggers on column resizing.
    * @event
+   * @deprecated
    */
   @Event()
   public resizing: EmitType<ResizeArgs>;
@@ -689,6 +753,7 @@ public pagerTemplate: string;
   /** 
    * Triggers when column resize ends.
    * @event
+   * @deprecated
    */
   @Event()
   public resizeStop: EmitType<ResizeArgs>;
@@ -696,6 +761,7 @@ public pagerTemplate: string;
   /**  
    * Triggers when column header element drag (move) starts. 
    * @event  
+   * @deprecated
    */
   @Event()
   public columnDragStart: EmitType<ColumnDragEventArgs>;
@@ -703,6 +769,7 @@ public pagerTemplate: string;
   /**  
    * Triggers when column header element is dragged (moved) continuously. 
    * @event  
+   * @deprecated
    */
   @Event()
   public columnDrag: EmitType<ColumnDragEventArgs>;
@@ -710,12 +777,14 @@ public pagerTemplate: string;
  /**  
   * Triggers when a column header element is dropped on the target column. 
   * @event  
+  * @deprecated
   */
   @Event()
   public columnDrop: EmitType<ColumnDragEventArgs>;
   /** 
    * Triggers when the check box state change in checkbox column.
    * @event
+   * @deprecated
    */
   @Event()
   public checkboxChange: EmitType<CheckBoxChangeEventArgs>;
@@ -723,30 +792,35 @@ public pagerTemplate: string;
  /** 
   * Triggers after print action is completed.  
   * @event 
+  * @deprecated
   */
   @Event()
   public printComplete: EmitType<PrintEventArgs>;
  /** 
   * Triggers before the print action starts.  
   * @event 
+  * @deprecated
   */
   @Event()
   public beforePrint: EmitType<PrintEventArgs>;
   /**      
    * Triggers when toolbar item is clicked.
    * @event
+   * @deprecated
    */
   @Event()
   public toolbarClick: EmitType<ClickEventArgs>;
   /**
    * Triggers when a particular selected cell is deselected.
    * @event 
+   * @deprecated
    */
 @Event()
 public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * Triggers before context menu opens.
    * @event
+   * @deprecated
    */
   @Event()
   public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -754,12 +828,14 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * Triggers when click on context menu.
    * @event
+   * @deprecated
    */
   @Event()
   public contextMenuClick: EmitType<MenuEventArgs>;
   /**
    * Triggers when row elements are dragged (moved) continuously.
    * @event
+   * @deprecated
    */
 
   /**
@@ -780,7 +856,7 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * If `allowExcelExport` set to true, then it will allow the user to export treegrid to Excel file.
    * 
-   * > Check the [`ExcelExport`](../../treegrid/excel-export/) to configure exporting document.
+   * > Check the [`ExcelExport`](./excel-exporting.html) to configure exporting document.
    * @default false    
    */
   @Property(false)
@@ -788,7 +864,7 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**    
    * If `allowPdfExport` set to true, then it will allow the user to export treegrid to Pdf file.
    * 
-   * > Check the [`Pdfexport`](../../treegrid/pdf-export/) to configure the exporting document.
+   * > Check the [`Pdfexport`](./pdf-exporting.html) to configure the exporting document.
    * @default false    
    */
   @Property(false)
@@ -797,6 +873,7 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
      * Triggers before exporting each cell to PDF document. 
      * You can also customize the PDF cells.
      * @event 
+     * @deprecated
      */
 @Event()
 public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
@@ -805,6 +882,7 @@ public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
  * Triggers before exporting each header cell to PDF document. 
  * You can also customize the PDF cells.
  * @event 
+ * @deprecated
  */
 @Event()
 public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
@@ -813,6 +891,7 @@ public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
  * Triggers before exporting each cell to Excel file.
  * You can also customize the Excel cells.
  * @event
+ * @deprecated
  */
 @Event()
 public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -821,6 +900,7 @@ public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
  * Triggers before exporting each header cell to Excel file.
  * You can also customize the Excel cells.
  * @event
+ * @deprecated
  */
 @Event()
 public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -835,6 +915,7 @@ public beforeExcelExport: EmitType<Object>;
 /**
  * Triggers after TreeGrid data is exported to Excel file.
  * @event
+ * @deprecated
  */
 @Event()
 public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
@@ -849,6 +930,7 @@ public beforePdfExport: EmitType<Object>;
 /**
  * Triggers after TreeGrid data is exported to PDF document.
  * @event
+ * @deprecated
  */
 @Event()
 public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
@@ -959,7 +1041,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
  /**
   * Searches TreeGrid records using the given key.
   * You can customize the default search option by using the
-  * [`searchSettings`](#searchsettings).
+  * [`searchSettings`](./api-searchSettings.html).
   * @param  {string} searchString - Defines the key.
   * @return {void}
   */
@@ -1006,7 +1088,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   /**
    * By default, prints all the pages of the TreeGrid and hides the pager.
    * > You can customize print options using the 
-   * [`printMode`](#printmode). 
+   * [`printMode`](./api-treegrid.html#printmode-string). 
    * @return {void}
    */
   public print(): void {
@@ -1134,8 +1216,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       let modules: ModuleDeclaration[] = [];
       if (this.isDestroyed) { return modules; }
       modules.push({
-          member: 'filter',
-          args: [this, this.filterSettings]
+        member: 'filter',
+        args: [this, this.filterSettings]
       });
       if (!isNullOrUndefined(this.toolbar)) {
           modules.push({
@@ -1173,15 +1255,19 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
           args: [this]
         });
       }
-      if (this.allowResizing) {
-        modules.push({
-          member: 'resize',
-          args: [this]
-        });
-      }
+      modules.push({
+        member: 'resize',
+        args: [this]
+      });
       if (this.allowExcelExport) {
         modules.push({
           member: 'ExcelExport',
+          args: [this]
+        });
+      }
+      if (this.detailTemplate) {
+        modules.push({
+          member: 'detailRow',
           args: [this]
         });
       }
@@ -1213,6 +1299,12 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         modules.push({
           member: 'selection',
           args: [this]
+        });
+      }
+      if (this.enableVirtualization) {
+        modules.push({
+            member: 'virtualScroll',
+            args: [this]
         });
       }
       return modules;
@@ -1291,6 +1383,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData : this.dataSource;
     this.grid.enableRtl = this.enableRtl;
     this.grid.allowKeyboard = this.allowKeyboard;
+    this.grid.enablePersistence = this.enablePersistence;
     this.grid.columns = this.getGridColumns(this.columns as Column[]);
     this.grid.allowExcelExport = this.allowExcelExport;
     this.grid.allowPdfExport = this.allowPdfExport;
@@ -1302,6 +1395,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.showColumnMenu = this.showColumnMenu;
     this.grid.allowSorting = this.allowSorting;
     this.grid.allowFiltering = this.allowFiltering;
+    this.grid.enableVirtualization = this.enableVirtualization;
     this.grid.width = this.width;
     this.grid.height = this.height;
     this.grid.enableAltRow = this.enableAltRow;
@@ -1327,6 +1421,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
     this.grid.editSettings = this.getGridEditSettings();
     this.grid.rowTemplate = getActualProperties(this.rowTemplate);
+    this.grid.detailTemplate = getActualProperties(this.detailTemplate);
   }
   private triggerEvents(args?: Object): void {
     this.trigger(getObject('name', args), args);
@@ -1393,7 +1488,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.treeColumnRowTemplate(args);
       this.updateColumnModel();
       this.updateAltRow(this.getRows());
-      this.notify('headerCheckbox', {});
+      this.notify('dataBoundArg', args);
       this.trigger(events.dataBound, args);
       if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
         let req: number = getObject('dataSource.requests', this).filter((e: Ajax) => {
@@ -1416,8 +1511,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
       if (!isRemoteData(treeGrid)) {
         treeGrid.notify('dataProcessor', args);
-      }
         //args = this.dataModule.dataProcessor(args);
+      }
       extend(args, treeGrid.dataResults);
       // this.notify(events.beforeDataBound, args);
       if (!(<IGrid>this).isPrinting) {
@@ -1478,9 +1573,12 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.trigger(events.recordDoubleClick, args);
       this.notify(events.recordDoubleClick, args);
     };
+    this.grid.detailDataBound = (args: DetailDataBoundEventArgs): void => {
+      this.notify('detaildataBound', args);
+      this.trigger(events.detailDataBound, args);
+    };
     this.grid.actionBegin = (args: Object): void => {
       let requestType: string = getObject('requestType', args);
-      let target: HTMLElement = getObject('target', args);
       if (requestType === 'reorder') {
         this.notify('getColumnIndex', {});
       }
@@ -1489,19 +1587,16 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         this.notify('clearFilters', { flatData: this.grid.dataSource });
         this.grid.dataSource = this.dataResults.result;
       }
-      if (!isNullOrUndefined(target) && requestType === 'sorting' && target.parentElement.classList.contains('e-hierarchycheckbox')) {
-        setValue('cancel', true, args);
-        return;
-      }
       this.trigger(events.actionBegin, args);
       this.notify(events.beginEdit, args);
     };
     this.grid.actionComplete = (args: CellSaveEventArgs) => {
+      this.notify('actioncomplete', args);
       this.updateColumnModel();
+      this.updateTreeGridModel();
       if (args.requestType === 'reorder') {
         this.notify('setColumnIndex', {});
       }
-
       if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
         this.notify(events.beginAdd, args);
       }
@@ -1509,7 +1604,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         this.notify(events.batchSave, args);
       }
       this.notify('updateGridActions', args);
-
       this.trigger(events.actionComplete, args);
     };
     this.grid.rowDataBound = function (args: RowDataBoundEventArgs): void {
@@ -1713,6 +1807,9 @@ private getGridEditSettings(): GridEditModel {
           this.grid.pageSettings = getActualProperties(this.pageSettings);
           requireRefresh = true;
           break;
+        case 'enableVirtualization':
+          this.grid.enableVirtualization = this.enableVirtualization;
+          break;
         case 'toolbar':
           this.grid.toolbar = this.getGridToolbar(); break;
         case 'allowSelection':
@@ -1774,6 +1871,10 @@ private getGridEditSettings(): GridEditModel {
             this.element.style.width = this.width;
           }
           this.grid.width = this.width; break;
+        case 'locale':
+          this.grid.locale = this.locale; break;
+        case 'selectedRowIndex':
+          this.grid.selectedRowIndex = this.selectedRowIndex; break;
         case 'enableAltRow':
           this.grid.enableAltRow = this.enableAltRow; break;
         case 'enableHover':
@@ -1791,9 +1892,12 @@ private getGridEditSettings(): GridEditModel {
         case 'textWrapSettings':
           this.grid.textWrapSettings = getActualProperties(this.textWrapSettings); break;
         case 'allowTextWrap':
-          this.grid.allowTextWrap = getActualProperties(this.allowTextWrap); break;
+          this.grid.allowTextWrap = getActualProperties(this.allowTextWrap);
+          this.refresh(); break;
         case 'contextMenuItems':
           this.grid.contextMenuItems = this.getContextMenu(); break;
+        case 'detailTemplate':
+          this.grid.detailTemplate = getActualProperties(this.detailTemplate); break;
         case 'columnMenuItems':
           this.grid.columnMenuItems = getActualProperties(this.columnMenuItems); break;
         case 'editSettings':
@@ -1822,8 +1926,8 @@ private getGridEditSettings(): GridEditModel {
         this.dataModule.destroy();
         let modules: string[] = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule',
         'excelExportModule', 'pdfExportModule', 'toolbarModule', 'summaryModule', 'reorderModule', 'resizeModule',
-         'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule',
-         'selectionModule'];
+         'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule', 'virtualScrollModule',
+         'selectionModule', 'detailRow'];
         for (let i: number = 0; i < modules.length; i++) {
             if (this[modules[i]]) {
                 this[modules[i]] = null;
@@ -1952,6 +2056,15 @@ private getGridEditSettings(): GridEditModel {
   }
 
   /**
+   * To edit any particular cell using row index and cell index.
+   * @param {number} rowIndex - Defines row index to edit a particular cell.
+   * @param {string} field - Defines the field name of the column to perform cell edit.
+   */
+  public editCell(rowIndex?: number, field?: string): void {
+    this.editModule.editCell(rowIndex, field);
+  }
+
+  /**
    * If TreeGrid is in editable state, you can save a record by invoking endEdit.
    */
   public endEdit(): void {
@@ -2002,6 +2115,17 @@ private getGridEditSettings(): GridEditModel {
      */
     public goToPage(pageNo: number): void {
       this.grid.pagerModule.goToPage(pageNo);
+  }
+
+    /** 
+     * Defines the text of external message.
+     * @param  {string} message - Defines the message to update. 
+     * @return {void} 
+     */
+    public updateExternalMessage(message: string): void {
+      if (this.pagerModule) {
+          this.grid.pagerModule.updateExternalMessage(message);
+      }
   }
 
     /**
@@ -2152,7 +2276,10 @@ private getGridEditSettings(): GridEditModel {
       }
       this.columnModel.push(new Column(gridColumn));
     }
+    let merge: string = 'deepMerge';
+    this[merge] = ['columns']; // Workaround for blazor updateModel 
     this.setProperties({columns : this.columnModel}, true);
+    this[merge] = undefined;  // Workaround for blazor updateModel
     return this.columnModel;
   }
 
@@ -2162,6 +2289,13 @@ private getGridEditSettings(): GridEditModel {
      */
     public getContent(): Element {
       return this.grid.getContent();
+  }
+
+    private updateTreeGridModel() : void {
+      this.setProperties({filterSettings: getObject('properties', this.grid.filterSettings)}, true);
+      this.setProperties({pageSettings: getObject('properties', this.grid.pageSettings)}, true);
+      this.setProperties({searchSettings: getObject('properties', this.grid.searchSettings)}, true);
+      this.setProperties({sortSettings: getObject('properties', this.grid.sortSettings)}, true);
   }
 
     /**
@@ -2319,12 +2453,22 @@ private getGridEditSettings(): GridEditModel {
    * @hidden
    */
   private expandCollapseRequest(target: HTMLElement): void {
-    let rowInfo: HTMLElement = target.closest('.e-treerowcell').parentElement;
-    let record: object = this.getCurrentViewRecords()[(<HTMLTableRowElement>rowInfo).rowIndex];
-    if (target.classList.contains('e-treegridexpand')) {
-      this.collapseRow(<HTMLTableRowElement>rowInfo, record);
-    } else {
-      this.expandRow(<HTMLTableRowElement>rowInfo, record);
+    if (this.rowTemplate) {
+      let rowInfo: HTMLElement = target.closest('.e-treerowcell').parentElement;
+      let record: object = this.getCurrentViewRecords()[(<HTMLTableRowElement>rowInfo).rowIndex];
+      if (target.classList.contains('e-treegridexpand')) {
+        this.collapseRow(<HTMLTableRowElement>rowInfo, record);
+      } else {
+        this.expandRow(<HTMLTableRowElement>rowInfo, record);
+      }
+    }else {
+      let rowInfo: RowInfo = this.grid.getRowInfo(target);
+      let record: ITreeData = <ITreeData>rowInfo.rowData;
+      if (target.classList.contains('e-treegridexpand')) {
+        this.collapseRow(<HTMLTableRowElement>rowInfo.row, record);
+      }else {
+        this.expandRow(<HTMLTableRowElement>rowInfo.row, record);
+      }
     }
   }
   /**
@@ -2334,15 +2478,16 @@ private getGridEditSettings(): GridEditModel {
   public expandRow(row: HTMLTableRowElement, record?: Object): void {
     record = this.getCollapseExpandRecords(row, record);
     let args: RowExpandingEventArgs = {data: record, row: row, cancel: false};
-    this.trigger(events.expanding, args);
-    if (args.cancel) {
-        return;
+    this.trigger(events.expanding, args, (expandingArgs: RowExpandingEventArgs) => {
+      if (!expandingArgs.cancel) {
+        this.resetTemplates();
+        this.expandCollapse('expand', row, record);
+        if (!(isRemoteData(this) && !isOffline(this))) {
+        let collapseArgs: RowExpandedEventArgs = {data: record, row: row};
+        this.trigger(events.expanded, collapseArgs);
+      }
     }
-    this.expandCollapse('expand', row, record);
-    if (!(isRemoteData(this) && !isOffline(this))) {
-      let collapseArgs: RowExpandedEventArgs = {data: record, row: row};
-      this.trigger(events.expanded, collapseArgs);
-    }
+   });
   }
   private getCollapseExpandRecords(row?: HTMLTableRowElement, record?: Object): Object {
     if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && this.isExpandAll && isNullOrUndefined(record)) {
@@ -2361,26 +2506,37 @@ private getGridEditSettings(): GridEditModel {
   public collapseRow(row: HTMLTableRowElement, record?: Object): void {
     record = this.getCollapseExpandRecords(row, record);
     let args: RowCollapsingEventArgs = {data: record, row: row, cancel: false};
-    this.trigger(events.collapsing, args);
-    if (args.cancel) {
-        return;
-    }
-    this.expandCollapse('collapse', row, record);
-    let collapseArgs: RowCollapsedEventArgs = {data: record, row: row};
-    this.trigger(events.collapsed, collapseArgs);
+    this.trigger(events.collapsing, args, (collapsingArgs: RowCollapsingEventArgs) => {
+      if (!collapsingArgs.cancel) {
+        this.resetTemplates();
+        this.expandCollapse('collapse', row, record);
+        let collapseArgs: RowCollapsedEventArgs = {data: record, row: row};
+        this.trigger(events.collapsed, collapseArgs);
+      }
+    });
   }
 
+  private resetTemplates(): void {
+    for (let i: number = 0; i < this.columns.length; i++) {
+      if ((this.columns[i] as Column).template) {
+        resetBlazorTemplate(this.grid.element.id + (this.columns[i] as Column).uid, 'Template');
+      }
+      if ((this.columns[i] as Column).headerTemplate) {
+        resetBlazorTemplate(this.grid.element.id + (this.columns[i] as Column).uid + 'headerTemplate', 'HeaderTemplate');
+      }
+    }
+  }
   /**
    * Expands the records at specific hierarchical level
    * @return {void}
    */
   public expandAtLevel(level: number): void {
-    if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+    if ((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) {
       let rec: ITreeData[] = (<ITreeData[]>this.grid.dataSource).filter((e: ITreeData) => {
-        if (e.hasChildRecords && e.level === level) {
-          e.expanded = true;
-        }
-        return e.hasChildRecords && e.level === level;
+          if (e.hasChildRecords && e.level === level) {
+            e.expanded = true;
+          }
+          return e.hasChildRecords && e.level === level;
       });
       this.expandRow(null, rec);
     } else {
@@ -2406,12 +2562,12 @@ private getGridEditSettings(): GridEditModel {
    * @return {void}
    */
   public collapseAtLevel(level: number): void {
-    if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+    if ((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) {
       let record: ITreeData[] = (<ITreeData[]>this.grid.dataSource).filter((e: ITreeData) => {
-        if (e.hasChildRecords && e.level === level) {
-          e.expanded = false;
-        }
-        return e.hasChildRecords && e.level === level;
+          if (e.hasChildRecords && e.level === level) {
+            e.expanded = false;
+          }
+          return e.hasChildRecords && e.level === level;
       });
       this.collapseRow(null, record);
     } else {
@@ -2443,11 +2599,12 @@ private getGridEditSettings(): GridEditModel {
       return e.querySelector('.e-treegrid' + (action  === 'expand' ? 'collapse' : 'expand'));
     });
     this.isExpandAll = true;
-    if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
+    if ((this.allowPaging && this.pageSettings.pageSizeMode === 'All')
+     || this.enableVirtualization) {
       this.flatData.filter((e: ITreeData) => {
-          if (e.hasChildRecords) {
-            e.expanded = action === 'collapse' ? false : true;
-          }
+        if (e.hasChildRecords) {
+          e.expanded = action === 'collapse' ? false : true;
+        }
       });
       action === 'collapse' ? this.collapseRow(rows[0]) :  this.expandRow(rows[0]);
     } else {
@@ -2473,7 +2630,7 @@ private getGridEditSettings(): GridEditModel {
     if (!isNullOrUndefined(row)) {
       row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
     }
-    if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && !isRemoteData(this)) {
+    if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)) {
       this.notify(events.localPagedExpandCollapse, {action: action, row: row, record: record});
     } else {
       let displayAction: string;
@@ -2488,6 +2645,7 @@ private getGridEditSettings(): GridEditModel {
         }
         addClass([targetEle], 'e-treegridexpand');
         removeClass([targetEle], 'e-treegridcollapse');
+        this.notify('rowExpand', {row: row});
       } else {
           displayAction = 'none';
           if (!isChild) {
@@ -2508,14 +2666,20 @@ private getGridEditSettings(): GridEditModel {
               'e-gridrowindex' + record.index + 'level' + (record.level + 1)
             )
         );
+        let detailrows: HTMLTableRowElement[] = gridRows.filter(
+          (r: HTMLTableRowElement) =>
+            r.classList.contains(
+              'e-griddetailrowindex' + record.index + 'level' + (record.level + 1)
+            )
+        );
         if (action === 'expand') {
-          this.notify(events.remoteExpand, {record: record, rows: rows, parentRow: row});
+          this.notify(events.remoteExpand, {record: record, rows: rows, parentRow: row, detailrows: detailrows });
         } else {
-          this.collapseRemoteChild(rows);
+          this.collapseRemoteChild(rows, detailrows);
           this.trigger(events.collapsed, args);
         }
       } else {
-        let childRecords: ITreeData[] =  this.getCurrentViewRecords().filter((e: ITreeData) => {
+        let childRecords: ITreeData[] = this.getCurrentViewRecords().filter((e: ITreeData) => {
           return (e.parentUniqueID === record.uniqueID) || e.isSummaryRow;
         });
         let index: number = (<ITreeData>childRecords[0].parentItem).index;
@@ -2523,15 +2687,21 @@ private getGridEditSettings(): GridEditModel {
           (r: HTMLTableRowElement) =>
             r.classList.contains(
               'e-gridrowindex' + record.index + 'level' + (record.level + 1)
-            )
-        );
+            ));
+        let detailrows: HTMLTableRowElement[] = gridRows.filter(
+          (detailRowes: HTMLTableRowElement) =>
+            detailRowes.classList.contains(
+              'e-griddetailrowindex' + record.index + 'level' + (record.level + 1)
+            ));
         for (let i: number = 0; i < rows.length; i++) {
           rows[i].style.display = displayAction;
+          this.notify('childRowExpand', { row: rows[i] });
           if (!isNullOrUndefined(childRecords[i].childRecords) && (action !== 'expand' ||
-               isNullOrUndefined(childRecords[i].expanded) || childRecords[i].expanded)) {
+            isNullOrUndefined(childRecords[i].expanded) || childRecords[i].expanded)) {
             this.expandCollapse(action, rows[i], childRecords[i], true);
           }
         }
+        this.notify('rowExpandCollapse', {detailrows: detailrows, action: displayAction});
       }
       this.updateAltRow(gridRows);
     }
@@ -2568,22 +2738,30 @@ private getGridEditSettings(): GridEditModel {
     }
     }
   }
-  private collapseRemoteChild(rows: HTMLTableRowElement[]): void {
+  private collapseRemoteChild(rows: HTMLTableRowElement[], detailrows: HTMLTableRowElement[]): void {
     for (let i: number = 0; i < rows.length; i++) {
       let rData: ITreeData = this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
       rData.expanded = false;
       rows[i].style.display = 'none';
+      if (!isNullOrUndefined(detailrows[i])) {
+        detailrows[i].style.display = 'none';
+      }
+
       if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
-        let targetEle: Element = rows[i].getElementsByClassName('e-treegridexpand')[0];
-        removeClass([targetEle], 'e-treegridexpand');
-        addClass([targetEle], 'e-treegridcollapse');
-        let cRow: HTMLTableRowElement[] = this.getRows().filter(
-          (r: HTMLTableRowElement) =>
-            r.classList.contains(
-              'e-gridrowindex' + rData.index + 'level' + (rData.level + 1)
-            )
-        );
-        this.collapseRemoteChild(cRow);
+        let expandElement: HTMLElement = rows[i].querySelector('.e-treecolumn-container .e-treegridexpand');
+        removeClass([expandElement], 'e-treegridexpand');
+        addClass([expandElement], 'e-treegridcollapse');
+        let cRow: HTMLTableRowElement[] = [];
+        let detailRows: HTMLTableRowElement[] = [];
+        let eRows: HTMLTableRowElement[] = this.getRows();
+        for (let i: number = 0; i < eRows.length; i++) {
+          if (eRows[i].classList.contains('e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
+            cRow.push(eRows[i]);
+          } else if (eRows[i].classList.contains('e-griddetailrowindex' + rData.index + 'level' + (rData.level + 1))) {
+            detailRows.push(eRows[i]);
+          }
+        }
+        this.collapseRemoteChild(cRow, detailRows);
       }
     }
   }

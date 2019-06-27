@@ -25,7 +25,7 @@ export class SortDescriptor extends ChildProperty<SortDescriptor> {
 }
 
 /** 
- * Configures the sorting behavior of Gantt
+ * Configures the sorting behavior of Gantt.
  */
 export class SortSettings extends ChildProperty<SortSettings> {
     /** 

@@ -98,6 +98,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers while rendering each Popup item of DropDownButton.
      * @event
+     * @blazorProperty 'OnItemRender'
      */
     @Event()
     public beforeItemRender: EmitType<MenuEventArgs>;
@@ -105,6 +106,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers before opening the DropDownButton popup.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -112,6 +114,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers before closing the DropDownButton popup.
      * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -119,6 +122,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers while closing the DropDownButton popup.
      * @event
+     * @blazorProperty 'Closed'
      */
     @Event()
     public close: EmitType<OpenCloseMenuEventArgs>;
@@ -126,6 +130,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers while opening the DropDownButton popup.
      * @event
+     * @blazorProperty 'Opened'
      */
     @Event()
     public open: EmitType<OpenCloseMenuEventArgs>;
@@ -133,6 +138,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers while selecting action item in DropDownButton popup.
      * @event
+     * @blazorProperty 'ItemSelected'
      */
     @Event()
     public select: EmitType<MenuEventArgs>;
@@ -140,6 +146,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -490,33 +497,37 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         let ul: HTMLElement = this.getULElement();
         let beforeOpenArgs: BeforeOpenCloseMenuEventArgs = { element: ul, items: this.items, event: e, cancel: false };
-        this.trigger('beforeOpen', beforeOpenArgs);
-        if (!beforeOpenArgs.cancel) {
-            this.dropDown.show(null, this.element);
-            addClass([this.element], 'e-active');
-            this.element.setAttribute('aria-expanded', 'true');
-            ul.focus();
-            let openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
-            this.trigger('open', openArgs);
-        }
+        this.trigger('beforeOpen', beforeOpenArgs, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
+            if (!observedArgs.cancel) {
+                let ul: HTMLElement = this.getULElement();
+                this.dropDown.show(null, this.element);
+                addClass([this.element], 'e-active');
+                this.element.setAttribute('aria-expanded', 'true');
+                ul.focus();
+                let openArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
+                this.trigger('open', openArgs);
+            }
+        });
     }
 
     private closePopup(e: MouseEvent | KeyboardEventArgs = null, focusEle?: HTMLElement): void {
         let ul: HTMLElement = this.getULElement();
         let beforeCloseArgs: BeforeOpenCloseMenuEventArgs = { element: ul, items: this.items, event: e, cancel: false };
-        this.trigger('beforeClose', beforeCloseArgs);
-        if (!beforeCloseArgs.cancel) {
-            this.removeCustomSelection();
-            this.dropDown.hide();
-            removeClass(this.activeElem, 'e-active');
-            this.element.setAttribute('aria-expanded', 'false');
-            if (focusEle) {
-                focusEle.focus();
+        this.trigger('beforeClose', beforeCloseArgs,  (observedArgs: BeforeOpenCloseMenuEventArgs) => {
+            if (!observedArgs.cancel) {
+                let ul: HTMLElement = this.getULElement();
+                this.removeCustomSelection();
+                this.dropDown.hide();
+                removeClass(this.activeElem, 'e-active');
+                this.element.setAttribute('aria-expanded', 'false');
+                if (focusEle) {
+                    focusEle.focus();
+                }
+                let closeArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
+                this.trigger('close', closeArgs);
+                if (!this.target && ul) { detach(ul); }
             }
-            let closeArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
-            this.trigger('close', closeArgs);
-            if (!this.target && ul) { detach(ul); }
-        }
+        });
     }
 
     protected unWireEvents(): void {

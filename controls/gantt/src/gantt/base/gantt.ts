@@ -1,4 +1,4 @@
-import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit } from '@syncfusion/ej2-base';
+import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';
 import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append } from '@syncfusion/ej2-base';
@@ -11,8 +11,8 @@ import { GanttTreeGrid } from './tree-grid';
 import { Toolbar } from '../actions/toolbar';
 import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
 import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs } from './interface';
-import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs } from './interface';
-import { ITimeSpanEventArgs } from './interface';
+import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, ZoomEventArgs } from './interface';
+import { ITimeSpanEventArgs, ZoomTimelineSettings } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
 import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';
@@ -28,7 +28,7 @@ import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column, ColumnModel } from '../models/column';
 import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';
 import { Sort } from '../actions/sort';
-import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs } from '@syncfusion/ej2-grids';
+import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';
 import { RowDataBoundEventArgs, HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
@@ -42,9 +42,11 @@ import { Splitter } from './splitter';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
-import { ToolbarItem, RowPosition, DurationUnit, SortDirection, GridLine } from './enum';
+import { ToolbarItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';
 import { Selection } from '../actions/selection';
 import { DayMarkers } from '../actions/day-markers';
+import { ContextMenu } from './../actions/context-menu';
+import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';
 
 /**
  *
@@ -155,6 +157,10 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public perDayWidth?: number;
     /** @hidden */
+    public zoomingProjectStartDate?: Date;
+    /** @hidden */
+    public zoomingProjectEndDate?: Date;
+    /** @hidden */
     public cloneProjectStartDate?: Date;
     /** @hidden */
     public cloneProjectEndDate?: Date;
@@ -166,6 +172,8 @@ export class Gantt extends Component<HTMLElement>
     public ganttColumns: ColumnModel[];
     /** @hidden */
     public contentHeight: number;
+    /** @hidden */
+    public isAdaptive: Boolean;
     /**
      * The `sortModule` is used to manipulate sorting operation in Gantt.
      */
@@ -206,6 +214,10 @@ export class Gantt extends Component<HTMLElement>
      * The `keyboardModule` is used to manipulate keyboard interactions in Gantt.
      */
     public keyboardModule: KeyboardEvents;
+    /**
+     * The `contextMenuModule` is used to invoke context menu in Gantt.
+     */
+    public contextMenuModule: ContextMenu;
     /** @hidden */
     public staticSelectedRowIndex: number = -1;
     protected needsID: boolean = true;
@@ -217,7 +229,7 @@ export class Gantt extends Component<HTMLElement>
     @Property(true)
     public allowKeyboard: boolean;
     /**
-     * Enables or disables the focusing the task bar on click action
+     * Enables or disables the focusing the task bar on click action.
      * 
      * @default true
      */
@@ -265,7 +277,7 @@ export class Gantt extends Component<HTMLElement>
     @Property(false)
     public highlightWeekends: boolean;
     /**
-     * To define expander column index in Grid
+     * To define expander column index in Grid.
      * @default 0
      * @aspType int
      */
@@ -273,13 +285,13 @@ export class Gantt extends Component<HTMLElement>
     public treeColumnIndex: number;
     /**
      * It is used to render Gantt chart rows and tasks.
-     * `dataSource` value was defined as array of JavaScript objects or instances of `DataManager`
+     * `dataSource` value was defined as array of JavaScript objects or instances of `DataManager`.
      * @default []
      */
     @Property([])
     public dataSource: Object[] | DataManager;
     /**
-     * `durationUnit` Specifies the duration unit for each tasks whether day or hour or minute
+     * `durationUnit` Specifies the duration unit for each tasks whether day or hour or minute.
      * * `day`: Sets the duration unit as day.
      * * `hour`: Sets the duration unit as hour.
      * * `minute`: Sets the duration unit as minute.
@@ -300,7 +312,7 @@ export class Gantt extends Component<HTMLElement>
     @Property('MM/dd/yyyy')
     public dateFormat: string;
     /**
-     * Defines the height of the Gantt component container
+     * Defines the height of the Gantt component container.
      * @default 'auto'
      */
     @Property('auto')
@@ -314,7 +326,7 @@ export class Gantt extends Component<HTMLElement>
     public renderBaseline: boolean;
 
     /**
-     * Configures the grid lines in tree grid and gantt chart
+     * Configures the grid lines in tree grid and gantt chart.
      */
     @Property('Horizontal')
     public gridLines: GridLine;
@@ -347,13 +359,13 @@ export class Gantt extends Component<HTMLElement>
     public milestoneTemplate: string;
 
     /**
-     * Defines the baseline bar color
+     * Defines the baseline bar color.
      */
     @Property()
     public baselineColor: string;
 
     /**
-     * Defines the width of the Gantt component container
+     * Defines the width of the Gantt component container.
      * @default 'auto'
      */
     @Property('auto')
@@ -375,13 +387,16 @@ export class Gantt extends Component<HTMLElement>
      * * CollapseAll: Collapses all the task of Gantt.
      * * PrevTimeSpan: Extends timeline with one unit before the timeline start date.
      * * NextTimeSpan: Extends timeline with one unit after the timeline finish date.
+     * * ZoomIn: ZoomIn the Gantt control.
+     * * ZoomOut: ZoomOut the Gantt control.
+     * * ZoomToFit: Display the all tasks within the viewable Gantt chart.
      * @default null
      */
     @Property()
     public toolbar: (ToolbarItem | string | ItemModel)[];
 
     /**
-     * Defines workweek of project
+     * Defines workweek of project.
      * @default ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
      */
     @Property(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
@@ -399,20 +414,20 @@ export class Gantt extends Component<HTMLElement>
     @Property(false)
     public allowUnscheduledTasks: boolean;
     /**
-     * To show notes column cell values inside the cell or in tooltip
+     * To show notes column cell values inside the cell or in tooltip.
      * @default false
      */
     @Property(false)
     public showInlineNotes: boolean;
     /**
-     * Defines height value for grid rows and chart rows in Gantt
+     * Defines height value for grid rows and chart rows in Gantt.
      * @default 36
      * @aspType int
      */
     @Property(36)
     public rowHeight: number;
     /**
-     * Defines height of taskbar element in Gantt
+     * Defines height of taskbar element in Gantt.
      * @aspType int?
      */
     @Property(null)
@@ -493,7 +508,7 @@ export class Gantt extends Component<HTMLElement>
     public selectedRowIndex: number;
 
     /**
-     * Defines customized working time of project
+     * Defines customized working time of project.
      */
     @Collection<DayWorkingTimeModel>([{ from: 8, to: 12 }, { from: 13, to: 17 }], DayWorkingTime)
     public dayWorkingTime: DayWorkingTimeModel[];
@@ -521,6 +536,14 @@ export class Gantt extends Component<HTMLElement>
      */
     @Complex<TimelineSettingsModel>({}, TimelineSettings)
     public timelineSettings: TimelineSettingsModel;
+    /**
+     * Configure zooming levels of Gantt Timeline
+     */
+    public zoomingLevels: ZoomTimelineSettings[];
+    /**
+     * Configures current zooming level of Gantt.
+     */
+    public currentZoomingLevel: ZoomTimelineSettings;
 
     /**
      * Configures the sort settings of the Gantt.
@@ -549,7 +572,7 @@ export class Gantt extends Component<HTMLElement>
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
     /**
-     * Enables or disables filtering support in Gantt
+     * Enables or disables filtering support in Gantt.
      * @default false
      */
     @Property(false)
@@ -569,6 +592,18 @@ export class Gantt extends Component<HTMLElement>
     public allowResizing: boolean;
 
     /**
+     * If `enableContextMenu` is set to true, Enable context menu in Gantt.
+     * @default false
+     */
+    @Property(false)
+    public enableContextMenu: boolean;
+    /**
+     * If `contextMenuItems` are array collection of menu items in Context Menu.
+     * @default null
+     */
+    @Property()
+    public contextMenuItems: ContextMenuItem[] | ContextMenuItemModel[];
+    /**
      * Configures the filter settings for Gantt.
      * @default {columns: [], type: 'Menu' }
      */
@@ -576,7 +611,7 @@ export class Gantt extends Component<HTMLElement>
     public filterSettings: FilterSettingsModel;
 
     /**
-     * Configures the search settings for Gantt
+     * Configures the search settings for Gantt.
      */
     @Complex<SearchSettingsModel>({}, SearchSettings)
     public searchSettings: SearchSettingsModel;
@@ -609,6 +644,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered after the taskbar element is appended to the Gantt element.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -616,6 +652,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered before the row getting collapsed.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -623,6 +660,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered after the row getting collapsed.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -630,6 +668,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered before the row getting expanded.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -637,6 +676,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered after the row getting expanded.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -644,27 +684,31 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when Gantt actions such as sorting, filtering, searching etc., starts.
+     * @deprecated
      * @event
      */
     /* tslint:disable-next-line */
     @Event()
-    public actionBegin: EmitType<object | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs>;
+    public actionBegin: EmitType<object | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs | ZoomEventArgs>;
     /**
      * Triggers when Gantt actions such as sorting, filtering, searching etc. are completed.
      * @event
+     * @deprecated
      */
     @Event()
-    public actionComplete: EmitType<FilterEventArgs | SortEventArgs | ITaskAddedEventArgs>;
+    public actionComplete: EmitType<FilterEventArgs | SortEventArgs | ITaskAddedEventArgs | IKeyPressedEventArgs | ZoomEventArgs>;
 
     /**
      * Triggers when actions are failed.
+     * @deprecated
      * @event
      */
     @Event()
     public actionFailure: EmitType<FilterEventArgs | SortEventArgs>;
 
     /** 
-     * This will be triggered taskbar was dragged and dropped on new position
+     * This will be triggered taskbar was dragged and dropped on new position.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -672,6 +716,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered when a task get saved by cell edit.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -679,6 +724,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered a cell get begins to edit.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -686,13 +732,15 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * Triggered before the Gantt control gets rendered.
-     * @event 
+     * @event
+     * @blazorProperty 'OnLoad'
      */
     @Event()
-    public load: EmitType<object>;
+    public load: EmitType<Object>;
 
     /** 
      * This event will be triggered when taskbar was in dragging state.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -700,13 +748,15 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * Triggers when data source is populated in the Grid.
-     * @event 
+     * @event
+     * @blazorProperty 'DataBound'
      */
     @Event()
-    public dataBound: EmitType<object>;
+    public dataBound: EmitType<Object>;
 
     /**
      * Triggers when column resize starts.
+     * @deprecated
      * @event
      */
     @Event()
@@ -714,6 +764,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers on column resizing.
+     * @deprecated
      * @event
      */
     @Event()
@@ -721,55 +772,63 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when column resize ends.
+     * @deprecated
      * @event
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
 
     /**
-     * Triggers when splitter resizing starts
+     * Triggers when splitter resizing starts.
+     * @deprecated
      * @event
      */
     @Event()
     public splitterResizeStart: EmitType<ResizeEventArgs>;
 
     /**
-     * Triggers when splitter bar was dragging
+     * Triggers when splitter bar was dragging.
+     * @deprecated
      * @event
      */
     @Event()
     public splitterResizing: EmitType<ResizingEventArgs>;
 
     /**
-     * Triggers when splitter resizing action completed
+     * Triggers when splitter resizing action completed.
+     * @deprecated
      * @event
      */
     @Event()
     public splitterResized: EmitType<ISplitterResizedEventArgs>;
 
     /**
-     * Triggers when column header element drag (move) starts. 
+     * Triggers when column header element drag (move) starts.
+     * @deprecated 
      * @event
      */
     @Event()
     public columnDragStart: EmitType<ColumnDragEventArgs>;
 
     /**
-     * Triggers when column header element is dragged (moved) continuously. 
+     * Triggers when column header element is dragged (moved) continuously.
+     * @deprecated 
      * @event
      */
     @Event()
     public columnDrag: EmitType<ColumnDragEventArgs>;
 
     /**
-     * Triggers when a column header element is dropped on the target column. 
+     * Triggers when a column header element is dropped on the target column.
+     * @deprecated 
      * @event
      */
     @Event()
     public columnDrop: EmitType<ColumnDragEventArgs>;
 
     /** 
-     * Triggers before tooltip get rendered
+     * Triggers before tooltip get rendered.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -777,6 +836,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers before row selection occurs.
+     * @deprecated
      * @event
      */
     @Event()
@@ -784,6 +844,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers after a row is selected.
+     * @deprecated
      * @event
      */
     @Event()
@@ -791,6 +852,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers before deselecting the selected row.
+     * @deprecated
      * @event
      */
     @Event()
@@ -798,6 +860,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when a selected row is deselected.
+     * @deprecated
      * @event
      */
     @Event()
@@ -806,6 +869,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers before any cell selection occurs.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -813,6 +877,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers after a cell is selected.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -820,6 +885,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers before the selected cell is deselecting.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -827,6 +893,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when a particular selected cell is deselected.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -834,6 +901,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered before the header cell element is appended to the Grid element.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -841,6 +909,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered before the header cell element is appended to the Grid element.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -848,6 +917,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered before the row element is appended to the Grid element.
+     * @deprecated
      * @event 
      */
     @Event()
@@ -855,23 +925,41 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * Triggers before column menu opens.
+     * @deprecated
      * @event 
      */
     @Event()
     public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
 
     /**
-     * Triggers when toolbar item was clicked
+     * Triggers when toolbar item was clicked.
+     * @deprecated
      * @event
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
     /** 
      * Triggers when click on column menu.
+     * @deprecated
      * @event 
      */
     @Event()
     public columnMenuClick: EmitType<ColumnMenuClickEventArgs>;
+    /** 
+     * Triggers before context menu opens.
+     * @deprecated
+     * @event
+     */
+    @Event()
+    public contextMenuOpen: EmitType<CMenuOpenEventArgs>;
+
+    /** 
+     * Triggers when click on context menu.
+     * @deprecated
+     * @event
+     */
+    @Event()
+    public contextMenuClick: EmitType<CMenuClickEventArgs>;
 
     constructor(options?: GanttModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -889,46 +977,57 @@ export class Gantt extends Component<HTMLElement>
      * To perform key interaction in Gantt
      * @private
      */
+    /* tslint:disable-next-line:max-func-body-length */
     public onKeyPress(e: KeyboardEventArgs): void | boolean {
+        let expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
+        if (e.action === 'home' || e.action === 'end' || e.action === 'downArrow' || e.action === 'upArrow' || e.action === 'delete' ||
+            e.action === 'rightArrow' || e.action === 'leftArrow' || e.action === 'focusTask' || e.action === 'focusSearch' ||
+            e.action === 'expandAll' || e.action === 'collapseAll') {
+            if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
+                this.editModule.cellEditModule.isCellEdit === true) {
+                return;
+            }
+        }
         switch (e.action) {
-            case 'focusGanttChart':
-                // console.log("Focus the Gantt Chart");
-                break;
             case 'home':
-                // console.log("Focus first row");
+                if (this.selectionModule && this.selectionSettings.mode !== 'Cell') {
+                    if (this.selectedRowIndex === 0) {
+                        return;
+                    }
+                    this.selectionModule.selectRow(0);
+                }
                 break;
             case 'end':
-                // console.log("Focus last row");
-                break;
-            case 'editCell':
-                // console.log("edit the focused cell");
+                if (this.selectionModule && this.selectionSettings.mode !== 'Cell') {
+                    let currentSelectingRecord: IGanttData = expandedRecords[expandedRecords.length - 1];
+                    if (this.selectedRowIndex === this.currentViewData.indexOf(currentSelectingRecord)) {
+                        return;
+                    }
+                    this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord));
+                }
                 break;
             case 'downArrow':
-                // console.log("select next row");
-                break;
             case 'upArrow':
-                // console.log("select previous row");
+                this.upDownKeyNavigate(e);
                 break;
-            case 'ctrlDownArrow':
-                // console.log("select multiple rows downwards");
+            case 'expandAll':
+                this.ganttChartModule.expandCollapseAll('expand');
                 break;
-            case 'ctrlUpArrow':
-                // console.log("select multiple rows upwards");
+            case 'collapseAll':
+                this.ganttChartModule.expandCollapseAll('collapse');
                 break;
-            case 'rightArrow':
-                // console.log("expand the record");
-                break;
-            case 'leftArrow':
-                // console.log("collapse the record");
-                break;
-            case 'totalRowExpand':
-                // console.log("expand all the parent");
-                break;
-            case 'totalRowCollapse':
-                // console.log("collapse all the parent");
+            case 'expandRow':
+            case 'collapseRow':
+                this.expandCollapseKey(e);
                 break;
             case 'saveRequest':
-                // console.log("Save edited cell");
+                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
+                    this.editModule.cellEditModule.isCellEdit === true) {
+                    this.editModule.cellEditModule.isCellEdit = false;
+                    this.treeGrid.grid.editModule.saveCell();
+                    let focussedElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-treegrid');
+                    focussedElement.focus();
+                }
                 break;
             case 'cancelRequest':
                 if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule)) {
@@ -939,45 +1038,110 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'addRow':
-                // console.log(" an empty row at the top row if the rows are not selected. If a row is selected," +
-                //     "then add an empty row based on the addRowPosition API");
-                if (this.editModule && this.editSettings.allowAdding) {
-                    e.preventDefault();
-                    this.editModule.addRecord();
-                }
+                e.preventDefault();
+                let focussedElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-gantt-chart');
+                focussedElement.focus();
+                this.addRecord();
                 break;
             case 'addRowDialog':
-                // console.log("add row through dialog");
-                if (this.editModule && this.editSettings.allowAdding) {
-                    e.preventDefault();
+                e.preventDefault();
+                if (this.editModule && this.editModule.dialogModule && this.editSettings.allowAdding) {
+                    if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
+                        return;
+                    }
                     this.editModule.dialogModule.openAddDialog();
                 }
                 break;
             case 'editRowDialog':
-                // console.log("add row through dialog");
-                if (this.editModule && this.editSettings.allowEditing) {
-                    e.preventDefault();
+                e.preventDefault();
+                if (this.editModule && this.editModule.dialogModule && this.editSettings.allowEditing) {
+                    if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
+                        return;
+                    }
                     this.editModule.dialogModule.openToolbarEditDialog();
                 }
                 break;
             case 'delete':
-                // console.log("delete selected record");
                 if (this.selectionModule && this.editModule) {
-                    if ((this.selectionSettings.mode === 'Row' && this.selectionModule.selectedRowIndexes.length)
+                    if ((this.selectionSettings.mode !== 'Cell' && this.selectionModule.selectedRowIndexes.length)
                         || (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length)) {
                         this.editModule.startDeleteAction();
                     }
                 }
                 break;
-            case 'navigateEditors':
-                // console.log("Navigate between navigateEditors");
-                break;
             case 'focusTask':
-                // console.log("	Focus the selected task");
+                e.preventDefault();
+                let selectedId: string;
+                if (this.selectionModule) {
+                    if (this.selectionSettings.mode !== 'Cell' &&
+                        !isNullOrUndefined(this.currentViewData[this.selectedRowIndex])) {
+                        selectedId = this.currentViewData[this.selectedRowIndex].ganttProperties.taskId;
+                    } else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
+                        let selectCellIndex: ISelectedCell[] = this.selectionModule.getSelectedRowCellIndexes();
+                        selectedId = this.currentViewData[selectCellIndex[selectCellIndex.length - 1].rowIndex].ganttProperties.taskId;
+                    }
+                }
+                if (selectedId) {
+                    this.scrollToTask(selectedId.toString());
+                }
+                break;
+            case 'focusSearch':
+                let searchElement: HTMLInputElement = <HTMLInputElement>this.element.querySelector('#' + this.element.id + '_searchbar');
+                searchElement.setAttribute('tabIndex', '-1');
+                searchElement.focus();
+                break;
+            default:
+                let eventArgs: IKeyPressedEventArgs = {
+                    requestType: 'keyPressed',
+                    action: e.action,
+                    keyEvent: e
+                };
+                this.trigger('actionComplete', eventArgs);
                 break;
         }
     }
-
+    private expandCollapseKey(e: KeyboardEventArgs): void {
+        if (this.selectionModule && this.selectedRowIndex !== -1) {
+            let selectedRowIndex: number;
+            if (this.selectionSettings.mode !== 'Cell') {
+                selectedRowIndex = this.selectedRowIndex;
+            } else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
+                let selectCellIndex: ISelectedCell[] = this.selectionModule.getSelectedRowCellIndexes();
+                selectedRowIndex = selectCellIndex[selectCellIndex.length - 1].rowIndex;
+            }
+            if (e.action === 'expandRow') {
+                this.expandByIndex(selectedRowIndex);
+            } else {
+                this.collapseByIndex(selectedRowIndex);
+            }
+        }
+    }
+    private upDownKeyNavigate(e: KeyboardEventArgs): void {
+        e.preventDefault();
+        let expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
+        if (this.selectionModule) {
+            if (this.selectionSettings.mode !== 'Cell' && this.selectedRowIndex !== -1) {
+                let selectedItem: IGanttData = this.currentViewData[this.selectedRowIndex];
+                let selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
+                let currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
+                    expandedRecords[selectingRowIndex - 1];
+                this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord));
+            } else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
+                let selectCellIndex: ISelectedCell[] = this.selectionModule.getSelectedRowCellIndexes();
+                let selectedCellItem: ISelectedCell = selectCellIndex[selectCellIndex.length - 1];
+                let currentCellIndex: number = selectedCellItem.cellIndexes[selectedCellItem.cellIndexes.length - 1];
+                let selectedItem: IGanttData = this.currentViewData[selectedCellItem.rowIndex];
+                let selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
+                let currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
+                    expandedRecords[selectingRowIndex - 1];
+                let cellInfo: IIndex = {
+                    rowIndex: this.currentViewData.indexOf(currentSelectingRecord),
+                    cellIndex: currentCellIndex
+                };
+                this.selectionModule.selectCell(cellInfo);
+            }
+        }
+    }
     /**
      * For internal use only - Initialize the event handler
      * @private
@@ -987,6 +1151,7 @@ export class Gantt extends Component<HTMLElement>
     }
     private initProperties(): void {
         this.globalize = new Internationalization(this.locale);
+        this.isAdaptive = Browser.isDevice;
         this.flatData = [];
         this.currentViewData = [];
         this.ids = [];
@@ -1047,29 +1212,26 @@ export class Gantt extends Component<HTMLElement>
         this.splitterModule = new Splitter(this);
         this.tooltipModule = new Tooltip(this);
         this.keyConfig = {
-            focusGanttChart: 'alt+74', // j key
             home: 'home',
             end: 'end',
-            editCell: 'f2',
             downArrow: 'downarrow',
             upArrow: 'uparrow',
-            ctrlDownArrow: 'ctrl+downarrow',
-            ctrlUpArrow: 'ctrl+uparrow',
-            rightArrow: 'rightarrow',
-            leftArrow: 'leftarrow',
-            totalRowExpand: 'ctrl+rightarrow',
-            totalRowCollapse: 'ctrl+leftarrow',
+            collapseAll: 'ctrl+uparrow',
+            expandAll: 'ctrl+downarrow',
+            collapseRow: 'ctrl+shift+uparrow',
+            expandRow: 'ctrl+shift+downarrow',
             saveRequest: '13', // enter
             cancelRequest: '27', //Esc 
-            addRow: 'ctrl+187', // + key 
-            addRowDialog: 'ctrl+shift+65', // + Key
-            editRowDialog: 'ctrl+shift+69', // + Key
+            addRow: 'insert', // insert key 
+            addRowDialog: 'ctrl+insert',
+            editRowDialog: 'ctrl+f2',
             delete: 'delete',
-            navigateEditors: 'tab',
-            focusTask: 'ctrl+shift+f5',
+            focusTask: 'shift+f5',
             indentLevel: 'shift+leftarrow',
             outdentLevel: 'shift+rightarrow',
+            focusSearch: 'ctrl+shift+70' //F Key
         };
+        this.zoomingLevels = this.getZoomingLevels();
     }
     /**
      * To validate height and width
@@ -1121,6 +1283,11 @@ export class Gantt extends Component<HTMLElement>
         createSpinner({ target: this.element }, this.createElement);
         this.trigger('load', {});
         this.element.classList.add(cls.root);
+        if (this.isAdaptive) {
+            this.element.classList.add(cls.adaptive);
+        } else {
+            this.element.classList.remove(cls.adaptive);
+        }
         this.calculateDimensions();
         if (!isNullOrUndefined(this.toolbarModule)) {
             this.renderToolbar();
@@ -1131,13 +1298,13 @@ export class Gantt extends Component<HTMLElement>
         this.dataOperation.checkDataBinding();
     }
     /**
-     * To show spinner
+     * Method used to show spinner.
      */
     public showSpinner(): void {
         showSpinner(this.element);
     }
     /**
-     * To hide spinner
+     * Method used to hide spinner.
      */
     public hideSpinner(): void {
         hideSpinner(this.element);
@@ -1147,6 +1314,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public renderGantt(isChange?: boolean): void {
         this.timelineModule.processTimelineUnit();
+        this.timelineModule.calculateZoomingLevelsPerDayWidth(); // To calculate the perDaywidth
         // predecessor calculation
         if (this.taskFields.dependency) {
             this.predecessorModule.updatePredecessors();
@@ -1166,6 +1334,9 @@ export class Gantt extends Component<HTMLElement>
             this.treeGridPane.classList.remove('e-temp-content');
             remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
             this.notify('dataReady', {});
+            if (this.enableContextMenu) {
+                this.notify('initiate-contextMenu', {});
+            }
             this.renderTreeGrid();
             this.wireEvents();
             if (this.taskFields.dependency && this.isInPredecessorValidation) {
@@ -1245,7 +1416,7 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     /**
-     * Get expanded records from given record collection
+     * Get expanded records from given record collection.
      * @param {IGanttData[]} records - Defines record collection.
      */
     public getExpandedRecords(records: IGanttData[]): IGanttData[] {
@@ -1254,6 +1425,171 @@ export class Gantt extends Component<HTMLElement>
         });
         return expandedRecords;
     }
+    /**
+     * Getting the Zooming collections of the Gantt control
+     * @private
+     */
+    /* tslint:disable-next-line:max-func-body-length */
+    public getZoomingLevels(): ZoomTimelineSettings[] {
+        let zoomingLevels: ZoomTimelineSettings[] = [
+            {
+                topTier: { unit: 'Year', format: 'yyyy', count: 50 },
+                bottomTier: { unit: 'Year', format: 'yyyy', count: 10 }, timelineUnitSize: 99, level: 0,
+                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Year', format: 'yyyy', count: 20 },
+                bottomTier: { unit: 'Year', format: 'yyyy', count: 5 }, timelineUnitSize: 99, level: 1,
+                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Year', format: 'yyyy', count: 5 },
+                bottomTier: { unit: 'Year', format: 'yyyy', count: 1 }, timelineUnitSize: 99, level: 2,
+                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
+                bottomTier: {
+                    unit: 'Month', formatter: this.displayHalfValue, count: 6
+                }, timelineUnitSize: 66, level: 3,
+                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
+                bottomTier: {
+                    unit: 'Month', formatter: this.displayHalfValue, count: 6
+                }, timelineUnitSize: 99, level: 4,
+                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
+                bottomTier: {
+                    unit: 'Month', formatter: this.displayQuarterValue, count: 3
+                }, timelineUnitSize: 66, level: 5,
+                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Year', format: 'yyyy', count: 1 },
+                bottomTier: {
+                    unit: 'Month', formatter: this.displayQuarterValue, count: 3
+                }, timelineUnitSize: 99, level: 6,
+                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Year', format: 'yyyy', count: 1 },
+                bottomTier: { unit: 'Month', format: 'MMM yyyy', count: 1 }, timelineUnitSize: 99, level: 7,
+                timelineViewMode: 'Year', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Month', format: 'MMM, yy', count: 1 },
+                bottomTier: { unit: 'Week', format: 'dd', count: 1 }, timelineUnitSize: 33, level: 8,
+                timelineViewMode: 'Month', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
+                bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 }, timelineUnitSize: 66, level: 9,
+                timelineViewMode: 'Month', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
+                bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 }, timelineUnitSize: 99, level: 10,
+                timelineViewMode: 'Month', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
+                bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 33, level: 11,
+                timelineViewMode: 'Week', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
+                bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 66, level: 12,
+                timelineViewMode: 'Week', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
+                bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 99, level: 13,
+                timelineViewMode: 'Week', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 66, level: 14,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 99, level: 15,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 6 }, timelineUnitSize: 66, level: 16,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 6 }, timelineUnitSize: 99, level: 17,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 2 }, timelineUnitSize: 66, level: 18,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 2 }, timelineUnitSize: 99, level: 19,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 1 }, timelineUnitSize: 66, level: 20,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 1 }, timelineUnitSize: 99, level: 21,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
+                bottomTier: { unit: 'Minutes', format: 'mm', count: 30 }, timelineUnitSize: 66, level: 22,
+                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
+                bottomTier: { unit: 'Minutes', format: 'mm', count: 15 }, timelineUnitSize: 66, level: 23,
+                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
+                bottomTier: { unit: 'Minutes', format: 'mm', count: 1 }, timelineUnitSize: 66, level: 24,
+                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+
+        ];
+        return zoomingLevels;
+    }
+    private displayQuarterValue(date: Date): string {
+        let month: number = date.getMonth();
+        if (month >= 0 && month <= 2) {
+            return 'Q1';
+        } else if (month >= 3 && month <= 5) {
+            return 'Q2';
+        } else if (month >= 6 && month <= 8) {
+            return 'Q3';
+        } else {
+            return 'Q4';
+        }
+    }
+    private displayHalfValue(date: Date): string {
+        let month: number = date.getMonth();
+        if (month >= 0 && month <= 6) {
+            return 'H1';
+        } else {
+            return 'H2';
+        }
+    }
+
     /**
      * 
      * @param date 
@@ -1269,7 +1605,7 @@ export class Gantt extends Component<HTMLElement>
         return this.globalize.formatDate(date, { format: format });
     }
     /**
-     * Get duration value as string combined with duration and unit values
+     * Get duration value as string combined with duration and unit values.
      * @param {number} duration - Defines the duration.
      * @param {string} durationUnit - Defines the duration unit.
      */
@@ -1320,7 +1656,10 @@ export class Gantt extends Component<HTMLElement>
      * @param oldProp 
      * @private
      */
+    /* tslint:disable-next-line:max-line-length */
+    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: GanttModel, oldProp: GanttModel): void {
+        let isRefresh: boolean = false;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'allowSelection':
@@ -1331,9 +1670,6 @@ export class Gantt extends Component<HTMLElement>
                     this.notify('ui-update', { module: 'day-markers', properties: newProp });
                     break;
                 case 'highlightWeekends':
-                    this.notify('ui-update', { module: 'day-markers', properties: newProp });
-                    break;
-                case 'holidays':
                     this.notify('ui-update', { module: 'day-markers', properties: newProp });
                     break;
                 case 'sortSettings':
@@ -1390,11 +1726,105 @@ export class Gantt extends Component<HTMLElement>
                         this.toolbarModule.updateSearchTextBox();
                     }
                     break;
+                case 'labelSettings':
+                case 'renderBaseline':
+                case 'baselineColor':
+                    this.chartRowsModule.initiateTemplates();
+                    this.chartRowsModule.refreshGanttRows();
+                    break;
+                case 'resourceIDMapping':
+                case 'resourceNameMapping':
+                case 'resources':
+                    this.dataOperation.reUpdateResources();
+                    this.treeGrid.refreshColumns();
+                    this.chartRowsModule.initiateTemplates();
+                    this.chartRowsModule.refreshGanttRows();
+                    break;
+                case 'includeWeekend':
+                case 'dayWorkingTime':
+                case 'allowUnscheduledTasks':
+                case 'holidays':
+                    if (prop === 'holidays') {
+                        this.totalHolidayDates = this.dataOperation.getHolidayDates();
+                        this.notify('ui-update', { module: 'day-markers', properties: newProp });
+                    }
+                    this.dataOperation.reUpdateGanttData();
+                    this.treeGrid.refreshColumns();
+                    this.chartRowsModule.initiateTemplates();
+                    this.chartRowsModule.refreshGanttRows();
+                    break;
+                case 'addDialogFields':
+                case 'editDialogFields':
+                    if (this.editModule && this.editModule.dialogModule) {
+                        this.editModule.dialogModule.processDialogFields();
+                    }
+                    break;
+                case 'columns':
+                    this.treeGridModule.treeGridColumns = [];
+                    this.treeGridModule.validateGanttColumns();
+                    this.treeGrid.columns = this.treeGridModule.treeGridColumns;
+                    this.chartRowsModule.initiateTemplates();
+                    this.timelineModule.updateChartByNewTimeline();
+                    break;
+                case 'width':
+                case 'height':
+                    this.reUpdateDimention();
+                    break;
+                case 'editSettings':
+                    this.treeGrid.editSettings.allowAdding = this.editSettings.allowAdding;
+                    this.treeGrid.editSettings.allowDeleting = this.editSettings.allowDeleting;
+                    this.treeGrid.editSettings.showDeleteConfirmDialog = this.editSettings.showDeleteConfirmDialog;
+                    this.treeGrid.editSettings.allowEditing = this.editSettings.allowEditing;
+                    if (!isNullOrUndefined(this.editModule)) {
+                        this.editModule.reUpdateEditModules();
+                    }
+                    if (!isNullOrUndefined(this.toolbarModule)) {
+                        this.toolbarModule.refreshToolbarItems();
+                    }
+                    break;
+                case 'connectorLineBackground':
+                case 'connectorLineWidth':
+                    if (this.taskFields.dependency) {
+                        this.connectorLineModule.initPublicProp();
+                        this.ganttChartModule.reRenderConnectorLines();
+                    }
+                    break;
+                case 'treeColumnIndex':
+                    this.treeGrid.treeColumnIndex = this.treeColumnIndex;
+                    break;
+                case 'projectStartDate':
+                case 'projectEndDate':
+                    this.dataOperation.calculateProjectDates();
+                    this.updateProjectDates(
+                        this.cloneProjectStartDate, this.cloneProjectEndDate, this.isTimelineRoundOff);
+                    break;
+                case 'selectedRowIndex':
+                    if (!isNullOrUndefined(this.selectionModule)) {
+                        this.selectionModule.selectRowByIndex();
+                    }
+                    break;
                 case 'dataSource':
                     this.closeGanttActions();
                     this.dataOperation.checkDataBinding(true);
                     break;
+                case 'enableContextMenu':
+                case 'contextMenuItems':
+                    if (this.enableContextMenu || prop === 'contextMenuItems') {
+                        this.notify('reRender-contextMenu', { module: 'contextMenu', enable: this.contextMenuItems });
+                    } else {
+                        this.treeGrid.contextMenuItems = [];
+                    }
+                    this.treeGrid.dataBind();
+                    break;
+                case 'currencyCode':
+                case 'locale':
+                case 'enableRtl':
+                    isRefresh = true;
+                    break;
             }
+        }
+        if (isRefresh) {
+            this.refresh();
         }
     }
 
@@ -1502,6 +1932,12 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
+        if (this.enableContextMenu) {
+            modules.push({
+                member: 'contextMenu',
+                args: [this]
+            });
+        }
         return modules;
     }
     /** 
@@ -1592,6 +2028,27 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**  
+     * To update height of the Grid lines in the Gantt chart side.  
+     * @return {void} 
+     * @private
+     */
+    public reUpdateDimention(): void {
+        let toolbarHeight: number = 0;
+        this.calculateDimensions();
+        if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
+            this.toolbarModule.toolbar.refresh();
+            this.toolbarModule.refreshToolbarItems();
+            toolbarHeight = this.toolbarModule.element.offsetHeight;
+        }
+        this.treeGrid.height = this.ganttHeight - toolbarHeight -
+            (this.treeGrid.grid.getHeaderContent() as HTMLElement).offsetHeight;
+        this.splitterModule.splitterObject.height = (this.ganttHeight - toolbarHeight).toString();
+        this.splitterModule.splitterObject.width = this.ganttWidth.toString();
+        this.ganttChartModule.scrollObject.
+            setHeight(this.ganttHeight - this.ganttChartModule.chartTimelineContainer.offsetHeight - toolbarHeight);
+    }
+
+    /**  
      * To render vertical lines in the Gantt chart side.  
      * @return {void} 
      */
@@ -1627,8 +2084,9 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**  
-     * Method to get default property of the Gantt.  
+     * Method to get default localized text of the Gantt.
      * @return {void} 
+     * @hidden
      */
     public getDefaultLocale(): Object {
         let ganttLocale: Object = {
@@ -1666,6 +2124,9 @@ export class Gantt extends Component<HTMLElement>
             search: 'Search',
             task: ' task',
             tasks: ' tasks',
+            zoomIn: 'Zoom in',
+            zoomOut: 'Zoom out',
+            zoomToFit: 'Zoom to fit',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             nextTimeSpan: 'Next timespan',
@@ -1695,13 +2156,29 @@ export class Gantt extends Component<HTMLElement>
             lag: 'Lag',
             start: 'Start',
             finish: 'Finish',
-            enterValue: 'Enter the value'
+            enterValue: 'Enter the value',
+            taskInformation: 'Task Information',
+            deleteTask: 'Delete Task',
+            deleteDependency: 'Delete Dependency',
+            convert: 'Convert',
+            save: 'Save',
+            above: 'Above',
+            below: 'Below',
+            child: 'Child',
+            milestone: 'Milestone',
+            toTask: 'To Task',
+            toMilestone: 'To Milestone',
+            eventMarkers: 'Event markers',
+            leftTaskLabel: 'Left task label',
+            rightTaskLabel: 'Right task label',
+            timelineCell: 'Timeline cell',
+            confirmPredecessorDelete: 'Are you sure you want to remove dependency link?'
         };
         return ganttLocale;
     }
     /**
-     * To clear sorted records with specific to particular column
-     * @param {string} columnName - Defines the sorted column name. 
+     * To remove sorted records of particular column.
+     * @param {string} columnName - Defines the sorted column name.  
      */
     public removeSortColumn(columnName: string): void {
         this.sortModule.removeSortColumn(columnName);
@@ -1716,7 +2193,7 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * To move horizontal scroll bar of Gantt to specific date
+     * To move horizontal scroll bar of Gantt to specific date.
      * @param  {string} date - Defines the task date of data.
      */
     public scrollToDate(date: string): void {
@@ -1736,7 +2213,7 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     /**
-     * To set scroll left and top in chart side
+     * To set scroll left and top in chart side.
      * @param  {number} left - Defines the scroll left value of chart side.
      * @param  {number} top - Defines the scroll top value of chart side.
      */
@@ -1752,8 +2229,8 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     /**
-     * Get parent task by clone parent item
-     * @param {IParent} cloneParent - Defines the clone parent item. 
+     * Get parent task by clone parent item.
+     * @param {IParent} cloneParent - Defines the clone parent item.
      */
     public getParentTask(cloneParent: IParent): IGanttData {
         if (!isNullOrUndefined(cloneParent)) {
@@ -1962,8 +2439,8 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     /**
-     * Method to get task by uniqueId value
-     * @param {string} id - Defines the task id. 
+     * Method to get task by uniqueId value.
+     * @param {string} id - Defines the task id.
      */
     public getTaskByUniqueID(id: string): IGanttData {
         let value: IGanttData[] = this.flatData.filter((val: IGanttData) => {
@@ -1977,7 +2454,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Method to get record by id value.
-     * @param {string} id - Defines the id of record. 
+     * @param {string} id - Defines the id of record.
      */
     public getRecordByID(id: string): IGanttData {
         if (isNullOrUndefined(id)) {
@@ -1986,7 +2463,7 @@ export class Gantt extends Component<HTMLElement>
         return this.flatData[this.ids.indexOf(id.toString())];
     }
     /**
-     * Method to set splitter position
+     * Method to set splitter position.
      * @param {string|number} value - Define value to splitter settings property.
      * @param {string} type - Defines name of internal splitter settings property.
      */
@@ -2063,7 +2540,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Method to update record by ID.
-     * @param  {object} data - Defines the data to modify.
+     * @param  {Object} data - Defines the data to modify.
      * @return {void}
      * @public
      */
@@ -2072,7 +2549,31 @@ export class Gantt extends Component<HTMLElement>
             this.editModule.updateRecordByID(data);
         }
     }
-
+    /**
+     * To perform Zoom in action on Gantt timeline.
+     * @return {void}
+     * @public
+     */
+    public zoomIn(): void {
+        this.timelineModule.processZooming(true);
+    }
+    /**
+     * To perform zoom out action on Gantt timeline.
+     * @return {void}
+     * @public
+     */
+    public zoomOut(): void {
+        this.timelineModule.processZooming(false);
+    }
+    /**
+     * To show all project task in available chart width 
+     * @return {void}
+     * @public
+     */
+    public fitToProject(): void {
+        this.timelineModule.processZoomToFit();
+        this.ganttChartModule.updateScrollLeft(0);
+    }
     /**
      * Method to update record by Index.
      * @param  {number} index - Defines the index of data to modify.
@@ -2094,7 +2595,7 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * To add dependency for Task
+     * To add dependency for Task.
      * @param  {String|number} id - Defines the ID of data to modify.
      * @param  {string} predecessorString - Defines the predecessor string to add.
      * @return {void}
@@ -2107,8 +2608,8 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     /**
-     * To remove dependency from task
-     * @param  {String|number} id - Defines the ID of data to modify.
+     * To remove dependency from task.
+     * @param  {String|number} id - Defines the ID of task to modify.
      * @return {void}
      * @public
      */
@@ -2119,7 +2620,7 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     /**
-     * To modify current dependency values of Task
+     * To modify current dependency values of Task by task id.
      * @param  {String|number} id - Defines the ID of data to modify.
      * @param  {string} predecessorString - Defines the predecessor string to update.
      * @return {void}
@@ -2258,7 +2759,7 @@ export class Gantt extends Component<HTMLElement>
         return textValue;
     }
     /**
-     * Method to perform search action in Gantt
+     * Method to perform search action in Gantt.
      * @param {string} keyVal - Defines key value to search.
      */
     public search(keyVal: string): void {
@@ -2285,6 +2786,14 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
+     * Method to expand all the rows of Gantt.
+     * @return {void}
+     * @public
+     */
+    public expandAll(): void {
+        this.ganttChartModule.expandCollapseAll('expand');
+    }
+    /**
      * Method to update data source.
      * @return {void}
      * @public
@@ -2302,17 +2811,9 @@ export class Gantt extends Component<HTMLElement>
         }
         this.dataSource = dataSource;
     }
-    /**
-     * Method to expand all the rows of Gantt
-     * @return {void}
-     * @public
-     */
-    public expandAll(): void {
-        this.ganttChartModule.expandCollapseAll('expand');
-    }
 
     /**
-     * Method to collapse all the rows of Gantt
+     * Method to collapse all the rows of Gantt.
      * @return {void}
      * @public
      */
@@ -2361,7 +2862,7 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * To set scroll top for chart scroll container
+     * To set scroll top for chart scroll container.
      * @param {number} scrollTop - Defines scroll top value for scroll container.
      * @return {void}
      * @public

@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 17.1.51 (2019-06-11)
+## 17.2.28-beta (2019-06-27)
 
 ### QueryBuilder
 
-#### Bug Fixes
+#### New Features
 
-- DataManager related issue resolved.
+- Provided localization support for 'AND/OR' conditions.
 
 ## 17.1.50 (2019-06-04)
 

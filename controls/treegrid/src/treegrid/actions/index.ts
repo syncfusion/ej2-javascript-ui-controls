@@ -15,3 +15,5 @@ export * from './context-menu';
 export * from './edit';
 export * from './command-column';
 export * from './selection';
+export * from './detail-row';
+export * from './virtual-scroll';

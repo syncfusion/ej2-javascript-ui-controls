@@ -281,6 +281,37 @@ export interface EmptyPointSettingsModel {
 }
 
 /**
+ * Interface for a class DragSettings
+ */
+export interface DragSettingsModel {
+
+    /**
+     * To enable the drag the points
+     * @default false
+     */
+    enable?: boolean;
+
+    /**
+     * To set the minimum y of the point
+     * @default null
+     */
+    minY?: number;
+
+    /**
+     * To set the maximum y of the point
+     * @default null
+     */
+    maxY?: number;
+
+    /**
+     * To set the color of the edited point
+     * @default null
+     */
+    fill?: string;
+
+}
+
+/**
  * Interface for a class TooltipSettings
  */
 export interface TooltipSettingsModel {

@@ -1,6 +1,6 @@
 import * as events from '../base/constant';
 import { IRichTextEditor, NotifyArgs, IRenderer } from '../base/interface';
-import { Dialog } from '@syncfusion/ej2-popups';
+import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
@@ -11,7 +11,7 @@ import { NodeSelection } from '../../selection/selection';
 import * as EVENTS from './../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { RenderType } from '../base/enum';
-
+import { DialogRenderer } from '../renderer/dialog-renderer';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
@@ -23,6 +23,7 @@ export class PasteCleanup {
   private i10n: L10n;
   private saveSelection: NodeSelection;
   private nodeSelectionObj: NodeSelection;
+  private dialogRenderObj: DialogRenderer;
   private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'button',
     'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe', 'img', 'input',
     'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
@@ -33,6 +34,7 @@ export class PasteCleanup {
     this.locator = serviceLocator;
     this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
     this.i10n = serviceLocator.getService<L10n>('rteLocale');
+    this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
     this.addEventListener();
   }
 
@@ -46,7 +48,6 @@ export class PasteCleanup {
   private destroy(): void {
     this.removeEventListener();
   }
-
   private removeEventListener(): void {
     if (this.parent.isDestroyed) { return; }
     this.parent.off(events.pasteClean, this.pasteClean);
@@ -60,6 +61,7 @@ export class PasteCleanup {
       event: e
     };
     let value: string = null;
+    let imageproperties: string | object;
     if (e.args && !isNOU((e.args as ClipboardEvent).clipboardData)) {
       value = (e.args as ClipboardEvent).clipboardData.getData('text/html');
     }
@@ -70,35 +72,78 @@ export class PasteCleanup {
         let file: File = e && (e.args as ClipboardEvent).clipboardData &&
           (e.args as ClipboardEvent).clipboardData.items.length > 0 ?
           (e.args as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
-        this.parent.notify(events.paste, { file: file, args: e.args, text: value });
+        this.parent.notify(events.paste, {
+          file: file,
+          args: e.args,
+          text: value,
+          callBack: (b: string | object) => {
+            imageproperties = b;
+            if (typeof(imageproperties) === 'object') {
+              this.parent.formatter.editorManager.execCommand(
+                'Images',
+                'Image',
+                e.args,
+                this.imageFormatting.bind(this),
+                'pasteCleanup',
+                imageproperties,
+                'pasteCleanupModule');
+            } else {
+              value = imageproperties;
+            }
+          }
+        });
       } else if (value.length > 0) {
         this.parent.formatter.editorManager.observer.notify(EVENTS.MS_WORD_CLEANUP, {
           args: e.args,
           text: e.text,
+          allowedStylePropertiesArray: this.parent.pasteCleanupSettings.allowedStyleProps,
           callBack: (a: string) => {
             value = a;
           }
         });
-        this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
-        let currentDocument: Document = this.contentRenderer.getDocument();
-        let range: Range = this.nodeSelectionObj.getRange(currentDocument);
-        this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
-        if (this.parent.pasteCleanupSettings.prompt) {
-          (e.args as ClipboardEvent).preventDefault();
-          this.pasteDialog(value);
-        } else if (this.parent.pasteCleanupSettings.plainText) {
-          (e.args as ClipboardEvent).preventDefault();
-          this.plainFormatting(value);
-        } else if (this.parent.pasteCleanupSettings.keepFormat) {
-          (e.args as ClipboardEvent).preventDefault();
-          this.formatting(value, false);
-        } else {
-          (e.args as ClipboardEvent).preventDefault();
-          this.formatting(value, true);
-        }
+      }
+      this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
+      let currentDocument: Document = this.contentRenderer.getDocument();
+      let range: Range = this.nodeSelectionObj.getRange(currentDocument);
+      this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
+      if (this.parent.pasteCleanupSettings.prompt) {
+        (e.args as ClipboardEvent).preventDefault();
+        this.pasteDialog(value);
+      } else if (this.parent.pasteCleanupSettings.plainText) {
+        (e.args as ClipboardEvent).preventDefault();
+        this.plainFormatting(value);
+      } else if (this.parent.pasteCleanupSettings.keepFormat) {
+        (e.args as ClipboardEvent).preventDefault();
+        this.formatting(value, false);
+      } else {
+        (e.args as ClipboardEvent).preventDefault();
+        this.formatting(value, true);
       }
     }
     setTimeout(() => { this.parent.formatter.onSuccess(this.parent, args); }, 0);
+  }
+
+  /**
+   * Method for image formatting when pasting
+   * @hidden
+   */
+  public imageFormatting(imgElement: { [key: string]: Element }): void {
+    let imageElement: HTMLElement = this.parent.createElement('span');
+    imageElement.appendChild(imgElement.elements);
+    let imageValue: string = imageElement.innerHTML;
+    this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
+    let currentDocument: Document = this.contentRenderer.getDocument();
+    let range: Range = this.nodeSelectionObj.getRange(currentDocument);
+    this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
+    if (this.parent.pasteCleanupSettings.prompt) {
+      this.pasteDialog(imageValue);
+    } else if (this.parent.pasteCleanupSettings.plainText) {
+      this.plainFormatting(imageValue);
+    } else if (this.parent.pasteCleanupSettings.keepFormat) {
+      this.formatting(imageValue, false);
+    } else {
+      this.formatting(imageValue, true);
+    }
   }
 
   private radioRender(): void {
@@ -125,13 +170,14 @@ export class PasteCleanup {
     }
   }
   private pasteDialog(value: string): void {
-    let dialog: Dialog = new Dialog({
+    let dialogModel: DialogModel = {
       buttons: [
         {
           click: () => {
             if (!dialog.isDestroyed) {
               this.selectFormatting(value);
               dialog.hide();
+              this.dialogRenderObj.close(dialog);
               dialog.destroy();
             }
           },
@@ -145,6 +191,7 @@ export class PasteCleanup {
           click: () => {
             if (!dialog.isDestroyed) {
               dialog.hide();
+              this.dialogRenderObj.close(dialog);
               dialog.destroy();
             }
           },
@@ -164,7 +211,8 @@ export class PasteCleanup {
       height: '265px',
       cssClass: CLS_RTE_DIALOG_MIN_HEIGHT,
       isModal: true
-    });
+    };
+    let dialog: Dialog =  this.dialogRenderObj.render(dialogModel);
     let rteDialogWrapper: HTMLElement = this.parent.element.querySelector('#' + this.parent.getID()
       + '_pasteCleanupDialog');
     if (rteDialogWrapper !== null && rteDialogWrapper.innerHTML !== '') {
@@ -191,7 +239,8 @@ export class PasteCleanup {
   }
 
   private formatting(value: string, clean: boolean): void {
-    let clipBoardElem: HTMLElement = this.parent.createElement('span') as HTMLElement;
+    let clipBoardElem: HTMLElement = this.parent.createElement(
+      'div', { className: 'pasteContent', styles: 'display:inline;'}) as HTMLElement;
     clipBoardElem.innerHTML = value;
     if (this.parent.pasteCleanupSettings.deniedTags !== null) {
       clipBoardElem = this.deniedTags(clipBoardElem);
@@ -215,11 +264,13 @@ export class PasteCleanup {
     clipBoardElem.innerHTML = value;
     this.detachInlineElements(clipBoardElem);
     let text: string = this.getTextContent(clipBoardElem);
-    let resultElement: HTMLElement = this.parent.createElement('span') as HTMLElement;
+    let resultElement: HTMLElement = this.parent.createElement(
+      'div', { className: 'pasteContent', styles: 'display:inline;'}) as HTMLElement;
     resultElement.innerHTML = text;
     this.saveSelection.restore();
     this.parent.executeCommand('insertHTML', resultElement);
   }
+
   private detachInlineElements(element: HTMLElement): void {
     while (!isNullOrUndefined(element)) {
       let isInlineElement: boolean = false;
@@ -299,7 +350,6 @@ export class PasteCleanup {
     }
     return result;
   }
-
   //GroupingTags
   private tagGrouping(deniedTags: string[]): string[] {
     let groupingTags: string[] = [...deniedTags];
@@ -407,7 +457,8 @@ export class PasteCleanup {
         }
       }
       styleElement[i].removeAttribute('style');
-      allowedStyleValue = allowedStyleValueArray.join(';');
+      allowedStyleValue = allowedStyleValueArray.join(';').trim() === '' ?
+      allowedStyleValueArray.join(';') : allowedStyleValueArray.join(';') + ';';
       if (allowedStyleValue) {
         styleElement[i].setAttribute('style', allowedStyleValue);
       }

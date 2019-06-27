@@ -42,7 +42,7 @@ let diagram: Diagram = new Diagram({
     width: 900, height: 1000,
     layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 30, verticalSpacing: 30 },
     dataSourceSettings: {
-        id: 'Name', parentId: 'ReportingPerson', dataManager: items
+        id: 'Name', parentId: 'ReportingPerson', dataSource: items
     },
 
     getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {

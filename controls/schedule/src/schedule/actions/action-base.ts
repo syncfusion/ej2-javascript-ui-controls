@@ -1,9 +1,11 @@
 import { addClass, createElement, compile, extend, isNullOrUndefined, closest, setStyleAttribute } from '@syncfusion/ej2-base';
 import { formatUnit, remove, removeClass } from '@syncfusion/ej2-base';
-import { ActionBaseArgs, ResizeEdges, DragEventArgs, ResizeEventArgs } from '../base/interface';
+import { ActionBaseArgs, ResizeEdges, DragEventArgs, ResizeEventArgs, TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { CurrentAction } from '../base/type';
 import * as cls from '../base/css-constant';
+import { MonthEvent } from '../event-renderer/month';
+import * as util from '../base/util';
 
 /**
  * Base class for the common drag and resize related actions
@@ -15,6 +17,8 @@ export class ActionBase {
     public resizeEdges: ResizeEdges;
     public scrollArgs: ActionBaseArgs;
     public scrollEdges: ResizeEdges;
+    public monthEvent: MonthEvent;
+    public daysVariation: number = 0;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -199,8 +203,15 @@ export class ActionBase {
         return cloneElement;
     }
 
+    public removeCloneElementClasses(): void {
+        let elements: HTMLElement[] = this.actionObj.originalElement;
+        if (this.parent.currentView === 'Month') {
+            elements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.EVENT_ACTION_CLASS));
+        }
+        elements.forEach((element: HTMLElement) => removeClass([element], cls.EVENT_ACTION_CLASS));
+    }
+
     public removeCloneElement(): void {
-        this.actionObj.originalElement.forEach((element: HTMLElement) => removeClass([element], cls.EVENT_ACTION_CLASS));
         this.actionObj.originalElement = [];
         this.actionObj.cloneElement.forEach((element: HTMLElement) => remove(element));
         this.actionObj.cloneElement = [];
@@ -270,6 +281,60 @@ export class ActionBase {
                     }
                 },
                 this.actionObj.scroll.timeDelay);
+        }
+    }
+
+    public updateOriginalElement(cloneElement: HTMLElement): void {
+        let query: string = '[data-id="' + cloneElement.getAttribute('data-id') + '"]';
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            query = query.concat('[data-group-index = "' + cloneElement.getAttribute('data-group-index') + '"]');
+        }
+        let elements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(query));
+        elements.forEach((element: HTMLElement) => addClass([element], cls.EVENT_ACTION_CLASS));
+        let appWrap: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-schedule-event-clone'));
+        appWrap.forEach((element: HTMLElement) => removeClass([element], cls.EVENT_ACTION_CLASS));
+    }
+
+    public getUpdatedEvent(startTime: Date, endTime: Date, eventObj: { [key: string]: Object }): { [key: string]: Object } {
+        let event: { [key: string]: Object } = JSON.parse(JSON.stringify(eventObj));
+        event[this.parent.eventFields.startTime] = startTime;
+        event[this.parent.eventFields.endTime] = endTime;
+        return event;
+    }
+
+    public dynamicEventsRendering(event: { [key: string]: Object }): void {
+        let dateRender: Date[] = this.parent.activeView.renderDates;
+        let workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+        let workDays: number[] = this.parent.activeViewOptions.workDays;
+        let groupOrder: string[];
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let resources: TdData[] = this.parent.resourceBase.lastResourceLevel.
+                filter((res: TdData) => res.groupIndex === this.actionObj.groupIndex);
+            dateRender = resources[0].renderDates;
+            workCells = [].slice.call(this.parent.element.
+                querySelectorAll('.' + cls.WORK_CELLS_CLASS + '[data-group-index="' + this.actionObj.groupIndex + '"]'));
+            workDays = resources[0].workDays;
+            groupOrder = resources[0].groupOrder;
+        }
+        this.monthEvent.dateRender = dateRender;
+        this.monthEvent.getSlotDates(workDays);
+        let appWrap: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-schedule-event-clone'));
+        if (appWrap.length > 0) {
+            (appWrap).forEach((element: HTMLElement) => remove(element));
+        }
+        let splittedEvents: { [key: string]: Object }[] = this.monthEvent.splitEvent(event, dateRender);
+        for (let event of splittedEvents) {
+            let day: number = this.parent.getIndexOfDate(dateRender, util.resetTime(event[this.monthEvent.fields.startTime] as Date));
+            let diffInDays: number = (event.data as { [key: string]: Object }).count as number;
+            let appWidth: number = (diffInDays * this.actionObj.cellWidth) - 7;
+            let appointmentElement: HTMLElement = this.monthEvent.createAppointmentElement(event, this.actionObj.groupIndex, true);
+            appointmentElement.setAttribute('drag', 'true');
+            addClass([appointmentElement], 'e-schedule-event-clone');
+            this.monthEvent.applyResourceColor(appointmentElement, event, 'backgroundColor', groupOrder);
+            setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none' });
+            let cellTd: Element = workCells[day];
+            this.monthEvent.renderElement(cellTd, appointmentElement);
+            this.actionObj.cloneElement.push(appointmentElement);
         }
     }
 

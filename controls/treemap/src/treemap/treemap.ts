@@ -232,108 +232,131 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before treemap rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
     /**
      * Triggers after treemap rendered.
      * @event
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
      * Triggers before item rendering.
      * @event
+     * @deprecated
+     * @blazorProperty 'ItemRendering'
      */
     @Event()
     public itemRendering: EmitType<IItemRenderingEventArgs>;
     /**
      * Triggers the drillDown start.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnDrillStart'
      */
     @Event()
     public drillStart: EmitType<IDrillStartEventArgs>;
     /**
      * Triggers the drillDown end.
      * @event
+     * @blazorProperty 'DrillCompleted'
      */
     @Event()
     public drillEnd: EmitType<IDrillEndEventArgs>;
     /**
      * Triggers the item selected.
      * @event
+     * @blazorProperty 'ItemSelected'
      */
     @Event()
     public itemSelected: EmitType<IItemSelectedEventArgs>;
     /**
      * Triggers the item highlight.
      * @event
+     * @blazorProperty 'ItemHighlighted'
      */
     @Event()
     public itemHighlight: EmitType<IItemHighlightEventArgs>;
     /**
      * Triggers the tooltip rendering.
      * @event
+     * @deprecated
+     * @blazorProperty 'TooltipRendering'
      */
     @Event()
     public tooltipRendering: EmitType<ITreeMapTooltipRenderEventArgs>;
     /**
      * Triggers the item click.
      * @event
+     * @blazorProperty 'OnItemClick'
      */
     @Event()
     public itemClick: EmitType<IItemClickEventArgs>;
     /**
      * Triggers the item move.
      * @event
+     * @blazorProperty 'OnItemMove'
      */
     @Event()
     public itemMove: EmitType<IItemMoveEventArgs>;
     /**
      * Triggers the click event.
      * @event
+     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<IItemClickEventArgs>;
     /**
      * Triggers on double clicking the maps.
      * @event
+     * @blazorProperty 'OnDoubleClick'
      */
     @Event()
     public doubleClick: EmitType<IDoubleClickEventArgs>;
     /**
      * Triggers on right clicking the maps.
      * @event
+     * @blazorProperty 'OnRightClick'
      */
     @Event()
     public rightClick: EmitType<IMouseMoveEventArgs>;
     /**
      * Triggers the mouse move event.
      * @event
+     * @blazorProperty 'OnMouseMove'
      */
     @Event()
     public mouseMove: EmitType<IMouseMoveEventArgs>;
     /**
      * Triggers the resize event.
      * @event
+     * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<IResizeEventArgs>;
     /**
      * Triggers the legend item rendering.
      * @event
+     * @deprecated
+     * @blazorProperty 'LegendItemRendering'
      */
     @Event()
     public legendItemRendering: EmitType<ILegendItemRenderingEventArgs>;
     /**
      * Triggers the legend rendering event.
      * @event
+     * @deprecated
+     * @blazorProperty 'LegendRendering'
      */
     @Event()
     public legendRendering: EmitType<ILegendRenderingEventArgs>;
@@ -1094,40 +1117,41 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         this.drilledItems[this.drilledItems.length - 1]['data']['name'] : item['name'],
                     rightClick: e.which === 3 ? true : false, childItems: null
                 };
-                this.trigger(drillStart, startEvent);
-                this.currentLevel = item['isDrilled'] && isNullOrUndefined(drillLevel) ? item['groupIndex'] :
+                this.trigger(drillStart, startEvent, (observedArgs: IDrillStartEventArgs) => {
+                    this.currentLevel = item['isDrilled'] && isNullOrUndefined(drillLevel) ? item['groupIndex'] :
                     (!isNullOrUndefined(drillLevel) && this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
-                if (!startEvent.cancel) {
-                    if (document.getElementById(layoutID)) {
-                        document.getElementById(layoutID).remove();
-                    }
-                    totalRect = extend({}, this.areaRect, totalRect, true) as Rect;
-                    if (this.legendSettings.visible && !isNullOrUndefined(this.treeMapLegendModule)) {
-                        if (!isNullOrUndefined(newDrillItem)) {
-                            this.treeMapLegendModule.legendGroup.textContent = ''; this.treeMapLegendModule.legendGroup = null;
-                            this.treeMapLegendModule.widthIncrement = 0; this.treeMapLegendModule.heightIncrement = 0;
-                            if (this.enableBreadcrumb && !isNullOrUndefined(drillLevel)) {
-                                this.drilledLegendItems = {
-                                    name: this.drilledItems[this.drilledItems.length - 1]['data']['levelOrderName'],
-                                    data: this.drilledItems[this.drilledItems.length - 1]['data']
-                                };
-                            } else {
-                                this.drilledLegendItems = { name: item['levelOrderName'], data: item };
-                            }
-                            this.treeMapLegendModule.renderLegend();
+                    if (!observedArgs.cancel) {
+                        if (document.getElementById(layoutID)) {
+                            document.getElementById(layoutID).remove();
                         }
-                        totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
+                        totalRect = extend({}, this.areaRect, totalRect, true) as Rect;
+                        if (this.legendSettings.visible && !isNullOrUndefined(this.treeMapLegendModule)) {
+                            if (!isNullOrUndefined(newDrillItem)) {
+                                this.treeMapLegendModule.legendGroup.textContent = ''; this.treeMapLegendModule.legendGroup = null;
+                                this.treeMapLegendModule.widthIncrement = 0; this.treeMapLegendModule.heightIncrement = 0;
+                                if (this.enableBreadcrumb && !isNullOrUndefined(drillLevel)) {
+                                    this.drilledLegendItems = {
+                                        name: this.drilledItems[this.drilledItems.length - 1]['data']['levelOrderName'],
+                                        data: this.drilledItems[this.drilledItems.length - 1]['data']
+                                    };
+                                } else {
+                                    this.drilledLegendItems = { name: item['levelOrderName'], data: item };
+                                }
+                                this.treeMapLegendModule.renderLegend();
+                            }
+                            totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
+                        }
+                        if (document.getElementById(templateID)) {
+                            document.getElementById(templateID).remove();
+                        }
+                        if (!isNullOrUndefined(observedArgs.childItems) && !observedArgs.cancel) {
+                            this.layout.onDemandProcess(observedArgs.childItems);
+                        } else {
+                            this.layout.calculateLayoutItems(newDrillItem, totalRect);
+                            this.layout.renderLayoutItems(newDrillItem);
+                        }
                     }
-                    if (document.getElementById(templateID)) {
-                        document.getElementById(templateID).remove();
-                    }
-                    if (!isNullOrUndefined(startEvent.childItems) && !startEvent.cancel) {
-                        this.layout.onDemandProcess(startEvent.childItems);
-                    } else {
-                        this.layout.calculateLayoutItems(newDrillItem, totalRect);
-                        this.layout.renderLayoutItems(newDrillItem);
-                    }
-                }
+                });
                 endEvent = { cancel: false, name: drillEnd, treemap: this, renderItems: this.layout.renderItems };
                 this.trigger(drillEnd, endEvent);
                 if (process) {

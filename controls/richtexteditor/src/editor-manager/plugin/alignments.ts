@@ -3,7 +3,7 @@ import * as CONSTANT from './../base/constant';
 import { NodeSelection } from './../../selection';
 import { IHtmlSubCommands } from './../base/interface';
 import { IHtmlKeyboardEvent } from './../base/interface';
-import { setStyleAttribute, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { setStyleAttribute, KeyboardEventArgs, closest } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
@@ -50,28 +50,52 @@ export class Alignments {
                 break;
         }
     }
+    private getTableNode(range: Range): Node[] {
+        let startNode: Node = range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentNode;
+        let tdNode: Node = closest(startNode, 'td');
+        return [tdNode];
+    }
+
     private applyAlignment(e: IHtmlSubCommands): void {
+        let isTableAlign: boolean = e.value === 'Table' ? true : false;
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
-        this.parent.domNode.setMarker(save);
-        let alignmentNodes: Node[] = this.parent.domNode.blockNodes();
-        for (let i: number = 0; i < alignmentNodes.length; i++) {
-            let parentNode: Element = alignmentNodes[i] as Element;
-            setStyleAttribute(parentNode as HTMLElement, { 'text-align': this.alignments[e.subCommand] });
+        if (!isTableAlign) {
+            this.parent.domNode.setMarker(save);
+            let alignmentNodes: Node[] = this.parent.domNode.blockNodes();
+            for (let i: number = 0; i < alignmentNodes.length; i++) {
+                let parentNode: Element = alignmentNodes[i] as Element;
+                setStyleAttribute(parentNode as HTMLElement, { 'text-align': this.alignments[e.subCommand] });
+            }
+            let imageTags: NodeListOf<HTMLImageElement> = this.parent.domNode.getImageTagInSelection();
+            for (let i: number = 0; i < imageTags.length; i++) {
+                let elementNode: Node[] = [];
+                elementNode.push(imageTags[i]);
+                this.parent.imgObj.imageCommand({
+                    item: {
+                        selectNode: elementNode
+                    },
+                    subCommand: e.subCommand,
+                    value: e.subCommand,
+                    callBack: e.callBack,
+                    selector: e.selector
+                });
+            }
+            (this.parent.editableElement as HTMLElement).focus();
+            save = this.parent.domNode.saveMarker(save);
+            if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, e.selector); }
+            save.restore();
+        } else {
+            setStyleAttribute(this.getTableNode(range)[0] as HTMLElement, { 'text-align': this.alignments[e.subCommand] });
         }
-        (this.parent.editableElement as HTMLElement).focus();
-        save = this.parent.domNode.saveMarker(save);
-        if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, e.selector); }
-        save.restore();
         if (e.callBack) {
             e.callBack({
                 requestType: e.subCommand,
                 editorMode: 'HTML',
                 event: e.event,
                 range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                elements: this.parent.domNode.blockNodes() as Element[]
+                elements: (isTableAlign ? this.getTableNode(range) : this.parent.domNode.blockNodes()) as Element[]
             });
         }
     }
 }
-

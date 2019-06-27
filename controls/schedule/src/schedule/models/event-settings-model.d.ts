@@ -59,4 +59,10 @@ export interface EventSettingsModel {
      */
     resourceColorField?: string;
 
+    /**
+     * When set to `true` will edit the future events only instead of editing entire series.
+     * @default false
+     */
+    editFollowingEvents?: boolean;
+
 }

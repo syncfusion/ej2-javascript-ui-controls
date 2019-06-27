@@ -34,6 +34,9 @@ export class KeyboardInteraction {
         altFour: 'alt+4',
         altFive: 'alt+5',
         altSix: 'alt+6',
+        altSeven: 'alt+7',
+        altEight: 'alt+8',
+        altNine: 'alt+9',
         enter: 'enter',
         escape: 'escape',
         delete: 'delete',
@@ -90,6 +93,9 @@ export class KeyboardInteraction {
             case 'altFour':
             case 'altFive':
             case 'altSix':
+            case 'altSeven':
+            case 'altEight':
+            case 'altNine':
                 this.processViewNavigation(e);
                 break;
             case 'enter':
@@ -183,12 +189,13 @@ export class KeyboardInteraction {
             showQuickPopup: false, event: e,
             requestType: 'cellSelect'
         };
-        this.parent.trigger(event.select, args);
-        if (args.showQuickPopup) {
-            let cellArgs: CellClickEventArgs =
-                <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
-            this.parent.notify(event.cellClick, cellArgs);
-        }
+        this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
+            if (selectArgs.showQuickPopup) {
+                let cellArgs: CellClickEventArgs =
+                    <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
+                this.parent.notify(event.cellClick, cellArgs);
+            }
+        });
     }
     private processEnter(e: Event): void {
         if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
@@ -296,42 +303,43 @@ export class KeyboardInteraction {
                 allowMultipleRow: true,
                 requestType: 'mousemove'
             };
-            this.parent.trigger(event.select, args);
-            if (!args.allowMultipleRow) {
-                let currentView: View = this.parent.currentView;
-                if (currentView === 'Day' || currentView === 'Week' || currentView === 'WorkWeek') {
-                    target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
-                }
-            }
-            let selectedCells: HTMLTableCellElement[] = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
-            if (this.parent.activeViewOptions.group.resources.length > 0) {
-                initialId = this.initialTarget.getAttribute('data-group-index');
-                let resourceSelectedCells: HTMLTableCellElement[] = [];
-                for (let i: number = 0; i < selectedCells.length; i++) {
-                    if (selectedCells[i].getAttribute('data-group-index') === initialId) {
-                        resourceSelectedCells.push(selectedCells[i]);
+            this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
+                if (!selectArgs.allowMultipleRow) {
+                    let currentView: View = this.parent.currentView;
+                    if (currentView === 'Day' || currentView === 'Week' || currentView === 'WorkWeek') {
+                        target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
                     }
                 }
-                selectedCells = resourceSelectedCells;
-            }
-            this.selectedCells = selectedCells;
-            if (selectedCells.length > 2 && !target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
-                let allDayCells: HTMLTableCellElement[] = this.getAllDayCells(selectedCells);
+                let selectedCells: HTMLTableCellElement[] = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
-                    let resourceAllDayCells: HTMLTableCellElement[] = [];
-                    for (let i: number = 0; i < allDayCells.length; i++) {
-                        if (allDayCells[i].getAttribute('data-group-index') === initialId) {
-                            resourceAllDayCells.push(allDayCells[i]);
+                    initialId = this.initialTarget.getAttribute('data-group-index');
+                    let resourceSelectedCells: HTMLTableCellElement[] = [];
+                    for (let cell of selectedCells) {
+                        if (cell.getAttribute('data-group-index') === initialId) {
+                            resourceSelectedCells.push(cell);
                         }
                     }
-                    allDayCells = resourceAllDayCells;
+                    selectedCells = resourceSelectedCells;
                 }
-                selectedCells = selectedCells.concat(allDayCells);
-            }
-            if ((target.getAttribute('data-group-index') !== initialId) && this.parent.activeViewOptions.group.resources.length > 0) {
-                target = this.selectedCells[this.selectedCells.length - 1];
-            }
-            this.parent.addSelectedClass(selectedCells, target);
+                this.selectedCells = selectedCells;
+                if (selectedCells.length > 2 && !target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
+                    let allDayCells: HTMLTableCellElement[] = this.getAllDayCells(selectedCells);
+                    if (this.parent.activeViewOptions.group.resources.length > 0) {
+                        let resourceAllDayCells: HTMLTableCellElement[] = [];
+                        for (let cell of allDayCells) {
+                            if (cell.getAttribute('data-group-index') === initialId) {
+                                resourceAllDayCells.push(cell);
+                            }
+                        }
+                        allDayCells = resourceAllDayCells;
+                    }
+                    selectedCells = selectedCells.concat(allDayCells);
+                }
+                if ((target.getAttribute('data-group-index') !== initialId) && this.parent.activeViewOptions.group.resources.length > 0) {
+                    target = this.selectedCells[this.selectedCells.length - 1];
+                }
+                this.parent.addSelectedClass(selectedCells, target);
+            });
         } else {
             this.initialTarget = target;
             this.selectedCells = [target];

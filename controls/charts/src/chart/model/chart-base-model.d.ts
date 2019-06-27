@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { ZIndex, Anchor, BorderType, sizeType } from '../utils/enum';import { Theme } from '../../common/model/theme';import { Font, Border } from '../../common/model/base';import { BorderModel, FontModel } from '../../common/model/base-model';import { Units, Alignment, Regions, Position, TextOverflow } from '../../common/utils/enum';
+import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { ZIndex, Anchor, BorderType, SizeType } from '../utils/enum';import { Theme } from '../../common/model/theme';import { Font, Border } from '../../common/model/base';import { BorderModel, FontModel } from '../../common/model/base-model';import { Units, Alignment, Regions, Position, TextOverflow } from '../../common/utils/enum';
 
 /**
  * Interface for a class ChartAnnotationSettings
@@ -150,6 +150,25 @@ export interface MultiLevelCategoriesModel {
      */
     maximumTextWidth?: number;
 
+    /**
+     * multi level labels custom data.
+     * @default null
+     */
+    customAttributes?: object;
+
+    /**
+     * Border type for labels
+     * * Rectangle
+     * * Without Top Border
+     * * Without Top and BottomBorder
+     * * Without Border
+     * * Brace
+     * * CurlyBrace
+     * @default ''
+     * @aspDefaultValueIgnore
+     */
+    type?: BorderType;
+
 }
 
 /**
@@ -207,7 +226,7 @@ export interface StripLineSettingsModel {
      * Size type of the strip line
      * @default Auto
      */
-    sizeType?: sizeType;
+    sizeType?: SizeType;
 
     /**
      * isRepeat value of the strip line.

@@ -237,7 +237,7 @@ describe('Canvas rendering', () => {
                 'end': 3.0
             };
             this.canvas.drawPath(options, [10, 20]);
-            expect(this.canvas.ctx.hash()).toEqual('15f87448600e7853f39dd4267872cf1e');
+            expect(this.canvas.ctx.hash()).toEqual('a5feae66f700ce12f2f69a25adf9581d');
         });
     });
 
@@ -284,7 +284,7 @@ describe('Canvas rendering', () => {
                 'color': 'black',
                 'opacity': 1
             };
-            this.canvas.drawText(options, 'test case');
+            this.canvas.createText(options, 'test case');
             expect(this.canvas.ctx.hash()).toEqual('15759d25188a7661f646457aa9feeea9');
         });
         it('Render a text in canvas with text anchor test', function () : void {
@@ -299,7 +299,7 @@ describe('Canvas rendering', () => {
                 'text-anchor': 'middle',
                 'baseline': 'middle'
             };
-            this.canvas.drawText(options, 'test case');
+            this.canvas.createText(options, 'test case');
             expect(this.canvas.ctx.hash()).toEqual('463b2e80788a6f069be2e977d6635736');
         });
     });
@@ -336,6 +336,7 @@ describe('Canvas rendering', () => {
             };
             this.canvas.drawImage(imgOptions);
             expect(this.canvas.ctx.hash()).toEqual('a3e76ef51c00895565c89ea114f30b29');
+            this.canvas.createGroup(imgOptions);
         });
     });
 

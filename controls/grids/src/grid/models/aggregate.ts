@@ -53,7 +53,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * Format is applied to a calculated value before it is displayed.
      * Gets the format from the user, which can be standard or custom
      * [`number`](../../common/internationalization/#number-formatting/)
-     * and [`date`](../../common/internationalization/#formatting/) formats.
+     * and [`date`](../../common/internationalization/#number-formatting/) formats.
      * @aspType string
      * @default null    
      */

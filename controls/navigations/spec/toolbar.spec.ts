@@ -2,7 +2,7 @@
  * toolbar spec document
  */
 import { ScrollEventArgs, TouchEventArgs, Browser } from '@syncfusion/ej2-base';
-import { createElement, isVisible, setStyleAttribute } from '@syncfusion/ej2-base';
+import { createElement, isVisible, setStyleAttribute, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs } from '../src/toolbar/toolbar';
 import { ItemModel } from '../src/toolbar/toolbar-model';
 import { HScroll } from '../src/common/h-scroll';
@@ -11775,6 +11775,383 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             };
             toolbar.keyActionHandler(keyEventArgs);
             expect(document.activeElement.children[0].innerHTML).toEqual('CutBtn');
+        });
+        it('Keyboard interaction not working for first hidden item as index', () => {
+            let keyEventArgs: any;
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                items: [
+                    { type: 'Button', text: 'New' },
+                    { type: 'Button', text: 'Underline' },
+                    { type: 'Button', text: 'Bold' },
+                    { type: 'Button', text: 'Italic' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.hideItem(0, true);
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex')).toEqual('-1');
+            let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex') === null).toEqual(true);
+        });
+        it('Keyboard interaction not working for focused hidden item as index', () => {
+            let keyEventArgs: any;
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                items: [
+                    { type: 'Button', text: 'New' },
+                    { type: 'Button', text: 'Underline' },
+                    { type: 'Button', text: 'Bold' },
+                    { type: 'Button', text: 'Italic' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex')).toEqual('-1');
+            toolbar.hideItem(0, true);
+            expect(ele1.getAttribute('tabindex')).toEqual('-1');
+            expect(ele2.getAttribute('tabindex') === null).toEqual(true);
+        });
+        it('Keyboard interaction not working for first hidden item as element', () => {
+            let keyEventArgs: any;
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                items: [
+                    { type: 'Button', text: 'New' },
+                    { type: 'Button', text: 'Underline' },
+                    { type: 'Button', text: 'Bold' },
+                    { type: 'Button', text: 'Italic' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item'), true);
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex')).toEqual('-1');
+            let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex') === null).toEqual(true);
+        });
+        it('Keyboard interaction not working for focused hidden item as element', () => {
+            let keyEventArgs: any;
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                items: [
+                    { type: 'Button', text: 'New' },
+                    { type: 'Button', text: 'Underline' },
+                    { type: 'Button', text: 'Bold' },
+                    { type: 'Button', text: 'Italic' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex')).toEqual('-1');
+            toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item'), true);
+            expect(ele1.getAttribute('tabindex')).toEqual('-1');
+            expect(ele2.getAttribute('tabindex') === null).toEqual(true);
+        });
+        it('Keyboard interaction not working when we set focus to hidden item as element', () => {
+            let keyEventArgs: any;
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            function creatfunction(e: Event) {
+                toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item')[1], true);
+                toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item')[2], true);
+            }
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                created: creatfunction,
+                items: [
+                    { type: 'Button', text: 'New' },
+                    { type: 'Button', text: 'Underline' },
+                    { type: 'Button', text: 'Bold' },
+                    { type: 'Button', text: 'Italic' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild;
+            expect(ele2.getAttribute('tabindex')).toEqual('-1');
+            toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item'), true);
+            toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item')[1], false);
+            toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item')[2], false);
+            ele1 = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            ele2 = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            expect(ele2.getAttribute('tabindex')).toEqual('-1');
+        });
+        it('Keyboard interaction not working when we set focus to hidden item as index', () => {
+            let keyEventArgs: any;
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            function creatfunction(e: Event) {
+                toolbar.hideItem(1, true);
+                toolbar.hideItem(2, true);
+            }
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                created: creatfunction,
+                items: [
+                    { type: 'Button', text: 'New' },
+                    { type: 'Button', text: 'Underline' },
+                    { type: 'Button', text: 'Bold' },
+                    { type: 'Button', text: 'Italic' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild;
+            expect(ele2.getAttribute('tabindex')).toEqual('-1');
+            toolbar.hideItem(0, true);
+            toolbar.hideItem(1, false);
+            toolbar.hideItem(2, false);
+            ele1 = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            ele2 = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            expect(ele2.getAttribute('tabindex')).toEqual('-1');
+        });
+        it('Keyboard interaction not working when we remove the right aligned hidden item as element', () => {
+            let keyEventArgs: any;
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            function creatfunction(e: Event) {
+                toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item')[1], true);
+                toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item')[2], true);
+            }
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                created: creatfunction,
+                items: [
+                    { type: 'Button', text: 'Cut', align: 'Left' },
+                    { type: 'Button', text: 'Copy', align: 'Left' },
+                    { type: 'Button', text: 'Paste', align: 'Left' },
+                    { type: 'Button', text: 'Italic', align: 'Left' },
+                    { type: 'Button', text: 'Bullets', align: 'Center' },
+                    { type: 'Button', text: 'Numbering', align: 'Center' },
+                    { type: 'Button', text: 'Color-Picker', align: 'Right' },
+                    { type: 'Button', text: 'Underline', align: 'Right' },
+                    { type: 'Button', text: 'Bold', align: 'Right' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item')[6], true);
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+        });
+        it('Keyboard interaction not working when we remove the right aligned hidden item as index', () => {
+            let keyEventArgs: any;
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            function creatfunction(e: Event) {
+                toolbar.hideItem(1, true);
+                toolbar.hideItem(2, true);
+            }
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                created: creatfunction,
+                items: [
+                    { type: 'Button', text: 'Cut', align: 'Left' },
+                    { type: 'Button', text: 'Copy', align: 'Left' },
+                    { type: 'Button', text: 'Paste', align: 'Left' },
+                    { type: 'Button', text: 'Italic', align: 'Left' },
+                    { type: 'Button', text: 'Bullets', align: 'Center' },
+                    { type: 'Button', text: 'Numbering', align: 'Center' },
+                    { type: 'Button', text: 'Color-Picker', align: 'Right' },
+                    { type: 'Button', text: 'Underline', align: 'Right' },
+                    { type: 'Button', text: 'Bold', align: 'Right' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element,
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            toolbar.hideItem(6, true);
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+        });
+    });
+
+    describe('RTE - Popup gets closed', () => {
+        let toolbar: Toolbar;
+        document.body.innerHTML = '';
+        let args: ClickEventArgs;
+        function clicked (e: ClickEventArgs) {
+            if(!isNullOrUndefined(e.item)) {
+                e.item.text = "Bullets";
+                toolbar.dataBind();
+            }
+            args = e;
+        }
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+            ele.style.display = 'block';
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('When we update the toolbar items in overflow mode extended', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Extended',
+                width: 363,
+                clicked: clicked, 
+                items: [
+                {
+                    type: "Button", text: 'Cut'
+                },
+                {
+                    type: "Button", text: 'Copy'
+                },
+                {
+                    type: "Button", text: 'Paste'
+                },
+                {
+                    type: "Button", text: 'Bold'
+                },
+                {
+                    type: "Button", text: 'Underline'
+                },
+                {
+                    type: "Button", text: 'Italic'
+                },
+                {
+                    type: "Button", text: 'Bullets'
+                },
+                {
+                    type: "Button", text: 'Numbering'
+                },
+                {
+                    type: "Button", text: 'Undo'
+                },
+                {
+                    type: "Button", text: 'Redo'
+                },
+                {
+                    type: "Button", text: 'Align-Left'
+                },
+                {
+                    type: "Button", text: 'Align-Justify'
+                },
+                {
+                    type: "Button", text: 'Align-Right'
+                },
+                {
+                    type: "Button", text: 'Align-Center'
+                },
+                {
+                    type: "Button", text: 'Radar'
+                },
+                {
+                    type: "Button", text: 'Line'
+                },
+                {
+                    type: "Button", text: 'Doughnut'
+                },
+                {
+                    type: "Button", text: 'Bubble'
+                },
+                {
+                    type: "Button", text: 'Table'
+                },
+                {
+                    type: "Button", text: 'Picture'
+                },
+                {
+                    type: "Button", text: 'Design'
+                },
+                {
+                    type: "Button", text: 'Sort A - Z'
+                }],
+            }); 
+            toolbar.appendTo('#ej2Toolbar');
+            let pop_Nav: HTMLElement = document.getElementById(element.id + '_nav');
+            let nav_icon: HTMLElement = pop_Nav.firstChild as HTMLElement;
+            pop_Nav.click();
+            let tool: any = toolbar;
+            tool.popObj.show();
+            expect(isVisible(element.querySelector('.e-popup'))).toEqual(true);
+            expect(nav_icon.classList.contains('e-popup-up-icon')).toEqual(true);
+            expect(isVisible(element.querySelector('.e-popup .e-toolbar-item'))).toEqual(true);
+            expect(element.children[2].classList.contains('e-popup-open')).toEqual(true);
+            (<HTMLElement>document.querySelectorAll('.e-toolbar .e-toolbar-item')[15].firstChild).click();
+            expect(args.item.text).toEqual('Bullets');
+            expect(isVisible(element.querySelector('.e-popup'))).toEqual(true);
+            expect(nav_icon.classList.contains('e-popup-up-icon')).toEqual(true);
+            expect(isVisible(element.querySelector('.e-popup .e-toolbar-item'))).toEqual(true);
+            expect(element.children[2].classList.contains('e-popup-open')).toEqual(true);
+            (<HTMLElement>document.querySelectorAll('.e-toolbar .e-toolbar-item')[16].firstChild).click();
+            expect(args.item.text).toEqual('Bullets');
+            expect(isVisible(element.querySelector('.e-popup'))).toEqual(true);
+            expect(nav_icon.classList.contains('e-popup-up-icon')).toEqual(true);
+            expect(isVisible(element.querySelector('.e-popup .e-toolbar-item'))).toEqual(true);
+            expect(element.children[2].classList.contains('e-popup-open')).toEqual(true);
+            pop_Nav.click();
+            tool.popObj.hide();
+            let popup_Nav: HTMLElement = document.getElementById(element.id + '_nav');
+            let nav_down_icon: HTMLElement = popup_Nav.firstChild as HTMLElement;
+            expect(nav_down_icon.classList.contains('e-popup-down-icon')).toEqual(true);
+            expect(isVisible(element.querySelector('.e-popup'))).toEqual(false);
+            (<HTMLElement>document.querySelectorAll('.e-toolbar .e-toolbar-item')[1].firstChild).click();
+            expect(args.item.text).toEqual('Bullets');
+            expect(nav_down_icon.classList.contains('e-popup-down-icon')).toEqual(true);
+            expect(isVisible(element.querySelector('.e-popup'))).toEqual(false);
         });
     });
 

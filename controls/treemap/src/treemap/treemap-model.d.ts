@@ -173,108 +173,131 @@ export interface TreeMapModel extends ComponentModel{
     /**
      * Triggers before treemap rendered.
      * @event
+     * @deprecated
      */
     load?: EmitType<ILoadEventArgs>;
 
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
     beforePrint?: EmitType<IPrintEventArgs>;
 
     /**
      * Triggers after treemap rendered.
      * @event
+     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before item rendering.
      * @event
+     * @deprecated
+     * @blazorProperty 'ItemRendering'
      */
     itemRendering?: EmitType<IItemRenderingEventArgs>;
 
     /**
      * Triggers the drillDown start.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnDrillStart'
      */
     drillStart?: EmitType<IDrillStartEventArgs>;
 
     /**
      * Triggers the drillDown end.
      * @event
+     * @blazorProperty 'DrillCompleted'
      */
     drillEnd?: EmitType<IDrillEndEventArgs>;
 
     /**
      * Triggers the item selected.
      * @event
+     * @blazorProperty 'ItemSelected'
      */
     itemSelected?: EmitType<IItemSelectedEventArgs>;
 
     /**
      * Triggers the item highlight.
      * @event
+     * @blazorProperty 'ItemHighlighted'
      */
     itemHighlight?: EmitType<IItemHighlightEventArgs>;
 
     /**
      * Triggers the tooltip rendering.
      * @event
+     * @deprecated
+     * @blazorProperty 'TooltipRendering'
      */
     tooltipRendering?: EmitType<ITreeMapTooltipRenderEventArgs>;
 
     /**
      * Triggers the item click.
      * @event
+     * @blazorProperty 'OnItemClick'
      */
     itemClick?: EmitType<IItemClickEventArgs>;
 
     /**
      * Triggers the item move.
      * @event
+     * @blazorProperty 'OnItemMove'
      */
     itemMove?: EmitType<IItemMoveEventArgs>;
 
     /**
      * Triggers the click event.
      * @event
+     * @blazorProperty 'OnClick'
      */
     click?: EmitType<IItemClickEventArgs>;
 
     /**
      * Triggers on double clicking the maps.
      * @event
+     * @blazorProperty 'OnDoubleClick'
      */
     doubleClick?: EmitType<IDoubleClickEventArgs>;
 
     /**
      * Triggers on right clicking the maps.
      * @event
+     * @blazorProperty 'OnRightClick'
      */
     rightClick?: EmitType<IMouseMoveEventArgs>;
 
     /**
      * Triggers the mouse move event.
      * @event
+     * @blazorProperty 'OnMouseMove'
      */
     mouseMove?: EmitType<IMouseMoveEventArgs>;
 
     /**
      * Triggers the resize event.
      * @event
+     * @blazorProperty 'Resizing'
      */
     resize?: EmitType<IResizeEventArgs>;
 
     /**
      * Triggers the legend item rendering.
      * @event
+     * @deprecated
+     * @blazorProperty 'LegendItemRendering'
      */
     legendItemRendering?: EmitType<ILegendItemRenderingEventArgs>;
 
     /**
      * Triggers the legend rendering event.
      * @event
+     * @deprecated
+     * @blazorProperty 'LegendRendering'
      */
     legendRendering?: EmitType<ILegendRenderingEventArgs>;
 

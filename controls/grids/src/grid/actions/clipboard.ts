@@ -1,5 +1,5 @@
 import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList } from '@syncfusion/ej2-base';
-import { IGrid, IAction, BeforeCopyEventArgs } from '../base/interface';
+import { IGrid, IAction, BeforeCopyEventArgs, BeforePasteEventArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { parentsUntil } from '../base/util';
 import * as events from '../base/constant';
@@ -124,11 +124,16 @@ export class Clipboard implements IAction {
                 col = grid.getColumnByIndex(cIdx);
                 value = col.getParser() ? col.getParser()(cols[c]) : cols[c];
                 if (col.allowEditing && !col.isPrimaryKey && !col.template) {
+                    let args: BeforePasteEventArgs = {
+                        column: col,
+                        data: value,
+                    };
+                    this.parent.trigger(events.beforePaste, args);
                     if (grid.editModule) {
                         if (col.type === 'number') {
-                            this.parent.editModule.updateCell(rIdx, col.field, parseInt(value, 10));
+                            this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data as string, 10));
                         } else {
-                            grid.editModule.updateCell(rIdx, col.field, value);
+                            grid.editModule.updateCell(rIdx, col.field, args.data);
                         }
                     }
                 }

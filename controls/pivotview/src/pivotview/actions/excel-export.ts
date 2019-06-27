@@ -37,7 +37,7 @@ export class ExcelExport {
         if (this.parent.enableVirtualization) {
             let pageSettings: IPageSettings = this.parent.engineModule.pageSettings;
             this.parent.engineModule.pageSettings = null;
-            this.parent.engineModule.generateGridData(this.parent.dataSource);
+            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings);
             this.parent.engineModule.pageSettings = pageSettings;
         }
         let args: BeforeExportEventArgs = {
@@ -84,7 +84,7 @@ export class ExcelExport {
                                     });
                                     if (pivotCell.axis === 'value') {
                                         cells[cells.length - 1].style = {
-                                            numberFormat: formatList[(cCnt - 1) % this.parent.dataSource.values.length],
+                                            numberFormat: formatList[(cCnt - 1) % this.parent.dataSourceSettings.values.length],
                                             bold: false,
                                             wrapText: true
                                         };

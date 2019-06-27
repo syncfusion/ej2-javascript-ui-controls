@@ -11,7 +11,8 @@ import {
     Page, LineWidget, Rect, Widget, Margin, ParagraphWidget, BodyWidget,
     TextElementBox, ElementBox, ListTextElementBox, IWidget, TableCellWidget,
     TableRowWidget, TableWidget, FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer,
-    BookmarkElementBox, FieldTextElementBox, TabElementBox, ImageElementBox
+    BookmarkElementBox, FieldTextElementBox, TabElementBox, ImageElementBox,
+    EditRangeEndElementBox, EditRangeStartElementBox, ErrorTextElementBox
 } from './page';
 import {
     SubWidthInfo, LineElementInfo, HelperMethods,
@@ -44,6 +45,26 @@ export class Layout {
      * @private
      */
     public isBidiReLayout: boolean = false;
+
+    private isSameStyle(currentParagraph: ParagraphWidget, isAfterSpacing: boolean): boolean {
+        let nextOrPrevSibling: ParagraphWidget = undefined;
+        if (isAfterSpacing) {
+            if (currentParagraph.nextWidget instanceof ParagraphWidget) {
+                nextOrPrevSibling = currentParagraph.nextWidget as ParagraphWidget;
+            }
+        } else {
+            if (currentParagraph.previousWidget instanceof ParagraphWidget) {
+                nextOrPrevSibling = currentParagraph.previousWidget as ParagraphWidget;
+            }
+        }
+        if (isNullOrUndefined(nextOrPrevSibling)) {
+            return false;
+        }
+        if (currentParagraph.paragraphFormat.baseStyle === nextOrPrevSibling.paragraphFormat.baseStyle) {
+            return currentParagraph.paragraphFormat.contextualSpacing;
+        }
+        return false;
+    }
 
     /**
      * viewer definition
@@ -101,12 +122,15 @@ export class Layout {
             this.layoutSection(section, 0, this.viewer);
         }
         this.updateFieldElements();
+        /* tslint:disable:align */
         setTimeout((): void => {
             if (this.viewer) {
+                this.viewer.isScrollHandler = true;
                 this.viewer.updateScrollBars();
+                this.viewer.isScrollHandler = false;
                 this.isInitialLoad = false;
             }
-        });
+        }, 50);
     }
     /**
      * Layouts the items
@@ -426,6 +450,12 @@ export class Layout {
         while (element instanceof ElementBox) {
             this.layoutElement(element, paragraph);
             line = element.line;
+            if (element instanceof TextElementBox) {
+                let textElement: TextElementBox = element as TextElementBox;
+                if (!isNullOrUndefined(textElement.errorCollection) && textElement.errorCollection.length > 0) {
+                    textElement.ischangeDetected = true;
+                }
+            }
             if (!this.isRTLLayout) {
                 element = element.nextElement;
             } else {
@@ -461,7 +491,8 @@ export class Layout {
             }
             return;
         }
-        if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox) {
+        if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
+            element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
                 this.moveElementFromNextLine(line);
             }
@@ -577,7 +608,7 @@ export class Layout {
                         return false;
                     }
                 }
-                if (elementBox instanceof TextElementBox) {
+                if (elementBox instanceof TextElementBox || elementBox instanceof ImageElementBox) {
                     return true;
                 }
                 elementBox = elementBox.nextNode;
@@ -729,7 +760,7 @@ export class Layout {
             topMargin += lineSpacing - (topMargin + height + bottomMargin);
         }
         topMargin += beforeSpacing;
-        bottomMargin += HelperMethods.convertPointToPixel(paragraph.paragraphFormat.afterSpacing);
+        bottomMargin += HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
             if (element instanceof ListTextElementBox) {
@@ -951,11 +982,41 @@ export class Layout {
             elementBox.width -= splittedElementBox.width;
             splittedElementBox.height = elementBox.height;
             splittedElementBox.baselineOffset = elementBox.baselineOffset;
+            this.splitErrorCollection(elementBox, splittedElementBox);
             this.addSplittedLineWidget(lineWidget, indexOf, splittedElementBox);
             this.addElementToLine(paragraph, elementBox);
             if (elementBox.width === 0) {
                 lineWidget.children.splice(indexOf, 1);
             }
+        }
+    }
+    /**
+     * Method to include error collection on splitted element
+     * @private
+     * @param {ElementBox} elementBox 
+     * @param {ElementBox} splittedBox 
+     */
+    public splitErrorCollection(elementBox: TextElementBox, splittedBox: TextElementBox): void {
+        if (elementBox.errorCollection.length > 0) {
+            let errorCollection: ErrorTextElementBox[] = [];
+            let ignoreItems: string[] = elementBox.ignoreOnceItems;
+            for (let i: number = 0; i < elementBox.errorCollection.length; i++) {
+                errorCollection.push(elementBox.errorCollection[i]);
+            }
+            for (let j: number = 0; j < elementBox.errorCollection.length; j++) {
+                let index: number = elementBox.text.indexOf(elementBox.errorCollection[j].text);
+                let textElement: ErrorTextElementBox = elementBox.errorCollection[j];
+                if (index < 0) {
+                    errorCollection.splice(0, 1);
+                    splittedBox.errorCollection.push(textElement);
+                } else if (splittedBox.text.indexOf(textElement.text) > 0) {
+                    splittedBox.errorCollection.push(textElement);
+                }
+            }
+            splittedBox.ignoreOnceItems = ignoreItems;
+            elementBox.ignoreOnceItems = [];
+            elementBox.errorCollection = errorCollection;
+
         }
     }
     /**
@@ -984,6 +1045,7 @@ export class Layout {
             let lineIndex: number = paragraph.childWidgets.indexOf(lineWidget);
             let splittedElement: TextElementBox = new TextElementBox();
             splittedElement.text = text;
+            splittedElement.errorCollection = textElement.errorCollection;
             textElement.text = textElement.text.substr(0, index);
             splittedElement.characterFormat.copyFormat(textElement.characterFormat);
             splittedElement.width = this.viewer.textHelper.getWidth(splittedElement.text, characterFormat);
@@ -1150,7 +1212,7 @@ export class Layout {
         }
         //Updates after spacing at the bottom of Paragraph last line.
         if (isParagraphEnd) {
-            afterSpacing = HelperMethods.convertPointToPixel(paraFormat.afterSpacing);
+            afterSpacing = HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
         }
 
         if (!this.isBidiReLayout && (paraFormat.bidi || this.isContainsRtl(line))) {
@@ -1782,7 +1844,13 @@ export class Layout {
         let isCustomTab: boolean = false;
         let tabs: WTabStop[] = paragraph.paragraphFormat.getUpdatedTabs();
         //  Calculate hanging width
-        if (viewer.clientActiveArea.x < viewer.clientArea.x) {
+        let clientWidth: number = 0;
+        if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
+            clientWidth = this.viewer.clientArea.x + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+        } else {
+            clientWidth = this.viewer.clientArea.x;
+        }
+        if (viewer.clientActiveArea.x < clientWidth) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
@@ -1985,14 +2053,27 @@ export class Layout {
     public getBeforeSpacing(paragraph: ParagraphWidget): number {
         let beforeSpacing: number = 0;
         if (paragraph.previousWidget instanceof ParagraphWidget) {
-            if ((paragraph.previousWidget as ParagraphWidget).paragraphFormat.afterSpacing < paragraph.paragraphFormat.beforeSpacing) {
+            let afterSpacing: number = this.getAfterSpacing(paragraph.previousWidget);
+            if (afterSpacing < paragraph.paragraphFormat.beforeSpacing) {
                 // tslint:disable-next-line:max-line-length
-                beforeSpacing = paragraph.paragraphFormat.beforeSpacing - (paragraph.previousWidget as ParagraphWidget).paragraphFormat.afterSpacing;
+                beforeSpacing = paragraph.paragraphFormat.beforeSpacing - afterSpacing;
             }
         } else {
             beforeSpacing = paragraph.paragraphFormat.beforeSpacing;
         }
-        return beforeSpacing;
+        if (this.isSameStyle(paragraph, false)) {
+            return 0;
+        } else {
+            return beforeSpacing;
+        }
+    }
+    public getAfterSpacing(paragraph: ParagraphWidget): number {
+        let afterSpacing: number = paragraph.paragraphFormat.afterSpacing;
+        if (this.isSameStyle(paragraph, true)) {
+            return 0;
+        } else {
+            return afterSpacing;
+        }
     }
     /**
      * Gets line spacing.

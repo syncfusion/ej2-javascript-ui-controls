@@ -31,6 +31,19 @@ export interface IAxisMultiLabelRenderEventArgs extends IChartEventArgs {
     textStyle: FontModel;
     /** Defines text alignment for multi labels */
     alignment: Alignment;
+    /** Defines custom objects for multi labels */
+    customAttributes: object;
+}
+export interface IMultiLevelLabelClickEventArgs extends IChartEventArgs {
+    /** Defines the current axis */
+    axis: Axis;
+    /** Defines label current label text */
+    text: string;
+    level: number;
+    start: number | Date | string;
+    end: number | Date | string;
+    /** Defines custom objects for multi labels */
+    customAttributes: object;
 }
 export interface IPointEventArgs extends IChartEventArgs {
     /** Defines the current series */
@@ -114,6 +127,16 @@ export interface ILegendRenderEventArgs extends IChartEventArgs {
     shape: LegendShape;
     /** Defines the current legend marker shape */
     markerShape?: ChartShape;
+}
+export interface ILegendClickEventArgs extends IChartEventArgs {
+    /** Defines the chart when legendClick */
+    chart: Chart;
+    /** Defines the current legend shape */
+    legendShape: LegendShape;
+    /** Defines the current series */
+    series: Series;
+    /** Defines the current legend text */
+    legendText: string;
 }
 export interface ITextRenderEventArgs extends IChartEventArgs {
     /** Defines the current series of the label */
@@ -264,4 +287,33 @@ export interface IResizeEventArgs {
     currentSize: Size;
     /** Defines the accumulation chart instance */
     chart: Chart | AccumulationChart | StockChart;
+}
+/**
+ * Interface for point drag and drop
+ */
+export interface IDataEditingEventArgs {
+    /**
+     * current series index
+     */
+    seriesIndex: number;
+    /**
+     * Current point index
+     */
+    pointIndex: number;
+    /**
+     * current point old value
+     */
+    oldValue: number;
+    /**
+     * current point new value
+     */
+    newValue: number;
+    /**
+     * current series
+     */
+    series: Series;
+    /**
+     * current point
+     */
+    point: Points;
 }

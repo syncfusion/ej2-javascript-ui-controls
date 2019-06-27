@@ -4,7 +4,7 @@ import { sampleData } from '../base/datasource.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ContextMenu } from '../../src/treegrid/actions/context-menu';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
-import { CellSaveEventArgs  } from '../../src';
+import { CellSaveEventArgs,  } from '../../src';
 import { CellEditArgs } from '@syncfusion/ej2-grids';
 
 /**
@@ -343,7 +343,6 @@ describe('ContextMenu module', () => {
       gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
     });
     it('Save the cell edited record with contextmenu save', (done: Function) => {
-      debugger;
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
       gridObj.selectRow(2);
       actionComplete = (args: CellSaveEventArgs): void => {

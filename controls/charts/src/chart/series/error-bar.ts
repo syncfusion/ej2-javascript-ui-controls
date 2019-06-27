@@ -5,7 +5,7 @@ import { Series, Points } from './chart-series';
 import { Mean, RectOption, StackValues, pathAnimation, getElement, appendChildElement, appendClipElement } from '../../common/utils/helper';
 import { getPoint, ChartLocation, sum, templateAnimate } from '../../common/utils/helper';
 import { ErrorBarMode, ErrorBarDirection } from '../../chart/utils/enum';
-import { PathOption } from '@syncfusion/ej2-svg-base';
+import { PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 
 /**
  * `ErrorBar` module is used to render the error bar for series.
@@ -83,7 +83,7 @@ export class ErrorBar {
                 );
                 element = getElement(capOption.id);
                 previousDirection = element ? element.getAttribute('d') : null;
-                appendChildElement(series.errorBarElement, this.chart.renderer.drawPath(capOption), redraw);
+                appendChildElement(this.chart.enableCanvas, series.errorBarElement, this.chart.renderer.drawPath(capOption), redraw);
                 pathAnimation(element, errorDirection[1], redraw, previousDirection);
             }
         }
@@ -329,7 +329,7 @@ export class ErrorBar {
                 'clip-path': 'url(#' + chart.element.id + '_ChartErrorBarClipRect_' + series.index + ')'
             });
             series.errorBarElement.appendChild(
-                appendClipElement(chart.redraw, options, chart.renderer)
+                appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer)
             );
         }
     }

@@ -2,6 +2,9 @@ import { KeyboardEvents, KeyboardEventArgs, closest, addClass, isNullOrUndefined
 import { PivotView } from '../base/pivotview';
 import * as cls from '../../common/base/css-constant';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
+import { PivotCellSelectedEventArgs } from '../../common/base/interface';
+import { IAxisSet } from '../../base/engine';
+import * as events from '../../common/base/constant';
 
 /**
  * PivotView Keyboard interaction
@@ -168,7 +171,17 @@ export class KeyboardInteraction {
                     rowIndex = Number(ele.getAttribute('index'));
                     let colSpan: number = Number(ele.getAttribute('aria-colspan'));
                     control.clearSelection(ele, e, colIndex, rowIndex);
-                    control.applyColumnSelection(e, ele, colIndex, colIndex + (colSpan > 0 ? (colSpan - 1) : 0), rowIndex);
+                    let selectArgs: PivotCellSelectedEventArgs = {
+                        cancel: false,
+                        isCellClick: true,
+                        currentCell: ele,
+                        data: control.pivotValues[rowIndex][colIndex] as IAxisSet
+                    };
+                    control.trigger(events.cellSelecting, selectArgs, (observedArgs: PivotCellSelectedEventArgs) => {
+                        if (!observedArgs.cancel) {
+                            control.applyColumnSelection(e, ele, colIndex, colIndex + (colSpan > 0 ? (colSpan - 1) : 0), rowIndex);
+                        }
+                    });
                 } else {
                     control.clearSelection(ele, e, colIndex, rowIndex);
                 }

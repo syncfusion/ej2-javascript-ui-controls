@@ -3,11 +3,12 @@ import { Point } from './../primitives/point';
 import { PointModel } from './../primitives/point-model';
 import { processPathData, pathSegmentCollection, getRectanglePath } from './../utility/path-util';
 import { overFlow } from './../utility/base-util';
-import { createHtmlElement } from './../utility/dom-util';
+import { createHtmlElement, setChildPosition } from './../utility/dom-util';
 import { PathSegment, ImageAttributes, StyleAttributes, BaseAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { LinearGradientModel, RadialGradientModel, StopModel } from './../core/appearance-model';
 import { RectAttributes, PathAttributes, TextAttributes, SubTextElement, TextBounds } from './canvas-interface';
 import { IRenderer } from './../rendering/IRenderer';
+import { Container } from '../core/containers/container';
 
 /**
  * Canvas Renderer
@@ -352,7 +353,7 @@ export class CanvasRenderer implements IRenderer {
     /**   @private  */
     public drawText(
         canvas: HTMLCanvasElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object,
-        diagramId?: string, scaleValue?: number):
+        diagramId?: string, scaleValue?: number, parentNode?: Container):
         void {
         if (options.content && options.visible === true) {
             let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
@@ -376,12 +377,27 @@ export class CanvasRenderer implements IRenderer {
                 let position: PointModel = this.labelAlign(options, wrapBounds, childNodes);
                 for (i = 0; i < childNodes.length; i++) {
                     let child: SubTextElement = childNodes[i];
+                    child.x = setChildPosition(child, childNodes, i, options);
                     let offsetX: number = position.x + (scaleValue ? child.x * scaleValue : child.x) - wrapBounds.x;
                     let offsetY: number = position.y + (scaleValue ? child.dy * scaleValue : child.dy) * i + ((options.fontSize) * 0.8);
-                    if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
+                    if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap' && options.textWrapping === 'NoWrap') {
                         child.text = overFlow(child.text, options);
                     }
-                    ctx.fillText(child.text, offsetX, offsetY);
+                    if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') && options.textWrapping === 'Wrap') {
+                        if (offsetY < parentNode.actualSize.height + parentNode.bounds.y) {
+                            if (options.textOverflow === 'Ellipsis' && childNodes[i + 1]) {
+                                let temp: SubTextElement = childNodes[i + 1];
+                                let y: number = position.y + temp.dy * (i + 1) + ((options.fontSize) * 0.8);
+                                if (y > parentNode.actualSize.height + parentNode.bounds.y) {
+                                    child.text = child.text.slice(0, child.text.length - 3);
+                                    child.text = child.text.concat('...');
+                                }
+                            }
+                            ctx.fillText(child.text, offsetX, offsetY);
+                        }
+                    } else {
+                        ctx.fillText(child.text, offsetX, offsetY);
+                    }
                     if (options.textDecoration === 'Underline'
                         || options.textDecoration === 'Overline'
                         || options.textDecoration === 'LineThrough') {
@@ -597,7 +613,11 @@ export class CanvasRenderer implements IRenderer {
             pointx = 0;
         } else if (text.textAlign === 'center') {
             if (wrapBounds.width > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
-                pointx = 0;
+                if (text.textWrapping === 'NoWrap') {
+                    pointx = 0;
+                } else {
+                    pointx = text.width * 0.5;
+                }
             } else {
                 pointx = text.width * 0.5;
             }

@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-diagrams",
-	"version": "17.1.50",
+	"version": "16.56.0",
 	"description": "Feature-rich diagram control to create diagrams like flow charts, organizational charts, mind maps, and BPMN diagrams. Its rich feature set includes built-in shapes, editing, serializing, exporting, printing, overview, data binding, and automatic layouts.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -10,7 +10,7 @@
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-data": "*",
-		"@syncfusion/ej2-navigations": "16.4.47",
+		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-popups": "*",
 		"@syncfusion/ej2-buttons": "*",

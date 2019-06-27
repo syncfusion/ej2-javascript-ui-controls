@@ -15,6 +15,7 @@ export class ChartData {
     public currentPoints: PointData[] | AccPointData[] = [];
     /** @private */
     public previousPoints: PointData[] | AccPointData[] = [];
+    public insideRegion: boolean = false;
 
     /**
      * Constructor for the data.
@@ -35,14 +36,25 @@ export class ChartData {
         let point: Points = null;
         let series: Series = null;
         let width: number; let height: number;
+        let mouseX: number; let mouseY: number;
         for (let len: number = chart.visibleSeries.length, i: number = len - 1; i >= 0; i--) {
             series = chart.visibleSeries[i];
             width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
                 ? (series.marker.height + 5) / 2 : 0;
             height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (!series.isRectSeries && series.marker.visible))
                 ? (series.marker.width + 5) / 2 : 0;
-            if (series.visible && withInBounds(chart.mouseX, chart.mouseY, series.clipRect, width, height)) {
-                point = this.getRectPoint(series, series.clipRect, chart.mouseX, chart.mouseY);
+            mouseX = chart.mouseX; mouseY = chart.mouseY;
+            if (series.dragSettings.enable && series.isRectSeries) {
+                if (!(series.type === 'Bar' && chart.isTransposed) && (chart.isTransposed || series.type === 'Bar')) {
+                    let markerWidth: number = series.marker.width / 2;
+                    mouseX = series.yAxis.isInversed ? mouseX + markerWidth : mouseX - markerWidth;
+                } else {
+                    let markerHeight: number = series.marker.height / 2;
+                    mouseY = series.yAxis.isInversed ? mouseY - markerHeight : mouseY + markerHeight;
+                }
+            }
+            if (series.visible && withInBounds(mouseX, mouseY, series.clipRect, width, height)) {
+                point = this.getRectPoint(series, series.clipRect, mouseX, mouseY);
             }
             if (point) {
                 return new PointData(point, series);
@@ -57,10 +69,14 @@ export class ChartData {
 
     private getRectPoint(series: Series, rect: Rect, x: number, y: number): Points {
         let currentRect: Rect;
+        let chart: Chart = this.chart;
         let fromCenterX: number; let fromCenterY: number;
         let clickAngle: number; let arcAngle: number = 0;
         let startAngle: number; let endAngle: number;
         let distanceFromCenter: number;
+        if (chart.isScrolling) {
+            return null;
+        }
         for (let point of series.points) {
             if (!point.regionData) {
                 if (!point.regions || !point.regions.length) {
@@ -88,7 +104,16 @@ export class ChartData {
                         && distanceFromCenter <= series.chart.radius)) {
                     return point;
                 }
-            } else if (this.checkRegionContainsPoint(point.regions, rect, x, y)) {
+            }
+            if (series.dragSettings.enable && series.isRectSeries) {
+                if (this.rectRegion(x, y, point, rect, series)) {
+                    this.insideRegion = true;
+                    return point;
+                }
+            }
+            if (!this.insideRegion && this.checkRegionContainsPoint(point.regions, rect, x, y)) {
+                return point;
+            } else if (this.insideRegion && this.checkRegionContainsPoint(point.regions, rect, x, y)) {
                 return point;
             }
         }
@@ -111,7 +136,66 @@ export class ChartData {
             );
         });
     }
-
+    /**
+     * To find drag region for column and bar series
+     * @param x
+     * @param y
+     * @param point
+     * @param rect
+     * @param series
+     */
+    private rectRegion(x: number, y: number, point: Points, rect: Rect, series: Series): boolean {
+        let isBar: boolean = series.type === 'Bar';
+        let isInversed: boolean = series.yAxis.isInversed;
+        let isTransposed: boolean = series.chart.isTransposed;
+        let heightValue: number = 10; let yValue: number = 0;
+        let xValue: number = 0;
+        let width: number;
+        let height: number = width = 2 * heightValue;
+        if (isInversed && isTransposed) {
+            if (isBar) {
+                yValue = point.regions[0].height - heightValue;
+                width = point.regions[0].width;
+            } else {
+                xValue = -heightValue;
+                height = point.regions[0].height;
+            }
+        } else if (isInversed || point.yValue < 0) {
+            if (isBar) {
+                xValue = -heightValue;
+                height = point.regions[0].height;
+            } else {
+                yValue = point.regions[0].height - heightValue;
+                width = point.regions[0].width;
+            }
+        } else if (isTransposed) {
+            if (isBar) {
+                yValue = -heightValue;
+                width = point.regions[0].width;
+            } else {
+                xValue = point.regions[0].width - heightValue;
+                height = point.regions[0].height;
+            }
+        } else {
+            if (isBar) {
+                xValue = point.regions[0].width - heightValue;
+                height = point.regions[0].height;
+            } else {
+                yValue = -heightValue;
+                width = point.regions[0].width;
+            }
+        }
+        return point.regions.some((region: Rect) => {
+            return withInBounds(
+                x, y,
+                new Rect(
+                    (this.chart.chartAreaType === 'Cartesian' ? rect.x : 0) + region.x + xValue,
+                    (this.chart.chartAreaType === 'Cartesian' ? rect.y : 0) + region.y + yValue,
+                    width, height
+                )
+            );
+        });
+    }
     /**
      * @private
      */

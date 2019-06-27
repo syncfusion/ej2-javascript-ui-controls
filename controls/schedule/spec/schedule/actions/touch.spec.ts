@@ -1,6 +1,6 @@
-import { createElement, remove, Browser, EventHandler, EmitType, extend } from '@syncfusion/ej2-base';
-import { Schedule, EJ2Instance, Day, Week, WorkWeek, Month } from '../../../src/schedule/index';
-import { triggerSwipeEvent, CommonArgs } from '../util.spec';
+import { createElement, Browser, EventHandler, extend } from '@syncfusion/ej2-base';
+import { Schedule, EJ2Instance, Day, Week, WorkWeek, Month, ScheduleModel } from '../../../src/schedule/index';
+import { triggerSwipeEvent, CommonArgs, destroy, createSchedule } from '../util.spec';
 import { defaultData } from '../base/datasource.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
@@ -55,16 +55,10 @@ describe('Touch functioalities', () => {
             document.body.appendChild(elem);
         });
         afterEach((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            destroy(schObj);
         });
         it('swipe right touch move different points', () => {
-            schObj = new Schedule({
-                currentView: 'Day', selectedDate: new Date(2017, 9, 5),
-                height: 500, width: 300
-            });
+            schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
             // tslint:disable-next-line:no-any
@@ -85,10 +79,7 @@ describe('Touch functioalities', () => {
             expect(schObj.selectedDate.getTime()).toEqual(new Date(2017, 9, 4).getTime());
         });
         it('swipe left touch move different points', () => {
-            schObj = new Schedule({
-                currentView: 'Day', selectedDate: new Date(2017, 9, 5),
-                height: 500, width: 300
-            });
+            schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
             // tslint:disable-next-line:no-any
@@ -109,10 +100,7 @@ describe('Touch functioalities', () => {
             expect(schObj.selectedDate.getTime()).toEqual(new Date(2017, 9, 6).getTime());
         });
         it('swipe other than left and right direction', () => {
-            schObj = new Schedule({
-                currentView: 'Day', selectedDate: new Date(2017, 9, 5),
-                height: 500, width: 300
-            });
+            schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
             // tslint:disable-next-line:no-any
@@ -133,10 +121,7 @@ describe('Touch functioalities', () => {
             expect(schObj.selectedDate.getTime()).toEqual(new Date(2017, 9, 5).getTime());
         });
         it('cancel swipe', () => {
-            schObj = new Schedule({
-                currentView: 'Day', selectedDate: new Date(2017, 9, 5),
-                height: 500, width: 300
-            });
+            schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
             // tslint:disable-next-line:no-any
@@ -161,10 +146,7 @@ describe('Touch functioalities', () => {
             expect(schObj.selectedDate.getTime()).toEqual(new Date(2017, 9, 5).getTime());
         });
         it('swipe left and then moved to right direction', () => {
-            schObj = new Schedule({
-                currentView: 'Day', selectedDate: new Date(2017, 9, 5),
-                height: 500, width: 300
-            });
+            schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
             // tslint:disable-next-line:no-any
@@ -185,10 +167,7 @@ describe('Touch functioalities', () => {
             expect(schObj.selectedDate.getTime()).toEqual(new Date(2017, 9, 4).getTime());
         });
         it('swipe right and then moved to left direction', () => {
-            schObj = new Schedule({
-                currentView: 'Day', selectedDate: new Date(2017, 9, 5),
-                height: 500, width: 300
-            });
+            schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
             // tslint:disable-next-line:no-any
@@ -209,10 +188,7 @@ describe('Touch functioalities', () => {
             expect(schObj.selectedDate.getTime()).toEqual(new Date(2017, 9, 6).getTime());
         });
         it('start swipe while before previous swipe transition end', () => {
-            schObj = new Schedule({
-                currentView: 'Day', selectedDate: new Date(2017, 9, 5),
-                height: 500, width: 300
-            });
+            schObj = new Schedule({ currentView: 'Day', selectedDate: new Date(2017, 9, 5), height: 500, width: 300 });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
             // tslint:disable-next-line:no-any
@@ -237,11 +213,7 @@ describe('Touch functioalities', () => {
             expect(schObj.selectedDate.getTime()).toEqual(new Date(2017, 9, 7).getTime());
         });
         it('Negative case for swipe', () => {
-            schObj = new Schedule({
-                currentView: 'Agenda',
-                height: 500, width: 300,
-                selectedDate: new Date(2018, 6, 5)
-            });
+            schObj = new Schedule({ currentView: 'Agenda', height: 500, width: 300, selectedDate: new Date(2018, 6, 5) });
             schObj.appendTo('#Schedule');
             node = schObj.element.querySelector('.e-table-container');
             expect(node.childNodes.length).toEqual(1);
@@ -265,25 +237,12 @@ describe('Touch functioalities', () => {
 
     describe('Appointment Tap and multiple select actions', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                selectedDate: new Date(2017, 10, 2), width: 300,
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            schObj.quickPopup.quickPopup.showAnimation = null;
-            schObj.quickPopup.quickPopup.hideAnimation = null;
-            schObj.quickPopup.quickPopup.dataBind();
+            let schOptions: ScheduleModel = { selectedDate: new Date(2017, 10, 2), width: 300 };
+            schObj = createSchedule(schOptions, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            destroy(schObj);
         });
         it('taphold appointment selection', () => {
             schObj.isAdaptive = true;
@@ -327,22 +286,15 @@ describe('Touch functioalities', () => {
 
     describe('RTL Touch actions', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: 500, width: 300,
-                currentView: 'Day',
+            let schOptions: ScheduleModel = {
+                height: 500, width: 300, currentView: 'Day',
                 selectedDate: new Date(2017, 9, 4), enableRtl: true
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = createSchedule(schOptions, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            destroy(schObj);
         });
         it('navigate next date', (done: Function) => {
             triggerSwipeEvent(schObj.element.querySelector('.e-table-container'), 300);

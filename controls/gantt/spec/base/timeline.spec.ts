@@ -2,14 +2,15 @@
  * Gantt base spec
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { Gantt } from '../../src/index';
-import { defaultGanttData } from './data-source.spec';
-import { createGantt, destroyGantt } from './gantt-util.spec';
+import { Gantt, Toolbar, Edit } from '../../src/index';
+import { defaultGanttData, zoomData, zoomData1 } from './data-source.spec';
+import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import * as cls from '../../src/gantt/base/css-constants';
 
 describe('Gantt-Timeline', () => {
 
     describe('Gantt base module', () => {
+        Gantt.Inject(Toolbar, Edit);
         let ganttObj: Gantt;
 
         beforeAll((done: Function) => {
@@ -24,6 +25,7 @@ describe('Gantt-Timeline', () => {
                     progress: 'Progress',
                     child: 'Children',
                 },
+                toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
                 projectStartDate: new Date('01/28/2018'),
                 projectEndDate: new Date('03/24/2018'),
             }, done);
@@ -792,5 +794,207 @@ describe('Gantt-Timeline', () => {
             let element: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(1) > thead > tr > th.e-timeline-top-header-cell > div') as HTMLElement;
             expect(element.textContent).toBe("Q1");
         }, 3000);
+
+        it('Zooming action with Top tier only', (done: Function) => {
+            ganttObj.timelineSettings.topTier.unit = "Month";
+            ganttObj.timelineSettings.bottomTier.unit = "None";
+            ganttObj.timelineSettings.bottomTier.format = '';
+            ganttObj.timelineSettings.topTier.format = 'M';
+            ganttObj.dataBound = () => {
+                ganttObj.zoomIn();
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("None");
+                expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("Week");
+                expect(ganttObj.timelineModule.customTimelineSettings.timelineUnitSize).toBe(33);
+                expect(ganttObj.currentZoomingLevel.level).toBe(8);
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('Zooming action with Bottom tier only', (done: Function) => {
+            ganttObj.timelineSettings.topTier.unit = "None";
+            ganttObj.timelineSettings.bottomTier.unit = "Month";
+            ganttObj.timelineSettings.bottomTier.format = 'M';
+            ganttObj.timelineSettings.topTier.format = '';
+            ganttObj.dataBound = () => {
+                ganttObj.zoomIn();
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Week");
+                expect(ganttObj.timelineModule.customTimelineSettings.topTier.unit).toBe("None");
+                expect(ganttObj.timelineModule.customTimelineSettings.timelineUnitSize).toBe(33);
+                expect(ganttObj.currentZoomingLevel.level).toBe(8);
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('check zoomout button with last zoomout level', (done: Function) => {
+            ganttObj.projectEndDate = new Date('03/24/2028');
+            ganttObj.timelineSettings.topTier.unit = "Year";
+            ganttObj.timelineSettings.topTier.count = 5;
+            ganttObj.timelineSettings.bottomTier.count = 10;
+            ganttObj.timelineSettings.bottomTier.unit = "Year";
+            ganttObj.timelineSettings.bottomTier.format = 'yyyy';
+            ganttObj.timelineSettings.topTier.format = 'yyyy';
+            ganttObj.dataBound = function () {
+                ganttObj.zoomOut();
+                expect(ganttObj.currentZoomingLevel.level).toBe(0);
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('check zoomin button with last zoomin level', (done: Function) => {
+            ganttObj.projectEndDate = new Date('02/24/2018');
+            ganttObj.timelineSettings.topTier.unit = "Hour";
+            ganttObj.timelineSettings.topTier.count = 1;
+            ganttObj.timelineSettings.bottomTier.count = 15;
+            ganttObj.timelineSettings.bottomTier.unit = "Minutes";
+            ganttObj.dataBound = function () {
+                ganttObj.zoomIn();
+                expect(ganttObj.currentZoomingLevel.level).toBe(24);
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('check zooming level collections length', (done: Function) => {
+            ganttObj.projectEndDate = new Date('02/24/2018');
+            ganttObj.timelineSettings.topTier.unit = "Hour";
+            ganttObj.timelineSettings.topTier.count = 1;
+            ganttObj.timelineSettings.bottomTier.count = 15;
+            ganttObj.timelineSettings.bottomTier.unit = "Minutes";
+            ganttObj.dataBound = function () {
+                ganttObj.zoomingLevels = [];
+                ganttObj.zoomIn();
+                expect(ganttObj.currentZoomingLevel.level).toBe(24);
+                expect(ganttObj.zoomingLevels.length).toBeGreaterThanOrEqual(0);
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('zoomtofit action when Gantt chart width is zero', (done: Function) => {
+            ganttObj.timelineSettings.topTier.unit = "Year";
+            ganttObj.timelineSettings.topTier.count = 1;
+            ganttObj.timelineSettings.bottomTier.count = 1;
+            ganttObj.timelineSettings.bottomTier.unit = "Year";
+            ganttObj.splitterSettings.position = '100%';
+            ganttObj.dataBound = function () {
+                ganttObj.fitToProject();
+                expect(ganttObj.currentZoomingLevel.level).toBe(2);
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('check zooming actions with custom zooming levels', (done: Function) => {
+            ganttObj.zoomingLevels = [{
+                topTier: { unit: 'Day', format: 'ddd MMM d', count: 1 },
+                bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 99, level: 0,
+                timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            },
+            {
+                topTier: { unit: 'Hour', format: 'ddd MMM d, h a', count: 1 },
+                bottomTier: { unit: 'Minutes', format: 'mm', count: 30 }, timelineUnitSize: 66, level: 1,
+                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+            }]
+            ganttObj.zoomIn();
+            expect(ganttObj.currentZoomingLevel.level).toBe(1);
+            expect(ganttObj.currentZoomingLevel.bottomTier.unit).toBe('Minutes');
+            done();
+            ganttObj.refresh();
+        }, 3000);
+
+        it('check zooming actions with custom zooming levels', (done: Function) => {
+            ganttObj.timelineSettings.topTier.unit = "Month";
+            ganttObj.timelineSettings.topTier.count = 1;
+            ganttObj.timelineSettings.bottomTier.count = 1;
+            ganttObj.timelineSettings.bottomTier.unit = "Week";
+            ganttObj.dataBound = function () {
+                ganttObj.zoomingLevels = [{
+                    topTier: { unit: 'Day', format: 'ddd MMM d', count: 1 },
+                    bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 99, level: 0,
+                    timelineViewMode: 'Day', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                },
+                {
+                    topTier: { unit: 'Hour', format: 'ddd MMM d, h a', count: 1 },
+                    bottomTier: { unit: 'Minutes', format: 'mm', count: 30 }, timelineUnitSize: 66, level: 1,
+                    timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                }];
+                ganttObj.zoomIn();
+                expect(ganttObj.currentZoomingLevel.level).toBe(1);
+                expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe("Minutes");
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('check the current zooming level when the bottom tire count in between the zooming levels', (done: Function) => {
+            ganttObj.timelineSettings.topTier.unit = "Year";
+            ganttObj.timelineSettings.topTier.count = 1;
+            ganttObj.timelineSettings.bottomTier.count = 4;
+            ganttObj.timelineSettings.bottomTier.unit = "Month";
+            ganttObj.dataBound = function () {
+                ganttObj.zoomOut();
+                expect(ganttObj.currentZoomingLevel.level).toBe(7);
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('Zoom to fit when perDay width below the last zoomin level width', (done: Function) => {
+            ganttObj.dataSource = zoomData;
+            ganttObj.splitterSettings.position = '0%';
+            ganttObj.dataBound = () => {
+                let zoomToFit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomtofit') as HTMLElement;
+                triggerMouseEvent(zoomToFit, 'click');
+                expect(ganttObj.currentZoomingLevel.level).toBe(24);
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('Zoom to fit when perDay width exceed the last zoomout level width', (done: Function) => {
+            ganttObj.dataSource = zoomData1;
+            ganttObj.splitterSettings.position = '99%';
+            ganttObj.dataBound = () => {
+                ganttObj.fitToProject();
+                expect(ganttObj.currentZoomingLevel.level).toBe(0);
+                ganttObj.zoomingLevels[3].bottomTier.count = 13;
+                ganttObj.zoomIn();
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('To check disable state of zoomin icon when mismatching the count value', (done: Function) => {
+            ganttObj.dataSource = defaultGanttData;
+            ganttObj.splitterSettings.position = '50%';
+            ganttObj.dataBound = () => {
+                ganttObj.zoomingLevels[1].bottomTier.count=14;
+                ganttObj.zoomIn();
+                expect(ganttObj.currentZoomingLevel.level).toBe(7);
+                ganttObj.fitToProject();
+                done();
+            }
+            ganttObj.refresh();
+        }, 3000);
+
+        it('Aria-label testing', (done: Function) => {
+            ganttObj.projectStartDate = "01/28/2018";
+            ganttObj.projectEndDate = "03/24/2018";
+            ganttObj.timelineSettings.timelineViewMode = "Week";
+            ganttObj.timelineSettings.topTier.unit = "None";
+            ganttObj.timelineSettings.bottomTier.unit = "None";
+            ganttObj.timelineSettings.topTier.count = 1;
+            ganttObj.timelineSettings.bottomTier.count = 1;
+            ganttObj.timelineSettings.topTier.formatter = null;                     
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(1) > thead > tr > th').getAttribute('aria-label').indexOf('Timeline cell 01/27/2018')> -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(2) > thead > tr > th:nth-child(3)').getAttribute('aria-label').indexOf('Timeline cell 01/29/2018')> -1).toBeTruthy();
+                done();
+            }
+            ganttObj.refresh();
+        });
     });
 });

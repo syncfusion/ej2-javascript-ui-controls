@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor } from '../document-editor/document-editor';import { TextProperties } from './properties-pane/text-properties-pane';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor } from '../document-editor/document-editor';import { TextProperties } from './properties-pane/text-properties-pane';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel } from '../document-editor/document-editor-model';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -22,6 +22,11 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     restrictEditing?: boolean;
 
     /**
+     * Enable or disable spell checker in document editor container.
+     */
+    enableSpellCheck?: boolean;
+
+    /**
      * Enable local paste
      */
     enableLocalPaste?: boolean;
@@ -34,25 +39,42 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     /**
      * Triggers when the component is created
      * @event
+     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
      * @event
+     * @blazorproperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers whenever the content changes in the document editor container.
      * @event
+     * @blazorproperty 'ContentChanged'
      */
     contentChange?: EmitType<ContainerContentChangeEventArgs>;
 
     /**
      * Triggers whenever selection changes in the document editor container.
      * @event
+     * @blazorproperty 'SelectionChanged'
      */
     selectionChange?: EmitType<ContainerSelectionChangeEventArgs>;
+
+    /**
+     * Triggers whenever document changes in the document editor container.
+     * @event
+     * @blazorproperty 'DocumentChanged'
+     */
+    documentChange?: EmitType<ContainerDocumentChangeEventArgs>;
+
+    /**
+     * Defines the settings of the DocumentEditorContainer service.
+     */
+    // tslint:disable-next-line:max-line-length
+    serverActionSettings?: ContainerServerActionSettingsModel;
 
 }

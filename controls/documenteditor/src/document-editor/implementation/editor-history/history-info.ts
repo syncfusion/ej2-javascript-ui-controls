@@ -1,6 +1,7 @@
 import { DocumentEditor } from '../../document-editor';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaseHistoryInfo } from './base-history-info';
+import { EditRangeStartElementBox } from '../viewer/page';
 /**
  * EditorHistory preservation class
  */
@@ -14,6 +15,8 @@ export class HistoryInfo extends BaseHistoryInfo {
     public modifiedActions: BaseHistoryInfo[];
 
     private isChildHistoryInfo: boolean = false;
+    public editRangeStart: EditRangeStartElementBox = undefined;
+
     /**
      * @private
      */
@@ -66,6 +69,18 @@ export class HistoryInfo extends BaseHistoryInfo {
             }
         }
 
+        if (this.action === 'RestrictEditing') {
+            let user: string = this.editRangeStart.user !== '' ? this.editRangeStart.user : this.editRangeStart.group;
+            if (this.editorHistory.isUndoing) {
+                let index: number = this.owner.viewer.editRanges.get(user).indexOf(this.editRangeStart);
+                if (index !== -1) {
+                    this.owner.viewer.editRanges.get(user).splice(index, 1);
+                }
+            } else {
+                this.owner.editor.updateRangeCollection(this.editRangeStart, user);
+            }
+            this.owner.selection.updateEditRangeCollection();
+        }
         if (!this.isChildHistoryInfo) {
             this.editorHistory.updateComplexHistory();
         } else {

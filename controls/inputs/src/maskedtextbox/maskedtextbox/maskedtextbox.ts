@@ -12,6 +12,7 @@ const INPUT: string = 'e-input';
 const COMPONENT: string = 'e-maskedtextbox';
 const CONTROL: string = 'e-control';
 const MASKINPUT_FOCUS: string = 'e-input-focus';
+const wrapperAttr: string[] = ['title', 'style', 'class'];
 
 /**
  * The MaskedTextBox allows the user to enter the valid input only based on the provided mask.
@@ -51,6 +52,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private preEleVal: string;
     private formElement: HTMLElement;
     private initInputValue: string = '';
+    private maskOptions: MaskedTextBoxModel;
+
     /**
      * Gets or sets the CSS classes to root element of the MaskedTextBox which helps to customize the
      * complete UI styles for the MaskedTextBox component.
@@ -86,6 +89,14 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
+
+    /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string; };
 
     /**
      * Sets a value that enables or disables the MaskedTextBox component.
@@ -175,6 +186,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     /**
      * Triggers when the MaskedTextBox component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -182,6 +194,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     /**
      * Triggers when the MaskedTextBox component is destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -189,18 +202,21 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     /**
      * Triggers when the value of the MaskedTextBox changes.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType <MaskChangeEventArgs>;
     /**
      * Triggers when the MaskedTextBox got focus in.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<MaskFocusEventArgs>;
     /**
      * Triggers when the MaskedTextBox got focus out.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<MaskBlurEventArgs>;
@@ -208,6 +224,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
 
     constructor(options?: MaskedTextBoxModel, element?: string | HTMLElement | HTMLInputElement) {
         super(options, <HTMLInputElement | string>element);
+        this.maskOptions = options;
     }
 
     /**
@@ -258,6 +275,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.element = <HTMLInputElement>input;
             setValue('ej2_instances', ejInstance, this.element);
         }
+        this.updateHTMLAttrToElement();
+        this.checkHtmlAttributes(true);
         if (this.formElement) {
             this.initInputValue = this.value;
         }
@@ -282,6 +301,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 addClass([this.element], INPUT);
             }
             this.createWrapper();
+            this.updateHTMLAttrToWrapper();
             if (this.element.name === '') {
                 this.element.setAttribute('name', this.element.id);
             }
@@ -297,6 +317,21 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             if (this.element.getAttribute('value') || this.value) {
                  this.element.setAttribute('value', this.element.value);
              }
+        }
+    }
+    private updateHTMLAttrToElement(): void {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttr.indexOf(key) < 0 ) {
+                this.element.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    }
+
+    private updateHTMLAttrToWrapper(): void {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttr.indexOf(key) > -1 ) {
+                this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+            }
         }
     }
 
@@ -344,6 +379,35 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         if (!isNullOrUndefined(width)) {
             this.element.style.width = formatUnit(width);
             this.inputObj.container.style.width = formatUnit(width);
+        }
+    }
+    private checkHtmlAttributes(isDynamic: boolean): void {
+        let attributes: string[] = ['placeholder', 'disabled', 'value'];
+        for (let key of attributes) {
+            if (!isNullOrUndefined(this.element.getAttribute(key))) {
+                switch (key) {
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({placeholder: this.element.placeholder}, isDynamic);
+                        }
+                        break;
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || !isDynamic) {
+                            let enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                                this.element.getAttribute(key) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || !isDynamic) {
+                            this.setProperties({value: this.element.value}, isDynamic);
+                        }
+                        break;
+                }
+            }
         }
     }
 
@@ -404,6 +468,11 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                     this.floatLabelType = newProp.floatLabelType;
                     Input.removeFloating(this.inputObj);
                     Input.addFloating(this.element, this.floatLabelType, this.placeholder, this.createElement);
+                    break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    this.checkHtmlAttributes(false);
                     break;
                 case 'mask':
                     let strippedValue: string = this.value;

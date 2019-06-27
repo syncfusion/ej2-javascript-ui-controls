@@ -62,6 +62,13 @@ export interface NumericTextBoxModel extends ComponentModel{
     placeholder?: string;
 
     /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string; };
+
+    /**
      * Specifies whether the up and down spin buttons should be displayed in NumericTextBox.
      * @default true
      */
@@ -171,30 +178,35 @@ export interface NumericTextBoxModel extends ComponentModel{
     /**
      * Triggers when the NumericTextBox component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the NumericTextBox component is destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the value of the NumericTextBox changes.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when the NumericTextBox got focus in.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<NumericFocusEventArgs>;
 
     /**
      * Triggers when the NumericTextBox got focus out.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<NumericBlurEventArgs>;
 

@@ -4,7 +4,7 @@
 import { Browser, select } from "@syncfusion/ej2-base";
 import { RichTextEditor, Toolbar, IRenderer, QuickToolbar, HtmlEditor, ToolbarRenderer, BaseToolbar } from "../../../src/rich-text-editor/index";
 import { pageYOffset } from "../../../src/rich-text-editor/base/util";
-import { renderRTE, destroy, removeStyleElements, androidUA, iPhoneUA, currentBrowserUA  } from "./../render.spec";
+import { renderRTE, destroy, removeStyleElements, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
 
 RichTextEditor.Inject(HtmlEditor, Toolbar, QuickToolbar);
 

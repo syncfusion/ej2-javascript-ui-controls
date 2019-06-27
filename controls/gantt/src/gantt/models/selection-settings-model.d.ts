@@ -15,7 +15,7 @@ export interface SelectionSettingsModel {
     mode?: SelectionMode;
 
     /**
-     * To define selection mode of cell
+     * To define selection mode of cell.
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CellSelectionMode
      */

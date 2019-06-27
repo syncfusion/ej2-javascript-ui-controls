@@ -2,63 +2,22 @@
 
 ## [Unreleased]
 
-## 17.1.51 (2019-06-11)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- #238350 - Editing works fine in remote data.
-
-## 17.1.49 (2019-05-29)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- #236554 - Expand/Collapse icon for 2nd level parent while using remote data works fine
-
-- #236554 - enableCollapseAll works fine with paging
-
-## 17.1.48 (2019-05-21)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- Styling alternate rows of TreeGrid works fine in collapsed state
-
-## 17.1.47 (2019-05-14)
+## 17.2.28-beta (2019-06-27)
 
 ### TreeGrid
 
 #### New Features
 
-- 'Row Template' support is provided that allows to use custom layout for the TreeGrid rows.
-
-## 17.1.44 (2019-05-07)
-
-### TreeGrid
+- Virtual Scrolling support has been provided in which the rows are added dynamically while scrolling.
+- Detail Template support has been provided that provides additional information about a particular row.
 
 #### Bug Fixes
 
-- Adding a new record or Deleting an existing record is working fine with the sorted data.
+- `collapseAll` method works fine with pageSize mode set to `All`.
 
-## 17.1.41 (2019-04-16)
+#### Breaking Changes
 
-### TreeGrid
-
-#### Bug Fixes
-
--#143815 - `GridLine` property is working fine in MVC
-
-## 17.1.40 (2019-04-09)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `addRecord` method is working fine and also allows to add record at desired row position.
+- The default value of `enableHover` property has been changed from `true` to `false`.
 
 ## 17.1.1-beta (2019-01-29)
 

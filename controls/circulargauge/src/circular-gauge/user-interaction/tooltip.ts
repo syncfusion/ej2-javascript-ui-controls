@@ -6,7 +6,7 @@ import { GaugeLocation, getPointer, Rect, getMousePosition, Size, getElementSize
 import { getAngleFromValue, getLabelFormat, getLocationFromAngle } from '../utils/helper';
 import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
-import { Browser, createElement, remove } from '@syncfusion/ej2-base';
+import { Browser, createElement, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { tooltipRender } from '../model/constants';
 /**
  * Tooltip Module handles the tooltip of the circular gauge
@@ -108,48 +108,58 @@ export class GaugeTooltip {
                 name: tooltipRender, cancel: false, content: content, location: location, axis: this.currentAxis,
                 tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge
             };
-            this.gauge.trigger(tooltipRender, tooltipArgs);
-            let template: string = tooltipArgs.tooltip.template;
-            if (template !== null && template.length === 1) {
-                template = template[template[0]];
-            }
-            if (!this.tooltip.showAtMousePosition) {
-                if (template) {
-                    let elementSize: Size = getElementSize(template, this.gauge, this.tooltipEle);
-                    this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
-                        this.findPosition(rect, angle, content, tooltipArgs.location) : rect;
+            this.gauge.trigger(tooltipRender, tooltipArgs, (observedArgs: ITooltipRenderEventArgs) => {
+                let template: string = tooltipArgs.tooltip.template;
+                if (template !== null && template.length === 1) {
+                    template = template[template[0]];
+                }
+                if (!this.tooltip.showAtMousePosition) {
+                    if (template) {
+                        let elementSize: Size = getElementSize(template, this.gauge, this.tooltipEle);
+                        this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
+                            this.findPosition(rect, angle, content, tooltipArgs.location) : rect;
+                    } else {
+                        this.findPosition(rect, angle, content, tooltipArgs.location);
+                    }
                 } else {
-                    this.findPosition(rect, angle, content, tooltipArgs.location);
+                    tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                    this.tooltipRect = rect;
                 }
-            } else {
-                tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
-                this.tooltipRect = rect;
-            }
-            if (!tooltipArgs.cancel && !samePointerEle) {
-                tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
-                tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
-                tooltipArgs.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    data: { value: tooltipArgs.content },
-                    template: template,
-                    enableAnimation: tooltipArgs.tooltip.enableAnimation,
-                    content: [tooltipArgs.content],
-                    location: tooltipArgs.location,
-                    inverted: this.arrowInverted,
-                    areaBounds: this.tooltipRect,
-                    fill: tooltipArgs.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
-                    textStyle: tooltipArgs.tooltip.textStyle,
-                    border: tooltipArgs.tooltip.border
-                });
-                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(this.tooltipEle);
-                if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
-                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                if (!tooltipArgs.cancel && !samePointerEle) {
+                    tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
+                    tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
+                    tooltipArgs.tooltip.textStyle.opacity =
+                        this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
+                    this.svgTooltip = new Tooltip({
+                        enable: true,
+                        data: { value: tooltipArgs.content },
+                        template: template,
+                        enableAnimation: tooltipArgs.tooltip.enableAnimation,
+                        content: [tooltipArgs.content],
+                        location: tooltipArgs.location,
+                        inverted: this.arrowInverted,
+                        areaBounds: this.tooltipRect,
+                        fill: tooltipArgs.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
+                        textStyle: tooltipArgs.tooltip.textStyle,
+                        availableSize: this.gauge.availableSize,
+                        border: tooltipArgs.tooltip.border
+                    });
+                    this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                    this.svgTooltip.appendTo(this.tooltipEle);
+                    if (this.gauge.tooltip.template) {
+                        updateBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+                    }
+                    if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                        this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                    }
                 }
-            }
+            });
+
         } else {
             this.removeTooltip();
+            if (this.gauge.tooltip.template) {
+                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+            }
         }
     }
 

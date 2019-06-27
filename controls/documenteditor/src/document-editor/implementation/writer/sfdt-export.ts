@@ -7,7 +7,9 @@ import { WBorder, WBorders, WShading } from '../format/index';
 import { LayoutViewer } from '../index';
 import {
     IWidget, LineWidget, ParagraphWidget, BlockContainer, BodyWidget, TextElementBox, Page, ElementBox, FieldElementBox, TableWidget,
-    TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters, ListTextElementBox, BookmarkElementBox
+    TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters,
+    ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
+    ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -27,6 +29,7 @@ export class SfdtExport {
     private viewer: LayoutViewer = undefined;
     private document: any = undefined;
     private writeInlineStyles: boolean = undefined;
+    private editRangeId: number = -1;
     /** 
      * @private
      */
@@ -63,6 +66,20 @@ export class SfdtExport {
             resolve(blob);
         });
     }
+    private updateEditRangeId(): void {
+        let index: number = -1;
+        for (let i: number = 0; i < this.viewer.editRanges.keys.length; i++) {
+            let keys: string[] = this.viewer.editRanges.keys;
+            for (let j: number = 0; j < keys[i].length; j++) {
+                let editRangeStart: EditRangeStartElementBox[] = this.viewer.editRanges.get(keys[i]);
+                for (let z: number = 0; z < editRangeStart.length; z++) {
+                    index++;
+                    editRangeStart[z].editRangeId = index;
+                    editRangeStart[z].editRangeEnd.editRangeId = index;
+                }
+            }
+        }
+    }
     // tslint:disable-next-line:max-line-length
     /** 
      * @private
@@ -77,6 +94,12 @@ export class SfdtExport {
         this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
         this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
         this.document.defaultTabWidth = this.viewer.defaultTabWidth;
+        this.document.enforcement = this.viewer.isDocumentProtected;
+        this.document.hashValue = this.viewer.hashValue;
+        this.document.saltValue = this.viewer.saltValue;
+        this.document.formatting = this.viewer.restrictFormatting;
+        this.document.protectionType = this.viewer.protectionType;
+        this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             // For selection
             let startPara: ParagraphWidget = line.paragraph;
@@ -278,6 +301,11 @@ export class SfdtExport {
         inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
         if (element instanceof FieldElementBox) {
             inline.fieldType = element.fieldType;
+            if (element.fieldCodeType && element.fieldCodeType !== '') {
+                inline.fieldCodeType = element.fieldCodeType;
+            }
+        } else if (element instanceof ChartElementBox) {
+            this.writeChart(element, inline);
         } else if (element instanceof ImageElementBox) {
             inline.imageString = element.imageString;
             inline.width = HelperMethods.convertPixelToPoint(element.width);
@@ -286,11 +314,226 @@ export class SfdtExport {
             inline.bookmarkType = element.bookmarkType;
             inline.name = element.name;
         } else if (element instanceof TextElementBox) {
-            inline.text = element.text;
+            // replacing the no break hyphen character by '-'
+            if (element.text.indexOf('\u001e') !== -1) {
+                inline.text = element.text.replace('\u001e', '-');
+            } else if (element.text.indexOf('\u001f') !== -1) {
+                inline.text = element.text.replace('\u001f', '');
+            } else {
+                inline.text = element.text;
+            }
+        } else if (element instanceof EditRangeStartElementBox) {
+            inline.user = element.user;
+            inline.group = element.group;
+            inline.columnFirst = element.columnFirst;
+            inline.columnLast = element.columnLast;
+            inline.editRangeId = element.editRangeId.toString();
+        } else if (element instanceof EditRangeEndElementBox) {
+            inline.editRangeStart = {
+                'user': element.editRangeStart.user,
+                'group': element.editRangeStart.group,
+                'columnFirst': element.editRangeStart.columnFirst,
+                'columnLast': element.editRangeStart.columnLast
+            };
+            inline.editRangeId = element.editRangeId.toString();
         } else {
             inline = undefined;
         }
         return inline;
+    }
+    public writeChart(element: ChartElementBox, inline: any): void {
+        inline.chartLegend = {};
+        inline.chartTitleArea = {};
+        inline.chartArea = {};
+        inline.plotArea = {};
+        inline.chartCategory = [];
+        inline.chartSeries = [];
+        inline.chartPrimaryCategoryAxis = {};
+        inline.chartPrimaryValueAxis = {};
+        this.writeChartTitleArea(element.chartTitleArea, inline.chartTitleArea);
+        this.writeChartArea(element.chartArea, inline.chartArea);
+        this.writeChartArea(element.chartPlotArea, inline.plotArea);
+        this.writeChartCategory(element, inline.chartCategory);
+        this.createChartSeries(element, inline.chartSeries);
+        this.writeChartLegend(element.chartLegend, inline.chartLegend);
+        this.writeChartCategoryAxis(element.chartPrimaryCategoryAxis, inline.chartPrimaryCategoryAxis);
+        this.writeChartCategoryAxis(element.chartPrimaryValueAxis, inline.chartPrimaryValueAxis);
+        if (element.chartDataTable.showSeriesKeys !== undefined) {
+            inline.chartDataTable = {};
+            this.writeChartDataTable(element.chartDataTable, inline.chartDataTable);
+        }
+        inline.chartTitle = element.title;
+        inline.chartType = element.type;
+        inline.gapWidth = element.chartGapWidth;
+        inline.overlap = element.chartOverlap;
+        inline.height = HelperMethods.convertPixelToPoint(element.height);
+        inline.width = HelperMethods.convertPixelToPoint(element.width);
+    }
+    private writeChartTitleArea(titleArea: ChartTitleArea, chartTitleArea: any): void {
+        chartTitleArea.fontName = titleArea.chartfontName;
+        chartTitleArea.fontSize = titleArea.chartFontSize;
+        chartTitleArea.layout = {};
+        chartTitleArea.dataFormat = this.writeChartDataFormat(titleArea.dataFormat);
+        this.writeChartLayout(titleArea.layout, chartTitleArea.layout);
+    }
+    private writeChartDataFormat(format: ChartDataFormat): any {
+        let chartDataFormat: any = {};
+        chartDataFormat.fill = {};
+        chartDataFormat.line = {};
+        chartDataFormat.fill.foreColor = format.fill.color;
+        chartDataFormat.fill.rgb = format.fill.rgb;
+        chartDataFormat.line.color = format.line.color;
+        chartDataFormat.line.rgb = format.line.rgb;
+        return chartDataFormat;
+    }
+    private writeChartLayout(layout: ChartLayout, chartLayout: any): void {
+        chartLayout.layoutX = layout.chartLayoutLeft;
+        chartLayout.layoutY = layout.chartLayoutTop;
+    }
+    private writeChartArea(area: ChartArea, chartArea: any): void {
+        chartArea.foreColor = area.chartForeColor;
+    }
+    private writeChartLegend(legend: ChartLegend, chartLegend: any): void {
+        chartLegend.position = legend.chartLegendPostion;
+        chartLegend.chartTitleArea = {};
+        this.writeChartTitleArea(legend.chartTitleArea, chartLegend.chartTitleArea);
+    }
+    private writeChartCategoryAxis(categoryAxis: ChartCategoryAxis, primaryCategoryAxis: any): void {
+        primaryCategoryAxis.chartTitle = categoryAxis.categoryAxisTitle;
+        primaryCategoryAxis.chartTitleArea = {};
+        this.writeChartTitleArea(categoryAxis.chartTitleArea, primaryCategoryAxis.chartTitleArea);
+        primaryCategoryAxis.categoryType = categoryAxis.categoryAxisType;
+        primaryCategoryAxis.fontSize = categoryAxis.axisFontSize;
+        primaryCategoryAxis.fontName = categoryAxis.axisFontName;
+        primaryCategoryAxis.numberFormat = categoryAxis.categoryNumberFormat;
+        primaryCategoryAxis.maximumValue = categoryAxis.max;
+        primaryCategoryAxis.minimumValue = categoryAxis.min;
+        primaryCategoryAxis.majorUnit = categoryAxis.interval;
+        primaryCategoryAxis.hasMajorGridLines = categoryAxis.majorGridLines;
+        primaryCategoryAxis.hasMinorGridLines = categoryAxis.minorGridLines;
+        primaryCategoryAxis.majorTickMark = categoryAxis.majorTick;
+        primaryCategoryAxis.minorTickMark = categoryAxis.minorTick;
+        primaryCategoryAxis.tickLabelPosition = categoryAxis.tickPosition;
+    }
+    private writeChartDataTable(chartDataTable: ChartDataTable, dataTable: any): void {
+        dataTable.showSeriesKeys = chartDataTable.showSeriesKeys;
+        dataTable.hasHorzBorder = chartDataTable.hasHorzBorder;
+        dataTable.hasVertBorder = chartDataTable.hasVertBorder;
+        dataTable.hasBorders = chartDataTable.hasBorders;
+    }
+    private writeChartCategory(element: any, chartCategory: any): void {
+        let data: any = element.chartCategory;
+        chartCategory.chartData = [];
+        for (let i: number = 0; i < data.length; i++) {
+            let xData: any = data[i];
+            let categories: any = this.createChartCategory(xData, element.chartType);
+            chartCategory.push(categories);
+        }
+    }
+    private createChartCategory(data: any, type: string): any {
+        let chartCategory: any = {};
+        chartCategory.chartData = [];
+        this.writeChartData(data, chartCategory.chartData, type);
+        chartCategory.categoryXName = data.categoryXName;
+        return chartCategory;
+    }
+    private writeChartData(element: any, chartData: any, type: string): any {
+        let data: any = element.chartData;
+        for (let i: number = 0; i < data.length; i++) {
+            let yData: any = data[i];
+            let yCategory: any = this.createChartData(yData, type);
+            chartData.push(yCategory);
+        }
+    }
+    private createChartData(data: any, type: string): any {
+        let chartData: any = {};
+        chartData.yValue = data.yValue;
+        if (type === 'Bubble') {
+            chartData.size = data.size;
+        }
+        return chartData;
+    }
+    private createChartSeries(element: any, chartSeries: any): any {
+        let data: any = element.chartSeries;
+        let type: string = element.chartType;
+        for (let i: number = 0; i < data.length; i++) {
+            let yData: any = data[i];
+            let series: any = this.writeChartSeries(yData, type);
+            chartSeries.push(series);
+        }
+    }
+    private writeChartSeries(series: any, type: string): any {
+        let isPieType: boolean = (type === 'Pie' || type === 'Doughnut');
+        let chartSeries: any = {};
+        let errorBar: any = {};
+        let errorBarData: any = series.errorBar;
+        chartSeries.dataPoints = [];
+        chartSeries.seriesName = series.seriesName;
+        if (isPieType) {
+            if (!isNullOrUndefined(series.firstSliceAngle)) {
+                chartSeries.firstSliceAngle = series.firstSliceAngle;
+            }
+            if (type === 'Doughnut') {
+                chartSeries.holeSize = series.doughnutHoleSize;
+            }
+        }
+        if (!isNullOrUndefined(series.dataLabels.labelPosition)) {
+            let dataLabel: any = this.writeChartDataLabels(series.dataLabels);
+            chartSeries.dataLabel = dataLabel;
+        }
+        if (!isNullOrUndefined(series.seriesFormat.markerStyle)) {
+            let seriesFormat: any = {};
+            let format: any = series.seriesFormat;
+            seriesFormat.markerStyle = format.markerStyle;
+            seriesFormat.markerSize = format.numberValue;
+            seriesFormat.markerColor = format.markerColor;
+            chartSeries.seriesFormat = seriesFormat;
+        }
+        if (!isNullOrUndefined(errorBarData.type)) {
+            errorBar.type = errorBarData.type;
+            errorBar.direction = errorBarData.direction;
+            errorBar.endStyle = errorBarData.endStyle;
+            errorBar.numberValue = errorBarData.numberValue;
+            chartSeries.errorBar = errorBarData;
+        }
+        if (series.trendLines.length > 0) {
+            chartSeries.trendLines = [];
+            for (let i: number = 0; i < series.trendLines.length; i++) {
+                let trendLine: any = this.writeChartTrendLines(series.trendLines[i]);
+                chartSeries.trendLines.push(trendLine);
+            }
+        }
+        for (let i: number = 0; i < series.chartDataFormat.length; i++) {
+            let format: any = this.writeChartDataFormat(series.chartDataFormat[i]);
+            chartSeries.dataPoints.push(format);
+        }
+        return chartSeries;
+    }
+    private writeChartDataLabels(dataLabels: any): any {
+        let dataLabel: any = {};
+        dataLabel.position = dataLabels.position;
+        dataLabel.fontName = dataLabels.fontName;
+        dataLabel.fontColor = dataLabels.fontColor;
+        dataLabel.fontSize = dataLabels.fontSize;
+        dataLabel.isLegendKey = dataLabels.isLegendKey;
+        dataLabel.isBubbleSize = dataLabels.isBubbleSize;
+        dataLabel.isCategoryName = dataLabels.isCategoryName;
+        dataLabel.isSeriesName = dataLabels.isSeriesName;
+        dataLabel.isValue = dataLabels.isValue;
+        dataLabel.isPercentage = dataLabels.isPercentage;
+        dataLabel.isLeaderLines = dataLabels.isLeaderLines;
+        return dataLabel;
+    }
+    private writeChartTrendLines(trendLines: any): any {
+        let trendLine: any = {};
+        trendLine.name = trendLines.trendLineName;
+        trendLine.type = trendLines.trendLineType;
+        trendLine.forward = trendLines.forwardValue;
+        trendLine.backward = trendLines.backwardValue;
+        trendLine.intercept = trendLines.interceptValue;
+        trendLine.isDisplayEquation = trendLines.isDisplayEquation;
+        trendLine.isDisplayRSquared = trendLines.isDisplayRSquared;
+        return trendLine;
     }
     private writeLines(paragraph: ParagraphWidget, lineIndex: number, offset: number, inlines: any): boolean {
         let startIndex: number = lineIndex;
@@ -372,6 +615,7 @@ export class SfdtExport {
         paragraphFormat.listFormat = this.writeListFormat(format.listFormat, isInline);
         paragraphFormat.tabs = this.writeTabs(format.tabs);
         paragraphFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
+        paragraphFormat.contextualSpacing = isInline ? format.contextualSpacing : format.getValue('contextualSpacing');
         if (this.writeInlineStyles && !isInline) {
             paragraphFormat.inlineFormat = this.writeParagraphFormat(format, true);
         }

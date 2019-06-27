@@ -114,5 +114,72 @@ describe('Alignments plugin', () => {
             detach(elem);
         });
     });
+    describe('align test-img and text in same line', () => {
+        let editorObj: EditorManager;
 
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: `
+        <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <p><b>Description:</b></p>
+        <p><b>Functional
+        Specifications/Requirements:</b></p>
+        <ol><li><p>Keyboard
+        navigation support.<img src="C:\\Users\\gunasekar.kuppusamy\\Downloads\\download.jpg" alt="Image"> </p></li></ol>
+         </div>
+         ` });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it(' Align', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('p');
+            let end: HTMLElement = elem.querySelectorAll('p')[2];
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
+            editorObj.execCommand("Alignments", 'JustifyRight', null);
+            expect(end.lastElementChild.classList.contains('e-imgright')).toBe(true);
+            editorObj.execCommand("Alignments", 'JustifyRight', null);
+            expect(end.lastElementChild.classList.contains('e-imgright')).toBe(true);
+            editorObj.execCommand("Alignments", 'JustifyCenter', null);
+            expect(end.lastElementChild.classList.contains('e-imgcenter')).toBe(true);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+    describe('align test-img and text in diff line', () => {
+        let editorObj: EditorManager;
+
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: `
+        <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <p><b>Description:</b></p>
+        <p><b>Functional
+        Specifications/Requirements:</b></p>
+        <ol><li><p>Keyboard
+        navigation support.</p></li></ol>
+        <img src="C:\\Users\\gunasekar.kuppusamy\\Downloads\\download.jpg" alt="Image">
+         </div>
+         ` });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+        it('Align', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('p');
+            let end: HTMLElement = document.getElementById('content-edit');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
+            editorObj.execCommand("Alignments", 'JustifyRight', null);
+            expect(end.lastElementChild.classList.contains('e-imgright')).toBe(true);
+            editorObj.execCommand("Alignments", 'JustifyRight', null);
+            expect(end.lastElementChild.classList.contains('e-imgright')).toBe(true);
+            editorObj.execCommand("Alignments", 'JustifyCenter', null);
+            expect(end.lastElementChild.classList.contains('e-imgcenter')).toBe(true);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
 });

@@ -155,6 +155,12 @@ export class ExcelExport {
                     });
                 });
             });
+        } else if (!isNullOrUndefined(exportProperties) && exportProperties.exportType === 'CurrentPage') {
+            return new Promise((resolve: Function, reject: Function) => {
+                    this.init(gObj);
+                    this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, this.parent.getCurrentViewRecords());
+                    this.exportingSuccess(resolve);
+            });
         } else {
             let allPromise: Promise<Object>[] = [];
             allPromise.push(this.data.getData({}, ExportHelper.getQuery(gObj, this.data)));
@@ -176,7 +182,7 @@ export class ExcelExport {
     /* tslint:disable-next-line:max-func-body-length */
     private processInnerRecords(gObj: IGrid, exportProperties: ExcelExportProperties,
         /* tslint:disable-next-line:no-any */
-                                isMultipleExport: boolean, workbook: any, r: ReturnType): Promise<Object> {
+                                isMultipleExport: boolean, workbook: any, r: ReturnType | Object[]): Promise<Object> {
         this.groupedColLength = gObj.groupSettings.columns.length;
         let blankRows: number = 5;
         let rows: ExcelRow[] = [];
@@ -312,7 +318,7 @@ export class ExcelExport {
         return initialIndex;
     }
 
-    private processGridExport(gObj: IGrid, exportProperties: ExcelExportProperties, r: ReturnType): ExcelRow[] {
+    private processGridExport(gObj: IGrid, exportProperties: ExcelExportProperties, r: ReturnType | Object[]): ExcelRow[] {
         let excelRows: ExcelRow[] = [];
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.theme)) {
             this.theme = exportProperties.theme;
@@ -338,13 +344,14 @@ export class ExcelExport {
     }
 
 
-    private processRecordContent(gObj: IGrid, returnType: ReturnType, headerRow: IHeader, exportProperties: ExcelExportProperties,
-                                 currentViewRecords: Object[], excelRow: ExcelRow[], helper: ExportHelper): ExcelRow[] {
+    private processRecordContent(gObj: IGrid, returnType: ReturnType | Object[], headerRow: IHeader,
+                                 exportProperties: ExcelExportProperties, currentViewRecords: Object[], excelRow: ExcelRow[],
+                                 helper: ExportHelper): ExcelRow[] {
         let record: Object[] | Group;
         if (!isNullOrUndefined(currentViewRecords)) {
             record = currentViewRecords;
         } else {
-            record = returnType.result;
+            record = (returnType as ReturnType).result;
         }
 
         if (!isNullOrUndefined((<Group>record).level)) {
@@ -352,11 +359,11 @@ export class ExcelExport {
         } else {
             this.processRecordRows(gObj, record, headerRow, 0, 0, exportProperties, excelRow, helper);
         }
-        if (!isNullOrUndefined(returnType.aggregates)) {
+        if (!isNullOrUndefined((returnType as ReturnType).aggregates)) {
             if (!isNullOrUndefined(currentViewRecords)) {
-                this.processAggregates(gObj, returnType.result, excelRow, currentViewRecords);
+                this.processAggregates(gObj, (returnType as ReturnType).result, excelRow, currentViewRecords);
             } else {
-                this.processAggregates(gObj, returnType.result, excelRow );
+                this.processAggregates(gObj, (returnType as ReturnType).result, excelRow);
             }
         }
         return excelRow;

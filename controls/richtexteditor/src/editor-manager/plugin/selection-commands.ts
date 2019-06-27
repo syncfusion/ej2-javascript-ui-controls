@@ -6,6 +6,7 @@ import { NodeCutter } from './nodecutter';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 export class SelectionCommands {
     public static applyFormat(docElement: Document, format: string, endNode: Node, value?: string, selector?: string): void {
@@ -173,9 +174,22 @@ export class SelectionCommands {
                         : nodes[index].textContent.toLocaleLowerCase();
                 } else if (!(isFontStyle === true && value === '')) {
                     let element: HTMLElement = this.GetFormatNode(format, value);
-                    nodes[index] = (index === (nodes.length - 1)) ? InsertMethods.Wrap(nodes[index] as HTMLElement, element)
-                        : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
-                    nodes[index] = this.getChildNode(nodes[index], element);
+                    if (format === 'fontsize') {
+                        let liElement: HTMLElement = nodes[index].parentElement;
+                        let parentElement: HTMLElement = nodes[index].parentElement;
+                        while (!isNullOrUndefined(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                            parentElement = parentElement.parentElement;
+                            liElement = parentElement;
+                        }
+                        if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                            liElement.textContent === nodes[index].textContent) {
+                            liElement.style.fontSize = value;
+                        } else {
+                            nodes[index] = this.applyStyles(nodes, index, element);
+                        }
+                    } else {
+                        nodes[index] = this.applyStyles(nodes, index, element);
+                    }
                 }
             } else {
                 nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index] as HTMLElement);
@@ -189,6 +203,12 @@ export class SelectionCommands {
                 nodeCutter.position = range.startOffset;
             }
         }
+        return nodes[index];
+    }
+    private static applyStyles(nodes: Node[], index: number, element: HTMLElement): Node {
+        nodes[index] = (index === (nodes.length - 1)) ? InsertMethods.Wrap(nodes[index] as HTMLElement, element)
+            : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
+        nodes[index] = this.getChildNode(nodes[index], element);
         return nodes[index];
     }
 

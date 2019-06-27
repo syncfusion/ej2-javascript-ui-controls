@@ -32,9 +32,9 @@ export interface SplitterSettingsModel {
 
     /**
      * Defines predefined view of Gantt.
-     * * `Default` - Shows grid side and side of Gantt
-     * * `Grid` - Shows grid side alone in Gantt
-     * * `Chart` - Shows chart side alone in Gantt
+     * * `Default` - Shows grid side and side of Gantt.
+     * * `Grid` - Shows grid side alone in Gantt.
+     * * `Chart` - Shows chart side alone in Gantt.
      * @default Default 
      */
     view?: SplitterView;

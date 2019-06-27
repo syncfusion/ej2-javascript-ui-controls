@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 
 /**
@@ -359,12 +359,15 @@ function getElementSize(template, gauge, parent) {
     let elementSize;
     let element;
     let templateFn = getTemplateFunction(template);
-    if (templateFn && templateFn(gauge).length) {
+    let tooltipData = templateFn ? templateFn({}, null, null, gauge.element.id + 'Template') : [];
+    if (templateFn && tooltipData.length) {
         element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
         gauge.element.appendChild(element);
-        let templateElement = templateFn(gauge);
-        while (templateElement.length > 0) {
+        let templateElement = templateFn({}, null, null, gauge.element.id + 'Template');
+        let templateLength = templateElement.length;
+        while (templateLength > 0) {
             element.appendChild(templateElement[0]);
+            templateLength--;
         }
         parent.appendChild(element);
         elementSize = new Size(parent.getBoundingClientRect().width, parent.getBoundingClientRect().height);
@@ -665,10 +668,10 @@ function getRangePalette(theme) {
 /** @private */
 function getThemeStyle(theme) {
     let style;
-    switch (theme) {
-        case 'MaterialDark':
-        case 'FabricDark':
-        case 'BootstrapDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
+        case 'fabricdark':
+        case 'bootstrapdark':
             style = {
                 backgroundColor: '#333232',
                 titleFontColor: '#ffffff',
@@ -684,7 +687,7 @@ function getThemeStyle(theme) {
                 needleTailColor: '#9A9A9A'
             };
             break;
-        case 'HighContrast':
+        case 'highcontrast':
             style = {
                 backgroundColor: '#000000',
                 titleFontColor: '#FFFFFF',
@@ -700,7 +703,7 @@ function getThemeStyle(theme) {
                 needleTailColor: '#FFFFFF'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
@@ -1076,6 +1079,7 @@ class Annotations {
     /**
      * Method to render the annotation for circular gauge.
      */
+    //tslint:disable
     renderAnnotation(axis, index) {
         let width = this.gauge.availableSize.width;
         let element = createElement('div', {
@@ -1090,6 +1094,7 @@ class Annotations {
         });
         if (parentElement && element.childElementCount) {
             parentElement.appendChild(element);
+            updateBlazorTemplate(element.id + '_ContentTemplate', 'ContentTemplate');
         }
     }
     /**
@@ -1107,27 +1112,32 @@ class Annotations {
             cancel: false, name: annotationRender, content: annotation.content,
             axis: axis, annotation: annotation, textStyle: annotation.textStyle
         };
-        this.gauge.trigger(annotationRender, argsData);
-        let templateFn;
-        let templateElement;
-        if (!argsData.cancel) {
-            templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && templateFn(axis).length) {
-                templateElement = Array.prototype.slice.call(templateFn(axis));
-                let length = templateElement.length;
-                for (let i = 0; i < length; i++) {
-                    childElement.appendChild(templateElement[i]);
+        this.gauge.trigger('annotationRender', argsData, (observedArgs) => {
+            let templateFn;
+            let templateElement;
+            let blazor = 'Blazor';
+            if (!argsData.cancel) {
+                templateFn = getTemplateFunction(argsData.content);
+                if (templateFn && (!window[blazor] ? templateFn(axis, null, null, element.id + '_ContentTemplate').length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, element.id + '_ContentTemplate'));
+                    let length = templateElement.length;
+                    for (let i = 0; i < length; i++) {
+                        childElement.appendChild(templateElement[i]);
+                    }
                 }
+                else {
+                    childElement.appendChild(createElement('div', {
+                        innerHTML: argsData.content,
+                        styles: getFontStyle(argsData.textStyle)
+                    }));
+                }
+                this.updateLocation(childElement, axis, annotation);
+                element.appendChild(childElement);
             }
             else {
-                childElement.appendChild(createElement('div', {
-                    innerHTML: argsData.content,
-                    styles: getFontStyle(argsData.textStyle)
-                }));
+                resetBlazorTemplate(element.id + '_ContentTemplate', '_ContentTemplate');
             }
-            this.updateLocation(childElement, axis, annotation);
-            element.appendChild(childElement);
-        }
+        });
     }
     /**
      * Method to update the annotation location for circular gauge.
@@ -1237,51 +1247,60 @@ class GaugeTooltip {
                 name: tooltipRender, cancel: false, content: content, location: location, axis: this.currentAxis,
                 tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge
             };
-            this.gauge.trigger(tooltipRender, tooltipArgs);
-            let template = tooltipArgs.tooltip.template;
-            if (template !== null && template.length === 1) {
-                template = template[template[0]];
-            }
-            if (!this.tooltip.showAtMousePosition) {
-                if (template) {
-                    let elementSize = getElementSize(template, this.gauge, this.tooltipEle);
-                    this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
-                        this.findPosition(rect, angle, content, tooltipArgs.location) : rect;
+            this.gauge.trigger(tooltipRender, tooltipArgs, (observedArgs) => {
+                let template = tooltipArgs.tooltip.template;
+                if (template !== null && template.length === 1) {
+                    template = template[template[0]];
+                }
+                if (!this.tooltip.showAtMousePosition) {
+                    if (template) {
+                        let elementSize = getElementSize(template, this.gauge, this.tooltipEle);
+                        this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
+                            this.findPosition(rect, angle, content, tooltipArgs.location) : rect;
+                    }
+                    else {
+                        this.findPosition(rect, angle, content, tooltipArgs.location);
+                    }
                 }
                 else {
-                    this.findPosition(rect, angle, content, tooltipArgs.location);
+                    tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                    this.tooltipRect = rect;
                 }
-            }
-            else {
-                tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
-                this.tooltipRect = rect;
-            }
-            if (!tooltipArgs.cancel && !samePointerEle) {
-                tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
-                tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
-                tooltipArgs.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    data: { value: tooltipArgs.content },
-                    template: template,
-                    enableAnimation: tooltipArgs.tooltip.enableAnimation,
-                    content: [tooltipArgs.content],
-                    location: tooltipArgs.location,
-                    inverted: this.arrowInverted,
-                    areaBounds: this.tooltipRect,
-                    fill: tooltipArgs.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
-                    textStyle: tooltipArgs.tooltip.textStyle,
-                    border: tooltipArgs.tooltip.border
-                });
-                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(this.tooltipEle);
-                if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
-                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                if (!tooltipArgs.cancel && !samePointerEle) {
+                    tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
+                    tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
+                    tooltipArgs.tooltip.textStyle.opacity =
+                        this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
+                    this.svgTooltip = new Tooltip({
+                        enable: true,
+                        data: { value: tooltipArgs.content },
+                        template: template,
+                        enableAnimation: tooltipArgs.tooltip.enableAnimation,
+                        content: [tooltipArgs.content],
+                        location: tooltipArgs.location,
+                        inverted: this.arrowInverted,
+                        areaBounds: this.tooltipRect,
+                        fill: tooltipArgs.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
+                        textStyle: tooltipArgs.tooltip.textStyle,
+                        availableSize: this.gauge.availableSize,
+                        border: tooltipArgs.tooltip.border
+                    });
+                    this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                    this.svgTooltip.appendTo(this.tooltipEle);
+                    if (this.gauge.tooltip.template) {
+                        updateBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+                    }
+                    if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                        this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                    }
                 }
-            }
+            });
         }
         else {
             this.removeTooltip();
+            if (this.gauge.tooltip.template) {
+                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+            }
         }
     }
     /**
@@ -2032,9 +2051,10 @@ class AxisLayoutPanel {
                 cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
                 midPoint: this.gauge.midPoint, axis: axis
             };
-            this.gauge.trigger(radiusCalculate, args);
-            axis.currentRadius = args.currentRadius;
-            this.gauge.midPoint = args.midPoint;
+            this.gauge.trigger('radiusCalculate', args, (observedArgs) => {
+                axis.currentRadius = args.currentRadius;
+                this.gauge.midPoint = args.midPoint;
+            });
             this.calculateVisibleLabels(axis);
         }
     }
@@ -2138,10 +2158,11 @@ class AxisLayoutPanel {
                     format(roundValue),
                 value: roundValue
             };
-            this.gauge.trigger(axisLabelRender, argsData);
-            if (!argsData.cancel) {
-                axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
-            }
+            this.gauge.trigger('axisLabelRender', argsData, (observedArgs) => {
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
+                }
+            });
         }
         let lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal = axis.visibleRange.max;
@@ -2152,10 +2173,11 @@ class AxisLayoutPanel {
                     format(maxVal),
                 value: maxVal
             };
-            this.gauge.trigger(axisLabelRender, argsData);
-            if (!argsData.cancel) {
-                axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal));
-            }
+            this.gauge.trigger('axisLabelRender', argsData, (observedArgs) => {
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal));
+                }
+            });
         }
         this.getMaxLabelWidth(this.gauge, axis);
     }
@@ -2350,23 +2372,24 @@ let CircularGauge = class CircularGauge extends Component {
      */
     mouseMove(e) {
         let args = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger(gaugeMouseMove, args);
-        let dragArgs;
-        let tooltip = this.tooltipModule;
-        if (!args.cancel) {
-            if (this.enablePointerDrag && this.activePointer) {
-                dragArgs = {
-                    axis: this.activeAxis,
-                    pointer: this.activePointer,
-                    previousValue: this.activePointer.currentValue,
-                    name: dragMove,
-                    currentValue: null
-                };
-                this.pointerDrag(new GaugeLocation(args.x, args.y));
-                dragArgs.currentValue = this.activePointer.currentValue;
-                this.trigger(dragMove, dragArgs);
+        this.trigger('gaugeMouseMove', args, (observedArgs) => {
+            let dragArgs;
+            let tooltip = this.tooltipModule;
+            if (!args.cancel) {
+                if (this.enablePointerDrag && this.activePointer) {
+                    dragArgs = {
+                        axis: this.activeAxis,
+                        pointer: this.activePointer,
+                        previousValue: this.activePointer.currentValue,
+                        name: dragMove,
+                        currentValue: null
+                    };
+                    this.pointerDrag(new GaugeLocation(args.x, args.y));
+                    dragArgs.currentValue = this.activePointer.currentValue;
+                    this.trigger(dragMove, dragArgs);
+                }
             }
-        }
+        });
         this.notify(Browser.touchMoveEvent, e);
         return false;
     }
@@ -2417,23 +2440,24 @@ let CircularGauge = class CircularGauge extends Component {
     gaugeOnMouseDown(e) {
         let currentPointer;
         let args = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger(gaugeMouseDown, args);
-        if (!args.cancel && args.target.id.indexOf('_Pointer_') >= 0 &&
-            args.target.id.indexOf(this.element.id + '_Axis_') >= 0) {
-            currentPointer = getPointer(args.target.id, this);
-            this.activeAxis = this.axes[currentPointer.axisIndex];
-            this.activePointer = this.activeAxis.pointers[currentPointer.pointerIndex];
-            if (isNullOrUndefined(this.activePointer.pathElement)) {
-                this.activePointer.pathElement = [e.target];
+        this.trigger('gaugeMouseDown', args, (observedArgs) => {
+            if (!args.cancel && args.target.id.indexOf('_Pointer_') >= 0 &&
+                args.target.id.indexOf(this.element.id + '_Axis_') >= 0) {
+                currentPointer = getPointer(args.target.id, this);
+                this.activeAxis = this.axes[currentPointer.axisIndex];
+                this.activePointer = this.activeAxis.pointers[currentPointer.pointerIndex];
+                if (isNullOrUndefined(this.activePointer.pathElement)) {
+                    this.activePointer.pathElement = [e.target];
+                }
+                this.trigger(dragStart, {
+                    axis: this.activeAxis,
+                    name: dragStart,
+                    pointer: this.activePointer,
+                    currentValue: this.activePointer.currentValue
+                });
+                this.svgObject.setAttribute('cursor', 'pointer');
             }
-            this.trigger(dragStart, {
-                axis: this.activeAxis,
-                name: dragStart,
-                pointer: this.activePointer,
-                currentValue: this.activePointer.currentValue
-            });
-            this.svgObject.setAttribute('cursor', 'pointer');
-        }
+        });
         return false;
     }
     /**

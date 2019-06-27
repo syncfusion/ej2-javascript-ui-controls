@@ -537,6 +537,17 @@ export type TextOverflow =
     'Clip';
 
 /**
+ * Defines how to show tooltip
+ * Auto - Shows the tooltip on drag, scale, and rotate the object
+ * Custom - Shows the tooltip for the diagram element
+ */
+export type TooltipMode =
+    /** Auto - It shows the tooltip On drag,scale,rotate the object */
+    'Auto' |
+    /** Custom - It shows tooltip based on object */
+    'Custom';
+
+/**
  * Defines the mode of the alignment based on which the elements should be aligned
  * Object - Aligns the objects based on the first object in the selected list
  * Selector - Aligns the objects based on the  the selector bounds
@@ -2277,7 +2288,7 @@ export enum DiagramEvent {
     'collectionChange', 'rotateChange', 'positionChange', 'propertyChange', 'selectionChange', 'sizeChange', 'drop',
     'sourcePointChange', 'targetPointChange', 'connectionChange', 'animationComplete', 'click', 'doubleClick',
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
-    'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange'
+    'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange'
 }
 
 /**
@@ -2477,6 +2488,6 @@ export type AssociationFlow = 'Default' | 'Directional' | 'BiDirectional';
  * Define the Multiplicity of uml connector shapes
  * * OneToOne - Indicates the connector multiplicity is OneToOne.
  * * OneToMany - Indicates the connector multiplicity is OneToMany.
- * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
+ * * ManyToOne - Indicates the connector multiplicity is ManyToOne. 
  */
 export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne';

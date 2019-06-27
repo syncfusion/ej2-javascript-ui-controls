@@ -7,11 +7,12 @@ import { Chart } from '../../../src/chart/chart';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
-import { Axis } from '../../../src/chart/axis/axis'; 
+import { Axis } from '../../../src/chart/axis/axis';
 import { Series, Points } from '../../../src/chart/series/chart-series';
 import { BarSeries } from '../../../src/chart/series/bar-series';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
+import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -20,9 +21,9 @@ import { MouseEvents } from '../base/events.spec';
 import { bar, barData, datetimeData, categoryData, categoryData1, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
-Chart.Inject(LineSeries, BarSeries, ColumnSeries, Tooltip, Crosshair, Category, DateTime, DataLabel);
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+
+Chart.Inject(LineSeries, BarSeries, DataEditing, ColumnSeries, Tooltip, Crosshair, Category, DateTime, DataLabel);
 
 
 
@@ -261,6 +262,9 @@ describe('Chart Control', () => {
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
                 expect(parseFloat(tooltip.style.left) > (elem.offsetLeft + series.points[7].regions[0].x + (series.points[7].regions[0].width / 2) + parseFloat(chartArea.getAttribute('x')))).toBe(true);
+                // let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
+                // let translateX: string[] = transform[1].split(',');
+                // expect(parseFloat(translateX[0]) > (elem.offsetLeft + series.points[7].regions[0].x + (series.points[7].regions[0].width / 2) + parseFloat(chartArea.getAttribute('x')))).toBe(true);
                 done();
             }
             chartObj.loaded = loaded;
@@ -282,7 +286,9 @@ describe('Chart Control', () => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
-                expect(parseFloat(tooltip.style.left) < series.points[1].regions[0].x + series.points[1].regions[0].width + parseFloat(chartArea.getAttribute('x'))).toBe(true);
+                let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
+                let translateX: string[] = transform[1].split(',');
+                expect(parseFloat(translateX[0]) < series.points[1].regions[0].x + series.points[1].regions[0].width + parseFloat(chartArea.getAttribute('x'))).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -305,7 +311,9 @@ describe('Chart Control', () => {
                 tooltipWidth = document.getElementById('container_tooltip_svg');
                 expect(tooltip != null).toBe(true);
                 expect(target.getAttribute('opacity') == '0.5').toBe(true);
-                expect((parseFloat(tooltip.style.left) + parseFloat(tooltipWidth.getAttribute('width'))) < series.points[1].regions[0].x + series.points[1].regions[0].width + parseFloat(chartArea.getAttribute('x'))).toBe(true);
+                let transform: string[] = document.getElementById('container_tooltip_group').getAttribute('transform').split('(');
+                let translateX: string[] = transform[1].split(',');
+                expect((parseFloat(translateX[0])) < series.points[1].regions[0].x + series.points[1].regions[0].width + parseFloat(chartArea.getAttribute('x'))).toBe(true);
                 done();
             }
             chartObj.loaded = loaded;
@@ -499,12 +507,12 @@ describe('Chart Control', () => {
         element = createElement('div', { id: 'container' });
         beforeAll(() => {
             if(document.getElementById('template')) {
-              remove(document.getElementById('template'));           
+              remove(document.getElementById('template'));
             }
             if(document.getElementById('template1')) {
-                remove(document.getElementById('template1'));           
+                remove(document.getElementById('template1'));
               }
-            let template: Element = createElement('div', { id: 'template', styles: 'display: none;' });           
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;' });
             document.body.appendChild(template);
             template.innerHTML = '<div>80</div>';
             let template1: Element = createElement('div', { id: 'template1', styles: 'display: none;' });
@@ -1109,7 +1117,7 @@ describe('Chart Control', () => {
                 primaryXAxis: { title: 'primaryXAxis', valueType: 'DateTime' },
                 primaryYAxis: { title: 'PrimaryYAxis' },
                 series: [
-                {type: 'Bar', name: 'barSeries1', dataSource: rotateData1, xName: 'x', yName: 'y', 
+                {type: 'Bar', name: 'barSeries1', dataSource: rotateData1, xName: 'x', yName: 'y',
                 animation: { enable: false }, marker: { visible: true }
              },
                 ],
@@ -1224,7 +1232,7 @@ describe('Chart Control', () => {
                     majorGridLines: { width: 0 },
                     enableTrim: true,
                 },
-        
+
                 //Initializing Primary Y Axis
                 primaryYAxis:
                 {
@@ -1256,14 +1264,14 @@ describe('Chart Control', () => {
                             { x: 'United States<br>Of America', y: 286.9, country: 'USA: 286.9'},
                             { x: 'Great Britain', y: 115.1, country: 'GBR: 115.1'},
                             { x: 'Nigeria', y: 97.2, country: 'NGR: 97.2'},
-        
+
                         ],
                         xName: 'x', width: 2,
                         yName: 'y',
                     }
                 ],
-        
-              
+
+
             },'#container');
             });
 
@@ -1281,6 +1289,113 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         })
+    });
+
+        /**
+     * Cheacking point drag and drop with bar series
+     */
+    describe('Bar series with drag and drop support', () => {
+        let barChart: Chart; let x: number; let y: number;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let barContainer: HTMLElement = createElement('div', { id: 'bar-drag' });
+        beforeAll(() => {
+            document.body.appendChild(barContainer);
+            barChart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        labelFormat: 'y',
+                        intervalType: 'Years',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 }
+                    },
+
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                    {
+                        labelFormat: '{value}%',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 100,
+                        interval: 20,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Bar',
+                            dataSource: [
+                                { x: new Date(2005, 0, 1), y: 21 }, { x: new Date(2006, 0, 1), y: 24 },
+                                { x: new Date(2007, 0, 1), y: 36 }, { x: new Date(2008, 0, 1), y: 38 },
+                                { x: new Date(2009, 0, 1), y: 54 }, { x: new Date(2010, 0, 1), y: 57 },
+                                { x: new Date(2011, 0, 1), y: 70 }
+                            ],
+                            animation: { enable: false },
+                            xName: 'x', width: 2, marker: {
+                                visible: true,
+                                width: 10,
+                                height: 10
+                            },
+                            yName: 'y', name: 'Germany', dragSettings: { enable: true }
+                        },
+                    ],
+
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                    //Initializing User Interaction Tooltip
+                    tooltip: {
+                        enable: false
+                    },
+                });
+                barChart.appendTo('#bar-drag');
+
+        });
+        afterAll((): void => {
+            barChart.destroy();
+            barContainer.remove();
+        });
+
+        it('Bar series drag and drop with marker true', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('bar-drag_Series_0_Point_3_Symbol');
+                let chartArea: HTMLElement = document.getElementById('bar-drag_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + barContainer.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + barContainer.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(barContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x) + 100, Math.ceil(y));
+                let yValue: number = barChart.visibleSeries[0].points[3].yValue;
+                expect(yValue == 52.39 || yValue == 52.13).toBe(true);
+                barChart.loaded = null;
+                done();
+            };
+            barChart.loaded = loaded;
+            barChart.refresh();
+        });
+        it('Bar series drag and drop with isTransposed true', (done: Function) => {
+            loaded = (): void => {
+                let target: HTMLElement = document.getElementById('bar-drag_Series_0_Point_3_Symbol');
+                let chartArea: HTMLElement = document.getElementById('bar-drag_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + barContainer.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + barContainer.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                trigger.draganddropEvent(barContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x), Math.ceil(y) + 50);
+                let yValue: number = barChart.visibleSeries[0].points[3].yValue;
+                expect(yValue == 22.87 || yValue == 23.12).toBe(true);
+                barChart.loaded = null;
+                done();
+            };
+            barChart.loaded = loaded;
+            barChart.isTransposed = true;
+            barChart.refresh();
+        });
     });
 
 

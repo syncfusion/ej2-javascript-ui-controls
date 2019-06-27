@@ -330,6 +330,50 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
         });
+        it('To zoom the marker clustering', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                map.zoomByPosition({ latitude: 33.5302186, longitude: -117.7418381 }, 5);
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layersCollection[0].layerType = 'OSM';
+            map.layers[0].markerClusterSettings = {
+                allowClustering: true,
+                shape: 'Image',
+                height:30,
+                width:30,
+                fill: 'blue',
+                opacity: 0.5, 
+                imageUrl :'./images/cluster_icon.svg'                            
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    dataSource: [
+                        { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno'},
+                            { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel'},
+                            { latitude: 40.7424509, longitude: -74.0081468, name: 'New York'},
+                            { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro'},
+                            { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto'},
+                            { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris'},
+                            { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin'},
+                            { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai'},
+                            { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato'},
+                            { latitude: 51.5326602, longitude: -0.1262422, name: 'London'}
+                    ]
+                },
+                {
+                    visible: true,
+                    template: '<div id="marker1" class="markerTemplate">Asia' +
+                        '</div>',
+                    dataSource: [
+                        { latitude: 50.32087157990324, longitude: 90.015625 }
+                    ],
+                    animationDuration: 0
+                },];
+            map.scale = 1; 
+            map.refresh();
+        });
     });
 
     describe('Checking with mouse panning', () => {
@@ -862,6 +906,49 @@ describe('Zoom feature tesing for map control', () => {
             map.layersCollection[0].layerType = 'OSM';
             map.refresh();
         });
+        it('To zoom the OSM layer with center position and marker clustering', () => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                    map.zoomByPosition({ latitude: 33.5302186, longitude: -117.7418381 }, 5);
+                    let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
+                    expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                };
+                map.layersCollection[0].layerType = 'OSM';
+                map.layers[0].markerClusterSettings = {
+                    allowClustering: true,
+                    shape: 'Image',
+                    height:30,
+                    width:30,
+                    fill: 'blue',
+                    opacity: 0.5, 
+                    imageUrl :'./images/cluster_icon.svg'                            
+                };
+                map.layers[0].markerSettings = [
+                    {
+                        visible: true,
+                        dataSource: [
+                            { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno'},
+                                { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel'},
+                                { latitude: 40.7424509, longitude: -74.0081468, name: 'New York'},
+                                { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro'},
+                                { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto'},
+                                { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris'},
+                                { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin'},
+                                { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai'},
+                                { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato'},
+                                { latitude: 51.5326602, longitude: -0.1262422, name: 'London'}
+                        ]
+                    },
+                    {
+                        visible: true,
+                        template: '<div id="marker1" class="markerTemplate">Asia' +
+                            '</div>',
+                        dataSource: [
+                            { latitude: 50.32087157990324, longitude: 90.015625 }
+                        ],
+                        animationDuration: 0
+                    },];
+                map.refresh();
+            });
     });
 
     describe('Checking with mouse canel event ', () => {
@@ -1066,6 +1153,96 @@ describe('Zoom feature tesing for map control', () => {
                     { "Name": "Indonesia", "latitude": -6.1750, "longitude": 106.8283 }
                 ]
             }];
+            map.scale = 1;
+            map.refresh();
+        });
+        it('Checking with marker while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id);
+                let rect: ClientRect = element.getBoundingClientRect();
+                let delta: number = 130;
+                for (let i: number = 0; i < 10; i++) {
+                    let wheelArgs: Object = {
+                        preventDefault: prevent,
+                        wheelDelta: delta++,
+                        detail: 3,
+                        clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                        clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                        pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                        pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                    };
+                    map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
+                }
+            };
+            map.layers[0].markerSettings = [{
+                visible: true,
+                height: 30,
+                width: 30,
+                dataSource: [
+                    { "Name": "USA", "latitude": 38.8833, "longitude": -77.0167 },
+                    { "Name": "Brazil", "latitude": -15.7833, "longitude": -47.8667 },
+                    { "Name": "India", "latitude": 21.0000, "longitude": 78.0000 },
+                    { "Name": "China", "latitude": 35.0000, "longitude": 103.0000 },
+                    { "Name": "Indonesia", "latitude": -6.1750, "longitude": 106.8283 }
+                ],
+                animationDuration: 2
+            }];
+            map.scale = 1;
+            map.refresh();
+        });
+        it('Checking with marker clustering while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id);
+                let rect: ClientRect = element.getBoundingClientRect();
+                let delta: number = 130;
+                for (let i: number = 0; i < 10; i++) {
+                    let wheelArgs: Object = {
+                        preventDefault: prevent,
+                        wheelDelta: delta++,
+                        detail: 3,
+                        clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                        clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                        pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                        pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                    };
+                    map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
+                }
+            };
+            map.layers[0].markerClusterSettings = {
+                allowClustering: true,
+                shape: 'Image',
+                height:30,
+                width:30,
+                fill: 'blue',
+                opacity: 0.5, 
+                imageUrl :'./images/cluster_icon.svg'                            
+            };
+            map.layers[0].markerSettings = [
+                {
+                    visible: true,
+                    dataSource: [
+                        { latitude: 37.6276571, longitude: -122.4276688, name: 'San Bruno'},
+                            { latitude: 33.5302186, longitude: -117.7418381, name: 'Laguna Niguel'},
+                            { latitude: 40.7424509, longitude: -74.0081468, name: 'New York'},
+                            { latitude: -23.5268201, longitude: -46.6489927, name: 'Bom Retiro'},
+                            { latitude: 43.6533855, longitude: -79.3729994, name: 'Toronto'},
+                            { latitude: 48.8773406, longitude: 2.3299627, name: 'Paris'},
+                            { latitude: 52.4643089, longitude: 13.4107368, name: 'Berlin'},
+                            { latitude: 19.1555762, longitude: 72.8849595, name: 'Mumbai'},
+                            { latitude: 35.6628744, longitude: 139.7345469, name: 'Minato'},
+                            { latitude: 51.5326602, longitude: -0.1262422, name: 'London'}
+                    ],
+                    animationDuration: 0
+                },
+                {
+                    visible: true,
+                    template: '<div id="marker1" class="markerTemplate">Asia' +
+                        '</div>',
+                    dataSource: [
+                        { latitude: 50.32087157990324, longitude: 90.015625 }
+                    ],
+                    animationDuration: 0
+                },];
             map.scale = 1;
             map.refresh();
         });

@@ -61,6 +61,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers after render the diagram elements
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;

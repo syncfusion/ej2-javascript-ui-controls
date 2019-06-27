@@ -24,8 +24,8 @@ let pivotGridObj: PivotView = new PivotView({
 });
 pivotGridObj.appendTo('#PivotView');
 let fieldlist: PivotFieldList = new PivotFieldList({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: false,
         enableSorting: true,
         sortSettings: [{ name: 'company', order: 'Descending' }],

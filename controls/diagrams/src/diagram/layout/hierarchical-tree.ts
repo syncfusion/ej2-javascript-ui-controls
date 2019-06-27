@@ -148,7 +148,6 @@ export class HierarchicalTree {
         return new Rect(x, y, node.actualSize.width, node.actualSize.height);
     }
 
-
     private updateTree(layout: ILayout, x: number, y: number, shape: INode, level?: number, prev?: INode, dontupdate?: boolean): Bounds {
         let dimensions: Dimensions;
         let info: LayoutInfo = {};
@@ -1520,6 +1519,8 @@ export class HierarchicalTree {
         if (node && !node.excludeFromLayout) {
             width = node.actualSize.width;
             height = node.actualSize.height;
+
+
             offsetX = layout.anchorX;
             offsetY = layout.anchorY;
             /*Performance - instead of checking conditions for every node, we can make the layout related
@@ -1635,3 +1636,5 @@ interface MultipleRowInfo {
     dimensions?: Dimensions;
     level?: number;
 }
+
+

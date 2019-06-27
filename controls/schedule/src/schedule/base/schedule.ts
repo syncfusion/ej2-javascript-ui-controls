@@ -47,6 +47,8 @@ import * as cls from '../base/css-constant';
 import * as util from '../base/util';
 import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
 import { ExcelExport } from '../exports/excel-export';
+import { Print } from '../exports/print';
+import { Timezone } from '../timezone/timezone';
 
 /**
  * Represents the Schedule component that displays a list of events scheduled against specific date and timings, 
@@ -108,6 +110,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public resizeModule: Resize;
     public dragAndDropModule: DragAndDrop;
     public excelExportModule: ExcelExport;
+    public printModule: Print;
     public viewOptions: { [key: string]: ViewsModel[] };
     public viewCollections: ViewsModel[];
     public viewIndex: number;
@@ -190,7 +193,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * To mark the active (current) date on the Schedule, `selectedDate` property can be defined.
      *  Usually, it defaults to the current System date.
-     * @default new Date()
+     * @default 'new Date()'
      * @aspDefaultValue DateTime.Now
      */
     @Property(new Date())
@@ -438,126 +441,155 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers after the scheduler component is created.
      * @event
+     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the scheduler component is destroyed.
      * @event
+     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers when the scheduler cells are single clicked or on single tap on the same cells in mobile devices.
      * @event
+     * @blazorproperty 'OnCellClick'
      */
     @Event()
     public cellClick: EmitType<CellClickEventArgs>;
     /**
      * Triggers when the scheduler cells are double clicked.
      * @event
+     * @blazorproperty 'OnCellDoubleClick'
      */
     @Event()
     public cellDoubleClick: EmitType<CellClickEventArgs>;
     /**
      * Triggers when multiple cells or events are selected on the Scheduler.
      * @event
+     * @blazorproperty 'OnSelect'
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
     /**
      * Triggers on beginning of every scheduler action.
      * @event
+     * @blazorproperty 'OnActionBegin'
+     * @deprecated
      */
     @Event()
     public actionBegin: EmitType<ActionEventArgs>;
     /**
      * Triggers on successful completion of the scheduler actions.
      * @event
+     * @blazorproperty 'ActionCompleted'
      */
     @Event()
     public actionComplete: EmitType<ActionEventArgs>;
     /**
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      * @event
+     * @blazorproperty 'OnActionFailure'
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
     /**
      * Triggers before the date or view navigation takes place on scheduler.
      * @event
+     * @blazorproperty 'Navigating'
      */
     @Event()
     public navigating: EmitType<NavigatingEventArgs>;
     /**
      * Triggers before each element of the schedule rendering on the page.
      * @event
+     * @blazorproperty 'OnRenderCell'
+     * @deprecated
      */
     @Event()
     public renderCell: EmitType<RenderCellEventArgs>;
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
      * @event
+     * @blazorproperty 'OnEventClick'
      */
     @Event()
     public eventClick: EmitType<EventClickArgs>;
     /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
      * @event
+     * @blazorproperty 'EventRendered'
      */
     @Event()
     public eventRendered: EmitType<EventRenderedArgs>;
     /**
      * Triggers before the data binds to the scheduler.
      * @event
+     * @blazorproperty 'DataBinding'
      */
     @Event()
     public dataBinding: EmitType<ReturnType>;
     /**
      * Triggers before any of the scheduler popups opens on the page.
      * @event
+     * @blazorproperty 'OnPopupOpen'
      */
     @Event()
     public popupOpen: EmitType<PopupOpenEventArgs>;
     /**
      * Triggers when an appointment is started to drag.
      * @event
+     * @blazorproperty 'OnDragStart'
+     * @deprecated
      */
     @Event()
     public dragStart: EmitType<DragEventArgs>;
     /**
      * Triggers when an appointment is being in a dragged state.
      * @event
+     * @blazorproperty 'Dragging'
+     * @deprecated
      */
     @Event()
     public drag: EmitType<DragEventArgs>;
     /**
      * Triggers when the dragging of appointment is stopped.
      * @event
+     * @blazorproperty 'Dragged'
+     * @deprecated
      */
     @Event()
     public dragStop: EmitType<DragEventArgs>;
     /**
      * Triggers when an appointment is started to resize.
      * @event
+     * @blazorproperty 'OnResizeStart'
+     * @deprecated
      */
     @Event()
     public resizeStart: EmitType<ResizeEventArgs>;
     /**
      * Triggers when an appointment is being in a resizing action.
      * @event
+     * @blazorproperty 'Resizing'
+     * @deprecated
      */
     @Event()
     public resizing: EmitType<ResizeEventArgs>;
     /**
      * Triggers when the resizing of appointment is stopped.
      * @event
+     * @blazorproperty 'Resized'
+     * @deprecated
      */
     @Event()
     public resizeStop: EmitType<ResizeEventArgs>;
     /**
      * Triggers once the event data is bound to the scheduler.
      * @event
+     * @blazorproperty 'DataBound'
      */
     @Event()
     public dataBound: EmitType<ReturnType>;
@@ -750,7 +782,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             recurrenceID: this.eventSettings.fields.recurrenceID.name,
             recurrenceRule: this.eventSettings.fields.recurrenceRule.name,
             recurrenceException: this.eventSettings.fields.recurrenceException.name,
-            isReadonly: this.eventSettings.fields.isReadonly
+            isReadonly: this.eventSettings.fields.isReadonly,
+            followingID: this.eventSettings.fields.followingID,
         };
         this.editorTitles = {
             subject: this.eventSettings.fields.subject.title || this.localeObj.getConstant('title'),
@@ -832,48 +865,58 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.viewIndex = index;
         let args: ActionEventArgs = { requestType: 'viewNavigate', cancel: false, event: event };
-        this.trigger(events.actionBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        let navArgs: NavigatingEventArgs = { action: 'view', cancel: false, previousView: this.currentView, currentView: view };
-        this.trigger(events.navigating, navArgs);
-        if (navArgs.cancel) {
-            return;
-        }
-        this.setProperties({ currentView: view }, true);
-        if (this.headerModule) {
-            this.headerModule.updateActiveView();
-            this.headerModule.setCalendarView();
-        }
-        this.initializeView(this.currentView);
-        this.animateLayout();
-        args = { requestType: 'viewNavigate', cancel: false, event: event };
-        this.trigger(events.actionComplete, args);
+        this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
+            if (!actionArgs.cancel) {
+                let navArgs: NavigatingEventArgs = { action: 'view', cancel: false, previousView: this.currentView, currentView: view };
+                this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
+                    if (!navigationArgs.cancel) {
+                        this.setProperties({ currentView: view }, true);
+                        if (this.headerModule) {
+                            this.headerModule.updateActiveView();
+                            this.headerModule.setCalendarView();
+                        }
+                        this.initializeView(this.currentView);
+                        this.animateLayout();
+                        args = { requestType: 'viewNavigate', cancel: false, event: event };
+                        this.trigger(events.actionComplete, args);
+                    }
+                });
+            }
+        });
     }
     public changeDate(selectedDate: Date, event?: Event): void {
         let args: ActionEventArgs = { requestType: 'dateNavigate', cancel: false, event: event };
-        this.trigger(events.actionBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        let navArgs: NavigatingEventArgs = { action: 'date', cancel: false, previousDate: this.selectedDate, currentDate: selectedDate };
-        this.trigger(events.navigating, navArgs);
-        if (navArgs.cancel) {
-            return;
-        }
-        this.uiStateValues.isInitial = this.activeView.isTimelineView() ? true : this.uiStateValues.isInitial;
-        this.setProperties({ selectedDate: selectedDate }, true);
-        if (this.headerModule) {
-            this.headerModule.setCalendarDate(selectedDate);
-        }
-        this.initializeView(this.currentView);
-        this.animateLayout();
-        args = { requestType: 'dateNavigate', cancel: false, event: event };
-        this.trigger(events.actionComplete, args);
+        this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
+            if (!actionArgs.cancel) {
+                let navArgs: NavigatingEventArgs = {
+                    action: 'date', cancel: false,
+                    previousDate: this.selectedDate, currentDate: selectedDate
+                };
+                this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
+                    if (!navigationArgs.cancel) {
+                        this.uiStateValues.isInitial = this.activeView.isTimelineView() ? true : this.uiStateValues.isInitial;
+                        this.setProperties({ selectedDate: selectedDate }, true);
+                        if (this.headerModule) {
+                            this.headerModule.setCalendarDate(selectedDate);
+                        }
+                        this.initializeView(this.currentView);
+                        this.animateLayout();
+                        args = { requestType: 'dateNavigate', cancel: false, event: event };
+                        this.trigger(events.actionComplete, args);
+                    }
+                });
+            }
+        });
     }
     public isSelectedDate(date: Date): boolean {
         return date.setHours(0, 0, 0, 0) === new Date('' + this.selectedDate).setHours(0, 0, 0, 0);
+    }
+    public getCurrentTime(): Date {
+        if (this.timezone) {
+            let tmz: Timezone = new Timezone();
+            return tmz.convert(new Date(), new Date().getTimezoneOffset() as number & string, this.timezone as number & string);
+        }
+        return new Date();
     }
     public getNavigateView(): View {
         if (this.activeView.isTimelineView()) {
@@ -923,6 +966,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             member: 'iCalendarImport',
             args: [this]
         });
+        modules.push({
+            member: 'print',
+            args: [this]
+        });
         return modules;
     }
     /**
@@ -936,8 +983,23 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
             isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
         };
-        this.activeCellsData = { startTime: new Date(), endTime: new Date(), isAllDay: false };
+        this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
+        this.getDefaultLocale();
+        this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
+        this.setCldrTimeFormat();
+        this.setCalendarMode();
+        this.eventsData = [];
+        this.eventsProcessed = [];
+        this.blockData = [];
+        this.blockProcessed = [];
+        this.resourceCollection = [];
+        this.currentAction = null;
+        this.selectedElements = [];
+        this.setViewOptions();
+    }
+
+    private getDefaultLocale(): void {
         this.defaultLocale = {
             day: 'Day',
             week: 'Week',
@@ -958,20 +1020,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             cancel: 'Cancel',
             noTitle: '(No Title)',
             delete: 'Delete',
-            deleteEvent: 'Delete Event',
+            deleteEvent: 'This Event',
             deleteMultipleEvent: 'Delete Multiple Events',
             selectedItems: 'Items selected',
-            deleteSeries: 'Delete Series',
+            deleteSeries: 'Entire Series',
             edit: 'Edit',
-            editSeries: 'Edit Series',
-            editEvent: 'Edit Event',
+            editSeries: 'Entire Series',
+            editEvent: 'This Event',
             createEvent: 'Create',
             subject: 'Subject',
             addTitle: 'Add title',
             moreDetails: 'More Details',
             save: 'Save',
-            editContent: 'Do you want to edit only this event or entire series?',
-            deleteRecurrenceContent: 'Do you want to delete only this event or entire series?',
+            editContent: 'How would you like to change the appointment in the series?',
             deleteContent: 'Are you sure you want to delete this event?',
             deleteMultipleContent: 'Are you sure you want to delete the selected events?',
             newEvent: 'New Event',
@@ -1010,20 +1071,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             timelineDay: 'Timeline Day',
             timelineWeek: 'Timeline Week',
             timelineWorkWeek: 'Timeline Work Week',
-            timelineMonth: 'Timeline Month'
+            timelineMonth: 'Timeline Month',
+            editFollowingEvent: 'Following Events',
+            deleteTitle: 'Delete Event',
+            editTitle: 'Edit Event',
         };
-        this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
-        this.setCldrTimeFormat();
-        this.setCalendarMode();
-        this.eventsData = [];
-        this.eventsProcessed = [];
-        this.blockData = [];
-        this.blockProcessed = [];
-        this.resourceCollection = [];
-        this.currentAction = null;
-        this.selectedElements = [];
-        this.setViewOptions();
     }
+
     /**
      * Binding events to the Schedule element.
      * @hidden
@@ -1454,6 +1508,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     state.isDataManager = true;
                     break;
+                case 'editFollowingEvents':
+                    state.isRefresh = true;
+                    break;
             }
         }
     }
@@ -1501,11 +1558,41 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public setWorkHours(dates: Date[], start: string, end: string, groupIndex?: number): void {
+        let cells: HTMLTableCellElement[] = [];
+        cells = this.getWorkHourCells(dates, start, end, groupIndex);
+        addClass(cells, cls.WORK_HOURS_CLASS);
+    }
+
+    /**
+     * Removes or resets different working hours on the required working days by accepting the required start and end time as well as the
+     * date collection as its parameters.
+     * if no parameters has been passed to this function, it will remove all the work hours.
+     * @param {date} dates Collection of dates on which the given start and end hour range need to be applied.
+     * @param {string} start Defines the work start hour.
+     * @param {string} end Defines the work end hour.
+     * @param {number} groupIndex Defines the resource index from last level.
+     * @returns {void}
+     */
+    public resetWorkHours(dates: Date[] = this.activeView.renderDates, start?: string, end?: string, groupIndex?: number): void {
+        if (dates && start && end) {
+            let cells: HTMLTableCellElement[] = this.getWorkHourCells(dates, start, end, groupIndex);
+            removeClass(cells, cls.WORK_HOURS_CLASS);
+        } else {
+            let workHourCells: NodeListOf<Element> = this.element.querySelectorAll('.' + cls.WORK_HOURS_CLASS);
+            removeClass(workHourCells, cls.WORK_HOURS_CLASS);
+        }
+    }
+
+    private getWorkHourCells(dates: Date[], start: string, end: string, groupIndex?: number): HTMLTableCellElement[] {
+        let crntView: string = this.currentView;
+        if (crntView === 'Agenda' || crntView === 'Month' || crntView === 'MonthAgenda' || crntView === 'TimelineMonth') {
+            return [];
+        }
         let startHour: Date = this.getStartEndTime(start);
         let endHour: Date = this.getStartEndTime(end);
         let tableEle: HTMLTableElement = this.getContentTable() as HTMLTableElement;
         if (isNullOrUndefined(startHour) || isNullOrUndefined(endHour) || !tableEle) {
-            return;
+            return [];
         }
         startHour.setMilliseconds(0);
         endHour.setMilliseconds(0);
@@ -1521,6 +1608,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let msInterval: number = msMajorInterval / this.activeViewOptions.timeScale.slotCount;
         let startIndex: number = Math.round((startHour.getTime() - viewStartHour.getTime()) / msInterval);
         let endIndex: number = Math.ceil((endHour.getTime() - viewStartHour.getTime()) / msInterval);
+        let tempStartIndex: number = startIndex;
+        let tempEndIndex: number = endIndex;
         let cells: HTMLTableCellElement[] = [];
         for (let date of dates) {
             util.resetTime(date);
@@ -1532,8 +1621,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             if (colIndex >= 0) {
                 if (this.activeView.isTimelineView()) {
                     let slotsPerDay: number = Math.round((viewEndHour.getTime() - viewStartHour.getTime()) / msInterval);
-                    startIndex = startIndex + (colIndex * slotsPerDay);
-                    endIndex = endIndex + (colIndex * slotsPerDay);
+                    startIndex = tempStartIndex + (colIndex * slotsPerDay);
+                    endIndex = tempEndIndex + (colIndex * slotsPerDay);
                 }
                 for (let i: number = startIndex; i < endIndex; i++) {
                     if (this.activeView.isTimelineView()) {
@@ -1551,7 +1640,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         }
-        addClass(cells, cls.WORK_HOURS_CLASS);
+        return cells;
     }
 
     /**
@@ -1683,6 +1772,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.excelExportModule.initializeExcelExport(excelExportOptions || {});
         } else {
             throw Error('Inject ExcelExport module');
+        }
+    }
+
+    /** print function */
+    public print(): void {
+        if (this.printModule) {
+            this.printModule.printScheduler();
+        } else {
+            throw Error('Inject Print module');
         }
     }
 

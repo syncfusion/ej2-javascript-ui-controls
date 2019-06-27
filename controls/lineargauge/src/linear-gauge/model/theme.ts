@@ -7,10 +7,10 @@ import { LinearGaugeTheme } from '../utils/enum';
 /** @private */
 export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
     let style: IThemeStyle;
-    switch (theme) {
-        case 'MaterialDark':
-        case 'FabricDark':
-        case 'BootstrapDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
+        case 'fabricdark':
+        case 'bootstrapdark':
             style = {
                 backgroundColor: '#333232',
                 titleFontColor: '#ffffff',
@@ -23,7 +23,7 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
                 pointerColor: '#9A9A9A'
             };
             break;
-        case 'HighContrast':
+        case 'highcontrast':
             style = {
                 backgroundColor: '#000000',
                 titleFontColor: '#FFFFFF',
@@ -36,7 +36,7 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
                 pointerColor: '#FFFFFF'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',

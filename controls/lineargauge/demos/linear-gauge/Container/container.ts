@@ -1,5 +1,6 @@
 import { LinearGauge, ContainerType, Orientation } from '../../../src/linear-gauge/index';
 
+
 let gauge: LinearGauge = new LinearGauge({
     title: 'Temperature Measure',
     container: {

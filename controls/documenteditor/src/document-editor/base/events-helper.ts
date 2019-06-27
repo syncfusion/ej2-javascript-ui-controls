@@ -146,3 +146,12 @@ export interface ContainerSelectionChangeEventArgs {
      */
     source: DocumentEditorContainer;
 }
+/** 
+ * This event arguments provides the necessary information about DocumentEditorContainer's documentChange event.
+ */
+export interface ContainerDocumentChangeEventArgs {
+    /**
+     * Specifies the source DocumentEditorContainer instance which triggers this documentChange event.
+     */
+    source: DocumentEditorContainer;
+}

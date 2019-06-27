@@ -1,4 +1,4 @@
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, classList } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor/index';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { Text } from './text-properties';
@@ -25,6 +25,13 @@ export class TextProperties {
         this.wireEvents();
     }
 
+    public enableDisableElements(enable: boolean): void {
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        } else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    }
     public updateStyles(): void {
         this.paragraph.updateStyleNames();
     }

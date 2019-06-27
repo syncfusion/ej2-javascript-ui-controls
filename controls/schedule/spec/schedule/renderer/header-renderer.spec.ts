@@ -1,11 +1,13 @@
 /**
  * Schedule header toolbar spec 
  */
-import { createElement, remove, Browser, EmitType } from '@syncfusion/ej2-base';
+import { Browser } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
-import { Dialog } from '@syncfusion/ej2-popups';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ToolbarActionArgs, ActionEventArgs } from '../../../src/schedule/index';
-import { triggerMouseEvent } from '../util.spec';
+import {
+    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda,
+    ToolbarActionArgs, ActionEventArgs, ScheduleModel
+} from '../../../src/schedule/index';
+import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda);
@@ -24,17 +26,12 @@ describe('Schedule header bar', () => {
 
     describe('Initial load', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4) });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('get module name', () => {
@@ -46,7 +43,7 @@ describe('Schedule header bar', () => {
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar-container')).toBeTruthy();
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar').length).toEqual(1);
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(10);
-            triggerMouseEvent(document.body, 'mousedown');
+            util.triggerMouseEvent(document.body, 'mousedown');
         });
 
         it('calendar navigation', () => {
@@ -69,7 +66,7 @@ describe('Schedule header bar', () => {
             let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
             expect(popupEle).toBeTruthy();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
-            triggerMouseEvent(document.body, 'mousedown');
+            util.triggerMouseEvent(document.body, 'mousedown');
             expect(popupEle.classList.contains('e-popup-open')).toEqual(false);
         });
 
@@ -92,7 +89,7 @@ describe('Schedule header bar', () => {
             (calendarEle.querySelector('.e-selected') as HTMLElement).click();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             expect(calendarEle.querySelector('.e-header').classList.contains('e-month')).toEqual(true);
-            triggerMouseEvent(calendarEle.querySelector('.e-next') as HTMLElement, 'mousedown');
+            util.triggerMouseEvent(calendarEle.querySelector('.e-next') as HTMLElement, 'mousedown');
             (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(false);
         });
@@ -161,21 +158,12 @@ describe('Schedule header bar', () => {
 
     describe('View items based on property change', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                selectedDate: new Date(2017, 9, 4),
-                views: [{ option: 'Day', isSelected: true }]
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), views: [{ option: 'Day', isSelected: true }] };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('toolbar items', () => {
@@ -193,10 +181,12 @@ describe('Schedule header bar', () => {
         });
 
         it('displayName on views change', () => {
-            schObj.views = [{ option: 'Day', isSelected: true, interval: 5, displayName: '5 Days' },
-            { option: 'Week', interval: 3, displayName: '3 Weeks' },
-            { option: 'WorkWeek', interval: 2, displayName: '2 WorkWeeks' },
-            { option: 'Month', interval: 2, displayName: '2 Months' }];
+            schObj.views = [
+                { option: 'Day', isSelected: true, interval: 5, displayName: '5 Days' },
+                { option: 'Week', interval: 3, displayName: '3 Weeks' },
+                { option: 'WorkWeek', interval: 2, displayName: '2 WorkWeeks' },
+                { option: 'Month', interval: 2, displayName: '2 Months' }
+            ];
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-day')).toBeTruthy();
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-week')).toBeTruthy();
@@ -231,18 +221,12 @@ describe('Schedule header bar', () => {
 
     describe('Day of week in calendar', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), firstDayOfWeek: 3 });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), firstDayOfWeek: 3 };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('toolbar calendar first day of week', () => {
@@ -263,19 +247,15 @@ describe('Schedule header bar', () => {
     describe('RTL mode', () => {
         let schObj: Schedule;
         beforeEach(() => {
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
+            schObj = undefined;
         });
         afterEach(() => {
-            if (schObj) {
-                schObj.destroy();
-                schObj = null;
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
 
         it('toolbar bar rtl class testing', () => {
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), enableRtl: true }, '#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), enableRtl: true };
+            schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar-container')).toBeTruthy();
             expect(schObj.element.querySelector('.e-schedule-toolbar').classList).toContain('e-rtl');
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(10);
@@ -287,7 +267,8 @@ describe('Schedule header bar', () => {
         });
 
         it('toolbar bar rtl mode property change', (done: Function) => {
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), enableRtl: true }, '#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), enableRtl: true };
+            schObj = util.createSchedule(model, []);
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
                 let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
@@ -304,17 +285,12 @@ describe('Schedule header bar', () => {
 
     describe('HeaderBar RTL mode testing via setmodel', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), showHeaderBar: false, enableRtl: true });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), showHeaderBar: false, enableRtl: true };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('toolbar bar rtl class testing', () => {
@@ -330,30 +306,18 @@ describe('Schedule header bar', () => {
         });
     });
 
-    function disableDialogAnimation(dialogObject: Dialog): void {
-        dialogObject.animationSettings = { effect: 'None' };
-        dialogObject.dataBind();
-        dialogObject.hide();
-    }
-
     describe('Mobile view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         let uA: string = Browser.userAgent;
         let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-
-        beforeAll(() => {
+        beforeAll((done: Function) => {
             Browser.userAgent = androidUserAgent;
-            document.body.appendChild(elem);
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), width: 300 });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4), width: 300 };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
             Browser.userAgent = uA;
         });
 
@@ -387,7 +351,6 @@ describe('Schedule header bar', () => {
 
         it('add icon click checking', () => {
             (schObj.element.querySelector('.e-schedule-toolbar .e-week') as HTMLElement).click();
-            disableDialogAnimation(schObj.eventWindow.dialogObject);
             let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
             (<HTMLElement>toolbarElement.querySelector('.e-add .e-tbar-btn')).click();
             let dialogElement: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
@@ -397,7 +360,6 @@ describe('Schedule header bar', () => {
         });
 
         it('add icon click checking after cell click', () => {
-            disableDialogAnimation(schObj.eventWindow.dialogObject);
             let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
             let firstWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
             firstWorkCell.click();
@@ -419,17 +381,11 @@ describe('Schedule header bar', () => {
     describe('Header date range on default culture', () => {
         let schObj: Schedule;
         beforeAll((): void => {
-            schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
-            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4) });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+            schObj = util.createSchedule(model, []);
         });
         afterAll((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
         it('dates on same month and year', () => {
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
@@ -452,32 +408,20 @@ describe('Schedule header bar', () => {
     describe('Add custom items and remove default items to toolbar', () => {
         let schObj: Schedule;
         beforeAll((done: Function): void => {
-            schObj = undefined;
-            let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                selectedDate: new Date(2017, 9, 4),
-                width: 800,
-                height: 600,
+            let model: ScheduleModel = {
+                width: 800, height: 600, selectedDate: new Date(2017, 9, 4),
                 actionBegin: (args: ActionEventArgs & ToolbarActionArgs) => {
                     if (args.requestType === 'toolbarItemRendering') {
-                        let printItem: ItemModel = {
-                            align: 'Center', text: 'Print', cssClass: 'e-schedule-print'
-                        };
+                        let printItem: ItemModel = { align: 'Center', text: 'Print', cssClass: 'e-schedule-print' };
                         args.items.push(printItem);
                         args.items.splice(0, 2);
                     }
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll((): void => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(document.querySelector('#Schedule'));
+            util.destroy(schObj);
         });
         it('check custom item', () => {
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(9);

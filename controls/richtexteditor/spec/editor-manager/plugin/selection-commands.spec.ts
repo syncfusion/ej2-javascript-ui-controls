@@ -64,6 +64,15 @@ describe('Selection commands', () => {
         'client side.</span>'+
         '<span id="format6">the Rich Text Editor (RTE) <span style="color:rgb(102, 102, 0);">control</span> is an easy to render in' +
         'client side.</span>'+
+        '<ol>'+
+        '<li><p id="paragraph20">paragraph20</p></li>'+
+        '<li><p id="paragraph21">paragraph21</p></li>'+
+        '<li><p id="paragraph22">paragraph22</p></li>'+
+        '<li><p id="paragraph23">paragraph23</p></li>'+
+        '<li><p id="paragraph24">paragraph24</p></li>'+
+        '<li><p id="paragraph25">paragraph25</p></li>'+
+        '<li><p id="paragraph26">paragraph26</p></li>'+
+        '</ol>'+
         '</div>';
 
 
@@ -486,5 +495,40 @@ describe('Selection commands', () => {
         domSelection.setSelectionText(document, node1, node1, 0, node1.childNodes.length);
         SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, '');
         expect((document.getElementById('format6').childNodes[1] as HTMLElement).style.color).toEqual('');
+    });
+    it('Apply fontsize tag for list elements', () => {
+        let node1: Node = document.getElementById('paragraph20');
+        let listNode1: Text = node1.childNodes[0] as Text;
+        let node2: Node = document.getElementById('paragraph26');
+        let listNode2: Text = node2.childNodes[0] as Text;
+        domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '36px');
+        expect(document.getElementById('paragraph20').parentElement.style.fontSize).toEqual('36px');
+        expect(document.getElementById('paragraph21').parentElement.style.fontSize).toEqual('36px');
+        expect(document.getElementById('paragraph22').parentElement.style.fontSize).toEqual('36px');
+        expect(document.getElementById('paragraph23').parentElement.style.fontSize).toEqual('36px');
+        expect(document.getElementById('paragraph24').parentElement.style.fontSize).toEqual('36px');
+        expect(document.getElementById('paragraph25').parentElement.style.fontSize).toEqual('36px');
+        expect(document.getElementById('paragraph26').parentElement.style.fontSize).toEqual('36px');
+    });
+
+    it('Apply fontsize tag for list elements', () => {
+        let node1: Node = document.getElementById('paragraph20');
+        let listNode1: Text = node1.childNodes[0] as Text;
+        let node2: Node = document.getElementById('paragraph26');
+        let listNode2: Text = node2.childNodes[0] as Text;
+        domSelection.setSelectionText(document, listNode1, listNode2, 5, 5);
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '10px');
+        expect(document.getElementById('paragraph20').parentElement.style.fontSize).not.toEqual('10px');
+        expect((document.getElementById('paragraph20').firstElementChild.tagName.toLowerCase()) === 'span').toBe(true);
+        expect((document.getElementById('paragraph20').firstElementChild as HTMLElement).style.fontSize).toEqual('10px');
+        expect(document.getElementById('paragraph21').parentElement.style.fontSize).toEqual('10px');
+        expect(document.getElementById('paragraph22').parentElement.style.fontSize).toEqual('10px');
+        expect(document.getElementById('paragraph23').parentElement.style.fontSize).toEqual('10px');
+        expect(document.getElementById('paragraph24').parentElement.style.fontSize).toEqual('10px');
+        expect(document.getElementById('paragraph25').parentElement.style.fontSize).toEqual('10px');
+        expect(document.getElementById('paragraph26').parentElement.style.fontSize).not.toEqual('10px');
+        expect((document.getElementById('paragraph26').firstElementChild.tagName.toLowerCase()) === 'span').toBe(true);
+        expect((document.getElementById('paragraph26').firstElementChild as HTMLElement).style.fontSize).toEqual('10px');
     });
 });

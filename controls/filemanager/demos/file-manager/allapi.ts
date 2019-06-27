@@ -2,19 +2,20 @@ import { FileManager } from '../../src/file-manager/base/file-manager';
 import { NavigationPane, DetailsView } from '../../src/file-manager/layout/index';
 import { Toolbar } from '../../src/file-manager/actions/toolbar';
 import {
-    FileBeforeSendEventArgs, FileOpenEventArgs, FileSelectEventArgs, FileMenuClickEventArgs, FileMenuOpenEventArgs,
-    FileToolbarClickEventArgs, FileOnSuccessEventArgs, FileOnErrorEventArgs, FileBeforeLoadEventArgs
+    BeforeSendEventArgs, FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs,
+    ToolbarClickEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs
 } from '../../src/file-manager/base/interface';
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 FileManager.Inject(NavigationPane, DetailsView, Toolbar);
-
+// let hostUrl: string = 'https://ng2jq.syncfusion.com/ej2services/';
+let hostUrl = 'http://localhost:62869/';
 let feObj: FileManager = new FileManager({
     ajaxSettings: {
-        url: 'http://localhost:59302/api/FileManager/FileOperations',
-        uploadUrl: 'http://localhost:59302/api/FileManager/Upload',
-        downloadUrl: 'http://localhost:59302/api/FileManager/Download',
-        getImageUrl: 'http://localhost:59302/api/FileManager/GetImage'
+        url: hostUrl + 'api/FileManager/FileOperations',
+        uploadUrl: hostUrl +'api/FileManager/Upload',
+        downloadUrl: hostUrl +'api/FileManager/Download',
+        getImageUrl: hostUrl +'api/FileManager/GetImage'
     },
     // allowMultiSelection: false,
     // contextMenuSettings: {
@@ -41,12 +42,12 @@ let feObj: FileManager = new FileManager({
     // },
     // searchSettings: {
     //     allowSearchOnTyping: false,
-    //     filterType: 'startWith',
+    //     filterType: 'startsWith',
     //     ignoreCase: true
     // },
     // showFileExtension: false,
     // navigationPaneSettings: { visible: false },
-    beforeFileLoad: (args: FileBeforeLoadEventArgs) => {
+    fileLoad: (args: FileLoadEventArgs) => {
         if ((args.fileDetails as any).hasChild) {
             var rowDiv = document.createElement('span');
             rowDiv.className += 'new';
@@ -59,11 +60,11 @@ let feObj: FileManager = new FileManager({
             }
         }
     },
-    beforeFileOpen: (args: FileOpenEventArgs) => {
+    fileOpen: (args: FileOpenEventArgs) => {
         addEventLog('The ' + (args.fileDetails as any)["name"] + ((<any>args.fileDetails).isFile ? ' file' : ' folder') + ' will be opened.');
     },
-    beforeSend: (args: FileBeforeSendEventArgs) => {
-        (args.ajaxSettings as any).onSuccess = function () {
+    beforeSend: (args: BeforeSendEventArgs) => {
+        (args.ajaxSettings as any).success = function () {
             addEventLog("Success");
         };
         addEventLog(args.action + ' beforeSend event is triggered');
@@ -71,19 +72,19 @@ let feObj: FileManager = new FileManager({
     fileSelect: (args: FileSelectEventArgs) => {
         addEventLog(args.action + 'ed: ' + (args.fileDetails as any)["name"]);
     },
-    menuClick: (args: FileMenuClickEventArgs) => {
+    menuClick: (args: MenuClickEventArgs) => {
         addEventLog('"' + args.item.text + '" menu item is clicked');
     },
-    menuOpen: (args: FileMenuOpenEventArgs) => {
+    menuOpen: (args: MenuOpenEventArgs) => {
         addEventLog('context menu will be opened');
     },
-    onSuccess: (args: FileOnSuccessEventArgs) => {
+    success: (args: SuccessEventArgs) => {
         addEventLog('Success');
     },
-    onError: (args: FileOnErrorEventArgs) => {
-        addEventLog('Service error');
+    failure: (args: FailureEventArgs) => {
+        addEventLog('Service failure');
     },
-    toolbarClick: (args: FileToolbarClickEventArgs) => {
+    toolbarClick: (args: ToolbarClickEventArgs) => {
         if (args.item && args.item.text == "Custom tool") {
             window.alert("Custom tool is clicked");
         }

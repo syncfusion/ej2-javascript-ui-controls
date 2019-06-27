@@ -4,7 +4,8 @@
     display: block;
   }
 
-  #{&}.e-calendar {
+  #{&}.e-calendar,
+  .e-bigger.e-small #{&}.e-calendar {
     // sass-lint:disable no-vendor-prefixes
     -webkit-tap-highlight-color: transparent;
     border-radius: $calendar-wrapper-border-radius;
@@ -154,12 +155,16 @@
     }
 
   //normal style
-  #{&}.e-calendar {
+  #{&}.e-calendar,
+  .e-bigger.e-small #{&}.e-calendar {
     max-width: $calendar-normal-max-width;
     min-width:  $calendar-normal-min-width;
     padding: $calendar-popup-padding;
 
-    &.e-week-number {
+    &.e-calendar-day-header-lg {
+      max-width: $calendar-lg-day-header-format-max-width;
+      min-width: $calendar-lg-day-header-format-min-width;
+    }&.e-week-number {
       min-width: $calendar-weeknumber-min-width;
     }
 
@@ -236,6 +241,19 @@
 }
 }
 
+  .e-small.e-bigger#{&}.e-calendar,
+  .e-small.e-bigger #{&}.e-calendar {
+    & .e-content.e-year {
+      & span.e-day {
+        font-size: $calendar-bigger-small-yeardecade-font-size;
+      }
+    }
+
+    & .e-content.e-month table {
+      padding: $calendar-bigger-small-table-padding;
+    }
+  }
+
   //bigger style
   .e-bigger#{&}.e-calendar,
   &.e-bigger #{&}.e-calendar {
@@ -243,7 +261,10 @@
     min-width: $calendar-bigger-min-width;
     padding: $calendar-popup-bigger-padding;
 
-    &.e-week {
+    &.e-calendar-day-header-lg {
+      max-width: $calendar-lg-day-header-format-max-width;
+      min-width: $calendar-lg-day-header-format-min-width;
+    }&.e-week {
       max-width: $calendar-week-bigger-max-width;
       min-width: $calendar-week-bigger-min-width;
     }&.e-week-number {
@@ -320,6 +341,57 @@
     }
   }
 
+  // Mouse small style
+  .e-small#{&}.e-calendar,
+  .e-small #{&}.e-calendar {
+    max-width: $calendar-normal-max-width;
+    min-width:  $calendar-normal-min-width;
+    padding: $calendar-small-popup-padding;
+
+    &.e-calendar-day-header-lg {
+      max-width: $calendar-lg-day-header-format-max-width;
+      min-width: $calendar-lg-day-header-format-min-width;
+    }& .e-content {
+      & span.e-day {
+        font-size: $calendar-small-date-font-size;
+        height: $calendar-small-month-view-height;
+        line-height: $calendar-small-month-view-height;
+        width: $calendar-small-month-view-width;
+      }
+    }
+
+    & .e-content.e-month td {
+      height: $calendar-small-month-view-height;
+    }
+
+    & .e-header {
+      height: $calendar-small-header-height;
+
+      & span {
+        font-size: $calendar-small-icon-font-size-style;
+        padding: $calendar-small-icon-padding;
+      }
+
+      & .e-title {
+        font-size: $calendar-small-title-font-size;
+        line-height: $calendar-small-header-height;
+      }
+  }
+
+    & .e-header .e-icon-container {
+      & .e-prev,
+      & .e-next {
+        height: $calendar-small-icon-size;
+        width: $calendar-small-icon-size;
+      }
+    }
+
+    & th {
+      font-size: $calendar-small-font-size;
+      height: $calendar-small-day-header-height;
+    }
+  }
+
   #{&}.e-calendar {
     & .e-btn.e-today.e-flat.e-disabled,
     & .e-btn.e-today.e-flat.e-disabled:hover,
@@ -336,5 +408,16 @@
       pointer-events: $calendar-none-style;
       touch-action: $calendar-none-style;
     }
+  }
+
+  .e-content-placeholder.e-calendar.e-placeholder-calendar {
+    background-size: 250px 336px;
+    min-height: 336px;
+  }
+
+  .e-bigger .e-content-placeholder.e-calendar.e-placeholder-calendar,
+  .e-bigger.e-content-placeholder.e-calendar.e-placeholder-calendar {
+    background-size: 300px 392px;
+    min-height: 392px;
   }
 }

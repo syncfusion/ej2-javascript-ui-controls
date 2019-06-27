@@ -523,5 +523,17 @@ describe('SVG Rendering', () => {
             expect((element.childNodes[0].childNodes[0] as HTMLElement).getAttribute('id').indexOf('Circle') > -1).toBe(true);
             expect(result).toBe(true);
         });
+        it('DrawCircularClipPath method test', function (): void {
+            let options: CircleAttributes = {
+                'cx': 10,
+                'cy': 10,
+                'r': 50,
+                'fill': 'blue',
+                'stroke': '#2988d6',
+                'stroke-width': 2
+            };
+            let element: Element = this.render.createCanvas(options);
+            expect(true).toBe(true);
+        });
     });
 });

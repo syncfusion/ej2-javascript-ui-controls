@@ -1,5 +1,5 @@
 import { TreeGrid } from '..';
-import { QueryCellInfoEventArgs, IGrid, RowDataBoundEventArgs, getObject } from '@syncfusion/ej2-grids';
+import { QueryCellInfoEventArgs, IGrid, RowDataBoundEventArgs, getObject, appendChildren } from '@syncfusion/ej2-grids';
 import { addClass, createElement, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
@@ -13,11 +13,14 @@ import { Column } from '../models';
 export class Render {
     //Module declarations
     private parent: TreeGrid;
+    private templateResult: NodeList;
     /**
      * Constructor for render module
      */
     constructor(parent?: TreeGrid) {
         this.parent = parent;
+        this.templateResult = null;
+        this.parent.grid.on('template-result', this.columnTemplateResult, this);
     }
     /**
      * Updated row elements for TreeGrid
@@ -99,7 +102,7 @@ export class Render {
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
             if (iconRequired && !isNullOrUndefined(data.childRecords)) {
                 iconRequired = !((<ITreeData>data).childRecords.length === 0 );
-            }
+                }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
                 let expandIcon: Element = createElement('span', {
@@ -125,7 +128,7 @@ export class Render {
                 emptyExpandIcon.style.width = '7px';
                 totalIconsWidth += 7;
                 container.appendChild(emptyExpandIcon.cloneNode());
-            } else if (pad) {
+            } else if (pad || !pad && !data.level) {
                 // icons width
                 totalIconsWidth += 20;
                 container.appendChild(emptyExpandIcon.cloneNode());
@@ -144,6 +147,11 @@ export class Render {
             let textContent: string = args.cell.querySelector('.e-treecell') != null ?
             args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
             cellElement.innerHTML = textContent;
+            if ( typeof(args.column.template) === 'object' && this.templateResult ) {
+                cellElement.innerHTML = '';
+                appendChildren(cellElement , this.templateResult);
+                this.templateResult = null;
+            }
             container.appendChild(cellElement);
             args.cell.innerHTML = '';
             args.cell.appendChild(container);
@@ -166,5 +174,13 @@ export class Render {
         if (isNullOrUndefined(this.parent.rowTemplate)) {
             this.parent.trigger(events.queryCellInfo, args);
             }
+    }
+
+    private columnTemplateResult(args: {template : NodeList, name: string}): void {
+        this.templateResult = args.template;
+    }
+
+    public destroy(): void {
+        this.parent.grid.off('template-result', this.columnTemplateResult);
     }
 }

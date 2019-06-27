@@ -235,6 +235,9 @@
         position: relative;
         text-align: center;
         vertical-align: middle;
+        @if ($pivotgrid-skin == 'bootstrap4') {
+          font-size: 14px;
+        }
       }
     }
 
@@ -828,6 +831,12 @@
         height: 40px;
         min-height: 40px;
         padding-left: $pivotview-axis-bigger-indent-padding;
+
+        .e-draggable-prompt {
+          @if ($pivotgrid-skin == 'bootstrap4') {
+            font-size: 16px;
+          }
+        }
       }
 
       .e-group-values {
@@ -941,5 +950,9 @@
 
       // sass-lint:enable-all
     }
+  }
+
+  .e-content-placeholder.e-pivotview.e-placeholder-pivotview {
+    background-size: 100% 200px;
   }
 }

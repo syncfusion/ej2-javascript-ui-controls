@@ -117,11 +117,12 @@ export class Selection {
             shapeData: shapeData,
             data: data
         };
-        this.maps.trigger(itemSelection, eventArgs);
-        // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility && this.maps.legendSettings.legendSelection) {
-        //     this.removeLegendSelection(this.maps.legendModule.legendCollection, targetEle);
-        // }
-        if (targetEle.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
+        this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
+            // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility
+            // && this.maps.legendSettings.legendSelection) {
+            //     this.removeLegendSelection(this.maps.legendModule.legendCollection, targetEle);
+            // }
+            if (targetEle.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
                 removeClass(targetEle);
                 if (targetEle.id.indexOf('NavigationIndex') > -1) {
                     let index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
@@ -129,25 +130,27 @@ export class Selection {
                     targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color );
                 }
-        }else {
-            if (!this.selectionsettings.enableMultiSelect && getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
-                let ele: Element = getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
-                removeClass(ele);
-                if (ele.id.indexOf('NavigationIndex') > -1) {
-                    let index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex: number = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                    ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color );
-                }
-            }
-            if (!getElement(this.selectionType + 'selectionMap')) {
-                document.body.appendChild(
-                    createStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs));
             }else {
-                customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
+                if (!this.selectionsettings.enableMultiSelect
+                    && getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
+                    let ele: Element = getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
+                    removeClass(ele);
+                    if (ele.id.indexOf('NavigationIndex') > -1) {
+                        let index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                        let layerIndex: number = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                        ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
+                        ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color );
+                    }
+                }
+                if (!getElement(this.selectionType + 'selectionMap')) {
+                    document.body.appendChild(
+                        createStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs));
+                }else {
+                    customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
+                }
+                targetEle.setAttribute('class', this.selectionType + 'selectionMapStyle');
             }
-            targetEle.setAttribute('class', this.selectionType + 'selectionMapStyle');
-        }
+        });
     }
     /**
      * Remove legend selection

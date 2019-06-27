@@ -1979,31 +1979,33 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ChipList.prototype.clickHandler = function (e, del) {
+        var _this = this;
         if (del === void 0) { del = false; }
         var chipWrapper = closest(e.target, '.' + classNames.chip);
         if (chipWrapper) {
             if (this.type !== 'chip') {
-                var chipData = this.find(chipWrapper);
-                chipData.event = e;
+                var chipData_1 = this.find(chipWrapper);
+                chipData_1.event = e;
                 var deleteElement = e.target.classList.contains(classNames.delete) ?
                     e.target : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
                 if (deleteElement && this.enableDelete) {
-                    chipData.cancel = false;
-                    var deletedItemArgs = chipData;
-                    this.trigger('delete', deletedItemArgs);
-                    if (!deletedItemArgs.cancel) {
-                        this.deleteHandler(chipData.element, chipData.index);
-                    }
+                    chipData_1.cancel = false;
+                    var deletedItemArgs = chipData_1;
+                    this.trigger('delete', deletedItemArgs, function (observedArgs) {
+                        if (!observedArgs.cancel) {
+                            _this.deleteHandler(chipData_1.element, chipData_1.index);
+                        }
+                    });
                 }
                 else if (this.selection !== 'None') {
                     this.selectionHandler(chipWrapper);
-                    chipData.selected = chipWrapper.classList.contains(classNames.active);
-                    var selectedItemArgs = chipData;
+                    chipData_1.selected = chipWrapper.classList.contains(classNames.active);
+                    var selectedItemArgs = chipData_1;
                     this.trigger('click', selectedItemArgs);
                 }
                 else {
                     this.focusInHandler(chipWrapper);
-                    var clickedItemArgs = chipData;
+                    var clickedItemArgs = chipData_1;
                     this.trigger('click', clickedItemArgs);
                 }
             }

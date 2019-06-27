@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {ExpandOnSettings,SortOrder,DataBoundEventArgs,DataSourceChangedEventArgs,DrawNodeEventArgs,NodeKeyPressEventArgs,NodeCheckEventArgs,NodeClickEventArgs,NodeExpandEventArgs,DragAndDropEventArgs,NodeEditEventArgs,NodeSelectEventArgs} from "./treeview";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -185,7 +185,7 @@ export interface TreeViewModel extends ComponentModel{
      * get the ID of nodes that are currently checked in the TreeView component.
      * The `checkedNodes` property depends upon the value of `showCheckBox` property.
      * For more information on checkedNodes, refer to
-     * [checkedNodes](../treeview/check-box#checked-nodes).
+     * [checkedNodes](../../treeview/check-box#checked-nodes).
      * @default []
      */
     checkedNodes?: string[];
@@ -296,12 +296,14 @@ export interface TreeViewModel extends ComponentModel{
     /**
      * Triggers when the TreeView control is created successfully.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when data source is populated in the TreeView.
      * @event
+     * @blazorProperty 'DataBound'
      */
     dataBound?: EmitType<DataBoundEventArgs>;
 
@@ -309,114 +311,146 @@ export interface TreeViewModel extends ComponentModel{
      * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
      * @event
+     * @blazorProperty 'DataSourceChanged'
      */
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
     /**
      * Triggers before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
      * @event
+     * @blazorProperty 'OnDrawNode'
      */
     drawNode?: EmitType<DrawNodeEventArgs>;
 
     /**
      * Triggers when the TreeView control is destroyed successfully.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when key press is successful. It helps to customize the operations at key press.
      * @event
+     * @blazorProperty 'OnKeyPress'
      */
     keyPress?: EmitType<NodeKeyPressEventArgs>;
 
     /**
      * Triggers when the TreeView node is checked/unchecked successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeChecked'
      */
     nodeChecked?: EmitType<NodeCheckEventArgs>;
 
     /**
      * Triggers before the TreeView node is to be checked/unchecked.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeChecking'
      */
     nodeChecking?: EmitType<NodeCheckEventArgs>;
 
     /**
      * Triggers when the TreeView node is clicked successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeClicked'
      */
     nodeClicked?: EmitType<NodeClickEventArgs>;
 
     /**
      * Triggers when the TreeView node collapses successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeCollapsed'
      */
     nodeCollapsed?: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers before the TreeView node collapses.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeCollapsing'
      */
     nodeCollapsing?: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers when the TreeView node is dragged (moved) continuously.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeDragging'
      */
     nodeDragging?: EmitType<DragAndDropEventArgs>;
 
     /**
      * Triggers when the TreeView node drag (move) starts.
+     * @deprecated
      * @event
+     * @blazorProperty 'OnNodeDragStart'
      */
     nodeDragStart?: EmitType<DragAndDropEventArgs>;
 
     /**
      * Triggers when the TreeView node drag (move) is stopped.
+     * @deprecated
      * @event
+     * @blazorProperty 'OnNodeDragged'
      */
     nodeDragStop?: EmitType<DragAndDropEventArgs>;
 
     /**
      * Triggers when the TreeView node is dropped on target element successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeDropped'
      */
     nodeDropped?: EmitType<DragAndDropEventArgs>;
 
     /**
      * Triggers when the TreeView node is renamed successfully.
      * @event
+     * @blazorProperty 'NodeEdited'
      */
     nodeEdited?: EmitType<NodeEditEventArgs>;
 
     /**
      * Triggers before the TreeView node is renamed.
      * @event
+     * @blazorProperty 'NodeEditing'
      */
     nodeEditing?: EmitType<NodeEditEventArgs>;
 
     /**
      * Triggers when the TreeView node expands successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeExpanded'
      */
     nodeExpanded?: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers before the TreeView node is to be expanded.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeExpanding'
      */
     nodeExpanding?: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers when the TreeView node is selected/unselected successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeSelected'
      */
     nodeSelected?: EmitType<NodeSelectEventArgs>;
 
     /**
      * Triggers before the TreeView node is selected/unselected.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeSelecting'
      */
     nodeSelecting?: EmitType<NodeSelectEventArgs>;
 

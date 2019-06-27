@@ -101,6 +101,8 @@ export const checkBoxChange: string = 'checkBoxChange';
 /** @hidden */
 export const beforeCopy: string = 'beforeCopy';
 /** @hidden */
+export const beforePaste: string = 'beforePaste';
+/** @hidden */
 export const filterChoiceRequest: string = 'filterchoicerequest';
 /** @hidden */
 export const filterAfterOpen: string = 'filterafteropen';
@@ -108,6 +110,8 @@ export const filterAfterOpen: string = 'filterafteropen';
 export const filterBeforeOpen: string = 'filterbeforeopen';
 /** @hidden */
 export const filterSearchBegin: string = 'filtersearchbegin';
+/** @hidden */
+export const commandClick: string = 'commandClick';
 
 /**
  * Specifies grid internal events

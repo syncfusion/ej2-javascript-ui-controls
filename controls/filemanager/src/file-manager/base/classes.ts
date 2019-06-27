@@ -1,6 +1,7 @@
 /**
  * Specifies the File Manager internal ID's
  */
+/** @hidden */
 export const TOOLBAR_ID: string = '_toolbar';
 /** @hidden */
 export const LAYOUT_ID: string = '_layout';
@@ -21,6 +22,8 @@ export const EXTN_DIALOG_ID: string = '_extn_dialog';
 /** @hidden */
 export const UPLOAD_DIALOG_ID: string = '_upload_dialog';
 /** @hidden */
+export const RETRY_DIALOG_ID: string = '_retry_dialog';
+/** @hidden */
 export const CONTEXT_MENU_ID: string = '_contextmenu';
 /** @hidden */
 export const SORTBY_ID: string = '_sortby';
@@ -35,11 +38,14 @@ export const BREADCRUMBBAR_ID: string = '_breadcrumbbar';
 /** @hidden */
 export const UPLOAD_ID: string = '_upload';
 /** @hidden */
+export const RETRY_ID: string = '_retry';
+/** @hidden */
 export const SEARCH_ID: string = '_search';
 
 /**
  * Specifies the File Manager internal class names
  */
+/** @hidden */
 export const ROOT: string = 'e-filemanager';
 /** @hidden */
 export const CONTROL: string = 'e-control';
@@ -80,6 +86,8 @@ export const HOVER: string = 'e-hover';
 /** @hidden */
 export const FOCUS: string = 'e-focus';
 /** @hidden */
+export const FOCUSED: string = 'e-focused';
+/** @hidden */
 export const CHECK: string = 'e-check';
 /** @hidden */
 export const FRAME: string = 'e-frame';
@@ -95,6 +103,12 @@ export const EMPTY: string = 'e-empty';
 export const EMPTY_CONTENT: string = 'e-empty-content';
 /** @hidden */
 export const EMPTY_INNER_CONTENT: string = 'e-empty-inner-content';
+/** @hidden */
+export const CLONE: string = 'e-fe-clone';
+/** @hidden */
+export const DROP_FOLDER: string = 'e-fe-drop-folder';
+/** @hidden */
+export const DROP_FILE: string = 'e-fe-drop-file';
 /** @hidden */
 export const FOLDER: string = 'e-fe-folder';
 /** @hidden */
@@ -167,6 +181,12 @@ export const ICON_LARGE: string = 'e-icons e-fe-large';
 export const ICON_BREADCRUMB: string = 'e-icons e-fe-breadcrumb';
 /** @hidden */
 export const ICON_CLEAR: string = 'e-icons e-fe-clear';
+/** @hidden */
+export const ICON_DROP_IN: string = 'e-icons e-fe-drop-in';
+/** @hidden */
+export const ICON_DROP_OUT: string = 'e-icons e-fe-drop-out';
+/** @hidden */
+export const ICON_NO_DROP: string = 'e-icons e-fe-no-drop';
 /** @hidden */
 export const ICONS: string = 'e-icons';
 /** @hidden */

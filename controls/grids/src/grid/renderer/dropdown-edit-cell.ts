@@ -1,7 +1,7 @@
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, EJ2Intance, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
-import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, FilteringEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Query, DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { isEditable, getComplexFieldID, getObject } from '../base/util';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -17,10 +17,12 @@ export class DropDownEditCell implements IEditCell {
     private parent: IGrid;
     private obj: DropDownList;
     private column: Column;
+    private flag: boolean;
 
     constructor(parent?: IGrid) {
         //constructor
         this.parent = parent;
+        this.flag = false;
     }
 
     public create(args: { column: Column, value: string }): Element {
@@ -44,7 +46,7 @@ export class DropDownEditCell implements IEditCell {
                 query: new Query().select(args.column.field), enabled: isEditable(args.column, args.requestType, args.element),
                 fields: { value: args.column.field },
                 value: getObject(args.column.field, args.rowData),
-                enableRtl: this.parent.enableRtl, actionComplete: this.ddActionComplete.bind(this),
+                enableRtl: this.parent.enableRtl, filtering: this.ddFiltering.bind(this), actionComplete: this.ddActionComplete.bind(this),
                 placeholder: isInline ? '' : args.column.headerText, popupHeight: '200px',
                 floatLabelType: isInline ? 'Never' : 'Always', open: this.dropDownOpen.bind(this),
                 sortOrder: 'Ascending'
@@ -59,11 +61,16 @@ export class DropDownEditCell implements IEditCell {
         return (<EJ2Intance>element).ej2_instances[0].value;
     }
 
+    private ddFiltering(e: FilteringEventArgs): void {
+        this.flag = true;
+    }
+
     private ddActionComplete(e: { result: Object[] }): void {
         e.result = DataUtil.distinct(e.result, this.obj.fields.value, true);
-        if ((<DataManager>this.column.dataSource)) {
+        if (!this.flag && (<DataManager>this.column.dataSource)) {
             (<DataManager>this.column.dataSource).dataSource.json = e.result;
         }
+        this.flag = false;
     }
 
     private dropDownOpen(args: { popup: Popup }): void {

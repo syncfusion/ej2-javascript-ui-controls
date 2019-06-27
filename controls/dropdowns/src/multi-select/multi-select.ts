@@ -92,6 +92,18 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyAction: boolean;
 
     /**
+     * Specifies a Boolean value that indicates the whether the grouped list items are 
+     * allowed to check by checking the group header in checkbox mode.
+     * By default, there is no checkbox provided for group headers.
+     * This property allows you to render checkbox for group headers and to select 
+     * all the grouped items at once
+     * @default false
+     */
+    @Property(false)
+    public enableGroupCheckBox: boolean;
+
+
+    /**
      * Sets the CSS classes to root element of this component which helps to customize the
      * complete styles.
      * @default null
@@ -344,60 +356,70 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Fires each time when selection changes happened in list items after model and input value get affected.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<MultiSelectChangeEventArgs>;
     /**
      * Fires before the selected item removed from the widget.
      * @event
+     * @blazorProperty 'OnValueRemove'
      */
     @Event()
     public removing: EmitType<RemoveEventArgs>;
     /**
      * Fires after the selected item removed from the widget.
      * @event
+     * @blazorProperty 'ValueRemoved'
      */
     @Event()
     public removed: EmitType<RemoveEventArgs>;
     /**
      * Fires after select all process completion.
      * @event
+     * @blazorProperty 'SelectedAll'
      */
     @Event()
     public selectedAll: EmitType<ISelectAllEventArgs>;
     /**
      * Fires when popup opens before animation.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<Object>;
     /**
      * Fires when popup opens after animation completion.
      * @event
+     * @blazorProperty 'Opened'
      */
     @Event()
     public open: EmitType<PopupEventArgs>;
     /**
      * Fires when popup close after animation completion.
      * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public close: EmitType<PopupEventArgs>;
     /**
      * Event triggers when the input get focus-out.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<Object>;
     /**
      * Event triggers when the input get focused.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<Object>;
     /**
      * Event triggers when the chip selection.
      * @event
+     * @blazorProperty 'ChipSelected'
      */
     @Event()
     public chipSelection: EmitType<Object>;
@@ -406,6 +428,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * > For more details about filtering, refer to [`Filtering`](../../multi-select/filtering) documentation.
      * 
      * @event
+     * @blazorProperty 'Filtering'
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -414,12 +437,14 @@ export class MultiSelect extends DropDownBase implements IInput {
      * > For more details about chip customization refer [`Chip Customization`](../../multi-select/chip-customization)
      * 
      * @event
+     * @blazorProperty 'OnChipTag'
      */
     @Event()
     public tagging: EmitType<TaggingEventArgs>;
     /**
      * Triggers when the [`customValue`](../../multi-select/custom-value) is selected.
      * @event
+     * @blazorProperty 'CustomValueSpecifier'
      */
     @Event()
     public customValueSelection: EmitType<CustomValueEventArgs>;
@@ -459,6 +484,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private selectAllEventData: FieldSettingsModel[] = [];
     private selectAllEventEle: HTMLLIElement[] = [];
     private filterParent: HTMLElement;
+    private removeIndex: number;
     private enableRTL(state: boolean): void {
         if (state) {
             this.overAllWrapper.classList.add(RTL_CLASS);
@@ -474,6 +500,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
         if (this.mode === 'CheckBox') {
+            this.isGroupChecking = this.enableGroupCheckBox;
             this.allowCustomValue = false;
             this.hideSelectedItem = false;
             this.closePopupOnSelect = false;
@@ -549,6 +576,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private onPopupShown(): void {
+        let listItems: NodeListOf<Element>;
+        let mainListItems: NodeListOf<Element>;
         if (Browser.isDevice && (this.mode === 'CheckBox' && this.allowFiltering)) {
             let proxy: this = this;
             window.onpopstate = () => {
@@ -559,18 +588,26 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         let animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
         let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
-        this.trigger('open', eventArgs);
-        if (eventArgs.cancel) { return; }
-        this.focusAtFirstListItem();
-        document.body.appendChild(this.popupObj.element);
-        if (this.mode === 'CheckBox' || this.showDropDownIcon) {
-            addClass([this.overAllWrapper], [iconAnimation]);
-        }
-        this.refreshPopup();
-        this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
-        attributes(this.inputElement, { 'aria-expanded': 'true' });
-        if (this.isFirstClick) {
-            this.loadTemplate();
+        this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
+            if (!eventArgs.cancel) {
+                this.focusAtFirstListItem();
+                document.body.appendChild(this.popupObj.element);
+                if (this.mode === 'CheckBox' || this.showDropDownIcon) {
+                    addClass([this.overAllWrapper], [iconAnimation]);
+                }
+                this.refreshPopup();
+                this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
+                attributes(this.inputElement, { 'aria-expanded': 'true' });
+                if (this.isFirstClick) {
+                    this.loadTemplate();
+                }
+            }
+        });
+    }
+    private updateListItems(listItems: NodeListOf<Element> , mainListItems: NodeListOf<Element>): void {
+        for (let i: number = 0; i < listItems.length; i++) {
+            this.findGroupStart(listItems[i] as HTMLElement);
+            this.findGroupStart(mainListItems[i] as HTMLElement);
         }
     }
     private loadTemplate(): void {
@@ -864,13 +901,23 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private checkSelectAll(): void {
+        let groupItemLength: number = this.list.querySelectorAll('li.e-list-group-item.e-active').length;
+        let listItem: NodeListOf<Element> = this.list.querySelectorAll('li.e-list-item');
         let searchCount: number = this.list.querySelectorAll('li.' + dropDownBaseClasses.li).length;
         let searchActiveCount: number = this.list.querySelectorAll('li.' + dropDownBaseClasses.selected).length;
+        if (this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
+            searchActiveCount = searchActiveCount - groupItemLength;
+        }
         if ((searchCount === searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll)) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'check' });
         }
         if ((searchCount !== searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll)) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
+        }
+        if (this.enableGroupCheckBox && this.fields.groupBy && !this.enableSelectionOrder) {
+            for (let i: number = 0; i < listItem.length; i++) {
+                this.findGroupStart(listItem[i] as HTMLElement);
+            }
         }
     }
     private openClick(e: KeyboardEventArgs): void {
@@ -924,12 +971,14 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 event: e,
                                 cancel: false
                             };
-                            this.trigger('filtering', eventArgs);
-                            if (eventArgs.cancel) { return; }
-                            if (!this.isFiltered && !eventArgs.preventDefaultAction) {
-                                this.filterAction = true;
-                                this.dataUpdater(this.dataSource, null, this.fields);
-                            }
+                            this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+                                if (!eventArgs.cancel) {
+                                    if (!this.isFiltered && !eventArgs.preventDefaultAction) {
+                                        this.filterAction = true;
+                                        this.dataUpdater(this.dataSource, null, this.fields);
+                                    }
+                                }
+                            });
                         } else if (this.allowCustomValue) {
                             let query: Query = new Query();
                             query = (text !== '') ? query.where(
@@ -1432,6 +1481,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         let list: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
             + dropDownBaseClasses.li
             + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+        if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
+            list = this.list.querySelectorAll('li.'
+            + dropDownBaseClasses.li + ',li.' + dropDownBaseClasses.group
+            + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+        }
         let focuseElem: Element = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
         let index: number = Array.prototype.slice.call(list).indexOf(focuseElem);
         if (index <= 0 && (this.mode === 'CheckBox' && this.allowFiltering)) {
@@ -1550,6 +1604,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private selectListByKey(e: KeyboardEventArgs): void {
         let li: HTMLElement = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
         let limit: number = this.value && this.value.length ? this.value.length : 0;
+        let target : HTMLElement;
         if (li !== null) {
             if (li.classList.contains('e-active')) {
                 limit = limit - 1;
@@ -1561,6 +1616,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.updateDelimView();
                     this.updateDelimeter(this.delimiterChar);
                     this.refreshInputHight();
+                    if (this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
+                        (target as Element) = li.firstElementChild.lastElementChild;
+                        this.findGroupStart(target);
+                    }
                 } else {
                     this.updateDelimeter(this.delimiterChar);
                 }
@@ -1569,7 +1628,13 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.refreshListItems(li.textContent);
                 }
                 this.refreshPopup();
+            }else {
+                if (!this.isValidLI(li) && limit < this.maximumSelectionLength) {
+                    (target as Element) = li.firstElementChild.lastElementChild;
+                    target.classList.contains('e-check') ? this.selectAllItem(false, e, li) : this.selectAllItem(true, e, li);
+                }
             }
+            this.refreshSelection();
             if (this.closePopupOnSelect) {
                 this.hidePopup();
             }
@@ -1628,6 +1693,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             let elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
                 + dropDownBaseClasses.li
                 + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+            if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
+                elements = this.list.querySelectorAll('li.'
+                + dropDownBaseClasses.li + ',li.' + dropDownBaseClasses.group
+                + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+            }
             let selectedElem: Element = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
             let temp: number = -1;
             if (elements.length) {
@@ -1641,16 +1711,29 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if (temp < (elements.length - 1)) {
                         this.removeFocus();
                         this.addListFocus(<HTMLElement>elements[++temp]);
+                        this.updateCheck(elements[temp]);
                         this.scrollBottom(<HTMLElement>elements[temp], temp);
                     }
                 } else {
                     if (temp > 0) {
                         this.removeFocus();
                         this.addListFocus(<HTMLElement>elements[--temp]);
+                        this.updateCheck(elements[temp]);
                         this.scrollTop(<HTMLElement>elements[temp], temp);
                     }
                 }
 
+            }
+        }
+    }
+    private updateCheck(element: Element): void {
+        if (this.mode === 'CheckBox' && this.enableGroupCheckBox  &&
+            !isNullOrUndefined(this.fields.groupBy)) {
+            let checkElement: Element = element.firstElementChild.lastElementChild;
+            if (checkElement.classList.contains('e-check')) {
+                element.classList.add('e-active');
+            } else {
+                element.classList.remove('e-active');
             }
         }
     }
@@ -1743,7 +1826,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.expandTextbox();
     }
-    private removeValue(value: string | number | boolean, eve: MouseEvent | KeyboardEventArgs, length?: number): void | boolean {
+    private removeValue(
+        value: string | number | boolean,
+        eve: MouseEvent | KeyboardEventArgs,
+        length?: number,
+        isClearAll?: boolean): void {
         let index: number = (this.value as string[]).indexOf(this.getFormattedValue(<string>value) as string);
         if (index === -1 && this.allowCustomValue && !isNullOrUndefined(value)) {
             index = (this.value as string[]).indexOf(value.toString());
@@ -1761,57 +1848,66 @@ export class MultiSelect extends DropDownBase implements IInput {
                 isInteracted: eve ? true : false,
                 cancel: false
             };
-            this.trigger('removing', eventArgs);
-            if (eventArgs.cancel) { return true; }
-            let removeVal: number[] | string[] | boolean[] = this.value.slice(0);
-            removeVal.splice(index, 1);
-            this.setProperties({ value: <[number | string]>[].concat([], removeVal) }, true);
-            if (element !== null) {
-                let hideElement: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', value);
-                element.setAttribute('aria-selected', 'false');
-                removeClass([element], className);
-                if (hideElement) {
-                    hideElement.setAttribute('aria-selected', 'false');
-                    removeClass([element, hideElement], className);
+            this.trigger('removing', eventArgs, (eventArgs: RemoveEventArgs) => {
+                if (eventArgs.cancel) {
+                    this.removeIndex++;
+                } else {
+                    let removeVal: number[] | string[] | boolean[] = this.value.slice(0);
+                    removeVal.splice(index, 1);
+                    this.setProperties({ value: <[number | string]>[].concat([], removeVal) }, true);
+                    if (element !== null) {
+                        let hideElement: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', value);
+                        element.setAttribute('aria-selected', 'false');
+                        removeClass([element], className);
+                        if (hideElement) {
+                            hideElement.setAttribute('aria-selected', 'false');
+                            removeClass([element, hideElement], className);
+                        }
+                        this.notify('activeList', {
+                            module: 'CheckBoxSelection',
+                            enable: this.mode === 'CheckBox', li: element,
+                            e: this, index: index
+                        });
+                        this.notify('updatelist', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', li: element, e: eve });
+                        attributes(this.inputElement, { 'aria-activedescendant': element.id });
+                        if ((this.value.length !== this.mainData.length) && (this.mode === 'CheckBox' && this.showSelectAll)) {
+                            this.notify(
+                                'checkSelectAll',
+                                { module: 'CheckBoxSelection',
+                                enable: this.mode === 'CheckBox',
+                                value: 'uncheck' });
+                        }
+                    }
+                    if (this.hideSelectedItem && this.fields.groupBy) { this.hideGroupItem(value); }
+                    this.updateMainList(true, <string>value);
+                    this.removeChip(value);
+                    this.updateChipStatus();
+                    let limit: number = this.value && this.value.length ? this.value.length : 0;
+                    if (limit < this.maximumSelectionLength) {
+                        let collection: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
+                            + dropDownBaseClasses.li + ':not(.e-active)');
+                        removeClass(collection, 'e-disable');
+                    }
+                    this.trigger('removed', eventArgs);
+                    if (length) {
+                        this.selectAllEventData.push(val);
+                        this.selectAllEventEle.push(<HTMLLIElement>element);
+                    }
+                    if (length === 1) {
+                        let args: ISelectAllEventArgs = {
+                            event: eve,
+                            items: this.selectAllEventEle,
+                            itemData: this.selectAllEventData,
+                            isInteracted: eve ? true : false,
+                            isChecked: false
+                        };
+                        this.trigger('selectedAll', args);
+                        this.selectAllEventData = [];
+                        this.selectAllEventEle = [];
+                    }
+                    if (isClearAll) { this.clearAllCallback(eve as MouseEvent); }
                 }
-                this.notify('activeList', {
-                    module: 'CheckBoxSelection',
-                    enable: this.mode === 'CheckBox', li: element,
-                    e: this, index: index
-                });
-                this.notify('updatelist', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', li: element, e: eve });
-                attributes(this.inputElement, { 'aria-activedescendant': element.id });
-                if ((this.value.length !== this.mainData.length) && (this.mode === 'CheckBox' && this.showSelectAll)) {
-                    this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
-                }
-            }
-            if (this.hideSelectedItem && this.fields.groupBy) { this.hideGroupItem(value); }
-            this.updateMainList(true, <string>value);
-            this.removeChip(value);
-            this.updateChipStatus();
-            let limit: number = this.value && this.value.length ? this.value.length : 0;
-            if (limit < this.maximumSelectionLength) {
-                let collection: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
-                    + dropDownBaseClasses.li + ':not(.e-active)');
-                removeClass(collection, 'e-disable');
-            }
-            this.trigger('removed', eventArgs);
-            if (length) {
-                this.selectAllEventData.push(val);
-                this.selectAllEventEle.push(<HTMLLIElement>element);
-            }
-            if (length === 1) {
-                let args: ISelectAllEventArgs = {
-                    event: eve,
-                    items: this.selectAllEventEle,
-                    itemData: this.selectAllEventData,
-                    isInteracted: eve ? true : false,
-                    isChecked: false
-                };
-                this.trigger('selectedAll', args);
-                this.selectAllEventData = [];
-                this.selectAllEventEle = [];
-            }
+            });
         }
     }
     private updateMainList(state: boolean, value: string): void {
@@ -1899,7 +1995,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         eve: MouseEvent | KeyboardEventArgs,
         element: HTMLElement,
         isNotTrigger: boolean,
-        length?: number): boolean {
+        length?: number): void {
         if (this.initStatus && !isNotTrigger) {
             let val: FieldSettingsModel = this.getDataByValue(value) as FieldSettingsModel;
             let eventArgs: SelectEventArgs = {
@@ -1909,33 +2005,31 @@ export class MultiSelect extends DropDownBase implements IInput {
                 isInteracted: eve ? true : false,
                 cancel: false
             };
-            this.trigger('select', eventArgs);
-            if (eventArgs.cancel) { return true; }
-            if (length) {
-                this.selectAllEventData.push(val);
-                this.selectAllEventEle.push(<HTMLLIElement>element);
-            }
-            if (length === 1) {
-                let args: ISelectAllEventArgs = {
-                    event: eve,
-                    items: this.selectAllEventEle,
-                    itemData: this.selectAllEventData,
-                    isInteracted: eve ? true : false,
-                    isChecked: true
-                };
-                this.trigger('selectedAll', args);
-                this.selectAllEventData = [];
-            }
+            this.trigger('select', eventArgs, (eventArgs: SelectEventArgs) => {
+                if (!eventArgs.cancel) {
+                    if (length) {
+                        this.selectAllEventData.push(val);
+                        this.selectAllEventEle.push(<HTMLLIElement>element);
+                    }
+                    if (length === 1) {
+                        let args: ISelectAllEventArgs = {
+                            event: eve,
+                            items: this.selectAllEventEle,
+                            itemData: this.selectAllEventData,
+                            isInteracted: eve ? true : false,
+                            isChecked: true
+                        };
+                        this.trigger('selectedAll', args);
+                        this.selectAllEventData = [];
+                    }
+                    this.updateListSelectEventCallback(value, element, eve);
+                }
+            });
         }
-        return false;
     }
     private addChip(text: string, value: string | number | boolean, e?: MouseEvent | KeyboardEventArgs): void {
         if (this.chipCollectionWrapper) {
-            let item: { [key: string]: boolean | HTMLElement } = this.getChip(text, value, e);
-            if (item.cancel) {
-                return;
-            }
-            this.chipCollectionWrapper.appendChild(item.element as HTMLElement);
+            this.getChip(text, value, e);
         }
     }
     private removeChipFocus(): void {
@@ -1968,7 +2062,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private getChip(
         data: string, value: string | number | boolean,
-        e?: MouseEvent | KeyboardEventArgs): { [key: string]: boolean | HTMLElement } {
+        e?: MouseEvent | KeyboardEventArgs): void {
         let itemData: { [key: string]: Object } | string | boolean | number = { text: value, value: value };
         let chip: HTMLElement = this.createElement('span', {
             className: CHIP,
@@ -1981,9 +2075,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             let compiledString: Function = compile(this.valueTemplate);
-            for (let item of compiledString(itemData)) {
+            for (let item of compiledString(itemData, null, null, this.valueTemplateId)) {
                 chipContent.appendChild(item);
             }
+            this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
         } else {
             chipContent.innerHTML = data;
         }
@@ -1997,23 +2092,23 @@ export class MultiSelect extends DropDownBase implements IInput {
             },
             cancel: false
         };
-        this.trigger('tagging', eventArgs);
-        if (eventArgs.cancel) {
-            return { cancel: true, element: chip };
-        }
-        if (Browser.isDevice) {
-            chip.classList.add(MOBILE_CHIP);
-            append([chipClose], chip);
-            chipClose.style.display = 'none';
-            EventHandler.add(chip, 'click', this.onMobileChipInteraction, this);
-        } else {
-            EventHandler.add(chip, 'mousedown', this.chipClick, this);
-            if (this.showClearButton) {
-                chip.appendChild(chipClose);
+        this.trigger('tagging', eventArgs, (eventArgs: TaggingEventArgs) => {
+            if (!eventArgs.cancel) {
+                if (Browser.isDevice) {
+                    chip.classList.add(MOBILE_CHIP);
+                    append([chipClose], chip);
+                    chipClose.style.display = 'none';
+                    EventHandler.add(chip, 'click', this.onMobileChipInteraction, this);
+                } else {
+                    EventHandler.add(chip, 'mousedown', this.chipClick, this);
+                    if (this.showClearButton) {
+                        chip.appendChild(chipClose);
+                    }
+                }
+                EventHandler.add(chipClose, 'mousedown', this.onChipRemove, this);
+                this.chipCollectionWrapper.appendChild(chip as HTMLElement);
             }
-        }
-        EventHandler.add(chipClose, 'mousedown', this.onChipRemove, this);
-        return { cancel: false, element: chip };
+        });
     }
     private calcPopupWidth(): string {
         let width: string = formatUnit(this.popupWidth);
@@ -2053,93 +2148,97 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (!this.popupObj) {
             let args: { [key: string]: boolean } = { cancel: false };
-            this.trigger('beforeOpen', args);
-            if (args.cancel) {
-                return;
-            }
-            document.body.appendChild(this.popupWrapper);
-            let checkboxFilter: HTMLElement = this.popupWrapper.querySelector('.' + FILTERPARENT);
-            if (this.mode === 'CheckBox' && !this.allowFiltering && checkboxFilter && this.filterParent) {
-                checkboxFilter.remove();
-                this.filterParent = null;
-            }
-            let overAllHeight: number = parseInt(<string>this.popupHeight, 10);
-            this.popupWrapper.style.visibility = 'hidden';
-            if (this.headerTemplate) {
-                this.setHeaderTemplate();
-                overAllHeight -= this.header.offsetHeight;
-            }
-            append([this.list], this.popupWrapper);
-            if (this.footerTemplate) {
-                this.setFooterTemplate();
-                overAllHeight -= this.footer.offsetHeight;
-            }
-            if (this.mode === 'CheckBox' && this.showSelectAll) {
-                this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
-                overAllHeight -= this.selectAllHeight;
-            } else if (this.mode === 'CheckBox' && !this.showSelectAll && (!this.headerTemplate || !this.footerTemplate)) {
-                this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
-                overAllHeight = parseInt(<string>this.popupHeight, 10);
-            } else if (this.mode === 'CheckBox' && !this.showSelectAll) {
-                this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
-                overAllHeight = parseInt(<string>this.popupHeight, 10);
-                if (this.headerTemplate && this.header) {
-                    overAllHeight -= this.header.offsetHeight;
-                }
-                if (this.footerTemplate && this.footer) {
-                    overAllHeight -= this.footer.offsetHeight;
-                }
-            }
-            if (this.mode === 'CheckBox') {
-                let args: { [key: string]: Object | string } = {
-                    module: 'CheckBoxSelection',
-                    enable: this.mode === 'CheckBox',
-                    popupElement: this.popupWrapper
-                };
-                if (this.allowFiltering) {
-                    this.notify('searchBox', args);
-                    overAllHeight -= this.searchBoxHeight;
-                }
-                addClass([this.popupWrapper], 'e-checkbox');
-            }
-            if (this.popupHeight !== 'auto') {
-                this.list.style.maxHeight = formatUnit(overAllHeight);
-                this.popupWrapper.style.maxHeight = formatUnit(this.popupHeight);
-            } else {
-                this.list.style.maxHeight = formatUnit(this.popupHeight);
-            }
-            this.popupObj = new Popup(this.popupWrapper, {
-                width: this.calcPopupWidth(), targetType: 'relative', position: { X: 'left', Y: 'bottom' },
-                relateTo: this.overAllWrapper, collision: { X: 'flip', Y: 'flip' }, offsetY: 1,
-                enableRtl: this.enableRtl,
-                zIndex: this.zIndex,
-                close: () => {
-                    if (this.popupObj.element.parentElement) {
-                        this.popupObj.unwireScrollEvents();
-                        detach(this.popupObj.element);
+            this.trigger('beforeOpen', args, (args: { [key: string]: object }) => {
+                if (!args.cancel) {
+                    document.body.appendChild(this.popupWrapper);
+                    let checkboxFilter: HTMLElement = this.popupWrapper.querySelector('.' + FILTERPARENT);
+                    if (this.mode === 'CheckBox' && !this.allowFiltering && checkboxFilter && this.filterParent) {
+                        checkboxFilter.remove();
+                        this.filterParent = null;
                     }
-                },
-                open: () => {
-                    if (!this.isFirstClick) {
-                        let ulElement: HTMLElement = this.list.querySelector('ul');
-                        if (ulElement) {
-                            this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
+                    let overAllHeight: number = parseInt(<string>this.popupHeight, 10);
+                    this.popupWrapper.style.visibility = 'hidden';
+                    if (this.headerTemplate) {
+                        this.setHeaderTemplate();
+                        overAllHeight -= this.header.offsetHeight;
+                    }
+                    append([this.list], this.popupWrapper);
+                    if (this.footerTemplate) {
+                        this.setFooterTemplate();
+                        overAllHeight -= this.footer.offsetHeight;
+                    }
+                    if (this.mode === 'CheckBox' && this.showSelectAll) {
+                        this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+                        overAllHeight -= this.selectAllHeight;
+                    } else if (this.mode === 'CheckBox' && !this.showSelectAll && (!this.headerTemplate || !this.footerTemplate)) {
+                        this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+                        overAllHeight = parseInt(<string>this.popupHeight, 10);
+                    } else if (this.mode === 'CheckBox' && !this.showSelectAll) {
+                        this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
+                        overAllHeight = parseInt(<string>this.popupHeight, 10);
+                        if (this.headerTemplate && this.header) {
+                            overAllHeight -= this.header.offsetHeight;
                         }
-                        this.isFirstClick = true;
+                        if (this.footerTemplate && this.footer) {
+                            overAllHeight -= this.footer.offsetHeight;
+                        }
                     }
-                    this.popupObj.wireScrollEvents();
-                    this.loadTemplate();
-                    this.setScrollPosition();
-                    if (this.allowFiltering) {
-                        this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus' });
+                    if (this.mode === 'CheckBox') {
+                        let args: { [key: string]: Object | string } = {
+                            module: 'CheckBoxSelection',
+                            enable: this.mode === 'CheckBox',
+                            popupElement: this.popupWrapper
+                        };
+                        if (this.allowFiltering) {
+                            this.notify('searchBox', args);
+                            overAllHeight -= this.searchBoxHeight;
+                        }
+                        addClass([this.popupWrapper], 'e-checkbox');
+                    }
+                    if (this.popupHeight !== 'auto') {
+                        this.list.style.maxHeight = formatUnit(overAllHeight);
+                        this.popupWrapper.style.maxHeight = formatUnit(this.popupHeight);
+                    } else {
+                        this.list.style.maxHeight = formatUnit(this.popupHeight);
+                    }
+                    this.popupObj = new Popup(this.popupWrapper, {
+                        width: this.calcPopupWidth(), targetType: 'relative', position: { X: 'left', Y: 'bottom' },
+                        relateTo: this.overAllWrapper, collision: { X: 'flip', Y: 'flip' }, offsetY: 1,
+                        enableRtl: this.enableRtl,
+                        zIndex: this.zIndex,
+                        close: () => {
+                            if (this.popupObj.element.parentElement) {
+                                this.popupObj.unwireScrollEvents();
+                                detach(this.popupObj.element);
+                            }
+                        },
+                        open: () => {
+                            if (!this.isFirstClick) {
+                                let ulElement: HTMLElement = this.list.querySelector('ul');
+                                if (ulElement) {
+                                    this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
+                                }
+                                this.isFirstClick = true;
+                            }
+                            this.popupObj.wireScrollEvents();
+                            this.loadTemplate();
+                            this.setScrollPosition();
+                            if (this.allowFiltering) {
+                                this.notify(
+                                    'inputFocus',
+                                    { module: 'CheckBoxSelection',
+                                    enable: this.mode === 'CheckBox',
+                                    value: 'focus' });
+                            }
+                        }
+                    });
+                    this.popupObj.close();
+                    this.popupWrapper.style.visibility = '';
+                    if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
+                        this.notify('deviceSearchBox', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                     }
                 }
             });
-            this.popupObj.close();
-            this.popupWrapper.style.visibility = '';
-            if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
-                this.notify('deviceSearchBox', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
-            }
         }
     }
     private setHeaderTemplate(): void {
@@ -2150,10 +2249,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.header = this.createElement('div');
         addClass([this.header], HEADER);
         compiledString = compile(this.headerTemplate);
-        let elements: [Element] = compiledString({});
+        let elements: [Element] = compiledString({}, null, null, this.headerTemplateId);
         for (let temp: number = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
         }
+        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
         if (this.mode === 'CheckBox' && this.showSelectAll) {
             prepend([this.header], this.popupWrapper);
         } else {
@@ -2169,51 +2269,57 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.footer = this.createElement('div');
         addClass([this.footer], FOOTER);
         compiledString = compile(this.footerTemplate);
-        let elements: [Element] = compiledString({});
+        let elements: [Element] = compiledString({}, null, null, this.footerTemplateId);
         for (let temp: number = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
         }
+        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
         append([this.footer], this.popupWrapper);
         EventHandler.add(this.footer, 'mousedown', this.onListMouseDown, this);
     }
     private ClearAll(e: MouseEvent): void {
         if (this.enabled && !this.readonly) {
             let temp: string | number | boolean;
-            let tempValues: string[] | number[] = this.value ? <string[]>this.value.slice() : <string[]>[];
             if (this.value) {
-                let i: number = 0;
-                for (temp = this.value[i]; i < this.value.length; temp = this.value[i]) {
-                    if (this.removeValue(temp, e)) {
-                        i++;
-                    }
+                this.removeIndex = 0;
+                for (temp = this.value[this.removeIndex]; this.removeIndex < this.value.length; temp = this.value[this.removeIndex]) {
+                    this.removeValue(temp, e, null, true);
                 }
+            } else {
+                this.clearAllCallback(e);
             }
-            if (this.mainList && this.listData && this.allowFiltering) {
-                let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
-                this.onActionComplete(list, this.mainData);
-            }
-            this.focusAtFirstListItem();
-            this.updateDelimeter(this.delimiterChar);
-            if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
-                this.updateDelimView();
-            }
-            this.makeTextBoxEmpty();
-            this.checkPlaceholderSize();
-            if (this.isPopupOpen()) {
-                this.refreshPopup();
-            }
-            if (!this.inputFocus) {
-                this.updateValueState(e, this.value, tempValues);
-                if (this.mode !== 'CheckBox') {
-                    this.inputElement.focus();
-                }
-            }
-            if (this.mode === 'CheckBox') {
-                this.refreshPlaceHolder();
-                this.refreshInputHight();
-            }
-            e.preventDefault();
         }
+    }
+    private clearAllCallback(e: MouseEvent): void {
+        let tempValues: string[] | number[] = this.value ? <string[]>this.value.slice() : <string[]>[];
+        if (this.mainList && this.listData && this.allowFiltering) {
+            let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
+            this.onActionComplete(list, this.mainData);
+        }
+        this.focusAtFirstListItem();
+        this.updateDelimeter(this.delimiterChar);
+        if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
+            this.updateDelimView();
+        }
+        this.makeTextBoxEmpty();
+        this.checkPlaceholderSize();
+        if (this.isPopupOpen()) {
+            this.refreshPopup();
+        }
+        if (!this.inputFocus) {
+            this.updateValueState(e, this.value, tempValues);
+            if (this.mode !== 'CheckBox') {
+                this.inputElement.focus();
+            }
+        }
+        if (this.mode === 'CheckBox') {
+            this.refreshPlaceHolder();
+            this.refreshInputHight();
+        }
+        if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
+            this.updateListItems(this.list.querySelectorAll('li.e-list-item'), this.mainList.querySelectorAll('li.e-list-item'));
+        }
+        e.preventDefault();
     }
     private windowResize(): void {
         this.refreshPopup();
@@ -2403,24 +2509,31 @@ export class MultiSelect extends DropDownBase implements IInput {
         let text: string = this.getTextByValue(value);
         this.removeHover();
         if (!this.value || (this.value as string[]).indexOf(value as string) === -1) {
-            let argsCancel: boolean = this.dispatchSelect(value, e, <HTMLElement>li, (li.getAttribute('aria-selected') === 'true'), length);
-            if (argsCancel) { return; }
-            if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
-                let temp: HTMLElement = <HTMLElement>li.cloneNode(true);
-                let data: Object = this.getDataByValue(value);
-                append([temp], this.mainList);
-                (this.mainData as { [key: string]: object }[]).push(data as { [key: string]: object });
-                let eventArgs: CustomValueEventArgs = {
-                    newData: data,
-                    cancel: false
-                };
-                this.trigger('customValueSelection', eventArgs);
-                if (eventArgs.cancel) { return; }
-            }
-            this.remoteCustomValue = false;
-            this.addValue(value, text, e);
+            this.dispatchSelect(value, e, <HTMLElement>li, (li.getAttribute('aria-selected') === 'true'), length);
         } else {
             this.removeValue(value, e, length);
+        }
+    }
+    private updateListSelectEventCallback(value: string | number | boolean, li: Element, e: MouseEvent | KeyboardEventArgs): void {
+        let text: string = this.getTextByValue(value);
+        if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
+            let temp: HTMLElement = <HTMLElement>li.cloneNode(true);
+            let data: Object = this.getDataByValue(value);
+            append([temp], this.mainList);
+            (this.mainData as { [key: string]: object }[]).push(data as { [key: string]: object });
+            let eventArgs: CustomValueEventArgs = {
+                newData: data,
+                cancel: false
+            };
+            this.trigger('customValueSelection', eventArgs, (eventArgs: CustomValueEventArgs) => {
+                if (!eventArgs.cancel) {
+                    this.remoteCustomValue = false;
+                    this.addValue(value, text, e);
+                }
+            });
+        } else {
+            this.remoteCustomValue = false;
+            this.addValue(value, text, e);
         }
     }
     protected removeListSelection(): void {
@@ -2476,12 +2589,22 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.enabled && this.isValidLI(li)) {
             this.removeHover();
             addClass([li], dropDownBaseClasses.hover);
+        } else {
+            if ((li !== null && li.classList.contains('e-list-group-item')) && this.enableGroupCheckBox && this.mode === 'CheckBox'
+            && !isNullOrUndefined(this.fields.groupBy)) {
+                this.removeHover();
+                addClass([li], dropDownBaseClasses.hover);
+            }
         }
     };
     private addListFocus(element: HTMLElement): void {
         if (this.enabled && this.isValidLI(element)) {
             this.removeFocus();
             addClass([element], dropDownBaseClasses.focus);
+        } else {
+            if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
+                addClass([element], dropDownBaseClasses.focus);
+            }
         }
     }
     private addListSelection(element: HTMLElement): void {
@@ -2512,53 +2635,143 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.scrollFocusStatus = false;
         let target: Element = <Element>e.target;
         let li: HTMLElement = <HTMLElement>closest(target, '.' + dropDownBaseClasses.li);
-        if (this.isValidLI(li)) {
-            let limit: number = this.value && this.value.length ? this.value.length : 0;
-            if (li.classList.contains('e-active')) {
-                limit = limit - 1;
-            }
-            if (limit < this.maximumSelectionLength) {
-                this.updateListSelection(li, e);
-                this.checkPlaceholderSize();
-                this.addListFocus(<HTMLElement>li);
-                if ((this.allowCustomValue || this.allowFiltering) && this.mainList && this.listData) {
-                    if (this.mode !== 'CheckBox') {
-                        this.focusAtLastListItem(<string>li.getAttribute('data-value'));
-                    }
-                    this.refreshSelection();
-                } else {
-                    this.makeTextBoxEmpty();
-                }
-            }
-            if (this.mode === 'CheckBox') {
-                this.updateDelimView();
-                this.updateDelimeter(this.delimiterChar);
-                this.refreshInputHight();
+        let listElement : Element;
+        this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
+        if (!li && this.enableGroupCheckBox && this.mode === 'CheckBox' && this.fields.groupBy) {
+            target = target.classList.contains('e-list-group-item') ? target.firstElementChild.lastElementChild
+            : <Element>e.target;
+            if (target.classList.contains('e-check')) {
+                this.selectAllItem(false, e);
+                target.classList.remove('e-check');
+                target.classList.remove('e-stop');
+                target.setAttribute('aria-selected', 'false');
             } else {
-                this.updateDelimeter(this.delimiterChar);
+                this.selectAllItem(true, e);
+                target.classList.remove('e-stop');
+                target.classList.add('e-check');
+                target.setAttribute('aria-selected', 'true');
             }
-            this.checkSelectAll();
-            this.refreshPopup();
-            if (this.hideSelectedItem) {
-                this.focusAtFirstListItem();
-            }
-            if (this.closePopupOnSelect) {
-                this.hidePopup();
+            this.refreshSelection();
+        } else {
+            if (this.isValidLI(li)) {
+                let limit: number = this.value && this.value.length ? this.value.length : 0;
+                if (li.classList.contains('e-active')) {
+                    limit = limit - 1;
+                }
+                if (limit < this.maximumSelectionLength) {
+                    this.updateListSelection(li, e);
+                    this.addListFocus(<HTMLElement>li);
+                    if ((this.allowCustomValue || this.allowFiltering) && this.mainList && this.listData) {
+                        if (this.mode !== 'CheckBox') {
+                            this.focusAtLastListItem(<string>li.getAttribute('data-value'));
+                        }
+                        this.refreshSelection();
+                    } else {
+                        this.makeTextBoxEmpty();
+                    }
+                }
+                if (this.mode === 'CheckBox') {
+                    this.updateDelimView();
+                    this.updateDelimeter(this.delimiterChar);
+                    this.refreshInputHight();
+                } else {
+                    this.updateDelimeter(this.delimiterChar);
+                }
+                this.checkSelectAll();
+                this.refreshPopup();
+                if (this.hideSelectedItem) {
+                    this.focusAtFirstListItem();
+                }
+                if (this.closePopupOnSelect) {
+                    this.hidePopup();
+                } else {
+                    e.preventDefault();
+                }
+                this.makeTextBoxEmpty();
             } else {
                 e.preventDefault();
             }
-            this.makeTextBoxEmpty();
+            if (this.mode !== 'CheckBox') {
+                this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
+            }
+            this.refreshPlaceHolder();
+            this.checkPlaceholderSize();
+            this.findGroupStart(target as HTMLElement);
+        }
+    }
+    private findGroupStart(target: HTMLElement): void {
+        if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
+            let count: number = 0;
+            let liChecked : number = 0;
+            let liUnchecked : number = 0;
+            let groupValues: number[];
+            if (this.itemTemplate && !target.getElementsByClassName('e-frame').length) {
+                while (!target.getElementsByClassName('e-frame').length) {
+                    target = target.parentElement;
+                }
+            }
+            if (target.classList.contains('e-frame')) {
+                target = target.parentElement.parentElement;
+            }
+            groupValues = this.findGroupAttrtibutes(target, liChecked, liUnchecked, count, 0);
+            groupValues = this.findGroupAttrtibutes(target, groupValues[0], groupValues[1], groupValues[2], 1);
+            while (!target.classList.contains('e-list-group-item')) {
+                if (target.classList.contains('e-list-icon')) {
+                    target = target.parentElement;
+                }
+                (target as Element) = target.previousElementSibling;
+                if (target == null) {
+                    break;
+                }
+            }
+            this.updateCheckBox(target, groupValues[0], groupValues[1], groupValues[2]);
+        }
+    }
 
+    private findGroupAttrtibutes(listElement: Element, checked: number, unChecked: number, count: number, position: number): number[] {
+        while (!listElement.classList.contains('e-list-group-item')) {
+            if (listElement.classList.contains('e-list-icon')) {
+                listElement = listElement.parentElement;
+            }
+            if (listElement.getElementsByClassName('e-frame')[0].classList.contains('e-check') &&
+            listElement.classList.contains('e-list-item')) {
+                checked++;
+            } else if (listElement.classList.contains('e-list-item')) {
+                unChecked++;
+            }
+            count++;
+            (listElement as Element) = position ? listElement.nextElementSibling : listElement.previousElementSibling;
+            if (listElement == null) {
+                break;
+            }
+        }
+        return [checked, unChecked, count];
+    }
+    private updateCheckBox(groupHeader: Element, checked: number, unChecked: number, count: number): void {
+        if (groupHeader === null) {
+            return;
+        }
+        let checkBoxElement : Element = groupHeader.getElementsByClassName('e-frame')[0];
+        if (count === checked) {
+            checkBoxElement.classList.remove('e-stop');
+            checkBoxElement.classList.add('e-check');
+            groupHeader.setAttribute('aria-selected', 'true');
+        } else if (count === unChecked) {
+            checkBoxElement.classList.remove('e-check');
+            checkBoxElement.classList.remove('e-stop');
+            groupHeader.setAttribute('aria-selected', 'false');
         } else {
-            e.preventDefault();
+            checkBoxElement.classList.remove('e-check');
+            checkBoxElement.classList.add('e-stop');
+            groupHeader.setAttribute('aria-selected', 'false');
         }
-        if (this.mode !== 'CheckBox') {
-            this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
-        }
-        this.refreshPlaceHolder();
     }
     private onMouseOver(e: MouseEvent): void {
         let currentLi: HTMLElement = <HTMLElement>closest(<Element>e.target, '.' + dropDownBaseClasses.li);
+        if (currentLi === null && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)
+            && this.enableGroupCheckBox) {
+            currentLi = <HTMLElement>closest(<Element>e.target, '.' + dropDownBaseClasses.group);
+        }
         this.addListHover(currentLi);
     }
     private onMouseLeave(e: MouseEvent): void {
@@ -2845,16 +3058,59 @@ export class MultiSelect extends DropDownBase implements IInput {
         EventHandler.remove(this.componentWrapper, 'mouseout', this.mouseOut);
         EventHandler.remove(this.overAllClear, 'mousedown', this.ClearAll);
     }
-    private selectAllItem(state: boolean, event?: MouseEvent): void {
+    private selectAllItem(state: boolean, event?: MouseEvent | KeyboardEventArgs, list? : HTMLElement): void {
         let li: HTMLElement[] & NodeListOf<Element>;
         li = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll(state ?
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
-            'li[aria-selected="true"]:not(.e-reorder-hide)');
+            'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
+        if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
+            let target: Element = <Element>event.target;
+            target = ((event as KeyboardEvent).keyCode === 32) ? list : target;
+            target = (target.classList.contains('e-frame')) ? target.parentElement.parentElement : target;
+            if (target.classList.contains('e-list-group-item')) {
+                let listElement : Element = target.nextElementSibling;
+                if (isNullOrUndefined(listElement)) {
+                    return;
+                }
+                while (listElement.classList.contains('e-list-item')) {
+                    if (state) {
+                        if (!listElement.firstElementChild.lastElementChild.classList.contains('e-check')) {
+                            this.updateListSelection(listElement, event);
+                        }
+                    } else {
+                        if (listElement.firstElementChild.lastElementChild.classList.contains('e-check')) {
+                            this.updateListSelection(listElement, event);
+                        }
+                    }
+                    listElement = listElement.nextElementSibling;
+                    if (listElement == null) {
+                        break;
+                    }
+                }
+                if (target.classList.contains('e-list-group-item')) {
+                    let focusedElement: Element = this.list.getElementsByClassName('e-item-focus')[0];
+                    if (focusedElement) {
+                        focusedElement.classList.remove('e-item-focus');
+                    }
+                    state ? target.classList.add('e-active') : target.classList.remove('e-active');
+                    target.classList.add('e-item-focus');
+                }
+                this.textboxValueUpdate();
+                this.checkPlaceholderSize();
+            } else if (target.classList.contains('e-selectall-parent') || target.parentElement.classList.contains('e-selectall-parent')) {
+                this.updateValue(event, li);
+            }
+        } else {
+            this.updateValue(event, li);
+        }
+    }
+    private updateValue (event: MouseEvent | KeyboardEventArgs, li : NodeListOf<HTMLElement>| HTMLElement[]): void {
         let length: number = li.length;
         if (li && li.length) {
             let index: number = 0;
             while (index < length && index <= 50) {
                 this.updateListSelection(li[index], event, length - index);
+                this.findGroupStart(li[index]);
                 index++;
             }
             if (length > 50) {
@@ -2862,6 +3118,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     (): void => {
                         while (index < length) {
                             this.updateListSelection(li[index], event, length - index);
+                            this.findGroupStart(li[index]);
                             index++;
                         }
                         this.textboxValueUpdate();
@@ -3084,19 +3341,22 @@ export class MultiSelect extends DropDownBase implements IInput {
                 duration: 100,
                 delay: delay ? delay : 0
             };
+            this.DropDownBaseresetBlazorTemplates(false, false, true, true, false, true, true);
             let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
-            this.trigger('close', eventArgs);
-            if (eventArgs.cancel) { return; }
-            this.beforePopupOpen = false;
-            this.overAllWrapper.classList.remove(iconAnimation);
-            this.popupObj.hide(new Animation(eventArgs.animation));
-            attributes(this.inputElement, { 'aria-expanded': 'false' });
-            if (this.allowFiltering) {
-                this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'clear' });
-            }
-            this.popupObj.hide();
-            removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
-            EventHandler.remove(this.list, 'keydown', this.onKeyDown);
+            this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
+                if (!eventArgs.cancel) {
+                    this.beforePopupOpen = false;
+                    this.overAllWrapper.classList.remove(iconAnimation);
+                    this.popupObj.hide(new Animation(eventArgs.animation));
+                    attributes(this.inputElement, { 'aria-expanded': 'false' });
+                    if (this.allowFiltering) {
+                        this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'clear' });
+                    }
+                    this.popupObj.hide();
+                    removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
+                    EventHandler.remove(this.list, 'keydown', this.onKeyDown);
+                }
+            });
         }
     }
     /**
@@ -3384,6 +3644,10 @@ export interface TaggingEventArgs {
      * @return {void}.
      */
     setClass: Function;
+    /**
+     * Illustrates whether the current action needs to be prevented or not.
+     */
+    cancel: boolean;
 }
 export interface MultiSelectChangeEventArgs {
     /**

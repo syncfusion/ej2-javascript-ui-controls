@@ -7,19 +7,22 @@ import {FilterType} from "./search-settings";
 export interface SearchSettingsModel {
 
     /**
-     * Enable or disable the allowSearchOnTyping.
+     * Enables or disables the allowSearchOnTyping.
      * @default true
      */
     allowSearchOnTyping?: boolean;
 
     /**
-     * Specifies the filter type while searching the content.
+     * Specifies the filter type while searching the content. The available filter types are:
+     * * `contains`
+     * * `startsWith`
+     * * `endsWith`
      * @default 'contains'
      */
     filterType?: FilterType;
 
     /**
-     * If ignoreCase is set to false, searches files that match exactly, 
+     * If ignoreCase is set to false, searches files that match exactly,
      * else searches files that are case insensitive(uppercase and lowercase letters treated the same).
      * @default true
      */

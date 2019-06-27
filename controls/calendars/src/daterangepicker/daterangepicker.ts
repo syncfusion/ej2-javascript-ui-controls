@@ -4,9 +4,9 @@ import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Brow
 import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';
 import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';
-import { FocusEventArgs, BlurEventArgs } from '../calendar/calendar';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
+import { BlurEventArgs, FocusEventArgs } from '../calendar/calendar';
 import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 import { PresetsModel, DateRangePickerModel } from './daterangepicker-model';
@@ -71,6 +71,8 @@ const FLAT: string = 'e-flat';
 const CSS: string = 'e-css';
 const ZOOMIN: string = 'e-zoomin';
 const NONEDITABLE: string = 'e-non-edit';
+const DAYHEADERLONG: string = 'e-daterange-day-header-lg';
+const wrapperAttr: string[] = ['title', 'class', 'style'];
 
 export class Presets extends ChildProperty<Presets> {
     /** 
@@ -240,6 +242,7 @@ export class DateRangePicker extends CalendarBase {
     private formatString: string;
     protected tabIndex: string;
     private invalidValueString: string = null;
+    private dateRangeOptions: DateRangePickerModel;
     private mobileRangePopupWrap: HTMLElement;
 
     /**
@@ -305,31 +308,36 @@ export class DateRangePicker extends CalendarBase {
     public calendarMode: CalendarType;
     /** 
      * Triggers when Calendar is created.
-     * @event 
+     * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /** 
      * Triggers when Calendar is destroyed.
-     * @event 
+     * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers when the Calendar value is changed.
      * @event  
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<RangeEventArgs>;
     /**
      * Triggers when the Calendar is navigated to another view or within the same level of view.
      * @event
+     * @blazorProperty 'Navigated'
      */
     @Event()
     public navigated: EmitType<NavigatedEventArgs>;
     /**     
      * Triggers when each day cell of the Calendar is rendered.
      * @event
+     * @blazorProperty 'OnRenderDayCell'
      */
     @Event()
     public renderDayCell: EmitType<RenderDayCellEventArgs>;
@@ -487,35 +495,46 @@ export class DateRangePicker extends CalendarBase {
      */
     @Property(null)
     public placeholder: string;
-
+    /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string; };
     /** 
      * Triggers when the DateRangePicker is opened.
      * @event 
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public open: EmitType<Object>;
 
     /** 
      * Triggers when the DateRangePicker is closed.
-     * @event 
+     * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public close: EmitType<Object>;
     /** 
      * Triggers on selecting the start and end date.
      * @event 
+     * @blazorProperty 'RangeSelected'
      */
     @Event()
     public select: EmitType<Object>;
     /** 
      *  Triggers when the control gets focus.
      * @event 
+     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<FocusEventArgs>;
     /** 
      * Triggers when the control loses the focus.
      * @event 
+     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<BlurEventArgs>;
@@ -524,6 +543,7 @@ export class DateRangePicker extends CalendarBase {
      */
     constructor(options?: DateRangePickerModel, element?: string | HTMLInputElement) {
         super(options, element);
+        this.dateRangeOptions = options;
     }
     /**
      * To Initialize the control rendering.
@@ -580,6 +600,7 @@ export class DateRangePicker extends CalendarBase {
         }
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
         removeClass([this.cloneElement], [ROOT, CONTROL, LIBRARY]);
+        this.updateHtmlAttributeToElement();
         if (this.element.getAttribute('id')) {
             if (this.angularTag !== null) { this.inputElement.id = this.element.getAttribute('id') + '_input'; }
         } else {
@@ -694,7 +715,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private initialize(): void {
         if (this.angularTag !== null) { this.validationAttribute(this.element, this.inputElement); }
-        this.checkHtmlAttributes();
+        this.checkHtmlAttributes(true);
         merge(this.keyConfigs, { shiftTab: 'shift+tab' });
         let start: Date = this.checkDateValue(new Date(this.checkValue(this.startValue)));
         this.setProperties({ startDate: start }, true); // persist the value propeerty.
@@ -707,6 +728,7 @@ export class DateRangePicker extends CalendarBase {
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         this.processPresets();
         this.createInput();
+        this.updateHtmlAttributeToWrapper();
         this.setRangeAllowEdit();
         this.bindEvents();
     }
@@ -744,6 +766,21 @@ export class DateRangePicker extends CalendarBase {
             let attr: string = element.getAttribute(attributes[i]);
             input.setAttribute(attributes[i], attr);
             element.removeAttribute(attributes[i]);
+        }
+    }
+    private updateHtmlAttributeToWrapper(): void {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttr.indexOf(key) > -1 ) {
+                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+            }
+        }
+    }
+
+    private updateHtmlAttributeToElement(): void {
+        for (let key of Object.keys(this.htmlAttributes)) {
+            if (wrapperAttr.indexOf(key) < 0 ) {
+                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+            }
         }
     }
     private processPresets(): void {
@@ -928,46 +965,60 @@ export class DateRangePicker extends CalendarBase {
             addClass([this.inputWrapper.container], [INPUTFOCUS]);
         }
     }
-    private checkHtmlAttributes(): void {
+    private checkHtmlAttributes(isDynamic: boolean): void {
         this.globalize = new Internationalization(this.locale);
         let attributes: string[];
         attributes = ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled',
-            'readonly', 'style', 'name', 'placeholder', 'type'];
+            'readonly', 'style', 'name', 'placeholder', 'type', 'value'];
         let format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['enabled'] === undefined)) || !isDynamic) {
                         let disabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                             this.inputElement.getAttribute(prop) === '';
-                        this.setProperties({ enabled: !disabled }, true);
-                        break;
-                    case 'readonly':
-                        let readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' ||
-                            this.inputElement.getAttribute(prop) === '';
-                        this.setProperties({ readonly: readonly }, true);
-                        break;
-                    case 'placeholder':
-                        if (isNullOrUndefined(this.placeholder) || this.placeholder.trim() === '') {
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, true);
+                        this.setProperties({ enabled: !disabled }, isDynamic);
                         }
                         break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['readonly'] === undefined)) || !isDynamic) {
+                        let readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' ||
+                            this.inputElement.getAttribute(prop) === '';
+                        this.setProperties({ readonly: readonly }, isDynamic);
+                        }
+                        break;
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['placeholder'] === undefined)) || !isDynamic) {
+                        this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['value'] === undefined)) || !isDynamic) {
+                           let value: string = this.inputElement.getAttribute(prop);
+                           this.setProperties(setValue(prop, value, {}), isDynamic);
+                       }
+                       break;
                     case 'style':
                         this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
                         break;
                     case 'min':
-                        if (isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1)) {
+                        if ((isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1))  || !isDynamic) {
                             let dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.setProperties(setValue(prop, dateValue, {}), true);
+                            this.setProperties(setValue(prop, dateValue, {}), isDynamic);
                         }
                         break;
                     case 'name':
                         this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
                         break;
                     case 'max':
-                        if (isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31)) {
+                        if ((isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31))  || !isDynamic) {
                             let dateValue: Date = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.setProperties(setValue(prop, dateValue, {}), true);
+                            this.setProperties(setValue(prop, dateValue, {}), isDynamic);
                         }
                         break;
                     case 'startDate':
@@ -1024,6 +1075,7 @@ export class DateRangePicker extends CalendarBase {
             }
         }
         this.popupWrapper = createElement('div', { id: this.element.id + '_popup', className: ROOT + ' ' + POPUP });
+        this.adjustLongHeaderWidth();
         let isPreset: boolean = (!this.isCustomRange || this.isMobile);
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
             this.isCustomWindow = false;
@@ -2869,6 +2921,7 @@ export class DateRangePicker extends CalendarBase {
             this.changeTrigger(eve);
             this.hide(eve ? eve : null);
             this.errorClass();
+            isValueChanged = true;
         } else {
             this.hide(eve ? eve : null);
         }
@@ -3434,6 +3487,13 @@ export class DateRangePicker extends CalendarBase {
             this.inputWrapper.container.style.width = '100%';
         }
     }
+
+    private adjustLongHeaderWidth(): void {
+        if (this.dayHeaderFormat === 'Wide') {
+            addClass([this.popupWrapper], DAYHEADERLONG);
+        }
+    }
+
     private refreshControl(): void {
         this.validateMinMax();
 
@@ -3912,23 +3972,30 @@ export class DateRangePicker extends CalendarBase {
                     event: event ? event : null,
                     appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
-                this.trigger('open', this.openEventArgs);
-                if (!this.openEventArgs.cancel) {
-                    this.openEventArgs.appendTo.appendChild(this.popupWrapper);
-                    this.showPopup(element, event);
-                    let isPreset: boolean = (!this.isCustomRange || (this.isMobile && this.isCustomRange));
-                    if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
-                        this.setScrollPosition();
+                let eventArgs: RangePopupEventArgs = this.openEventArgs;
+                this.trigger('open', eventArgs, (eventArgs: RangePopupEventArgs) => {
+                    this.openEventArgs = eventArgs;
+                    if (!this.openEventArgs.cancel) {
+                        this.openEventArgs.appendTo.appendChild(this.popupWrapper);
+                        this.showPopup(element, event);
+                        let isPreset: boolean = (!this.isCustomRange || (this.isMobile && this.isCustomRange));
+                        if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
+                            this.setScrollPosition();
+                        }
+                        this.checkMinMaxDays();
+                        if ((this.isMobile) && (!isNullOrUndefined(this.startDate)) && (isNullOrUndefined(this.endDate))) {
+                            this.endButton.element.classList.add(ACTIVE);
+                            this.startButton.element.classList.remove(ACTIVE);
+                            this.endButton.element.removeAttribute('disabled');
+                            this.selectableDates();
+                        }
+                        super.setOverlayIndex(
+                            this.mobileRangePopupWrap,
+                            this.popupObj.element,
+                            this.modal,
+                            this.isMobile || Browser.isDevice);
                     }
-                    this.checkMinMaxDays();
-                    if ((this.isMobile) && (!isNullOrUndefined(this.startDate)) && (isNullOrUndefined(this.endDate))) {
-                        this.endButton.element.classList.add(ACTIVE);
-                        this.startButton.element.classList.remove(ACTIVE);
-                        this.endButton.element.removeAttribute('disabled');
-                        this.selectableDates();
-                    }
-                    super.setOverlayIndex(this.mobileRangePopupWrap, this.popupObj.element, this.modal, this.isMobile || Browser.isDevice);
-                }
+                });
             }
         }
     }
@@ -3966,55 +4033,64 @@ export class DateRangePicker extends CalendarBase {
                     model: this,
                     event: event ? event : null
                 };
-                this.trigger('close', this.closeEventArgs);
-                if (!this.closeEventArgs.cancel) {
-                    if (this.isMobile) {
-                        if (!isNullOrUndefined(this.startButton) && !isNullOrUndefined(this.endButton)) {
-                            EventHandler.remove(this.startButton.element, 'click touchstart', this.deviceHeaderClick);
-                            EventHandler.remove(this.endButton.element, 'click touchstart', this.deviceHeaderClick);
+                let eventArgs: RangePopupEventArgs = this.closeEventArgs;
+                this.trigger('close', eventArgs, (eventArgs: RangePopupEventArgs) => {
+                    this.closeEventArgs = eventArgs;
+                    if (!this.closeEventArgs.cancel) {
+                        if (this.isMobile) {
+                            if (!isNullOrUndefined(this.startButton) && !isNullOrUndefined(this.endButton)) {
+                                EventHandler.remove(this.startButton.element, 'click touchstart', this.deviceHeaderClick);
+                                EventHandler.remove(this.endButton.element, 'click touchstart', this.deviceHeaderClick);
+                            }
                         }
+                        if (this.popupObj) {
+                            this.popupObj.hide();
+                            if (this.preventBlur) {
+                                this.inputElement.focus();
+                                addClass([this.inputWrapper.container], [INPUTFOCUS]);
+                            }
+                        }
+                        if (!this.isMobile) {
+                            if (!isNullOrUndefined(this.leftKeyboardModule) && !isNullOrUndefined(this.rightKeyboardModule)) {
+                                this.leftKeyboardModule.destroy();
+                                this.rightKeyboardModule.destroy();
+                            }
+                            if (!isNullOrUndefined(this.presetElement)) {
+                                this.presetKeyboardModule.destroy();
+                            }
+                            if (!isNullOrUndefined(this.cancelButton)) {
+                                this.btnKeyboardModule.destroy();
+                            }
+                        }
+                        this.targetElement = null;
+                        removeClass([document.body], OVERFLOW);
+                        EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
+                        if (this.isMobile && this.modal) {
+                            this.modal.style.display = 'none';
+                            this.modal.outerHTML = '';
+                            this.modal = null;
+                            if (!isNullOrUndefined(this.mobileRangePopupWrap)) {
+                                this.mobileRangePopupWrap.remove();
+                                this.mobileRangePopupWrap = null;
+                            }
+                        }
+                        this.isKeyPopup = this.dateDisabled = false;
+                    } else {
+                        removeClass([this.inputWrapper.buttons[0]], ACTIVE);
                     }
-                    if (this.popupObj) {
-                        this.popupObj.hide();
-                        if (this.preventBlur) {
-                            this.inputElement.focus();
-                            addClass([this.inputWrapper.container], [INPUTFOCUS]);
-                        }
+                    this.updateClearIconState();
+                    this.updateHiddenInput();
+                    if (this.isMobile && this.allowEdit && !this.readonly) {
+                        this.inputElement.removeAttribute('readonly');
                     }
-                    if (!this.isMobile) {
-                        if (!isNullOrUndefined(this.leftKeyboardModule) && !isNullOrUndefined(this.rightKeyboardModule)) {
-                            this.leftKeyboardModule.destroy();
-                            this.rightKeyboardModule.destroy();
-                        }
-                        if (!isNullOrUndefined(this.presetElement)) {
-                            this.presetKeyboardModule.destroy();
-                        }
-                        if (!isNullOrUndefined(this.cancelButton)) {
-                            this.btnKeyboardModule.destroy();
-                        }
-                    }
-                    this.targetElement = null;
-                    removeClass([document.body], OVERFLOW);
-                    EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
-                    if (this.isMobile && this.modal) {
-                        this.modal.style.display = 'none';
-                        this.modal.outerHTML = '';
-                        this.modal = null;
-                        if (!isNullOrUndefined(this.mobileRangePopupWrap)) {
-                            this.mobileRangePopupWrap.remove();
-                            this.mobileRangePopupWrap = null;
-                        }
-                    }
-                    this.isKeyPopup = this.dateDisabled = false;
-                } else {
-                    removeClass([this.inputWrapper.buttons[0]], ACTIVE);
-                }
+                });
             }
-        }
-        this.updateClearIconState();
-        this.updateHiddenInput();
-        if (this.isMobile && this.allowEdit && !this.readonly) {
-            this.inputElement.removeAttribute('readonly');
+        } else {
+            this.updateClearIconState();
+            this.updateHiddenInput();
+            if (this.isMobile && this.allowEdit && !this.readonly) {
+                this.inputElement.removeAttribute('readonly');
+            }
         }
     }
     private setLocale(): void {
@@ -4140,6 +4216,11 @@ export class DateRangePicker extends CalendarBase {
                     this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
                     Input.setPlaceholder(this.placeholder, this.inputElement);
                     this.setLocale();
+                    break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttributeToElement();
+                    this.updateHtmlAttributeToWrapper();
+                    this.checkHtmlAttributes(false);
                     break;
                 case 'showClearButton':
                     Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);

@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### RichTextEditor
+
+#### New Features
+
+- **Paste from Microsoft Word**
+    - This feature allows users to paste clean-formatted HTML markup by removing all unnecessary elements, styles, and attributes from text while copying and pasting it from Microsoft Word.
+
+#### Breaking Changes
+
+- Changed the default value of the API property `allowedStyleProps` from `null` to `['background', 'background-color', 'border', 'border-bottom', 'border-left', 'border-radius', 'border-right', 'border-style', 'border-top', 'border-width', 'clear', 'color', 'cursor', 'direction', 'display', 'float', 'font', 'font-family', 'font-size', 'font-weight', 'font-style','height', 'left', 'line-height', 'margin', 'margin-top', 'margin-left', 'margin-right', 'margin-bottom', 'max-height', 'max-width', 'min-height', 'min-width',  'overflow', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left', 'padding-right', 'padding-top', 'position', 'right', 'table-layout', 'text-align', 'text-decoration', 'text-indent', 'top', 'vertical-align', 'visibility', 'white-space', 'width']`.
+
+#### Bug Fixes
+
+- #238872 - Issue with cursor position when enabled list with empty editor that issue has been resolved.
+
 ## 17.1.49 (2019-05-29)
 
 ### RichTextEditor
@@ -46,6 +63,10 @@
 
 - Insert image functionality of `RichTextEditor` is not working when render with `File Upload`, that issue has been fixed.
 
+- #237729 - Pickers mode throws script error when selecting the color in table's quick toolbar, that issue has been fixed.
+
+- #237729 - Color picker value doesn't set as RGBA(alpha) value in content editor, that issue has been fixed.
+
 ## 17.1.32-beta (2019-03-13)
 
 ### RichTextEditor
@@ -55,6 +76,8 @@
 - Image and Table quick toolbar open while scrolling the content in the iPhone device, that issue has been fixed.
 
 - Getting console error while rendering inline mode with `FontColor` and `BackgroundColor` in mobile view, that issue has been fixed.
+
+-`Undo` and `Redo` icon visible in preview mode issue has been fixed
 
 #### New Features
 

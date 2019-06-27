@@ -5,7 +5,7 @@ import { Smithchart} from '../../smithchart';
 import { SmithchartSeriesModel} from '../../smithchart/series/series-model';
 import { ClosestPoint, Point, SmithchartRect } from '../../smithchart/utils/utils';
 import { Tooltip} from '@syncfusion/ej2-svg-base';
-import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 /**
  * To render tooltip
@@ -87,12 +87,14 @@ export class TooltipRender {
                                              smithchart.bounds.width, smithchart.bounds.height),
                                          palette: [series.fill || smithchart.seriesColors[seriesindex %  smithchart.seriesColors.length]],
                                          shapes : ['Circle'],
+                                          availableSize: smithchart.availableSize,
                                          theme: smithchart.theme
       });
       this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
       this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily ||  'Roboto, Segoe UI, Noto, Sans-serif';
       this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
       this.tooltipElement.appendTo(div as HTMLElement);
+      updateBlazorTemplate(div.id + 'Template', 'Template');
     }
     private closestPointXY(smithchart: Smithchart, x: number, y: number, series: SmithchartSeriesModel, seriesindex: number): ClosestPoint {
         let pointIndex: number;

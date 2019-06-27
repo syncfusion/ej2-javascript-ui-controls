@@ -40,7 +40,7 @@ export class NodeStateModified {
         if ((args.cancel && droppedClass === '') ||
             (this.parent.dataSourceUpdate.btnElement && this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
                 ((droppedClass === 'filters' || droppedClass === 'values') ||
-                    droppedClass.indexOf(this.parent.dataSource.valueAxis) > -1))) {
+                    droppedClass.indexOf(this.parent.dataSourceSettings.valueAxis) > -1))) {
             nodeDropped = false;
             return nodeDropped;
         }

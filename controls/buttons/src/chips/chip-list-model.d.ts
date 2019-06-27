@@ -1,5 +1,5 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, append, isNullOrUndefined } from '@syncfusion/ej2-base';import { removeClass, KeyboardEventArgs, rippleEffect, closest, MouseEventArgs } from '@syncfusion/ej2-base';import { EventHandler, detach, EmitType, Event, addClass } from '@syncfusion/ej2-base';import { ChipModel } from './chip';
-import {selection,ClickEventArgs,DeleteEventArgs} from "./chip-list";
+import {Selection,ClickEventArgs,DeleteEventArgs} from "./chip-list";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -65,7 +65,7 @@ export interface ChipListModel extends ComponentModel{
      * This selection property enables chip selection type.
      * @default 'None'
      */
-    selection?: selection;
+    selection?: Selection;
 
     /**
      * This enableDelete property helps to enable delete functionality.
@@ -76,18 +76,21 @@ export interface ChipListModel extends ComponentModel{
     /**
      * This created event will get triggered once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 
     /**
      * This click event will get triggered once the chip is clicked.
      * @event
+     * @blazorProperty 'OnClick'
      */
     click?: EmitType<ClickEventArgs>;
 
     /**
      * This delete event will get triggered before removing the chip.
      * @event
+     * @blazorProperty 'OnDelete'
      */
     delete?: EmitType<DeleteEventArgs>;
 

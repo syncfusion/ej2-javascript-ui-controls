@@ -21,8 +21,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents, tooltipData1 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
-import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, Legend, HiloOpenCloseSeries, Tooltip, Crosshair, Logarithmic, Selection);
 
 export let doubleData: any[] = [

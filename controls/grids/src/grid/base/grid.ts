@@ -1,6 +1,6 @@
 import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
-import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';
+import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
 import { EventHandler, KeyboardEvents, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
 import { Query, DataManager, DataUtil } from '@syncfusion/ej2-data';
@@ -24,7 +24,8 @@ import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeA
 import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';
 import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';
 import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';
-import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs, CheckBoxChangeEventArgs } from './interface';
+import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs} from './interface';
+import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs } from './interface';
 import { Render } from '../renderer/render';
 import { Column, ColumnModel } from '../models/column';
 import { Action, SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
@@ -545,7 +546,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
     /**    
      * The Caption Template allows user to display the string or HTML element in group caption.
      * > It accepts either the
-     * [template string](http://ej2.syncfusion.com/documentation/common/template-engine.html) or the HTML element ID.
+     * [template string](http://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
      * @default ''
      */
     @Property()
@@ -1367,6 +1368,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when the component is created.
      * @event 
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -1374,6 +1376,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when the component is destroyed. 
      * @event 
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -1381,6 +1384,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * This event allows customization of Grid properties before rendering.
      * @event 
+     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<Object>;
@@ -1388,6 +1392,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggered every time a request is made to access row information, element, or data. 
      * This will be triggered before the row element is appended to the Grid element.
      * @event 
+     * @blazorProperty 'RowDataBound'
      */
     @Event()
     public rowDataBound: EmitType<RowDataBoundEventArgs>;
@@ -1395,7 +1400,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggered every time a request is made to access cell information, element, or data.
      * This will be triggered before the cell element is appended to the Grid element.
-     * @event 
+     * @event
+     * @blazorProperty 'QueryCellInfo'
      */
     @Event()
     public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
@@ -1403,6 +1409,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggered for stacked header.
      * @event 
+     * @blazorProperty 'HeaderCellInfo'
      */
     @Event()
     public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
@@ -1411,6 +1418,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts. 
      * @event
+     * @blazorProperty 'OnActionBegin'
      */
     @Event()
     public actionBegin: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
@@ -1418,6 +1426,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed. 
      * @event 
+     * @blazorProperty 'ActionCompleted'
      */
     @Event()
     public actionComplete: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
@@ -1426,6 +1435,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when any Grid action failed to achieve the desired results. 
      * @event 
+     * @blazorProperty 'OnActionFailure'
      */
     @Event()
     public actionFailure: EmitType<FailureEventArgs>;
@@ -1433,6 +1443,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when data source is populated in the Grid.
      * @event 
+     * @blazorProperty 'OnDataBound'
      */
     @Event()
     public dataBound: EmitType<Object>;
@@ -1440,6 +1451,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when record is double clicked.
      * @event 
+     * @blazorProperty 'OnRecordDoubleClick'
      */
     @Event()
     public recordDoubleClick: EmitType<RecordDoubleClickEventArgs>;
@@ -1447,6 +1459,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before row selection occurs.
      * @event 
+     * @blazorProperty 'RowSelecting'
      */
     @Event()
     public rowSelecting: EmitType<RowSelectingEventArgs>;
@@ -1454,6 +1467,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers after a row is selected.
      * @event 
+     * @blazorProperty 'RowSelected'
      */
     @Event()
     public rowSelected: EmitType<RowSelectEventArgs>;
@@ -1461,6 +1475,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before deselecting the selected row.
      * @event 
+     * @deprecated  
      */
     @Event()
     public rowDeselecting: EmitType<RowDeselectEventArgs>;
@@ -1468,6 +1483,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when a selected row is deselected.
      * @event 
+     * @blazorProperty 'RowDeselected'
      */
     @Event()
     public rowDeselected: EmitType<RowDeselectEventArgs>;
@@ -1475,6 +1491,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before any cell selection occurs.
      * @event 
+     * @deprecated  
      */
     @Event()
     public cellSelecting: EmitType<CellSelectingEventArgs>;
@@ -1482,6 +1499,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers after a cell is selected.
      * @event 
+     * @deprecated  
      */
     @Event()
     public cellSelected: EmitType<CellSelectEventArgs>;
@@ -1489,6 +1507,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before the selected cell is deselecting.
      * @event 
+     * @deprecated  
      */
     @Event()
     public cellDeselecting: EmitType<CellDeselectEventArgs>;
@@ -1496,27 +1515,31 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when a particular selected cell is deselected.
      * @event 
+     * @deprecated  
      */
     @Event()
     public cellDeselected: EmitType<CellDeselectEventArgs>;
 
     /**  
      * Triggers when column header element drag (move) starts. 
-     * @event  
+     * @event
+     * @deprecated  
      */
     @Event()
     public columnDragStart: EmitType<ColumnDragEventArgs>;
 
     /**  
      * Triggers when column header element is dragged (moved) continuously. 
-     * @event  
+     * @event
+     * @deprecated
      */
     @Event()
     public columnDrag: EmitType<ColumnDragEventArgs>;
 
     /**  
      * Triggers when a column header element is dropped on the target column. 
-     * @event  
+     * @event
+     * @deprecated
      */
     @Event()
     public columnDrop: EmitType<ColumnDragEventArgs>;
@@ -1524,34 +1547,39 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers after print action is completed.  
      * @event 
+     * @deprecated  
      */
     @Event()
     public printComplete: EmitType<PrintEventArgs>;
 
     /** 
      * Triggers before the print action starts.  
-     * @event 
+     * @event
+     * @deprecated
      */
     @Event()
     public beforePrint: EmitType<PrintEventArgs>;
 
     /** 
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
-     * @event 
+     * @event
+     * @deprecated 
      */
     @Event()
     public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
 
     /** 
      * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
-     * @event 
+     * @event
+     * @deprecated 
      */
     @Event()
     public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
     /** 
      * Triggers before exporting each detail Grid to PDF document.
-     * @event 
+     * @event
+     * @deprecated 
      */
     @Event()
     public exportDetailDataBound: EmitType<ExportDetailDataBoundEventArgs>;
@@ -1560,6 +1588,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before exporting each cell to Excel file.
      * You can also customize the Excel cells.
      * @event
+     * @deprecated
      */
     @Event()
     public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -1568,6 +1597,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers before exporting each header cell to Excel file.
      * You can also customize the Excel cells.
      * @event
+     * @deprecated
      */
     @Event()
     public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -1575,6 +1605,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before Grid data is exported to Excel file.
      * @event
+     * @deprecated
      */
     @Event()
     public beforeExcelExport: EmitType<Object>;
@@ -1582,6 +1613,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers after Grid data is exported to Excel file.
      * @event
+     * @deprecated
      */
     @Event()
     public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
@@ -1589,6 +1621,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before Grid data is exported to PDF document.
      * @event
+     * @deprecated
      */
     @Event()
     public beforePdfExport: EmitType<Object>;
@@ -1596,6 +1629,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers after Grid data is exported to PDF document.
      * @event
+     * @deprecated
      */
     @Event()
     public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
@@ -1603,6 +1637,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers when row element's before drag(move).
      * @event
+     * @deprecated
      */
     @Event()
     public rowDragStartHelper: EmitType<RowDragEventArgs>;
@@ -1611,27 +1646,31 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers after detail row expands.
      * > This event triggers at initial expand.  
      * @event 
+     * @deprecated  
      */
     @Event()
     public detailDataBound: EmitType<DetailDataBoundEventArgs>;
 
     /**  
      * Triggers when row element's drag(move) starts. 
-     * @event  
+     * @event
+     * @deprecated  
      */
     @Event()
     public rowDragStart: EmitType<RowDragEventArgs>;
 
     /**  
      * Triggers when row elements are dragged (moved) continuously. 
-     * @event  
+     * @event
+     * @deprecated  
      */
     @Event()
     public rowDrag: EmitType<RowDragEventArgs>;
 
     /**  
      * Triggers when row elements are dropped on the target row. 
-     * @event  
+     * @event
+     * @deprecated 
      */
     @Event()
     public rowDrop: EmitType<RowDragEventArgs>;
@@ -1639,6 +1678,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**      
      * Triggers when toolbar item is clicked.
      * @event
+     * @blazorProperty 'OnToolbarClick'
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
@@ -1646,6 +1686,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before the columnChooser open.
      * @event
+     * @deprecated
      */
     @Event()
     public beforeOpenColumnChooser: EmitType<ColumnChooserEventArgs>;
@@ -1653,6 +1694,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when records are added in batch mode.   
      * @event
+     * @deprecated
      */
     @Event()
     public batchAdd: EmitType<BatchAddArgs>;
@@ -1660,6 +1702,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when records are deleted in batch mode.
      * @event
+     * @deprecated
      */
     @Event()
     public batchDelete: EmitType<BatchDeleteArgs>;
@@ -1667,6 +1710,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when cancel the batch edit changes batch mode.
      * @event
+     * @deprecated
      */
     @Event()
     public batchCancel: EmitType<BatchCancelArgs>;
@@ -1674,6 +1718,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are added in batch mode.
      * @event
+     * @deprecated
      */
     @Event()
     public beforeBatchAdd: EmitType<BeforeBatchAddArgs>;
@@ -1681,6 +1726,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are deleted in batch mode.
      * @event
+     * @deprecated
      */
     @Event()
     public beforeBatchDelete: EmitType<BeforeBatchDeleteArgs>;
@@ -1688,6 +1734,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are saved in batch mode.
      * @event
+     * @deprecated  
      */
     @Event()
     public beforeBatchSave: EmitType<BeforeBatchSaveArgs>;
@@ -1695,13 +1742,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before the record is to be edit.
      * @event
+     * @blazorProperty 'OnBeginEdit'
      */
     @Event()
     public beginEdit: EmitType<BeginEditArgs>;
 
     /** 
+     * Triggers when command button is clicked.
+     * @event
+     * @blazorProperty 'OnCommandClicked'
+     */
+    @Event()
+    public commandClick: EmitType<CommandClickEventArgs>;
+
+    /** 
      * Triggers when the cell is being edited.
      * @event
+     * @deprecated  
      */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
@@ -1709,6 +1766,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when cell is saved.
      * @event
+     * @deprecated  
      */
     @Event()
     public cellSave: EmitType<CellSaveArgs>;
@@ -1716,6 +1774,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when cell is saved.
      * @event
+     * @deprecated  
      */
     @Event()
     public cellSaved: EmitType<CellSaveArgs>;
@@ -1723,6 +1782,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when column resize starts.
      * @event
+     * @deprecated
      */
     @Event()
     public resizeStart: EmitType<ResizeArgs>;
@@ -1730,6 +1790,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers on column resizing.
      * @event
+     * @deprecated
      */
     @Event()
     public resizing: EmitType<ResizeArgs>;
@@ -1737,6 +1798,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when column resize ends.
      * @event
+     * @deprecated
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
@@ -1744,6 +1806,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before data is bound to Grid.
      * @event
+     * @deprecated
      */
     @Event()
     public beforeDataBound: EmitType<BeforeDataBoundArgs>;
@@ -1751,6 +1814,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before context menu opens.
      * @event
+     * @deprecated
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -1758,6 +1822,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when click on context menu.
      * @event
+     * @deprecated  
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1765,6 +1830,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before column menu opens.
      * @event
+     * @deprecated  
      */
     @Event()
     public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
@@ -1772,6 +1838,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when click on column menu.
      * @event
+     * @deprecated
      */
     @Event()
     public columnMenuClick: EmitType<MenuEventArgs>;
@@ -1779,6 +1846,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when the check box state change in checkbox column.
      * @event
+     * @deprecated
      */
     @Event()
     public checkBoxChange: EmitType<CheckBoxChangeEventArgs>;
@@ -1786,14 +1854,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before Grid copy action.
      * @event
+     * @deprecated
      */
     @Event()
     public beforeCopy: EmitType<BeforeCopyEventArgs>;
 
     /** 
+     * Triggers before Grid paste action.
+     * @event
+     * @deprecated 
+     */
+    @Event()
+    public beforePaste: EmitType<BeforePasteEventArgs>;
+
+    /** 
      * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.
      * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
      * @event
+     * @deprecated  
      */
     @Event()
     public dataStateChange: EmitType<DataStateChangeEventArgs>;
@@ -1802,7 +1880,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when the grid data is added, deleted and updated.
      * Invoke the done method from the argument to start render after edit operation.
      * @event
-     * @blazorProperty 'dataSourceUpdated'
+     * @deprecated 
      */
     @Event()
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
@@ -3592,7 +3670,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Searches Grid records using the given key.
      * You can customize the default search option by using the
-     * [`searchSettings`](./api-searchSettings.html).
+     * [`searchSettings`](./#searchsettings/).
      * @param  {string} searchString - Defines the key.
      * @return {void} 
      */
@@ -3605,7 +3683,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * By default, prints all the pages of the Grid and hides the pager.
      * > You can customize print options using the 
-     * [`printMode`](./api-grid.html#printmode-string). 
+     * [`printMode`](./#printmode). 
      * @return {void}
      */
     public print(): void {
@@ -4186,6 +4264,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.dataBoundFunction = this.refreshMediaCol.bind(this);
         this.addEventListener(events.dataBound, this.dataBoundFunction);
         this.on(events.keyPressed, this.keyPressed, this);
+        this.on(events.contentReady, this.blazorTemplate, this);
     }
     /**
      * @hidden
@@ -4199,6 +4278,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.off(events.keyPressed, this.keyPressed);
     }
 
+
+    private blazorTemplate(): void {
+
+        for (let i: number = 0; i < this.columnModel.length; i++) {
+
+            if (this.columnModel[i].template) {
+                updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template');
+            }
+            if (this.columnModel[i].headerTemplate) {
+                updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate');
+            }
+
+        }
+    }
     /** 
      * Get current visible data of grid.
      * @return {Object[]}
@@ -4501,6 +4594,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public log(type: string | string[], args?: Object): void {
         this.loggerModule ? this.loggerModule.log(type, args) : (() => 0)();
+    }
+
+    /**
+     * @hidden
+     */
+    public applyBiggerTheme(element:Element) :void{
+        if(this.element.classList.contains('e-bigger')) {      
+          element.classList.add('e-bigger');
+        }
     }
 
     /** 

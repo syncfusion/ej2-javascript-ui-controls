@@ -26,6 +26,7 @@
     &.e-right.e-close {
       box-shadow: none;
       transform: translateX(100%);
+      transition: transform .5s ease, visibility 500ms;
       visibility: hidden;
         }
 
@@ -46,6 +47,13 @@
       visibility: hidden;
         }
 
+    &.e-right.e-close {
+      box-shadow: none;
+      transform: translateX(100%);
+      transition: transform .5s ease, visibility 500ms;
+      visibility: hidden;
+        }
+
     &.e-right {
       border-left: 1px solid $sidebar-border;
       left: auto;
@@ -62,13 +70,13 @@
 
     &.e-left.e-close.e-dock {
       transform: translateX(0%);
-      transition: transform ease;
+      transition: width .5s ease, visibility 500ms;
       visibility: visible;
     }
 
     &.e-right.e-close.e-dock {
       transform: translateX(0%);
-      transition: transform ease;
+      transition: width .5s ease, visibility 500ms;
       visibility: visible;
     }
 
@@ -123,10 +131,6 @@
       overflow: auto;
       user-select: none;
     }
-
-    &.e-disable-animation {
-      transition: none;
-    }
 }
 
   .e-disable-interaction {
@@ -152,5 +156,13 @@
     z-index: 999;
 
 	}
+
+  .e-content-placeholder.e-sidebar.e-placeholder-sidebar {
+    left: 0;
+    position: fixed;
+    right: auto;
+    top: 0;
+    visibility: visible;
+  }
 
 }

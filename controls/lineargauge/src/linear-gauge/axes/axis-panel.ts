@@ -357,11 +357,12 @@ export class AxisLayoutPanel {
                     formatValue(i, this.gauge).toString(),
                 value: i
             };
-            this.gauge.trigger(axisLabelRender, argsData);
-            labelSize = measureText(argsData.text, axis.labelStyle.font);
-            if (!argsData.cancel) {
-                axis.visibleLabels.push(new VisibleLabels(argsData.text, i, labelSize));
-            }
+            this.gauge.trigger('axisLabelRender', argsData, (argsData: IAxisLabelRenderEventArgs) => {
+                labelSize = measureText(argsData.text, axis.labelStyle.font);
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(argsData.text, i, labelSize));
+                }
+            });
         }
         this.getMaxLabelWidth(this.gauge, axis);
     }

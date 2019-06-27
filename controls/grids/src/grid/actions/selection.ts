@@ -106,6 +106,8 @@ export class Selection implements IAction {
     private isPreventCellSelect: boolean = false;
     private disableUI: boolean = false;
     private isPersisted: boolean = false;
+    private cmdKeyPressed: boolean = false;
+    private isMacOS: boolean;
 
     /**
      * Constructor for the Grid selection module
@@ -117,6 +119,7 @@ export class Selection implements IAction {
         this.factory = locator.getService<RendererFactory>('rendererFactory');
         this.focus = locator.getService<FocusStrategy>('focus');
         this.addEventListener();
+        this.wireEvents();
     }
 
     private initializeSelection(): void {
@@ -170,6 +173,7 @@ export class Selection implements IAction {
         this.hidePopUp();
         this.clearSelection();
         this.removeEventListener();
+        this.unWireEvents();
         EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
     }
 
@@ -930,6 +934,9 @@ export class Selection implements IAction {
                         events.cellDeselecting, [{ rowIndex: cellIndex.rowIndex, cellIndexes: [cellIndex.cellIndex] }],
                         selectedData, [selectedCell], foreignKeyData);
                     selectedCellIdx.splice(selectedCellIdx.indexOf(cellIndex.cellIndex), 1);
+                    if (selectedCellIdx.length === 0) {
+                        this.selectedRowCellIndexes.splice(index, 1);
+                    }
                     selectedCell.classList.remove('e-cellselectionbackground');
                     selectedCell.removeAttribute('aria-selected');
                     this.cellDeselect(
@@ -1101,6 +1108,9 @@ export class Selection implements IAction {
             for (let i: number = 0, len: number = selectedCells.length; i < len; i++) {
                 selectedCells[i].classList.remove('e-cellselectionbackground');
                 selectedCells[i].removeAttribute('aria-selected');
+            }
+            if (this.bdrBottom) {
+                this.hideBorders();
             }
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
@@ -1628,6 +1638,21 @@ export class Selection implements IAction {
         this.removeEventListener_checkbox();
     }
 
+    private wireEvents(): void {
+        this.isMacOS = navigator.userAgent.indexOf('Mac OS') !== -1;
+        if (this.isMacOS) {
+            EventHandler.add(this.parent.element, 'keydown', this.keyDownHandler, this);
+            EventHandler.add(this.parent.element, 'keyup', this.keyUpHandler, this);
+        }
+    }
+
+    private unWireEvents(): void {
+        if (this.isMacOS) {
+            EventHandler.remove(this.parent.element, 'keydown', this.keyDownHandler);
+            EventHandler.remove(this.parent.element, 'keyup', this.keyUpHandler);
+        }
+    }
+
     private columnPositionChanged(): void {
         if (!this.parent.isPersistSelection) {
             this.clearSelection();
@@ -1782,7 +1807,8 @@ export class Selection implements IAction {
     }
 
     private setRowSelection(state: boolean): void {
-        if (!this.parent.getDataModule().isRemote()) {
+        let adaptorName: string = 'adaptorName';
+        if (!this.parent.getDataModule().isRemote() && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
             if (state) {
                 for (let data of this.getData()) {
                     this.selectedRowState[data[this.primaryKey]] = true;
@@ -1884,6 +1910,7 @@ export class Selection implements IAction {
 
     private updatePersistSelectedData(checkState: boolean): void {
         if (this.parent.isPersistSelection) {
+            let adaptorName: string = 'adaptorName';
             let rows: Element[] = this.parent.getRows();
             for (let i: number = 0; i < rows.length; i++) {
                 this.updatePersistCollection(rows[i], checkState);
@@ -1893,7 +1920,9 @@ export class Selection implements IAction {
                 this.persistSelectedData = this.parent.getDataModule().isRemote() ? this.persistSelectedData : [];
             } else if (this.parent.checkAllRows === 'Check') {
                 this.setRowSelection(true);
-                this.persistSelectedData = !this.parent.getDataModule().isRemote() ? this.getData().slice() : this.persistSelectedData;
+                this.persistSelectedData = (!this.parent.getDataModule().isRemote() &&
+                                            !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) ?
+                                            this.getData().slice() : this.persistSelectedData;
             }
         }
     }
@@ -2055,11 +2084,27 @@ export class Selection implements IAction {
         }
     }
 
+    private keyDownHandler(e: KeyboardEvent): void {
+        // Below are keyCode for command key in MAC OS. Safari/Chrome(91-Left command, 93-Right Command), Opera(17), FireFox(224)
+        if ((Browser.info.name === ('chrome' || 'safari') && (e.keyCode === 91 || e.keyCode === 93)) ||
+        (Browser.info.name === 'opera' &&  e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
+            this.cmdKeyPressed = true;
+        }
+    }
+
+    private keyUpHandler(e: KeyboardEvent): void {
+        if ((Browser.info.name === ('chrome' || 'safari') && (e.keyCode === 91 || e.keyCode === 93)) ||
+        (Browser.info.name === 'opera' &&  e.keyCode === 17) || (Browser.info.name === 'mozilla' && e.keyCode === 224)) {
+            this.cmdKeyPressed = false;
+        }
+    }
+
     private clickHandler(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         this.actualTarget = target;
         this.isInteracted = true;
-        this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
+        this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch ||
+        (this.isMacOS && this.cmdKeyPressed);
         this.isMultiShiftRequest = e.shiftKey;
         this.popUpClickHandler(e);
         let chkSelect: boolean = false;

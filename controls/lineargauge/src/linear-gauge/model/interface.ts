@@ -25,6 +25,7 @@ export interface ILoadedEventArgs extends ILinearGaugeEventArgs {
 }
 /**
  * Gauge Load event arguments
+ * @deprecated
  */
 export interface ILoadEventArgs extends ILinearGaugeEventArgs {
     /**
@@ -47,6 +48,7 @@ export interface IAnimationCompleteEventArgs extends ILinearGaugeEventArgs {
 }
 /**
  * Gauge axis label rendering event arguments
+ * @deprecated
  */
 export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
     /**
@@ -65,6 +67,7 @@ export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
 
 /**
  * Gauge tooltip event arguments
+ * @deprecated
  */
 export interface ITooltipRenderEventArgs extends ILinearGaugeEventArgs {
     /**
@@ -98,6 +101,7 @@ export interface ITooltipRenderEventArgs extends ILinearGaugeEventArgs {
 }
 /**
  * Gauge annotation render event arguments
+ * @deprecated
  */
 export interface IAnnotationRenderEventArgs extends ILinearGaugeEventArgs {
     /**
@@ -115,6 +119,7 @@ export interface IAnnotationRenderEventArgs extends ILinearGaugeEventArgs {
 }
 /**
  * Gauge mouse events args
+ * @deprecated
  */
 export interface IMouseEventArgs extends ILinearGaugeEventArgs {
     /**

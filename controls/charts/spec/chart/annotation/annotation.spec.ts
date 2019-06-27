@@ -1,4 +1,3 @@
-
 /**
  * Specifies the annotation spec.
  */
@@ -123,7 +122,7 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
 
-        it('Checking annotaiton region as series with near and middle', (done: Function) => {
+        it('Checking annotaiton region as series with near and middle ', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
                 expect((element as HTMLElement).style.left == '40.5px' || (element as HTMLElement).style.left == '35.5px').toBe(true);

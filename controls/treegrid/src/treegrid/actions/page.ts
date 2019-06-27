@@ -132,6 +132,11 @@ export class Page {
         let query: Query = new Query();
         let size: number = this.parent.grid.pageSettings.pageSize;
         let current: number = this.parent.grid.pageSettings.currentPage;
+        if (visualData.length < (current * size)) {
+            current = (Math.floor(visualData.length / size)) + ((visualData.length % size) ? 1 : 0);
+            current = current ? current : 1;
+            this.parent.grid.setProperties({pageSettings: {currentPage: current}}, true);
+        }
         let skip: number = size * (current - 1);
         query = query.skip(skip).take(size);
         dm.dataSource.json = visualData;

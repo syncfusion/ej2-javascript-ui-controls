@@ -2,7 +2,7 @@
  * ListView spec document
  */
 import { createElement, isVisible, extend } from '@syncfusion/ej2-base';
-import { ListView , Virtualization, SelectEventArgs, SelectedItem} from '../../src/list-view/index';
+import { ListView, Virtualization, SelectEventArgs, SelectedItem } from '../../src/list-view/index';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import '../../node_modules/es6-promise/dist/es6-promise';
 ListView.Inject(Virtualization);
@@ -557,7 +557,7 @@ describe('ListView', () => {
             });
 
             it('select & getSelected Items method', () => {
-                let liItem : HTMLElement = nTree.element.querySelectorAll('.e-list-item')[1] as HTMLElement;
+                let liItem: HTMLElement = nTree.element.querySelectorAll('.e-list-item')[1] as HTMLElement;
                 nTree.selectItem(liItem);
                 expect(nTree.getSelectedItems().item).toBe(liItem);
                 expect(nTree.getSelectedItems().text).toBe('Fuller');
@@ -578,7 +578,7 @@ describe('ListView', () => {
 
             it('Add & removeItem should not have any effect for remote data', () => {
                 let data: { [key: string]: Object } = { EmployeeID: '777', FirstName: 'hitler' };
-                let data1: { [key: string]: Object } ={ EmployeeID: '1002', FirstName: 'Fuller' };
+                let data1: { [key: string]: Object } = { EmployeeID: '1002', FirstName: 'Fuller' };
                 expect(ele.querySelectorAll('.e-list-item').length).toBe(9);
                 nTree.addItem([data]);
                 expect(ele.querySelectorAll('.e-list-item').length).toBe(9);
@@ -593,7 +593,7 @@ describe('ListView', () => {
                 nTree.showCheckBox = true;
                 nTree.dataBind();
                 nTree.uncheckAllItems();
-                nTree.selectMultipleItems([liItem1,liItem2,liItem3]);
+                nTree.selectMultipleItems([liItem1, liItem2, liItem3]);
                 expect((nTree.getSelectedItems().item as HTMLElement[]).length).toBe(3);
                 expect((nTree.getSelectedItems().item as HTMLElement[])[0]).toBe(liItem1);
                 expect((nTree.getSelectedItems().item as HTMLElement[])[1]).toBe(liItem2);
@@ -794,12 +794,12 @@ describe('ListView', () => {
 
             let data: any = {
                 item: li, text: 'text1', data:
-                    {
-                        id: '01', text: 'text1', icon: 'iconClass1', category: 'a', child: [
-                            { id: '01_1', text: 'subText1', icon: 'iconSubClass1', category: 'a' },
-                            { id: '01_2', text: 'subText2', icon: 'iconSubClass2', category: 'b' },
-                            { id: '01_3', text: 'subText3', icon: 'iconSubClass3', category: 'a' }]
-                    }
+                {
+                    id: '01', text: 'text1', icon: 'iconClass1', category: 'a', child: [
+                        { id: '01_1', text: 'subText1', icon: 'iconSubClass1', category: 'a' },
+                        { id: '01_2', text: 'subText2', icon: 'iconSubClass2', category: 'b' },
+                        { id: '01_3', text: 'subText3', icon: 'iconSubClass3', category: 'a' }]
+                }
             };
 
             expect(treeObj.getSelectedItems()).toEqual(data);
@@ -1270,10 +1270,12 @@ describe('ListView', () => {
 
         it('Select event trigger on checkbox interaction', () => {
             let eventArgs: any;
-            listObj = new ListView({ dataSource: dataSourceCheckbox, showCheckBox: true, fields: { isChecked: 'checked' },
-            select: (args: SelectEventArgs) => {
-                eventArgs = args;
-            } });
+            listObj = new ListView({
+                dataSource: dataSourceCheckbox, showCheckBox: true, fields: { isChecked: 'checked' },
+                select: (args: SelectEventArgs) => {
+                    eventArgs = args;
+                }
+            });
             listObj.appendTo('#listView');
             ((listObj as any).liCollection[1].querySelector('.e-frame.e-icons') as HTMLElement).click();
             expect(eventArgs.isChecked).toBe(true);
@@ -2134,7 +2136,7 @@ describe('ListView', () => {
                 document.body.appendChild(ele);
                 listObj = new ListView({ dataSource: data, headerTitle: 'list', showHeader: true, });
                 listObj.appendTo(ele);
-                (document.getElementsByClassName('e-list-header')[0] as HTMLElement).style.height= '50px';
+                (document.getElementsByClassName('e-list-header')[0] as HTMLElement).style.height = '50px';
                 window.scrollTo(0, 50);
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
                 listObj.setSelectLI(li[0]);
@@ -2150,7 +2152,7 @@ describe('ListView', () => {
                 document.body.appendChild(ele);
                 listObj = new ListView({ dataSource: data, height: 500, headerTitle: 'list', showHeader: true });
                 listObj.appendTo(ele);
-                (document.getElementsByClassName('e-list-header')[0] as HTMLElement).style.height= '50px';
+                (document.getElementsByClassName('e-list-header')[0] as HTMLElement).style.height = '50px';
                 listObj.element.scrollTo(0, 50);
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
                 listObj.setSelectLI(li[0]);
@@ -2163,7 +2165,7 @@ describe('ListView', () => {
                 setStyle(ele, 50);
                 ele.style.overflow = 'auto';
                 document.body.appendChild(ele);
-                listObj = new ListView({ dataSource: data, height: 500, fields: {groupBy: 'category'} });
+                listObj = new ListView({ dataSource: data, height: 500, fields: { groupBy: 'category' } });
                 listObj.appendTo(ele);
                 listObj.element.scrollTo(0, 50);
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
@@ -2176,7 +2178,7 @@ describe('ListView', () => {
                 ele = createElement('div', { id: 'ListView' });
                 setStyle(ele, 50);
                 document.body.appendChild(ele);
-                listObj = new ListView({ dataSource: data, fields: {groupBy: 'category'} });
+                listObj = new ListView({ dataSource: data, fields: { groupBy: 'category' } });
                 listObj.appendTo(ele);
                 window.scrollTo(0, 50);
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
@@ -2218,9 +2220,9 @@ describe('ListView', () => {
                 ele = createElement('div', { id: 'ListView' });
                 setStyle(ele, 50);
                 document.body.appendChild(ele);
-                listObj = new ListView({ dataSource: data, fields: {groupBy: 'category'}, headerTitle: 'list', showHeader: true});
+                listObj = new ListView({ dataSource: data, fields: { groupBy: 'category' }, headerTitle: 'list', showHeader: true });
                 listObj.appendTo(ele);
-                (document.getElementsByClassName('e-list-header')[0] as HTMLElement).style.height= '50px';
+                (document.getElementsByClassName('e-list-header')[0] as HTMLElement).style.height = '50px';
                 window.scrollTo(0, 50);
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
                 listObj.setSelectLI(li[1]);
@@ -2464,67 +2466,9 @@ describe('ListView', () => {
                 ele.remove();
             });
         });
-
-        describe('Tab button', () => {
-            let keyEventArgs: any = {
-                preventDefault: (): void => { /** NO Code */ },
-                keyCode: 9
-            };
-
-            let ele: Element;
-            let listObj: any;
-            it('Tab focus action with simple dataSource', () => {
-                ele = createElement('div', { id: 'ListView' });
-                document.body.appendChild(ele);
-                listObj = new
-                    ListView({ dataSource: dataSource });
-                listObj.appendTo(ele);
-                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
-                listObj.keyActionHandler(keyEventArgs);
-                expect((li[0] as Element).classList.contains('e-active')).toBe(true)
-            });
-
-            it('Tab focus action with checkbox', () => {
-                ele = createElement('div', { id: 'ListView' });
-                document.body.appendChild(ele);
-                listObj = new
-                    ListView({ dataSource: dataSource, showCheckBox: true });
-                listObj.appendTo(ele);
-                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
-                listObj.keyActionHandler(keyEventArgs);
-                expect((li[0] as Element).classList.contains('e-focused')).toBe(true)
-            });
-
-            it('Tab focus action with Nested dataSource', () => {
-                ele = createElement('div', { id: 'ListView' });
-                document.body.appendChild(ele);
-                listObj = new ListView({ dataSource: NestedData });
-                listObj.appendTo(ele);
-                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
-                listObj.keyActionHandler(keyEventArgs);
-                expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
-            });
-
-            it('Tab focus action with empty datasource', () => {
-                ele = createElement('div', { id: 'ListView' });
-                document.body.appendChild(ele);
-                listObj = new ListView({ dataSource: [] });
-                listObj.appendTo(ele);
-                listObj.keyActionHandler(keyEventArgs);
-            });
-
-            afterEach(() => {
-                ele.remove();
-            });
-        });
-
     });
 
     describe('focusout event', () => {
-        let keyEventArgs: any = {
-            preventDefault: (): void => { /** NO Code */ },
-            keyCode: 9
-        };
         let keyEventArgs1: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 38
@@ -2532,29 +2476,6 @@ describe('ListView', () => {
 
         let ele: Element;
         let listObj: any;
-        it('focusout event with simple dataSource', () => {
-            ele = createElement('div', { id: 'ListView' });
-            document.body.appendChild(ele);
-            listObj = new ListView({ dataSource: dataSource });
-            listObj.appendTo(ele);
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
-            listObj.keyActionHandler(keyEventArgs);
-            expect((li[0] as Element).classList.contains('e-active')).toBe(true);
-            listObj.focusout();
-            expect((li[0] as Element).classList.contains('e-active')).toBe(true);
-        });
-
-        it('focusout event with Nested dataSource', () => {
-            ele = createElement('div', { id: 'ListView' });
-            document.body.appendChild(ele);
-            listObj = new ListView({ dataSource: NestedData });
-            listObj.appendTo(ele);
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>listObj.curUL.querySelectorAll('li');
-            listObj.keyActionHandler(keyEventArgs);
-            expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
-            listObj.focusout();
-            expect((li[0] as Element).classList.contains('e-focused')).toBe(false);
-        });
 
         it('focusout event with Nested dataSource', () => {
             ele = createElement('div', { id: 'ListView' });
@@ -3130,4 +3051,18 @@ describe('ListView', () => {
             ele.remove();
         });
     });
+
+    describe('Blazor update template methods', () => {
+        it('Update template method', () => {
+            const ele: HTMLElement = createElement('div', { id: 'ListView' });
+            const listObj = new ListView({
+                dataSource: [{ id: '1', text: 'text', category: 'odd' }], fields: { groupBy: 'category' },
+                template: '<div>${text}</div>',
+                groupTemplate: '<div>${text}</div>',
+                headerTemplate: '<div>Header template</div>',
+                showHeader: true
+            });
+            listObj.appendTo(ele);
+        });
+    })
 });

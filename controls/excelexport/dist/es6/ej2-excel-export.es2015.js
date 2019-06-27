@@ -418,6 +418,17 @@ class CsvHelper {
         this.csvStr = csv;
     }
     parseCellValue(value) {
+        let val = '';
+        let length = value.length;
+        for (let start = 0; start < length; start++) {
+            if (value[start] === '\"') {
+                val += value[start].replace('\"', '\"\"');
+            }
+            else {
+                val += value[start];
+            }
+        }
+        value = val;
         if (value.indexOf(',') !== -1 || value.indexOf('\n') !== -1) {
             return value = '\"' + value + '\"';
         }
@@ -1016,7 +1027,7 @@ class Workbook {
         }
         return colorVal;
     }
-    processCellValue(value) {
+    processCellValue(value, cell) {
         let cellValue = value;
         let processedVal = '';
         let startindex = value.indexOf('<', 0);
@@ -1029,39 +1040,56 @@ class Workbook {
                 endIndex = value.indexOf('>', startindex + 1);
                 if (endIndex >= 0) {
                     let subString = value.substring(startindex + 1, endIndex);
-                    let subSplit = subString.split(' ');
-                    if (subSplit.length > 0) {
-                        processedVal += '<r><rPr>';
-                    }
-                    if (subSplit.length > 1) {
-                        for (let element of subSplit) {
-                            if (element.trim().startsWith('size=')) {
-                                processedVal += '<sz val="' + element.substring(6, element.length - 1) + '"/>';
-                            }
-                            else if (element.trim().startsWith('face=')) {
-                                processedVal += '<rFont val="' + element.substring(6, element.length - 1) + '"/>';
-                            }
-                            else if (element.trim().startsWith('color=')) {
-                                processedVal += '<color rgb="' + this.processColor(element.substring(7, element.length - 1)) + '"/>';
-                            }
-                        }
-                    }
-                    else if (subSplit.length === 1) {
-                        if (subSplit[0].trim() === 'b') {
-                            processedVal += '<b/>';
-                        }
-                        else if (subSplit[0].trim() === 'i') {
-                            processedVal += '<i/>';
-                        }
-                        else if (subSplit[0].trim() === 'u') {
-                            processedVal += '<u/>';
-                        }
-                    }
                     startindex = value.indexOf('<', endIndex + 1);
                     if (startindex < 0) {
                         startindex = cellValue.length;
                     }
-                    processedVal += '</rPr><t xml:space="preserve">' + cellValue.substring(endIndex + 1, startindex) + '</t></r>';
+                    let text = cellValue.substring(endIndex + 1, startindex);
+                    if (text.length !== 0) {
+                        let subSplit = subString.split(' ');
+                        if (subSplit.length > 0) {
+                            processedVal += '<r><rPr>';
+                        }
+                        if (subSplit.length > 1) {
+                            for (let element of subSplit) {
+                                let start = element.trim().substring(0, 5);
+                                switch (start) {
+                                    case 'size=':
+                                        processedVal += '<sz val="' + element.substring(6, element.length - 1) + '"/>';
+                                        break;
+                                    case 'face=':
+                                        processedVal += '<rFont val="' + element.substring(6, element.length - 1) + '"/>';
+                                        break;
+                                    case 'color':
+                                        processedVal += '<color rgb="' + this.processColor(element.substring(7, element.length - 1)) + '"/>';
+                                        break;
+                                    case 'href=':
+                                        let hyperLink = new HyperLink();
+                                        hyperLink.target = element.substring(6, element.length - 1).trim();
+                                        hyperLink.ref = cell.refName;
+                                        hyperLink.rId = (this.mHyperLinks.length + 1);
+                                        this.mHyperLinks.push(hyperLink);
+                                        processedVal += '<color rgb="FF0000FF"/><u/><b/>';
+                                        break;
+                                }
+                            }
+                        }
+                        else if (subSplit.length === 1) {
+                            let style = subSplit[0].trim();
+                            switch (style) {
+                                case 'b':
+                                    processedVal += '<b/>';
+                                    break;
+                                case 'i':
+                                    processedVal += '<i/>';
+                                    break;
+                                case 'u':
+                                    processedVal += '<u/>';
+                                    break;
+                            }
+                        }
+                        processedVal += '</rPr><t xml:space="preserve">' + text + '</t></r>';
+                    }
                 }
             }
             if (processedVal === '') {
@@ -1428,7 +1456,7 @@ class Workbook {
             case 'string':
                 this.sharedStringCount++;
                 saveType = 's';
-                let sstvalue = this.processCellValue(value);
+                let sstvalue = this.processCellValue(value, cell);
                 if (!this.contains(this.sharedString, sstvalue)) {
                     this.sharedString.push(sstvalue);
                 }

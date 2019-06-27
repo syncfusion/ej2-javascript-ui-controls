@@ -294,6 +294,10 @@ export const QUICK_DIALOG_OCCURRENCE_CLASS: string = 'e-quick-dialog-occurrence-
 /** @hidden */
 export const QUICK_DIALOG_SERIES_CLASS: string = 'e-quick-dialog-series-event';
 /** @hidden */
+export const QUICK_DIALOG_FOLLOWING_EVENTS_CLASS: string = 'e-quick-dialog-following-events';
+/** @hidden */
+export const FOLLOWING_EVENTS_DIALOG: string = 'e-following-events-dialog';
+/** @hidden */
 export const QUICK_DIALOG_DELETE_CLASS: string = 'e-quick-dialog-delete';
 /** @hidden */
 export const QUICK_DIALOG_CANCEL_CLASS: string = 'e-quick-dialog-cancel';
@@ -301,6 +305,8 @@ export const QUICK_DIALOG_CANCEL_CLASS: string = 'e-quick-dialog-cancel';
 export const QUICK_DIALOG_ALERT_OK: string = 'e-quick-alertok';
 /** @hidden */
 export const QUICK_DIALOG_ALERT_CANCEL: string = 'e-quick-alertcancel';
+/** @hidden */
+export const QUICK_DIALOG_ALERT_FOLLOWING: string = 'e-quick-alertfollowing';
 /** @hidden */
 export const QUICK_DIALOG_ALERT_BTN_CLASS: string = 'e-quick-dialog-alert-btn';
 /** @hidden */

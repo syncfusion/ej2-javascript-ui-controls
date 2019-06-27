@@ -3,11 +3,10 @@
  */
 
 import { AccPoints, AccumulationSeries } from '../model/acc-base';
-import { PathOption, Size } from '@syncfusion/ej2-svg-base';
+import { PathOption, Size, removeElement } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, appendChildElement } from '../../common/utils/helper';
 import { AccumulationChart } from '../accumulation';
 import { TriangularBase } from './triangular-base';
-import { removeElement } from '../../sparkline/utils/helper';
 
 /**
  * PyramidSeries module used to render `Pyramid` Series.
@@ -148,7 +147,7 @@ export class PyramidSeries extends TriangularBase {
         }
         options.d = this.getSegmentData(point, series, chart);
         point.midAngle = 0;
-        appendChildElement(seriesGroup, chart.renderer.drawPath(options), redraw);
+        appendChildElement(false, seriesGroup, chart.renderer.drawPath(options), redraw);
         if (point.isExplode) {
             chart.accBaseModule.explodePoints(point.index, chart, true);
         }

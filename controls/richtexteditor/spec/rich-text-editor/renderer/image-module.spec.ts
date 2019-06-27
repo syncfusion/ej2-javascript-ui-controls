@@ -649,6 +649,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).focus();
             args = {
                 item: {url: 'https://www.syncfusion.com', selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)]},
+                selection: null,
                 preventDefault: function () { }, target: '_blank'
             };
             (<any>rteObj).formatter.editorManager.imgObj.insertImageLink (args);
@@ -656,7 +657,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             args.item = { url: 'https://www.syncfusion.com', target: '_blank', selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)] };
             (<any>rteObj).formatter.editorManager.imgObj.editImageLink (args);
             args.item = { url: 'https://www.syncfusion.com', target: '_blank',
-            insertElement:(rteObj.element.querySelector('.e-rte-image') as HTMLElement) , selectParent : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)] };
+            insertElement:(rteObj.element.querySelector('.e-rte-image') as HTMLElement) , selectParent : [(rteObj.element.querySelector('a') as HTMLElement)] };
             (<any>rteObj).formatter.editorManager.imgObj.removeImageLink(args);
             expect((<any>rteObj).contentModule.getEditPanel().querySelector('a')).toBe(null);
             args.item= { selectNode : [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)]};
@@ -2194,6 +2195,57 @@ client side. Customer easy to edit the contents and get the HTML content for
         afterEach((done: Function) => {
             destroy(rteObj);
             done();
+        });
+    });
+
+    describe(' Caption image with link insert testing', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                insertImageSettings: { resize: false },
+                value: "<p>Test</p><img id='rteImg' src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style='width:300px; height: 200px'/>"
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' insert/remove link', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+            dispatchEvent((rteObj.element.querySelector('#rteImg') as HTMLElement), 'mouseup');
+            setTimeout(() => {
+                (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[2] as HTMLElement).click();
+                dispatchEvent((rteObj.element.querySelector('#rteImg') as HTMLElement), 'mouseup');
+                setTimeout(() => {
+                    (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[4] as HTMLElement).click();
+                    (document.querySelector('.e-img-link') as HTMLInputElement).value = 'https://www.google.com';
+                    (document.querySelector('.e-update-link') as HTMLElement).click();
+                    let imgEle: Element = document.querySelector('#rteImg');
+                    expect(imgEle.parentElement.nodeName).toBe('A');
+                    expect(imgEle.parentElement.parentElement.classList.contains('e-img-wrap')).toBe(true);
+                    expect(imgEle.parentElement.parentElement.parentElement.classList.contains('e-img-caption')).toBe(true);
+                    expect(document.querySelector('.e-content').childNodes.item(0).nodeName).toBe('P');
+                    expect(document.querySelector('.e-content').childNodes.item(1).nodeName).toBe('SPAN');
+                    expect((document.querySelector('.e-content').childNodes.item(1) as Element).classList.contains('e-img-caption')).toBe(true);
+                    dispatchEvent((rteObj.element.querySelector('#rteImg') as HTMLElement), 'mouseup');
+                    setTimeout(() => {
+                        (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[7] as HTMLElement).click();
+                        let imgEle: Element = document.querySelector('#rteImg');
+                        expect(imgEle.parentElement.nodeName).not.toBe('A');
+                        expect(imgEle.parentElement.classList.contains('e-img-wrap')).toBe(true);
+                        expect(imgEle.parentElement.parentElement.classList.contains('e-img-caption')).toBe(true);
+                        expect(document.querySelector('.e-content').childNodes.item(0).nodeName).toBe('P');
+                        expect(document.querySelector('.e-content').childNodes.item(1).nodeName).toBe('SPAN');
+                        expect((document.querySelector('.e-content').childNodes.item(1) as Element).classList.contains('e-img-caption')).toBe(true);
+                        done();
+                    }, 400);
+                }, 400);
+            }, 400);
         });
     });
 });

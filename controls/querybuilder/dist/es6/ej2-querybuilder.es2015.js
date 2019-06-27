@@ -184,21 +184,6 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
     }
-    triggerEvents(args, type) {
-        if (this.isImportRules) {
-            return args;
-        }
-        if (type === 'before') {
-            this.trigger('beforeChange', args);
-        }
-        else if (type === 'ruleChange') {
-            this.trigger('ruleChange', args);
-        }
-        else {
-            this.trigger('change', args);
-        }
-        return args;
-    }
     clickEventHandler(event) {
         let target = event.target;
         let args;
@@ -223,13 +208,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         if (target.tagName === 'BUTTON') {
             if (target.className.indexOf('e-removerule') > -1) {
-                if (target.className.indexOf('e-tooltip') > -1) {
-                    getComponent(target, 'tooltip').destroy();
-                }
+                this.actionButton = target;
                 this.deleteRule(target);
             }
             else if (target.className.indexOf('e-deletegroup') > -1) {
-                getComponent(target, 'tooltip').destroy();
+                this.actionButton = target;
                 this.deleteGroup(closest(target, '.e-group-container'));
             }
             else if (target.className.indexOf('e-edit-rule') > -1) {
@@ -253,16 +236,30 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
             let element = closest(target, '.e-group-container');
-            let beforeRules = this.getValidRules(this.rule);
+            let forIdValue = target.getAttribute('for');
+            let targetValue = document.getElementById(forIdValue).getAttribute('value');
             groupID = element.id.replace(this.element.id + '_', '');
-            args = { groupID: groupID, cancel: false, type: 'condition', value: target.textContent.toLowerCase() };
-            args = this.triggerEvents(args, 'before');
-            if (args.cancel) {
-                return;
+            args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase() };
+            if (!this.isImportRules) {
+                this.trigger('beforeChange', args, (observedChangeArgs) => {
+                    this.beforeSuccessCallBack(observedChangeArgs, target);
+                });
             }
+            else {
+                this.beforeSuccessCallBack(args, target);
+            }
+        }
+    }
+    beforeSuccessCallBack(args, target) {
+        if (!args.cancel) {
+            let element = closest(target, '.e-group-container');
+            let groupID = element.id.replace(this.element.id + '_', '');
+            let beforeRules = this.getValidRules(this.rule);
             let rule = this.getParentGroup(element);
             rule.condition = args.value;
-            this.triggerEvents({ groupID: groupID, type: 'condition', value: rule.condition });
+            if (!this.isImportRules) {
+                this.trigger('change', { groupID: groupID, type: 'condition', value: rule.condition });
+            }
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'condition');
         }
     }
@@ -283,90 +280,103 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     addRuleElement(target, rule) {
-        let args = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertRule' };
-        args = this.triggerEvents(args, 'before');
-        if (args.cancel) {
+        if (!target) {
             return;
         }
-        let ruleElem = this.ruleElem.cloneNode(true);
-        if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
-            ruleElem.className = 'e-rule-container e-vertical-mode';
-        }
-        else {
-            ruleElem.className = 'e-rule-container e-horizontal-mode';
-        }
-        let groupLevel;
-        let rules;
-        let i;
-        let len;
-        let dropDownList;
-        let ruleListElem = target.querySelector('.e-rule-list');
-        let element = ruleElem.querySelector('button');
-        let height;
-        let ruleID;
-        if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
-            element.textContent = this.l10n.getConstant('Remove');
-            addClass([element], 'e-flat');
-            addClass([element], 'e-primary');
-        }
-        else {
-            addClass([element], 'e-round');
-            addClass([element], 'e-icon-btn');
-            let tooltip = new Tooltip({ content: this.l10n.getConstant('DeleteRule') });
-            tooltip.appendTo(element);
-            element = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
-            ruleElem.querySelector('button').appendChild(element);
-        }
-        ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
-        this.ruleIdCounter++;
-        ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
-        ruleListElem.appendChild(ruleElem);
-        if (ruleElem.previousElementSibling && ruleElem.previousElementSibling.className.indexOf('e-rule-container') > -1) {
-            if (ruleElem.className.indexOf('e-joined-rule') < 0) {
-                ruleElem.className += ' e-joined-rule';
-            }
-            if (ruleElem.previousElementSibling.className.indexOf('e-prev-joined-rule') < 0) {
-                ruleElem.previousElementSibling.className += ' e-prev-joined-rule';
-            }
-        }
-        if (ruleElem.previousElementSibling && ruleElem.previousElementSibling.className.indexOf('e-group-container') > -1 &&
-            ruleElem.className.indexOf('e-separate-rule') < 0) {
-            ruleElem.className += ' e-separate-rule';
-        }
-        height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
-        dropDownList = new DropDownList({
-            dataSource: this.columns,
-            fields: this.fields,
-            placeholder: this.l10n.getConstant('SelectField'),
-            popupHeight: ((this.columns.length > 5) ? height : 'auto'),
-            change: this.changeField.bind(this),
-            value: rule ? rule.field : null
-        });
-        dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
-        groupLevel = this.levelColl[target.id];
-        this.selectedColumn = dropDownList.getDataByValue(dropDownList.value);
+        let args = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertRule' };
         if (!this.isImportRules) {
-            rules = this.rule;
-            for (i = 0, len = groupLevel.length; i < len; i++) {
-                rules = this.findGroupByIdx(groupLevel[i], rules, i === 0);
-            }
-            if (Object.keys(rule).length) {
-                rules.rules.push({
-                    'field': rule.field, 'type': rule.type, 'label': rule.label, 'operator': rule.operator, value: rule.value
-                });
-            }
-            else {
-                rules.rules.push({ 'field': '', 'type': '', 'label': '', 'operator': '', 'value': '' });
-            }
-        }
-        if (Object.keys(rule).length) {
-            this.changeRule(rule, {
-                element: dropDownList.element,
-                itemData: this.selectedColumn
+            this.trigger('beforeChange', args, (observedChangeArgs) => {
+                this.addRuleSuccessCallBack(observedChangeArgs, target, rule);
             });
         }
-        ruleID = ruleElem.id.replace(this.element.id + '_', '');
-        this.triggerEvents({ groupID: target.id.replace(this.element.id + '_', ''), ruleID: ruleID, type: 'insertRule' });
+        else {
+            this.addRuleSuccessCallBack(args, target, rule);
+        }
+    }
+    addRuleSuccessCallBack(args, target, rule) {
+        if (!args.cancel) {
+            let ruleElem = this.ruleElem.cloneNode(true);
+            if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
+                ruleElem.className = 'e-rule-container e-vertical-mode';
+            }
+            else {
+                ruleElem.className = 'e-rule-container e-horizontal-mode';
+            }
+            let groupLevel;
+            let rules;
+            let i;
+            let len;
+            let dropDownList;
+            let ruleListElem = target.querySelector('.e-rule-list');
+            let element = ruleElem.querySelector('button');
+            let height;
+            let ruleID;
+            if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
+                element.textContent = this.l10n.getConstant('Remove');
+                addClass([element], 'e-flat');
+                addClass([element], 'e-primary');
+            }
+            else {
+                addClass([element], 'e-round');
+                addClass([element], 'e-icon-btn');
+                let tooltip = new Tooltip({ content: this.l10n.getConstant('DeleteRule') });
+                tooltip.appendTo(element);
+                element = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
+                ruleElem.querySelector('button').appendChild(element);
+            }
+            ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
+            this.ruleIdCounter++;
+            ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
+            ruleListElem.appendChild(ruleElem);
+            if (ruleElem.previousElementSibling && ruleElem.previousElementSibling.className.indexOf('e-rule-container') > -1) {
+                if (ruleElem.className.indexOf('e-joined-rule') < 0) {
+                    ruleElem.className += ' e-joined-rule';
+                }
+                if (ruleElem.previousElementSibling.className.indexOf('e-prev-joined-rule') < 0) {
+                    ruleElem.previousElementSibling.className += ' e-prev-joined-rule';
+                }
+            }
+            if (ruleElem.previousElementSibling && ruleElem.previousElementSibling.className.indexOf('e-group-container') > -1 &&
+                ruleElem.className.indexOf('e-separate-rule') < 0) {
+                ruleElem.className += ' e-separate-rule';
+            }
+            height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
+            dropDownList = new DropDownList({
+                dataSource: this.columns,
+                fields: this.fields,
+                placeholder: this.l10n.getConstant('SelectField'),
+                popupHeight: ((this.columns.length > 5) ? height : 'auto'),
+                change: this.changeField.bind(this),
+                value: rule ? rule.field : null
+            });
+            dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
+            groupLevel = this.levelColl[target.id];
+            this.selectedColumn = dropDownList.getDataByValue(dropDownList.value);
+            if (!this.isImportRules) {
+                rules = this.rule;
+                for (i = 0, len = groupLevel.length; i < len; i++) {
+                    rules = this.findGroupByIdx(groupLevel[i], rules, i === 0);
+                }
+                if (Object.keys(rule).length) {
+                    rules.rules.push({
+                        'field': rule.field, 'type': rule.type, 'label': rule.label, 'operator': rule.operator, value: rule.value
+                    });
+                }
+                else {
+                    rules.rules.push({ 'field': '', 'type': '', 'label': '', 'operator': '', 'value': '' });
+                }
+            }
+            if (Object.keys(rule).length) {
+                this.changeRule(rule, {
+                    element: dropDownList.element,
+                    itemData: this.selectedColumn
+                });
+            }
+            ruleID = ruleElem.id.replace(this.element.id + '_', '');
+            if (!this.isImportRules) {
+                this.trigger('change', { groupID: target.id.replace(this.element.id + '_', ''), ruleID: ruleID, type: 'insertRule' });
+            }
+        }
     }
     renderToolTip(element) {
         let tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'),
@@ -505,11 +515,13 @@ let QueryBuilder = class QueryBuilder extends Component {
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl e-small' }, innerHTML: 'AND' });
+        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl e-small' },
+            innerHTML: this.l10n.getConstant('AND') });
         glueElem.appendChild(labelElem);
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-or', value: 'OR' } });
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl e-small' }, innerHTML: 'OR' });
+        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl e-small' },
+            innerHTML: this.l10n.getConstant('OR') });
         glueElem.appendChild(labelElem);
         groupHdrElem.appendChild(glueElem);
         grpActElem = this.createElement('div', { attrs: { class: 'e-group-action' } });
@@ -550,71 +562,82 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     addGroupElement(isGroup, target, condition, isBtnClick) {
         let args = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertGroup' };
-        args = this.triggerEvents(args, 'before');
-        if (args.cancel || (this.element.querySelectorAll('.e-group-container').length >= this.maxGroupCount)) {
-            return;
-        }
-        let dltGroupBtn;
-        let groupElem = this.groupElem.cloneNode(true);
-        groupElem.setAttribute('id', this.element.id + '_group' + this.groupIdCounter);
-        this.groupIdCounter++;
-        let andInpElem = groupElem.querySelector('.e-btngroup-and');
-        let orInpElem = groupElem.querySelector('.e-btngroup-or');
-        let andLblElem = groupElem.querySelector('.e-btngroup-and-lbl');
-        let orLblElem = groupElem.querySelector('.e-btngroup-or-lbl');
-        andInpElem.setAttribute('id', this.element.id + '_and' + this.btnGroupId);
-        orInpElem.setAttribute('id', this.element.id + '_or' + this.btnGroupId);
-        andInpElem.setAttribute('name', this.element.id + '_and' + this.btnGroupId);
-        orInpElem.setAttribute('name', this.element.id + '_and' + this.btnGroupId);
-        andLblElem.setAttribute('for', this.element.id + '_and' + this.btnGroupId);
-        orLblElem.setAttribute('for', this.element.id + '_or' + this.btnGroupId);
-        this.btnGroupId++;
-        if (isGroup) {
-            let clsName = this.showButtons.groupDelete ? 'e-deletegroup' : 'e-deletegroup e-button-hide';
-            dltGroupBtn = this.createElement('button', { attrs: { class: clsName } });
-            let button = new Button({ iconCss: 'e-icons e-delete-icon', cssClass: 'e-small e-round' });
-            button.appendTo(dltGroupBtn);
-            let tooltip = new Tooltip({ content: this.l10n.getConstant('DeleteGroup') });
-            tooltip.appendTo(dltGroupBtn);
-            rippleEffect(dltGroupBtn, { selector: '.deletegroup' });
-            groupElem.querySelector('.e-group-action').appendChild(dltGroupBtn);
-            let ruleList = target.querySelector('.e-rule-list');
-            let childElems = ruleList.children;
-            let grpLen = 0;
-            for (let j = 0, jLen = childElems.length; j < jLen; j++) {
-                if (childElems[j].className.indexOf('e-group-container') > -1) {
-                    grpLen += 1;
-                }
-            }
-            ruleList.appendChild(groupElem);
-            let level = this.levelColl[target.id].slice(0);
-            level.push(grpLen);
-            this.levelColl[groupElem.id] = level;
-            if (!this.isImportRules) {
-                this.addGroups([], target.id.replace(this.element.id + '_', ''));
-                if (isBtnClick) {
-                    this.addRuleElement(groupElem, {});
-                }
-            }
+        if (!this.isImportRules) {
+            this.trigger('beforeChange', args, (observedChangeArgs) => {
+                this.addGroupSuccess(observedChangeArgs, isGroup, target, condition, isBtnClick);
+            });
         }
         else {
-            target.appendChild(groupElem);
-            this.levelColl[groupElem.id] = [0];
+            this.addGroupSuccess(args, isGroup, target, condition, isBtnClick);
         }
-        groupElem.querySelector('.e-btngroup-and').setAttribute('checked', 'true');
-        if (condition === 'or') {
-            groupElem.querySelector('.e-btngroup-or').setAttribute('checked', 'true');
+    }
+    addGroupSuccess(args, isGroup, eventTarget, condition, isBtnClick) {
+        if (!args.cancel && (this.element.querySelectorAll('.e-group-container').length <= this.maxGroupCount)) {
+            let target = eventTarget;
+            let dltGroupBtn;
+            let groupElem = this.groupElem.cloneNode(true);
+            groupElem.setAttribute('id', this.element.id + '_group' + this.groupIdCounter);
+            this.groupIdCounter++;
+            let andInpElem = groupElem.querySelector('.e-btngroup-and');
+            let orInpElem = groupElem.querySelector('.e-btngroup-or');
+            let andLblElem = groupElem.querySelector('.e-btngroup-and-lbl');
+            let orLblElem = groupElem.querySelector('.e-btngroup-or-lbl');
+            andInpElem.setAttribute('id', this.element.id + '_and' + this.btnGroupId);
+            orInpElem.setAttribute('id', this.element.id + '_or' + this.btnGroupId);
+            andInpElem.setAttribute('name', this.element.id + '_and' + this.btnGroupId);
+            orInpElem.setAttribute('name', this.element.id + '_and' + this.btnGroupId);
+            andLblElem.setAttribute('for', this.element.id + '_and' + this.btnGroupId);
+            orLblElem.setAttribute('for', this.element.id + '_or' + this.btnGroupId);
+            this.btnGroupId++;
+            if (isGroup) {
+                let clsName = this.showButtons.groupDelete ? 'e-deletegroup' : 'e-deletegroup e-button-hide';
+                dltGroupBtn = this.createElement('button', { attrs: { class: clsName } });
+                let button = new Button({ iconCss: 'e-icons e-delete-icon', cssClass: 'e-small e-round' });
+                button.appendTo(dltGroupBtn);
+                let tooltip = new Tooltip({ content: this.l10n.getConstant('DeleteGroup') });
+                tooltip.appendTo(dltGroupBtn);
+                rippleEffect(dltGroupBtn, { selector: '.deletegroup' });
+                groupElem.querySelector('.e-group-action').appendChild(dltGroupBtn);
+                let ruleList = target.querySelector('.e-rule-list');
+                let childElems = ruleList.children;
+                let grpLen = 0;
+                for (let j = 0, jLen = childElems.length; j < jLen; j++) {
+                    if (childElems[j].className.indexOf('e-group-container') > -1) {
+                        grpLen += 1;
+                    }
+                }
+                ruleList.appendChild(groupElem);
+                let level = this.levelColl[target.id].slice(0);
+                level.push(grpLen);
+                this.levelColl[groupElem.id] = level;
+                if (!this.isImportRules) {
+                    this.addGroups([], target.id.replace(this.element.id + '_', ''));
+                    if (isBtnClick) {
+                        this.addRuleElement(groupElem, {});
+                    }
+                }
+            }
+            else {
+                target.appendChild(groupElem);
+                this.levelColl[groupElem.id] = [0];
+            }
+            groupElem.querySelector('.e-btngroup-and').setAttribute('checked', 'true');
+            if (condition === 'or') {
+                groupElem.querySelector('.e-btngroup-or').setAttribute('checked', 'true');
+            }
+            let groupBtn = groupElem.querySelector('.e-add-btn');
+            let btnObj = new DropDownButton({
+                items: this.items,
+                cssClass: 'e-round e-small e-caret-hide e-addrulegroup',
+                iconCss: 'e-icons e-add-icon',
+                beforeOpen: this.selectBtn.bind(this, groupBtn),
+                select: this.selectBtn.bind(this, groupBtn)
+            });
+            btnObj.appendTo(groupBtn);
+            if (!this.isImportRules) {
+                this.trigger('change', { groupID: target.id.replace(this.element.id + '_', ''), type: 'insertGroup' });
+            }
         }
-        let groupBtn = groupElem.querySelector('.e-add-btn');
-        let btnObj = new DropDownButton({
-            items: this.items,
-            cssClass: 'e-round e-small e-caret-hide e-addrulegroup',
-            iconCss: 'e-icons e-add-icon',
-            beforeOpen: this.selectBtn.bind(this, groupBtn),
-            select: this.selectBtn.bind(this, groupBtn)
-        });
-        btnObj.appendTo(groupBtn);
-        this.triggerEvents({ groupID: target.id.replace(this.element.id + '_', ''), type: 'insertGroup' });
     }
     notifyChange(value, element) {
         let tempColl = closest(element, '.e-rule-value').querySelectorAll('.e-template');
@@ -675,12 +698,22 @@ let QueryBuilder = class QueryBuilder extends Component {
             value = args.value;
         }
         eventsArgs = { groupID: groupID, ruleID: ruleID, value: value, cancel: false, type: 'value' };
-        eventsArgs = this.triggerEvents(eventsArgs, 'before');
-        if (eventsArgs.cancel) {
-            return;
+        if (!this.isImportRules) {
+            this.trigger('beforeChange', eventsArgs, (observedChangeArgs) => {
+                this.changeValueSuccessCallBack(observedChangeArgs, element, i, groupID, ruleID);
+            });
         }
-        this.updateRules(element, eventsArgs.value, i);
-        this.triggerEvents({ groupID: groupID, ruleID: ruleID, value: eventsArgs.value, cancel: false, type: 'value' });
+        else {
+            this.changeValueSuccessCallBack(eventsArgs, element, i, groupID, ruleID);
+        }
+    }
+    changeValueSuccessCallBack(args, element, i, groupID, ruleID) {
+        if (!args.cancel) {
+            this.updateRules(element, args.value, i);
+            if (!this.isImportRules) {
+                this.trigger('change', { groupID: groupID, ruleID: ruleID, value: args.value, cancel: false, type: 'value' });
+            }
+        }
     }
     changeField(args) {
         if (args.isInteracted) {
@@ -695,46 +728,84 @@ let QueryBuilder = class QueryBuilder extends Component {
             this.changeRule(rules.rules[index], args);
         }
     }
-    changeRule(rule, args) {
-        if (!args.itemData) {
+    changeRule(rule, ddlArgs) {
+        if (!ddlArgs.itemData) {
             return;
         }
         let tempRule = {};
-        let ddlObj;
+        let filterElem = closest(ddlArgs.element, '.e-rule-filter');
+        let ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
+        let element = closest(ddlArgs.element, '.e-group-container');
+        let groupID = element.id.replace(this.element.id + '_', '');
+        let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
+        this.changeFilter(filterElem, ddlObj, groupID, rule, tempRule, ddlArgs);
+        if (!this.isOperatorRendered) {
+            this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
+        }
+        if (!this.isValueRendered) {
+            this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
+        }
+        this.isValueRendered = false;
+        this.isOperatorRendered = false;
+    }
+    changeFilter(flt, dl, grID, rl, tmpRl, dArg) {
+        if (flt) {
+            this.selectedColumn = dl.getDataByValue(dl.value);
+            let ruleElem = closest(flt, '.e-rule-container');
+            let eventsArgs;
+            let ruleID = ruleElem.id.replace(this.element.id + '_', '');
+            eventsArgs = { groupID: grID, ruleID: ruleID, selectedField: dl.value, cancel: false, type: 'field' };
+            if (!this.isImportRules) {
+                this.trigger('beforeChange', eventsArgs, (observedChangeArgs) => {
+                    this.fieldChangeSuccess(observedChangeArgs, tmpRl, flt, rl, dArg);
+                });
+            }
+            else {
+                this.fieldChangeSuccess(eventsArgs, tmpRl, flt, rl, dArg);
+            }
+        }
+    }
+    changeOperator(flt, opr, dl, grID, rl, tmpRl, dArg) {
         let ruleElem;
         let ruleID;
-        let operatorElem;
-        let prevOper = rule.operator ? rule.operator.toLowerCase() : '';
-        let operatorList;
-        let filterElem = closest(args.element, '.e-rule-filter');
-        operatorElem = closest(args.element, '.e-rule-operator');
-        let dropDownObj = getComponent(args.element, 'dropdownlist');
-        let oprElem;
-        let element = closest(args.element, '.e-group-container');
         let eventsArgs;
-        let groupID = element.id.replace(this.element.id + '_', '');
-        if (filterElem) {
-            this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value);
-            ruleElem = closest(filterElem, '.e-rule-container');
+        if (opr) {
+            ruleElem = closest(opr, '.e-rule-container');
             ruleID = ruleElem.id.replace(this.element.id + '_', '');
-            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedField: dropDownObj.value, cancel: false, type: 'field' };
-            eventsArgs = this.triggerEvents(eventsArgs, 'before');
-            if (eventsArgs.cancel) {
-                return;
+            eventsArgs = { groupID: grID, ruleID: ruleID, selectedIndex: dl.index, cancel: false, type: 'operator' };
+            if (!this.isImportRules) {
+                this.trigger('beforeChange', eventsArgs, (observedChangeArgs) => {
+                    this.operatorChangeSuccess(observedChangeArgs, flt, tmpRl, rl, dArg);
+                });
             }
+            else {
+                this.operatorChangeSuccess(eventsArgs, flt, tmpRl, rl, dArg);
+            }
+        }
+    }
+    fieldChangeSuccess(args, tempRule, filterElem, rule, ddlArgs) {
+        let ruleElem = closest(filterElem, '.e-rule-container');
+        if (!args.cancel) {
             tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
                 rule.value = '';
             }
+            let element = closest(ddlArgs.element, '.e-group-container');
+            let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
+            let groupID = element.id.replace(this.element.id + '_', '');
+            let ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
+            this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
         }
-        if (operatorElem) {
-            ruleElem = closest(operatorElem, '.e-rule-container');
-            ruleID = ruleElem.id.replace(this.element.id + '_', '');
-            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedIndex: dropDownObj.index, cancel: false, type: 'operator' };
-            eventsArgs = this.triggerEvents(eventsArgs, 'before');
-            if (eventsArgs.cancel) {
-                return;
-            }
+        else {
+            this.isOperatorRendered = true;
+        }
+        this.isOperatorRendered = true;
+    }
+    operatorChangeSuccess(eventsArgs, filterElem, tempRule, rule, ddlArgs) {
+        if (!eventsArgs.cancel) {
+            let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
+            let dropDownObj = getComponent(ddlArgs.element, 'dropdownlist');
+            let prevOper = rule.operator ? rule.operator.toLowerCase() : '';
             tempRule.operator = dropDownObj.value;
             let currOper = tempRule.operator.toLowerCase();
             if (tempRule.operator.toLowerCase().indexOf('between') > -1 || (tempRule.operator.toLowerCase().indexOf('in') > -1
@@ -748,8 +819,8 @@ let QueryBuilder = class QueryBuilder extends Component {
             else if (typeof rule.value === 'object') {
                 rule.value = rule.value.length > 0 ? rule.value[0] : '';
             }
-            if (args.previousItemData) {
-                let prevValue = args.previousItemData.value.toLowerCase();
+            if (ddlArgs.previousItemData) {
+                let prevValue = ddlArgs.previousItemData.value.toLowerCase();
                 if (prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 && prevValue.indexOf('contains') < 0)) {
                     filterElem = operatorElem.previousElementSibling;
                     tempRule.type = rule.type;
@@ -759,14 +830,23 @@ let QueryBuilder = class QueryBuilder extends Component {
                 && currOper.indexOf('in') < 5)) {
                 filterElem = null;
             }
+            this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
         }
+        this.isValueRendered = true;
+    }
+    changeRuleValues(filterElem, rule, tempRule, ddlArgs) {
+        let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
+        let ddlObj;
+        let operatorList;
+        let oprElem;
         if (filterElem) {
             operatorElem = filterElem.nextElementSibling;
             addClass([operatorElem], 'e-operator');
             if (operatorElem.childElementCount) {
                 ddlObj = getComponent(operatorElem.querySelector('.e-dropdownlist'), 'dropdownlist');
                 tempRule.operator = ddlObj.value;
-                this.renderValues(operatorElem, args.itemData, args.previousItemData, true, rule, tempRule, args.element);
+                let itemData = ddlArgs.itemData;
+                this.renderValues(operatorElem, itemData, ddlArgs.previousItemData, true, rule, tempRule, ddlArgs.element);
             }
             else {
                 let ruleId = closest(operatorElem, '.e-rule-container').id;
@@ -775,7 +855,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 if (this.selectedColumn.operators) {
                     operatorList = this.selectedColumn.operators;
                 }
-                else if (args.itemData) {
+                else if (ddlArgs.itemData) {
                     operatorList = this.customOperators[this.selectedColumn.type + 'Operator'];
                 }
                 let height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
@@ -794,11 +874,11 @@ let QueryBuilder = class QueryBuilder extends Component {
                     tempRule.type = this.selectedColumn.type;
                     tempRule.operator = rule.operator;
                 }
-                this.renderValues(operatorElem, this.selectedColumn, args.previousItemData, false, rule, tempRule, args.element);
+                this.renderValues(operatorElem, this.selectedColumn, ddlArgs.previousItemData, false, rule, tempRule, ddlArgs.element);
             }
         }
         if (!this.isImportRules) {
-            this.updateRules(args.element, args.item);
+            this.updateRules(ddlArgs.element, ddlArgs.item);
         }
     }
     // tslint:disable-next-line:no-any
@@ -901,6 +981,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             dataSource: isValues ? values : (isFetched ? ds : this.dataManager),
             query: new Query([rule.field]),
             fields: { text: rule.field, value: rule.field },
+            placeholder: this.l10n.getConstant('SelectValue'),
             value: selectedValue,
             mode: 'CheckBox',
             width: '100%',
@@ -1027,7 +1108,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 selectedValue = selectedVal.join(',');
             }
             let inputobj = new TextBox({
-                placeholder: 'Value',
+                placeholder: this.l10n.getConstant('SelectValue'),
                 input: this.changeValue.bind(this, idx)
             });
             inputobj.appendTo('#' + parentId + '_valuekey' + idx);
@@ -1053,7 +1134,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
             let selVal = selectedVal.join(',');
             let inputobj = new TextBox({
-                placeholder: 'Value',
+                placeholder: this.l10n.getConstant('SelectValue'),
                 input: this.changeValue.bind(this, idx)
             });
             inputobj.appendTo('#' + parentId + '_valuekey' + idx);
@@ -1174,6 +1255,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                                 let column;
                                 let format = itemData.format;
                                 let datepick;
+                                let place = this.l10n.getConstant('SelectValue');
                                 if (itemData.value) {
                                     if (itemData.value instanceof Date) {
                                         selectedValue = itemData.value;
@@ -1193,10 +1275,13 @@ let QueryBuilder = class QueryBuilder extends Component {
                                 }
                                 if (format) {
                                     datepick =
-                                        new DatePicker({ value: selectedValue, format: format, change: this.changeValue.bind(this, i) });
+                                        new DatePicker({
+                                            value: selectedValue, placeholder: place, format: format, change: this.changeValue.bind(this, i)
+                                        });
                                 }
                                 else {
-                                    datepick = new DatePicker({ value: selectedValue, change: this.changeValue.bind(this, i) });
+                                    datepick =
+                                        new DatePicker({ value: selectedValue, placeholder: place, change: this.changeValue.bind(this, i) });
                                 }
                                 datepick.appendTo('#' + parentId + '_valuekey' + i);
                                 if (!rule.value) {
@@ -1381,7 +1466,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                 eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
                 this.updateValues(elementCln[i], rule.rules[index]);
             }
-            this.triggerEvents(eventsArgs);
+            if (!this.isImportRules) {
+                this.trigger('change', eventsArgs);
+            }
             if (this.allowValidation && rule.rules[index].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(target.parentElement, 'tooltip').destroy();
             }
@@ -1403,7 +1490,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             for (let i = 0; i < inputElem.length; i++) {
                 this.updateValues(inputElem[i], rule.rules[index]);
             }
-            this.triggerEvents(eventsArgs);
+            if (!this.isImportRules) {
+                this.trigger('change', eventsArgs);
+            }
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'operator');
         }
         else if (closest(target, '.e-rule-value')) {
@@ -1415,7 +1504,9 @@ let QueryBuilder = class QueryBuilder extends Component {
         let beforeRuleStr = JSON.stringify({ condition: beforeRule.condition, rule: beforeRule.rules });
         let afetrRuleStr = JSON.stringify({ condition: afterRule.condition, rule: afterRule.rules });
         if (beforeRuleStr !== afetrRuleStr) {
-            this.triggerEvents({ previousRule: beforeRule, rule: afterRule, type: type }, 'ruleChange');
+            if (!this.isImportRules) {
+                this.trigger('ruleChange', { previousRule: beforeRule, rule: afterRule, type: type });
+            }
         }
     }
     ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i) {
@@ -1451,7 +1542,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                     rule.rules[index].value = selectedValue;
                 }
                 eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value, type: 'value' };
-                this.triggerEvents(eventsArgs);
+                if (!this.isImportRules) {
+                    this.trigger('change', eventsArgs);
+                }
             }
             else if (target.className.indexOf('e-spin') > -1 || target.className.indexOf('e-numeric') > -1) {
                 if (arrOperator.indexOf(oper) > -1) {
@@ -1810,7 +1903,10 @@ let QueryBuilder = class QueryBuilder extends Component {
             Edit: 'EDIT',
             ValidationMessage: 'This field is required',
             SummaryViewTitle: 'Summary View',
-            OtherFields: 'Other Fields'
+            OtherFields: 'Other Fields',
+            AND: 'AND',
+            OR: 'OR',
+            SelectValue: 'Enter Value'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization(this.locale);
@@ -1857,12 +1953,6 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.operators = {
             equal: '=', notequal: '!=', greaterthan: '>', greaterthanorequal: '>=', lessthan: '<', in: 'IN', notin: 'NOT IN',
             lessthanorequal: '<=', startswith: 'LIKE', endswith: 'LIKE', between: 'BETWEEN', notbetween: 'NOT BETWEEN', contains: 'LIKE'
-        };
-        this.operatorValue = {
-            equal: 'Equal', greaterthan: 'GreaterThan', greaterthanorequal: 'GreaterThanOrEqual',
-            lessthan: 'LessThan', lessthanorequal: 'LessThanOrEqual', notequal: 'NotEqual',
-            between: 'Between', in: 'in', notin: 'NotIn', notbetween: 'NotBetween', startswith: 'StartsWith', endswith: 'EndsWith',
-            contains: 'Contains'
         };
         this.fields = { text: 'label', value: 'field' };
     }
@@ -1930,87 +2020,115 @@ let QueryBuilder = class QueryBuilder extends Component {
     deleteGroup(target) {
         let groupElem = target;
         let groupId = groupElem.id.replace(this.element.id + '_', '');
-        let rule = this.getParentGroup(groupElem, true);
-        let index = 0;
-        let i;
-        let len;
         let args = { groupID: groupId, cancel: false, type: 'deleteGroup' };
-        let beforeRules = this.getValidRules(this.rule);
-        args = this.triggerEvents(args, 'before');
-        if (args.cancel) {
-            return;
+        if (!this.isImportRules) {
+            this.trigger('beforeChange', args, (observedChangeArgs) => {
+                this.deleteGroupSuccessCallBack(observedChangeArgs, target);
+            });
         }
-        let nextElem = groupElem.nextElementSibling;
-        let prevElem = groupElem.previousElementSibling;
-        let element = groupElem.querySelectorAll('.e-group-container');
-        let valElem = target.querySelectorAll('.e-tooltip');
-        len = valElem.length;
-        for (i = 0; i < len; i++) {
-            getComponent(valElem[i], 'tooltip').destroy();
+        else {
+            this.deleteGroupSuccessCallBack(args, target);
         }
-        for (i = 0, len = element.length; i < len; i++) {
-            delete this.levelColl[element[i].id];
-        }
-        while (groupElem.previousElementSibling !== null) {
-            groupElem = groupElem.previousElementSibling;
-            index++;
-        }
-        if (nextElem && nextElem.className.indexOf('e-separate-rule') > -1) {
-            removeClass([nextElem], 'e-separate-rule');
-            addClass([nextElem], 'e-joined-rule');
-            if (prevElem && prevElem.className.indexOf('e-rule-container') > -1) {
-                addClass([prevElem], 'e-prev-joined-rule');
+    }
+    deleteGroupSuccessCallBack(args, target) {
+        if (!args.cancel) {
+            if (this.actionButton) {
+                getComponent(this.actionButton, 'tooltip').destroy();
             }
+            let groupElem = target;
+            let rule = this.getParentGroup(groupElem, true);
+            let index = 0;
+            let i;
+            let len;
+            let beforeRules = this.getValidRules(this.rule);
+            let nextElem = groupElem.nextElementSibling;
+            let prevElem = groupElem.previousElementSibling;
+            let element = groupElem.querySelectorAll('.e-group-container');
+            let valElem = groupElem.querySelectorAll('.e-tooltip');
+            len = valElem.length;
+            for (i = 0; i < len; i++) {
+                getComponent(valElem[i], 'tooltip').destroy();
+            }
+            for (i = 0, len = element.length; i < len; i++) {
+                delete this.levelColl[element[i].id];
+            }
+            while (groupElem.previousElementSibling !== null) {
+                groupElem = groupElem.previousElementSibling;
+                index++;
+            }
+            if (nextElem && nextElem.className.indexOf('e-separate-rule') > -1) {
+                removeClass([nextElem], 'e-separate-rule');
+                addClass([nextElem], 'e-joined-rule');
+                if (prevElem && prevElem.className.indexOf('e-rule-container') > -1) {
+                    addClass([prevElem], 'e-prev-joined-rule');
+                }
+            }
+            rule.rules.splice(index, 1);
+            delete this.levelColl[args.groupID];
+            detach(target);
+            this.refreshLevelColl();
+            if (!this.isImportRules) {
+                this.trigger('change', args);
+            }
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteGroup');
         }
-        rule.rules.splice(index, 1);
-        delete this.levelColl[groupId];
-        detach(target);
-        this.refreshLevelColl();
-        this.triggerEvents(args);
-        this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteGroup');
     }
     deleteRule(target) {
         let groupElem = closest(target, '.e-group-container');
         let ruleID;
         let groupID;
-        let rule = this.getParentGroup(groupElem);
-        let ruleElem = closest(target, '.e-rule-container');
         groupID = groupElem.id.replace(this.element.id + '_', '');
         ruleID = closest(target, '.e-rule-container').id.replace(this.element.id + '_', '');
-        let beforeRules = this.getValidRules(this.rule);
         let args = { groupID: groupID, ruleID: ruleID, cancel: false, type: 'deleteRule' };
-        args = this.triggerEvents(args, 'before');
-        if (args.cancel) {
-            return;
+        if (!this.isImportRules) {
+            this.trigger('beforeChange', args, (observedChangeArgs) => {
+                this.deleteRuleSuccessCallBack(observedChangeArgs, target);
+            });
         }
-        let clnruleElem = ruleElem;
-        let nextElem = ruleElem.nextElementSibling;
-        let prevElem = ruleElem.previousElementSibling;
-        let index = 0;
-        let valElem = ruleElem.querySelectorAll('.e-tooltip');
-        let i;
-        let len = valElem.length;
-        for (i = 0; i < len; i++) {
-            getComponent(valElem[i], 'tooltip').destroy();
+        else {
+            this.deleteRuleSuccessCallBack(args, target);
         }
-        while (ruleElem.previousElementSibling !== null) {
-            ruleElem = ruleElem.previousElementSibling;
-            index++;
-        }
-        rule.rules.splice(index, 1);
-        if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
-            if (nextElem) {
-                removeClass([nextElem], 'e-joined-rule');
+    }
+    deleteRuleSuccessCallBack(args, target) {
+        if (!args.cancel) {
+            if (this.actionButton && this.actionButton.className.indexOf('e-tooltip') > -1) {
+                getComponent(this.actionButton, 'tooltip').destroy();
             }
-        }
-        if (!nextElem || nextElem.className.indexOf('e-rule-container') < 0) {
-            if (prevElem) {
-                removeClass([prevElem], 'e-prev-joined-rule');
+            let groupElem = closest(target, '.e-group-container');
+            let rule = this.getParentGroup(groupElem);
+            let ruleElem = closest(target, '.e-rule-container');
+            let beforeRules = this.getValidRules(this.rule);
+            let clnruleElem = ruleElem;
+            let nextElem = ruleElem.nextElementSibling;
+            let prevElem = ruleElem.previousElementSibling;
+            let index = 0;
+            let valElem = ruleElem.querySelectorAll('.e-tooltip');
+            let i;
+            let len = valElem.length;
+            for (i = 0; i < len; i++) {
+                getComponent(valElem[i], 'tooltip').destroy();
             }
+            while (ruleElem.previousElementSibling !== null) {
+                ruleElem = ruleElem.previousElementSibling;
+                index++;
+            }
+            rule.rules.splice(index, 1);
+            if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
+                if (nextElem) {
+                    removeClass([nextElem], 'e-joined-rule');
+                }
+            }
+            if (!nextElem || nextElem.className.indexOf('e-rule-container') < 0) {
+                if (prevElem) {
+                    removeClass([prevElem], 'e-prev-joined-rule');
+                }
+            }
+            detach(clnruleElem);
+            if (!this.isImportRules) {
+                this.trigger('change', args);
+            }
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteRule');
         }
-        detach(clnruleElem);
-        this.triggerEvents(args);
-        this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteRule');
     }
     setGroupRules(rule) {
         this.reset();
@@ -2075,7 +2193,7 @@ let QueryBuilder = class QueryBuilder extends Component {
      * @returns object.
      */
     getRules() {
-        return this.rule;
+        return { condition: this.rule.condition, rules: this.rule.rules };
     }
     /**
      * Gets the rule.
@@ -2177,9 +2295,12 @@ let QueryBuilder = class QueryBuilder extends Component {
         let ruleValue;
         let ignoreCase = false;
         let column;
+        if (!ruleColl) {
+            return pred;
+        }
         for (let i = 0, len = ruleColl.length; i < len; i++) {
             let keys = Object.keys(ruleColl[i]);
-            if (keys.indexOf('rules') > -1) {
+            if (keys.indexOf('rules') > -1 && ruleColl[i].rules) {
                 pred2 = this.getPredicate(ruleColl[i]);
                 if (pred2) {
                     if (pred) {
@@ -2434,7 +2555,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.parser = [];
         this.sqlParser(sqlString);
         this.rule = { condition: '', rules: [] };
-        return this.processParser(this.parser, this.rule, [0]);
+        let rule = this.processParser(this.parser, this.rule, [0]);
+        return { condition: rule.condition, rules: rule.rules };
     }
     /**
      * Gets the sql query from rules.

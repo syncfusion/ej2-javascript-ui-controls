@@ -19,6 +19,9 @@ export class FullScreen {
     }
 
     public showFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
+        if (this.parent.toolbarSettings.enable === true) {
+            this.parent.quickToolbarModule.hideQuickToolbars();
+        }
         this.scrollableParent = getScrollableParent(this.parent.element);
         if (!this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.parent.trigger(events.actionBegin, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
@@ -46,6 +49,9 @@ export class FullScreen {
     }
 
     public hideFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
+        if (this.parent.toolbarSettings.enable === true) {
+            this.parent.quickToolbarModule.hideQuickToolbars();
+        }
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.parent.element.classList.remove(classes.CLS_FULL_SCREEN);
             let elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');

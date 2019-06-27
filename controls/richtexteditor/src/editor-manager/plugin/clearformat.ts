@@ -17,6 +17,8 @@ export class ClearFormat {
 
     private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
 
+    private static IGNORE_PARENT_TAGS: string[] = ['ul', 'ol', 'table'];
+
     private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr',
             'th',   'tfoot', 'figcaption', 'li'  ];
 
@@ -177,15 +179,18 @@ export class ClearFormat {
             }
             if (parentNodes[index1].nodeName.toLocaleLowerCase() !== 'p') {
                 if (this.NONVALID_PARENT_TAGS.indexOf(parentNodes[index1].nodeName.toLowerCase()) < 0
-                && parentNodes[index1].parentNode.nodeName.toLocaleLowerCase() !== 'p'
-                && !( parentNodes[index1].childNodes.length === 1
-                    && parentNodes[index1].childNodes[0].nodeName.toLocaleLowerCase() === 'p')) {
-                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p') );
+                    && parentNodes[index1].parentNode.nodeName.toLocaleLowerCase() !== 'p'
+                    && !((parentNodes[index1].nodeName.toLocaleLowerCase() === 'blockquote'
+                        || parentNodes[index1].nodeName.toLocaleLowerCase() === 'li')
+                        && this.IGNORE_PARENT_TAGS.indexOf(parentNodes[index1].childNodes[0].nodeName.toLocaleLowerCase()) > -1)
+                    && !(parentNodes[index1].childNodes.length === 1
+                        && parentNodes[index1].childNodes[0].nodeName.toLocaleLowerCase() === 'p')) {
+                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p'));
                 }
                 let childNodes: Node[] = InsertMethods.unwrap(parentNodes[index1]);
                 if ( childNodes.length === 1
                     && childNodes[0].parentNode.nodeName.toLocaleLowerCase() === 'p') {
-                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p') );
+                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p'));
                     InsertMethods.unwrap(parentNodes[index1]);
                 }
                 for (let index2: number = 0; index2 < childNodes.length; index2++) {
@@ -195,10 +200,17 @@ export class ClearFormat {
                     childNodes[index2].nodeName.toLocaleLowerCase() !== 'p') {
                         let blockNodes: Node[] = this.removeParent([childNodes[index2]]);
                         this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
+                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
+                        childNodes[index2].parentNode.nodeName.toLocaleLowerCase() === childNodes[index2].nodeName.toLocaleLowerCase()) {
+                        InsertMethods.unwrap(childNodes[index2]);
+                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
+                        childNodes[index2].nodeName.toLocaleLowerCase() === 'p') {
+                        InsertMethods.Wrap(childNodes[index2] as HTMLElement, docElement.createElement('p'));
+                        InsertMethods.unwrap(childNodes[index2]);
                     }
                 }
             } else {
-                InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p') );
+                InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement('p'));
                 InsertMethods.unwrap(parentNodes[index1]);
             }
         }

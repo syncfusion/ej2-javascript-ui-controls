@@ -32,6 +32,16 @@ export class HeaderFooterProperties {
     get toolbar(): Toolbar {
         return this.container.toolbarModule;
     }
+    /**
+     * @private
+     */
+    public enableDisableElements(enable: boolean): void {
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        } else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    }
     constructor(container: DocumentEditorContainer, isRtl?: boolean) {
         this.container = container;
         this.isRtl = isRtl;

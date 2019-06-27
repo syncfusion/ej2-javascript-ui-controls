@@ -167,6 +167,74 @@
           width: $cbox-ripple-small-width;
         }
       }
+   }
+}
+
+  .e-small .e-checkbox-wrapper,
+  .e-small.e-checkbox-wrapper,
+  .e-small .e-css.e-checkbox-wrapper,
+  .e-small.e-css.e-checkbox-wrapper {
+    & .e-frame {
+      height: $cbox-small-height;
+      line-height: $cbox-small-lineheight;
+      width: $cbox-small-width;
+    }
+
+    & .e-check {
+      font-size: $cbox-small-check-fontsize;
+    }
+
+    & .e-stop {
+      font-size: $cbox-small-indeterminate-fontsize;
+      line-height: $cbox-small-indeterminate-lineheight;
+    }
+
+    & .e-label {
+      font-size: $cbox-small-font-size;
+      line-height: $cbox-small-height;
+    }
+
+    & .e-ripple-container {
+      bottom: $cbox-ripple-small-size;
+      height: $cbox-ripple-small-height;
+      left: $cbox-ripple-small-size;
+      right: $cbox-ripple-small-size;
+      top: $cbox-ripple-small-size;
+      width: $cbox-ripple-small-width;
+    }
+}
+
+  .e-bigger.e-small .e-checkbox-wrapper,
+  .e-bigger.e-small.e-checkbox-wrapper,
+  .e-bigger.e-small .e-css.e-checkbox-wrapper,
+  .e-bigger.e-small.e-css.e-checkbox-wrapper {
+    & .e-frame {
+      height: $cbox-bigger-small-height;
+      line-height: $cbox-bigger-small-lineheight;
+      width: $cbox-bigger-small-width;
+    }
+
+    & .e-check {
+      font-size: $cbox-bigger-small-check-fontsize;
+    }
+
+    & .e-stop {
+      font-size: $cbox-bigger-small-indeterminate-fontsize;
+      line-height: $cbox-bigger-small-indeterminate-lineheight;
+    }
+
+    & .e-label {
+      font-size: $cbox-bigger-small-font-size;
+      line-height: $cbox-bigger-small-height;
+    }
+
+    & .e-ripple-container {
+      bottom: $cbox-ripple-bigger-small-size;
+      height: $cbox-ripple-bigger-small-height;
+      left: $cbox-ripple-bigger-small-size;
+      right: $cbox-ripple-bigger-small-size;
+      top: $cbox-ripple-bigger-small-size;
+      width: $cbox-ripple-bigger-small-width;
     }
   }
 

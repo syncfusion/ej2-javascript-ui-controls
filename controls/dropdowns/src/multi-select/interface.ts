@@ -59,4 +59,5 @@ export interface IMulitSelect extends Component<HTMLElement> {
     removeFocus?(): void;
     getLocaleName?(): string;
     filterParent: HTMLElement;
+    enableGroupCheckBox : boolean;
 }

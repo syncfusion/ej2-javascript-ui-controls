@@ -149,12 +149,37 @@ describe('Position Module Specs', () => {
         });
     });
 
-    
-
     afterAll(() => {
         element.remove();
     });
 });
+   
+describe('position calculation for popup-', () => {
+    let element: HTMLElement;
+    let offset: OffsetPosition;
+    function updateoffset(): void {
+        offset = { left: getTargetElement().getBoundingClientRect().left, top: getTargetElement().getBoundingClientRect().top };
+    }
+    beforeAll(() => {
+        //document.body.appendChild()
+        if (getTargetElement()) {
+            getTargetElement().remove();
+        }
+        element = createElement('div', { id: 'dialogSample' });
+        element.innerHTML = '<div id="block"><div style="margin: 713px;"><button id="targetElement">TargetElement</button>  </div></div>';
+        document.body.appendChild(element);
+        updateoffset();
+
+    });
+    afterAll(() => {
+        element.remove();
+    });
+    it('if bottom and right collison occurs', () => {
+        expect(calculatePosition(getTargetElement(), 'right', 'top'))
+        .toEqual({ left: document.querySelector("#targetElement").getBoundingClientRect().right, top: document.querySelector("#targetElement").getBoundingClientRect().top });
+    });
+});
+
 describe('Position calculation - calculateRelativeBasedPosition -', () => {
     let element: HTMLElement;
     let offset: OffsetPosition;

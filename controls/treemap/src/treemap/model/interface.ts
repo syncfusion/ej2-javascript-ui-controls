@@ -19,6 +19,7 @@ export interface IPrintEventArgs extends ITreeMapEventArgs {
 }
 /**
  * Specifies the Load Event arguments.
+ * @deprecated
  */
 export interface ILoadEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
@@ -33,6 +34,10 @@ export interface ILoadedEventArgs extends ITreeMapEventArgs {
     treemap: TreeMap;
 }
 
+/**
+ * Specifies the Item Rendering Event arguments.
+ * @deprecated
+ */
 export interface IItemRenderingEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
     treemap: TreeMap;
@@ -50,6 +55,10 @@ export interface IItemRenderingEventArgs extends ITreeMapEventArgs {
     options: Object;
 }
 
+/**
+ * Specifies the Drill Start Event arguments.
+ * @deprecated
+ */
 export interface IDrillStartEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
     treemap: TreeMap;
@@ -186,6 +195,10 @@ export interface IItemHighlightEventArgs extends ITreeMapEventArgs {
     elements: Element[];
 }
 
+/**
+ * Specifies the Tooltip Rendering Event arguments.
+ * @deprecated
+ */
 export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
     treemap: TreeMap;
@@ -209,6 +222,7 @@ export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
 
 /**
  * Specifies legendRendering event arguments for maps.
+ * @deprecated
  */
 export interface ILegendItemRenderingEventArgs extends ITreeMapEventArgs {
     /**

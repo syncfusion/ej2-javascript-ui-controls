@@ -64,14 +64,16 @@ export class TreeMapLegend {
             cancel: false, name: legendRendering, treemap: this.treemap, _changePosition: this.treemap.legendSettings.position,
             position: this.treemap.legendSettings.position
         };
-        this.treemap.trigger(legendRendering, eventArgs);
-        if (!eventArgs.cancel && eventArgs._changePosition !== this.treemap.legendSettings.position) {
-            this.treemap.legendSettings.position = eventArgs._changePosition;
-        }
-        this.calculateLegendBounds();
-        if (this.legendCollections.length > 0) {
-            this.drawLegend();
-        }
+        this.treemap.trigger(legendRendering, eventArgs, (observedArgs : ILegendRenderingEventArgs) => {
+            if (!observedArgs.cancel && observedArgs._changePosition !== this.treemap.legendSettings.position) {
+                this.treemap.legendSettings.position = observedArgs._changePosition;
+            }
+            this.calculateLegendBounds();
+            if (this.legendCollections.length > 0) {
+                this.drawLegend();
+            }
+        });
+
     }
     /* tslint:disable:no-string-literal */
     /* tslint:disable-next-line:max-func-body-length */
@@ -561,6 +563,7 @@ export class TreeMapLegend {
         return { shapeLocation: shapeLocation, textLocation: textLocation };
     }
 
+    /* tslint:disable-next-line:max-func-body-length */
     private drawLegendItem(page: number): void {
         let treemap: TreeMap = this.treemap; let spacing: number = 10;
         let legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
@@ -592,18 +595,19 @@ export class TreeMapLegend {
                     cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
-                this.treemap.trigger(legendItemRendering, eventArgs);
-                let renderOptions: PathOption = new PathOption(
-                    shapeId, eventArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, ''
-                );
-                legendElement.appendChild(
-                    drawSymbol(shapeLocation, eventArgs.shape, shapeSize, eventArgs.imageUrl, renderOptions, legendText)
-                );
-                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(
-                    textOptions, legend.textStyle, legend.textStyle.color || this.treemap.themeStyle.legendTextColor, legendElement
-                );
-                this.legendGroup.appendChild(legendElement);
+                this.treemap.trigger(legendItemRendering, eventArgs, (observedArgs : ILegendItemRenderingEventArgs) => {
+                    let renderOptions: PathOption = new PathOption(
+                        shapeId, observedArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, ''
+                    );
+                    legendElement.appendChild(
+                        drawSymbol(shapeLocation, observedArgs.shape, shapeSize, observedArgs.imageUrl, renderOptions, legendText)
+                    );
+                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
+                    renderTextElement(
+                        textOptions, legend.textStyle, legend.textStyle.color || this.treemap.themeStyle.legendTextColor, legendElement
+                    );
+                    this.legendGroup.appendChild(legendElement);
+                });
             }
             let pagingGroup: Element; let width: number = spacing; let height: number = (spacing / 2);
             if (this.page !== 0) {

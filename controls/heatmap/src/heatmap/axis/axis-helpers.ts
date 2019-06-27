@@ -80,8 +80,9 @@ export class AxisHelper {
         this.drawSvgCanvas.drawLine(line, parent);
     }
     private drawXAxisTitle(axis: Axis, parent: Element, rect: Rect): void {
-        let y: number = rect.y + (!axis.opposedPosition ? (axis.maxLabelSize.height + this.padding +
-            sum(axis.xAxisMultiLabelHeight)) : - (axis.maxLabelSize.height + this.padding + sum(axis.xAxisMultiLabelHeight)));
+        let titlepadding: number = ( axis.textStyle.size === '0px' ? 0 : 10);
+        let y: number = rect.y + (!axis.opposedPosition ? (axis.maxLabelSize.height + titlepadding +
+            sum(axis.xAxisMultiLabelHeight)) : - (axis.maxLabelSize.height + titlepadding + sum(axis.xAxisMultiLabelHeight)));
         if (axis.title.text) {
             let heatMap: HeatMap = this.heatMap;
             let title: TitleModel = axis.title;
@@ -109,7 +110,8 @@ export class AxisHelper {
                 title.textStyle.textAlignment === 'Far' ? 'end' : 'middle';
             let padding: number = 10;
             padding = axis.opposedPosition ? padding : -padding;
-            let x: number = rect.x + padding + ((axis.opposedPosition) ? axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight) :
+            let titlepadding: number = ( axis.textStyle.size === '0px' ? 0 : padding);
+            let x: number = rect.x + titlepadding + ((axis.opposedPosition) ? axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight) :
                 -(axis.maxLabelSize.width + sum(axis.yAxisMultiLabelHeight)));
             let y: number = rect.y + titlePositionY(rect, 0, 0, title.textStyle) + (axis.opposedPosition ? this.padding : -this.padding);
             let options: TextOption = new TextOption(
@@ -238,7 +240,6 @@ export class AxisHelper {
         let labelPadding: number;
         let angle: number = axis.angle;
         padding = this.padding;
-        let anglePadding: number = ((angle === 90 || angle === -90)) ? -2 : 0;
         let labelElement: Element; let borderElement: Element;
         if (!heatMap.enableCanvasRendering) {
             labelElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisLabels' });

@@ -1,5 +1,8 @@
 import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';
-import { BorderModel, Border, ErrorBarSettingsModel, ErrorBarSettings, MarkerSettingsModel, ChartDrawType } from '@syncfusion/ej2-charts';
+import { BorderModel, Border, ErrorBarSettingsModel, ErrorBarSettings, MarkerSettingsModel, LegendPosition } from '@syncfusion/ej2-charts';
+import { ChartDrawType, ChartShape, DataLabelSettingsModel, DataLabelSettings, ErrorBarCapSettingsModel } from '@syncfusion/ej2-charts';
+import { ErrorBarCapSettings, ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '@syncfusion/ej2-charts';
+import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';
 import { TrendlineModel, Trendline, LegendShape, SplineType, EmptyPointSettingsModel, EmptyPointSettings } from '@syncfusion/ej2-charts';
 import { CornerRadius, AnimationModel, ChartSegmentModel, ChartSegment, Segment, Animation, FontModel } from '@syncfusion/ej2-charts';
 import { EdgeLabelPlacement, LabelPlacement, AxisPosition, MajorTickLinesModel, MinorTickLinesModel } from '@syncfusion/ej2-charts';
@@ -12,9 +15,1046 @@ import { LabelIntersectAction, ZoomMode, ToolbarItems, MajorTickLines, MinorTick
 import { MarkerSettings, CornerRadiusModel, MajorGridLinesModel, StripLineSettingsModel } from '@syncfusion/ej2-charts';
 import { IAnimationCompleteEventArgs, IAxisLabelRenderEventArgs, IZoomCompleteEventArgs } from '@syncfusion/ej2-charts';
 import { MinorGridLines, AxisLine, StripLineSettings, LabelBorder, CrosshairTooltipModel } from '@syncfusion/ej2-charts';
+import { LocationModel, AccEmptyPointMode } from '@syncfusion/ej2-charts';
 import { CrosshairTooltip, CrosshairSettingsModel } from '@syncfusion/ej2-charts';
 import { PivotSeriesModel, PivotAxisModel, PivotTooltipSettingsModel, PivotZoomSettingsModel } from './chartsettings-model';
 import { ChartSeriesType, ChartSelectionMode } from '../../common';
+
+/**
+ *  third party configures for chart series in chart settings.
+ */
+export class PivotChartSeriesBorder {
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * @default ''
+     */
+    @Property('')
+    public color: string;
+
+    /**
+     * The width of the border in pixels.
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+}
+export class PivotChartSeriesAnimation {
+    /**
+     * If set to true, series gets animated on initial loading.
+     * @default true
+     */
+    @Property(true)
+    public enable: boolean;
+
+    /**
+     * The duration of animation in milliseconds.
+     * @default 1000
+     */
+    @Property(1000)
+    public duration: number;
+
+    /**
+     * The option to delay animation of the series.
+     * @default 0
+     */
+    @Property(0)
+    public delay: number;
+}
+export class PivotChartSeriesSegment {
+    /**
+     * Defines the starting point of region.
+     * @default null
+     */
+    @Property(null)
+    public value: Object;
+
+    /**
+     * Defines the color of a region.
+     * @default null
+     */
+    @Property(null)
+    public color: string;
+
+    /**
+     * Defines the pattern of dashes and gaps to stroke.
+     * @default '0'
+     */
+    @Property('0')
+    public dashArray: string;
+
+    /** @private */
+    public startValue: number;
+
+    /** @private */
+    public endValue: number;
+}
+export class PivotChartSeriesMarkerSettings {
+    /**
+     * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
+
+    /**
+     * The different shape of a marker:
+     * * Circle
+     * * Rectangle
+     * * Triangle
+     * * Diamond
+     * * HorizontalLine
+     * * VerticalLine
+     * * Pentagon
+     * * InvertedTriangle
+     * * Image
+     * @default 'Circle'
+     */
+    @Property('Circle')
+    public shape: ChartShape;
+
+
+    /**
+     * The URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
+     * @default ''
+     */
+    @Property('')
+    public imageUrl: string;
+
+    /**
+     * The height of the marker in pixels.
+     * @default 5
+     */
+    @Property(5)
+    public height: number;
+
+    /**
+     * The width of the marker in pixels.
+     * @default 5
+     */
+    @Property(5)
+    public width: number;
+
+    /**
+     * Options for customizing the border of a marker.
+     */
+    @Complex<BorderModel>({ width: 2, color: null }, Border)
+    public border: BorderModel;
+
+    /**
+     *  The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. By default, it will take series' color.
+     * @default null
+     */
+    @Property(null)
+    public fill: string;
+
+    /**
+     * The opacity of the marker.
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * The data label for the series.
+     */
+    @Complex<DataLabelSettingsModel>({}, DataLabelSettings)
+    public dataLabel: DataLabelSettingsModel;
+}
+export class PivotChartSeriesErrorSettings {
+    /**
+     * If set true, error bar for data gets rendered.
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
+
+    /**
+     * The type of the error bar . They are
+     * * Fixed -  Renders a fixed type error bar.
+     * * Percentage - Renders a percentage type error bar.
+     * * StandardDeviation - Renders a standard deviation type error bar.
+     * * StandardError -Renders a standard error type error bar.
+     * * Custom -Renders a custom type error bar.
+     * @default 'Fixed'
+     */
+    @Property('Fixed')
+    public type: ErrorBarType;
+
+    /**
+     * The direction of the error bar . They are
+     * * both -  Renders both direction of error bar.
+     * * minus - Renders minus direction of error bar.
+     * * plus - Renders plus direction error bar.
+     * @default 'Both'
+     */
+    @Property('Both')
+    public direction: ErrorBarDirection;
+
+    /**
+     * The mode of the error bar . They are
+     * * Vertical -  Renders a vertical error bar.
+     * * Horizontal - Renders a horizontal error bar.
+     * * Both - Renders both side error bar.
+     * @default 'Vertical'
+     */
+    @Property('Vertical')
+    public mode: ErrorBarMode;
+
+    /**
+     *  The color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
+     * @default null
+     */
+    @Property(null)
+    public color: string;
+
+    /**
+     * The vertical error of the error bar.
+     * @default 1
+     */
+    @Property(1)
+    public verticalError: number;
+
+    /**
+     * The stroke width of the error bar..
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+    /**
+     * The horizontal error of the error bar.
+     * @default 1
+     */
+    @Property(1)
+    public horizontalError: number;
+
+    /**
+     * The vertical positive error of the error bar.
+     * @default 3
+     */
+    @Property(3)
+    public verticalPositiveError: number;
+
+    /**
+     * The vertical negative error of the error bar.
+     * @default 3
+     */
+    @Property(3)
+    public verticalNegativeError: number;
+
+    /**
+     * The horizontal positive error of the error bar.
+     * @default 1
+     */
+    @Property(1)
+    public horizontalPositiveError: number;
+
+    /**
+     * The horizontal negative error of the error bar.
+     * @default 1
+     */
+    @Property(1)
+    public horizontalNegativeError: number;
+
+    /**
+     * Options for customizing the cap of the error bar.
+     */
+    @Complex<ErrorBarCapSettingsModel>(null, ErrorBarCapSettings)
+    public errorBarCap: ErrorBarCapSettingsModel;
+}
+export class PivotChartSeriesTrendline {
+    /**
+     * Defines the name of trendline
+     * @default ''
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Defines the type of the trendline
+     * @default 'Linear'
+     */
+    @Property('Linear')
+    public type: TrendlineTypes;
+
+    /**
+     * Defines the period, the price changes over which will be considered to predict moving average trend line
+     * @default 2
+     */
+    @Property(2)
+    public period: number;
+
+    /**
+     * Defines the polynomial order of the polynomial trendline
+     * @default 2
+     */
+    @Property(2)
+    public polynomialOrder: number;
+
+    /**
+     * Defines the period, by which the trend has to backward forecast
+     * @default 0
+     */
+    @Property(0)
+    public backwardForecast: number;
+
+    /**
+     * Defines the period, by which the trend has to forward forecast
+     * @default 0
+     */
+    @Property(0)
+    public forwardForecast: number;
+
+    /**
+     * Options to customize the animation for trendlines
+     */
+    @Complex<AnimationModel>({}, Animation)
+    public animation: AnimationModel;
+
+    /**
+     * Options to customize the marker for trendlines
+     */
+    @Complex<MarkerSettingsModel>({}, MarkerSettings)
+    public marker: MarkerSettingsModel;
+
+    /**
+     * Enables/disables tooltip for trendlines
+     * @default true
+     */
+    @Property(true)
+    public enableTooltip: boolean;
+
+
+    /**
+     * Defines the intercept of the trendline
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public intercept: number;
+
+    /**
+     * Defines the fill color of trendline
+     * @default ''
+     */
+    @Property('')
+    public fill: string;
+
+    /**
+     * Defines the width of the trendline
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+    /**
+     * Sets the legend shape of the trendline
+     * @default 'SeriesType'
+     */
+    @Property('SeriesType')
+    public legendShape: LegendShape;
+}
+export class PivotChartSeriesEmptyPointSettings {
+    /**
+     * To customize the fill color of empty points.
+     * @default null
+     */
+    @Property(null)
+    public fill: string;
+
+    /**
+     * Options to customize the border of empty points.
+     * @default "{color: 'transparent', width: 0}"
+     */
+    @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
+    public border: BorderModel;
+
+    /**
+     * To customize the mode of empty points.
+     * @default Gap
+     */
+    @Property('Gap')
+    public mode: EmptyPointMode | AccEmptyPointMode;
+}
+export class PivotChartSeriesCornerRadius {
+    /**
+     * Specifies the top left corner radius value
+     * @default 0
+     */
+    @Property(0)
+    public topLeft: number;
+
+    /**
+     * Specifies the top right corner radius value
+     * @default 0
+     */
+    @Property(0)
+    public topRight: number;
+
+    /**
+     * Specifies the bottom left corner radius value
+     * @default 0
+     */
+    @Property(0)
+    public bottomLeft: number;
+
+    /**
+     * Specifies the bottom right corner radius value
+     * @default 0
+     */
+    @Property(0)
+    public bottomRight: number;
+}
+
+/**
+ *  third party configures for chart axis in chart settings.
+ */
+export class PivotChartAxisFont {
+    /**
+     * FontStyle for the text.
+     * @default 'Normal'
+     */
+    @Property('Normal')
+    public fontStyle: string;
+
+    /**
+     * Font size for the text.
+     * @default '16px'
+     */
+    @Property('16px')
+    public size: string;
+
+    /**
+     * FontWeight for the text.
+     * @default 'Normal'
+     */
+    @Property('Normal')
+    public fontWeight: string;
+
+    /**
+     * Color for the text.
+     * @default ''
+     */
+    @Property('')
+    public color: string;
+
+    /**
+     * text alignment
+     * @default 'Center'
+     */
+    @Property('Center')
+    public textAlignment: Alignment;
+
+    /**
+     * FontFamily for the text.
+     */
+    @Property('Segoe UI')
+    public fontFamily: string;
+
+    /**
+     * Opacity for the text.
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * Specifies the chart title text overflow
+     * @default 'Trim'
+     */
+    @Property('Trim')
+    public textOverflow: TextOverflow;
+}
+export class PivotChartAxisCrosshairTooltip {
+    /**
+     * If set to true, crosshair ToolTip will be visible.
+     *  @default false
+     */
+    @Property(false)
+    public enable: Boolean;
+
+    /**
+     * The fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
+     * @default null
+     */
+    @Property(null)
+    public fill: string;
+
+    /**
+     * Options to customize the crosshair ToolTip text.
+     */
+    @Complex<FontModel>(Theme.crosshairLabelFont, Font)
+    public textStyle: FontModel;
+}
+export class PivotChartAxisMajorTickLines {
+    /**
+     * The width of the tick lines in pixels.
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+    /**
+     * The height of the ticks in pixels.
+     * @default 5
+     */
+    @Property(5)
+    public height: number;
+
+    /**
+     * The color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+     * @default null
+     */
+    @Property(null)
+    public color: string;
+}
+export class PivotChartAxisMajorGridLines {
+    /**
+     * The width of the line in pixels.
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+    /**
+     * The dash array of the grid lines.
+     * @default ''
+     */
+    @Property('')
+    public dashArray: string;
+
+    /**
+     * The color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
+     * @default null
+     */
+    @Property(null)
+    public color: string;
+}
+export class PivotChartAxisMinorTickLines {
+    /**
+     * The width of the tick line in pixels.
+     * @default 0.7
+     */
+    @Property(0.7)
+    public width: number;
+
+    /**
+     * The height of the ticks in pixels.
+     * @default 5
+     */
+    @Property(5)
+    public height: number;
+
+    /**
+     * The color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
+     * @default null
+     */
+    @Property(null)
+    public color: string;
+}
+export class PivotChartAxisMinorGridLines {
+    /**
+     * The width of the line in pixels.
+     * @default 0.7
+     */
+    @Property(0.7)
+    public width: number;
+
+    /**
+     * The dash array of grid lines.
+     * @default ''
+     */
+    @Property('')
+    public dashArray: string;
+
+    /**
+     * The color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
+     * @default null
+     */
+    @Property(null)
+    public color: string;
+}
+export class PivotChartAxisAxisLine {
+    /**
+     * The width of the line in pixels.
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+    /**
+     * The dash array of the axis line.
+     * @default ''
+     */
+    @Property('')
+    public dashArray: string;
+
+    /**
+     * The color of the axis line that accepts value in hex and rgba as a valid CSS color string.
+     * @default null
+     */
+    @Property(null)
+    public color: string;
+}
+export class PivotChartAxisStripLineSettings {
+    /**
+     * If set true, strip line for axis renders.
+     * @default true
+     */
+    @Property(true)
+    public visible: boolean;
+
+    /**
+     *  If set true, strip line get render from axis origin.
+     *  @default false
+     */
+    @Property(false)
+    public startFromAxis: boolean;
+
+    /**
+     * Start value of the strip line.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public start: number | Date;
+
+    /**
+     * End value of the strip line.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public end: number | Date;
+
+    /**
+     * Size of the strip line, when it starts from the origin.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public size: number;
+
+    /**
+     * Color of the strip line.
+     * @default '#808080'
+     */
+    @Property('#808080')
+    public color: string;
+
+    /**
+     * Dash Array of the strip line.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public dashArray: string;
+
+    /**
+     * Size type of the strip line
+     * @default Auto
+     */
+    @Property('Auto')
+    public sizeType: SizeType;
+
+    /**
+     * isRepeat value of the strip line.
+     * @default false
+     * @aspDefaultValueIgnore
+     */
+    @Property(false)
+    public isRepeat: boolean;
+
+    /**
+     * repeatEvery value of the strip line.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public repeatEvery: number | Date;
+
+    /**
+     * repeatUntil value of the strip line.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public repeatUntil: number | Date;
+
+    /**
+     * isSegmented value of the strip line
+     * @default false
+     * @aspDefaultValueIgnore
+     */
+    @Property(false)
+    public isSegmented: boolean;
+
+    /**
+     * segmentStart value of the strip line.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public segmentStart: number | Date;
+
+    /**
+     * segmentEnd value of the strip line.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public segmentEnd: number | Date;
+
+    /**
+     * segmentAxisName of the strip line.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public segmentAxisName: string;
+
+    /**
+     * Border of the strip line.
+     */
+    @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
+    public border: BorderModel;
+
+    /**
+     * Strip line text.
+     * @default ''
+     */
+    @Property('')
+    public text: string;
+
+    /**
+     * The angle to which the strip line text gets rotated.
+     * @default null
+     * @aspDefaultValueIgnore
+     */
+    @Property(null)
+    public rotation: number;
+
+    /**
+     * Defines the position of the strip line text horizontally. They are,
+     * * Start: Places the strip line text at the start.
+     * * Middle: Places the strip line text in the middle.
+     * * End: Places the strip line text at the end.
+     * @default 'Middle'
+     */
+    @Property('Middle')
+    public horizontalAlignment: Anchor;
+
+    /**
+     * Defines the position of the strip line text vertically. They are,
+     * * Start: Places the strip line text at the start.
+     * * Middle: Places the strip line text in the middle.
+     * * End: Places the strip line text at the end.
+     * @default 'Middle'
+     */
+    @Property('Middle')
+    public verticalAlignment: Anchor;
+
+    /**
+     * Options to customize the strip line text.
+     */
+    @Complex<FontModel>(Theme.stripLineLabelFont, Font)
+    public textStyle: FontModel;
+
+    /**
+     * Specifies the order of the strip line. They are,
+     * * Behind: Places the strip line behind the series elements.
+     * * Over: Places the strip line over the series elements.
+     * @default 'Behind'
+     */
+    @Property('Behind')
+    public zIndex: ZIndex;
+
+    /**
+     * Strip line Opacity
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+}
+export class PivotChartAxisLabelBorder {
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * @default ''
+     */
+    @Property('')
+    public color: string;
+
+    /**
+     * The width of the border in pixels.
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+
+    /**
+     * Border type for labels
+     * * Rectangle
+     * * Without Top Border
+     * * Without Top and BottomBorder
+     * * Without Border
+     * * Brace
+     * * CurlyBrace
+     * @default 'Rectangle'
+     */
+    @Property('Rectangle')
+    public type: BorderType;
+}
+
+/**
+ *  third party configures in chart settings.
+ */
+export class PivotChartSettingsChartArea {
+    /**
+     * Options to customize the border of the chart area.
+     */
+    @Complex<BorderModel>({}, Border)
+    public border: BorderModel;
+
+    /**
+     * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+     * @default 'transparent'
+     */
+    @Property('transparent')
+    public background: string;
+
+    /**
+     * The opacity for background.
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+}
+export class PivotChartSettingsCrosshairSettings {
+    /**
+     * If set to true, crosshair line becomes visible.
+     * @default false
+     */
+    @Property(false)
+    public enable: boolean;
+
+    /**
+     * DashArray for crosshair.
+     * @default ''
+     */
+    @Property('')
+    public dashArray: string;
+
+    /**
+     * Options to customize the crosshair line.
+     */
+    @Complex<BorderModel>({ color: null, width: 1 }, Border)
+    public line: BorderModel;
+
+    /**
+     * Specifies the line type. Horizontal mode enables the horizontal line and Vertical mode enables the vertical line. They are,
+     * * None: Hides both vertical and horizontal crosshair lines.
+     * * Both: Shows both vertical and horizontal crosshair lines.
+     * * Vertical: Shows the vertical line.
+     * * Horizontal: Shows the horizontal line.
+     * @default Both
+     */
+    @Property('Both')
+    public lineType: LineType;
+}
+export class PivotChartSettingsLegendSettings {
+    /**
+     * If set to true, legend will be visible.
+     * @default true
+     */
+    @Property(true)
+    public visible: boolean;
+
+    /**
+     * The height of the legend in pixels.
+     * @default null
+     */
+    @Property(null)
+    public height: string;
+
+    /**
+     * The width of the legend in pixels.
+     * @default null
+     */
+    @Property(null)
+    public width: string;
+
+    /**
+     * Specifies the location of the legend, relative to the chart.
+     * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
+     * ```html
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let chart: Chart = new Chart({
+     * ...
+     *   legendSettings: {
+     *     visible: true,
+     *     position: 'Custom',
+     *     location: { x: 100, y: 150 },
+     *   },
+     * ...
+     * });
+     * chart.appendTo('#Chart');
+     * ```
+     */
+    @Complex<LocationModel>({ x: 0, y: 0 }, Location)
+    public location: LocationModel;
+
+    /**
+     * Position of the legend in the chart are,
+     * * Auto: Places the legend based on area type.
+     * * Top: Displays the legend at the top of the chart.
+     * * Left: Displays the legend at the left of the chart.
+     * * Bottom: Displays the legend at the bottom of the chart.
+     * * Right: Displays the legend at the right of the chart.
+     * * Custom: Displays the legend  based on the given x and y values.
+     * @default 'Auto'
+     */
+    @Property('Auto')
+    public position: LegendPosition;
+
+    /**
+     * Option to customize the padding between legend items.
+     * @default 8
+     */
+    @Property(8)
+    public padding: number;
+
+    /**
+     * Legend in chart can be aligned as follows:
+     * * Near: Aligns the legend to the left of the chart.
+     * * Center: Aligns the legend to the center of the chart.
+     * * Far: Aligns the legend to the right of the chart.
+     * @default 'Center'
+     */
+    @Property('Center')
+    public alignment: Alignment;
+
+    /**
+     * Options to customize the legend text.
+     */
+    @Complex<FontModel>(Theme.legendLabelFont, Font)
+    public textStyle: FontModel;
+
+    /**
+     * Shape height of the legend in pixels.
+     * @default 10
+     */
+    @Property(10)
+    public shapeHeight: number;
+
+    /**
+     * Shape width of the legend in pixels.
+     * @default 10
+     */
+    @Property(10)
+    public shapeWidth: number;
+
+    /**
+     * Options to customize the border of the legend.
+     */
+    @Complex<BorderModel>({}, Border)
+    public border: BorderModel;
+
+    /**
+     *  Options to customize left, right, top and bottom margins of the chart.
+     */
+    @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+    public margin: MarginModel;
+
+    /**
+     * Padding between the legend shape and text.
+     * @default 5
+     */
+    @Property(5)
+    public shapePadding: number;
+
+    /**
+     * The background color of the legend that accepts value in hex and rgba as a valid CSS color string.
+     * @default 'transparent'
+     */
+    @Property('transparent')
+    public background: string;
+
+    /**
+     * Opacity of the legend.
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * If set to true, series' visibility collapses based on the legend visibility.
+     * @default true
+     */
+    @Property(true)
+    public toggleVisibility: boolean;
+
+    /**
+     * Description for legends.
+     * @default null
+     */
+    @Property(null)
+    public description: string;
+
+    /**
+     * TabIndex value for the legend.
+     * @default 3
+     */
+    @Property(3)
+    public tabIndex: number;
+}
+export class PivotChartSettingsIndexes {
+    /**
+     * Specifies the series index
+     * @default 0
+     * @aspType int
+     */
+    @Property(0)
+    public series: number;
+
+    /**
+     * Specifies the point index
+     * @default 0
+     * @aspType int
+     */
+    @Property(0)
+    public point: number;
+}
+export class PivotChartSettingsMargin {
+    /**
+     * Left margin in pixels.
+     * @default 10
+     */
+    @Property(10)
+    public left: number;
+
+    /**
+     * Right margin in pixels.
+     * @default 10
+     */
+    @Property(10)
+    public right: number;
+
+    /**
+     * Top margin in pixels.
+     * @default 10
+     */
+    @Property(10)
+    public top: number;
+
+    /**
+     * Bottom margin in pixels.
+     * @default 10
+     */
+    @Property(10)
+    public bottom: number;
+}
 
 /**
  *  Configures the series in charts.
@@ -843,6 +1883,13 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     public enableAnimation: boolean;
 
     /**
+     * Specifies whether a grouping separator should be used for a number.
+     * @default true
+     */
+    @Property(true)
+    public useGroupingSeparator: boolean;
+
+    /**
      * It specifies whether the chart should be render in transposed manner or not.
      * @default false
      */
@@ -866,6 +1913,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers after resizing of chart
      * @event
+     * @deprecated
      */
     @Event()
     public resized: EmitType<IResizeEventArgs>;
@@ -880,6 +1928,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers after chart load.
      * @event
+     * @deprecated
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -887,6 +1936,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers before the prints gets started.
      * @event
+     * @deprecated
      */
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
@@ -894,6 +1944,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers after animation is completed for the series.
      * @event
+     * @deprecated
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -901,6 +1952,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers before chart load.
      * @event
+     * @deprecated
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -908,6 +1960,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers before the data label for series is rendered.
      * @event
+     * @deprecated
      */
 
     @Event()
@@ -916,6 +1969,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers before the legend is rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public legendRender: EmitType<ILegendRenderEventArgs>;
@@ -923,6 +1977,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers before the series is rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public seriesRender: EmitType<ISeriesRenderEventArgs>;
@@ -930,6 +1985,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers before each points for the series is rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public pointRender: EmitType<IPointRenderEventArgs>;
@@ -937,6 +1993,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
@@ -944,6 +2001,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers before each axis label is rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
@@ -951,6 +2009,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers on clicking the chart.
      * @event
+     * @deprecated
      */
     @Event()
     public chartMouseClick: EmitType<IMouseEventArgs>;
@@ -958,6 +2017,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers on hovering the chart.
      * @event
+     * @deprecated
      */
     @Event()
     public chartMouseMove: EmitType<IMouseEventArgs>;
@@ -965,6 +2025,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers on point move.
      * @event
+     * @deprecated
      */
     @Event()
     public pointMove: EmitType<IPointEventArgs>;
@@ -972,6 +2033,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers on point click.
      * @event
+     * @deprecated
      */
     @Event()
     public pointClick: EmitType<IPointEventArgs>;
@@ -979,6 +2041,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers on mouse down.
      * @event
+     * @deprecated
      */
     @Event()
     public chartMouseDown: EmitType<IMouseEventArgs>;
@@ -986,6 +2049,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers when cursor leaves the chart.
      * @event
+     * @deprecated
      */
     @Event()
     public chartMouseLeave: EmitType<IMouseEventArgs>;
@@ -993,6 +2057,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers after the drag selection is completed.
      * @event
+     * @deprecated
      */
     @Event()
     public dragComplete: EmitType<IDragCompleteEventArgs>;
@@ -1000,6 +2065,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers on mouse up.
      * @event
+     * @deprecated
      */
     @Event()
     public chartMouseUp: EmitType<IMouseEventArgs>;
@@ -1007,6 +2073,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers when start the scroll.
      * @event
+     * @deprecated
      */
     @Event()
     public scrollStart: EmitType<IScrollEventArgs>;
@@ -1014,6 +2081,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers after the zoom selection is completed.
      * @event
+     * @deprecated
      */
     @Event()
     public zoomComplete: EmitType<IZoomCompleteEventArgs>;
@@ -1021,6 +2089,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers when change the scroll.
      * @event
+     * @deprecated
      */
     @Event()
     public scrollChanged: EmitType<IScrollEventArgs>;
@@ -1028,7 +2097,15 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Triggers after the scroll end.
      * @event
+     * @deprecated
      */
     @Event()
     public scrollEnd: EmitType<IScrollEventArgs>;
+
+    /**
+     * Specifies whether to show multilevel labels in chart.
+     * @default true
+     */
+    @Property(true)
+    public showMultiLevelLabels: boolean;
 }

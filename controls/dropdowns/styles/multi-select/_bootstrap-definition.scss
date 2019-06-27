@@ -8,7 +8,7 @@ $ddl-chip-mobile-font: $brand-primary-font !default;
 $ddl-chip-bg-color:  $grey-e6 !default;
 $ddl-chip-hover-bg-color: $grey-d4 !default;
 $ddl-chip-hover-font-color: $grey-light-font !default;
-$ddl-chip-font-color:  $grey-light-font !default;
+$ddl-chip-font-color: $grey-light-font !default;
 $ddl-chip-close:  $grey-light-font !default;
 $ddl-sel-chip-font-color: $grey-light-font !default;
 $ddl-sel-chip-close: $grey-light-font !default;
@@ -111,6 +111,35 @@ $ddl-close-rtl-icon-left: 38px !default;
 $ddl-chip-close-rtl-left: -15px !default;
 $ddl-delim-font-color: $grey-light-font !default;
 $ddl-close-icon-color: $grey-light-font !default;
+$ddl-multiselect-group-list-item-rtl-padding-right: 29px !default;
+$ddl-bigger-multiselect-group-list-item-rtl-padding-right: 5px !default;
+$ddl-multiselect-group-list-group-item-padding-left: 24px !default;
+$ddl-multiselect-group-checkbox-wrapper-padding-left: 14px !default;
+$ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: 20px !default;
+$ddl-multiselect-group-list-group-item-rtl-padding-right: 20px !default;
+// Small size
+$ddl-select-all-height-small: 22px !default;
+$ddl-small-chip-height: 24px !default;
+$ddl-chip-small-font-size: 13px !default;
+$ddl-small-chip-close-square: 24px !default;
+$ddl-small-chip-close-font: 8px !default;
+$ddl-control-small-height: 24px !default;
+$ddl-small-input-height: 28px !default;
+$ddl-delim-small-font-size: 13px !default;
+$ddl-small-closer-margin-top: -3.5em !default;
+$ddl-chip-close-hooker-small-left: 8px !default;
+$ddl-delimviewheight-small: 28px !default;
+// Touch Small size
+$ddl-select-all-height-bigger-small: 34px !default;
+$ddl-bigger-small-chip-height: 30px !default;
+$ddl-chip-bigger-small-font-size: 15px !default;
+$ddl-bigger-small-chip-close-square: 30px !default;
+$ddl-bigger-small-chip-close-font: 10px !default;
+$ddl-control-bigger-small-height: 30px !default;
+$ddl-bigger-small-input-height: 35px !default;
+$ddl-delim-bigger-small-font-size: 14px !default;
+$ddl-delimviewheight-bigger-small: 35px !default;
+$ddl-closer-margin-top-bigger-small: -4em !default;
 
 @include export-module('multiselect-bootstrap') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {

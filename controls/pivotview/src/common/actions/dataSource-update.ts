@@ -38,13 +38,13 @@ export class DataSourceUpdate {
         if (this.control && this.btnElement && this.btnElement.getAttribute('isvalue') === 'true') {
             switch (droppedClass) {
                 case '':
-                    this.control.setProperties({ dataSource: { values: [] } }, true);
+                    this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
                     break;
                 case 'rows':
-                    this.control.setProperties({ dataSource: { valueAxis: 'row' } }, true);
+                    this.control.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
                     break;
                 case 'columns':
-                    this.control.setProperties({ dataSource: { valueAxis: 'column' } }, true);
+                    this.control.setProperties({ dataSourceSettings: { valueAxis: 'column' } }, true);
                     break;
             }
         } else {
@@ -56,7 +56,7 @@ export class DataSourceUpdate {
         }
         if (this.control) {
             let eventArgs: FieldDroppedEventArgs = {
-                'droppedField': dataSourceItem, 'dataSource': this.parent.dataSource, 'droppedAxis': droppedClass
+                'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
             };
             this.control.trigger(events.onFieldDropped, eventArgs);
         }
@@ -64,23 +64,23 @@ export class DataSourceUpdate {
             switch (droppedClass) {
                 case 'filters':
                     droppedPosition !== -1 ?
-                        this.parent.dataSource.filters.splice(droppedPosition as number, 0, dataSourceItem) :
-                        this.parent.dataSource.filters.push(dataSourceItem);
+                        this.parent.dataSourceSettings.filters.splice(droppedPosition as number, 0, dataSourceItem) :
+                        this.parent.dataSourceSettings.filters.push(dataSourceItem);
                     break;
                 case 'rows':
                     droppedPosition !== -1 ?
-                        this.parent.dataSource.rows.splice(droppedPosition as number, 0, dataSourceItem) :
-                        this.parent.dataSource.rows.push(dataSourceItem);
+                        this.parent.dataSourceSettings.rows.splice(droppedPosition as number, 0, dataSourceItem) :
+                        this.parent.dataSourceSettings.rows.push(dataSourceItem);
                     break;
                 case 'columns':
                     droppedPosition !== -1 ?
-                        this.parent.dataSource.columns.splice(droppedPosition as number, 0, dataSourceItem) :
-                        this.parent.dataSource.columns.push(dataSourceItem);
+                        this.parent.dataSourceSettings.columns.splice(droppedPosition as number, 0, dataSourceItem) :
+                        this.parent.dataSourceSettings.columns.push(dataSourceItem);
                     break;
                 case 'values':
                     droppedPosition !== -1 ?
-                        this.parent.dataSource.values.splice(droppedPosition as number, 0, dataSourceItem) :
-                        this.parent.dataSource.values.push(dataSourceItem);
+                        this.parent.dataSourceSettings.values.splice(droppedPosition as number, 0, dataSourceItem) :
+                        this.parent.dataSourceSettings.values.push(dataSourceItem);
                     break;
             }
         }
@@ -96,10 +96,10 @@ export class DataSourceUpdate {
     public removeFieldFromReport(fieldName: string): IFieldOptions {
         let dataSourceItem: IFieldOptions;
         let isDataSource: boolean = false;
-        let rows: IFieldOptions[] = this.parent.dataSource.rows;
-        let columns: IFieldOptions[] = this.parent.dataSource.columns;
-        let values: IFieldOptions[] = this.parent.dataSource.values;
-        let filters: IFieldOptions[] = this.parent.dataSource.filters;
+        let rows: IFieldOptions[] = this.parent.dataSourceSettings.rows;
+        let columns: IFieldOptions[] = this.parent.dataSourceSettings.columns;
+        let values: IFieldOptions[] = this.parent.dataSourceSettings.values;
+        let filters: IFieldOptions[] = this.parent.dataSourceSettings.filters;
         let fields: IFieldOptions[][] = [rows, columns, values, filters];
         let field: IField = this.parent.engineModule.fieldList[fieldName];
         for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {

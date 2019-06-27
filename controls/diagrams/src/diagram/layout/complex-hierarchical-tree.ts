@@ -51,6 +51,7 @@ export class ComplexHierarchicalTree {
         }
         return nodesCollection;
     }
+
 }
 
 /**

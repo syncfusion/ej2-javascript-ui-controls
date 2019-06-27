@@ -76,6 +76,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * Triggers on set a 
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      * @event
+     * @blazorProperty 'CustomValueSpecifier'
      */
     customValueSpecifier?: EmitType<CustomValueSpecifierEventArgs>;
 
@@ -83,6 +84,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * Triggers on typing a character in the component.
      * > For more details about the filtering refer to [`Filtering`](../../combo-box/filtering) documentation.
      * @event
+     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<FilteringEventArgs>;
 

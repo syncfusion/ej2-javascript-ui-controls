@@ -3,6 +3,7 @@ import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Animation
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
@@ -366,48 +367,56 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * The event will be fired once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired before adding the item to the Tab.
      * @event
+     * @blazorProperty 'Adding'
      */
     @Event()
     public adding: EmitType<AddEventArgs>;
     /**
      * The event will be fired after adding the item to the Tab.
      * @event
+     * @blazorProperty 'Added'
      */
     @Event()
     public added: EmitType<AddEventArgs>;
     /**
      * The event will be fired before the item gets selected.
      * @event
+     * @blazorProperty 'Selecting'
      */
     @Event()
     public selecting: EmitType<SelectingEventArgs>;
     /**
      * The event will be fired after the item gets selected.
      * @event
+     * @blazorProperty 'Selected'
      */
     @Event()
     public selected: EmitType<SelectEventArgs>;
     /**
      * The event will be fired before removing the item from the Tab.
      * @event
+     * @blazorProperty 'Removing'
      */
     @Event()
     public removing: EmitType<RemoveEventArgs>;
     /**
      * The event will be fired after removing the item from the Tab.
      * @event
+     * @blazorProperty 'Removed'
      */
     @Event()
     public removed: EmitType<RemoveEventArgs>;
     /**
      * The event will be fired when the component gets destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Event>;
@@ -476,6 +485,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     protected render(): void {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title} });
         this.renderContainer();
+        this.refreshTemplate();
         this.wireEvents();
         this.initRender = false;
     }
@@ -654,6 +664,22 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     }
+
+    private refreshTemplate(): void {
+        for (let item of this.items) {
+            if (item.header.text && typeof item.header.text === 'string' &&
+                (<string>item.header.text).indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'text', 'Text');
+                updateBlazorTemplate(this.element.id + 'text', 'Text');
+            }
+            if (item.content && typeof item.content === 'string' &&
+                (<string>item.content).indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'content', 'Content');
+                updateBlazorTemplate(this.element.id + 'content', 'Content');
+            }
+        }
+    }
+
     private removeActiveClass(id: string): void {
         let hdrActEle: HTEle = <HTEle> selectAll(':root .' + CLS_HEADER + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE, this.element)[0];
         if (this.headerPlacement === 'Bottom') {
@@ -837,7 +863,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let tempEle: HTEle = this.createElement('div');
         this.compileElement(tempEle, cnt, 'content');
         if (tempEle.childNodes.length !== 0) {
-          ele.appendChild(tempEle); }
+          ele.appendChild(tempEle);
+        }
     }
     private compileElement(ele: HTEle, val: string, prop: string): void {
       if (typeof val === 'string') {
@@ -845,7 +872,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
       let templateFn: Function = compile(val);
       let templateFUN: HTMLElement[];
       if (!isNOU(templateFn)) {
-        templateFUN = templateFn({}, this, prop); }
+        let templateProps: string;
+        if (ele.classList.contains(CLS_TEXT)) {
+          templateProps = this.element.id + 'text';
+        } else if (ele.classList.contains(CLS_CONTENT)) {
+          templateProps = this.element.id + 'content';
+        }
+        templateFUN = templateFn({}, this, prop, templateProps); }
       if (!isNOU(templateFn) && templateFUN.length > 0) {
         [].slice.call(templateFUN).forEach((el: HTEle): void => {
           ele.appendChild(el);
@@ -1359,50 +1392,55 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns void.
      */
     public addTab(items: TabItemModel[], index?: number): void {
-        let lastEleIndex: number = 0;
         let addArgs: AddEventArgs = { addedItems: items, cancel: false };
         if (!this.isReplace) {
-            this.trigger('adding', addArgs);
+            this.trigger('adding', addArgs, (tabAddingArgs: AddEventArgs) => {
+                if (!tabAddingArgs.cancel) { this.addingTabContent(items, index); }
+            });
+        } else {
+            this.addingTabContent(items, index);
         }
-        if (addArgs.cancel) { return; }
+    }
+    private addingTabContent(items: TabItemModel[], index?: number): void {
+        let lastEleIndex: number = 0;
         this.hdrEle = <HTEle> select('.' + CLS_HEADER, this.element);
         if (isNOU(this.hdrEle)) {
             this.items = items;
             this.reRenderItems();
-            return;
+        } else {
+            let itemsCount: number = selectAll('.' + CLS_TB_ITEM, this.element).length;
+            if (itemsCount !== 0) { lastEleIndex = this.lastIndex + 1; }
+            if (isNOU(index)) { index = itemsCount - 1; }
+            if (itemsCount < index || index < 0 || isNaN(index)) { return; }
+            if (itemsCount === 0 && !isNOU(this.hdrEle)) { this.hdrEle.style.display = ''; }
+            if (!isNOU(this.bdrLine)) { this.bdrLine.classList.add(CLS_HIDDEN); }
+            this.tbItems = <HTEle> select('.' + CLS_HEADER + ' .' +  CLS_TB_ITEMS, this.element);
+            this.isAdd = true;
+            let tabItems: object[] = this.parseObject(items, index);
+            this.isAdd = false;
+            let i: number = 0;
+            let textValue: string | HTEle;
+            items.forEach((item: TabItemModel, place: number) => {
+                textValue = item.header.text;
+                if (!((isNOU(item.header) || isNOU(textValue) || ((<string>textValue).length === 0) && isNOU(item.header.iconCss)))) {
+                this.items.splice((index + i), 0, item);
+                i++;
+                }
+                if (this.isTemplate && !isNOU(item.header) && !isNOU(item.header.text)) {
+                    let no: number = lastEleIndex + place;
+                    let ele: HTEle = this.createElement('div', {
+                        id: CLS_CONTENT + '_' + no, className: CLS_ITEM, attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM + '_' + no }
+                    });
+                    this.cntEle.insertBefore(ele, this.cntEle.children[(index + place)]);
+                    let eleTrg: HTEle = this.getTrgContent(this.cntEle, no.toString());
+                    this.getContent(eleTrg, item.content, 'render');
+                }
+            });
+            this.tbObj.addItems(tabItems, index);
+            if (!this.isReplace) {
+            this.trigger('added', { addedItems: items }); }
+            if (this.selectedItem === index) { this.select(index); } else { this.setActiveBorder(); }
         }
-        let itemsCount: number = selectAll('.' + CLS_TB_ITEM, this.element).length;
-        if (itemsCount !== 0) { lastEleIndex = this.lastIndex + 1; }
-        if (isNOU(index)) { index = itemsCount - 1; }
-        if (itemsCount < index || index < 0 || isNaN(index)) { return; }
-        if (itemsCount === 0 && !isNOU(this.hdrEle)) { this.hdrEle.style.display = ''; }
-        if (!isNOU(this.bdrLine)) { this.bdrLine.classList.add(CLS_HIDDEN); }
-        this.tbItems = <HTEle> select('.' + CLS_HEADER + ' .' +  CLS_TB_ITEMS, this.element);
-        this.isAdd = true;
-        let tabItems: object[] = this.parseObject(items, index);
-        this.isAdd = false;
-        let i: number = 0;
-        let textValue: string | HTEle;
-        items.forEach((item: TabItemModel, place: number) => {
-            textValue = item.header.text;
-            if (!((isNOU(item.header) || isNOU(textValue) || ((<string>textValue).length === 0) && isNOU(item.header.iconCss)))) {
-            this.items.splice((index + i), 0, item);
-            i++;
-            }
-            if (this.isTemplate && !isNOU(item.header) && !isNOU(item.header.text)) {
-                let no: number = lastEleIndex + place;
-                let ele: HTEle = this.createElement('div', {
-                    id: CLS_CONTENT + '_' + no, className: CLS_ITEM, attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM + '_' + no }
-                });
-                this.cntEle.insertBefore(ele, this.cntEle.children[(index + place)]);
-                let eleTrg: HTEle = this.getTrgContent(this.cntEle, no.toString());
-                this.getContent(eleTrg, item.content, 'render');
-            }
-        });
-        this.tbObj.addItems(tabItems, index);
-        if (!this.isReplace) {
-        this.trigger('added', { addedItems: items }); }
-        if (this.selectedItem === index) { this.select(index); } else { this.setActiveBorder(); }
     }
     /**
      * Removes the items in the Tab from the specified index.
@@ -1411,24 +1449,30 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      */
     public removeTab(index: number): void {
         let trg: HTEle = selectAll('.' + CLS_TB_ITEM, this.element)[index];
-        let removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index, cancel: false };
-        this.trigger('removing', removeArgs);
-        if (removeArgs.cancel || isNOU(trg)) { return; }
-        this.tbObj.removeItems(index);
-        this.items.splice(index, 1);
-        this.itemIndexArray.splice(index, 1);
-        this.refreshActiveBorder();
-        let cntTrg: HTEle = <HTEle>select('#' + CLS_CONTENT + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT, this.element));
-        if (!isNOU(cntTrg)) { detach(cntTrg); }
-        this.trigger('removed', removeArgs);
-        if (trg.classList.contains(CLS_ACTIVE)) {
-            index = (index > selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element).length - 1) ? index - 1 : index;
-            this.enableAnimation = false;
-            this.selectedItem = index;
-            this.select(index);
+        if (isNOU(trg)) {
+            return;
         }
-        if (selectAll('.' + CLS_TB_ITEM, this.element).length === 0) { this.hdrEle.style.display = 'none'; }
-        this.enableAnimation = true;
+        let removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index, cancel: false };
+        this.trigger('removing', removeArgs, (tabRemovingArgs: RemoveEventArgs) => {
+            if (!tabRemovingArgs.cancel) {
+                this.tbObj.removeItems(index);
+                this.items.splice(index, 1);
+                this.itemIndexArray.splice(index, 1);
+                this.refreshActiveBorder();
+                let cntTrg: HTEle = <HTEle>select('#' + CLS_CONTENT + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT, this.element));
+                if (!isNOU(cntTrg)) { detach(cntTrg); }
+                this.trigger('removed', tabRemovingArgs);
+                if (trg.classList.contains(CLS_ACTIVE)) {
+                    // tslint:disable-next-line:max-line-length
+                    index = (index > selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element).length - 1) ? index - 1 : index;
+                    this.enableAnimation = false;
+                    this.selectedItem = index;
+                    this.select(index);
+                }
+                if (selectAll('.' + CLS_TB_ITEM, this.element).length === 0) { this.hdrEle.style.display = 'none'; }
+                this.enableAnimation = true;
+            }
+        });
     }
     /**
      * Shows or hides the Tab that is in the specified index.
@@ -1515,8 +1559,17 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             cancel: false
         };
         if (!this.initRender || this.selectedItem !== 0 ) {
-        this.trigger('selecting', eventArg); }
-        if (eventArg.cancel) { return; }
+            this.trigger('selecting', eventArg, (selectArgs: SelectingEventArgs) => {
+                if (!selectArgs.cancel) {
+                    this.selectingContent(args);
+                }
+            });
+        } else {
+            this.selectingContent(args);
+        }
+    }
+
+    private selectingContent(args: number | HTEle): void {
         if (typeof args === 'number') {
             if (!isNOU(this.tbItem[args]) && this.tbItem[<number>args].classList.contains(CLS_DISABLE)) {
                 for (let i: number = <number>args + 1; i < this.items.length; i++) {

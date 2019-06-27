@@ -115,9 +115,17 @@ export interface DataSourceModel {
     /**
      * Sets the data source either as a collection of objects or as an URL of DataManager
      * @default null
+     * @deprecated
      */
 
     dataManager?: DataManager;
+
+    /**
+     * Sets the data source either as a collection of objects or as an URL of DataManager
+     * @default null
+     */
+
+    dataSource?: DataManager;
 
     /**
      * Sets the unique id of the root data source item
@@ -135,6 +143,7 @@ export interface DataSourceModel {
      * Binds the custom data with node model
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     doBinding?: Function | string;
 

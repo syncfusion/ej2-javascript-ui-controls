@@ -12,6 +12,7 @@ export const toolbar: string = 'e-gantt-toolbar';
 export const chartScrollElement: string = 'e-chart-scroll-container';
 export const chartBodyContent: string = 'e-chart-rows-container';
 export const scrollContent: string = 'e-content';
+export const adaptive: string = 'e-device';
 // Timeline-Class
 export const taskTable: string = 'e-task-table';
 export const zeroSpacing: string = 'e-zero-spacing';
@@ -105,4 +106,20 @@ export const rightConnectorPointOuterDiv: string = 'e-right-connectorpoint-outer
 export const leftConnectorPointOuterDiv: string = 'e-left-connectorpoint-outer-div';
 export const connectorPointAllowBlock: string = 'e-connectorpoint-allow-block';
 export const ganttTooltip: string = 'e-gantt-tooltip';
-
+// Context Menu
+export const columnHeader: string = '.e-gridheader';
+export const content: string = '.e-content';
+export const deleteIcon: string = 'e-delete';
+export const saveIcon: string = 'e-save';
+export const cancelIcon: string = 'e-cancel';
+export const ascendingIcon: string = 'e-icon-ascending';
+export const descendingIcon: string = 'e-icon-descending';
+export const editIcon: string = 'e-edit';
+export const addIcon: string = 'e-add';
+export const addAboveIcon: string = 'e-add-above';
+export const addBelowIcon: string = 'e-add-below';
+//Predecessor touch mode
+export const activeParentTask: string = 'e-active-parent-task';
+export const activeChildTask: string = 'e-active-child-task';
+export const activeConnectedTask: string = 'e-active-connected-task';
+export const touchMode: string = 'e-predecessor-touch-mode';

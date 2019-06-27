@@ -1082,6 +1082,191 @@ describe('MaskedTextBox Component', () => {
             expect(input.value === '14 +2[s]').toEqual(true);
         });
     });
+    describe('HTML attributes at inline element testing', () => {
+        let maskBox: any;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mask' });
+            ele.setAttribute('placeholder','Enter a number');
+            ele.setAttribute('disabled', '');
+            ele.setAttribute('value', '50');
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Inline element testing', () => {
+            maskBox = new MaskedTextBox();
+            maskBox.appendTo('#mask');
+            expect(maskBox.placeholder).toBe("Enter a number");
+            expect(maskBox.element.hasAttribute('enabled')).toBe(false);
+            expect(maskBox.element.getAttribute('value')).toBe('50');
+        });
+        it('Inline and API testing', () => {
+            maskBox = new MaskedTextBox({placeholder:"Enter your mark", enabled: true, value: "70"});
+            maskBox.appendTo('#mask');
+            expect(maskBox.placeholder).toBe("Enter your mark");
+            expect(maskBox.element.hasAttribute('disabled')).toBe(false);
+            expect(maskBox.element.getAttribute('value')).toBe('70');
+        });
+        it('Inline and html attributes API testing', () => {
+            maskBox = new MaskedTextBox({ htmlAttributes:{placeholder:"Number of states", disabled: "false", value: "100"}});
+            maskBox.appendTo('#mask');
+            expect(maskBox.placeholder).toBe("Number of states");
+            expect(maskBox.element.hasAttribute('disabled')).toBe(false);
+            expect(maskBox.element.getAttribute('value')).toBe('100');
+        });
+        it('Inline, API and html attributes API testing', () => {
+            maskBox = new MaskedTextBox({ htmlAttributes:{placeholder:"Number of states", disabled: "", value: "100"}, placeholder: "Enter your mark", enabled: true, value: "70"});
+            maskBox.appendTo('#mask');
+            expect(maskBox.placeholder).toBe("Enter your mark");
+            expect(maskBox.element.hasAttribute('enabled')).toBe(false);
+            expect(maskBox.element.getAttribute('value')).toBe('70');
+        });
+    });
+    
+    describe('HTML attribute API testing', () => {
+        let maskBox: any;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mask' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Inline and API testing', () => {
+            maskBox = new MaskedTextBox({placeholder:"Enter your mark", enabled: true, value: "70"});
+            maskBox.appendTo('#mask');
+            expect(maskBox.placeholder).toBe("Enter your mark");
+            expect(maskBox.element.hasAttribute('disabled')).toBe(false);
+            expect(maskBox.element.getAttribute('value')).toBe('70');
+        });
+        it('Inline and html attributes API testing', () => {
+            maskBox = new MaskedTextBox({ htmlAttributes:{placeholder:"Number of states", disabled: "false", value: "100"}});
+            maskBox.appendTo('#mask');
+            expect(maskBox.placeholder).toBe("Number of states");
+            expect(maskBox.element.hasAttribute('disabled')).toBe(false);
+            expect(maskBox.element.getAttribute('value')).toBe('100');
+        });
+        it('Inline, API and html attributes API testing', () => {
+            maskBox = new MaskedTextBox({ htmlAttributes:{placeholder:"Number of states", disabled: "", value: "100"}, placeholder: "Enter your mark", enabled: true, value: "70"});
+            maskBox.appendTo('#mask');
+            expect(maskBox.placeholder).toBe("Enter your mark");
+            expect(maskBox.element.hasAttribute('enabled')).toBe(false);
+            expect(maskBox.element.getAttribute('value')).toBe('70');
+        });
+        it('Other attribute testing with htmlAttributes API', () => {
+            maskBox = new MaskedTextBox({ htmlAttributes:{class: "test", name:"numeric", title:"sample", style: 'background-color:yellow'}});
+            maskBox.appendTo('#mask');
+            maskBox.updateHTMLAttrToWrapper();
+            expect(maskBox.element.getAttribute('name')).toBe('numeric');
+            expect(maskBox.inputObj.container.getAttribute('title')).toBe('sample');
+            expect(maskBox.inputObj.container.getAttribute('class')).toBe('test');
+            expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:yellow');
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            maskBox = new MaskedTextBox({});
+            maskBox.appendTo('#mask');
+            maskBox.htmlAttributes = { class: "test", title: 'sample', disabled: 'disabled', placeholder: "Number of states", style: 'background-color:yellow'};
+            maskBox.dataBind();
+            maskBox.updateHTMLAttrToWrapper();
+            maskBox.updateHTMLAttrToElement();
+            expect(maskBox.element.hasAttribute('disabled')).toBe(true);
+            expect(maskBox.element.getAttribute('placeholder')).toBe('Number of states');
+            expect(maskBox.inputObj.container.getAttribute('title')).toBe('sample');
+            expect(maskBox.inputObj.container.getAttribute('class')).toBe('test');
+            expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:yellow');
+        });
+    });
+
+    describe('HTML attribute API dynamic testing', () => {
+        let maskBox: any;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mask' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            maskBox = new MaskedTextBox({ htmlAttributes:{placeholder:"Enter a name", readonly: "true", disabled: "true", value: "100", class: "test", title:"sample", style: 'background-color:yellow'}});
+            maskBox.appendTo('#mask');
+            expect(maskBox.element.getAttribute('placeholder')).toBe('Enter a name');
+            expect(maskBox.element.hasAttribute('disabled')).toBe(true);
+            expect(maskBox.element.getAttribute('value')).toBe('100');
+            expect(maskBox.inputObj.container.getAttribute('title')).toBe('sample');
+            expect(maskBox.inputObj.container.getAttribute('class')).toBe('test');
+            expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:yellow');
+            maskBox.htmlAttributes = { placeholder:"Enter a number", readonly: "false", disabled: "false", value: "50", class: "multiple", title:"heading", style: 'background-color:red'};
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe('Enter a number');
+            expect(maskBox.element.hasAttribute('disabled')).toBe(false);
+            expect(maskBox.element.getAttribute('value')).toBe('50');
+            expect(maskBox.inputObj.container.getAttribute('title')).toBe('heading');
+            expect(maskBox.inputObj.container.getAttribute('class')).toBe('multiple');
+            expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:red');
+        });
+        it('Placeholder testing in auto case', () => {
+            maskBox = new MaskedTextBox({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
+            maskBox.appendTo('#mask');
+            expect(maskBox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            maskBox.htmlAttributes = { placeholder:"choose a date"};
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            maskBox.floatLabelType = "Always";
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            maskBox.floatLabelType = "Never";
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in always case', () => {
+            maskBox = new MaskedTextBox({ floatLabelType: "Always", htmlAttributes:{placeholder:"Enter a name" }});
+            maskBox.appendTo('#mask');
+            expect(maskBox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            maskBox.htmlAttributes = { placeholder:"choose a date"};
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            maskBox.floatLabelType = "Always";
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            maskBox.floatLabelType = "Never";
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in never case', () => {
+            maskBox = new MaskedTextBox({ floatLabelType: "Never", htmlAttributes:{placeholder:"Enter a name" }});
+            maskBox.appendTo('#mask');
+            expect(maskBox.element.getAttribute('placeholder')).toBe('Enter a name');
+            maskBox.htmlAttributes = { placeholder:"choose a date"};
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe('choose a date');
+            maskBox.floatLabelType = "Always";
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            maskBox.floatLabelType = "Never";
+            maskBox.dataBind();
+            expect(maskBox.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+    });
     describe('Edit values in MaskedTextBox-- Escape mask support', () => {
         let maskBox: MaskedTextBox;
         beforeEach((): void => {

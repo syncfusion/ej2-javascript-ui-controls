@@ -13,8 +13,8 @@ import { PivotChart } from '../../../src/pivotchart/index';
 
 PivotView.Inject(GroupingBar, FieldList, CalculatedField, PivotChart);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_smalldata as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_smalldata as IDataSet[],
         expandAll: false,
         enableSorting: true,
         columns: [{ name: 'Date' }, { name: 'Product' }],

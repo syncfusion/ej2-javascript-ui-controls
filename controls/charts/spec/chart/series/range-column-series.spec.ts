@@ -24,8 +24,7 @@ import { Selection } from '../../../src/chart/user-interaction/selection';
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
-import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, RangeColumnSeries, Legend, Tooltip, Crosshair, Logarithmic, Selection);
 
 export let categoryData: any[] = [

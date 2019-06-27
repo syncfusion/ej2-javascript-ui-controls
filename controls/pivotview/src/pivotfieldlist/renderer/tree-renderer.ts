@@ -114,6 +114,7 @@ export class TreeViewRenderer implements IAction {
             close: this.dialogClose.bind(this)
         });
         this.fieldDialog.appendTo(fieldListDialog);
+        this.fieldDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('adaptiveFieldHeader');
     }
 
     private dialogClose(): void {
@@ -251,7 +252,7 @@ export class TreeViewRenderer implements IAction {
             addClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
             let addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(args.data[0].id.toString());
             selectedNode.type === 'number' ?
-                this.parent.dataSource.values.push(addNode) : this.parent.dataSource.rows.push(addNode);
+                this.parent.dataSourceSettings.values.push(addNode) : this.parent.dataSourceSettings.rows.push(addNode);
         } else {
             removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
             this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(args.data[0].id.toString());
@@ -272,8 +273,11 @@ export class TreeViewRenderer implements IAction {
     private updateDataSource(): void {
         if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {
             (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
+            /* tslint:disable:align */
             (this.parent as PivotFieldList).pivotGridModule.
-                setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties as IDataOptions }, true);
+                setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions
+                }, true);
             (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
         } else {
             this.parent.triggerPopulateEvent();
@@ -332,8 +336,9 @@ export class TreeViewRenderer implements IAction {
             fieldList[key] = { id: member.id, caption: member.caption, isSelected: member.isSelected };
         }
         if (this.parent.isAdaptive) {
-            let fields: IFieldOptions[][] = [this.parent.dataSource.filters, this.parent.dataSource.columns, this.parent.dataSource.rows,
-            this.parent.dataSource.values];
+            let fields: IFieldOptions[][] =
+                [this.parent.dataSourceSettings.filters, this.parent.dataSourceSettings.columns, this.parent.dataSourceSettings.rows,
+                this.parent.dataSourceSettings.values];
             let currentFieldSet: IFieldOptions[] = fields[axis];
             let len: number = keys.length;
             while (len--) {

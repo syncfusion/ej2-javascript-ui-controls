@@ -64,6 +64,7 @@ export namespace Input {
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
             args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
             setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
+            inputObject.clearButton.setAttribute('role', 'button');
             if (inputObject.container.classList.contains(CLASSNAMES.FLOATINPUT)) {
                 addClass([inputObject.container], CLASSNAMES.INPUTGROUP);
             }
@@ -279,7 +280,7 @@ export namespace Input {
         if (!isNullOrUndefined(placeholder) && placeholder !== '') {
             let spanEle: HTMLElement = document.createElement('span');
             spanEle.innerHTML = placeholder;
-            result = spanEle.textContent;
+            result = spanEle.innerHTML;
         }
         return result;
     }
@@ -344,6 +345,7 @@ export namespace Input {
          if (!isNullOrUndefined(placeholder) && placeholder !== '') {
            parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;
            parentElement.classList.remove(CLASSNAMES.NOFLOATLABEL);
+           element.removeAttribute('placeholder');
          } else {
            parentElement.classList.add(CLASSNAMES.NOFLOATLABEL);
            parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = '';

@@ -184,7 +184,7 @@ export class PolarRadarPanel extends LineBase {
 
         axisElement.appendChild(this.element);
 
-        appendChildElement(chart.svgObject, axisElement, chart.redraw);
+        appendChildElement(chart.enableCanvas, chart.svgObject, axisElement, chart.redraw);
 
         return axisLineElement;
     }
@@ -229,7 +229,7 @@ export class PolarRadarPanel extends LineBase {
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY + (elementSize.height / 4),
                                      anchor, axis.visibleLabels[i].text);
             textElement(
-                options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
+                chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
                 false, chart.redraw, true, true
             );
         }
@@ -238,7 +238,7 @@ export class PolarRadarPanel extends LineBase {
 
     private drawYAxisGridLine(axis: Axis, index: number): void {
         let chart: Chart = this.chart;
-        let options: PathOption;
+        let options: CircleOption | PathOption;
         let radius: number;
         let majorTick: string = '';
         let majorGrid: string = '';
@@ -267,6 +267,7 @@ export class PolarRadarPanel extends LineBase {
                         axis.majorGridLines.width, this.centerX, this.centerY, radius
                     );
                     appendChildElement(
+                        chart.enableCanvas,
                         this.element, chart.renderer.drawCircle(options), chart.redraw,
                         true, 'r', 'r', new ChartLocation(+previousValue, +previousValue), null, true
                     );
@@ -301,6 +302,7 @@ export class PolarRadarPanel extends LineBase {
                         axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid
                     );
                     appendChildElement(
+                        chart.enableCanvas,
                         this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true
                     );
                 }
@@ -430,7 +432,7 @@ export class PolarRadarPanel extends LineBase {
 
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
             textElement(
-                options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
+                chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
                 false, chart.redraw, true, true
             );
         }
@@ -455,7 +457,7 @@ export class PolarRadarPanel extends LineBase {
                 axis.majorTickLines.color || chart.themeStyle.majorTickLine, null, null, majorTickLine
             );
             appendChildElement(
-                chart.yAxisElements, chart.renderer.drawPath(tickOptions),
+                chart.enableCanvas, chart.yAxisElements, chart.renderer.drawPath(tickOptions),
                 chart.redraw, true, 'x', 'y', null, direction
             );
 
@@ -468,7 +470,7 @@ export class PolarRadarPanel extends LineBase {
                 axis.minorTickLines.color || chart.themeStyle.minorTickLine, null, null, minorTickLine
             );
             appendChildElement(
-                chart.yAxisElements, chart.renderer.drawPath(tickOptions),
+                chart.enableCanvas, chart.yAxisElements, chart.renderer.drawPath(tickOptions),
                 chart.redraw, true, 'x', 'y', null, direction
             );
         }
@@ -487,7 +489,7 @@ export class PolarRadarPanel extends LineBase {
                 axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, axis.majorGridLines.dashArray, majorGrid
             );
             appendChildElement(
-                this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction
+                chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction
             );
         }
         if (axis.minorGridLines.width > 0) {
@@ -498,7 +500,7 @@ export class PolarRadarPanel extends LineBase {
                 axis.minorGridLines.color || chart.themeStyle.minorGridLine, null, axis.minorGridLines.dashArray, minorGird
             );
             appendChildElement(
-                this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction
+                chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction
             );
         }
     }

@@ -1050,21 +1050,77 @@ var Observer = /** @__PURE__ @class */ (function () {
     /**
      * To notify the handlers in the specified event.
      * @param {string} property - Specifies the event to be notify.
-     *  @param {Object} args - Additional parameters to pass while calling the handler.
+     * @param {Object} args - Additional parameters to pass while calling the handler.
+     * @param {Function} successHandler - this function will invoke after event successfully triggered
+     * @param {Function} errorHandler - this function will invoke after event if it was failure to call.
      * @return {void}
      */
-    Observer.prototype.notify = function (property, argument) {
+    Observer.prototype.notify = function (property, argument, successHandler, errorHandler) {
         if (this.notExist(property)) {
+            if (successHandler) {
+                successHandler.call(this, argument);
+            }
             return;
         }
         if (argument) {
             argument.name = property;
         }
+        var blazor = 'Blazor';
         var curObject = getValue(property, this.boundedEvents).slice(0);
-        for (var _i = 0, curObject_1 = curObject; _i < curObject_1.length; _i++) {
-            var cur = curObject_1[_i];
-            cur.handler.call(cur.context, argument);
+        if (window[blazor]) {
+            return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
         }
+        else {
+            for (var _i = 0, curObject_1 = curObject; _i < curObject_1.length; _i++) {
+                var cur = curObject_1[_i];
+                cur.handler.call(cur.context, argument);
+            }
+            if (successHandler) {
+                successHandler.call(this, argument);
+            }
+        }
+    };
+    Observer.prototype.blazorCallback = function (objs, argument, successHandler, errorHandler, index) {
+        var _this = this;
+        var isTrigger = index === objs.length - 1;
+        if (index < objs.length) {
+            var obj_1 = objs[index];
+            var promise = obj_1.handler.call(obj_1.context, argument);
+            if (promise && typeof promise.then === 'function') {
+                if (!successHandler) {
+                    return promise;
+                }
+                promise.then(function (data) {
+                    data = typeof data === 'string' && _this.isJson(data) ? JSON.parse(data) : data;
+                    extend(argument, argument, data, true);
+                    if (successHandler && isTrigger) {
+                        successHandler.call(obj_1.context, argument);
+                    }
+                    else {
+                        return _this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
+                    }
+                }).catch(function (data) {
+                    if (errorHandler) {
+                        errorHandler.call(obj_1.context, typeof data === 'string' && _this.isJson(data) ? JSON.parse(data) : data);
+                    }
+                });
+            }
+            else if (successHandler && isTrigger) {
+                successHandler.call(obj_1.context, argument);
+            }
+            else {
+                return this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
+            }
+        }
+    };
+    Observer.prototype.isJson = function (value) {
+        try {
+            JSON.parse(value);
+        }
+        catch (e) {
+            return false;
+        }
+        return true;
     };
     /**
      * To destroy handlers in the event
@@ -1076,7 +1132,7 @@ var Observer = /** @__PURE__ @class */ (function () {
      * Returns if the property exists.
      */
     Observer.prototype.notExist = function (prop) {
-        return this.boundedEvents.hasOwnProperty(prop) === false;
+        return this.boundedEvents.hasOwnProperty(prop) === false || this.boundedEvents[prop].length <= 0;
     };
     /**
      * Returns if the handler is present.
@@ -1241,28 +1297,49 @@ var Base = /** @__PURE__ @class */ (function () {
         if (this.isDestroyed !== true) {
             var prevDetection = this.isProtectedOnChange;
             this.isProtectedOnChange = false;
-            this.modelObserver.notify(eventName, eventProp);
+            var data = this.modelObserver.notify(eventName, eventProp, successHandler, errorHandler);
             if (isColEName.test(eventName)) {
                 var handler = getValue(eventName, this);
                 if (handler) {
-                    var promise = handler.call(this, eventProp);
-                    if (promise && (promise.toString()).indexOf('Promise') >= 0) {
-                        promise.then(function (data) {
-                            if (successHandler) {
-                                successHandler.call(_this, data);
+                    var blazor = 'Blazor';
+                    if (window[blazor]) {
+                        var promise = handler.call(this, eventProp);
+                        if (promise && typeof promise.then === 'function') {
+                            if (!successHandler) {
+                                data = promise;
                             }
-                        }).catch(function (data) {
-                            if (errorHandler) {
-                                errorHandler.call(_this, data);
+                            else {
+                                promise.then(function (data) {
+                                    if (successHandler) {
+                                        data = typeof data === 'string' && _this.modelObserver.isJson(data) ?
+                                            JSON.parse(data) : data;
+                                        successHandler.call(_this, data);
+                                    }
+                                }).catch(function (data) {
+                                    if (errorHandler) {
+                                        data = typeof data === 'string' && _this.modelObserver.isJson(data) ? JSON.parse(data) : data;
+                                        errorHandler.call(_this, data);
+                                    }
+                                });
                             }
-                        });
+                        }
+                        else if (successHandler) {
+                            successHandler.call(this, eventProp);
+                        }
                     }
-                    else if (successHandler) {
-                        successHandler.call(this, eventProp);
+                    else {
+                        handler.call(this, eventProp);
+                        if (successHandler) {
+                            successHandler.call(this, eventProp);
+                        }
                     }
+                }
+                else if (successHandler) {
+                    successHandler.call(this, eventProp);
                 }
             }
             this.isProtectedOnChange = prevDetection;
+            return data;
         }
     };
     /**
@@ -6923,6 +7000,10 @@ function addNameSpace(str, addNS, nameSpace, ignoreList) {
  */
 var HAS_ROW = /^[\n\r.]+\<tr|^\<tr/;
 var HAS_SVG = /^[\n\r.]+\<svg|^\<path|^\<g/;
+var blazorTemplates = {};
+function getRandomId() {
+    return '-' + Math.random().toString(36).substr(2, 5);
+}
 /**
  * Compile the template string into template function.
  * @param  {string} templateString - The template string which is going to convert.
@@ -6933,8 +7014,22 @@ var HAS_SVG = /^[\n\r.]+\<svg|^\<path|^\<g/;
 function compile$$1(templateString, helper) {
     var compiler = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return function (data, component, propName) {
+    return function (data, component, propName, templateId) {
         var result = compiler(data, component, propName);
+        var blazor = 'Blazor';
+        var blazorTemplateId = 'BlazorTemplateId';
+        if (window && window[blazor]) {
+            var randomId = getRandomId();
+            if (!blazorTemplates[templateId]) {
+                blazorTemplates[templateId] = [];
+            }
+            data[blazorTemplateId] = templateId + randomId;
+            blazorTemplates[templateId].push(data);
+            // tslint:disable-next-line:no-any
+            return propName === 'rowTemplate' ? [createElement('tr', { id: templateId + randomId })] :
+                // tslint:disable-next-line:no-any
+                [createElement('div', { id: templateId + randomId })];
+        }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {
                 var ele = createElement('svg', { innerHTML: result });
@@ -6949,6 +7044,32 @@ function compile$$1(templateString, helper) {
             return result;
         }
     };
+}
+function updateBlazorTemplate(templateId, templateName) {
+    var blazor = 'Blazor';
+    if (window && window[blazor]) {
+        var ejsIntrop = 'ejsIntrop';
+        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId);
+        blazorTemplates[templateId] = [];
+    }
+}
+function resetBlazorTemplate(templateId, templateName) {
+    var templateDiv = document.getElementById(templateId);
+    if (templateDiv) {
+        // tslint:disable-next-line:no-any
+        var innerTemplates = templateDiv.getElementsByClassName('blazor-inner-template');
+        for (var i = 0; i < innerTemplates.length; i++) {
+            var tempId = innerTemplates[i].getAttribute('data-templateId');
+            var tempElement = document.getElementById(tempId);
+            if (tempElement) {
+                var length_1 = tempElement.children.length;
+                for (var j = 0; j < length_1; j++) {
+                    innerTemplates[i].appendChild(tempElement.children[0]);
+                    tempElement.appendChild(innerTemplates[i].children[j].cloneNode(true));
+                }
+            }
+        }
+    }
 }
 /**
  * Set your custom template engine for template rendering.
@@ -6982,5 +7103,5 @@ var engineObj = { compile: new Engine().compile };
  * Base modules
  */
 
-export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, compile$$1 as compile, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
+export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
 //# sourceMappingURL=ej2-base.es5.js.map

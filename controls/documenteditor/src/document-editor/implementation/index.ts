@@ -12,3 +12,5 @@ export * from './editor/index'
 export * from './editor-history/index';
 export * from './writer/index';
 export * from './dialogs/index';
+export * from './spell-check/index';
+export * from './restrict-editing/index';

@@ -1228,4 +1228,15 @@
   .e-rte-dialog-minheight {
     min-height: 296px;
   }
+
+  .e-content-placeholder.e-richtexteditor.e-placeholder-richtexteditor {
+    background-size: 700px 190px;
+    min-height: 190px;
+  }
+
+  .e-bigger .e-content-placeholder.e-richtexteditor.e-placeholder-richtexteditor,
+  .e-bigger.e-content-placeholder.e-richtexteditor.e-placeholder-richtexteditor {
+    background-size: 700px 190px;
+    min-height: 190px;
+  }
 }

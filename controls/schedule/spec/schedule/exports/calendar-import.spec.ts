@@ -1,13 +1,11 @@
 /**
  * Schedule calendar import spec
  */
-import { EmitType } from '@syncfusion/ej2-base';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth,
     MonthAgenda, ScheduleModel, ICalendarImport
 } from '../../../src/schedule/index';
 import { createSchedule, destroy } from '../util.spec';
-import { timezoneData } from '../base/datasource.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, ICalendarImport);
@@ -265,30 +263,24 @@ describe('ICS calendar import', () => {
     describe('Import checking', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            let events: Object[] = [
-                {
-                    Id: 10,
-                    Subject: 'recurrence event',
-                    StartTime: new Date(2017, 9, 19, 10, 0),
-                    EndTime: new Date(2017, 9, 19, 11, 0),
-                    RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
-                }, {
-                    Id: 11,
-                    StartTime: new Date(2017, 9, 19, 11, 0),
-                    EndTime: new Date(2017, 9, 19, 12, 30)
-                }, {
-                    Id: 12,
-                    Subject: 'event 2',
-                    StartTime: new Date(2017, 9, 20, 11, 0),
-                    EndTime: new Date(2017, 9, 20, 12, 30)
-                }
-            ];
-            let dataBound: EmitType<Object> = () => { done(); };
-            let options: ScheduleModel = {
-                eventSettings: { dataSource: events },
-                selectedDate: new Date(2017, 9, 19), dataBound: dataBound
-            };
-            schObj = createSchedule(options, timezoneData, done);
+            let events: Object[] = [{
+                Id: 10,
+                Subject: 'recurrence event',
+                StartTime: new Date(2017, 9, 19, 10, 0),
+                EndTime: new Date(2017, 9, 19, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            }, {
+                Id: 11,
+                StartTime: new Date(2017, 9, 19, 11, 0),
+                EndTime: new Date(2017, 9, 19, 12, 30)
+            }, {
+                Id: 12,
+                Subject: 'event 2',
+                StartTime: new Date(2017, 9, 20, 11, 0),
+                EndTime: new Date(2017, 9, 20, 12, 30)
+            }];
+            let options: ScheduleModel = { selectedDate: new Date(2017, 9, 19) };
+            schObj = createSchedule(options, events, done);
         });
         afterAll(() => {
             destroy(schObj);
@@ -300,7 +292,7 @@ describe('ICS calendar import', () => {
                 done();
             };
             expect(schObj.eventsData.length).toEqual(3);
-            let fileObj: File = new File([iCalString], "EJSchedule.ics", { lastModified: 0, type: "text/calendar" });
+            let fileObj: File = new File([iCalString], 'EJSchedule.ics', { lastModified: 0, type: 'text/calendar' });
             schObj.importICalendar(fileObj);
         });
     });

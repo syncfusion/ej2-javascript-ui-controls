@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, resetBlazorTemplate, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -655,6 +655,10 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.clickHandler = function (e) {
         if (!e.target.classList.contains(NAVIGATE_ARROW)) {
+            var hoverBars = selectAll('.' + ROOT + ' > .' + SPLIT_BAR + '.' + SPLIT_BAR_HOVER);
+            if (hoverBars.length > 0) {
+                removeClass(hoverBars, SPLIT_BAR_HOVER);
+            }
             e.target.classList.add(SPLIT_BAR_HOVER);
         }
         var icon = e.target;
@@ -666,32 +670,33 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Splitter.prototype.expandAction = function (e) {
+        var _this = this;
         this.splitterDetails(e);
         var collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
         var eventArgs = this.beforeAction(e);
-        this.trigger('beforeExpand', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.previousPane.style.flexGrow = '1';
-        this.nextPane.style.flexGrow = '0';
-        if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
-            removeClass([this.nextPane], EXPAND_PANE);
-            removeClass([this.previousPane], collapseClass);
-            addClass([this.previousPane], EXPAND_PANE);
-            addClass([this.nextPane], collapseClass);
-        }
-        else {
-            (this.currentBarIndex !== 0) ?
-                this.previousPane.previousElementSibling.style.flexGrow = '' : this.nextPane.style.flexGrow = '';
-            removeClass([this.previousPane], collapseClass);
-            removeClass([this.nextPane], EXPAND_PANE);
-        }
-        this.updateIconsOnExpand(e);
-        this.previousPane.setAttribute('aria-expanded', 'true');
-        this.nextPane.setAttribute('aria-expanded', 'false');
-        var expandEventArgs = this.afterAction(e);
-        this.trigger('expanded', expandEventArgs);
+        this.trigger('beforeExpand', eventArgs, function (beforeExpandArgs) {
+            if (!beforeExpandArgs.cancel) {
+                _this.previousPane.style.flexGrow = '1';
+                _this.nextPane.style.flexGrow = '0';
+                if (!_this.previousPane.classList.contains(COLLAPSE_PANE)) {
+                    removeClass([_this.nextPane], EXPAND_PANE);
+                    removeClass([_this.previousPane], collapseClass);
+                    addClass([_this.previousPane], EXPAND_PANE);
+                    addClass([_this.nextPane], collapseClass);
+                }
+                else {
+                    (_this.currentBarIndex !== 0) ?
+                        _this.previousPane.previousElementSibling.style.flexGrow = '' : _this.nextPane.style.flexGrow = '';
+                    removeClass([_this.previousPane], collapseClass);
+                    removeClass([_this.nextPane], EXPAND_PANE);
+                }
+                _this.updateIconsOnExpand(e);
+                _this.previousPane.setAttribute('aria-expanded', 'true');
+                _this.nextPane.setAttribute('aria-expanded', 'false');
+                var expandEventArgs = _this.afterAction(e);
+                _this.trigger('expanded', expandEventArgs);
+            }
+        });
     };
     Splitter.prototype.hideTargetBarIcon = function (targetBar, targetArrow) {
         addClass([select('.' + targetArrow, targetBar)], HIDE_ICON);
@@ -734,30 +739,31 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Splitter.prototype.collapseAction = function (e) {
+        var _this = this;
         this.splitterDetails(e);
         var collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
         this.previousPane.style.flexGrow = '0';
         this.nextPane.style.flexGrow = '1';
         var eventArgs = this.beforeAction(e);
-        this.trigger('beforeCollapse', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
-            removeClass([this.previousPane], EXPAND_PANE);
-            removeClass([this.nextPane], collapseClass);
-        }
-        else {
-            removeClass([this.previousPane], EXPAND_PANE);
-            removeClass([this.nextPane], collapseClass);
-            addClass([this.nextPane], EXPAND_PANE);
-            addClass([this.previousPane], collapseClass);
-        }
-        this.updateIconsOnCollapse(e);
-        this.previousPane.setAttribute('aria-expanded', 'false');
-        this.nextPane.setAttribute('aria-expanded', 'true');
-        var collapseEventArgs = this.afterAction(e);
-        this.trigger('collapsed', collapseEventArgs);
+        this.trigger('beforeCollapse', eventArgs, function (beforeCollapseArgs) {
+            if (!beforeCollapseArgs.cancel) {
+                if (_this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                    removeClass([_this.previousPane], EXPAND_PANE);
+                    removeClass([_this.nextPane], collapseClass);
+                }
+                else {
+                    removeClass([_this.previousPane], EXPAND_PANE);
+                    removeClass([_this.nextPane], collapseClass);
+                    addClass([_this.nextPane], EXPAND_PANE);
+                    addClass([_this.previousPane], collapseClass);
+                }
+                _this.updateIconsOnCollapse(e);
+                _this.previousPane.setAttribute('aria-expanded', 'false');
+                _this.nextPane.setAttribute('aria-expanded', 'true');
+                var collapseEventArgs = _this.afterAction(e);
+                _this.trigger('collapsed', collapseEventArgs);
+            }
+        });
     };
     Splitter.prototype.beforeAction = function (e) {
         var eventArgs = {
@@ -873,6 +879,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.getPaneDetails();
     };
     Splitter.prototype.onMouseDown = function (e) {
+        var _this = this;
         e.preventDefault();
         var target = e.target;
         if (target.classList.contains(NAVIGATE_ARROW)) {
@@ -890,21 +897,21 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             separator: this.currentSeparator,
             cancel: false
         };
-        this.trigger('resizeStart', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.wireResizeEvents();
-        if (this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0) {
-            var previousFlexBasis = this.updatePaneFlexBasis(this.previousPane);
-            var nextFlexBasis = this.updatePaneFlexBasis(this.nextPane);
-            this.totalPercent = previousFlexBasis + nextFlexBasis;
-            this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
-        }
-        else {
-            this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
-                this.previousPane.offsetHeight + this.nextPane.offsetHeight;
-        }
+        this.trigger('resizeStart', eventArgs, function (resizeStartArgs) {
+            if (!resizeStartArgs.cancel) {
+                _this.wireResizeEvents();
+                if (_this.previousPane.style.flexBasis.indexOf('%') > 0 || _this.nextPane.style.flexBasis.indexOf('%') > 0) {
+                    var previousFlexBasis = _this.updatePaneFlexBasis(_this.previousPane);
+                    var nextFlexBasis = _this.updatePaneFlexBasis(_this.nextPane);
+                    _this.totalPercent = previousFlexBasis + nextFlexBasis;
+                    _this.totalWidth = _this.convertPercentageToPixel(_this.totalPercent + '%');
+                }
+                else {
+                    _this.totalWidth = (_this.orientation === 'Horizontal') ? _this.previousPane.offsetWidth + _this.nextPane.offsetWidth :
+                        _this.previousPane.offsetHeight + _this.nextPane.offsetHeight;
+                }
+            }
+        });
     };
     Splitter.prototype.updatePaneFlexBasis = function (pane) {
         var previous;
@@ -1873,16 +1880,17 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         return undefined;
     };
-    DashboardLayout.prototype.renderTemplate = function (content, appendElement) {
+    DashboardLayout.prototype.renderTemplate = function (content, appendElement, type) {
         var templateFn = this.templateParser(content);
         var templateElements = [];
-        for (var _i = 0, _a = templateFn({}); _i < _a.length; _i++) {
+        for (var _i = 0, _a = templateFn({}, null, null, this.element.id + type); _i < _a.length; _i++) {
             var item = _a[_i];
             templateElements.push(item);
         }
         append([].slice.call(templateElements), appendElement);
     };
     DashboardLayout.prototype.renderPanels = function (cellElement, panelModel) {
+        var _this = this;
         addClass([cellElement], [panel, panelTransition]);
         this.panelContent = cellElement.querySelector('.e-panel-container') ?
             cellElement.querySelector('.e-panel-container') :
@@ -1896,8 +1904,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 cellElement.querySelector('.e-panel-header') : this.createSubElement('', cellElement.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             if (!cellElement.querySelector('.e-panel-header')) {
-                this.renderTemplate(panelModel.header, headerTemplateElement);
+                this.renderTemplate(panelModel.header, headerTemplateElement, 'header');
                 this.panelContent.appendChild(headerTemplateElement);
+                setTimeout(function () { updateBlazorTemplate(_this.element.id + 'header', 'Header'); }, 0);
             }
         }
         if (panelModel.content) {
@@ -1908,8 +1917,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             var contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
             setStyleAttribute(this.panelBody, { height: contentHeightValue });
             if (!cellElement.querySelector('.e-panel-content')) {
-                this.renderTemplate(panelModel.content, this.panelBody);
+                this.renderTemplate(panelModel.content, this.panelBody, 'content');
                 this.panelContent.appendChild(this.panelBody);
+                setTimeout(function () { updateBlazorTemplate(_this.element.id + 'content', 'content'); }, 0);
             }
         }
         return cellElement;
@@ -1948,7 +1958,11 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     DashboardLayout.prototype.resizeEvents = function () {
         if (this.allowResizing) {
             for (var i = 0; i < document.querySelectorAll('.e-resize').length; i++) {
-                EventHandler.add(document.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+                var eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
+                EventHandler.add(document.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
+                if (Browser.info.name !== 'mise') {
+                    EventHandler.add(document.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
+                }
             }
         }
     };
@@ -1957,6 +1971,19 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.resizeEvents();
     };
     DashboardLayout.prototype.downResizeHandler = function (e) {
+        this.downHandler(e);
+        this.lastMouseX = e.pageX;
+        this.lastMouseY = e.pageY;
+        var moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
+        var upEventName = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
+        EventHandler.add(document, moveEventName, this.moveResizeHandler, this);
+        if (!this.isMouseUpBound) {
+            EventHandler.add(document, upEventName, this.upResizeHandler, this);
+            this.isMouseUpBound = true;
+        }
+    };
+    
+    DashboardLayout.prototype.downHandler = function (e) {
         this.resizeCalled = false;
         var el = closest((e.currentTarget), '.e-panel');
         var args = { event: e, element: el };
@@ -1966,118 +1993,145 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.shadowEle.classList.add('e-holder');
         addClass([this.element], [preventSelect]);
         this.element.appendChild(this.shadowEle);
-        this.lastMouseX = e.pageX;
-        this.lastMouseY = e.pageY;
         this.elementX = parseInt(el.style.left, 10);
         this.elementY = parseInt(el.style.top, 10);
         this.elementWidth = el.offsetWidth;
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
         this.originalHeight = this.getCellInstance(el.id).sizeY;
-        EventHandler.add(document, 'mousemove', this.moveResizeHandler, this);
+    };
+    DashboardLayout.prototype.touchDownResizeHandler = function (e) {
+        this.downHandler(e);
+        this.lastMouseX = e.changedTouches[0].pageX;
+        this.lastMouseY = e.changedTouches[0].pageY;
+        EventHandler.add(document, 'touchmove', this.touchMoveResizeHandler, this);
         if (!this.isMouseUpBound) {
-            EventHandler.add(document, 'mouseup', this.upResizeHandler, this);
+            EventHandler.add(document, 'touchend', this.upResizeHandler, this);
             this.isMouseUpBound = true;
         }
     };
-    
     DashboardLayout.prototype.getCellSize = function () {
         return [parseInt((this.cellSize[0]), 10), parseInt(this.cellSize[1], 10)];
     };
-    /* istanbul ignore next */
-    // tslint:disable-next-line:max-func-body-length
-    DashboardLayout.prototype.moveResizeHandler = function (e) {
+    DashboardLayout.prototype.updateMaxTopLeft = function (e) {
         this.moveTarget = this.downTarget;
         var el = closest((this.moveTarget), '.e-panel');
         var args = { event: e, element: el };
         this.trigger('resize', args);
-        if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
-            return;
-        }
+    };
+    DashboardLayout.prototype.updateResizeElement = function (el) {
         this.maxLeft = this.element.offsetWidth - 1;
         this.maxTop = this.cellSize[1] * this.maxRows - 1;
         removeClass([el], 'e-panel-transition');
         addClass([el], [dragging]);
-        var oldSizeX = this.getCellInstance(el.id).sizeX;
-        var oldSizeY = this.getCellInstance(el.id).sizeY;
         var handleArray = [east, west, north, south, southEast, northEast, northWest, southWest];
-        var oldProp = [this.elementWidth, this.elementHeight];
         for (var i = 0; i < this.moveTarget.classList.length; i++) {
             if (handleArray.indexOf(this.moveTarget.classList[i]) !== -1) {
                 this.handleClass = (this.moveTarget.classList[i]);
             }
         }
+    };
+    DashboardLayout.prototype.moveResizeHandler = function (e) {
+        this.updateMaxTopLeft(e);
+        var el = closest((this.moveTarget), '.e-panel');
+        if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
+            return;
+        }
+        this.updateResizeElement(el);
         var panelModel = this.getCellInstance(el.getAttribute('id'));
         this.mouseX = e.pageX;
         this.mouseY = e.pageY;
+        var diffY = this.mouseY - this.lastMouseY + this.mOffY;
+        var diffX = this.mouseX - this.lastMouseX + this.mOffX;
+        this.mOffX = this.mOffY = 0;
+        this.lastMouseY = this.mouseY;
+        this.lastMouseX = this.mouseX;
+        this.resizingPanel(el, panelModel, diffX, diffY);
+    };
+    DashboardLayout.prototype.touchMoveResizeHandler = function (e) {
+        this.updateMaxTopLeft(e);
+        var el = closest((this.moveTarget), '.e-panel');
+        if (this.lastMouseX === e.changedTouches[0].pageX || this.lastMouseY === e.changedTouches[0].pageY) {
+            return;
+        }
+        this.updateResizeElement(el);
+        var panelModel = this.getCellInstance(el.getAttribute('id'));
+        this.mouseX = e.changedTouches[0].pageX;
+        this.mouseY = e.changedTouches[0].pageY;
         var diffX = this.mouseX - this.lastMouseX + this.mOffX;
         var diffY = this.mouseY - this.lastMouseY + this.mOffY;
         this.mOffX = this.mOffY = 0;
         this.lastMouseX = this.mouseX;
         this.lastMouseY = this.mouseY;
-        var dY = diffY;
-        var dX = diffX;
+        this.resizingPanel(el, panelModel, diffX, diffY);
+    };
+    /* istanbul ignore next */
+    DashboardLayout.prototype.resizingPanel = function (el, panelModel, currentX, currentY) {
+        var oldSizeX = this.getCellInstance(el.id).sizeX;
+        var oldSizeY = this.getCellInstance(el.id).sizeY;
+        var dY = currentY;
+        var dX = currentX;
         if (this.handleClass.indexOf('north') >= 0) {
             if (this.elementHeight - dY < this.getMinHeight(panelModel)) {
-                diffY = this.elementHeight - this.getMinHeight(panelModel);
-                this.mOffY = dY - diffY;
+                currentY = this.elementHeight - this.getMinHeight(panelModel);
+                this.mOffY = dY - currentY;
             }
             else if (panelModel.maxSizeY && this.elementHeight - dY > this.getMaxHeight(panelModel)) {
-                diffY = this.elementHeight - this.getMaxHeight(panelModel);
-                this.mOffY = dY - diffY;
+                currentY = this.elementHeight - this.getMaxHeight(panelModel);
+                this.mOffY = dY - currentY;
             }
             else if (this.elementY + dY < this.minTop) {
-                diffY = this.minTop - this.elementY;
-                this.mOffY = dY - diffY;
+                currentY = this.minTop - this.elementY;
+                this.mOffY = dY - currentY;
             }
-            this.elementY += diffY;
-            this.elementHeight -= diffY;
+            this.elementY += currentY;
+            this.elementHeight -= currentY;
         }
         if (this.handleClass.indexOf('south') >= 0) {
             if (this.elementHeight + dY < this.getMinHeight(panelModel)) {
-                diffY = this.getMinHeight(panelModel) - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.getMinHeight(panelModel) - this.elementHeight;
+                this.mOffY = dY - currentY;
             }
             else if (panelModel.maxSizeY && this.elementHeight + dY > this.getMaxHeight(panelModel)) {
-                diffY = this.getMaxHeight(panelModel) - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.getMaxHeight(panelModel) - this.elementHeight;
+                this.mOffY = dY - currentY;
             }
             else if (this.elementY + this.elementHeight + dY > this.maxTop) {
-                diffY = this.maxTop - this.elementY - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.maxTop - this.elementY - this.elementHeight;
+                this.mOffY = dY - currentY;
             }
-            this.elementHeight += diffY;
+            this.elementHeight += currentY;
         }
         if (this.handleClass.indexOf('west') >= 0) {
             if (this.elementWidth - dX < this.getMinWidth(panelModel)) {
-                diffX = this.elementWidth - this.getMinWidth(panelModel);
-                this.mOffX = dX - diffX;
+                currentX = this.elementWidth - this.getMinWidth(panelModel);
+                this.mOffX = dX - currentX;
             }
             else if (panelModel.maxSizeX && this.elementWidth - dX > this.getMaxWidth(panelModel)) {
-                diffX = this.elementWidth - this.getMaxWidth(panelModel);
-                this.mOffX = dX - diffX;
+                currentX = this.elementWidth - this.getMaxWidth(panelModel);
+                this.mOffX = dX - currentX;
             }
             else if (this.elementX + dX < this.minLeft) {
-                diffX = this.minLeft - this.elementX;
-                this.mOffX = dX - diffX;
+                currentX = this.minLeft - this.elementX;
+                this.mOffX = dX - currentX;
             }
-            this.elementX += diffX;
-            this.elementWidth -= diffX;
+            this.elementX += currentX;
+            this.elementWidth -= currentX;
         }
         if (this.handleClass.indexOf('east') >= 0) {
             if (this.elementWidth + dX < this.getMinWidth(panelModel)) {
-                diffX = this.getMinWidth(panelModel) - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.getMinWidth(panelModel) - this.elementWidth;
+                this.mOffX = dX - currentX;
             }
             else if (panelModel.maxSizeX && this.elementWidth + dX > this.getMaxWidth(panelModel)) {
-                diffX = this.getMaxWidth(panelModel) - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.getMaxWidth(panelModel) - this.elementWidth;
+                this.mOffX = dX - currentX;
             }
             else if (this.elementX + this.elementWidth + dX > this.maxLeft) {
-                diffX = this.maxLeft - this.elementX - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.maxLeft - this.elementX - this.elementWidth;
+                this.mOffX = dX - currentX;
             }
-            this.elementWidth += diffX;
+            this.elementWidth += currentX;
         }
         el.style.top = this.elementY + 'px';
         el.style.left = this.elementX + 'px';
@@ -2120,8 +2174,14 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
-            EventHandler.remove(document, 'mousemove', this.moveResizeHandler);
-            EventHandler.remove(document, 'mouseup', this.upResizeHandler);
+            var moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
+            var upEventName = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
+            EventHandler.remove(document, moveEventName, this.moveResizeHandler);
+            EventHandler.remove(document, upEventName, this.upResizeHandler);
+            if (Browser.info.name !== 'mise') {
+                EventHandler.remove(document, 'touchmove', this.touchMoveResizeHandler);
+                EventHandler.remove(document, 'touchend', this.upResizeHandler);
+            }
             this.isMouseUpBound = false;
             if (this.shadowEle) {
                 detach(this.shadowEle);
@@ -2291,9 +2351,6 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.sortedPanel();
     };
     
-    /**
-     * Refresh the panels of DashboardLayout component.
-     */
     DashboardLayout.prototype.refresh = function () {
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -3186,7 +3243,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     if (this.mainElement && collisionModels.indexOf(this.mainElement) !== -1) {
                         collisionModels.splice(collisionModels.indexOf(this.mainElement), 1);
                     }
-                    this.updatePanel(collisionModels, eleCol, eleRow_1, ele_1);
+                    this.collisionPanel(collisionModels, eleCol, eleRow_1, ele_1);
                 }
                 this.isSubValue = false;
             }
@@ -3208,11 +3265,11 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 this.oldRowCol[(this.overlapElementClone[i].id)] = { row: updatedRow, col: colValue };
                 var panelModel = this.getCellInstance(this.overlapElementClone[i].id);
                 this.panelPropertyChange(panelModel, { col: colValue, row: updatedRow });
-                this.updatePanel(collisionModels, colValue, updatedRow, this.overlapElementClone[i]);
+                this.collisionPanel(collisionModels, colValue, updatedRow, this.overlapElementClone[i]);
             }
         }
     };
-    DashboardLayout.prototype.updatePanel = function (collisionModels, colValue, updatedRow, clone) {
+    DashboardLayout.prototype.collisionPanel = function (collisionModels, colValue, updatedRow, clone) {
         var panelModel = this.getCellInstance(clone.id);
         this.panelPropertyChange(panelModel, { row: updatedRow, col: colValue });
         if (collisionModels.length > 0) {
@@ -3302,14 +3359,14 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     DashboardLayout.prototype.setXYAttributes = function (element, panelModel) {
         var value = {
             value: {
-                sizeX: !isNullOrUndefined(panelModel.sizeX) ? panelModel.sizeX.toString() : undefined,
-                sizeY: !isNullOrUndefined(panelModel.sizeY) ? panelModel.sizeY.toString() : undefined,
-                minSizeX: !isNullOrUndefined(panelModel.minSizeX) ? panelModel.minSizeX.toString() : 1,
-                minSizeY: !isNullOrUndefined(panelModel.minSizeY) ? panelModel.minSizeY.toString() : 1,
+                sizeX: panelModel.sizeX.toString(),
+                sizeY: panelModel.sizeY.toString(),
+                minSizeX: panelModel.minSizeX.toString(),
+                minSizeY: panelModel.minSizeY.toString(),
                 maxSizeX: !isNullOrUndefined(panelModel.maxSizeX) ? panelModel.maxSizeX.toString() : undefined,
                 maxSizeY: !isNullOrUndefined(panelModel.maxSizeY) ? panelModel.maxSizeY.toString() : undefined,
-                row: !isNullOrUndefined(panelModel.row) ? panelModel.row.toString() : undefined,
-                col: !isNullOrUndefined(panelModel.col) ? panelModel.col.toString() : undefined,
+                row: panelModel.row.toString(),
+                col: panelModel.col.toString(),
             }
         };
         this.setAttributes(value, element);
@@ -3660,9 +3717,79 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.updateCloneArrayObject();
         if (this.allowResizing) {
             for (var i = 0; i < cell.querySelectorAll('.e-resize').length; i++) {
-                EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+                var eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
+                EventHandler.add(cell.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
+                if (Browser.info.name !== 'mise') {
+                    EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
+                }
             }
         }
+    };
+    /**
+     * Allows to update a panel in the DashboardLayout.
+     */
+    DashboardLayout.prototype.updatePanel = function (panel) {
+        var _this = this;
+        if (!panel.id) {
+            return;
+        }
+        var panelInstance = this.getCellInstance(panel.id);
+        if (!panelInstance) {
+            return;
+        }
+        this.maxCol();
+        panel.col = (panel.col < 1) ? 0 : ((panel.col > this.columns)) ? this.columns - 1 : panel.col;
+        if (isNullOrUndefined(panel.col)) {
+            panel.col = panelInstance.col;
+        }
+        this.panelPropertyChange(panelInstance, panel);
+        this.setMinMaxValues(panelInstance);
+        var cell = document.getElementById(panel.id);
+        this.mainElement = cell;
+        this.panelContent = cell.querySelector('.e-panel-container') ?
+            cell.querySelector('.e-panel-container') :
+            this.createSubElement(panelInstance.cssClass, cell.id + '_content', panelContainer);
+        cell.appendChild(this.panelContent);
+        if (panelInstance.header) {
+            var headerTemplateElement = cell.querySelector('.e-panel-header') ?
+                cell.querySelector('.e-panel-header') : this.createSubElement('', cell.id + 'template', '');
+            addClass([headerTemplateElement], [header]);
+            headerTemplateElement.innerHTML = '';
+            this.renderTemplate(panelInstance.header, headerTemplateElement, 'header');
+            this.panelContent.appendChild(headerTemplateElement);
+            resetBlazorTemplate(this.element.id + 'header', 'Header');
+            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'header', 'Header'); }, 0);
+        }
+        else {
+            if (cell.querySelector('.e-panel-header')) {
+                detach(cell.querySelector('.e-panel-header'));
+            }
+        }
+        if (panelInstance.content) {
+            this.panelBody = cell.querySelector('.e-panel-content') ? cell.querySelector('.e-panel-content') :
+                this.createSubElement(panelInstance.cssClass, cell.id + '_body', panelContent);
+            this.panelBody.innerHTML = '';
+            var headerHeight = this.panelContent.querySelector('.e-panel-header') ?
+                window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
+            var contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
+            setStyleAttribute(this.panelBody, { height: contentHeightValue });
+            this.renderTemplate(panelInstance.content, this.panelBody, 'content');
+            this.panelContent.appendChild(this.panelBody);
+            resetBlazorTemplate(this.element.id + 'content', 'Content');
+            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'content', 'Content'); }, 0);
+        }
+        else {
+            if (cell.querySelector('.e-panel-content')) {
+                detach(cell.querySelector('.e-panel-content'));
+            }
+        }
+        this.setXYAttributes(cell, panelInstance);
+        this.setHeightAndWidth(cell, panelInstance);
+        this.setPanelPosition(cell, panelInstance.row, panelInstance.col);
+        this.updatePanelLayout(cell, panelInstance);
+        this.mainElement = null;
+        this.updatePanels();
+        this.updateCloneArrayObject();
     };
     DashboardLayout.prototype.updateCloneArrayObject = function () {
         this.cloneArray = this.sortedArray;
@@ -3875,8 +4002,12 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     }
                     else {
                         for (var i = 0; i < document.querySelectorAll('.e-resize').length; i++) {
+                            var eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                             var element = document.querySelectorAll('.e-resize')[i];
-                            EventHandler.remove(element, 'mousedown', this.downResizeHandler);
+                            EventHandler.remove(element, eventName, this.downResizeHandler);
+                            if (Browser.info.name !== 'mise') {
+                                EventHandler.remove(element, 'touchstart', this.touchDownResizeHandler);
+                            }
                         }
                         this.removeResizeClasses(this.panelCollection);
                     }

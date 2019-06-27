@@ -4,7 +4,7 @@ import { MarkerSettings, Trendline } from '../../chart/series/chart-series';
 import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';
 import { StockChart } from '../stock-chart';
 import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields } from '../../chart/utils/enum';
-import { Anchor, ZIndex, sizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';
+import { Anchor, ZIndex, SizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';
 import { SkeletonType, ChartRangePadding, EdgeLabelPlacement, ValueType, LegendShape, TrendlineTypes } from '../../chart/utils/enum';
 import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';
 import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';
@@ -215,7 +215,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * @default Auto
      */
     @Property('Auto')
-    public sizeType: sizeType;
+    public sizeType: SizeType;
 
     /**
      * Dash Array of the strip line.

@@ -61,10 +61,20 @@ export class MarkdownToolbarStatus {
     }
     private isListsApplied(lines: { [key: string]: string | number }[], type: string): boolean {
         let isApply: boolean = true;
-        for (let i: number = 0; i < lines.length; i++) {
-            if (!this.selection.isStartWith(lines[i].text as string, this.parent.formatter.listTags[type])) {
-                isApply = false;
-                break;
+        if (type === 'OL') {
+            for (let i: number = 0; i < lines.length; i++) {
+                let lineSplit: string = (lines[i].text as string).trim().split(' ', 2)[0] + ' ';
+                if (!/^[\d.]+[ ]+$/.test(lineSplit)) {
+                    isApply = false;
+                    break;
+                }
+            }
+        } else {
+            for (let i: number = 0; i < lines.length; i++) {
+                if (!this.selection.isStartWith(lines[i].text as string, this.parent.formatter.listTags[type])) {
+                    isApply = false;
+                    break;
+                }
             }
         }
         return isApply;

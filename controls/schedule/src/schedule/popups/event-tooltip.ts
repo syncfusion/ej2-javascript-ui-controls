@@ -57,7 +57,9 @@ export class EventTooltip {
                 resourceData: resCollection.resourceData
             };
             let contentContainer: HTMLElement = createElement('div');
-            append(this.parent.getHeaderTooltipTemplate()(data), contentContainer);
+            let templateId: string = this.parent.element.id + 'headerTooltipTemplate';
+            let tooltipTemplate: NodeList = this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId);
+            append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
             return;
         }
@@ -65,7 +67,9 @@ export class EventTooltip {
             <{ [key: string]: Object }>this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             let contentContainer: HTMLElement = createElement('div');
-            append(this.parent.getEventTooltipTemplate()(record), contentContainer);
+            let templateId: string = this.parent.element.id + 'tooltipTemplate';
+            let tooltipTemplate: NodeList = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId);
+            append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         } else {
             let globalize: Internationalization = this.parent.globalize; let fields: EventFieldsMapping = this.parent.eventFields;

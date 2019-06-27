@@ -119,6 +119,41 @@ $ddl-bigger-close-top: 9px !default;
 $ddl-multi-checkbox-bgcolor: $primary-font !default;
 $ddl-multi-checkbox-border-color: $primary-font !default;
 $ddl-multi-checkbox-color: $primary !default;
+$ddl-multiselect-group-list-item-rtl-padding-right: 29px !default;
+$ddl-bigger-multiselect-group-list-item-rtl-padding-right: 5px !default;
+$ddl-multiselect-group-list-group-item-padding-left: 24px !default;
+$ddl-multiselect-group-checkbox-wrapper-padding-left: 14px !default;
+$ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: 20px !default;
+$ddl-multiselect-group-list-group-item-rtl-padding-right: 20px !default;
+// Small size
+$ddl-select-all-height-small: 22px !default;
+$ddl-small-chip-height: 22px !default;
+$ddl-chip-small-font-size: 12px !default;
+$ddl-small-chip-close-square: 18px !default;
+$ddl-small-chip-close-font: 8px !default;
+$ddl-control-small-height: 24px !default;
+$ddl-small-input-height: 24px !default;
+$ddl-delim-small-font-size: 12px !default;
+$ddl-small-closer-margin-top: -3.4em !default;
+$ddl-chip-small-content-padding: 0 8px 0 8px !default;
+$ddl-chip-close-small-left: 6px !default;
+$ddl-chip-close-small-top: 5px !default;
+$ddl-chip-close-hooker-small-left: 0 !default;
+$ddl-delimviewheight-small: 24px !default;
+// Touch Small size
+$ddl-select-all-height-bigger-small: 34px !default;
+$ddl-bigger-small-chip-height: 30px !default;
+$ddl-chip-bigger-small-font-size: 15px !default;
+$ddl-bigger-small-chip-close-square: 30px !default;
+$ddl-bigger-small-chip-close-font: 10px !default;
+$ddl-control-bigger-small-height: 30px !default;
+$ddl-bigger-small-input-height: 34px !default;
+$ddl-delim-bigger-small-font-size: 14px !default;
+$ddl-chip-close-bigger-left: 13px !default;
+$ddl-chip-close-bigger-top: 11px !default;
+$ddl-chip-bigger-content-padding: 7px 8px 7px 12px !default;
+$ddl-delimviewheight-bigger-small: 34px !default;
+$ddl-closer-margin-top-bigger-small: -3.4em !default;
 
 @include export-module('multiselect-bootstrap4') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {
@@ -158,6 +193,14 @@ $ddl-multi-checkbox-color: $primary !default;
 
   .e-input-group.e-multiselect .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle {
     stroke-width: 1px;
+  }
+
+  .e-small .e-multi-select-wrapper .e-chips {
+    margin: 1px 4px 1px 0;
+  }
+
+  .e-small.e-bigger .e-multi-select-wrapper .e-chips {
+    margin: 2px 4px 2px 0;
   }
 
 }

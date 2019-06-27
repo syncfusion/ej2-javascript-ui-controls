@@ -16,6 +16,12 @@ export const finalizeEnd: string = 'finalize-end';
 /** @hidden */
 export const createEnd: string = 'create-end';
 /** @hidden */
+export const beforeDelete: string = 'before-delete';
+/** @hidden */
+export const pathDrag: string = 'path-drag';
+/** @hidden */
+export const deleteInit: string = 'delete-init';
+/** @hidden */
 export const deleteEnd: string = 'delete-end';
 /** @hidden */
 export const refreshEnd: string = 'refresh-end';
@@ -36,7 +42,7 @@ export const afterRequest: string = 'after-request';
 /** @hidden */
 export const download: string = 'download';
 /** @hidden */
-export const uiRefresh: string = 'ui-refresh';
+export const layoutRefresh: string = 'layout-refresh';
 /** @hidden */
 export const search: string = 'search';
 /** @hidden */
@@ -58,6 +64,10 @@ export const sortByChange: string = 'sort-by-change';
 /** @hidden */
 export const nodeExpand: string = 'node-expand';
 /** @hidden */
+export const detailsInit: string = 'details-init';
+/** @hidden */
+export const menuItemData: string = 'menu-item-data';
+/** @hidden */
 export const renameInit: string = 'rename-init';
 /** @hidden */
 export const renameEnd: string = 'rename-end';
@@ -65,6 +75,16 @@ export const renameEnd: string = 'rename-end';
 export const showPaste: string = 'show-paste';
 /** @hidden */
 export const hidePaste: string = 'hide-paste';
+/** @hidden */
+export const selectedData: string = 'selected-data';
+/** @hidden */
+export const cutCopyInit: string = 'cut-copy-init';
+/** @hidden */
+export const pasteInit: string = 'paste-init';
+/** @hidden */
+export const pasteEnd: string = 'paste-end';
+/** @hidden */
+export const cutEnd: string = 'cut-end';
 /** @hidden */
 export const hideLayout: string = 'hide-layout';
 /** @hidden */
@@ -78,4 +98,16 @@ export const pathColumn: string = 'path-column';
 /** @hidden */
 export const searchTextChange: string = 'search-change';
 /** @hidden */
+export const beforeDownload: string = 'before-download';
+/** @hidden */
 export const downloadInit: string = 'download-init';
+/** @hidden */
+export const dropInit: string = 'drop-init';
+/** @hidden */
+export const dragEnd: string = 'drag-end';
+/** @hidden */
+export const dropPath: string = 'drop-path';
+/** @hidden */
+export const dragHelper: string = 'drag-helper';
+/** @hidden */
+export const dragging: string = 'dragging';

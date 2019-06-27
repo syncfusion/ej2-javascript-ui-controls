@@ -270,21 +270,21 @@ export namespace DarkTheme {
 
 export function getThemeStyle(theme: MapsTheme): IThemeStyle {
     let style: IThemeStyle; let color: string;
-    switch (theme) {
-        case 'MaterialDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
             color = '#303030';
             break;
-        case 'FabricDark':
+        case 'fabricdark':
             color = '#201F1F';
             break;
-        case 'BootstrapDark':
+        case 'bootstrapdark':
             color = '#1A1A1A';
             break;
     }
-    switch (theme) {
-        case 'MaterialDark':
-        case 'FabricDark':
-        case 'BootstrapDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
+        case 'fabricdark':
+        case 'bootstrapdark':
             style = {
                 backgroundColor: color,
                 areaBackgroundColor: color,
@@ -295,10 +295,11 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
                 dataLabelFontColor: '#DADADA',
                 tooltipFontColor: '#ffffff',
                 tooltipFillColor: '#363F4C',
-                zoomFillColor: '#FFFFFF'
+                zoomFillColor: '#FFFFFF',
+                labelFontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
-        case 'HighContrast':
+        case 'highcontrast':
             style = {
                 backgroundColor: '#000000',
                 areaBackgroundColor: '#000000',
@@ -309,10 +310,11 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
                 dataLabelFontColor: '#000000',
                 tooltipFontColor: '#000000',
                 tooltipFillColor: '#ffffff',
-                zoomFillColor: '#FFFFFF'
+                zoomFillColor: '#FFFFFF',
+                labelFontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 backgroundColor: '#FFFFFF',
                 areaBackgroundColor: '#FFFFFF',
@@ -329,7 +331,7 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
                 legendFontSize: '14px',
                 tooltipFillOpacity: 1,
                 tooltipTextOpacity: 0.9,
-                labelFontFamily: 'HelveticaNeue'
+                labelFontFamily: 'HelveticaNeue-Medium'
             };
             break;
         default:
@@ -343,7 +345,8 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
                 dataLabelFontColor: '#000000',
                 tooltipFontColor: '#ffffff',
                 tooltipFillColor: '#000000',
-                zoomFillColor: '#737373'
+                zoomFillColor: '#737373',
+                labelFontFamily: 'Roboto, Noto, Sans-serif'
             };
             break;
     }

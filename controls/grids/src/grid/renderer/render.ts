@@ -1,5 +1,5 @@
 import { L10n, NumberFormatOptions } from '@syncfusion/ej2-base';
-import { remove } from '@syncfusion/ej2-base';
+import { remove, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Group, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
 import { IGrid, NotifyArgs, IValueFormatter } from '../base/interface';
@@ -89,27 +89,46 @@ export class Render {
     public refresh(e: NotifyArgs = { requestType: 'refresh' }): void {
         let gObj: IGrid = this.parent;
         gObj.notify(`${e.requestType}-begin`, e);
-        gObj.trigger(events.actionBegin, e);
-        if (e.cancel) {
-            gObj.notify(events.cancelBegin, e);
-            return;
+        this.resetTemplates();
+        gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
+            if (args.cancel) {
+                gObj.notify(events.cancelBegin, args);
+                return;
+            }
+            if (args.requestType === 'delete' as Action && gObj.allowPaging) {
+                let dataLength: number = (<{ data?: NotifyArgs[] }>args).data.length;
+                let count: number = gObj.pageSettings.totalRecordsCount - dataLength;
+                if (!(gObj.currentViewData.length - dataLength) && count) {
+                    gObj.prevPageMoving = true;
+                    gObj.setProperties({
+                        pageSettings: {
+                            totalRecordsCount: count, currentPage: Math.ceil(count / gObj.pageSettings.pageSize)
+                        }
+                    },                 true);
+                    gObj.pagerModule.pagerObj.totalRecordsCount = count;
+                }
+            }
+            this.refreshDataManager(args);
+        });
+    }
+    private resetTemplates(): void {
+        let gObj: IGrid = this.parent;
+        if (gObj.detailTemplate) {
+            let detailTemplateID: string = gObj.element.id + 'detailTemplate';
+            resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
         }
-        if (e.requestType === 'delete' as Action && gObj.allowPaging) {
-            let dataLength: number = (<{ data?: NotifyArgs[] }>e).data.length;
-            let count: number = gObj.pageSettings.totalRecordsCount - dataLength;
-            if (!(gObj.currentViewData.length - dataLength) && count) {
-                gObj.prevPageMoving = true;
-                gObj.setProperties({
-                    pageSettings: {
-                        totalRecordsCount: count, currentPage: Math.ceil(count / gObj.pageSettings.pageSize)
-                    }
-                },                 true);
-                gObj.pagerModule.pagerObj.totalRecordsCount = count;
+        if (gObj.rowTemplate) {
+            resetBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate');
+        }
+        for (let i: number = 0; i < gObj.getColumns().length; i++) {
+            if (gObj.getColumns()[i].template) {
+                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid, 'Template');
+            }
+            if (gObj.getColumns()[i].headerTemplate) {
+                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'headerTemplate', 'HeaderTemplate');
             }
         }
-        this.refreshDataManager(e);
     }
-
     private refreshComplete(e?: NotifyArgs): void {
         this.parent.trigger(events.actionComplete, e);
     }

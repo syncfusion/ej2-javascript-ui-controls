@@ -49,6 +49,13 @@ export interface TextBoxModel extends ComponentModel{
     placeholder?: string;
 
     /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string; };
+
+    /**
      * Specifies a boolean value that enable or disable the multiline on the TextBox. 
      * The TextBox changes from single line to multiline when enable this multiline mode.
      * @default false
@@ -76,36 +83,42 @@ export interface TextBoxModel extends ComponentModel{
     /**
      * Triggers when the TextBox component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the TextBox component is destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the content of TextBox has changed and gets focus-out.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangedEventArgs>;
 
     /**
      * Triggers when the TextBox has focus-out.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<FocusOutEventArgs>;
 
     /**
      * Triggers when the TextBox gets focus.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<FocusInEventArgs>;
 
     /**
      * Triggers each time when the value of TextBox has changed.
      * @event
+     * @blazorProperty 'OnInput'
      */
     input?: EmitType<InputEventArgs>;
 

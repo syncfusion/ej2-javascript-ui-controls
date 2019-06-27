@@ -35,8 +35,8 @@ let data: Function = (count: number) => {
 
 PivotView.Inject(VirtualScroll, FieldList, GroupingBar, CalculatedField);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: [],
+    dataSourceSettings: {
+        dataSource: [],
         expandAll: false,
         formatSettings: [{ name: 'Estimation', format: 'C' }],
         rows: [{ name: 'TaskID' }, { name: 'Status' }],
@@ -53,7 +53,7 @@ let pivotGridObj: PivotView = new PivotView({
 });
 pivotGridObj.appendTo('#PivotView');
 document.getElementById('load').onclick = function () {
-    if ((pivotGridObj.dataSource.data as IDataSet[]).length === 0) {
-        pivotGridObj.dataSource.data = data(1000000) as IDataSet[];
+    if ((pivotGridObj.dataSourceSettings.dataSource as IDataSet[]).length === 0) {
+        pivotGridObj.dataSourceSettings.dataSource = data(1000000) as IDataSet[];
     }
 };

@@ -20,8 +20,8 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 PivotView.Inject(FieldList, CalculatedField, Toolbar, PDFExport, ExcelExport, ConditionalFormatting);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: true,
         enableSorting: true,
         allowLabelFilter: true,
@@ -69,7 +69,7 @@ let pivotGridObj: PivotView = new PivotView({
             }
         });
         if (args.report) {
-            pivotGridObj.dataSource = JSON.parse(args.report).dataSource;
+            pivotGridObj.dataSourceSettings = JSON.parse(args.report).dataSourceSettings;
         }
     },
     removeReport: function (args: RemoveReportArgs): void {
@@ -105,7 +105,7 @@ let pivotGridObj: PivotView = new PivotView({
         });
     },
     newReport: function (): void {
-        pivotGridObj.setProperties({ dataSource: { columns: [], rows: [], values: [], filters: [] } }, false);
+        pivotGridObj.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
     },
     displayOption: { view: 'Both' },
     chartSettings: {

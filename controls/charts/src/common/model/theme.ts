@@ -84,7 +84,7 @@ export namespace Theme {
 /** @private */
 export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] {
     let palette: string[];
-    switch (theme) {
+    switch (theme as string) {
         case 'Fabric':
             palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
                 '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
@@ -98,6 +98,7 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
         case 'HighContrastLight':
+        case 'Highcontrast':
         case 'HighContrast':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
@@ -128,8 +129,9 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
 export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyle {
     let style: IThemeStyle;
     let darkBackground: string = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
-    switch (theme) {
+    switch (theme as string) {
         case 'HighContrastLight':
+        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 axisLabel: '#ffffff',

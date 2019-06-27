@@ -447,7 +447,6 @@ describe('Pyramid Series checking', () => {
         };
         //fourth label should be outside
         data[3]['y'] = 5;
-        chart.series[0].dataSource = data;
         chart.series[0].dataLabel.position = 'Inside';
         chart.refresh();
     });

@@ -16,12 +16,35 @@
     width: 100%;
   }
 
+  .e-de-statusbar-seperator {
+    border: 1px solid $e-de-statusbar-seperator-color;
+    height: 16px;
+    margin-left: 15.5px;
+    margin-top: 10px;
+  }
+
+  .e-de-statusbar-spellcheck {
+    border-radius: 2px;
+    height: $de-spellcheck-tlbr-height;
+    margin-left: $de-spellcheck-tlbr-margin-left;
+    width: $de-spellcheck-tlbr-width;
+
+  }
+
   .e-de-ctn {
     background-color: $de-ctnr-bg-clr;
     border: 1px solid $de-panel-border;
     height: $de-ctnr-height;
     position: relative;
     width: 100%;
+  }
+
+  .e-bigger .e-de-statusbar-spellcheck {
+    border-radius: 2px;
+    height: $de-spellcheck-tlbr-height;
+    margin-left: $de-spellcheck-tlbr-margin-left;
+    width: $de-spellcheck-tlbr-width-big;
+
   }
 
   .e-de-ctnr-toolbar {
@@ -922,12 +945,38 @@
     width: $de-page-no-width;
   }
 
-  .e-de-statusbar-zoom {
+  .e-de-ctnr-pg-no-spellout {
+    color: $de-font-color;
+    display: inline-flex;
+    font-size: 13px;
+    height: 100%;
+    width: $de-page-no-width-spellout;
+  }
+
+  .e-bigger .e-de-ctnr-pg-no-spellout {
+    color: $de-font-color;
+    display: inline-flex;
+    font-size: 13px;
+    height: 100%;
+    width: $de-page-no-width-spellout-big;
+  }
+
+  .e-de-statusbar-zoom-spell {
     background-color: $de-ctnr-bg-clr;
     border: 0;
     color: $de-font-color;
     float: right;
     height: 34px;
+    margin-left: $de-zoom-tlbr-margin-left;
+  }
+
+  .e-bigger .e-de-statusbar-zoom-spell {
+    background-color: $de-ctnr-bg-clr;
+    border: 0;
+    color: $de-font-color;
+    float: right;
+    height: 34px;
+    margin-left: $de-zoom-tlbr-margin-left-big;
   }
 
   .e-de-btn-cancel {
@@ -1591,14 +1640,6 @@
       display: inline-flex;
       height: $de-ctnr-status-bar-hgt;
       width: 100%;
-    }
-
-    .e-de-ctnr-pg-no {
-      color: $de-font-color;
-      display: inline-flex;
-      font-size: 13px;
-      height: 100%;
-      width: $de-page-no-width-big;
     }
 
     .e-de-statusbar-zoom {

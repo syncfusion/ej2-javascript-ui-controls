@@ -138,31 +138,53 @@ export abstract class Base<ElementType extends HTMLElement> {
      * @param {Function} errorHandler - this function will invoke after event if it failured to call.
      * @return {void}
      */
-    public trigger(eventName: string, eventProp?: Object, successHandler?: Function, errorHandler?: Function): void {
+    public trigger(
+        eventName: string,
+        eventProp?: Object,
+        successHandler?: Function,
+        errorHandler?: Function): void | object {
         if (this.isDestroyed !== true) {
             let prevDetection: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = false;
-            this.modelObserver.notify(eventName, eventProp);
+            let data: object = this.modelObserver.notify(eventName, eventProp, successHandler, errorHandler) as object;
             if (isColEName.test(eventName)) {
                 let handler: Function = getValue(eventName, this);
                 if (handler) {
-                    let promise: Promise<object> = handler.call(this, eventProp);
-                    if (promise && (promise.toString()).indexOf('Promise') >= 0) {
-                        promise.then((data: object) => {
-                            if (successHandler) {
-                                successHandler.call(this, data);
+                    let blazor: string = 'Blazor';
+                    if (window[blazor]) {
+                        let promise: Promise<object> = handler.call(this, eventProp);
+                        if (promise && typeof promise.then === 'function') {
+                            if (!successHandler) {
+                                data = promise;
+                            } else {
+                                promise.then((data: object) => {
+                                    if (successHandler) {
+                                        data = typeof data === 'string' && this.modelObserver.isJson(data) ?
+                                            JSON.parse(data as string) : data;
+                                        successHandler.call(this, data);
+                                    }
+                                }).catch((data: object) => {
+                                    if (errorHandler) {
+                                        data = typeof data === 'string' && this.modelObserver.isJson(data) ? JSON.parse(data) : data;
+                                        errorHandler.call(this, data);
+                                    }
+                                });
                             }
-                        }).catch((data: object) => {
-                            if (errorHandler) {
-                                errorHandler.call(this, data);
-                            }
-                        });
-                    } else if (successHandler) {
-                        successHandler.call(this, eventProp);
+                        } else if (successHandler) {
+                            successHandler.call(this, eventProp);
+                        }
+                    } else {
+                        handler.call(this, eventProp);
+                        if (successHandler) {
+                            successHandler.call(this, eventProp);
+                        }
                     }
+                } else if (successHandler) {
+                    successHandler.call(this, eventProp);
                 }
             }
             this.isProtectedOnChange = prevDetection;
+            return data;
         }
     }
 

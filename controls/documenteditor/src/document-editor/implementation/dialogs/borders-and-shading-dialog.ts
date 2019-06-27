@@ -69,6 +69,7 @@ export class BordersAndShadingDialog {
     private shadingColorPicker: ColorPicker;
     private ulelementShading: DropDownList;
     private borderWidth: NumericTextBox;
+    private isShadingChanged: boolean = false;
     /**
      * @private
      */
@@ -620,6 +621,7 @@ export class BordersAndShadingDialog {
                 shading.textureStyle = currentTableFormat.shading.textureStyle;
             }
             this.tableFormat.shading = new WShading();
+            this.isShadingChanged = currentTableFormat.shading.backgroundColor !== shading.backgroundColor;
             editorModule.applyShading(this.tableFormat.shading, shading);
         }
         this.applyFormat();
@@ -633,7 +635,7 @@ export class BordersAndShadingDialog {
         if (this.applyTo === 0) {
             editorModule.onCellFormat(this.cellFormat);
         } else {
-            editorModule.onTableFormat(this.tableFormat);
+            editorModule.onTableFormat(this.tableFormat, this.isShadingChanged);
         }
         if (!isNullOrUndefined(this.owner.owner.editorHistory.currentHistoryInfo)) {
             this.owner.owner.editorHistory.updateComplexHistory();

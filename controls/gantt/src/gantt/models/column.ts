@@ -2,7 +2,7 @@ import { NumberFormatOptions, DateFormatOptions, merge } from '@syncfusion/ej2-b
 import { TextAlign, ClipMode, ValueAccessor, IEditCell, IFilter } from '@syncfusion/ej2-grids';
 import { IGanttCellFormatter } from '../base/interface';
 /**
- * Configures column collection in Gantt
+ * Configures column collection in Gantt.
  */
 export class Column {
     /**
@@ -98,8 +98,8 @@ export class Column {
      * Gets the format from the user which can be standard or custom 
      * [`number`](../../../common/internationalization/#number-formatting) 
      * and [`date`](../../../common/internationalization/#formatting) formats.  
-     * @default null  
-     * @aspType string  
+     * @default null
+     * @aspType string
      */
     public format: string | NumberFormatOptions | DateFormatOptions;
 
@@ -152,7 +152,7 @@ export class Column {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../../../common/template-engine/) or HTML element ID.   
+     * It accepts either template string or HTML element ID.   
      * @default null
      */
     public template: string;
@@ -295,9 +295,9 @@ export interface ColumnModel {
     /**
      * It is used to change display value with the given format and does not affect the original data.  
      * Gets the format from the user which can be standard or custom 
-     * [`number`](../../../common/internationalization/#number-formatting) 
-     * and [`date`](../../../common/internationalization/#formatting) formats.  
-     * @default null  
+     * [`number`](../../../common/internationalization/#number-formatting)
+     * and [`date`](../../../common/internationalization/#formatting) formats.
+     * @default null
      * @aspType string
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
@@ -351,7 +351,7 @@ export interface ColumnModel {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../../../common/template-engine/) or HTML element ID.   
+     * It accepts either template string or HTML element ID.   
      * @default null
      */
     template?: string;
@@ -392,7 +392,7 @@ export interface ColumnModel {
      */
     edit?: IEditCell;
     /**
-     * To define column type
+     * To define column type.
      * @private
      */
     type?: string;

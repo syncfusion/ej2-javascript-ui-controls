@@ -4,8 +4,7 @@ import { RectOption, appendClipElement } from '../../common/utils/helper';
 import { findClipRect } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
 import { Chart } from '../chart';
-import { BaseAttibutes } from '@syncfusion/ej2-svg-base';
-import { Rect } from '@syncfusion/ej2-svg-base';
+import { BaseAttibutes, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 /**
  * Technical Analysis module helps to predict the market trend
  */
@@ -69,7 +68,7 @@ export class TechnicalAnalysis extends LineBase {
                 x: 0, y: 0, width: clipRect.width,
                 height: clipRect.height,
             });
-        let clipRectElement: Element = appendClipElement(chart.redraw, options, chart.renderer);
+        let clipRectElement: Element = appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer);
         //defines the clip rect element
 
         //creates the group for an indicator

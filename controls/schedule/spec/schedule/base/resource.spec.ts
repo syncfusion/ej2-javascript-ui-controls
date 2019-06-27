@@ -1,12 +1,11 @@
 /**
  * Schedule resource base spec 
  */
-import { createElement, isNullOrUndefined, remove, EmitType, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda,
     ResourceDetails, EJ2Instance, ScheduleModel, TimelineViews
 } from '../../../src/schedule/index';
-import { triggerMouseEvent, disableScheduleAnimation } from '../util.spec';
 import { resourceData } from '../base/datasource.spec';
 import { Popup } from '@syncfusion/ej2-popups';
 import * as util from '../util.spec';
@@ -28,39 +27,30 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2017, 10, 1),
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('control class testing', () => {
@@ -70,41 +60,32 @@ describe('Schedule Resources', () => {
 
     describe('Event Color by resources', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2018, 3, 1),
                 group: { resources: ['Rooms', 'Owners'] },
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#cb6bb2' },
                         { Text: 'Room 2', Id: 2, Color: '#56ca85' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
                 }],
-                eventSettings: { resourceColorField: 'Owners', dataSource: resourceData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                eventSettings: { resourceColorField: 'Owners', dataSource: resourceData }
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('control class testing', () => {
@@ -125,46 +106,31 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource with group', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => {
-                disableScheduleAnimation(schObj);
-                done();
-            };
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2018, 3, 1),
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
+                group: { resources: ['Rooms', 'Owners'] },
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                eventSettings: { dataSource: resourceData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('control class testing', () => {
@@ -172,7 +138,7 @@ describe('Schedule Resources', () => {
         });
 
         it('resource details in quick event popup', () => {
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[3] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[3] as HTMLElement, 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             (<HTMLElement>eventPopup.querySelector('.e-close')).click();
@@ -199,54 +165,39 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource with group setmodel testing', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 currentView: 'WorkWeek',
                 selectedDate: new Date(2018, 3, 1),
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
-                resources: [
-                    {
-                        field: 'RoomId', title: 'Room',
-                        name: 'Rooms', allowMultiple: false,
-                        dataSource: [
-                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
-                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
-                        ],
-                        textField: 'text', idField: 'id', colorField: 'color'
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                        { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [{
+                        text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [0, 1, 2, 3],
+                        startHour: '00:00', endHour: '08:00', css: 'e-na'
                     }, {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            {
-                                text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [0, 1, 2, 3],
-                                startHour: '00:00', endHour: '08:00', css: 'e-na'
-                            },
-                            {
-                                text: 'Steven', id: 2, groupId: 2, color: '#f8a398', workDays: [3, 4],
-                                startHour: '08:00', endHour: '16:00', css: 'e-st'
-                            },
-                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', startHour: '16:00', endHour: '23:59', css: 'e-mi' }
-                        ],
-                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color',
-                        workDaysField: 'workDays', startHourField: 'startHour', endHourField: 'endHour', cssClassField: 'css'
-                    }
-                ],
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                        text: 'Steven', id: 2, groupId: 2, color: '#f8a398', workDays: [3, 4],
+                        startHour: '08:00', endHour: '16:00', css: 'e-st'
+                    }, {
+                        text: 'Michael', id: 3, groupId: 1, color: '#7499e1', startHour: '16:00', endHour: '23:59', css: 'e-mi'
+                    }],
+                    textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color',
+                    workDaysField: 'workDays', startHourField: 'startHour', endHourField: 'endHour', cssClassField: 'css'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('headerdate checking in workweek view', () => {
@@ -262,39 +213,30 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource group with custom workdays and hours', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
                 selectedDate: new Date(2017, 10, 1),
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('setmodel - byDate testing', () => {
@@ -310,20 +252,12 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource without group rendering in setmodel', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                width: '100%', height: '550px', selectedDate: new Date(2017, 10, 1), dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { width: '100%', height: '550px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('default resource value checking', () => {
@@ -365,41 +299,93 @@ describe('Schedule Resources', () => {
         });
     });
 
-    describe('Public methods checking for resources', () => {
+    describe('Resource expand/collapse icon checking', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 width: '100%',
                 height: '550px',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    resources: ['Projects', 'SubProjects', 'Categories']
+                },
+                resources: [
+                    {
+                        field: 'ProjectId',
+                        title: 'Project',
+                        name: 'Projects',
+                        dataSource: [
+                            { text: 'PROJECT 1', id: 1, color: '#cb6bb2' },
+                            { text: 'PROJECT 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'SubProjectId',
+                        title: 'SubProject',
+                        name: 'SubProjects',
+                        dataSource: [
+                            { text: 'SUB-PROJECT1', id: 3, color: '#df5286', groupId: 1 },
+                            { text: 'SUB-PROJECT2', id: 4, color: '#df5286', groupId: 2 },
+                            { text: 'Michael', id: 5, color: '#df5286', groupId: 1 }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color', groupIDField: 'groupId'
+                    }, {
+                        field: 'CategoryId',
+                        title: 'Category',
+                        name: 'Categories',
+                        dataSource: [
+                            { text: 'Steven', id: 6, color: '#7fa900', groupId: 3 },
+                            { text: 'Robert', id: 7, color: '#ea7a57', groupId: 4 },
+                            { text: 'Smith', id: 8, color: '#5978ee', groupId: 4 }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color', groupIDField: 'groupId'
+                    }],
+                views: ['TimelineWeek']
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking resource expand/collapse icon when it has no child', () => {
+            let resourceRow: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resource-cells.e-parent-node'));
+            expect(resourceRow[1].parentElement.classList.contains('e-hidden')).toEqual(false);
+            expect(resourceRow[1].children[0].classList.contains('e-resource-tree-icon')).toEqual(true);
+            expect(resourceRow[1].children[0].classList.contains('e-resource-collapse')).toEqual(true);
+            expect(resourceRow[2].parentElement.classList.contains('e-hidden')).toEqual(false);
+            expect(resourceRow[2].children[0].classList.contains('e-resource-tree-icon')).toEqual(false);
+            expect(resourceRow[2].children[0].classList.contains('e-resource-collapse')).toEqual(false);
+            util.triggerMouseEvent(resourceRow[0].children[0] as HTMLElement, 'click');
+            expect(resourceRow[1].parentElement.classList.contains('e-hidden')).toEqual(true);
+            expect(resourceRow[2].parentElement.classList.contains('e-hidden')).toEqual(true);
+        });
+    });
+
+    describe('Public methods checking for resources', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '100%', height: '550px',
                 selectedDate: new Date(2017, 10, 1),
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('Initial resource testing', () => {
@@ -407,16 +393,15 @@ describe('Schedule Resources', () => {
         });
 
         it('quick cell popup testing', () => {
-            disableScheduleAnimation(schObj);
             let morePopup: Popup = schObj.quickPopup.morePopup;
             schObj.quickPopup.morePopup = null;
             let workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'click');
             let quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(quickPopup.classList.contains('e-popup-open')).toEqual(true);
             expect(quickPopup.classList.contains('e-popup-close')).toEqual(false);
             expect(quickPopup.querySelector('.e-resource-details')).toBeNull();
-            triggerMouseEvent(quickPopup.querySelector('.e-close'), 'click');
+            util.triggerMouseEvent(quickPopup.querySelector('.e-close'), 'click');
             expect(quickPopup.classList.contains('e-popup-open')).toEqual(false);
             expect(quickPopup.classList.contains('e-popup-close')).toEqual(true);
             schObj.quickPopup.morePopup = morePopup;
@@ -489,57 +474,44 @@ describe('Schedule Resources', () => {
             schObj.dataBind();
         });
     });
-
+    
     describe('Keyboard interactions with multiple resource grouping', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
+            let model: ScheduleModel = {
+                width: '100%', height: '550px',
                 selectedDate: new Date(2018, 3, 1),
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
+                group: { resources: ['Rooms', 'Owners'] },
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                eventSettings: { dataSource: resourceData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('multiple work cells selection for particular resource', () => {
             keyModule = schObj.keyboardInteractionModule;
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[428];
-            triggerMouseEvent(workCells[428], 'mousedown');
-            triggerMouseEvent(workCells[495], 'mousemove');
-            triggerMouseEvent(workCells[495], 'mouseup');
+            util.triggerMouseEvent(workCells[428], 'mousedown');
+            util.triggerMouseEvent(workCells[495], 'mousemove');
+            util.triggerMouseEvent(workCells[495], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(201);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -553,9 +525,9 @@ describe('Schedule Resources', () => {
             keyModule = schObj.keyboardInteractionModule;
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
             keyModule.initialTarget = workCells[428];
-            triggerMouseEvent(workCells[428], 'mousedown');
-            triggerMouseEvent(workCells[500], 'mousemove');
-            triggerMouseEvent(workCells[500], 'mouseup');
+            util.triggerMouseEvent(workCells[428], 'mousedown');
+            util.triggerMouseEvent(workCells[500], 'mousemove');
+            util.triggerMouseEvent(workCells[500], 'mouseup');
             let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
             expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(274);
             expect(focuesdEle.classList).toContain('e-selected-cell');
@@ -568,48 +540,35 @@ describe('Schedule Resources', () => {
 
     describe('Multiple resource grouping rendering in mobile device', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         let uA: string = Browser.userAgent;
         let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
         beforeAll((done: Function) => {
             Browser.userAgent = androidUserAgent;
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: 300,
-                height: '500px',
+            let model: ScheduleModel = {
+                width: 300, height: '500px',
                 selectedDate: new Date(2018, 3, 1),
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'MonthAgenda'],
-                group: {
-                    resources: ['Rooms', 'Owners']
-                },
+                group: { resources: ['Rooms', 'Owners'] },
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                eventSettings: { dataSource: resourceData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
             Browser.userAgent = uA;
         });
 
@@ -634,7 +593,6 @@ describe('Schedule Resources', () => {
             treePopup.showAnimation = null;
             treePopup.hideAnimation = null;
             treePopup.dataBind();
-
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(true);
             let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
             menuElement.click();
@@ -649,19 +607,15 @@ describe('Schedule Resources', () => {
 
         it('document click testing', () => {
             let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
-            triggerMouseEvent(menuElement, 'click');
+            util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(true);
             expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(true);
             let popupWrapper: HTMLElement = schObj.element.querySelector('.e-resource-tree-popup');
-            triggerMouseEvent(popupWrapper, 'mousedown');
+            util.triggerMouseEvent(popupWrapper, 'mousedown');
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(true);
             expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(true);
-            // triggerMouseEvent(document.body, 'mousedown');
-            // expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(true);
-            // expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(false);
-            // expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(false);
         });
 
         it('resource node click testing', () => {
@@ -670,9 +624,7 @@ describe('Schedule Resources', () => {
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Nancy');
             let nodeElement: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-tree .e-list-item:not(.e-has-child)');
-            triggerMouseEvent(nodeElement[2] as HTMLElement, 'mouseup');
-            // expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 2');
-            // expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Steven');
+            util.triggerMouseEvent(nodeElement[2] as HTMLElement, 'mouseup');
         });
 
         it('resource events checked for week view testing', () => {

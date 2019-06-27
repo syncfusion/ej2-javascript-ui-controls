@@ -195,6 +195,7 @@ export class ExcelFilter extends CheckBoxFilter {
                 pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
             }
             this.menuObj.open(pos.top, pos.left, e.target as HTMLElement);
+            this.parent.applyBiggerTheme(this.menuObj.element.parentElement);
         }
     }
 
@@ -324,6 +325,7 @@ export class ExcelFilter extends CheckBoxFilter {
             this.dlgObj.element.style.width = '90%';
         }
         this.dlgObj.show();
+        this.parent.applyBiggerTheme(this.dlgObj.element.parentElement);
     }
     private renderCustomFilter(target: Element, column: string): void {
         let dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
@@ -398,7 +400,7 @@ export class ExcelFilter extends CheckBoxFilter {
             return;
         }
         mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
-        if (secondValue) {
+        if (!isNullOrUndefined(secondValue)) {
             secondOperator = !isNullOrUndefined(secondOperator) ? secondOperator as string : 'equal';
             fColl.push({
                 field: field,

@@ -36,18 +36,19 @@ export class Selection {
     }
 
     public addEventListener(): void {
-      this.parent.on('headerCheckbox', this.headerCheckbox, this);
+      this.parent.on('dataBoundArg', this.headerCheckbox, this);
       this.parent.on('columnCheckbox', this.columnCheckbox, this);
       this.parent.on('updateGridActions', this.updateGridActions, this);
       this.parent.on('checkboxSelection', this.checkboxSelection, this);
+
     }
 
     public removeEventListener(): void {
       if (this.parent.isDestroyed) { return; }
-      this.parent.off('renderHeaderCheckbox', this.headerCheckbox);
-      this.parent.off('renderCheckbox', this.columnCheckbox);
+      this.parent.off('dataBoundArg', this.headerCheckbox);
+      this.parent.off('columnCheckbox', this.columnCheckbox);
       this.parent.off('checkboxSelection', this.checkboxSelection);
-      this.parent.off('updateCheckboxes', this.updateGridActions);
+      this.parent.off('updateGridActions', this.updateGridActions);
     }
 
   /**
@@ -65,13 +66,7 @@ export class Selection {
     let checkBox: HTMLInputElement;
     if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
       checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
-      let rowIndex: number[]; rowIndex = [];
-      rowIndex.push(target.closest('tr').rowIndex);
-      let checkBoxargs: CheckBoxChangeEventArgs =
       this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
-      if (!checkBoxargs.cancel) {
-        this.selectCheckboxes(rowIndex);
-      }
     } else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
       let checkBoxvalue: boolean = !checkWrap.querySelector('.e-frame').classList.contains('e-check')
         && !checkWrap.querySelector('.e-frame').classList.contains('e-stop');
@@ -79,12 +74,17 @@ export class Selection {
     }
   }
 
-  private triggerChkChangeEvent(checkBox: HTMLInputElement, checkState: boolean, rowElement: HTMLTableRowElement): Object {
+  private triggerChkChangeEvent(checkBox: HTMLInputElement, checkState: boolean, rowElement: HTMLTableRowElement): void {
+    let rowIndex: number[]; rowIndex = [];
+    rowIndex.push(rowElement.rowIndex);
     let data: ITreeData = this.parent.getCurrentViewRecords()[rowElement.rowIndex];
     let args: Object = { checked: checkState, target: checkBox, cancel: false, rowElement: rowElement,
       rowData: data };
-    this.parent.trigger(events.checkboxChange, args);
-    return args;
+    this.parent.trigger(events.checkboxChange, args, (checkBoxArgs: CheckBoxChangeEventArgs) => {
+      if (!checkBoxArgs.cancel) {
+        this.selectCheckboxes(rowIndex);
+      }
+    });
   }
 
   private getCheckboxcolumnIndex(): number {
@@ -114,6 +114,7 @@ export class Selection {
         let rowChkBox: Element = this.parent.createElement('input', { className: 'e-treeselectall', attrs: { 'type': 'checkbox'}});
         checkWrap = createCheckBox(this.parent.createElement, false, { checked: value as boolean, label: ' ' });
         checkWrap.classList.add('e-hierarchycheckbox');
+        (<HTMLElement>checkWrap.querySelector('.e-frame')).style.width = '18px';
         checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
         if (!isNullOrUndefined(headerElement)) {
           headerElement.insertBefore(checkWrap, headerElement.firstChild);
@@ -131,6 +132,7 @@ export class Selection {
       let value: boolean = (isNullOrUndefined(data.checkboxState) || data.checkboxState === 'uncheck') ? false : true;
       checkWrap = createCheckBox(this.parent.createElement, false, { checked: value as boolean, label: ' ' });
       checkWrap.classList.add('e-hierarchycheckbox');
+      (<HTMLElement>checkWrap.querySelector('.e-frame')).style.width = '18px';
       if (data.checkboxState === 'indeterminate') {
         let checkbox: HTMLElement = <HTMLElement>checkWrap.querySelectorAll('.e-frame')[0];
         removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);

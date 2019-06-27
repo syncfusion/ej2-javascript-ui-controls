@@ -1,3 +1,4 @@
+import { TemplateName } from './../base/enum';
 import { Gantt } from '../base/gantt';
 import { Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
@@ -32,9 +33,11 @@ export class EditTooltip {
                 mouseTrail: mouseTrail,
                 cssClass: cls.ganttTooltip,
                 target: target ? target : null,
-                animation: { open: { effect: 'None' }, close: { effect: 'None' } }
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                created: this.toolTipObjCreated.bind(this)
             }
         );
+
         this.toolTipObj.beforeRender = (args: TooltipEventArgs) => {
             let argsData: BeforeTooltipRenderEventArgs = {
                 data: this.taskbarEdit.taskBarEditRecord,
@@ -44,6 +47,10 @@ export class EditTooltip {
             this.parent.trigger('beforeTooltipRender', argsData);
         };
         this.toolTipObj.appendTo(this.parent.chartPane);
+    }
+
+    private toolTipObjCreated(): void {
+        this.parent.tooltipModule.updateBlazorTooltipTemplate(true, TemplateName.EditingTooltip);
     }
 
     /**
@@ -113,8 +120,9 @@ export class EditTooltip {
         let instance: Internationalization = this.parent.globalize;
         let editRecord: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties;
         if (this.parent.tooltipSettings.editing) {
+            this.parent.tooltipModule.updateBlazorTooltipTemplate(false, TemplateName.EditingTooltip);
             let templateNode: NodeList = this.parent.tooltipModule.templateCompiler(
-                this.parent.tooltipSettings.editing, this.parent, editRecord);
+                this.parent.tooltipSettings.editing, this.parent, editRecord, TemplateName.EditingTooltip);
             tooltipString = (templateNode[0] as HTMLElement);
         } else {
             switch (this.taskbarEdit.taskBarEditAction) {

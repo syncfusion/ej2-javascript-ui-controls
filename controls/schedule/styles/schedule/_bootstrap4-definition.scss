@@ -173,6 +173,11 @@ $schedule-val-error-bg-color: #fcdbe4 !default;
 $schedule-block-appointment-bg-color: $gray-300 !default;
 $schedule-block-appointment-font-color: $gray-900 !default;
 
+$schedule-resource-color-margin-top: 6px !default;
+$schedule-bigger-resource-color-margin-top: 8px !default;
+$schedule-resource-color-size: 14px !default;
+$schedule-bigger-resource-color-size: 16px !default;
+
 @mixin tbar-btn-animation {
   content: '';
 }

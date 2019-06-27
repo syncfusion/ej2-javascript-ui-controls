@@ -596,7 +596,6 @@ export class TableResizer {
         if (hasTableWidth || table.tableHolder.getTotalWidth(0) > containerWidth) {
             table.tableFormat.allowAutoFit = false;
             table.updateWidth(dragValue);
-
             table.tableHolder.tableWidth = table.tableHolder.getTotalWidth(0);
         }
         let dragOffset: number = dragValue;

@@ -63,7 +63,7 @@ let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
 let diagram: Diagram = new Diagram({
     width: '100%', height: '550px',
     layout: { type: 'MindMap' },
-    dataSourceSettings: { id: 'id', parentId: 'parentId', dataManager: items, root: String(1) },
+    dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: items, root: String(1) },
     getNodeDefaults: (obj: Node) => {
         obj.shape = { type: 'Text', content: (obj.data as { Label: 'string' }).Label };
         obj.style = { fill: 'lightgrey', strokeColor: 'none', strokeWidth: 2 };

@@ -1,6 +1,6 @@
 import { Browser, closest, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA } from './../render.spec';
+import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { QuickToolbar, MarkdownEditor, HtmlEditor, Table, Toolbar, IRenderer, ToolbarRenderer } from "../../../src/rich-text-editor/index";
@@ -103,6 +103,7 @@ describe('Table creation', () => {
                 expect(table.querySelectorAll('tr').length === 4).toBe(true);
                 (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
                 ((<HTMLElement>tableTBItems.item(1)).childNodes[0] as HTMLElement).click();
+                popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
                 mouseEventArgs = {
                     target: (popupElement.childNodes[0].childNodes[2] as HTMLElement)
                 };
@@ -127,6 +128,7 @@ describe('Table creation', () => {
                 expect(table.querySelector('tr').querySelectorAll('td').length === 5).toBe(true);
                 (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
                 ((<HTMLElement>tableTBItems.item(2)).childNodes[0] as HTMLElement).click();
+                popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
                 mouseEventArgs = {
                     target: (popupElement.childNodes[0].childNodes[1] as HTMLElement)
                 };
@@ -135,6 +137,7 @@ describe('Table creation', () => {
                 expect(table.querySelector('tr').querySelectorAll('td').length === 6).toBe(true);
                 (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
                 ((<HTMLElement>tableTBItems.item(2)).childNodes[0] as HTMLElement).click();
+                popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
                 mouseEventArgs = {
                     target: (popupElement.childNodes[0].childNodes[2] as HTMLElement)
                 };
@@ -209,6 +212,7 @@ describe('Table creation', () => {
                 expect(popupElement.children[0].children[0].children[0].classList.contains('e-align-top')).toBe(true);
                 mouseEventArgs.target.click();
                 expect((tar as HTMLElement).style.verticalAlign === 'top').toBe(true);
+                (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
                 ((<HTMLElement>tableTBItems.item(7)).childNodes[0] as HTMLElement).click();
                 popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
                 mouseEventArgs = {
@@ -217,6 +221,7 @@ describe('Table creation', () => {
                 expect(popupElement.children[0].children[1].children[0].classList.contains('e-align-middle')).toBe(true);
                 mouseEventArgs.target.click();
                 expect((tar as HTMLElement).style.verticalAlign === 'middle').toBe(true);
+                (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
                 ((<HTMLElement>tableTBItems.item(7)).childNodes[0] as HTMLElement).click();
                 popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
                 mouseEventArgs = {
@@ -225,6 +230,7 @@ describe('Table creation', () => {
                 expect(popupElement.children[0].children[2].children[0].classList.contains('e-align-bottom')).toBe(true);
                 mouseEventArgs.target.click();
                 expect((tar as HTMLElement).style.verticalAlign === 'bottom').toBe(true);
+                (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
                 ((<HTMLElement>tableTBItems.item(8)).childNodes[0] as HTMLElement).click();
                 popupElement = document.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
                 mouseEventArgs = {
@@ -1355,6 +1361,26 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect((applied[3] as HTMLElement).style.marginLeft === '20px').toBe(true);
                 done();
             });
+            it('Bold the text and applying table to it', (done) => {
+                rteObj.value = '<p>Bold the richtexteditor text and applying table to it testing</p>'
+                rteObj.dataBind();
+                let nodeSelection: NodeSelection = new NodeSelection();
+                let firstNode: HTMLElement = rteObj.element.querySelectorAll("p")[0];
+                nodeSelection.setSelectionText(document, firstNode.childNodes[0], firstNode.childNodes[0], 13, 17);
+                (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+                expect(firstNode.firstElementChild.tagName.toLowerCase() === 'strong');
+                expect(firstNode.firstElementChild.textContent === 'text');
+                (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+                (<HTMLElement>rteEle.querySelector(".e-insert-table-btn") as HTMLElement).click();
+                (<HTMLElement>rteEle.querySelectorAll(".e-insert-table")[0] as HTMLElement).click();
+                let firstSplittedNode: HTMLElement = rteObj.element.querySelectorAll("p")[0];
+                let tableNode: HTMLElement = rteObj.element.querySelectorAll("table")[0];
+                let lastSplittedNode: HTMLElement = rteObj.element.querySelectorAll("p")[1]
+                expect(firstSplittedNode.querySelectorAll('strong').length === 0).toBe(true);
+                expect(lastSplittedNode.querySelectorAll('strong').length === 0).toBe(true);
+                expect(tableNode).not.toBe(null);
+                done();
+            });
         });
 
         describe(" Apply to text line with empty line", () => {
@@ -1703,7 +1729,65 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
         });
 
+        describe("tab and shift+tab", () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            let keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 9,
+                shiftKey: false
+            };
+            let keyboardEventArgs1 = {
+                preventDefault: function () { },
+                keyCode: 9,
+                shiftKey: true
+            };
+            beforeEach(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                            'UnorderedList', 'Outdent', 'Indent']
+                    },
+                    value: `<ol><li><p>Support
+                    to insert image from a defined path.</p></li></ol><div><table class="e-rte-table" style="width: 100%;">
+                    <tbody><tr><td style="width: 50%;"><br></td>
+                    <td style="width: 50%;"><br></td></tr></tbody></table><br></div><ol><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol>`
+                });
+                rteEle = rteObj.element;
+            });
 
+            afterEach(() => {
+                destroy(rteObj);
+            });
+            it(' empty cell', (done) => {
+                setTimeout(() => {
+                    let tdNode: Element = rteObj.element.querySelector("td");
+                    setCursorPoint(tdNode, 0);
+                    keyboardEventArgs.keyCode = 9;
+                    (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+                    keyboardEventArgs1.keyCode = 9;
+                    (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs1 });
+                    expect(tdNode.querySelector('p')).toBeNull();
+                    done();
+                }, 500);
+            });
+            it('Multiline text cell', (done) => {
+                setTimeout(() => {
+                    let tdNode: Element = rteObj.element.querySelector("td");
+                    (tdNode as HTMLElement).innerText = "'first line'<br>'second line'<br>'third line'<br>'fourth line' <br>";
+                    (tdNode as HTMLElement).innerText = "'first line'<br>'second line'<br>'third line'<br>'fourth line' <br>";
+                    setCursorPoint(tdNode, 0);
+                    keyboardEventArgs.keyCode = 9;
+                    (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+                    keyboardEventArgs1.keyCode = 9;
+                    (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs1 });
+                    expect(tdNode.querySelector('p')).toBeNull();
+                    done();
+                }, 500);
+            });
+
+        });
         describe(" EJ2-19873:  Inserting table in the list produces one extra empty list", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
@@ -1732,7 +1816,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 setCursorPoint(firstNode.childNodes[0] as Element, firstNode.textContent.length - 1);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateTable') as HTMLElement;
                 item.click();
-                let cell:Element = document.getElementById(controlId+"_table").querySelectorAll(".e-rte-tablecell")[0];
+                let cell: Element = document.getElementById(controlId + "_table").querySelectorAll(".e-rte-tablecell")[0];
                 dispatchEvent(cell, "mousedown");
                 dispatchEvent(cell, "mouseup");
                 (cell as HTMLElement).click();
@@ -1880,7 +1964,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 200);
         });
-        it(" Android - 'leftClick' with quickpopup availability testing", (done: Function) => {
+        it(" Android - false with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -1905,7 +1989,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 400);
         });
-        it(" Android - 'rightClick' with quickpopup availability testing", (done: Function) => {
+        it(" Android - true with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -1931,7 +2015,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 400);
         });
-        it(" Android - 'rightClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+        it(" Android - true with onproperty change and quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -1961,7 +2045,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 400);
         });
-        it(" Android - 'leftClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+        it(" Android - false with onproperty change and quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -1992,7 +2076,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 400);
         });
-        it(" iPhone - 'leftClick' with quickpopup availability testing", (done: Function) => {
+        it(" iPhone - false with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -2007,7 +2091,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('.e-rte-table td');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX, clientY: rteObj.clickPoints.clientY };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -2017,7 +2101,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 400);
         });
-        it(" iPhone - 'rightClick' with quickpopup availability testing", (done: Function) => {
+        it(" iPhone - true with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -2032,7 +2116,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('.e-rte-table td');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX, clientY: rteObj.clickPoints.clientY };
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -2043,7 +2127,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 400);
         });
-        it(" iPhone - 'rightClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+        it(" iPhone - true with onproperty change and quickpopup availability testing", (done: Function) => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -2062,7 +2146,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             rteObj.quickToolbarSettings.showOnRightClick = false;
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('.e-rte-table td');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX, clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -2073,7 +2157,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 400);
         });
-        it(" iPhone - 'leftClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+        it(" iPhone - false with onproperty change and quickpopup availability testing", (done: Function) => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -2092,7 +2176,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             rteObj.quickToolbarSettings.showOnRightClick = true;
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('.e-rte-table td');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX, clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
@@ -2107,6 +2191,124 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         afterEach((done: Function) => {
             destroy(rteObj);
             done();
+        });
+    });
+
+    describe(" EJ2-19935: RTE text align property is not working properly in table cell", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        let controlId: string;
+        let editNode: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                value: `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                client side.</p><table class="e-rte-table" style="width: 100%;"><thead><tr><th class="e-cell-select"><br></th><th><br></th></tr></thead><tbody><tr><td style="width: 50%;" class=""><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>
+                `
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            editNode = (rteObj as any).inputElement;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' apply the right alignment to table td', (done) => {
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("td");
+            setCursorPoint(node, 0);
+            node.focus();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            (rteObj as any).inputElement.dispatchEvent(clickEvent);
+            let eventsArg: any = { pageX: 50, pageY: 300, target: node };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let tablePop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                let insertBtn: HTMLElement = tablePop.querySelector("#" + controlId + "_quick_Alignments");
+                insertBtn.click();
+                let dropdown: HTMLElement = document.querySelector('#' + controlId + "_quick_Alignments-popup");
+                (dropdown.querySelectorAll(".e-item")[2] as HTMLElement).click();
+                expect(((rteObj as any).inputElement.querySelectorAll("td")[0] as HTMLElement).style.textAlign === 'right').toBe(true);
+                done();
+            }, 600);
+        });
+    });
+
+    describe(" IE - table delete testing", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        let controlId: string;
+        let editNode: HTMLElement;
+        beforeEach(() => {
+            Browser.userAgent = ieUA;
+        });
+
+        afterEach(() => {
+            Browser.userAgent = currentBrowserUA;
+            destroy(rteObj);
+        });
+        it(' delete column', (done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 33.3333%;" class="">1</td><td style="width: 33.3333%;">4</td><td style="width: 33.3333%;">7</td></tr><tr><td style="width: 33.3333%;">2</td><td style="width: 33.3333%;" class="e-cell-select">5</td><td style="width: 33.3333%;">8</td></tr><tr><td style="width: 33.3333%;">3</td><td style="width: 33.3333%;">6</td><td style="width: 33.3333%;">9</td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            editNode = (rteObj as any).inputElement;
+            let domSelection: NodeSelection = new NodeSelection();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+            let tableCell: Element = document.querySelectorAll('tr')[1].querySelectorAll('td')[1];
+            let eventsArg: any = { pageX: 50, pageY: 300, target: tableCell };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let rows: any = rteObj.element.querySelectorAll('tr');
+                expect(rows[0].querySelectorAll('td').length).toBe(3);
+                expect(rows[1].querySelectorAll('td').length).toBe(3);
+                expect(rows[2].querySelectorAll('td').length).toBe(3);
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[2] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
+                expect(rows[0].querySelectorAll('td').length).toBe(2);
+                expect(rows[1].querySelectorAll('td').length).toBe(2);
+                expect(rows[2].querySelectorAll('td').length).toBe(2);
+                done();
+            }, 400);
+        });
+        it(' delete row', (done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 33.3333%;" class="">1</td><td style="width: 33.3333%;">4</td><td style="width: 33.3333%;">7</td></tr><tr><td style="width: 33.3333%;">2</td><td style="width: 33.3333%;" class="e-cell-select">5</td><td style="width: 33.3333%;">8</td></tr><tr><td style="width: 33.3333%;">3</td><td style="width: 33.3333%;">6</td><td style="width: 33.3333%;">9</td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            editNode = (rteObj as any).inputElement;
+            let domSelection: NodeSelection = new NodeSelection();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+            let tableCell: Element = document.querySelectorAll('tr')[1].querySelectorAll('td')[1];
+            let eventsArg: any = { pageX: 50, pageY: 300, target: tableCell };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let rows: any = rteObj.element.querySelectorAll('tr');
+                expect(rows.length).toBe(3);
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
+                rows = rteObj.element.querySelectorAll('tr');
+                expect(rows.length).toBe(2);
+                done();
+            }, 400);
         });
     });
 });

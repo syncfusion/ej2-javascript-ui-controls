@@ -86,9 +86,10 @@ export class WaterfallSeries extends ColumnBase {
             direction = getElement(options.id).getAttribute('d');
         }
         let element: HTMLElement = <HTMLElement>(redrawElement(redraw, options.id, options, series.chart.renderer) ||
-            series.chart.renderer.drawPath(options));
-        element.style.visibility = (series.animation.enable && series.chart.animateSeries) ? 'hidden' : 'visible';
-        appendChildElement(series.seriesElement, element, redraw, true, null, null, null, direction);
+            series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])));
+        element.style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable && series.chart.animateSeries) ?
+                                    'hidden' : 'visible') : null;
+        appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw, true, null, null, null, direction);
         this.renderMarker(series);
     }
 

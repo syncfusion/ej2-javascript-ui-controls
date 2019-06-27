@@ -56,13 +56,17 @@ export class TextLayer {
                 if (newLine !== ' ') {
                     textDiv.style.whiteSpace = 'pre';
                 }
-                this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
+                if (bounds) {
+                    this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
+                }
                 this.setTextElementProperties(textDiv);
                 let context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
                 context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
                 let contextWidth: number = context.measureText(textContents[i].replace(/(\r\n|\n|\r)/gm, '')).width;
-                let scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
-                this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
+                if (bounds) {
+                    let scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                    this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
+                }
                 textLayer.appendChild(textDiv);
                 this.resizeExcessDiv(textLayer, textDiv);
                 // tslint:disable-next-line:max-line-length
@@ -86,19 +90,26 @@ export class TextLayer {
                 let textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + i);
                 if (textBounds) {
                     bounds = textBounds[i];
-                    this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
+                    if (bounds) {
+                        this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
+                    }
                 }
                 this.setTextElementProperties(textDiv);
                 let context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
                 context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
                 let contextWidth: number;
                 if (textContents) {
-                    contextWidth = context.measureText(textContents[i].replace(/(\r\n|\n|\r)/gm, '')).width;
+                    let textContent: string = textContents[i];
+                    if (textContent) {
+                        contextWidth = context.measureText(textContent.replace(/(\r\n|\n|\r)/gm, '')).width;
+                    }
                 } else {
                     contextWidth = context.measureText(textDiv.textContent.replace(/(\r\n|\n|\r)/gm, '')).width;
                 }
-                let scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
-                this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
+                if (bounds) {
+                    let scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
+                    this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
+                }
                 this.resizeExcessDiv(textLayer, textDiv);
             }
         } else {

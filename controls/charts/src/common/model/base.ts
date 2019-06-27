@@ -311,6 +311,42 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 }
 
 /**
+ * Configures the drag settings of series
+ */
+
+export class DragSettings extends ChildProperty<DragSettings> {
+
+    /**
+     * To enable the drag the points
+     * @default false
+     */
+    @Property(false)
+    public enable: boolean;
+
+    /**
+     * To set the minimum y of the point
+     * @default null
+     */
+    @Property(null)
+    public minY: number;
+
+    /**
+     * To set the maximum y of the point
+     * @default null
+     */
+    @Property(null)
+    public maxY: number;
+
+    /**
+     * To set the color of the edited point
+     * @default null
+     */
+    @Property(null)
+    public fill: string;
+
+}
+
+/**
  * Configures the ToolTips in the chart.
  * @public
  */

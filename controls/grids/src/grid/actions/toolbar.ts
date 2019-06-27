@@ -211,44 +211,43 @@ export class Toolbar {
         let gObj: IGrid = this.parent;
         let gID: string = this.gridID;
         extend(args, { cancel: false });
-        gObj.trigger(events.toolbarClick, args);
-        if (args.cancel) {
-            return;
+        gObj.trigger(events.toolbarClick, args, (toolbarargs: ClickEventArgs) => {
+        if (!toolbarargs.cancel) {
+            switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
+                case gID + '_print':
+                    gObj.print();
+                    break;
+                case gID + '_edit':
+                    gObj.startEdit();
+                    break;
+                case gID + '_update':
+                    gObj.endEdit();
+                    break;
+                case gID + '_cancel':
+                    gObj.closeEdit();
+                    break;
+                case gID + '_add':
+                    gObj.addRecord();
+                    break;
+                case gID + '_delete':
+                    gObj.deleteRecord();
+                    break;
+                case gID + '_search':
+                    if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton') {
+                        this.search();
+                    }
+                    break;
+                case gID + '_columnchooser':
+                    let tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
+                    let y: number = tarElement.getBoundingClientRect().top;
+                    let x: number = tarElement.getBoundingClientRect().left;
+                    let targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
+                    y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
+                    gObj.createColumnchooser(x, y, targetEle);
+                    break;
+            }
         }
-
-        switch (!isNullOrUndefined(args.item) && args.item.id) {
-            case gID + '_print':
-                gObj.print();
-                break;
-            case gID + '_edit':
-                gObj.startEdit();
-                break;
-            case gID + '_update':
-                gObj.endEdit();
-                break;
-            case gID + '_cancel':
-                gObj.closeEdit();
-                break;
-            case gID + '_add':
-                gObj.addRecord();
-                break;
-            case gID + '_delete':
-                gObj.deleteRecord();
-                break;
-            case gID + '_search':
-                if ((<HTMLElement>args.originalEvent.target).id === gID + '_searchbutton') {
-                    this.search();
-                }
-                break;
-            case gID + '_columnchooser':
-                let tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
-                let y: number = tarElement.getBoundingClientRect().top;
-                let x: number = tarElement.getBoundingClientRect().left;
-                let targetEle: Element = (<HTMLElement>args.originalEvent.target);
-                y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
-                gObj.createColumnchooser(x, y, targetEle);
-                break;
-        }
+        });
     }
 
     private modelChanged(e: { module: string, properties: EditSettingsModel }): void {

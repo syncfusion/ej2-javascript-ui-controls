@@ -204,7 +204,7 @@ describe('TreeGrid Reordering', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-}); 
+});
 describe('Reorder Columns by using method', () => {
   let TreeGridObj: TreeGrid;
   let headers: any;

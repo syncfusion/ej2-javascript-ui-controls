@@ -335,7 +335,7 @@ export class TextPosition {
         let endParagraph: ParagraphWidget = textPosition.currentWidget.paragraph;
         if (startParagraph.containerWidget instanceof BodyWidget && endParagraph.containerWidget instanceof BodyWidget &&
             startParagraph.containerWidget.index === endParagraph.containerWidget.index) {
-            if (startParagraph.isInsideTable) {
+            if (startParagraph.isInsideTable && endParagraph.isInsideTable) {
                 return startParagraph.associatedCell.childWidgets.indexOf(startParagraph) >
                     endParagraph.associatedCell.childWidgets.indexOf(endParagraph);
                 // } else if ((this.currentParagraph).owner instanceof WHeaderFooter) {
@@ -1998,6 +1998,7 @@ export class TextPosition {
 export class SelectionWidgetInfo {
     private leftIn: number = 0;
     private widthIn: number = 0;
+    public color: string = '';
     /**
      * @private
      */

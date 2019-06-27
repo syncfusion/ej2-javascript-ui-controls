@@ -1,4 +1,7 @@
-import { isNullOrUndefined, addClass, createElement, append, EventHandler, extend, remove } from '@syncfusion/ej2-base';
+import {
+    isNullOrUndefined, addClass, createElement, append, EventHandler,
+    extend, remove
+} from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { EventFieldsMapping, EventRenderedArgs, TdData, CellTemplateArgs } from '../base/interface';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -66,7 +69,8 @@ export class AgendaBase {
                 let templateEle: HTMLElement[];
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
                     addClass([appWrapper], cls.EVENT_TEMPLATE);
-                    templateEle = this.parent.getAppointmentTemplate()(listData[li]);
+                    let templateId: string = this.parent.element.id + 'eventTemplate';
+                    templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         let iconClass: string = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
                             cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
@@ -79,10 +83,11 @@ export class AgendaBase {
                 listElement.children[li].innerHTML = '';
                 listElement.children[li].appendChild(appWrapper);
                 let args: EventRenderedArgs = { data: listData[li], element: listElement.children[li] as HTMLElement, cancel: false };
-                this.parent.trigger(event.eventRendered, args);
-                if (args.cancel) {
-                    remove(listElement.children[li]);
-                }
+                this.parent.trigger(event.eventRendered, args, (eventArgs: EventRenderedArgs) => {
+                    if (eventArgs.cancel) {
+                        remove(listElement.children[li]);
+                    }
+                });
             }
         }
         aTd.appendChild(listElement);
@@ -318,9 +323,10 @@ export class AgendaBase {
         let dateHeader: Element;
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: cls.AGENDA_HEADER_CLASS });
-            let templateArgs: CellTemplateArgs = { date: date, type: 'dateHeader' };
-            let template: HTMLCollection = this.parent.getDateHeaderTemplate()(templateArgs);
-            append([].slice.call(template), dateHeader);
+            let args: CellTemplateArgs = { date: date, type: 'dateHeader' };
+            let templateId: string = this.parent.element.id + 'dateHeaderTemplate';
+            let dateTemplate: NodeList = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId);
+            append([].slice.call(dateTemplate), dateHeader);
         } else {
             dateHeader = this.viewBase.getMobileDateElement(date, cls.AGENDA_HEADER_CLASS);
         }

@@ -1,116 +1,116 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 
 /**
- * Defines mapping property to get task details from data source
+ * Defines mapping property to get task details from data source.
  */
 export class TaskFields extends ChildProperty<TaskFields> {
     /**
-     * Defines mapping property to get task id value from data source.
+     * To map id of task from data source.
      * @default null
      */
     @Property(null)
     public id: string;
 
     /** 
-     * Defines mapping property to get task name value from data source.
+     * To map name of task from data source.
      * @default null     
      */
     @Property(null)
     public name: string;
 
     /**
-     * Defines mapping property to get task's parent id value from data source.
+     * To map parent id of task from data source.
      * @default null     
      */
     @Property(null)
     public parentID: string;
 
     /** 
-     * Defines mapping property to get task name value from data source.
+     * To map start date of task from data source.
      * @default null      
      */
     @Property(null)
     public startDate: string;
     /**
-     * Define end date mapping in Gantt
+     * To map end date of task from data source.
      * @default null     
      */
     @Property(null)
     public endDate: string;
 
     /**
-     * Define taskDependency mapping in Gantt
+     * To map dependency of task from data source.
      * @default null
      */
     @Property(null)
     public dependency: string;
 
     /**
-     * Define progress mapping in Gantt
+     * To map progress of task from data source.
      * @default null
      */
     @Property(null)
     public progress: string;
 
     /**
-     * Define child mapping in Gantt
+     * To map child of task from data source.
      * @default null
      */
     @Property(null)
     public child: string;
 
     /**
-     * Define Milestone mapping in Gantt
+     * To map milestone of task from data source.
      * @default null
      */
     @Property(null)
     public milestone: string;
 
     /**
-     * Define Milestone mapping in Gantt
+     * To map duration of task from data source.
      * @default null
      */
     @Property(null)
     public duration: string;
 
     /**
-     * To map duration unit of task
+     * To map duration unit of task from data source.
      */
     @Property(null)
     public durationUnit: string;
     /**
-     * To map custom css class of task
+     * To map custom css class of task from data source.
      */
     @Property(null)
     public cssClass: string;
     /**
-     * To map baseline start date of task
+     * To map baseline start date of task from data source.
      */
     @Property(null)
     public baselineStartDate: string;
     /**
-     * To map baseline end date of task
+     * To map baseline end date of task from data source.
      */
     @Property(null)
     public baselineEndDate: string;
     /**
-     * To map assigned resources of task
+     * To map assigned resources of task from data source.
      */
     @Property(null)
     public resourceInfo: string;
     /**
-     * To map expand status of parent record
+     * To map expand status of parent record from data source.
      */
     @Property(null)
     public expandState: string;
     /**
-     * Define the Indicators of Gantt
+     * To map indicators of task from data source.
      * @default null      
      */
     @Property(null)
     public indicators: string;
     /**
-     * To map note of task
+     * To map notes value of task from data source.
      * @default null
      */
     @Property(null)

@@ -2,7 +2,7 @@ import { Component, EventHandler, Property, Event, EmitType, AnimationModel, Key
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { addClass, isVisible, closest, attributes, classList, detach, select } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
-import { setStyleAttribute as setStyle, Complex  } from '@syncfusion/ej2-base';
+import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate, resetBlazorTemplate  } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
 import { AccordionModel, AccordionItemModel, AccordionAnimationSettingsModel, AccordionActionSettingsModel } from './accordion-model';
 
@@ -264,30 +264,35 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     /**
      * The event will be fired while clicking anywhere within the Accordion.
      * @event
+     * @blazorProperty 'Clicked'
      */
     @Event()
     public clicked: EmitType<AccordionClickArgs>;
     /**
      * The event will be fired before the item gets collapsed/expanded.
      * @event
+     * @blazorProperty 'Expanding'
      */
     @Event()
     public expanding: EmitType<ExpandEventArgs>;
     /**
      * The event will be fired after the item gets collapsed/expanded.
      * @event
+     * @blazorProperty 'Expanded'
      */
     @Event()
     public expanded: EmitType<ExpandEventArgs>;
     /**
      * The event will be fired once the control rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired when the control gets destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Event>;
@@ -352,6 +357,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     protected render(): void {
         this.initialize();
         this.renderControl();
+        this.refreshTemplate();
         this.wireEvents();
     }
     private initialize(): void {
@@ -646,6 +652,21 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       return innerEle;
     }
 
+    private refreshTemplate(): void {
+      for (let item of this.items) {
+        if (item.header && typeof item.header === 'string' &&
+          item.header.indexOf('BlazorTemplate')) {
+          resetBlazorTemplate(this.element.id + 'header', 'Header');
+          updateBlazorTemplate(this.element.id + 'header', 'Header');
+        }
+        if (item.content && typeof item.content === 'string' &&
+          item.content.indexOf('BlazorTemplate')) {
+          resetBlazorTemplate(this.element.id + 'content', 'Content');
+          updateBlazorTemplate(this.element.id + 'content', 'Content');
+        }
+      }
+    }
+
     private angularnativeCondiCheck(item: AccordionItemModel, prop: string): boolean {
       let property: string = prop === 'content' ? item.content : item.header;
       let content: AcrdnTemplateRef = (property as Object) as AcrdnTemplateRef;
@@ -680,7 +701,13 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       }
       let tempArray: HTEle[];
       if (!isNOU(templateFn)) {
-          tempArray = templateFn();
+          let templateProps: string;
+          if (ele.classList.contains(CLS_HEADERCTN)) {
+            templateProps = this.element.id + 'header';
+          } else if (ele.classList.contains(CLS_CTENT)) {
+            templateProps = this.element.id + 'content';
+          }
+          tempArray = templateFn({}, null, null, templateProps);
       }
       if (!isNOU(tempArray) && tempArray.length > 0 && !(isNOU(tempArray[0].tagName) && tempArray.length === 1) ) {
         [].slice.call(tempArray).forEach((el: HTEle): void => {
@@ -732,20 +759,21 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                     content: trgtItemEle.querySelector('.' + CLS_CONTENT),
                     isExpanded: true };
       let eff: string = animation.name;
-      this.trigger('expanding', eventArgs);
-      if (eventArgs.cancel) {
-        return; }
-      icon.classList.add(CLS_TOGANIMATE);
-      this.expandedItemsPush(trgtItemEle);
-      if (!isNOU(expandState)) {
-        expandState.classList.remove(CLS_EXPANDSTATE); }
-      trgtItemEle.classList.add(CLS_EXPANDSTATE);
-      if ((animation.name === <Effect>'None')) {
-        this.expandProgress('begin', icon, trgt, trgtItemEle, eventArgs);
-        this.expandProgress('end', icon, trgt, trgtItemEle, eventArgs);
-        return;
-      }
-      this.expandAnimation(eff, icon, trgt, trgtItemEle, animation, eventArgs);
+      this.trigger('expanding', eventArgs, (expandArgs: ExpandEventArgs) => {
+        if (!expandArgs.cancel) {
+          icon.classList.add(CLS_TOGANIMATE);
+          this.expandedItemsPush(trgtItemEle);
+          if (!isNOU(expandState)) {
+            expandState.classList.remove(CLS_EXPANDSTATE); }
+          trgtItemEle.classList.add(CLS_EXPANDSTATE);
+          if ((animation.name === <Effect>'None')) {
+            this.expandProgress('begin', icon, trgt, trgtItemEle, expandArgs);
+            this.expandProgress('end', icon, trgt, trgtItemEle, expandArgs);
+          } else {
+            this.expandAnimation(eff, icon, trgt, trgtItemEle, animation, expandArgs);
+          }
+        }
+      });
     }
     private expandAnimation (ef: Str, icn: HTEle, trgt: HTEle, trgtItemEle: HTEle, animate: AnimationModel, args: ExpandEventArgs ): void {
       let height: number;
@@ -816,18 +844,19 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                     content: trgtItemEle.querySelector('.' + CLS_CONTENT),
                     isExpanded: false };
       let eff: string = animation.name;
-      this.trigger('expanding' , eventArgs);
-      if (eventArgs.cancel) {
-        return; }
-      this.expandedItemsPop(trgtItemEle);
-      trgtItemEle.classList.add(CLS_EXPANDSTATE);
-      icon.classList.add(CLS_TOGANIMATE);
-      if ((animation.name === <Effect>'None')) {
-        this.collapseProgress('begin', icon, trgt, trgtItemEle, eventArgs);
-        this.collapseProgress('end', icon, trgt, trgtItemEle, eventArgs);
-        return;
-      }
-      this.collapseAnimation(eff, trgt, trgtItemEle, icon, animation, eventArgs);
+      this.trigger('expanding', eventArgs, (expandArgs: ExpandEventArgs) => {
+        if (!expandArgs.cancel) {
+          this.expandedItemsPop(trgtItemEle);
+          trgtItemEle.classList.add(CLS_EXPANDSTATE);
+          icon.classList.add(CLS_TOGANIMATE);
+          if ((animation.name === <Effect>'None')) {
+            this.collapseProgress('begin', icon, trgt, trgtItemEle, expandArgs);
+            this.collapseProgress('end', icon, trgt, trgtItemEle, expandArgs);
+          } else {
+            this.collapseAnimation(eff, trgt, trgtItemEle, icon, animation, expandArgs);
+          }
+        }
+      });
     }
     private collapseAnimation (ef: Str, trgt: HTEle, trgtItEl: HTEle, icn: HTEle, animate: AnimationModel, args: ExpandEventArgs ): void {
       let height: number;

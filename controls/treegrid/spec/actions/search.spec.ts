@@ -1,7 +1,8 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData, newSampledata } from '../base/datasource.spec';
+import { sampleData, projectData, newSampledata, employeeData3 } from '../base/datasource.spec';
 import { Filter } from '../../src/treegrid/actions/filter';
+import { Sort } from '../../src/treegrid/actions/sort';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
@@ -10,7 +11,7 @@ import { SaveEventArgs, ActionEventArgs } from '@syncfusion/ej2-grids';
 /**
  * Grid base spec 
  */
-TreeGrid.Inject(Filter, Toolbar, Edit);
+TreeGrid.Inject(Filter, Toolbar, Edit, Sort);
 describe('Search module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -415,6 +416,44 @@ describe('Search module', () => {
       destroy(gridObj);
     });
   });
+
+  describe('EJ2-22799: Searching is not working after performing Sorting', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowSorting: true,
+          sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
+          toolbar: ['Search'],
+          columns: [
+              { field: 'taskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
+              { field: 'taskName', headerText: 'Task Name', width: 200 },
+              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+          ]
+        },
+        done
+      );
+    });
+    it('Searching with Sorting', (done: Function)  => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
+        done();
+    }
+    gridObj.grid.dataBound = actionComplete;
+    gridObj.search('Plan');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)
@@ -424,4 +463,41 @@ describe('Search module', () => {
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
 });
+});
+
+describe('EJ2-28175: Duplicate records of search result after sorting', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+
+  gridObj = createGrid(
+      {
+          dataSource: employeeData3,
+          childMapping: "Children",
+          sortSettings: {columns: [{field: 'Name', direction: 'Ascending'}]},
+          toolbar: ['Search'],
+          treeColumnIndex: 0,
+          columns: [
+              {field:'EmployeeID', headerText:'EmployeeID', width: 140},
+              { headerText: 'Name', width: 140, field: 'Name' },
+              { headerText: 'FullName', width: 150, field:'FullName'},
+              {headerText: 'TaskID', width: 150, field: 'TaskID'}
+          ],
+          height: 315
+      },
+      done
+    );
+  });
+  it('Check the search records length', (done: Function) => {
+      actionComplete = (args?: object): void => {
+         expect(gridObj.getRows().length == 4).toBe(true);
+         done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.search("Tedd Lawson");
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
 });

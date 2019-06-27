@@ -31,6 +31,7 @@ import { LegendSettingsModel } from '../heatmap/legend/legend-model';
 import { LegendSettings, Legend } from '../heatmap/legend/legend';
 import { Adaptor } from './datasource/adaptor';
 import { DataModel } from './datasource/adaptor-model';
+import { ILegendRenderEventArgs } from './model/interface';
 
 @NotifyPropertyChanges
 export class HeatMap extends Component<HTMLElement> implements INotifyPropertyChanged {
@@ -64,6 +65,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when click the heat map cell.
      * @event
+     * @blazorProperty 'TooltipRendering'
      */
     @Event()
     public tooltipRender: EmitType<ITooltipEventArgs>;
@@ -71,6 +73,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after resizing of Heatmap.
      * @event
+     * @blazorProperty 'Resized'
      */
     @Event()
     public resized: EmitType<IResizeEventArgs>;
@@ -78,14 +81,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after heatmap is loaded.
      * @event
+     * @blazorProperty 'Loaded'
      */
-
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before each heatmap cell renders.
+     * @deprecated
      * @event
+     * @blazorProperty 'CellRendering'
      */
     @Event()
     public cellRender: EmitType<ICellEventArgs>;
@@ -93,6 +98,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when multiple cells gets selected.
      * @event
+     * @blazorProperty 'CellSelected'
      */
     @Event()
     public cellSelected: EmitType<ISelectedEventArgs>;
@@ -109,6 +115,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the datasource for the heat map.
+     * @isdatamanager false
      * @default null
      */
 
@@ -187,6 +194,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers after heat map rendered.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -194,6 +202,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers before heat map load.
      * @event
+     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -201,9 +210,19 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when click the heat map cell.
      * @event
+     * @blazorProperty 'CellClicked'
      */
     @Event()
     public cellClick: EmitType<ICellClickEventArgs>;
+
+    /**
+     * Triggers before the legend is rendered.
+     * @deprecated
+     * @event
+     * @blazorProperty 'LegendRendering'
+     */
+    @Event()
+    public legendRender: EmitType<ILegendRenderEventArgs>;
 
     /** @private */
     public enableCanvasRendering: boolean = false;
@@ -249,7 +268,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public tempTooltipRectId: string;
     /** @private */
-    // tslint:disable-next-line:no-any 
+    // tslint:disable-next-line:no-any
     public clonedDataSource: any[];
     /** @private */
     public completeAdaptDataSource: Object;
@@ -320,14 +339,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public initialCellY: number;
     /**
-     * @private 
+     * @private
      */
     public tooltipCollection: CanvasTooltip[] = [];
-    /** 
-     * @private 
+    /**
+     * @private
      */
     public isTouch: boolean;
-    /** 
+    /**
      * @private
      */
     private border: Object;
@@ -338,8 +357,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public axisCollections: Axis[];
 
-    /** 
-     * @private 
+    /**
+     * @private
      */
     public intl: Internationalization;
     /**
@@ -347,12 +366,12 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public isCellData: boolean = false;
     private titleCollection: string[];
-    /** 
-     * @private 
+    /**
+     * @private
      */
     public mouseX: number;
-    /** 
-     * @private 
+    /**
+     * @private
      */
     public mouseY: number;
 
@@ -971,7 +990,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         );
     }
     /**
-     * Handles the heatmap resize. 
+     * Handles the heatmap resize.
      * @return {boolean}
      * @private
      */
@@ -1193,7 +1212,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Handles the mouse Move. 
+     * Handles the mouse Move.
      * @return {boolean}
      * @private
      */
@@ -1236,7 +1255,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     isshowTooltip = this.cellSelectionOnMouseMove(e, currentRect, pageX, pageY, isshowTooltip);
                 }
             }
-            this.tooltipOnMouseMove(e, currentRect, isshowTooltip);
+            this.tooltipOnMouseMove(e, currentRect, isshowTooltip, isheatmapRect);
             if (this.legendModule && this.legendSettings.visible && this.paletteSettings.type === 'Fixed' &&
                 this.legendSettings.enableSmartLegend && this.legendSettings.labelDisplayType === 'None') {
                 this.legendModule.createTooltip(pageX, pageY);
@@ -1247,7 +1266,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 this.axisTooltip(e, pageX, pageY, this.isTouch);
                 if (this.legendModule && this.legendSettings.visible && this.legendSettings.showLabel && this.legendVisibilityByCellType) {
-                    this.legendModule.renderLegendLabelTooltip(e);
+                    this.legendModule.renderLegendLabelTooltip(e, pageX, pageY);
                 }
             } else {
                 elementRect = this.element.getBoundingClientRect();
@@ -1289,7 +1308,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Rendering tooltip on mouse move
      */
-    private tooltipOnMouseMove(e: PointerEvent, currentRect: CurrentRect, isshowTooltip: boolean): void {
+    private tooltipOnMouseMove(e: PointerEvent, currentRect: CurrentRect, isshowTooltip: boolean, isheatmapRect?: boolean): void {
         if (isshowTooltip && currentRect) {
             if (this.tempTooltipRectId !== currentRect.id) {
                 if (this.showTooltip) {
@@ -1319,7 +1338,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
         } else {
             if (e !== null) {
-                if ((<Element>e.target).id.indexOf('Celltooltip') === -1) {
+                if (!isheatmapRect) {
                     if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
                         this.heatMapSeries.highlightSvgRect((<Element>e.target).id);
                     }
@@ -1639,7 +1658,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Handles the mouse end. 
+     * Handles the mouse end.
      * @return {boolean}
      * @private
      */
@@ -1816,4 +1835,3 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 }
-

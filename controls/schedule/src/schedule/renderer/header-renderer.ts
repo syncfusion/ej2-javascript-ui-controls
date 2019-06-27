@@ -340,8 +340,8 @@ export class HeaderRenderer {
                 this.parent.changeView('TimelineMonth', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
             case 'e-today':
-                if (!this.parent.isSelectedDate(util.resetTime(new Date()))) {
-                    this.parent.changeDate(util.resetTime(new Date()), args.originalEvent);
+                if (!this.parent.isSelectedDate(util.resetTime(this.parent.getCurrentTime()))) {
+                    this.parent.changeDate(util.resetTime(this.parent.getCurrentTime()), args.originalEvent);
                 }
                 break;
             case 'e-prev':
@@ -360,7 +360,9 @@ export class HeaderRenderer {
                     let slotCount: number = this.parent.activeViewOptions.timeScale.slotCount;
                     let msInterval: number = (interval * util.MS_PER_MINUTE) / slotCount;
                     let startTime: Date = new Date(this.parent.selectedDate.getTime());
-                    startTime.setHours(new Date().getHours(), (Math.round(startTime.getMinutes() / msInterval) * msInterval), 0);
+                    let currentTime: Date = this.parent.getCurrentTime();
+                    startTime.
+                        setHours(currentTime.getHours(), (Math.round(startTime.getMinutes() / msInterval) * msInterval), 0);
                     let endTime: Date = new Date(new Date(startTime.getTime()).setMilliseconds(startTime.getMilliseconds() + msInterval));
                     data = { startTime: startTime, endTime: endTime, isAllDay: false };
                 }

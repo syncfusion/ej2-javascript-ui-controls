@@ -284,6 +284,18 @@
     content: '\e935';
   }
 
+  .e-de-selected-spellcheck-item::before {
+    content: '\e935';
+    font-family: 'e-icons';
+    font-size: 10px;
+  }
+
+  .e-de-selected-underline-item::before {
+    content: '\e935';
+    font-family: 'e-icons';
+    font-size: 10px;
+  }
+
   .e-de-ctnr-break::before {
     content: '\eba1';
   }

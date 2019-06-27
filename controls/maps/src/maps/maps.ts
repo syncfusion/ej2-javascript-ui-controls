@@ -6,8 +6,9 @@ import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement } fro
 import { Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, getElement, removeClass } from './utils/helper';
-import { ZoomSettings, LegendSettings } from './model/base';
+import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip } from './utils/helper';
+import { getElement, removeClass, getTranslate } from './utils/helper';
+import { ZoomSettings, LegendSettings, Tile } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
 import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel, MarkerSettingsModel } from './model/base-model';
 import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel } from './model/base-model';
@@ -20,14 +21,15 @@ import { Selection } from './user-interaction/selection';
 import { MapsTooltip } from './user-interaction/tooltip';
 import { Zoom } from './user-interaction/zoom';
 import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, shapeHighlight, itemSelection } from './model/constants';
-import { itemHighlight } from './model/constants';
 import { ProjectionType, MapsTheme, PanDirection } from './utils/enum';
 import { MapsModel } from './maps-model';
 import { getThemeStyle } from './model/theme';
 import { BingMap } from './layers/bing-map';
 import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
+import { GeoPosition } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
 import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';
+import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs} from './model/interface';
 import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
@@ -212,78 +214,96 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before maps rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
     /**
      * Triggers after maps rendered.
      * @event
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
      * Triggers on clicking the maps.
      * @event
+     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<IMouseEventArgs>;
     /**
      * Triggers on double clicking the maps.
      * @event
+     * @blazorProperty 'OnDoubleClick'
      */
     @Event()
     public doubleClick: EmitType<IMouseEventArgs>;
     /**
      * Triggers on right clicking the maps.
      * @event
+     * @blazorProperty 'OnRightClick'
      */
     @Event()
     public rightClick: EmitType<IMouseEventArgs>;
     /**
      * Triggers on resizing the maps.
      * @event
+     * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<IResizeEventArgs>;
     /**
      * Triggers before the maps tooltip rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'TooltipRendering'
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
     /**
      * Triggers while clicking the shape
      * @event
+     * @blazorProperty 'ShapeSelected'
      */
     @Event()
     public shapeSelected: EmitType<IShapeSelectedEventArgs>;
     /**
      * Triggers before selection applied
      * @event
+     * @deprecated
+     * @blazorProperty 'OnItemSelect'
      */
     @Event()
     public itemSelection: EmitType<ISelectionEventArgs>;
     /**
      * Trigger before highlight applied
      * @event
+     * @deprecated
+     * @blazorProperty 'OnItemHighlight'
      */
     @Event()
     public itemHighlight: EmitType<ISelectionEventArgs>;
     /**
      * Triggers before highlight applied for shape
      * @event
+     * @blazorProperty 'ShapeHighlighted'
      */
     @Event()
     public shapeHighlight: EmitType<IShapeSelectedEventArgs>;
     /**
      * Triggers before the maps layer rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'LayerRendering'
      */
     @Event()
     public layerRendering: EmitType<ILayerRenderingEventArgs>;
@@ -291,6 +311,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps shape rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'ShapeRendering'
      */
     @Event()
     public shapeRendering: EmitType<IShapeRenderingEventArgs>;
@@ -298,20 +320,44 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps marker rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'MarkerRendering'
      */
     @Event()
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
+    /**
+     * Triggers before the maps marker cluster rendered.
+     * @event
+     */
+    @Event()
+    public markerClusterRendering: EmitType<IMarkerClusterRenderingEventArgs>;
 
     /**
      * Triggers event mouse clicking on the maps marker element.
      * @event
+     * @blazorProperty 'OnMarkerClick'
      */
     @Event()
     public markerClick: EmitType<IMarkerClickEventArgs>;
 
     /**
+     * Triggers event mouse clicking on the maps Cluster element.
+     * @event
+     */
+    @Event()
+    public markerClusterClick: EmitType<IMarkerClusterClickEventArgs>;
+
+    /**
+     * Triggers event mouse moving on the maps cluster element.
+     * @event
+     */
+    @Event()
+    public markerClusterMouseMove: EmitType<IMarkerClusterMoveEventArgs>;
+
+    /**
      * Triggers event mouse moving on the maps marker element.
      * @event
+     * @blazorProperty 'OnMarkerMouseMove'
      */
     @Event()
     public markerMouseMove: EmitType<IMarkerMoveEventArgs>;
@@ -319,6 +365,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the data label get rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'DataLabelRendering'
      */
     @Event()
     public dataLabelRendering: EmitType<ILabelRenderingEventArgs>;
@@ -326,6 +374,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps bubble rendered.
      * @event
+     * @blazorProperty 'BubbleRendering'
      */
     @Event()
     public bubbleRendering: EmitType<IBubbleRenderingEventArgs>;
@@ -333,6 +382,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers event mouse clicking on the maps bubble element.
      * @event
+     * @blazorProperty 'OnBubbleClick'
      */
     @Event()
     public bubbleClick: EmitType<IBubbleClickEventArgs>;
@@ -340,6 +390,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers event mouse moving on the maps bubble element.
      * @event
+     * @blazorProperty 'OnBubbleMouseMove'
      */
     @Event()
     public bubbleMouseMove: EmitType<IBubbleMoveEventArgs>;
@@ -347,6 +398,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers after the animation completed.
      * @event
+     * @blazorProperty 'AnimationCompleted'
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -354,6 +406,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before annotation rendering.
      * @event
+     * @deprecated
+     * @blazorProperty 'AnnotationRendering'
      */
     @Event()
     public annotationRendering: EmitType<IAnnotationRenderingEventArgs>;
@@ -361,6 +415,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before zoom in or zoom out.
      * @event
+     * @blazorProperty 'OnZoom'
      */
     @Event()
     public zoom: EmitType<IMapZoomEventArgs>;
@@ -368,6 +423,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before panning.
      * @event
+     * @blazorProperty 'OnPan'
      */
     @Event()
     public pan: EmitType<IMapPanEventArgs>;
@@ -488,6 +544,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public previousPoint: Point;
      /** @public */
      public dataLabelShape: number[] = [];
+     public mouseDownEvent: Object = { x: null, y: null };
+     public mouseClickEvent: Object = { x: null, y: null };
 
 
     /**
@@ -987,23 +1045,40 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public mapsOnClick(e: PointerEvent): void {
         let targetEle: Element = <Element>e.target;
         let targetId: string = targetEle.id;
+        let layerIndex: number = 0;
+        let latLongValue: Object;
+        let latitude: number = null; let longitude: number = null;
+        this.mouseClickEvent = { x: e.x, y: e.y };
+        if (targetEle.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
+            && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
+            layerIndex = parseFloat(targetEle.id.split('_LayerIndex_')[1].split('_')[0]);
+            latLongValue = this.getGeoLocation(layerIndex, e);
+            latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+        } else if (this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
+            && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
+            latLongValue = this.getTileGeoLocation(e);
+            latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+        }
         let eventArgs: IMouseEventArgs = {
-            cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY
+            cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
+            latitude: latitude, longitude: longitude
         };
-        this.trigger(click, eventArgs);
-        if (targetEle.id.indexOf('shapeIndex') !== -1) {
-            let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
-        }
-        if (this.markerModule) {
-            this.markerModule.markerClick(e);
-        }
-        if (this.bubbleModule) {
-            this.bubbleModule.bubbleClick(e);
-        }
-        if (!eventArgs.cancel) {
-            this.notify(click, targetEle);
-        }
+        this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
+            if (targetEle.id.indexOf('shapeIndex') !== -1) {
+                let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
+            }
+            if (this.markerModule) {
+                this.markerModule.markerClick(e);
+                this.markerModule.markerClusterClick(e);
+            }
+            if (this.bubbleModule) {
+                this.bubbleModule.bubbleClick(e);
+            }
+            if (!eventArgs.cancel) {
+                this.notify(click, targetEle);
+            }
+        });
     }
 
     /**
@@ -1049,6 +1124,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let pageY: number;
         let target: Element;
         let touchArg: TouchEvent;
+        this.mouseDownEvent = { x: e.x, y: e.y };
         let rect: ClientRect = this.element.getBoundingClientRect();
         let element: Element = <Element>e.target;
         this.notify(Browser.touchStartEvent, e);
@@ -1078,6 +1154,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         // }
         if (this.markerModule) {
             this.markerModule.markerMove(e);
+            this.markerModule.markerClusterMouseMove(e);
         }
         if (this.bubbleModule) {
             this.bubbleModule.bubbleMove(e);
@@ -1525,5 +1602,58 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             layer: isLayerVisible, bubble: isBubblevisible, tooltip: istooltipVisible,
             selection: isSelection, highlight: isHighlight
         };
+    }
+    /**
+     * To get the geo location
+     * @param {number} layerIndex
+     * @param {PointerEvent} location
+     * @return GeoPosition
+     */
+    public getGeoLocation(layerIndex: number, location: PointerEvent): GeoPosition {
+        let container: HTMLElement = document.getElementById(this.element.id);
+        let pageX: number = location.layerX - container.offsetLeft;
+        let pageY: number = location.layerY - container.offsetTop;
+        let currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex];
+        let translate: Object = getTranslate(this, currentLayer, false);
+        let translatePoint: Point = translate['location'] as Point;
+        let translatePointX: number = translatePoint.x * this.scale;
+        let translatePointY: number = translatePoint.y * this.scale;
+        let mapSize: number = (Math.min(this.mapAreaRect.height, this.mapAreaRect.width)
+            * this.mapLayerPanel['currentFactor']) * this.scale;
+        let xx: number = (this.clip(pageX - translatePointX, 0, mapSize - 1) / mapSize) - 0.5;
+        let yy: number = 0.5 - (this.clip(pageY - translatePointY, 0, mapSize - 1) / mapSize);
+        let lat: number = 90 - 360 * Math.atan(Math.exp(-yy * 2 * Math.PI)) / Math.PI;
+        let long: number = 360 * xx;
+        return { latitude: lat, longitude: long };
+    }
+
+    private clip(value: number, minVal: number, maxVal: number): number {
+        return Math.min(Math.max(value, minVal), maxVal);
+    }
+
+    /**
+     * To get the geo location
+     * @param {PointerEvent}
+     * @return GeoPosition
+     */
+    public getTileGeoLocation(location: PointerEvent): GeoPosition {
+        let container: HTMLElement = document.getElementById(this.element.id);
+        let latLong: Object;
+        let ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
+        let lastTile: Tile = this.mapLayerPanel.tiles[this.mapLayerPanel.tiles.length - 1];
+        let tile0: Tile = this.mapLayerPanel.tiles[0];
+        latLong = this.pointToLatLong(
+            location.layerX - (ele.offsetLeft - container.offsetLeft), location.layerY - (ele.offsetTop - container.offsetTop));
+        return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
+    }
+
+    public pointToLatLong(pageX: number, pageY: number): Object {
+        pageY = (this.zoomSettings.enable) ? pageY + 10 : pageY;
+        let mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
+        let x1: number =  (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
+        let y1: number = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
+        let lat: number = 90 - 360 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
+        let long: number = 360 * x1;
+        return { latitude: lat, longitude: long };
     }
 }

@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined } from '@syncfusion/ej2-base';import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption } from '@syncfusion/ej2-data';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';import { DatePicker, DatePickerModel, DateTimePicker, DateRange } from '@syncfusion/ej2-calendars';import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';import { Rte } from '../modules/rte';import { Slider } from '../modules/slider';import { ComboBox } from '../modules/combo-box';import { TimePicker } from '../modules/time-picker';import { MultiSelect } from '../modules/multi-select';import { ColorPicker } from '../modules/color-picker';import { AutoComplete } from '../modules/auto-complete';import { DateRangePicker } from '../modules/date-range-picker';import * as events from './events';import * as classes from './classes';import { PopupSettings, modulesList, localeConstant } from './models';import { PopupSettingsModel } from './models-model';import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton } from './interface';import { parseValue, getCompValue } from './util';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption } from '@syncfusion/ej2-data';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';import { DatePicker, DatePickerModel, DateTimePicker, DateRange } from '@syncfusion/ej2-calendars';import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';import { Rte } from '../modules/rte';import { Slider } from '../modules/slider';import { ComboBox } from '../modules/combo-box';import { TimePicker } from '../modules/time-picker';import { MultiSelect } from '../modules/multi-select';import { ColorPicker } from '../modules/color-picker';import { AutoComplete } from '../modules/auto-complete';import { DateRangePicker } from '../modules/date-range-picker';import * as events from './events';import * as classes from './classes';import { PopupSettings, modulesList, localeConstant } from './models';import { PopupSettingsModel } from './models-model';import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton } from './interface';import { parseValue, getCompValue } from './util';
 import {RenderMode,AdaptorType,InputType,EditableType,ActionBlur} from "./inplace-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -160,36 +160,42 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * The event will be fired once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 
     /**
      * The event will be fired before the data submitted to the server.
      * @event
+     * @blazorProperty 'OnActionBegin'
      */
     actionBegin?: EmitType<ActionBeginEventArgs>;
 
     /**
      * The event will be fired when data submitted successfully to the server.
      * @event
+     * @blazorProperty 'OnActionSuccess'
      */
     actionSuccess?: EmitType<ActionEventArgs>;
 
     /**
      * The event will be fired when data submission failed.
      * @event
+     * @blazorProperty 'OnActionFailure'
      */
     actionFailure?: EmitType<ActionEventArgs>;
 
     /**
      * The event will be fired while validating current value.
      * @event
+     * @blazorProperty 'Validating'
      */
     validating?: EmitType<ValidateEventArgs>;
 
     /**
      * The event will be fired when the component gets destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Event>;
 

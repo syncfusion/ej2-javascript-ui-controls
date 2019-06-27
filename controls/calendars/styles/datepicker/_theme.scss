@@ -1,5 +1,6 @@
 @include export-module('datepicker-theme') {
-  #{&}.e-datepicker {
+  #{&}.e-datepicker,
+  .e-bigger.e-small #{&}.e-datepicker {
     &.e-popup-wrapper {
       border: $datepicker-popup-border;
       box-shadow: $datepicker-popup-box-shadow;

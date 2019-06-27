@@ -1,6 +1,6 @@
 import { RangeNavigator } from '../range-navigator';
 import { valueToCoefficient, textElement, firstToLowerCase } from '../../common/utils/helper';
-import { PathOption, Rect, measureText, TextOption } from '@syncfusion/ej2-svg-base';
+import { PathOption, Rect, measureText, TextOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { DateTime, FontModel, IntervalType } from '../../chart/index';
 import { RangeIntervalType } from '../../common/utils/enum';
 import { Axis, VisibleLabels, MajorGridLinesModel, VisibleLabelsModel, MajorTickLinesModel } from '../../chart/index';
@@ -338,6 +338,7 @@ export class RangeNavigatorAxis extends DateTime {
                 continue;
             }
             textElement(
+                this.rangeNavigator.renderer as unknown as SvgRenderer,
                 new TextOption(
                     this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text),
                 argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor,

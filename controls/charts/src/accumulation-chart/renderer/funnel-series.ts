@@ -105,7 +105,7 @@ export class FunnelSeries extends TriangularBase {
         let direction: string = this.getSegmentData(point, series, chart);
         point.midAngle = 0;
         options.d = direction;
-        appendChildElement(seriesGroup, chart.renderer.drawPath(options), redraw);
+        appendChildElement(false, seriesGroup, chart.renderer.drawPath(options), redraw);
         if (point.isExplode) {
             chart.accBaseModule.explodePoints(point.index, chart, true);
         }

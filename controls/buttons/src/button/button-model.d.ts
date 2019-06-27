@@ -64,6 +64,7 @@ export interface ButtonModel extends ComponentModel{
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

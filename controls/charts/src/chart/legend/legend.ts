@@ -2,17 +2,18 @@
  * Chart legend
  */
 import { remove, Browser } from '@syncfusion/ej2-base';
-import { extend} from '@syncfusion/ej2-base';
+import { extend } from '@syncfusion/ej2-base';
 import { Series } from '../series/chart-series';
 import { Indexes } from '../../common/model/base';
 import { ChartSeriesType, ChartDrawType } from '../utils/enum';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
 import { Chart } from '../../chart';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
-import { textTrim, ChartLocation, removeElement, getElement } from '../../common/utils/helper';
-import { Size, measureText, Rect } from '@syncfusion/ej2-svg-base';
-import { ILegendRenderEventArgs } from '../../chart/model/chart-interface';
-import { legendRender } from '../../common/model/constants';
+import { textTrim, ChartLocation, removeElement, getElement, RectOption, withInBounds } from '../../common/utils/helper';
+import { Size, measureText, Rect, CanvasRenderer } from '@syncfusion/ej2-svg-base';
+import { ILegendRegions } from '../../common/model/interface';
+import { ILegendRenderEventArgs, ILegendClickEventArgs } from '../../chart/model/chart-interface';
+import { legendRender, legendClick } from '../../common/model/constants';
 /**
  * `Legend` module is used to render legend for the chart.
  */
@@ -61,7 +62,7 @@ export class Legend extends BaseLegend {
      * @return {void}
      * @private
      */
-    public getLegendOptions(visibleSeriesCollection: Series[], chart : Chart): void {
+    public getLegendOptions(visibleSeriesCollection: Series[], chart: Chart): void {
         this.legendCollections = [];
         let seriesType: ChartDrawType | ChartSeriesType;
         for (let series of visibleSeriesCollection) {
@@ -157,6 +158,14 @@ export class Legend extends BaseLegend {
         let chart: Chart = <Chart>this.chart;
         let series: Series = chart.visibleSeries[seriesIndex];
         let legend: LegendOptions = this.legendCollections[seriesIndex];
+        let legendClickArgs: ILegendClickEventArgs =  { legendText: legend.text, legendShape: legend.shape,
+            chart: chart, series: series, name: legendClick, cancel: false
+                };
+        this.chart.trigger(legendClick, legendClickArgs);
+        series.legendShape = legendClickArgs.legendShape;
+        if (series.fill !== null) {
+            chart.visibleSeries[seriesIndex].interior = series.fill;
+        }
         let selectedDataIndexes: Indexes[] = [];
         if (chart.selectionModule) {
             selectedDataIndexes = <Indexes[]>extend([], chart.selectionModule.selectedDataIndexes, null, true);
@@ -168,7 +177,7 @@ export class Legend extends BaseLegend {
                 series.visible = false;
             }
             legend.visible = (series.visible);
-            if (chart.svgObject.childNodes.length > 0 && !chart.enableAnimation) {
+            if ((chart.svgObject.childNodes.length > 0 ) && !chart.enableAnimation && !chart.enableCanvas) {
                 while (chart.svgObject.lastChild) {
                     chart.svgObject.removeChild(chart.svgObject.lastChild);
                 }
@@ -213,10 +222,13 @@ export class Legend extends BaseLegend {
      * To show the tooltip for the trimmed text in legend.
      * @return {void}
      */
-    public click(event: Event): void {
+    public click(event: Event | PointerEvent): void {
         if (!this.chart.legendSettings.visible) {
             return;
         }
+        let pageX: number = (event as PointerEvent).pageX;
+        let pageY: number = (event as PointerEvent).pageY;
+        let legendRegion: ILegendRegions[] = [];
         let targetId: string = (<HTMLElement>event.target).id;
         let legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
         this.legendID + '_shape_'];
@@ -232,6 +244,56 @@ export class Legend extends BaseLegend {
             this.changePage(event, true);
         } else if (targetId.indexOf(this.legendID + '_pagedown') > -1) {
             this.changePage(event, false);
+        }
+        if ((this.chart as Chart).enableCanvas && this.pagingRegions.length) {
+            this.checkWithinBounds(pageX, pageY);
+        }
+
+        legendRegion = this.legendRegions.filter((region: ILegendRegions) => {
+            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage(null, 1, 2) : 0)),
+                                 region.rect));
+        });
+        if (legendRegion.length && (this.chart as Chart).enableCanvas) {
+            this.LegendClick(legendRegion[0].index);
+        }
+    }
+    /**
+     * To check click position is within legend bounds
+     */
+    protected checkWithinBounds(pageX: number , pageY: number): void {
+        let cRender: CanvasRenderer = this.chart.renderer as CanvasRenderer;
+        let bounds: Rect = this.legendBounds;
+        let borderWidth: number = this.chart.legendSettings.border.width;
+        let canvasRect: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        canvasRect.x = canvasRect.x - borderWidth / 2;
+        canvasRect.y = canvasRect.y - borderWidth / 2;
+        canvasRect.width = canvasRect.width + borderWidth;
+        canvasRect.height = canvasRect.height + borderWidth;
+        if (withInBounds(pageX, pageY, this.pagingRegions[0])) {
+            // pagedown calculations are performing here
+            if (--this.currentPageNumber > 0) {
+                this.legendRegions = [];
+                cRender.clearRect(canvasRect);
+                cRender.canvasClip(new RectOption('legendClipPath', 'transparent', { width: 0, color: '' }, null, canvasRect));
+                this.renderLegend(this.chart, this.legend, bounds);
+                cRender.canvasRestore();
+            } else {
+                ++this.currentPageNumber;
+            }
+            return null;
+        }
+        if (withInBounds(pageX, pageY, this.pagingRegions[1])) {
+            // pageUp calculations are performing here
+            if (++this.currentPageNumber > 0 && this.currentPageNumber <= this.totalNoOfPages) {
+                this.legendRegions = [];
+                cRender.clearRect(canvasRect);
+                cRender.canvasClip(new RectOption('legendClipPath', 'transpaent', { width: 0, color: '' }, null, canvasRect));
+                this.renderLegend(this.chart, this.legend, bounds);
+                cRender.canvasRestore();
+            } else {
+                --this.currentPageNumber;
+            }
+            return null;
         }
     }
 

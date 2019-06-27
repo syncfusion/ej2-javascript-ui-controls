@@ -32,10 +32,11 @@ export class ExportUtils {
         let argsData: IPrintEventArgs = {
             cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
         };
-        this.control.trigger(beforePrint, argsData);
-        if (!argsData.cancel) {
-            printWindow(argsData.htmlContent, this.printWindow);
-        }
+        this.control.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
+            if (!argsData.cancel) {
+                printWindow(argsData.htmlContent, this.printWindow);
+            }
+        });
     }
 
     /**

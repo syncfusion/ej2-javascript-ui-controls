@@ -13,7 +13,7 @@ export interface FilterSettingsModel {
     columns?: PredicateModel[];
 
     /**
-   * Defines filter type of Gantt
+   * Defines filter type of Gantt.
    * * `Menu` - Enables menu filters in Grid.
    * @hidden
    */

@@ -12,6 +12,7 @@ import { createElement, remove, merge } from '@syncfusion/ej2-base';
  * @private
  */
 export function measureText(text: string, font: TextStyleModel): Size {
+    let breakText: string = text || ''; // For avoid NuLL value
     let htmlObject: HTMLElement = document.getElementById('chartmeasuretext');
 
     if (htmlObject === null) {
@@ -27,7 +28,7 @@ export function measureText(text: string, font: TextStyleModel): Size {
         }
         text = textArray.join(' ');
     }
-    htmlObject.innerHTML = text;
+    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
@@ -176,8 +177,10 @@ export class TextOption extends CustomizeOption {
     public x: number;
     public y: number;
     public baseLine: string = 'auto';
+    public labelRotation: number = 0;
 
-    constructor(id?: string, x?: number, y?: number, anchor?: string, text?: string | string[], transform: string = '', baseLine?: string) {
+    constructor(id?: string, x?: number, y?: number, anchor?: string, text?: string | string[], transform: string = '',
+                baseLine?: string, labelRotation?: number) {
         super(id);
         this.x = x;
         this.y = y;
@@ -185,6 +188,7 @@ export class TextOption extends CustomizeOption {
         this.text = text;
         this.transform = transform;
         this.baseLine = baseLine;
+        this.labelRotation = labelRotation;
     }
 }
 /** @private */

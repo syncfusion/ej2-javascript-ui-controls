@@ -579,7 +579,7 @@ export class Workbook {
         }
         return colorVal;
     }
-    private processCellValue(value: string): string {
+    private processCellValue(value: string, cell: Cell): string {
         let cellValue : string = value;
         let processedVal: string = '';
         let startindex: number = value.indexOf('<', 0);
@@ -592,35 +592,57 @@ export class Workbook {
            endIndex = value.indexOf('>', startindex + 1);
            if (endIndex >= 0) {
            let subString: string = value.substring(startindex + 1, endIndex);
+
+           startindex = value.indexOf('<', endIndex + 1);
+            if (startindex < 0) {
+               startindex = cellValue.length;
+            }
+           let text = cellValue.substring(endIndex + 1, startindex);
+           if(text.length !== 0) {
            let subSplit: string[]  = subString.split(' ');
            if (subSplit.length > 0) {
               processedVal += '<r><rPr>';
            }
            if (subSplit.length > 1) {
                 for (let element of subSplit) {
-                    if (element.trim().startsWith('size=')) {
-                    processedVal += '<sz val="' + element.substring(6, element.length - 1) + '"/>';
-                    } else if (element.trim().startsWith('face=')) {
-                    processedVal += '<rFont val="' + element.substring(6, element.length - 1) + '"/>';
-                    } else if (element.trim().startsWith('color=')) {
-                    processedVal += '<color rgb="' + this.processColor(element.substring(7, element.length - 1)) + '"/>';
+                    let start: string = element.trim().substring(0,5);
+                    switch (start) {
+                        case 'size=':
+                            processedVal += '<sz val="' + element.substring(6, element.length - 1) + '"/>';
+                            break;
+                        case 'face=' :
+                            processedVal += '<rFont val="' + element.substring(6, element.length - 1) + '"/>';
+                            break;
+                        case 'color':
+                            processedVal += '<color rgb="' + this.processColor(element.substring(7, element.length - 1)) + '"/>';
+                            break;
+                        case 'href=':
+                            let hyperLink: HyperLink = new HyperLink();
+                            hyperLink.target = element.substring(6, element.length - 1).trim();
+                            hyperLink.ref = cell.refName;
+                            hyperLink.rId = (this.mHyperLinks.length + 1);                      
+                            this.mHyperLinks.push(hyperLink);
+                            processedVal += '<color rgb="FF0000FF"/><u/><b/>';
+                            break;
                     }
                 }
            } else if (subSplit.length === 1) {
-                if (subSplit[0].trim() === 'b') {
+               let style: string = subSplit[0].trim();
+               switch (style){
+                case 'b':
                   processedVal += '<b/>';
-                } else if (subSplit[0].trim() === 'i') {
+                  break;
+                case 'i':
                   processedVal += '<i/>';
-                } else if (subSplit[0].trim() === 'u') {
+                  break;
+                case 'u':
                   processedVal += '<u/>';
+                  break;                
                 }
-           }
-            startindex = value.indexOf('<', endIndex + 1);
-            if (startindex < 0) {
-               startindex = cellValue.length;
-            }
-             processedVal += '</rPr><t xml:space="preserve">' + cellValue.substring(endIndex + 1, startindex) + '</t></r>';
-           }
+            }                     
+             processedVal += '</rPr><t xml:space="preserve">' + text + '</t></r>';
+           }               
+         }            
         }
         if (processedVal === '') {
            return cellValue;
@@ -979,7 +1001,7 @@ export class Workbook {
             case 'string':
                 this.sharedStringCount++;
                 saveType = 's';
-                let sstvalue = this.processCellValue(value);
+                let sstvalue = this.processCellValue(value, cell);
                 if (!this.contains(this.sharedString, sstvalue)) {
                     this.sharedString.push(sstvalue);
                 }

@@ -52,7 +52,7 @@ let diagram: Diagram = new Diagram({
                 'Color'
             ],
         },
-        dataManager: nodedata,
+        dataSource: nodedata,
         connectionDataSource:
         {
             id: 'Name',

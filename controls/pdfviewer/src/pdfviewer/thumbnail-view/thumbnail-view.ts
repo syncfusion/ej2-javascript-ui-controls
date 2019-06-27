@@ -102,7 +102,7 @@ export class ThumbnailView {
             }
             proxy.renderThumbnailImage(data);
             if (!proxy.isThumbnailCompleted) {
-                proxy.startIndex = proxy.thumbnailLimit;
+                proxy.startIndex = data.endPage;
                 proxy.isThumbnailCompleted = true;
             }
         };
@@ -189,7 +189,7 @@ export class ThumbnailView {
     // tslint:disable-next-line
     private renderThumbnailImage(data: any): void {
         if (this.thumbnailView) {
-            for (let i: number = this.startIndex; i < this.thumbnailLimit; i++) {
+            for (let i: number = data.startPage; i < data.endPage; i++) {
                 // tslint:disable-next-line:max-line-length
                 let pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i , attrs: {'aria-label': 'Thumbnail of Page' + (i + 1) , 'tabindex': '-1', 'role': 'link' }}) as HTMLAnchorElement;
                 // tslint:disable-next-line:max-line-length

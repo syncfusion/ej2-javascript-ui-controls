@@ -3,7 +3,8 @@
  */
 import {isNullOrUndefined} from '@syncfusion/ej2-base';
 import {LineAttributes, PathAttributes, CircleAttributes, RectAttributes, EllipseAttributes, PolylineAttributes,
-    BaseAttibutes, TextAttributes, ImageAttributes, SVGCanvasAttributes, GradientColor } from './svg-canvas-interface';
+    BaseAttibutes, TextAttributes, ImageAttributes, SVGCanvasAttributes, GradientColor, SVGAttributes } from './svg-canvas-interface';
+import { Rect } from '../tooltip';
 /**
  * @private
  */
@@ -114,7 +115,6 @@ export class CanvasRenderer {
         this.ctx.lineTo(options.x2, options.y2);
         this.ctx.stroke();
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     }
 
     /**
@@ -122,11 +122,12 @@ export class CanvasRenderer {
      * @param {RectAttributes} options - required options to draw a rectangle on the canvas
      * @return {void}
      */
-    public drawRectangle(options: RectAttributes): void {
+    public drawRectangle(options: RectAttributes, canvasTranslate ?: Int32Array): Element {
         let canvasCtx: CanvasRenderingContext2D = this.ctx;
         let cornerRadius: number = options.rx;
         this.ctx.save();
         this.ctx.beginPath();
+        if (canvasTranslate) { this.ctx.translate(canvasTranslate[0], canvasTranslate[1]); }
         this.ctx.globalAlpha = this.getOptionValue<number>(options, 'opacity');
         this.setAttributes(options as SVGCanvasAttributes);
         this.ctx.rect(options.x, options.y, options.width, options.height);
@@ -140,7 +141,7 @@ export class CanvasRenderer {
         }
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return (this.canvasObj);
     }
 
 
@@ -166,7 +167,6 @@ export class CanvasRenderer {
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
-        this.dataUrl = this.canvasObj.toDataURL();
     }
 
     /**
@@ -175,7 +175,7 @@ export class CanvasRenderer {
      * @param {Int32Array} canvasTranslate - Array of numbers to translate the canvas
      * @return {void}
      */
-    public drawPath(options: PathAttributes, canvasTranslate: Int32Array): void {
+    public drawPath(options: PathAttributes, canvasTranslate ?: Int32Array): Element {
         let path: string = options.d;
         let dataSplit: string[] = path.split(' ');
         let borderWidth: number = this.getOptionValue<number>(options, 'stroke-width');
@@ -199,6 +199,12 @@ export class CanvasRenderer {
                     if (!options.innerR) {
                         this.ctx.lineTo(x1, y1);
                     }
+                    break;
+                case 'Q':
+                    let q1: number = parseFloat(dataSplit[i + 3]);
+                    let q2: number = parseFloat(dataSplit[i + 4]);
+                    this.ctx.quadraticCurveTo(x1, y1, q1, q2);
+                    i = i + 2;
                     break;
                 case 'C':
                     let c1: number = parseFloat(dataSplit[i + 3]);
@@ -225,7 +231,10 @@ export class CanvasRenderer {
                     i = i + 5;
                     break;
                 case 'z':
+                case 'Z':
                     this.ctx.closePath();
+                    //since for loop is incremented by 3, to get next value after 'z' i is decremented for 2.
+                    i = i - 2;
                     break;
             }
         }
@@ -238,7 +247,7 @@ export class CanvasRenderer {
         }
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     }
 
     /**
@@ -247,7 +256,7 @@ export class CanvasRenderer {
      * @param {string} label - Specifies the text which has to be drawn on the canvas
      * @return {void}
      */
-    public drawText(options: TextAttributes, label: string): void {
+    public createText(options: TextAttributes, label: string, transX ?: number, transY ?: number): Element {
         let fontWeight: string = this.getOptionValue<string>(options, 'font-weight');
         if (!isNullOrUndefined(fontWeight) && fontWeight.toLowerCase() === 'regular') {
            fontWeight = 'normal';
@@ -270,11 +279,11 @@ export class CanvasRenderer {
             this.ctx.textBaseline = options.baseline;
         }
         let txtlngth: number = 0;
-        this.ctx.translate(options.x + (txtlngth / 2), options.y);
+        this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
         this.ctx.rotate(options.labelRotation * Math.PI / 180);
         this.ctx.fillText(label, 0, 0);
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     }
 
     /**
@@ -282,7 +291,7 @@ export class CanvasRenderer {
      * @param {CircleAttributes} options - required options to draw the circle
      * @return {void}
      */
-    public drawCircle(options: CircleAttributes): void {
+    public drawCircle(options: CircleAttributes, canvasTranslate ?: Int32Array): Element {
         let canvasCtx: CanvasRenderingContext2D = this.ctx;
         this.ctx.save();
         this.ctx.beginPath();
@@ -290,11 +299,12 @@ export class CanvasRenderer {
         this.ctx.fillStyle = options.fill;
         this.ctx.globalAlpha = options.opacity;
         this.ctx.fill();
+        if (canvasTranslate) { this.ctx.translate(canvasTranslate[0], canvasTranslate[1]); }
         this.setAttributes(options as SVGCanvasAttributes);
         this.ctx.stroke();
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     }
 
     /**
@@ -320,7 +330,6 @@ export class CanvasRenderer {
         this.ctx.strokeStyle = options.stroke;
         this.ctx.stroke();
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     }
 
     /**
@@ -328,7 +337,7 @@ export class CanvasRenderer {
      * @param {EllipseAttributes} options - options needed to draw ellipse
      * @return {void}
      */
-    public drawEllipse(options: EllipseAttributes): void {
+    public drawEllipse(options: EllipseAttributes, canvasTranslate ?: Int32Array): void {
         let canvasCtx: CanvasRenderingContext2D = this.ctx;
         let circumference: number = Math.max(options.rx, options.ry);
         let scaleX: number = options.rx / circumference;
@@ -336,6 +345,7 @@ export class CanvasRenderer {
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.translate(options.cx, options.cy);
+        if (canvasTranslate) { this.ctx.translate(canvasTranslate[0], canvasTranslate[1]); }
         this.ctx.save();
         this.ctx.scale(scaleX, scaleY);
         this.ctx.arc(0, 0, circumference, 0, 2 * Math.PI, false);
@@ -347,7 +357,6 @@ export class CanvasRenderer {
         this.ctx.stroke();
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
     }
 
     /**
@@ -363,7 +372,6 @@ export class CanvasRenderer {
             this.ctx.drawImage(imageObj, options.x, options.y, options.width, options.height);
         }
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     }
 
     /**
@@ -408,7 +416,6 @@ export class CanvasRenderer {
         } else {
             colorName = colors[0].color.toString();
         }
-        this.dataUrl = this.canvasObj.toDataURL();
         return colorName;
     }
 
@@ -418,13 +425,13 @@ export class CanvasRenderer {
      * @param {HTMLElement} element - The element to which the attributes need to be set
      * @return {HTMLElement}
      */
-    public setElementAttributes(options: SVGCanvasAttributes, element: HTMLElement): HTMLElement {
+    public setElementAttributes(options: SVGCanvasAttributes, element: HTMLElement | Element): HTMLElement | Element {
         let keys: string[] = Object.keys(options);
         let values: string[] = Object.keys(options).map((key: string) => { return options[key]; });
         for (let i: number = 0; i < keys.length; i++) {
             element.setAttribute(keys[i], values[i]);
         }
-        return element;
+        return null;
     }
 
     /**
@@ -442,5 +449,93 @@ export class CanvasRenderer {
             };
             img.src = this.dataUrl;
         }
+    }
+
+    /**
+     * This method clears the given rectangle region
+     * @param options
+     */
+    public clearRect(rect: Rect): void {
+        this.ctx.restore();
+        this.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
+    };
+
+    /**
+     * For canvas rendering in chart
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options needed to create group
+     * @return {Element}
+     */
+    public createGroup(options: BaseAttibutes): Element {
+        return null;
+    }
+
+    /**
+     * To render a clip path
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options required to render a clip path
+     * @return {Element}
+     */
+    public drawClipPath(options: BaseAttibutes): Element {
+        return null;
+    }
+
+    /**
+     * Clip method to perform clip in canvas mode
+     * @param options
+     */
+    public canvasClip(options: BaseAttibutes): void {
+        this.ctx.save();
+        this.ctx.fillStyle = 'transparent';
+        this.ctx.rect(options.x, options.y, options.width, options.height);
+        this.ctx.fill();
+        this.ctx.clip();
+    }
+
+    /**
+     * Tp restore the canvas
+     * @param options
+     */
+    public canvasRestore() : void {
+        this.ctx.restore();
+    }
+
+    /**
+     * To draw a polygon
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {PolylineAttributes} options - Options needed to draw a polygon in SVG
+     * @return {Element}
+     */
+    public drawPolygon(options: PolylineAttributes): Element {
+        return null;
+    }
+
+    /**
+     * To create defs element in SVG
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @return {Element}
+     */
+    public createDefs(): Element {
+        return null;
+    }
+
+    /**
+     * To create clip path in SVG
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options needed to create clip path
+     * @return {Element}
+     */
+    public createClipPath(options: BaseAttibutes): Element {
+        return null;
+    }
+
+    /**
+     * To create a Html5 SVG element
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {SVGAttributes} options - Options to create SVG
+     * @return {Element}
+     */
+    public createSvg(options: SVGAttributes): Element {
+        return null;
     }
 }

@@ -145,6 +145,7 @@ export class AutoComplete extends ComboBox {
     /**
      * Triggers on typing a character in the component.
      * @event
+     * @blazorProperty 'Filtering'
      */
     @Event()
     public filtering: EmitType<FilteringEventArgs>;
@@ -270,11 +271,11 @@ export class AutoComplete extends ComboBox {
             },
             cancel: false
         };
-        this.trigger('filtering', eventArgs);
-        if (eventArgs.cancel) { return; }
-        if (!this.isFiltered && !eventArgs.preventDefaultAction) {
-            this.filterAction(this.dataSource, null, this.fields);
-        }
+        this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+            if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
+                this.filterAction(this.dataSource, null, this.fields);
+            }
+        });
     }
 
     private filterAction(

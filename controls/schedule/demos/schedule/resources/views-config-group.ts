@@ -1,11 +1,12 @@
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, MonthAgenda } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, MonthAgenda,
+    TimelineViews, TimelineMonth, Print } from '../../../src/schedule/index';
 import { resourceData } from '../../../spec/schedule/base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 /**
  * schedule view specific group option sample
  */
-Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda);
+Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Print);
 
 let scheduleOptions: ScheduleModel = {
     width: '100%',
@@ -35,10 +36,12 @@ let scheduleOptions: ScheduleModel = {
         { option: 'Day', group: { byGroupID: false, resources: ['Rooms', 'Owners'] } },
         { option: 'Week', group: { resources: ['Rooms', 'Owners'] } },
         { option: 'WorkWeek', group: { byDate: true, resources: ['Owners'] } },
-        { option: 'Month' },
-        { option: 'Agenda', group: { resources: ['Rooms', 'Owners'] } },
-        { option: 'MonthAgenda' }],
+        { option: 'Month', interval: 4 },
+        { option: 'Agenda', group: { resources: ['Rooms', 'Owners'] } }],
     eventSettings: { dataSource: resourceData }
 };
 
 let scheduleObj: Schedule = new Schedule(scheduleOptions, document.getElementById('schedule'));
+(document.getElementById('printSchedule') as HTMLElement).onclick = () => {
+    scheduleObj.print();
+};

@@ -11,7 +11,8 @@ export type ToolbarItem =
     'PrintOption' |
     'DownloadOption' |
     'UndoRedoTool' |
-    'AnnotationEditTool';
+    'AnnotationEditTool'|
+    'CommentTool';
 
 /**
  * Enum AnnotationToolbarItem for annotation toolbar settings
@@ -20,9 +21,14 @@ export type AnnotationToolbarItem =
     'HighlightTool' |
     'UnderlineTool' |
     'StrikethroughTool' |
+    'ShapeTool' |
+    'CalibrateTool' |
     'ColorEditTool' |
+    'StrokeColorEditTool' |
+    'ThicknessEditTool' |
     'OpacityEditTool' |
-    'AnnotationDeleteTool';
+    'AnnotationDeleteTool' |
+    'StampAnnotationTool';
 /**
  * Enum LinkTarget for hyperlink navigation
  */
@@ -35,4 +41,15 @@ export type AnnotationToolbarItem =
 /**
  * Enum AnnotationType for specifying Annotations
  */
-export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough';
+// tslint:disable-next-line:max-line-length
+export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume';
+
+/**
+ * Enum LineHeadStyle for line and arrow annotation
+ */
+export type LineHeadStyle = 'None' | 'Closed' | 'Open' | 'Square' | 'Round' | 'Diamond';
+
+/**
+ * Enum unit for calibration annotation
+ */
+export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' |'p';

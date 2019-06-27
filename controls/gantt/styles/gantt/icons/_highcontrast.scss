@@ -1,11 +1,11 @@
 @include export-module('gantt-material-icons') {
   #{&}.e-gantt {
     .e-add::before {
-      content: '\e823';
+      content: '\e7d5';
     }
 
     .e-edit::before {
-      content: '\e944';
+      content: '\e97c';
     }
 
     .e-delete::before {
@@ -56,5 +56,37 @@
     .e-right-resize-gripper::before {
       content: '\ebef';
     }
+
+    .e-zoomin::before {
+      content: '\e349';
+    }
+
+    .e-zoomout::before {
+      content: '\e351';
+    }
+
+    .e-zoomtofit::before {
+      content: '\e657';
+    }
+
+    .e-add-above::before {
+      content: '\e658';
+    }
+
+    .e-add-below::before {
+      content: '\e659';
+    }
   }
+
+  #{&}.e-gantt.e-device {
+    .e-backarrowspan::before,
+    .e-icon-dlg-close::before {
+      content: '\e85b';
+      }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\e903';
+      }
+   }
 }

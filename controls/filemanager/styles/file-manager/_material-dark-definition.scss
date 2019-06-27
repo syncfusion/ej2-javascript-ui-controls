@@ -5,7 +5,6 @@ $fe-bc-icon-font-size: 10px !default;
 $fe-dg-td-font-size: 14px !default;
 $fe-lg-text-font-size: 13px !default;
 $fe-ddl-icon-font-size: 14px !default;
-$fe-tbr-text-font-size: 14px !default;
 
 $fe-big-bc-font-size: 15px !default;
 $fe-big-bc-icon-font-size: 12px !default;
@@ -44,7 +43,15 @@ $fe-checkbox-color: $accent-font !default;
 $fe-checkbox-bg-color: $accent !default;
 $fe-drop-border-color: $accent !default;
 $fe-up-list-border-color: rgba($grey-dark-font, .12) !default;
+$fe-clone-bg-color: $grey-700 !default;
+$fe-clone-border-color: none !default ;
+$fe-clone-count-border-color: $accent !default;
+$fe-clone-count-font-color: $accent-font !default;
+$fe-clone-count-bg-color: $accent !default;
+$fe-drop-folder-bg-color: $accent !default;
 
+$fe-clone-box-shadow: 0 2px 4px $shadow !default;
+$fe-clone-border: none !default;
 $fe-img-box-shadow: 0 1px 3px 1px rgba($grey-black, .2) !default;
 $fe-tb-ddb-icon-padding: 0 !default;
 $fe-tb-ddb-height: calc(100% - 10px) !default;
@@ -52,7 +59,6 @@ $fe-tb-ddb-btn-hvr-padding: 0 !default;
 $fe-tb-ddb-btn-padding: 0 !default;
 $fe-tb-ddb-border: 0 !default;
 $fe-tb-ddb-caret-size: 8px !default;
-$fe-tb-text-padding: 4px 2px 3px 0 !default;
 $fe-upload-overlay-border: 3px !default;
 $fe-search-padding: 1px 7px 0 16px !default;
 $fe-search-height: 29px !default;
@@ -72,6 +78,7 @@ $fe-bc-li-text-decoration: none;
 $fe-grid-icon-size: 18px !default;
 $fe-grid-icon-margin: 0 8px 0 0 !default;
 $fe-dg-td-padding: 8px 24px 8px 0 !default;
+$fe-dg-rtl-td-padding: 8px 0 8px 24px !default;
 $fe-grid-header-height: 32px !default;
 $fe-grid-header-font-size: 14px !default;
 $fe-grid-header-cb-padding-left: 12px !default;
@@ -161,12 +168,7 @@ $fe-mobile-lg-item-minwidth: 140px !default;
 $fe-mobile-lg-item-width-two: calc(50% - 17px) !default;
 $fe-mobile-lg-item-width-three: calc(33.33% - 17px) !default;
 
-$fe-big-lg-icon-empty-height: 180px !default;
-$fe-big-lg-icon-empty-left: 50% !default;
 $fe-big-lg-icon-empty-min-width: 300px !default;
-$fe-big-lg-icon-empty-position: relative !default;
-$fe-big-lg-icon-empty-top: 50% !default;
-$fe-big-lg-icon-empty-transform: translate(-50%, -50%);
 
 $fe-big-lg-icon-empty-content-font-size: 24px !default;
 $fe-big-lg-icon-empty-content-margin: 0 auto !default;
@@ -183,12 +185,7 @@ $fe-big-lg-icon-empty-inner-content-opacity: .7 !default;
 $fe-big-lg-icon-empty-inner-content-padding: 4px !default;
 $fe-big-lg-icon-empty-inner-content-text-align: center !default;
 
-$fe-big-grid-empty-height: 175px !default;
-$fe-big-grid-empty-left: 50% !default;
 $fe-big-grid-empty-min-width: 300px !default;
-$fe-big-grid-empty-position: absolute !default;
-$fe-big-grid-empty-top: 50% !default;
-$fe-big-grid-empty-transform: translate(-50%, -50%) !default;
 
 $fe-big-grid-empty-content-font-size: 24px !default;
 $fe-big-grid-empty-content-margin: 0 auto !default;
@@ -205,12 +202,7 @@ $fe-big-grid-empty-inner-content-opacity: .7 !default;
 $fe-big-grid-empty-inner-content-padding: 4px !default;
 $fe-big-grid-empty-inner-content-text-align: center !default;
 
-$fe-grid-empty-height: 160px !default;
-$fe-grid-empty-left: 50% !default;
 $fe-grid-empty-min-width: 200px !default;
-$fe-grid-empty-position: absolute !default;
-$fe-grid-empty-top: 50% !default;
-$fe-grid-empty-transform: translate(-50%, -50%) !default;
 
 $fe-grid-empty-content-font-size: 20px !default;
 $fe-grid-empty-content-margin: 0 auto !default;
@@ -227,12 +219,7 @@ $fe-grid-empty-inner-content-opacity: .7 !default;
 $fe-grid-empty-inner-content-padding: 6px !default;
 $fe-grid-empty-inner-content-text-align: center !default;
 
-$fe-lg-icon-empty-height: 160px !default;
-$fe-lg-icon-empty-left: 50% !default;
 $fe-lg-icon-empty-min-width: 200px !default;
-$fe-lg-icon-empty-position: relative !default;
-$fe-lg-icon-empty-top: 50% !default;
-$fe-lg-icon-empty-transform: translate(-50%, -50%);
 
 $fe-lg-icon-empty-content-font-size: 20px !default;
 $fe-lg-icon-empty-content-margin: 0 auto !default;

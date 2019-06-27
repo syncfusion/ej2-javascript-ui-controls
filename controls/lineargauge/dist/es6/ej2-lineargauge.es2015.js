@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -290,6 +290,9 @@ __decorate$2([
 __decorate$2([
     Property(null)
 ], Pointer.prototype, "description", void 0);
+/**
+ * Options for customizing the axis of a gauge.
+ */
 class Axis extends ChildProperty {
     constructor() {
         /**
@@ -1224,11 +1227,12 @@ class AxisLayoutPanel {
                     formatValue(i, this.gauge).toString(),
                 value: i
             };
-            this.gauge.trigger(axisLabelRender, argsData);
-            labelSize = measureText(argsData.text, axis.labelStyle.font);
-            if (!argsData.cancel) {
-                axis.visibleLabels.push(new VisibleLabels(argsData.text, i, labelSize));
-            }
+            this.gauge.trigger('axisLabelRender', argsData, (argsData) => {
+                labelSize = measureText(argsData.text, axis.labelStyle.font);
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(argsData.text, i, labelSize));
+                }
+            });
         }
         this.getMaxLabelWidth(this.gauge, axis);
     }
@@ -1737,11 +1741,16 @@ class Annotations {
         });
         if (annotationGroup.childElementCount > 0 && !(isNullOrUndefined(getElement(secondaryID)))) {
             getElement(secondaryID).appendChild(annotationGroup);
+            updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate', 'ContentTemplate');
+        }
+        else {
+            resetBlazorTemplate(this.gauge.element.id + '_ContentTemplate', 'ContentTemplate');
         }
     }
     /**
      * To create annotation elements
      */
+    //tslint:disable
     createAnnotationTemplate(element, annotationIndex) {
         let left;
         let top;
@@ -1761,79 +1770,87 @@ class Annotations {
             annotation: annotation, textStyle: annotation.font
         };
         argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
-        this.gauge.trigger(annotationRender, argsData);
-        if (!argsData.cancel) {
-            templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && templateFn(this.gauge).length) {
-                templateElement = Array.prototype.slice.call(templateFn(this.gauge));
-                let length = templateElement.length;
-                for (let i = 0; i < length; i++) {
-                    childElement.appendChild(templateElement[i]);
-                }
-            }
-            else {
-                childElement.appendChild(createElement('div', {
-                    innerHTML: argsData.content,
-                    styles: getFontStyle(argsData.textStyle)
-                }));
-            }
-            let offset = getElementOffset(childElement.cloneNode(true), this.gauge.element);
-            if (!(isNullOrUndefined(annotation.axisValue))) {
-                axisIndex = isNullOrUndefined(annotation.axisIndex) ? 0 : annotation.axisIndex;
-                axis = this.gauge.axes[axisIndex];
-                let range = axis.visibleRange;
-                renderAnnotation = (annotation.axisValue >= range.min && annotation.axisValue <= range.max) ? true : false;
-                let line = axis.lineBounds;
-                if (this.gauge.orientation === 'Vertical') {
-                    left = line.x + annotation.x;
-                    top = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.height) + line.y);
-                    top += annotation.y;
+        this.gauge.trigger(annotationRender, argsData, (observerArgs) => {
+            if (!argsData.cancel) {
+                let blazor = 'Blazor';
+                templateFn = getTemplateFunction(argsData.content);
+                if (templateFn && (!window[blazor] ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate').length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate'));
+                    let length = templateElement.length;
+                    for (let i = 0; i < length; i++) {
+                        childElement.appendChild(templateElement[i]);
+                    }
                 }
                 else {
-                    left = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.width) + line.x);
-                    left += annotation.x;
-                    top = line.y + annotation.y;
+                    childElement.appendChild(createElement('div', {
+                        innerHTML: argsData.content,
+                        styles: getFontStyle(argsData.textStyle)
+                    }));
                 }
-                left -= (offset.width / 2);
-                top -= (offset.height / 2);
+                let offset = getElementOffset(childElement.cloneNode(true), this.gauge.element);
+                if (!(isNullOrUndefined(annotation.axisValue))) {
+                    axisIndex = isNullOrUndefined(annotation.axisIndex) ? 0 : annotation.axisIndex;
+                    axis = this.gauge.axes[axisIndex];
+                    let range = axis.visibleRange;
+                    renderAnnotation = (annotation.axisValue >= range.min && annotation.axisValue <= range.max) ? true : false;
+                    let line = axis.lineBounds;
+                    if (this.gauge.orientation === 'Vertical') {
+                        left = line.x + annotation.x;
+                        top = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.height) + line.y);
+                        top += annotation.y;
+                    }
+                    else {
+                        left = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.width) + line.x);
+                        left += annotation.x;
+                        top = line.y + annotation.y;
+                    }
+                    left -= (offset.width / 2);
+                    top -= (offset.height / 2);
+                }
+                else {
+                    let elementRect = this.gauge.element.getBoundingClientRect();
+                    let bounds = this.gauge.svgObject.getBoundingClientRect();
+                    renderAnnotation = true;
+                    left = Math.abs(bounds.left - elementRect.left);
+                    top = Math.abs(bounds.top - elementRect.top);
+                    left = (annotation.horizontalAlignment === 'None') ? (left + annotation.x) : left;
+                    top = (annotation.verticalAlignment === 'None') ? top + annotation.y : top;
+                    switch (annotation.verticalAlignment) {
+                        case 'Near':
+                            top = top + annotation.y;
+                            break;
+                        case 'Center':
+                            top = top + annotation.y + ((bounds.height / 2) - (offset.height / 2));
+                            break;
+                        case 'Far':
+                            top = (top + bounds.height) + annotation.y - offset.height;
+                            break;
+                    }
+                    switch (annotation.horizontalAlignment) {
+                        case 'Near':
+                            left = left + annotation.x;
+                            break;
+                        case 'Center':
+                            left = left + annotation.x + ((bounds.width / 2) - (offset.width / 2));
+                            break;
+                        case 'Far':
+                            left = (left + bounds.width) + annotation.x - offset.width;
+                            break;
+                    }
+                }
+                childElement.style.left = left + 'px';
+                childElement.style.top = top + 'px';
+                if (renderAnnotation) {
+                    element.appendChild(childElement);
+                    setTimeout(() => {
+                        updateBlazorTemplate(element.id + ' content', 'Content');
+                    }, 0);
+                }
             }
             else {
-                let elementRect = this.gauge.element.getBoundingClientRect();
-                let bounds = this.gauge.svgObject.getBoundingClientRect();
-                renderAnnotation = true;
-                left = Math.abs(bounds.left - elementRect.left);
-                top = Math.abs(bounds.top - elementRect.top);
-                left = (annotation.horizontalAlignment === 'None') ? (left + annotation.x) : left;
-                top = (annotation.verticalAlignment === 'None') ? top + annotation.y : top;
-                switch (annotation.verticalAlignment) {
-                    case 'Near':
-                        top = top + annotation.y;
-                        break;
-                    case 'Center':
-                        top = top + annotation.y + ((bounds.height / 2) - (offset.height / 2));
-                        break;
-                    case 'Far':
-                        top = (top + bounds.height) + annotation.y - offset.height;
-                        break;
-                }
-                switch (annotation.horizontalAlignment) {
-                    case 'Near':
-                        left = left + annotation.x;
-                        break;
-                    case 'Center':
-                        left = left + annotation.x + ((bounds.width / 2) - (offset.width / 2));
-                        break;
-                    case 'Far':
-                        left = (left + bounds.width) + annotation.x - offset.width;
-                        break;
-                }
+                resetBlazorTemplate(element.id + ' content', 'Content');
             }
-            childElement.style.left = left + 'px';
-            childElement.style.top = top + 'px';
-            if (renderAnnotation) {
-                element.appendChild(childElement);
-            }
-        }
+        });
     }
     /*
      * Get module name.
@@ -1920,39 +1937,47 @@ class GaugeTooltip {
             let tooltipPos = this.getTooltipPosition();
             location.y += (this.tooltip.template && tooltipPos === 'Top') ? 20 : 0;
             location.x += (this.tooltip.template && tooltipPos === 'Right') ? 20 : 0;
-            this.gauge.trigger(tooltipRender, args);
-            let template = args.tooltip.template;
-            if (template !== null && Object.keys(template).length === 1) {
-                template = template[Object.keys(template)[0]];
-            }
-            let themes = this.gauge.theme.toLowerCase();
-            if (!args.cancel) {
-                args['tooltip']['properties']['textStyle']['color'] = this.tooltip.textStyle.color ||
-                    this.gauge.themeStyle.tooltipFontColor;
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    header: '',
-                    data: { value: args.pointer.currentValue },
-                    template: template,
-                    content: [args.content],
-                    shapes: [],
-                    location: args.location,
-                    palette: [],
-                    inverted: !(args.gauge.orientation === 'Horizontal'),
-                    enableAnimation: args.tooltip.enableAnimation,
-                    fill: this.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
-                    areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
-                    textStyle: args.tooltip.textStyle,
-                    border: args.tooltip.border,
-                    theme: args.gauge.theme
-                });
-                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(tooltipEle);
-            }
+            this.gauge.trigger('tooltipRender', args, (observedArgs) => {
+                let template = args.tooltip.template;
+                if (template !== null && Object.keys(template).length === 1) {
+                    template = template[Object.keys(template)[0]];
+                }
+                let themes = this.gauge.theme.toLowerCase();
+                if (!args.cancel) {
+                    args['tooltip']['properties']['textStyle']['color'] = this.tooltip.textStyle.color ||
+                        this.gauge.themeStyle.tooltipFontColor;
+                    this.svgTooltip = new Tooltip({
+                        enable: true,
+                        header: '',
+                        data: { value: args.pointer.currentValue },
+                        template: template,
+                        content: [args.content],
+                        shapes: [],
+                        location: args.location,
+                        palette: [],
+                        inverted: !(args.gauge.orientation === 'Horizontal'),
+                        enableAnimation: args.tooltip.enableAnimation,
+                        fill: this.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
+                        availableSize: this.gauge.availableSize,
+                        areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
+                        textStyle: args.tooltip.textStyle,
+                        border: args.tooltip.border,
+                        theme: args.gauge.theme
+                    });
+                    this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                    this.svgTooltip.appendTo(tooltipEle);
+                    if (this.gauge.tooltip.template) {
+                        updateBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+                    }
+                }
+            });
         }
         else {
             clearTimeout(this.clearTimeout);
             this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+            if (this.gauge.tooltip.template) {
+                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+            }
         }
     }
     getTooltipPosition() {
@@ -2009,6 +2034,7 @@ class GaugeTooltip {
         if (document.getElementsByClassName('EJ2-LinearGauge-Tooltip').length > 0) {
             document.getElementsByClassName('EJ2-LinearGauge-Tooltip')[0].remove();
         }
+        resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
     }
     mouseUpHandler(e) {
         this.renderTooltip(e);
@@ -2055,10 +2081,10 @@ class GaugeTooltip {
 /** @private */
 function getThemeStyle(theme) {
     let style;
-    switch (theme) {
-        case 'MaterialDark':
-        case 'FabricDark':
-        case 'BootstrapDark':
+    switch (theme.toLowerCase()) {
+        case 'materialdark':
+        case 'fabricdark':
+        case 'bootstrapdark':
             style = {
                 backgroundColor: '#333232',
                 titleFontColor: '#ffffff',
@@ -2071,7 +2097,7 @@ function getThemeStyle(theme) {
                 pointerColor: '#9A9A9A'
             };
             break;
-        case 'HighContrast':
+        case 'highcontrast':
             style = {
                 backgroundColor: '#000000',
                 titleFontColor: '#FFFFFF',
@@ -2084,7 +2110,7 @@ function getThemeStyle(theme) {
                 pointerColor: '#FFFFFF'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
@@ -2436,18 +2462,19 @@ let LinearGauge = class LinearGauge extends Component {
         let clientRect = this.element.getBoundingClientRect();
         let current;
         let args = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger(gaugeMouseDown, args);
-        this.mouseX = args.x;
-        this.mouseY = args.y;
-        if (args.target) {
-            if (!args.cancel && ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1))) {
-                current = this.moveOnPointer(args.target);
-                if (!(isNullOrUndefined(current)) && current.pointer) {
-                    this.pointerDrag = true;
-                    this.mouseElement = args.target;
+        this.trigger('gaugeMouseDown', args, (mouseArgs) => {
+            this.mouseX = args.x;
+            this.mouseY = args.y;
+            if (args.target) {
+                if (!args.cancel && ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1))) {
+                    current = this.moveOnPointer(args.target);
+                    if (!(isNullOrUndefined(current)) && current.pointer) {
+                        this.pointerDrag = true;
+                        this.mouseElement = args.target;
+                    }
                 }
             }
-        }
+        });
         return true;
     }
     /**
@@ -2458,21 +2485,22 @@ let LinearGauge = class LinearGauge extends Component {
     mouseMove(e) {
         let current;
         let args = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger(gaugeMouseMove, args);
-        this.mouseX = args.x;
-        this.mouseY = args.y;
-        if (args.target && !args.cancel) {
-            if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
-                current = this.moveOnPointer(args.target);
-                if (!(isNullOrUndefined(current)) && current.pointer) {
-                    this.element.style.cursor = current.style;
+        this.trigger('gaugeMouseMove', args, (mouseArgs) => {
+            this.mouseX = args.x;
+            this.mouseY = args.y;
+            if (args.target && !args.cancel) {
+                if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
+                    current = this.moveOnPointer(args.target);
+                    if (!(isNullOrUndefined(current)) && current.pointer) {
+                        this.element.style.cursor = current.style;
+                    }
                 }
+                else {
+                    this.element.style.cursor = (this.pointerDrag) ? this.element.style.cursor : 'auto';
+                }
+                this.gaugeOnMouseMove(e);
             }
-            else {
-                this.element.style.cursor = (this.pointerDrag) ? this.element.style.cursor : 'auto';
-            }
-            this.gaugeOnMouseMove(e);
-        }
+        });
         this.notify(Browser.touchMoveEvent, e);
         return false;
     }

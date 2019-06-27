@@ -60,7 +60,13 @@ export class NodeCutter {
         }
     }
     private spliceEmptyNode(fragment: DocumentFragment | Node, isStart: boolean): DocumentFragment | Node {
-        let len: number = fragment.childNodes.length - 1;
+        let len: number;
+        if (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName === '#text' &&
+            fragment.childNodes[0].textContent === '' || fragment.textContent === '') {
+            len = -1;
+        } else {
+            len = fragment.childNodes.length - 1;
+        }
         if (len > -1 && !isStart) {
             this.spliceEmptyNode(fragment.childNodes[len], isStart);
         } else if (len > -1) {

@@ -16,7 +16,11 @@
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-notifications": "*",
-		"@syncfusion/ej2-popups": "*"
+		"@syncfusion/ej2-popups": "*",
+		"@syncfusion/ej2-drawings": "*",
+		"@syncfusion/ej2-inplace-editor": "*",
+		"@syncfusion/ej2-calendars": "*",
+		"@syncfusion/ej2-richtexteditor": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",
@@ -60,5 +64,6 @@
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"
-	}
+	},
+	"typings": "index.d.ts"
 }

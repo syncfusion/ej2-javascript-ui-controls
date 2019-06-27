@@ -7,6 +7,7 @@ import { EventState, ChangeType, State, DiagramAction } from '../../enum/enum';
 import { SelectorModel } from '../../interaction/selector-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
+import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel} from '../../objects/connector-model';
 
 /**
  * IElement interface defines the base of the diagram objects (node/connector)
@@ -92,6 +93,23 @@ export interface ICollectionChangeEventArgs {
     cause: DiagramAction;
     /** returns the state of the event */
     state: EventState;
+    /** returns the type of the collection change */
+    type: ChangeType;
+    /** returns whether to cancel the change or not */
+    cancel: boolean;
+}
+
+/**
+ * ICollectionChangeEventArgs notifies while the node/connector are added or removed
+ * 
+ */
+export interface ISegmentCollectionChangeEventArgs {
+    /** returns the selected element  */
+    element: ConnectorModel;
+    /** returns the selected element  */
+    removeSegments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
+    /** returns the action of diagram */
+    addSegments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
     /** returns the type of the collection change */
     type: ChangeType;
     /** returns whether to cancel the change or not */

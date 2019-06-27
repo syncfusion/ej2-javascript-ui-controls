@@ -70,7 +70,7 @@ export type Segment =
     'Y';
 
 /** 
- * Defines the unit of Stripline Size. They are
+ * Defines the unit of Strip line Size. They are
  * * auto
  * * pixel
  * * year
@@ -79,9 +79,8 @@ export type Segment =
  * * hour
  * * minutes
  * * seconds
- * @private
  */
-export type sizeType =
+export type SizeType =
     /**  Auto - In numeric axis, it will consider a number and DateTime axis, it will consider as milliseconds. */
     'Auto' |
     /**  Pixel - The stripline gets their size in pixel */

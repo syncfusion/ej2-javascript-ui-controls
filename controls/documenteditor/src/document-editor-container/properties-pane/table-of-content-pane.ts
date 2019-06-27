@@ -1,5 +1,5 @@
 import { DocumentEditor, ContextType, TableOfContentsSettings } from '../../document-editor/index';
-import { createElement, L10n } from '@syncfusion/ej2-base';
+import { createElement, L10n, classList } from '@syncfusion/ej2-base';
 import { Button, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Toolbar } from '../tool-bar';
@@ -44,7 +44,16 @@ export class TocProperties {
         this.isRtl = isRtl;
         this.initializeTocPane();
     }
-
+    /**
+     * @private
+     */
+    public enableDisableElements(enable: boolean): void {
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        } else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    }
     private initializeTocPane = (): void => {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         // tslint:disable-next-line:max-line-length

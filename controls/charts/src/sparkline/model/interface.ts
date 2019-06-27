@@ -50,6 +50,7 @@ export interface ISparklineLoadedEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the Load Event arguments.
+ * @deprecated
  */
 export interface ISparklineLoadEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
@@ -57,6 +58,7 @@ export interface ISparklineLoadEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the axis rendering Event arguments.
+ * @deprecated
  */
 export interface IAxisRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
@@ -78,6 +80,7 @@ export interface IAxisRenderingEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the sparkline series rendering Event arguments.
+ * @deprecated
  */
 export interface ISeriesRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
@@ -124,6 +127,7 @@ export interface IPointRegionEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the sparkline datalabel rendering Event arguments.
+ * @deprecated
  */
 export interface IDataLabelRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
@@ -145,6 +149,7 @@ export interface IDataLabelRenderingEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the sparkline marker rendering Event arguments.
+ * @deprecated
  */
 export interface IMarkerRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
@@ -178,6 +183,7 @@ export interface ISparklineResizeEventArgs {
 }
 /**
  * Sparkline tooltip event args.
+ * @deprecated
  */
 export interface ITooltipRenderingEventArgs extends ISparklineEventArgs {
     /** Defines tooltip text */

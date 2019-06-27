@@ -318,6 +318,10 @@ describe('Input', () => {
                 Input.setPlaceholder('Hi&eacute;rachie article', element);
                 expect(element.getAttribute('placeholder')).toBe('Hiérachie article');
             });
+            it('placeholder encode decode with tag element', () => {
+                Input.setPlaceholder('<b>Hi&eacute;rachie article</b>', element);
+                expect(element.getAttribute('placeholder')).toBe('<b>Hiérachie article</b>');
+            });
             afterAll(() => {
                 element.remove();
             });

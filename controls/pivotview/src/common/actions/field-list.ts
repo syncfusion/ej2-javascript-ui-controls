@@ -47,7 +47,7 @@ export class FieldList implements IAction {
         this.parent.element.parentElement.appendChild(this.element);
         this.parent.element.parentElement.appendChild(this.parent.element);
         this.parent.pivotFieldListModule = new PivotFieldList({
-            dataSource: {
+            dataSourceSettings: {
                 rows: [],
                 columns: [],
                 values: [],
@@ -59,7 +59,7 @@ export class FieldList implements IAction {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             target: this.parent.element.parentElement,
-            aggregateCellInfo : this.parent.bindTriggerEvents.bind(this.parent)
+            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent)
         });
         this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
     }

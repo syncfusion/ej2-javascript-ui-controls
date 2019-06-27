@@ -36,7 +36,18 @@ export type Action =
     /** Defines current Action as Virtual Scroll */
     'virtualscroll' |
     /** Defines current Action as print */
-    'print';
+    'print' |
+    /** Defines current Action as beginedit */
+    'beginEdit' |
+    /** Defines current Action as save */
+    'save' |
+    /** Defines current Action as delete */
+    'delete' |
+    /** Defines current Action as cancel */
+    'cancel' |
+    /** Defines current Action as add */
+    'add';
+
 
 
 /** 

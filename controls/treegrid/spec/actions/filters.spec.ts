@@ -200,6 +200,46 @@ describe('Filter module', () => {
     });
   });
 
+describe('Hierarchy Filter Mode Testing - Parent and child', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: ()=>void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowFiltering: true, 
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+
+    it('Check the filtered records for Parent and child mode', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+            expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
+            expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Plan budget").toBe(true);
+            done();
+        }
+        gridObj.actionComplete = actionComplete;
+      gridObj.filterByColumn("taskName","startswith","Plan budget");
+     });
+
+     it('Check the filtered records for child mode', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Plan budget").toBe(true);
+      done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.filterSettings.hierarchyMode = 'Child';
+   });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   describe('Hierarchy Filter Mode Testing - None', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -597,7 +637,6 @@ describe('Filter module', () => {
       let rows: Element[];
       let originalTimeout: number;
       let actionComplete: (args: CellSaveEventArgs) => void;
-  
       beforeAll((done: Function) => {
         gridObj = createGrid(
           {
@@ -632,7 +671,6 @@ describe('Filter module', () => {
          expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
          expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design Documentation").toBe(true);
          expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
-
         }
          done();
         }
@@ -659,7 +697,6 @@ describe('Filter module', () => {
       let rows: Element[];
       let originalTimeout: number;
       let actionComplete: (args: CellSaveEventArgs) => void;
-  
       beforeAll((done: Function) => {
         gridObj = createGrid(
           {
@@ -818,6 +855,98 @@ describe('Filter module', () => {
         expect((<HTMLElement>(gridObj.getRowByIndex(3))).style.display).toBe('none');
         expect((<HTMLElement>(gridObj.getRowByIndex(4))).style.display).toBe('none');
       });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+    describe('Editing after filtering with summary rows', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let actionComplete: () => void;
+        
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            treeColumnIndex: 1, 
+            childMapping: 'subtasks',
+            height: window.innerHeight - 70,
+            allowFiltering: true,
+            filterSettings: { type: 'Menu'},
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Row',
+                newRowPosition: 'Top',
+                showConfirmDialog: true,
+                allowEditOnDblClick: true,
+                showDeleteConfirmDialog: true
+    
+            },
+            toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Edit'],
+            columns: [
+                {
+                    field: 'taskID', headerText: 'Task ID', textAlign: 'Right',
+                     width: 90, isPrimaryKey: true
+                },
+                { field: 'taskName', headerText: 'Task Name',  width: 220},
+                { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
+                  format: 'yMd' },
+                {
+                    field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100
+                },
+                {
+                    field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 100
+                }
+            ],
+            aggregates: [{
+                showChildSummary: true,
+                columns: [
+                    {
+                        type: 'Max',
+                        field: 'progress',
+                        columnName: 'progress',
+                        footerTemplate: 'Maximum: ${Max}'
+                    },
+                    {
+                    type: 'Min',
+                    field: 'duration',
+                    columnName: 'duration',
+                    footerTemplate: 'Minimum: ${Min}'
+                }]}]
+          },
+          done
+        );
+      });
+      it('Editing after filtering with summary rows- filtering', (done: Function) => {
+        actionComplete = (args?: any): void => {
+          if (args.requestType === 'filtering') {
+          expect(gridObj.getRows().length == 5).toBe(true);
+          expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
+          expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Plan timeline").toBe(true);
+          expect(gridObj.getRows()[4].classList.contains('e-summaryrow')).toBe(true);
+          }
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.filterByColumn("taskName","startswith","Plan");
+    });
+    it('Editing after filtering with summary rows- editing', () => {
+      gridObj.selectRow(0);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[1].value = "testing";
+      actionComplete = (args?: any): void => {
+        if (args.requestType === 'save') {
+        expect(gridObj.getRows().length == 5).toBe(true);
+        expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "testing").toBe(true);
+        expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Plan timeline").toBe(true);
+        expect(gridObj.getRows()[4].classList.contains('e-summaryrow')).toBe(true);
+        }
+      }
+      gridObj.actionComplete = actionComplete;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
       afterAll(() => {
         destroy(gridObj);
       });

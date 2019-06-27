@@ -4,14 +4,14 @@ import { DataLabelSettingsModel, MarkerSettingsModel, TrendlineModel, ChartSegme
 import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
 import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues } from '../../common/utils/helper';
-import { Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType } from '../utils/enum';
 import { ChartDrawType } from '../utils/enum';
 import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel } from '../../common/model/base-model';
 import { ConnectorModel } from '../../common/model/base-model';
-import { CornerRadiusModel } from '../../common/model/base-model';
+import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';
 import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';
-import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector } from '../../common/model/base';
+import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector, DragSettings } from '../../common/model/base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { Chart } from '../chart';
 import { Axis, Column, Row } from '../axis/axis';
@@ -494,7 +494,6 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
     public endValue: number;
 
 }
-
 /**
  * Error bar settings
  * @public
@@ -842,10 +841,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         if (this instanceof Series) {
             if ((this.type === 'Waterfall' || this.type === 'Histogram')) {
                 this.currentViewData = this.chart[firstToLowerCase(this.type) + 'SeriesModule'].
-                    processInternalData(this.currentViewData, this);
+                    processInternalData(extend([], this.currentViewData, null, true) as Object[], this);
             }
             if (this.category === 'Pareto') {
-                this.currentViewData = sort(this.currentViewData as Object[], [this.yName], true);
+                this.currentViewData = sort(extend([], this.currentViewData, null, true) as Object[], [this.yName], true);
                 if (this.type === 'Line') {
                     this.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(
                         this.currentViewData, this);
@@ -1104,7 +1103,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
 
     private dataManagerSuccess(e: { result: Object, count: number }, chart: Chart, isRemoteData: boolean = true): void {
-        this.currentViewData = e.result !== '' ? extend([], e.result, null, true) : [];
+        this.currentViewData = e.result !== '' ? e.result : [];
         if (this instanceof Series) {
             let argsData: ISeriesRenderEventArgs = {
                 name: seriesRender, series: this, data: this.currentViewData, fill: this.interior
@@ -1116,6 +1115,11 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.processJsonData();
         this.recordsCount = e.count;
         this.refreshChart(isRemoteData);
+        if (chart.stockChart) {
+            if (isNullOrUndefined(chart.stockChart.blazorDataSource[this.index])) {
+                chart.stockChart.blazorDataSource.splice(this.index, 0, this.currentViewData);
+            }
+        }
         this.currentViewData = null;
     }
 
@@ -1134,6 +1138,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         if (chart.visibleSeries.length === (chart.visibleSeriesCount)) {
             chart.refreshBound();
             chart.trigger('loaded', { chart: chart });
+            if (this.chart.stockChart && this.chart.stockChart.initialRender) {
+                this.chart.stockChart.stockChartDataManagerSuccess();
+                this.chart.stockChart.initialRender = false;
+            }
         }
         if (this instanceof Series) {
             chart.visibleSeriesCount += isRemoteData ? 0 : 1;
@@ -1312,6 +1320,7 @@ export class Series extends SeriesBase {
     @Property(0)
     public zOrder: number;
 
+
     /**
      * The type of the series are
      * * Line
@@ -1356,6 +1365,12 @@ export class Series extends SeriesBase {
      */
     @Complex<MarkerSettingsModel>(null, MarkerSettings)
     public marker: MarkerSettingsModel;
+
+    /**
+     * Options to customize the drag settings for series
+     */
+    @Complex<DragSettingsModel>({}, DragSettings)
+    public dragSettings: DragSettingsModel;
 
     /**
      * Defines the collection of trendlines that are used to predict the trend
@@ -1751,7 +1766,9 @@ export class Series extends SeriesBase {
                 }
                 this.appendSeriesElement(chart.seriesElements, chart);
             }
-            this.performAnimation(chart, seriesType, this.errorBar, this.marker, this.marker.dataLabel);
+            if (!this.chart.enableCanvas) {
+                this.performAnimation(chart, seriesType, this.errorBar, this.marker, this.marker.dataLabel);
+            }
         }
     }
 
@@ -1765,7 +1782,8 @@ export class Series extends SeriesBase {
             let elementId: string = chart.element.id;
             // 8 for extend border value 5 for extend size value
             let explodeValue: number = this.marker.border.width + 8 + 5;
-            let render: SvgRenderer = chart.renderer;
+            let render: SvgRenderer | CanvasRenderer = (this.type === 'Scatter' || this.type === 'Bubble') ?
+             chart.svgRenderer : chart.renderer;
             let index: string | number = this.index === undefined ? this.category : this.index;
             let markerHeight: number = (this.type === 'Scatter') ? (this.marker.height + explodeValue) / 2 : 0;
             let markerWidth: number = (this.type === 'Scatter') ? (this.marker.width + explodeValue) / 2 : 0;
@@ -1776,7 +1794,7 @@ export class Series extends SeriesBase {
                     elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1,
                     this.clipRect.width / 2 + this.clipRect.x, this.clipRect.height / 2 + this.clipRect.y, chart.radius + markerMaxValue
                 );
-                this.clipRectElement = appendClipElement(chart.redraw, options, render, 'drawCircularClipPath');
+                this.clipRectElement = appendClipElement(chart.redraw, options, render as SvgRenderer, 'drawCircularClipPath');
             } else {
                 options = new RectOption(
                     elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1,
@@ -1785,7 +1803,7 @@ export class Series extends SeriesBase {
                         width: this.clipRect.width + markerWidth * 2,
                         height: this.clipRect.height + markerHeight * 2
                     });
-                this.clipRectElement = appendClipElement(chart.redraw, options, render);
+                this.clipRectElement = appendClipElement(chart.redraw, options, render as SvgRenderer);
             }
             let transform: string;
             transform = chart.chartAreaType === 'Cartesian' ? 'translate(' + this.clipRect.x + ',' + (this.clipRect.y) + ')' : '';
@@ -1795,7 +1813,9 @@ export class Series extends SeriesBase {
                 'transform': transform,
                 'clip-path': 'url(#' + elementId + '_ChartSeriesClipRect_' + index + ')'
             });
-            this.seriesElement.appendChild(this.clipRectElement);
+            if (!this.chart.enableCanvas || this.type === 'Scatter' || this.type === 'Bubble') {
+                this.seriesElement.appendChild(this.clipRectElement);
+            }
         }
     }
     /**
@@ -1808,17 +1828,17 @@ export class Series extends SeriesBase {
         let dataLabel: DataLabelSettingsModel = marker.dataLabel;
         let redraw: boolean = chart.redraw;
         if (this.category !== 'TrendLine') {
-            appendChildElement(chart.seriesElements, this.seriesElement, redraw);
+            appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
             let errorBar: ErrorBarSettingsModel = this.errorBar;
             if (errorBar.visible) {
                 if (chart.chartAreaType === 'PolarRadar') {
-                    appendChildElement(chart.seriesElements, this.seriesElement, redraw);
+                    appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
                 } else {
-                    appendChildElement(chart.seriesElements, this.errorBarElement, redraw);
+                    appendChildElement(chart.enableCanvas, chart.seriesElements, this.errorBarElement, redraw);
                 }
             }
             if (this.type === 'Scatter' || this.type === 'Bubble') {
-                appendChildElement(chart.seriesElements, this.seriesElement, redraw);
+                appendChildElement(false, chart.seriesElements, this.seriesElement, redraw);
             }
         }
         if (
@@ -1826,13 +1846,13 @@ export class Series extends SeriesBase {
                 ((this.drawType !== 'Scatter') && chart.chartAreaType === 'PolarRadar')) && this.type !== 'Scatter' &&
             this.type !== 'Bubble' && this.type !== 'Candle' && this.type !== 'Hilo' && this.type !== 'HiloOpenClose'
         ) {
-            appendChildElement(chart.seriesElements, this.symbolElement, redraw);
+            appendChildElement(chart.enableCanvas, chart.seriesElements, this.symbolElement, redraw);
         }
         if (dataLabel.visible) {
-            appendChildElement(chart.dataLabelElements, this.shapeElement, redraw);
-            appendChildElement(chart.dataLabelElements, this.textElement, redraw);
+            appendChildElement(chart.enableCanvas, chart.dataLabelElements, this.shapeElement, redraw);
+            appendChildElement(chart.enableCanvas, chart.dataLabelElements, this.textElement, redraw);
         }
-        if (chart.dataLabelElements.hasChildNodes()) {
+        if (!chart.enableCanvas && chart.dataLabelElements.hasChildNodes()) {
             chart.seriesElements.appendChild(chart.dataLabelElements);
         }
     }

@@ -74,6 +74,7 @@ describe('Template', () => {
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
     });
 
+   
     it('JSON Array Input With two space in first class name and multiple space between three class names', () => {
         let templateStr: string = '<div class="  class1    class2   class3">${name}</div>';
         let result: Element[] = [];

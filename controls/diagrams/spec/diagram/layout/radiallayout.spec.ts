@@ -56,7 +56,7 @@ describe('Diagram Control', () => {
 
                 layout: { type: 'RadialTree', horizontalSpacing: 40, verticalSpacing: 40, orientation: 'TopToBottom' },
                 dataSourceSettings: {
-                    id: 'Id', parentId: 'ReportingPerson', dataManager: items, root: 'parent'
+                    id: 'Id', parentId: 'ReportingPerson', dataSource: items, root: 'parent'
                 },
                 getNodeDefaults: (node: NodeModel, diagram: Diagram) => {
                     let obj: NodeModel = {};
@@ -183,7 +183,7 @@ describe('Diagram Control', () => {
                 width: 1000, height: 1000,
                 layout: { type: 'RadialTree', horizontalSpacing: 40, verticalSpacing: 40, orientation: 'TopToBottom' },
                 dataSourceSettings: {
-                    id: 'Id', parentId: 'ReportingPerson', dataManager: items
+                    id: 'Id', parentId: 'ReportingPerson', dataSource: items
                 },
                 getNodeDefaults: (node: NodeModel, diagram: Diagram) => {
                     let obj: NodeModel = {};

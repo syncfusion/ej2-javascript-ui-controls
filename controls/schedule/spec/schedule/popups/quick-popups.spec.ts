@@ -1,30 +1,22 @@
 /**
  * QuickPopups spec
  */
-import { createElement, remove, EmitType, extend, isVisible, Browser, closest } from '@syncfusion/ej2-base';
+import { remove, isVisible, Browser, closest } from '@syncfusion/ej2-base';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, EJ2Instance,
-    EventRenderedArgs, ScheduleModel, CellClickEventArgs
+    EventRenderedArgs, ScheduleModel, CellClickEventArgs, Timezone
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
 import { defaultData, resourceData } from '../base/datasource.spec';
 import { PopupOpenEventArgs, EventClickArgs } from '../../../src/index';
 import * as cls from '../../../src/schedule/base/css-constant';
-import { disableScheduleAnimation, triggerMouseEvent } from '../util.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews);
 
 describe('Quick Popups', () => {
-    let getDataSource: Function = (): Object[] => {
-        let datasrc: Object[] = [];
-        for (let i: number = 0; i < 43; i++) {
-            datasrc.push(extend({}, defaultData[i]));
-        }
-        return datasrc;
-    };
-
     beforeAll(() => {
         // tslint:disable-next-line:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
@@ -38,23 +30,12 @@ describe('Quick Popups', () => {
 
     describe('Tooltip and Dialog for vertical view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px', selectedDate: new Date(2017, 10, 1),
-                eventSettings: { dataSource: getDataSource() },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('Cell Click and open event window', () => {
@@ -73,7 +54,7 @@ describe('Quick Popups', () => {
             let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElements).toBeTruthy();
             eventElements[1].click();
-            schObj.eventClick = (args: EventClickArgs) => { args.cancel = false; };
+            schObj.eventClick = (args: EventClickArgs) => args.cancel = false;
             schObj.dataBind();
         });
 
@@ -113,11 +94,10 @@ describe('Quick Popups', () => {
         });
 
         it('Cell Click and Save new event', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(44);
                 done();
             };
-            schObj.dataBound = dataBound;
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
             workCells[0].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -126,11 +106,10 @@ describe('Quick Popups', () => {
         });
 
         it('Cell Click and Save new event with default value', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(45);
                 done();
             };
-            schObj.dataBound = dataBound;
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
             workCells[0].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -138,11 +117,10 @@ describe('Quick Popups', () => {
         });
 
         it('Event Dialog Delete Click', (done: Function) => {
-            let dataBound: () => void = () => {
+            schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(44);
                 done();
             };
-            schObj.dataBound = dataBound;
             let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             eventElements[1].click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -170,21 +148,15 @@ describe('Quick Popups', () => {
         });
 
         it('Prevent event click quickInfo', () => {
-            schObj.popupOpen = (args: PopupOpenEventArgs) => {
-                if (args.type === 'QuickInfo' && args.target.classList.contains(cls.APPOINTMENT_CLASS)) {
-                    args.cancel = true;
-                }
-            };
+            schObj.popupOpen = (args: PopupOpenEventArgs) =>
+                args.cancel = (args.type === 'QuickInfo' && args.target.classList.contains(cls.APPOINTMENT_CLASS));
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-close');
         });
 
         it('Prevent cell click quickInfo', () => {
-            schObj.popupOpen = (args: PopupOpenEventArgs) => {
-                if (args.type === 'QuickInfo' && args.target.classList.contains('e-work-cells')) {
-                    args.cancel = true;
-                }
-            };
+            schObj.popupOpen = (args: PopupOpenEventArgs) =>
+                args.cancel = (args.type === 'QuickInfo' && args.target.classList.contains('e-work-cells'));
             (schObj.element.querySelector('.e-work-cells') as HTMLElement).click();
             expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-close');
         });
@@ -199,13 +171,8 @@ describe('Quick Popups', () => {
             expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-close');
         });
 
-
         it('Prevent delete alert', () => {
-            schObj.popupOpen = (args: PopupOpenEventArgs) => {
-                if (args.type === 'DeleteAlert') {
-                    args.cancel = true;
-                }
-            };
+            schObj.popupOpen = (args: PopupOpenEventArgs) => args.cancel = (args.type === 'DeleteAlert');
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
@@ -237,27 +204,18 @@ describe('Quick Popups', () => {
             (dialogElement.querySelector('.' + cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS) as HTMLElement).click();
         });
     });
+
     describe('Tooltip and Dialog for timeline view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px', selectedDate: new Date(2017, 10, 1),
-                currentView: 'TimelineWeek',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                eventSettings: { dataSource: getDataSource() },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 1), currentView: 'TimelineWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
+            };
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('Cell Click and open event window', () => {
@@ -316,11 +274,10 @@ describe('Quick Popups', () => {
         });
 
         it('Cell Click and Save new event', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(44);
                 done();
             };
-            schObj.dataBound = dataBound;
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
             workCells[0].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -329,11 +286,10 @@ describe('Quick Popups', () => {
         });
 
         it('Cell Click and Save new event with default value', (done: Function) => {
-            let dataBound: (args: Object) => void = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(45);
                 done();
             };
-            schObj.dataBound = dataBound;
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
             workCells[0].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -341,11 +297,10 @@ describe('Quick Popups', () => {
         });
 
         it('Event Dialog Delete Click', (done: Function) => {
-            let dataBound: () => void = () => {
+            schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(44);
                 done();
             };
-            schObj.dataBound = dataBound;
             let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             eventElements[1].click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -373,21 +328,15 @@ describe('Quick Popups', () => {
         });
 
         it('Prevent event click quickInfo', () => {
-            schObj.popupOpen = (args: PopupOpenEventArgs) => {
-                if (args.type === 'QuickInfo' && args.target.classList.contains(cls.APPOINTMENT_CLASS)) {
-                    args.cancel = true;
-                }
-            };
+            schObj.popupOpen = (args: PopupOpenEventArgs) =>
+                args.cancel = (args.type === 'QuickInfo' && args.target.classList.contains(cls.APPOINTMENT_CLASS));
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-close');
         });
 
         it('Prevent cell click quickInfo', () => {
-            schObj.popupOpen = (args: PopupOpenEventArgs) => {
-                if (args.type === 'QuickInfo' && args.target.classList.contains('e-work-cells')) {
-                    args.cancel = true;
-                }
-            };
+            schObj.popupOpen = (args: PopupOpenEventArgs) =>
+                args.cancel = (args.type === 'QuickInfo' && args.target.classList.contains('e-work-cells'));
             (schObj.element.querySelector('.e-work-cells') as HTMLElement).click();
             expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-close');
         });
@@ -402,13 +351,8 @@ describe('Quick Popups', () => {
             expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-close');
         });
 
-
         it('Prevent delete alert', () => {
-            schObj.popupOpen = (args: PopupOpenEventArgs) => {
-                if (args.type === 'DeleteAlert') {
-                    args.cancel = true;
-                }
-            };
+            schObj.popupOpen = (args: PopupOpenEventArgs) => args.cancel = (args.type === 'DeleteAlert');
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
@@ -443,7 +387,6 @@ describe('Quick Popups', () => {
 
     describe('checking quickInfoTemplate for cellClick', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
             let hT: string = '<div>${if (elementType === "cell")}<div class="e-cell-header"><div class="e-header-icon-wrapper">' +
                 '<button class="e-close" title="Close"></button></div></div>${/if}</div>';
@@ -467,24 +410,14 @@ describe('Quick Popups', () => {
             scriptEleFooter.id = 'footerTemplate';
             scriptEleFooter.appendChild(document.createTextNode(fT));
             document.getElementsByTagName('head')[0].appendChild(scriptEleFooter);
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px', currentView: 'Week', views: ['Week'],
-                selectedDate: new Date(2017, 10, 1), eventSettings: { dataSource: [] },
-                dataBound: dataBound
-            });
-            schObj.appendTo(elem);
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = { height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
+            util.destroy(schObj);
             document.getElementById('headerTemplate').remove();
             document.getElementById('contentTemplate').remove();
             document.getElementById('footerTemplate').remove();
-            remove(elem);
         });
 
         it('checking header, content and footer area for cell-quick popup', () => {
@@ -658,7 +591,12 @@ describe('Quick Popups', () => {
 
     describe('checking quickInfoTemplate for eventClick', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let eventData: Object[] = [{
+            Id: 1,
+            Subject: 'Testing',
+            StartTime: new Date(2017, 10, 1, 10),
+            EndTime: new Date(2017, 10, 1, 12),
+        }];
         beforeAll((done: Function) => {
             let hT: string = '<div>${if(elementType === "event")}<div class="e-event-header"><div class="e-header-icon-wrapper">' +
                 '<button class="e-close" title="CLOSE"></button></div></div>${/if}</div>';
@@ -682,34 +620,17 @@ describe('Quick Popups', () => {
             scriptEleFooter.id = 'footerTemplate';
             scriptEleFooter.appendChild(document.createTextNode(fT));
             document.getElementsByTagName('head')[0].appendChild(scriptEleFooter);
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px', currentView: 'Week', views: ['Day', 'Week', 'WorkWeek', 'Month'],
-                selectedDate: new Date(2017, 10, 1),
-                eventSettings: {
-                    dataSource: [
-                        {
-                            Id: 1,
-                            Subject: 'Testing',
-                            StartTime: new Date(2017, 10, 1, 10),
-                            EndTime: new Date(2017, 10, 1, 12),
-                        }
-                    ]
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo(elem);
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', selectedDate: new Date(2017, 10, 1),
+                views: ['Day', 'Week', 'WorkWeek', 'Month']
+            };
+            schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
+            util.destroy(schObj);
             document.getElementById('headerTemplate').remove();
             document.getElementById('contentTemplate').remove();
             document.getElementById('footerTemplate').remove();
-            remove(elem);
         });
 
         it('checking header, content and footer area for event-quick popup', () => {
@@ -719,7 +640,7 @@ describe('Quick Popups', () => {
                 footer: '#footerTemplate'
             };
             schObj.dataBind();
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
@@ -744,7 +665,7 @@ describe('Quick Popups', () => {
                 footer: ''
             };
             schObj.dataBind();
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
@@ -763,7 +684,7 @@ describe('Quick Popups', () => {
                 footer: ''
             };
             schObj.dataBind();
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(schObj.element.querySelector('.e-event-content')).toBeTruthy();
@@ -785,7 +706,7 @@ describe('Quick Popups', () => {
                 footer: '#footerTemplate'
             };
             schObj.dataBind();
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(schObj.element.querySelector('.e-popup-header')).toBeTruthy();
@@ -807,7 +728,7 @@ describe('Quick Popups', () => {
                 footer: ''
             };
             schObj.dataBind();
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
@@ -829,7 +750,7 @@ describe('Quick Popups', () => {
                 footer: '#footerTemplate'
             };
             schObj.dataBind();
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(schObj.element.querySelector('.e-popup-header')).toBeTruthy();
@@ -854,7 +775,7 @@ describe('Quick Popups', () => {
                 footer: '#footerTemplate'
             };
             schObj.dataBind();
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
             expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
@@ -872,7 +793,12 @@ describe('Quick Popups', () => {
 
     describe('checking quickInfoTemplate for both cell and eventClick', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let eventData: Object[] = [{
+            Id: 1,
+            Subject: 'Testing',
+            StartTime: new Date(2017, 10, 1, 10),
+            EndTime: new Date(2017, 10, 1, 12),
+        }];
         beforeAll((done: Function) => {
             let hT: string = '<div>${if(elementType === "cell")}<div class="e-cell-header"><div class="e-header-icon-wrapper">' +
                 '<button class="e-close" title="Close"></button></div></div>${else}<div class="e-event-header">' +
@@ -902,39 +828,17 @@ describe('Quick Popups', () => {
             scriptEleFooter.id = 'footerTemplate';
             scriptEleFooter.appendChild(document.createTextNode(fT));
             document.getElementsByTagName('head')[0].appendChild(scriptEleFooter);
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px', currentView: 'Week', views: ['Week'],
-                selectedDate: new Date(2017, 10, 1),
-                quickInfoTemplates: {
-                    header: '#headerTemplate',
-                    content: '#contentTemplate',
-                    footer: '#footerTemplate'
-                },
-                eventSettings: {
-                    dataSource: [
-                        {
-                            Id: 1,
-                            Subject: 'Testing',
-                            StartTime: new Date(2017, 10, 1, 10),
-                            EndTime: new Date(2017, 10, 1, 12),
-                        }
-                    ]
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo(elem);
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                quickInfoTemplates: { header: '#headerTemplate', content: '#contentTemplate', footer: '#footerTemplate' }
+            };
+            schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
+            util.destroy(schObj);
             document.getElementById('headerTemplate').remove();
             document.getElementById('contentTemplate').remove();
             document.getElementById('footerTemplate').remove();
-            remove(elem);
         });
 
         it('checking header, content and footer area for cell and event quick popup', () => {
@@ -959,7 +863,7 @@ describe('Quick Popups', () => {
             expect(footerEle.firstElementChild.classList).toContain('e-event-details');
             expect(footerEle.lastElementChild.classList).toContain('e-event-create');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
-            triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
@@ -985,28 +889,13 @@ describe('Quick Popups', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px',
-                readonly: true,
-                selectedDate: new Date(2017, 10, 1),
-                eventSettings: {
-                    dataSource: defaultData,
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { height: '500px', readonly: true, selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, defaultData, done);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Prevent delete alert', () => {
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
@@ -1031,7 +920,7 @@ describe('Quick Popups', () => {
         });
         it('quick popup - left arrow', () => {
             let workCell: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
-            triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'click');
             expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
             keyModule.keyActionHandler({ action: 'leftArrow', target: schObj.element.querySelector('.e-quick-popup-wrapper .e-subject') });
             keyModule.keyActionHandler({ action: 'escape' });
@@ -1040,7 +929,7 @@ describe('Quick Popups', () => {
         });
         it('quick popup - right arrow', () => {
             let workCell: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
-            triggerMouseEvent(workCell, 'click');
+            util.triggerMouseEvent(workCell, 'click');
             expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
             keyModule.keyActionHandler({ action: 'rightArrow', target: schObj.element.querySelector('.e-quick-popup-wrapper .e-subject') });
             keyModule.keyActionHandler({ action: 'escape' });
@@ -1053,25 +942,13 @@ describe('Quick Popups', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px', currentView: 'Month',
-                selectedDate: new Date(2017, 10, 1),
-                eventSettings: { dataSource: getDataSource() },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { height: '500px', currentView: 'Month', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, defaultData, done);
             keyModule = schObj.keyboardInteractionModule;
-            disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('More Indicator click', () => {
             (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
@@ -1079,11 +956,10 @@ describe('Quick Popups', () => {
             expect(isVisible(moreEventPopup)).toBe(true);
         });
         it('Event click edit action', (done: Function) => {
-            let dataBound: () => void = () => {
+            schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(42);
                 done();
             };
-            schObj.dataBound = dataBound;
             let eventElements: HTMLElement = (schObj.element.querySelector('.e-more-event-content .e-appointment'));
             eventElements.click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -1100,7 +976,6 @@ describe('Quick Popups', () => {
             expect(isVisible(eventPopup)).toBe(true);
             (<HTMLElement>document.body.querySelector('.e-quick-dialog-cancel')).click();
         });
-
         it('Event Dialog Close icon click', () => {
             let eventElements: HTMLElement = (schObj.element.querySelector('.e-more-event-content .e-appointment'));
             eventElements.click();
@@ -1109,11 +984,10 @@ describe('Quick Popups', () => {
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
         });
         it('Event  Delete Click', (done: Function) => {
-            let dataBound: () => void = () => {
+            schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(41);
                 done();
             };
-            schObj.dataBound = dataBound;
             let eventElements: HTMLElement = (schObj.element.querySelector('.e-more-event-content .e-appointment'));
             eventElements.click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -1128,7 +1002,6 @@ describe('Quick Popups', () => {
             keyModule.keyActionHandler({ action: 'delete', target: '.e-more-appointment-wrapper' });
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn')).click();
         });
-
         it('More Indicator Day view navigation click', () => {
             (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
             let moreEventPopup: Element = schObj.element.querySelector('.e-more-popup-wrapper');
@@ -1142,79 +1015,71 @@ describe('Quick Popups', () => {
 
     describe('More Indicator with resource', () => {
         let schObj: Schedule;
-        let data: Object[] = [
-            {
-                Id: 1,
-                Subject: 'Board Meeting',
-                Description: 'Meeting to discuss business goal of 2018.',
-                StartTime: new Date(2018, 11, 7, 12, 35, 26),
-                EndTime: new Date(2018, 11, 7, 14, 36, 0),
-                OwnerId: 1
-            }, {
-                Id: 2,
-                Subject: 'Board Meeting1',
-                Description: 'Meeting to discuss business goal of 2018.',
-                StartTime: new Date(2018, 11, 7, 10, 36, 26),
-                EndTime: new Date(2018, 11, 7, 12, 36, 0),
-                OwnerId: 1
-            }, {
-                Id: 3,
-                Subject: 'Time Rounded',
-                StartTime: new Date(2018, 11, 7, 10),
-                EndTime: new Date(2018, 11, 7, 11, 30),
-                IsAllDay: false,
-                OwnerId: 3
-            }, {
-                Id: 4,
-                Subject: 'In-Between time',
-                StartTime: new Date(2018, 11, 7, 10, 12),
-                EndTime: new Date(2018, 11, 7, 11, 38),
-                IsAllDay: false,
-                OwnerId: 3
-            }, {
-                Id: 5,
-                Subject: 'spanned event',
-                StartTime: new Date(2018, 11, 7, 11),
-                EndTime: new Date(2018, 11, 8, 11),
-                IsAllDay: false,
-                OwnerId: 5
-            }, {
-                Id: 6,
-                Subject: 'Recurrence Summary Checking',
-                StartTime: new Date(2018, 11, 7, 10),
-                EndTime: new Date(2018, 11, 8, 12),
-                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
-                IsAllDay: false,
-                OwnerId: 6
-            }
-        ];
-
+        let eventDatas: Object[] = [{
+            Id: 1,
+            Subject: 'Board Meeting',
+            Description: 'Meeting to discuss business goal of 2018.',
+            StartTime: new Date(2018, 11, 7, 12, 35, 26),
+            EndTime: new Date(2018, 11, 7, 14, 36, 0),
+            OwnerId: 1
+        }, {
+            Id: 2,
+            Subject: 'Board Meeting1',
+            Description: 'Meeting to discuss business goal of 2018.',
+            StartTime: new Date(2018, 11, 7, 10, 36, 26),
+            EndTime: new Date(2018, 11, 7, 12, 36, 0),
+            OwnerId: 1
+        }, {
+            Id: 3,
+            Subject: 'Time Rounded',
+            StartTime: new Date(2018, 11, 7, 10),
+            EndTime: new Date(2018, 11, 7, 11, 30),
+            IsAllDay: false,
+            OwnerId: 3
+        }, {
+            Id: 4,
+            Subject: 'In-Between time',
+            StartTime: new Date(2018, 11, 7, 10, 12),
+            EndTime: new Date(2018, 11, 7, 11, 38),
+            IsAllDay: false,
+            OwnerId: 3
+        }, {
+            Id: 5,
+            Subject: 'spanned event',
+            StartTime: new Date(2018, 11, 7, 11),
+            EndTime: new Date(2018, 11, 8, 11),
+            IsAllDay: false,
+            OwnerId: 5
+        }, {
+            Id: 6,
+            Subject: 'Recurrence Summary Checking',
+            StartTime: new Date(2018, 11, 7, 10),
+            EndTime: new Date(2018, 11, 8, 12),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+            IsAllDay: false,
+            OwnerId: 6
+        }];
         beforeAll((done: Function) => {
             let schOptions: ScheduleModel = {
                 height: '550px', width: '100%',
+                selectedDate: new Date(2018, 11, 7),
                 currentView: 'TimelineWeek',
                 views: ['TimelineWeek'],
-                group: {
-                    resources: ['Owners']
-                },
-                resources: [
-                    {
-                        field: 'OwnerId', title: 'Owner',
-                        name: 'Owners', allowMultiple: true,
-                        dataSource: [
-                            { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
-                            { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
-                            { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
-                            { OwnerText: 'Phoenix', Id: 4, OwnerColor: '#fec200' },
-                            { OwnerText: 'Mission', Id: 5, OwnerColor: '#df5286' },
-                            { OwnerText: 'Hangout', Id: 6, OwnerColor: '#00bdae' }
-                        ],
-                        textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
-                    }
-                ],
-                selectedDate: new Date(2018, 11, 7)
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Phoenix', Id: 4, OwnerColor: '#fec200' },
+                        { OwnerText: 'Mission', Id: 5, OwnerColor: '#df5286' },
+                        { OwnerText: 'Hangout', Id: 6, OwnerColor: '#00bdae' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                }]
             };
-            schObj = util.createSchedule(schOptions, data, done);
+            schObj = util.createSchedule(schOptions, eventDatas, done);
         });
         afterAll(() => {
             util.destroy(schObj);
@@ -1284,31 +1149,18 @@ describe('Quick Popups', () => {
 
     describe('Quick Popup validation', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px',
-                selectedDate: new Date(2017, 10, 1),
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 1),
                 eventSettings: {
-                    dataSource: defaultData,
-                    fields: {
-                        subject: { name: 'Subject', validation: { required: true } }
-                    }
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+                    fields: { subject: { name: 'Subject', validation: { required: true } } }
+                }
+            };
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
-
         it('Cell click and insert event', () => {
             (schObj.element.querySelector('.' + cls.WORK_HOURS_CLASS) as HTMLElement).click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -1319,24 +1171,12 @@ describe('Quick Popups', () => {
 
     describe('Popup for recurrence rule appointment for vertical view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px',
-                selectedDate: new Date(2017, 10, 2),
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Single appointment select using click or tap', () => {
             let target: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
@@ -1354,26 +1194,15 @@ describe('Quick Popups', () => {
 
     describe('Popup for recurrence rule appointment for timeline view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px',
-                selectedDate: new Date(2017, 10, 2),
-                currentView: 'TimelineWeek',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 2), currentView: 'TimelineWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
+            };
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Single appointment select using click or tap & recurrence delete dialog', () => {
             let target: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
@@ -1387,24 +1216,12 @@ describe('Quick Popups', () => {
 
     describe('Quick info display for vertical view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px',
-                selectedDate: new Date(2017, 10, 2),
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('Normal appointment click', () => {
@@ -1445,26 +1262,15 @@ describe('Quick Popups', () => {
 
     describe('Quick info display for timeline view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px',
-                selectedDate: new Date(2017, 10, 2),
-                currentView: 'TimelineWeek',
-                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
-                eventSettings: { dataSource: defaultData },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 2), currentView: 'TimelineWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek']
+            };
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('Normal appointment click', () => {
@@ -1497,7 +1303,6 @@ describe('Quick Popups', () => {
 
     describe('Popup for mobile view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         let datasource: Object[] = [{
             Id: 1,
             Subject: 'AllDay Event',
@@ -1522,20 +1327,11 @@ describe('Quick Popups', () => {
             IsAllDay: false
         }];
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                selectedDate: new Date(2017, 9, 18), width: 300,
-                eventSettings: { dataSource: datasource },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2017, 9, 18), width: 300 };
+            schObj = util.createSchedule(model, datasource, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('Single appointment select using click or tap and close', () => {
             let target: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
@@ -1561,8 +1357,8 @@ describe('Quick Popups', () => {
             target.click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
-            (eventPopup.querySelector('.e-close') as HTMLElement).click();
             expect(eventPopup.querySelector('.e-location-details').textContent).toEqual('India');
+            (eventPopup.querySelector('.e-close') as HTMLElement).click();
         });
         it('Single appointment select using click or tap and edit event', () => {
             let target: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
@@ -1584,56 +1380,37 @@ describe('Quick Popups', () => {
 
     describe('Multiple resource grouping', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        let getResourceData: Function = () => {
-            let dataCol: Object[] = [];
-            resourceData.forEach((data: Object) => dataCol.push(extend({}, data)));
-            return dataCol;
-        };
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => {
-                disableScheduleAnimation(schObj);
-                done();
-            };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
+            let model: ScheduleModel = {
+                width: '100%', height: '550px',
                 selectedDate: new Date(2018, 3, 1),
                 group: {
                     byGroupID: false,
                     resources: ['Rooms', 'Owners']
                 },
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                eventSettings: { dataSource: getResourceData() },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('resource event checking', () => {
-            triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             let resourceElement: HTMLElement = eventPopup.querySelector('.e-resource') as HTMLElement;
@@ -1648,7 +1425,7 @@ describe('Quick Popups', () => {
                 (<HTMLElement>args.element.querySelector('.e-popup-header .e-delete')).style.display = 'none';
                 (<HTMLElement>args.element.querySelector('.e-popup-footer')).style.display = 'block';
             };
-            triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             let resourceElement: HTMLElement = eventPopup.querySelector('.e-resource') as HTMLElement;
@@ -1665,26 +1442,26 @@ describe('Quick Popups', () => {
             schObj.popupOpen = () => { /** Null */ };
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(10);
-                triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
+                util.triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
                 let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
                 expect(morePopup.classList).toContain('e-popup-open');
                 let appElement: Element = morePopup.querySelector('.e-appointment');
                 expect(appElement.getAttribute('data-group-index')).toEqual('1');
-                triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+                util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
                 expect(morePopup.classList).toContain('e-popup-close');
                 done();
             };
-            disableScheduleAnimation(schObj);
+            util.disableScheduleAnimation(schObj);
             expect(schObj.eventsData.length).toEqual(9);
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            triggerMouseEvent(workCells[9], 'click');
+            util.triggerMouseEvent(workCells[9], 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
             let resourceElement: HTMLElement = eventPopup.querySelector('.e-resource') as HTMLElement;
             expect(resourceElement).toBeTruthy();
             expect(resourceElement.querySelector('.e-resource-details').innerHTML).toEqual('Michael');
             (<HTMLInputElement>eventPopup.querySelector('.e-subject')).value = 'Conference Meeting';
-            triggerMouseEvent(eventPopup.querySelector('.e-event-create'), 'click');
+            util.triggerMouseEvent(eventPopup.querySelector('.e-event-create'), 'click');
         });
 
         it('normal event edit checking in more events with multiple resource grouping', (done: Function) => {
@@ -1693,20 +1470,20 @@ describe('Quick Popups', () => {
                 expect(morePopup.classList).toContain('e-popup-open');
                 let recurrenceIcon: Element = morePopup.querySelector('.e-recurrence-icon');
                 expect(recurrenceIcon).toBeTruthy();
-                triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+                util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
                 expect(morePopup.classList).toContain('e-popup-close');
                 done();
             };
             expect(schObj.eventsData.length).toEqual(10);
-            triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(morePopup.classList).toContain('e-popup-open');
             let appElement: HTMLElement = morePopup.querySelector('.e-appointment') as HTMLElement;
             expect(appElement.getAttribute('data-group-index')).toEqual('1');
-            triggerMouseEvent(appElement, 'click');
+            util.triggerMouseEvent(appElement, 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
-            triggerMouseEvent(eventPopup.querySelector('.e-edit'), 'click');
+            util.triggerMouseEvent(eventPopup.querySelector('.e-edit'), 'click');
             expect(eventPopup.classList).toContain('e-popup-close');
             let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
             expect(eventWindow.classList).toContain('e-popup-open');
@@ -1714,7 +1491,7 @@ describe('Quick Popups', () => {
                 ej2_instances[0] as RecurrenceEditor;
             recObj.value = 'FREQ=DAILY;INTERVAL=1;COUNT=5';
             recObj.dataBind();
-            triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
             expect(eventWindow.classList).toContain('e-popup-close');
         });
 
@@ -1724,54 +1501,54 @@ describe('Quick Popups', () => {
                 expect(morePopup.classList).toContain('e-popup-open');
                 let recurrenceIcon: Element = morePopup.querySelector('.e-recurrence-edit-icon');
                 expect(recurrenceIcon).toBeTruthy();
-                triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+                util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
                 expect(morePopup.classList).toContain('e-popup-close');
                 done();
             };
             expect(schObj.eventsData.length).toEqual(10);
-            triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(morePopup.classList).toContain('e-popup-open');
             let appElement: HTMLElement = closest(morePopup.querySelector('.e-recurrence-icon'), '.e-appointment') as HTMLElement;
             expect(appElement.getAttribute('data-group-index')).toEqual('1');
-            triggerMouseEvent(appElement, 'click');
-            triggerMouseEvent(appElement, 'dblclick');
+            util.triggerMouseEvent(appElement, 'click');
+            util.triggerMouseEvent(appElement, 'dblclick');
             let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
             remove(morePopup.querySelector('.e-more-event-content'));
             expect(quickDialog.classList).toContain('e-popup-open');
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
             let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
             expect(eventWindow.classList).toContain('e-popup-open');
-            triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
             expect(eventWindow.classList).toContain('e-popup-close');
         });
 
         it('eventRendered event checking for more event popup with multiple resource grouping', () => {
             schObj.eventRendered = (args: EventRenderedArgs) => args.cancel = true;
-            triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             expect(morePopup.classList).toContain('e-popup-open');
             let appElement: HTMLElement[] = [].slice.call(morePopup.querySelectorAll('.e-appointment'));
             expect(appElement.length).toEqual(0);
-            triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
             expect(morePopup.classList).toContain('e-popup-close');
         });
 
         it('popupOpen event checking in more events with multiple resource grouping', () => {
             schObj.eventRendered = (args: EventRenderedArgs) => args.cancel = false;
             schObj.popupOpen = (args: PopupOpenEventArgs) => args.cancel = true;
-            triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
             expect(schObj.element.querySelector('.e-more-popup-wrapper').classList).toContain('e-popup-close');
         });
 
         it('more event popup checking with current date ', (done: Function) => {
             schObj.dataBound = () => {
-                triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
+                util.triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
                 let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
                 expect(morePopup.classList).toContain('e-popup-open');
                 expect(morePopup.querySelectorAll('.e-appointment').length).toEqual(5);
-                triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+                util.triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
                 expect(morePopup.classList).toContain('e-popup-close');
                 done();
             };
@@ -1798,27 +1575,16 @@ describe('Quick Popups', () => {
 
     describe('Event actions in mobile device', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         let uA: string = Browser.userAgent;
         let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel 2 Build/PPR1.180610.009)' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.85 Mobile Safari/537.36';
         beforeAll((done: Function) => {
             Browser.userAgent = androidUserAgent;
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            schObj = new Schedule({
-                width: 300, height: '500px', selectedDate: new Date(2017, 10, 1),
-                eventSettings: { dataSource: getDataSource() },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = { width: 300, height: '500px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
             Browser.userAgent = uA;
         });
 
@@ -1830,53 +1596,38 @@ describe('Quick Popups', () => {
             expect(schObj.eventsData.length).toEqual(43);
             let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             // tslint:disable-next-line:no-any
-            let e: any = {};
-            e.originalEvent = { target: appElements[0], type: 'touchstart' };
-            // tslint:disable-next-line:no-any
-            (schObj.scheduleTouchModule as any).tapHoldHandler(e);
+            (schObj.scheduleTouchModule as any).tapHoldHandler({ originalEvent: { target: appElements[0], type: 'touchstart' } });
             let eventPopup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
-            triggerMouseEvent(appElements[1], 'click');
-            triggerMouseEvent(appElements[2], 'click');
-            triggerMouseEvent(eventPopup.querySelector('.e-delete-icon'), 'click');
+            util.triggerMouseEvent(appElements[1], 'click');
+            util.triggerMouseEvent(appElements[2], 'click');
+            util.triggerMouseEvent(eventPopup.querySelector('.e-delete-icon'), 'click');
             let quickDialog: Element = document.querySelector('.e-quick-dialog');
             expect(quickDialog.classList).toContain('e-popup-open');
             expect(quickDialog.querySelector('.e-dlg-header').innerHTML).toEqual('Delete Multiple Events');
             expect(quickDialog.querySelector('.e-dlg-content').innerHTML).toEqual('Are you sure you want to delete the selected events?');
             let deleteButton: HTMLElement = quickDialog.querySelector('.e-quick-dialog-delete') as HTMLElement;
-            triggerMouseEvent(deleteButton, 'click');
+            util.triggerMouseEvent(deleteButton, 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
         });
     });
 
     describe('Ignore Edited Occurrences Scenarios', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let eventData: Object[] = [{
+            Id: 1,
+            Subject: 'Recurrence',
+            StartTime: new Date(2019, 1, 4, 10),
+            EndTime: new Date(2019, 1, 4, 11, 30),
+            IsAllDay: false,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+        }];
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => done();
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px', selectedDate: new Date(2019, 1, 5),
-                eventSettings: {
-                    dataSource: [{
-                        Id: 1,
-                        Subject: 'Recurrence',
-                        StartTime: new Date(2019, 1, 4, 10),
-                        EndTime: new Date(2019, 1, 4, 11, 30),
-                        IsAllDay: false,
-                        RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
-                    }]
-                },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-            disableScheduleAnimation(schObj);
+            let model: ScheduleModel = { height: '500px', selectedDate: new Date(2019, 1, 5) };
+            schObj = util.createSchedule(model, eventData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('Edit Single Occurrence', (done: Function) => {
@@ -1886,16 +1637,16 @@ describe('Quick Popups', () => {
             };
             expect(schObj.eventsData.length).toEqual(1);
             let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            triggerMouseEvent(appElements[1], 'click');
-            triggerMouseEvent(appElements[1], 'dblclick');
+            util.triggerMouseEvent(appElements[1], 'click');
+            util.triggerMouseEvent(appElements[1], 'dblclick');
             let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
             (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited';
-            triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
         });
 
@@ -1906,23 +1657,23 @@ describe('Quick Popups', () => {
             };
             expect(schObj.eventsData.length).toEqual(2);
             let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            triggerMouseEvent(appElements[2], 'click');
-            triggerMouseEvent(appElements[2], 'dblclick');
+            util.triggerMouseEvent(appElements[2], 'click');
+            util.triggerMouseEvent(appElements[2], 'dblclick');
             let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
             (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Ignored Edited Occurrences';
-            triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
             expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(3);
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-cancel'), 'click');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-cancel'), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-alertcancel '), 'click');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-alertcancel '), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
         });
@@ -1934,25 +1685,548 @@ describe('Quick Popups', () => {
             };
             expect(schObj.eventsData.length).toEqual(2);
             let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            triggerMouseEvent(appElements[2], 'click');
-            triggerMouseEvent(appElements[2], 'dblclick');
+            util.triggerMouseEvent(appElements[2], 'click');
+            util.triggerMouseEvent(appElements[2], 'dblclick');
             let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
             (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Include Edited Occurrences';
-            triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
             expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(3);
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-cancel'), 'click');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-cancel'), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-alertok '), 'click');
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-alertok '), 'click');
             expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
             expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+    });
+
+    describe('Edit Following Events', () => {
+        let schObj: Schedule;
+        let timezone: Timezone = new Timezone();
+        let eventData: Object[] = [{
+            Id: 1,
+            Subject: 'Recurrence',
+            StartTime: timezone.removeLocalOffset(new Date(2019, 1, 4, 10)),
+            EndTime: timezone.removeLocalOffset(new Date(2019, 1, 4, 11)),
+            IsAllDay: false,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10'
+        }];
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2019, 1, 4),
+                eventSettings: { editFollowingEvents: true }
+            };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Edit Series without following events', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentAction).toEqual('EditSeries');
+                expect(schObj.eventsData.length).toEqual(1);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect(dataObj[0].Subject).toEqual('Recurrence - Series Edit');
+                expect(dataObj[0].RecurrenceException as string).toEqual(null);
+                expect(dataObj[0].RecurrenceID as string).toEqual(null);
+                expect(dataObj[0].FollowingID as string).toEqual(undefined);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(1);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[1], 'click');
+            util.triggerMouseEvent(appElements[1], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Series Edit';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(4);
+        });
+
+        it('Edit Single Occurrence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(1);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[1], 'click');
+            util.triggerMouseEvent(appElements[1], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit Series excluding with ignore occurrence event and without following events', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentAction).toEqual('EditSeries');
+                expect(schObj.eventsData.length).toEqual(2);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
+                expect(dataObj[0].Subject).toEqual('Recurrence Series');
+                expect(dataObj[0].RecurrenceException as string).toEqual('20190205T100000Z');
+                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].RecurrenceID).toEqual(1);
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited');
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[1], 'click');
+            util.triggerMouseEvent(appElements[1], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence Series';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(4);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-alertcancel '), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit Following Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentAction).toEqual('EditFollowingEvents');
+                expect(schObj.eventsData.length).toEqual(3);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
+                expect(dataObj[0].Subject).toEqual('Recurrence Series');
+                expect(dataObj[0].RecurrenceException as string).toEqual('20190205T100000Z');
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].RecurrenceID).toEqual(1);
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited');
+                expect(dataObj[2].Id).toEqual(3);
+                expect(dataObj[2].Subject).toEqual('Recurrence - Following Edited');
+                expect(dataObj[2].FollowingID).toEqual(1);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[3], 'click');
+            util.triggerMouseEvent(appElements[3], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-following-events'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Following Edited';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit single occurrence in following series', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentAction).toEqual('EditOccurrence');
+                expect(schObj.eventsData.length).toEqual(4);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
+                expect(dataObj[2].Id).toEqual(3);
+                expect(dataObj[2].RecurrenceException).toEqual('20190209T100000Z');
+                expect(dataObj[3].Subject).toEqual('Recurrence - Edited in following series');
+                expect(dataObj[3].Id).toEqual(4);
+                expect(dataObj[3].RecurrenceID).toEqual(3);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(3);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[5], 'click');
+            util.triggerMouseEvent(appElements[5], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited in following series';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit Following Series and include edited occurrence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(4);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect(dataObj[3].RecurrenceException).toEqual(null);
+                expect(dataObj[3].Subject).toEqual('Include Edited Occurrences in Following Edit');
+                expect(dataObj[3].Id).toEqual(5);
+                expect(dataObj[3].FollowingID).toEqual(3);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(4);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[4], 'click');
+            util.triggerMouseEvent(appElements[4], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-following-events'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Include Edited Occurrences in Following Edit';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(4);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-alertok '), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit Single Occurrence as Series', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentAction).toEqual('EditSeries');
+                expect(schObj.eventsData.length).toEqual(2);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[0].RecurrenceException).toEqual('20190205T100000Z');
+                expect(dataObj[0].Subject).toEqual('Ignored Edited Occurrences');
+                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited');
+                expect(dataObj[1].RecurrenceID).toEqual(1);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(4);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[5], 'click');
+            util.triggerMouseEvent(appElements[5], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Ignored Edited Occurrences';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(4);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-alertcancel '), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit Single Occurrence as Series with include edited occurrence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentAction).toEqual('EditSeries');
+                expect(schObj.eventsData.length).toEqual(1);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[0].RecurrenceException).toEqual(null);
+                expect(dataObj[0].Subject).toEqual('Recurrence');
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[5], 'click');
+            util.triggerMouseEvent(appElements[5], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(4);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-alertok '), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit Single Occurrence to ensure Delete Functionality', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[0].RecurrenceException).toEqual('20190205T100000Z');
+                expect(dataObj[0].Subject).toEqual('Recurrence');
+                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].RecurrenceID).toEqual(1);
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited1');
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(1);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[1], 'click');
+            util.triggerMouseEvent(appElements[1], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited1';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+        });
+
+        it('Edit More Single Occurrence to ensure Delete Functionality', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(2);
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[0].RecurrenceException).toEqual('20190205T100000Z,20190208T100000Z');
+                expect(dataObj[0].Subject).toEqual('Recurrence');
+                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].RecurrenceID).toEqual(1);
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited1');
+                expect(dataObj[2].Id).toEqual(3);
+                expect(dataObj[2].RecurrenceID).toEqual(1);
+                expect(dataObj[2].Subject).toEqual('Recurrence - Edited2');
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[4], 'click');
+            util.triggerMouseEvent(appElements[4], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited2';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Delete Single Occurrence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(3);
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[0].RecurrenceException).toEqual('20190205T100000Z,20190208T100000Z,20190209T100000Z');
+                expect(dataObj[0].Subject).toEqual('Recurrence');
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(3);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[5], 'click');
+            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Delete Following Events', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[0].RecurrenceException).toEqual('20190205T100000Z');
+                expect(dataObj[0].Subject).toEqual('Recurrence');
+                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].RecurrenceID).toEqual(1);
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited1');
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(3);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[3], 'click');
+            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-following-events'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Delete Series', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(0);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[1], 'click');
+            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+        });
+    });
+
+    describe('Create Following Events as Separate Series When Time Changes', () => {
+        let schObj: Schedule;
+        let timezone: Timezone = new Timezone();
+        let eventData: Object[] = [{
+            Id: 1,
+            Subject: 'Recurrence',
+            StartTime: timezone.removeLocalOffset(new Date(2019, 1, 4, 10)),
+            EndTime: timezone.removeLocalOffset(new Date(2019, 1, 4, 11)),
+            IsAllDay: false,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10'
+        }];
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2019, 1, 4),
+                eventSettings: { editFollowingEvents: true }
+            };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Edit Single Occurrence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(1);
+                expect(dataObj[0].Subject).toEqual('Recurrence');
+                expect(dataObj[0].RecurrenceException as string).toEqual('20190205T100000Z');
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited');
+                expect(dataObj[1].RecurrenceID).toEqual(1);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(1);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[1], 'click');
+            util.triggerMouseEvent(appElements[1], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+        it('Check Following Edit Button Availability for Recurrenece Edited Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[1], 'click');
+            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-event-edit')).click();
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.querySelector('.e-footer-content .e-quick-dialog-following-events').classList.contains('e-disable'))
+                .toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+        it('Check Following Edit Button Availability for Normal Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[0], 'click');
+            let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-event-edit')).click();
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.querySelector('.e-footer-content .e-quick-dialog-following-events').classList.contains('e-disable'))
+                .toEqual(false);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited1';
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+        it('Edit Following Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentAction).toEqual('EditFollowingEvents');
+                expect(schObj.eventsData.length).toEqual(4);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                expect((<string>dataObj[0].RecurrenceException).split(',').length).toEqual(2);
+                expect(dataObj[0].Subject).toEqual('Recurrence');
+                expect(dataObj[0].RecurrenceException as string).toEqual('20190205T100000Z,20190204T100000Z');
+                expect(dataObj[0].Id).toEqual(1);
+                expect(dataObj[1].Id).toEqual(2);
+                expect(dataObj[1].RecurrenceID).toEqual(1);
+                expect(dataObj[1].Subject).toEqual('Recurrence - Edited');
+                expect(dataObj[2].Id).toEqual(3);
+                expect(dataObj[2].Subject).toEqual('Recurrence - Edited1');
+                expect(dataObj[2].FollowingID).toEqual(undefined);
+                expect(dataObj[2].RecurrenceID).toEqual(1);
+                expect(dataObj[3].Id).toEqual(4);
+                expect(dataObj[3].Subject).toEqual('Recurrence - Following Edited');
+                expect(dataObj[3].FollowingID).toEqual(undefined);
+                expect(dataObj[3].RecurrenceID).toEqual(null);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(3);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            util.triggerMouseEvent(appElements[2], 'click');
+            util.triggerMouseEvent(appElements[2], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-following-events'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Following Edited';
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let startDate: DateTimePicker = (<HTMLElement>dialogElement.querySelector('.e-start') as EJ2Instance).
+                ej2_instances[0] as DateTimePicker;
+            startDate.value = timezone.removeLocalOffset(new Date(2019, 1, 5, 10));
+            startDate.dataBind();
+            let endDate: DateTimePicker = (<HTMLElement>dialogElement.querySelector('.e-end') as EJ2Instance).
+                ej2_instances[0] as DateTimePicker;
+            endDate.value = timezone.removeLocalOffset(new Date(2019, 1, 5, 11));
+            endDate.dataBind();
+            util.triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
         });
     });
 
@@ -2030,7 +2304,7 @@ describe('Quick Popups', () => {
                     let data: { [key: string]: Object } = args.data as { [key: string]: Object };
                     expect(data.startTime).toBeUndefined();
                     expect(data.endTime).toBeUndefined();
-                    expect(data.isAllDay).toBeUndefined()
+                    expect(data.isAllDay).toBeUndefined();
                     expect(+data.StartTime).toBe(+new Date('2017-10-31T00:00:00.000'));
                     expect(+data.EndTime).toBe(+new Date('2017-11-01T00:00:00.000'));
                     expect(data.IsAllDay).toBe(true);
@@ -2045,130 +2319,63 @@ describe('Quick Popups', () => {
                     let data: { [key: string]: Object } = args.data as { [key: string]: Object };
                     expect(data.startTime).toBeUndefined();
                     expect(data.endTime).toBeUndefined();
-                    expect(data.isAllDay).toBeUndefined()
+                    expect(data.isAllDay).toBeUndefined();
                     expect(+data.StartTime).toBe(+new Date('2017-10-29T00:00:00.000'));
                     expect(+data.EndTime).toBe(+new Date('2017-10-29T00:30:00.000'));
                     expect(data.IsAllDay).toBe(false);
                     args.cancel = true;
                 }
             };
-            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
-            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
         });
     });
 
     describe('Multiple resource grouping without enableRtl', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        let getResourceData: Function = () => {
-            let dataCol: Object[] = [];
-            resourceData.forEach((data: Object) => dataCol.push(extend({}, data)));
-            return dataCol;
-        };
         beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => {
-                disableScheduleAnimation(schObj);
-                done();
-            };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
+            let model: ScheduleModel = {
+                width: '100%', height: '550px',
                 selectedDate: new Date(2018, 3, 1),
-                currentView: "Agenda",
+                currentView: 'Agenda',
                 group: {
                     byGroupID: false,
                     resources: ['Rooms', 'Owners']
                 },
                 resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
+                    field: 'RoomId', name: 'Rooms',
                     dataSource: [
                         { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
                         { Text: 'Room 2', Id: 2, Color: '#f8a398' }
                     ]
                 }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
+                    field: 'OwnerId', name: 'Owners',
                     dataSource: [
                         { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                         { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
                         { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
                     ]
-                }],
-                eventSettings: { dataSource: getResourceData() },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
 
         it('agenda view quick popup backgroud check without enableRtl', () => {
             let resourceEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(resourceEvent.style.borderLeftColor).toEqual('rgb(255, 170, 0)');
         });
-    });
 
-    describe('Multiple resource grouping with enableRtl', () => {
-        let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        let getResourceData: Function = () => {
-            let dataCol: Object[] = [];
-            resourceData.forEach((data: Object) => dataCol.push(extend({}, data)));
-            return dataCol;
-        };
-        beforeAll((done: Function) => {
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => {
-                disableScheduleAnimation(schObj);
+        it('agenda view quick popup backgroud check with enableRtl', (done: Function) => {
+            schObj.dataBound = () => {
+                let resourceEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                expect(resourceEvent.style.borderRightColor).toEqual('rgb(255, 170, 0)');
                 done();
             };
-            schObj = new Schedule({
-                width: '100%',
-                height: '550px',
-                enableRtl: true,
-                selectedDate: new Date(2018, 3, 1),
-                currentView: "Agenda",
-                group: {
-                    byGroupID: false,
-                    resources: ['Rooms', 'Owners']
-                },
-                resources: [{
-                    field: 'RoomId',
-                    name: 'Rooms',
-                    dataSource: [
-                        { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
-                        { Text: 'Room 2', Id: 2, Color: '#f8a398' }
-                    ]
-                }, {
-                    field: 'OwnerId',
-                    name: 'Owners',
-                    dataSource: [
-                        { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
-                        { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
-                        { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
-                    ]
-                }],
-                eventSettings: { dataSource: getResourceData() },
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-        });
-        afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
-        });
-
-        it('agenda view quick popup backgroud check with enableRtl', () => {
-            let resourceEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            expect(resourceEvent.style.borderRightColor).toEqual('rgb(255, 170, 0)');
+            schObj.enableRtl = true;
+            schObj.dataBind();
         });
     });
 

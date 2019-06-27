@@ -9,6 +9,7 @@ import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel } from './symbol-p
 import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';
 import { SvgRenderer } from '../diagram/rendering/svg-renderer';
 import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';
+import { removeElementsByClass } from '../diagram/utility/dom-util';
 import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults } from '../diagram/utility/diagram-util';
 import { getFunction, randomId } from '../diagram/utility/base-util';
 import { getOuterBounds } from '../diagram/utility/connector';
@@ -199,6 +200,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * node.style.strokeColor = '#3A3A3A';
      * }
      * ```
+     * @deprecated
      */
     @Property()
     public getSymbolInfo: Function | string;
@@ -207,6 +209,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the symbols to be added in search palette
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public filterSymbols: Function | string;
@@ -215,6 +218,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the content of a symbol
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public getSymbolTemplate: Function | string;
@@ -280,6 +284,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers after the selection changes in the symbol palette
      * @event
+     * @blazorProperty 'OnPaletteSelectionChange'
      */
     @Event()
     public paletteSelectionChange: EmitType<IPaletteSelectionChangeArgs>;
@@ -291,12 +296,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Helps to return the default properties of node
+     * @deprecated
      */
     @Property()
     public getNodeDefaults: Function | string;
 
     /**
-     * Helps to return the default properties of connector 
+     * Helps to return the default properties of connector
+     * @deprecated
      */
     @Property()
     public getConnectorDefaults: Function | string;
@@ -629,7 +636,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbolGroup.height) {
             style += 'height:' + symbolGroup.height + 'px';
         }
-        let paletteDiv: HTMLElement = createHtmlElement('div', { 'id': symbolGroup.id, style: style });
+        let paletteDiv: HTMLElement = createHtmlElement('div', { 'id': symbolGroup.id, style: style, class: 'e-remove-palette' });
         this.element.appendChild(paletteDiv);
 
         let item: AccordionItemModel = {
@@ -1427,6 +1434,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     private refreshPalettes(): void {
         this.accordionElement.items = [];
+        removeElementsByClass('e-remove-palette');
         this.updatePalettes();
         this.accordionElement.dataBind();
     }
@@ -1497,6 +1505,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             let element: HTMLElement = document.getElementById('iconSearch');
             element.className = 'e-input-group-icon e-search e-icons';
             this.accordionElement.removeItem(0);
+            let searchPalette: HTMLElement = document.getElementById('SearchPalette');
+            if (searchPalette) {
+                searchPalette.remove();
+            }
         }
     }
 

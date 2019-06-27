@@ -19,6 +19,9 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { categoryData1 } from '../polar-radar/polar-radar-series.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { IMultiLevelLabelClickEventArgs } from '../../../src';
+import { MouseEvents } from '../base/events.spec';
+import { Browser } from '@syncfusion/ej2-base';
 Chart.Inject(LineSeries, Logarithmic, ColumnSeries, AreaSeries, BarSeries, DateTime, Category, Legend, MultiLevelLabel);
 let data: any = seriesData1;
 let datetime: any = datetimeData;
@@ -198,7 +201,7 @@ describe('Chart Control', () => {
         });
         it('Checking multilevel labels with border color', (done: Function) => {
             loaded = (args: Object): void => {
-                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg.getAttribute('stroke') === 'red').toBe(true);
                 done();
             };
@@ -221,34 +224,36 @@ describe('Chart Control', () => {
             chartObj.primaryXAxis.labelRotation = 90;
             chartObj.refresh();
         });
-        // it('Checking multilevel labels with label rotation and label positioon inside', (done: Function) => {
-        //     loaded = (args: Object): void => {
-        //         svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
-        //         expect(svg !== null).toBe(true);
-        //         expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '185.78125' ||
-        //             svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
-        //         expect(svg.getAttribute('y') === '313.59375' || svg.getAttribute('y') === '336.703125' ||
-        //             svg.getAttribute('y') === '335.4333190917969' || svg.getAttribute('y') === '321.359375').toBe(true);
-        //         done();
-        //     };
-        //     chartObj.loaded = loaded;
-        //     chartObj.primaryXAxis.labelPosition = 'Inside';
-        //     chartObj.refresh();
-        // });
-        // it('Checking multilevel labels opposedPosition', (done: Function) => {
-        //     loaded = (args: Object): void => {
-        //         svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
-        //         expect(svg !== null).toBe(true);
-        //         expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '185.78125' ||
-        //             svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
-        //         expect(svg.getAttribute('y') === '145.65625' || svg.getAttribute('y') === '135.890625' ||
-        //             svg.getAttribute('y') === '123.81668090820312' || svg.getAttribute('y') === '114.390625').toBe(true);
-        //         done();
-        //     };
-        //     chartObj.loaded = loaded;
-        //     chartObj.primaryXAxis.opposedPosition = true;
-        //     chartObj.refresh();
-        // });
+        it('Checking multilevel labels with label rotation and label positioon inside', (done: Function) => {
+            loaded = (args: Object): void => {
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
+                expect(svg !== null).toBe(true);
+                expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '185.78125' ||
+                    svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
+                expect(svg.getAttribute('y') === '313.59375' || svg.getAttribute('y') === '336.703125' ||
+                    svg.getAttribute('y') === '335.4333190917969' || svg.getAttribute('y') === '321.359375' ||
+                    svg.getAttribute('y') === '321.34375').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.primaryXAxis.labelPosition = 'Inside';
+            chartObj.refresh();
+        });
+        it('Checking multilevel labels opposedPosition', (done: Function) => {
+            loaded = (args: Object): void => {
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
+                expect(svg !== null).toBe(true);
+                expect(svg.getAttribute('x') === '186.96875' || svg.getAttribute('x') === '185.78125' ||
+                    svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
+                expect(svg.getAttribute('y') === '145.65625' || svg.getAttribute('y') === '135.890625' ||
+                    svg.getAttribute('y') === '123.81668090820312' || svg.getAttribute('y') === '114.390625' ||
+                    svg.getAttribute('y') === '135.90625').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.primaryXAxis.opposedPosition = true;
+            chartObj.refresh();
+        });
         it('Checking multilevel labels opposedPosition and label outside position', (done: Function) => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
@@ -401,7 +406,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
-                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg === null).toBe(true);
                 done();
             };
@@ -418,7 +423,7 @@ describe('Chart Control', () => {
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '87.75' || svg.getAttribute('y') === '86.75' ||
                     svg.getAttribute('y') === '89.25' || svg.getAttribute('y') === '81.25').toBe(true);
-                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
             };
@@ -451,7 +456,7 @@ describe('Chart Control', () => {
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '371.5' || svg.getAttribute('y') === '371.5' ||
                     svg.getAttribute('y') === '370' || svg.getAttribute('y') === '376').toBe(true);
-                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
             };
@@ -526,7 +531,7 @@ describe('Chart Control', () => {
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '185.78125').toBe(true);
                 expect(svg.getAttribute('y') === '82.75' || svg.getAttribute('y') === '81.75' ||
                     svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '76.25').toBe(true);
-                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
             };
@@ -543,7 +548,7 @@ describe('Chart Control', () => {
                     svg.getAttribute('x') === '494.3125' || svg.getAttribute('x') === '312.5625').toBe(true);
                 expect(svg.getAttribute('y') === '82.75' || svg.getAttribute('y') === '81.75' ||
                     svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '76.25').toBe(true);
-                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
             };
@@ -559,7 +564,7 @@ describe('Chart Control', () => {
                     svg.getAttribute('x') === '63' || svg.getAttribute('x') === '59').toBe(true);
                 expect(svg.getAttribute('y') === '82.75' || svg.getAttribute('y') === '81.75' ||
                     svg.getAttribute('y') === '84.25' || svg.getAttribute('y') === '76.25').toBe(true);
-                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
             };
@@ -575,12 +580,547 @@ describe('Chart Control', () => {
                     svg.getAttribute('x') === '278.65625' || svg.getAttribute('x') === '59').toBe(true);
                 expect(svg.getAttribute('y') === '371.5' || svg.getAttribute('y') === '371.5' ||
                     svg.getAttribute('y') === '370' || svg.getAttribute('y') === '376').toBe(true);
-                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
             chartObj.primaryXAxis.opposedPosition = false;
+            chartObj.refresh();
+        });
+    });
+
+    describe('Chart Multiple labels click - Category axis', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let svg: HTMLElement;
+        let text: HTMLElement;
+        let datalabel: HTMLElement;
+        let labelElement: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        let loaded: EmitType<ILoadedEventArgs>;
+        let multilevellabelclick: EmitType<IMultiLevelLabelClickEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        border: { width: 0, type: 'Rectangle' },
+                        isIndexed: true, interval: 1, majorGridLines: { width: 0 },
+                        multiLevelLabels : (Browser.isDevice ? ([
+                            {
+                                border: { type: 'Rectangle', width: 10 },
+                                categories: [
+                                    { start: -0.5, end: 2.5, text: 'In Season' },
+                                    { start: 2.5, end: 5.5, text: 'Out of Season' },
+                                    { start: 5.5, end: 7.5, text: 'In Season' },
+                                    { start: 7.5, end: 9.5, text: 'Out of Season' },
+                                ]
+                            }, {
+                                border: { type: 'Rectangle' },
+                                textStyle: { fontWeight: 'Bold' },
+                                categories: [
+                                    { start: -0.5, end: 5.5, text: 'Fruits', },
+                                    { start: 5.5, end: 9.5, text: 'Vegetables', },
+                                ]
+                            }]) : [
+                                {
+                                    border: { type: 'Rectangle' },
+                                    categories: [
+                                        { start: -0.5, end: 0.5, text: 'Seedless', customAttributes: { load: 'sesson1', pass: 'through1'} },
+                                        { start: 0.5, end: 2.5, text: 'Seeded', customAttributes: { load: 'sesson2', pass: 'through2'}},
+                                        { start: 2.5, end: 3.5, text: 'Seedless', customAttributes: { load: 'sesson3', pass: 'through3'} },
+                                        { start: 3.5, end: 5.5, text: 'Seeded', customAttributes: { load: 'sesson4', pass: 'through4'}},
+                                        { start: 5.5, end: 6.5, text: 'Seedless', customAttributes: { load: 'sesson5', pass: 'through5'}},
+                                        { start: 6.5, end: 7.5, text: 'Seeded', customAttributes: { load: 'sesson6', pass: 'through6'}},
+                                        { start: 7.5, end: 8.5, text: 'Seedless', customAttributes: { load: 'sesson7', pass: 'through7'}},
+                                        { start: 8.5, end: 9.5, text: 'Seeded', customAttributes: { load: 'sesson8', pass: 'through8'}}
+                                    ]
+                                }, {
+                                    border: { type: 'Rectangle' },
+                                    categories: [
+                                        { start: -0.5, end: 2.5, text: 'In Season', customAttributes: { load: 'In Season1', pass: 'through'}  },
+                                        { start: 2.5, end: 5.5, text: 'Out of Season', customAttributes: { load: 'Out of Season2', pass: 'through'} },
+                                        { start: 5.5, end: 7.5, text: 'In Season', customAttributes: { load: 'sesson3', pass: 'through'} },
+                                        { start: 7.5, end: 9.5, text: 'Out of Season', customAttributes: { load: 'sesson4', pass: 'through'} },
+                                    ]
+                                }, {
+                                    border: { type: 'Rectangle' },
+                                    textStyle: { fontWeight: 'Bold' },
+                                    categories: [
+                                        { start: -0.5, end: 5.5, text: 'Fruits', customAttributes: { startDate: new Date(2005, 0, 1) , endDate: new Date(2006, 0, 1)} },
+                                        { start: 5.5, end: 9.5, text: 'Vegetables', customAttributes: { load: 'sesson2', pass: 'through'}},
+                                    ]
+                                }])
+                    },
+                    chartArea: {
+                        border: { width: 0 }
+                    },
+                    //Initializing Primary Y Axis
+                    primaryYAxis:
+                        {
+                            minimum: 0, maximum: 120, interval: 30,
+                            majorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelStyle: { color: 'transparent' },
+                            multiLevelLabels: ( Browser.isDevice ? ([{
+                                border: { type: 'Rectangle' },
+                                categories: [{ start: 0, end: 30, text: 'Half Yearly 1', maximumTextWidth: 50 },
+                                { start: 30, end: 60, text: 'Half Yearly 2', maximumTextWidth: 50 },
+                                { start: 60, end: 90, text: 'Half Yearly 3', maximumTextWidth: 50 },
+                                { start: 90, end: 120, text: 'Half Yearly 4', maximumTextWidth: 50 }],
+                            }]) : [
+                                {
+                                border: { type: 'Rectangle' },
+                                    categories: [
+                                        { start: 0, end: 20, text: 'Seedless', customAttributes: { load: 'ysesson1', pass: 'through'} },
+                                        { start: 20, end: 40, text: 'Seeded', customAttributes: { load: 'ysesson2', pass: 'through'}},
+                                        { start: 40, end: 60, text: 'Seedless', customAttributes: { load: 'ysesson3', pass: 'through'} },
+                                        { start: 60, end: 80, text: 'Seeded', customAttributes: { load: 'ysesson4', pass: 'through'} },
+                                        { start: 80, end: 100, text: 'Seedless', customAttributes: { load: 'ysesson5', pass: 'through'} },
+                                        { start: 100, end: 120, text: 'Seeded', customAttributes: { load: 'ysesson6', pass: 'through'} },
+                                    ]
+                                },
+                                {
+                                    border: { type: 'Rectangle' },
+                                    categories: [{ start: 0, end: 30, text: 'Half Yearly 1', maximumTextWidth: 50,
+                                    customAttributes: { load: 'Half Yearly 1', pass: 'through1'} },
+                                    { start: 30, end: 60, text: 'Half Yearly 2', maximumTextWidth: 50,
+                                    customAttributes: { load: 'Half Yearly 2', pass: 'through2'} },
+                                    { start: 60, end: 90, text: 'Half Yearly 3', maximumTextWidth: 50,
+                                    customAttributes: { load: 'Half Yearly 3', pass: 'through3'} },
+                                    { start: 90, end: 120, text: 'Half Yearly 4', maximumTextWidth: 50,
+                                    customAttributes: { load: 'Half Yearly 4', pass: 'through4'} }],
+                                }
+                            ])
+                        },
+                    // Initializing Chart Series data: { vg: 'Half Yearly 1', ggj: []}
+                    series: [
+                        {
+                            type: 'Column', xName: 'x', yName: 'y',
+                            dataSource: [
+                                { x: 'Grapes', y: 28 }, { x: 'Apples', y: 87 },
+                                { x: 'Pears', y: 42 }, { x: 'Grapes', y: 13 },
+                                { x: 'Apples', y: 13 }, { x: 'Pears', y: 10 },
+                                { x: 'Tomato', y: 31 }, { x: 'Potato', y: 96 },
+                                { x: 'Cucumber', y: 41 }, { x: 'Onion', y: 59 }],
+                            marker: {
+                                dataLabel: {
+                                    visible: true, position: 'Outer'
+                                }
+                            }
+                        },
+                    ],
+                    // Initializing Chart title
+                    title: 'Fruits and Vegetables - Season',
+                });
+                chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Checking the multi level labels after click event in x axis', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('Seedless');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                expect((Object as any).values(object)[0]).toBe('sesson1');
+                expect((Object as any).values(object)[1]).toBe('through1');
+
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
+            chartObj.refresh();
+        });
+        it('Checking the multi level labels after click event in y axis', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container1_Axis_MultiLevelLabel_Level_1_Text_2');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('Half Yearly 3');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                expect((Object as any).values(object)[0]).toBe('Half Yearly 3');
+                expect((Object as any).values(object)[1]).toBe('through3');
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
+            chartObj.refresh();
+        });
+        it('Checking the multi level labels after click event, date access in custom objects', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container0_Axis_MultiLevelLabel_Level_2_Text_0');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('Fruits');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                let startDate: Date = new Date((Object as any).values(object)[0]);
+                let endDate: Date = new Date((Object as any).values(object)[1]);
+                expect(startDate.getFullYear()).toBe(2005);
+                expect(endDate.getFullYear()).toBe(2006);
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
+            chartObj.refresh();
+        });
+    });
+    describe('Chart Multi Level labels click event - DateTime axis and Logarithmic axis', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let svg: HTMLElement;
+        let text: HTMLElement;
+        let datalabel: HTMLElement;
+        let labelElement: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        let loaded: EmitType<ILoadedEventArgs>;
+        let multilevellabelclick: EmitType<IMultiLevelLabelClickEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTime',
+                        border: { width: 0, type: 'Rectangle' },
+                        isIndexed: true, interval: 2, majorGridLines: { width: 0 },
+                        multiLevelLabels: (Browser.isDevice ? ([
+                            {
+                                border: { type: 'Rectangle', width: 10 },
+                                categories: [
+                                    { start: new Date(1994, 6, 11), end: new Date(1999, 3, 6), text: 'In Season', },
+                                    { start: new Date(1999, 3, 6), end: new Date(2005, 3, 12), text: 'Out of Season', },
+                                ]
+                            }, {
+                                border: { type: 'Rectangle' },
+                                textStyle: { fontWeight: 'Bold' },
+                                categories: [
+                                    { start: new Date(1994, 6, 11), end: new Date(1999, 3, 6), text: 'Fruits', },
+                                    { start: new Date(1999, 3, 6), end: new Date(2005, 3, 12), text: 'Vegetables', },
+                                ]
+                            }
+                        ]) : [
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [
+                                    { start: new Date(1994, 6, 11), end: new Date(1999, 3, 6),
+                                         text: 'In Season', customAttributes: { load: 'In Season1', pass: 'through' } },
+                                    { start: new Date(1999, 3, 6), end: new Date(2005, 3, 12),
+                                         text: 'Out of Season', customAttributes: { load: 'Out of Season2', pass: 'through' } },
+                                ]
+                            }, {
+                                border: { type: 'Rectangle' },
+                                textStyle: { fontWeight: 'Bold' },
+                                categories: [
+                                    { start: new Date(1994, 6, 11), end: new Date(1999, 3, 6), text: 'Fruits', customAttributes: { startDate: new Date(2005, 0, 1) , endDate: new Date(2006, 0, 1)} },
+                                    { start: new Date(1999, 3, 6), end: new Date(2005, 3, 12), text: 'Vegetables', customAttributes: { load: 'sesson2', pass: 'through' } },
+                                ]
+                            }
+                        ])
+                    },
+                    chartArea: {
+                        border: { width: 0 }
+                    },
+                    primaryYAxis: {
+                        valueType: 'Logarithmic',
+                        minimum: 0, maximum: 12000, interval: 1000,
+                        majorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelStyle: { color: 'transparent' },
+                        multiLevelLabels: (Browser.isDevice ? ([{
+                                border: { type: 'Rectangle' },
+                                categories: [{ start: 0, end: 1.25, text: 'Half Yearly 1', maximumTextWidth: 50 },
+                                    { start: 1.25, end: 2.5, text: 'Half Yearly 2', maximumTextWidth: 50 },
+                                    { start: 2.5, end: 3.75, text: 'Half Yearly 3', maximumTextWidth: 50 },
+                                    { start: 3.75, end: 5, text: 'Half Yearly 4', maximumTextWidth: 50 }],
+                            }]) : [
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [
+                                    { start: 0, end: 1, text: 'Seedless', customAttributes: { load: 'ysesson1', pass: 'through' } },
+                                    { start: 1, end: 2, text: 'Seeded', customAttributes: { load: 'ysesson2', pass: 'through' } },
+                                    { start: 2, end: 3, text: 'Seedless', customAttributes: { load: 'ysesson3', pass: 'through' } },
+                                    { start: 3, end: 4, text: 'Seeded', customAttributes: { load: 'ysesson4', pass: 'through' } },
+                                    { start: 4, end: 5, text: 'Seedless', customAttributes: { load: 'ysesson5', pass: 'through' } },
+                                ]
+                            },
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [{ start: 0, end: 1.25, text: 'Half Yearly 1', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 1', pass: 'through' } },
+                                    { start: 1.25, end: 2.5, text: 'Half Yearly 2', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 2', pass: 'through' } },
+                                    { start: 2.5, end: 3.75, text: 'Half Yearly 3', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 3', pass: 'through' } },
+                                    { start: 3.75, end: 5, text: 'Half Yearly 4', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 4', pass: 'through' } }],
+                            }
+                        ])
+                    },
+                    series: [
+                        {
+                            type: 'Column', xName: 'x', yName: 'y',
+                            dataSource: [{ x: new Date(1995, 0, 1), y: 80 }, { x: new Date(1996, 0, 1), y: 200 },
+                                { x: new Date(1997, 0, 1), y: 400 }, { x: new Date(1998, 0, 1), y: 600 },
+                                { x: new Date(1999, 0, 1), y: 700 }, { x: new Date(2000, 0, 1), y: 1400 },
+                                { x: new Date(2001, 0, 1), y: 2000 }, { x: new Date(2002, 0, 1), y: 4000 },
+                                { x: new Date(2003, 0, 1), y: 6000 }, { x: new Date(2004, 0, 1), y: 8000 },
+                                { x: new Date(2005, 0, 1), y: 11000 }],
+                            marker: {
+                                dataLabel: {
+                                    visible: true, position: 'Outer'
+                                }
+                            }
+                        },
+                    ],
+                    title: 'Fruits and Vegetables - Season',
+                });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Checking the multi level labels after click event in x axis', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('In Season');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                expect((Object as any).values(object)[0]).toBe('In Season1');
+                expect((Object as any).values(object)[1]).toBe('through');
+
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
+            chartObj.refresh();
+        });
+        it('Checking the multi level labels after click event in y axis', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container1_Axis_MultiLevelLabel_Level_1_Text_2');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('Half Yearly 3');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                expect((Object as any).values(object)[0]).toBe('Half Yearly 3');
+                expect((Object as any).values(object)[1]).toBe('through');
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
+            chartObj.refresh();
+        });
+        it('Checking the multi level labels after click event, date access in custom objects', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container0_Axis_MultiLevelLabel_Level_1_Text_0');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('Fruits');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                let startDate: Date = new Date((Object as any).values(object)[0]);
+                let endDate: Date = new Date((Object as any).values(object)[1]);
+                expect(startDate.getFullYear()).toBe(2005);
+                expect(endDate.getFullYear()).toBe(2006);
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
+            chartObj.refresh();
+        });
+    });
+    describe('Chart Multi Level labels click event - Double', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement;
+        let svg: HTMLElement;
+        let text: HTMLElement;
+        let datalabel: HTMLElement;
+        let labelElement: Element;
+        let trigger: MouseEvents = new MouseEvents();
+        let loaded: EmitType<ILoadedEventArgs>;
+        let multilevellabelclick: EmitType<IMultiLevelLabelClickEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Double',
+                        border: { width: 0, type: 'Rectangle' },
+                        isIndexed: true, interval: 1, majorGridLines: { width: 0 },
+                        multiLevelLabels: (Browser.isDevice ? ([
+                            {
+                                border: { type: 'Rectangle', width: 10 },
+                                categories: [
+                                    { start: 0.5, end: 3.5, text: 'In Season', },
+                                    { start: 3.5, end: 5.5, text: 'Out of Season', },
+                                    { start: 5.5, end: 7.5, text: 'In Season', },
+                                    { start: 7.5, end: 10, text: 'Out of Season', },
+                                ]
+                            }, {
+                                border: { type: 'Rectangle' },
+                                textStyle: { fontWeight: 'Bold' },
+                                categories: [
+                                    { start: 0.5, end: 5, text: 'Fruits', },
+                                    { start: 5, end: 10, text: 'Vegetables', },
+                                ]
+                            }
+                        ]) : [
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [
+                                    { start: 0.5, end: 2.5, text: 'Seedless', customAttributes: { load: 'sesson1', pass: 'through' } },
+                                    { start: 2.5, end: 4.5, text: 'Seeded', customAttributes: { load: 'sesson2', pass: 'through' } },
+                                    { start: 4.5, end: 6.5, text: 'Seedless', customAttributes: { load: 'sesson3', pass: 'through' } },
+                                    { start: 6.5, end: 8.5, text: 'Seeded', customAttributes: { load: 'sesson4', pass: 'through' } },
+                                    { start: 8.5, end: 10, text: 'Seedless', customAttributes: { load: 'sesson5', pass: 'through' } },
+                                ]
+                            }, {
+                                border: { type: 'Rectangle' },
+                                categories: [
+                                    { start: 0.5, end: 3.5, text: 'In Season', customAttributes: { load: 'In Season1', pass: 'through' } },
+                                    { start: 3.5, end: 5.5, text: 'Out of Season', customAttributes: { load: 'Out of Season2', pass: 'through' } },
+                                    { start: 5.5, end: 7.5, text: 'In Season', customAttributes: { load: 'sesson3', pass: 'through' } },
+                                    { start: 7.5, end: 10, text: 'Out of Season', customAttributes: { load: 'sesson4', pass: 'through' } },
+                                ]
+                            }, {
+                                border: { type: 'Rectangle' },
+                                textStyle: { fontWeight: 'Bold' },
+                                categories: [
+                                    { start: 0.5, end: 5, text: 'Fruits', customAttributes: { startDate: new Date(2005, 0, 1) , endDate: new Date(2006, 0, 1)} },
+                                    { start: 5, end: 10, text: 'Vegetables', customAttributes: { load: 'sesson2', pass: 'through' } },
+                                ]
+                            }
+                        ])
+                    },
+                    chartArea: {
+                        border: { width: 0 }
+                    },
+                    primaryYAxis: {
+                        valueType: 'Double',
+                        minimum: 0, maximum: 120, interval: 10,
+                        majorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelStyle: { color: 'transparent' },
+                        multiLevelLabels: (Browser.isDevice ? ([{
+                                border: { type: 'Rectangle' },
+                                categories: [{ start: 0, end: 25, text: 'Half Yearly 1', maximumTextWidth: 50 },
+                                    { start: 25, end: 50, text: 'Half Yearly 2', maximumTextWidth: 50 },
+                                    { start: 50, end: 75, text: 'Half Yearly 3', maximumTextWidth: 50 },
+                                    { start: 75, end: 100, text: 'Half Yearly 4', maximumTextWidth: 50 },
+                                    { start: 100, end: 120, text: 'Half Yearly 5', maximumTextWidth: 50 }],
+                            }]) : [
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [
+                                    { start: 0, end: 25, text: 'Seedless', customAttributes: { load: 'ysesson1', pass: 'through' } },
+                                    { start: 25, end: 50, text: 'Seeded', customAttributes: { load: 'ysesson2', pass: 'through' } },
+                                    { start: 50, end: 75, text: 'Seedless', customAttributes: { load: 'ysesson3', pass: 'through' } },
+                                    { start: 75, end: 100, text: 'Seeded', customAttributes: { load: 'ysesson4', pass: 'through' } },
+                                    { start: 100, end: 120, text: 'Seedless', customAttributes: { load: 'ysesson5', pass: 'through' } },
+                                ]
+                            },
+                            {
+                                border: { type: 'Rectangle' },
+                                categories: [{ start: 0, end: 25, text: 'Half Yearly 1', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 1', pass: 'through' } },
+                                    { start: 25, end: 50, text: 'Half Yearly 2', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 2', pass: 'through' } },
+                                    { start: 50, end: 75, text: 'Half Yearly 3', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 3', pass: 'through' } },
+                                    { start: 75, end: 100, text: 'Half Yearly 4', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 4', pass: 'through' } },
+                                    { start: 100, end: 120, text: 'Half Yearly 5', maximumTextWidth: 50,
+                                        customAttributes: { load: 'Half Yearly 5', pass: 'through' } }],
+                            }
+                        ])
+                    },
+                    series: [
+                        {
+                            type: 'Column', xName: 'x', yName: 'y',
+                            dataSource: [{ y: 18, x: 1 }, { y: 29, x: 2 }, { y: 30, x: 3 }, { y: 41, x: 4 },
+                                { y: 52, x: 5 }, { y: 62, x: 6 },
+                                { y: 74, x: 7 }, { y: 85, x: 8 }, { y: 96, x: 9 }, { y: 102, x: 10 }],
+                            marker: {
+                                dataLabel: {
+                                    visible: true, position: 'Outer'
+                                }
+                            }
+                        },
+                    ],
+                    title: 'Fruits and Vegetables - Season',
+                });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chartObj.destroy();
+        });
+        it('Checking the multi level labels after click event in x axis', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('Seedless');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                expect((Object as any).values(object)[0]).toBe('sesson1');
+                expect((Object as any).values(object)[1]).toBe('through');
+
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
+            chartObj.refresh();
+        });
+        it('Checking the multi level labels after click event in y axis', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container1_Axis_MultiLevelLabel_Level_1_Text_2');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('Half Yearly 3');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                expect((Object as any).values(object)[0]).toBe('Half Yearly 3');
+                expect((Object as any).values(object)[1]).toBe('through');
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
+            chartObj.refresh();
+        });
+        it('Checking the multi level labels after click event, date access in custom objects', (done: Function) => {
+            let elem1: HTMLElement;
+            loaded = (args: Object): void => {
+                labelElement = document.getElementById('container0_Axis_MultiLevelLabel_Level_2_Text_0');
+                trigger.clickEvent(labelElement);
+                expect(labelElement.textContent).toBe('Fruits');
+                done();
+            };
+            multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
+                let object: Object = args.customAttributes;
+                let startDate: Date = new Date((Object as any).values(object)[0]);
+                let endDate: Date = new Date((Object as any).values(object)[1]);
+                expect(startDate.getFullYear()).toBe(2005);
+                expect(endDate.getFullYear()).toBe(2006);
+            };
+            chartObj.loaded = loaded;
+            chartObj.multiLevelLabelClick = multilevellabelclick;
             chartObj.refresh();
         });
     });
@@ -1351,7 +1891,7 @@ describe('Chart Control', () => {
         });
         it('Checking with zoom factor for withouttopborder border type', (done: Function) => {
             loaded = (args: Object): void => {
-                svg = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
             };
@@ -1366,7 +1906,7 @@ describe('Chart Control', () => {
         });
         it('Checking with zoom factor for rectangle border type', (done: Function) => {
             loaded = (args: Object): void => {
-                svg = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0');
+                svg = document.getElementById('container1_Axis_MultiLevelLabel_Rect_0_0');
                 expect(svg !== null).toBe(true);
                 done();
             };
@@ -1475,6 +2015,169 @@ describe('Chart Control', () => {
             chart.primaryXAxis.labelRotation = 90;
             chart.refresh();
         });
+        it('Checking border type with category type', (done: Function) => {
+            loaded = (args: Object): void => {
+                let firstPath: string = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0').getAttribute('d');
+                expect(firstPath.indexOf('C') !== -1).toBe(true);
+                let secondPath: string = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_1').getAttribute('d');
+                expect(secondPath.indexOf('C') === -1).toBe(true);
+                let thirdPath: HTMLElement = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_2');
+                expect(thirdPath === null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.opposedPosition = false;
+            chart.primaryXAxis.multiLevelLabels = [
+                {
+                    border: {type: 'CurlyBrace'},
+                    categories: [{
+                        text: 'Quater 1', start: -0.5, end: 2.5
+                    },
+                    {
+                        text: 'Quater 2', start: 2.5, end: 5.5, type: 'Rectangle'
+                    },
+                    {
+                        text: 'Quater 3', start: 5.5, end: 7.5, type: 'WithoutBorder'
+                    },
+                    ]
+                }
+            ];
+            chart.refresh();
+        });
+    });
+    describe('Chart Multiple labels - Bar series type', () => {
+        let chart: Chart;
+        let elem: HTMLElement;
+        let svg: HTMLElement;
+        let text: HTMLElement;
+        let datalabel: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        //title: 'Food',
+                        interval: 1,
+                        border: { width: 1, type: 'WithoutTopandBottomBorder' },
+                        majorGridLines: { width: 0 },
+                        multiLevelLabels: [
+                          {
+                            border: { type: 'WithoutTopBorder' },
+                            categories: [
+                              { start: -0.5, end: 0.5, text: 'Seedless', },
+                              { start: 0.5, end: 1.5, text: 'Seeded', },
+                              { start: 1.5, end: 2.5, text: 'Seedless', },
+                              { start: 2.5, end: 3.5, text: 'Seeded', }
+                            ]
+                          },
+                          {
+                            border: { type: 'WithoutTopBorder' },
+                            categories: [
+                              { start: -0.5, end: 1.5, text: 'In Season', },
+                              { start: 1.5, end: 3.5, text: 'Out of Season', },
+                            ]
+                          }, {
+                            border: { type: 'WithoutTopBorder' },
+                            textStyle: { fontWeight: 'Bold' },
+                            categories: [
+                              { start: -0.5, end: 3.5, text: 'Fruits', }
+                            ]
+                          }]
+                      },
+                      primaryYAxis:
+                      {
+                        labelFormat: '{value}B',
+                        edgeLabelPlacement: 'Shift',
+                        majorGridLines: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        lineStyle: { width: 0 },
+                        labelStyle: {
+                          color: 'transparent'
+                        }
+                      },
+                      chartArea: {
+                        border: {
+                          width: 0
+                        }
+                      },
+                      //Initializing Chart Series
+                      series: [
+                        {
+                          type: 'Bar',
+                          dataSource: [
+                            { x: 'Egg', y: 2.2 }, { x: 'Fish', y: 2.4 },
+                            { x: 'Misc', y: 3 }, { x: 'Tea', y: 3.1 }
+                          ],
+                          xName: 'x', width: 2,
+                          yName: 'y', name: 'Imports', marker: {
+                            dataLabel: {
+                              visible: true,
+                              position: 'Top',
+                              font: {
+                                fontWeight: '600', color: '#ffffff'
+                              }
+                            }
+                          }
+                        },
+                        {
+                          type: 'Bar',
+                          dataSource: [
+                            { x: 'Egg', y: 1.2 }, { x: 'Fish', y: 1.3 },
+                            { x: 'Misc', y: 1.5 }, { x: 'Tea', y: 2.2 }
+                          ],
+                          xName: 'x', width: 2,
+                          yName: 'y', name: 'Exports', marker: {
+                            dataLabel: {
+                              visible: true,
+                              position: 'Top',
+                              font: {
+                                fontWeight: '600', color: '#ffffff'
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      // Initializing the tooltip
+                      tooltip: {
+                        enable: true
+                      },
+                },
+                '#container');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chart.destroy();
+        });
+        it('Checking primary axis labels with border type withouttopandbottomborder', (done: Function) => {
+            loaded = (args: Object): void => {
+                svg = document.getElementById('container_BorderLine_0');
+                expect(svg !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.border.type = 'WithoutTopandBottomBorder';
+            chart.primaryXAxis.border.width = 1;
+            chart.refresh();
+        });
+        it('Checking primary axis labels with border alignment', (done: Function) => {
+            loaded = (args: Object): void => {
+                let path: string;
+                let checkPath: string[] = [];
+                svg = document.getElementById('container_BorderLine_0');
+                path = svg.getAttribute('d');
+                checkPath = path.split(' ');
+                expect(checkPath[8] === '287.5' || checkPath[8] === '289').toBe(true);
+                expect(checkPath[30] === '102.5' || checkPath[30] === '103').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.border.type = 'WithoutTopandBottomBorder';
+            chart.primaryXAxis.border.width = 1;
+            chart.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();
@@ -1484,5 +2187,5 @@ describe('Chart Control', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
 });

@@ -22,7 +22,7 @@ export const classNames: ClassNames = {
     rtl: 'e-rtl',
 };
 
-export type selection = 'Single' | 'Multiple' | 'None';
+export type Selection = 'Single' | 'Multiple' | 'None';
 
 export interface ClassNames {
     chipSet: string;
@@ -266,7 +266,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * @default 'None'
      */
     @Property('None')
-    public selection: selection;
+    public selection: Selection;
 
     /**
      * This enableDelete property helps to enable delete functionality.
@@ -278,6 +278,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This created event will get triggered once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -285,6 +286,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This click event will get triggered once the chip is clicked.
      * @event
+     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -292,6 +294,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This delete event will get triggered before removing the chip.
      * @event
+     * @blazorProperty 'OnDelete'
      */
     @Event()
     public delete: EmitType<DeleteEventArgs>;
@@ -580,10 +583,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 if (deleteElement && this.enableDelete) {
                     (chipData as DeleteEventArgs).cancel = false;
                     let deletedItemArgs: DeleteEventArgs = chipData as DeleteEventArgs;
-                    this.trigger('delete', deletedItemArgs);
-                    if (!deletedItemArgs.cancel) {
-                        this.deleteHandler(chipData.element, chipData.index);
-                    }
+                    this.trigger('delete', deletedItemArgs, (observedArgs: DeleteEventArgs) => {
+                        if (!observedArgs.cancel) {
+                            this.deleteHandler(chipData.element, chipData.index);
+                        }
+                    });
                 } else if (this.selection !== 'None') {
                     this.selectionHandler(chipWrapper);
                     (chipData as ClickEventArgs).selected = chipWrapper.classList.contains(classNames.active);

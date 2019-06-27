@@ -1,4 +1,4 @@
-import { createElement, remove, getUniqueID, extend, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, getUniqueID, extend, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt, GanttModel } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
 /**
@@ -38,8 +38,30 @@ export function destroyGantt(gantt: Gantt): void {
 }
 
 export function triggerMouseEvent(
-    node: HTMLElement, eventType: string, x: number = 0, y: number = 0, isShiftKey?: boolean, isCtrlKey?: boolean): void {
+    node: HTMLElement, eventType: string, x: number = 0, y: number = 0, isShiftKey?: boolean, isCtrlKey?: boolean, buttonArgs?: number): void {
     let mouseEve: MouseEvent = new MouseEvent(eventType);
-    mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, isCtrlKey, false, isShiftKey, false, 0, null);
+    buttonArgs = isNullOrUndefined(buttonArgs) ? 0 : buttonArgs;
+    mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, isCtrlKey, false, isShiftKey, false, buttonArgs, null);
     node.dispatchEvent(mouseEve);
+}
+
+export function  triggerScrollEvent(target: HTMLElement, newScrollTop?: number, newScrollLeft?: number) {
+    if(newScrollTop) {
+    target.scrollTop = newScrollTop;
+    } 
+    if(newScrollLeft) {
+        target.scrollLeft = newScrollLeft;
+    }
+    var e = document.createEvent("UIEvents");
+    e.initUIEvent("scroll", true, true, window, 1);
+    target.dispatchEvent(e);
+}
+export function triggerKeyboardEvent(target: Element, type: string, key: string): any {
+    let keyboardEve: KeyboardEvent = new KeyboardEvent(type);
+    keyboardEve.initKeyboardEvent(type, true, true, window, key, 0, '', false, '');
+    target.dispatchEvent(keyboardEve);
+}
+export function getKeyUpObj(keyCode: string | number, target: Element): any {
+    let preventDefault = () => { };
+    return { target: target, keyCode: keyCode};
 }

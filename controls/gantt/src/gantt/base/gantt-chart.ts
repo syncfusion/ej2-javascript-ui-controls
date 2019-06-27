@@ -4,6 +4,7 @@ import { isNullOrUndefined, closest, addClass, removeClass, getValue } from '@sy
 import * as cls from '../base/css-constants';
 import { ChartScroll } from '../actions/chart-scroll';
 import { IGanttData } from '../base/interface';
+import { click } from '@syncfusion/ej2-grids';
 
 /**
  * module to render gantt chart - project view
@@ -144,13 +145,26 @@ export class GanttChart {
      * Click event handler in chart side
      */
     private ganttChartMouseDown(e: PointerEvent): void {
-        this.parent.notify('chartMouseDown', e);
-        this.parent.element.tabIndex = 0;
+        if (e.which !== 3) {
+            this.parent.notify('chartMouseDown', e);
+            this.parent.element.tabIndex = 0;
+        }
+    }
+
+    private ganttChartMouseClick(e: PointerEvent): void {
+        if (this.parent.autoFocusTasks) {
+            this.scrollToTarget(e); /** Scroll to task */
+        }
+        this.parent.notify('chartMouseClick', e);
+    }
+
+    private ganttChartMouseUp(e: PointerEvent): void {
+        this.parent.notify('chartMouseUp', e);
     }
 
     /**
-     * 
-     * @param e 
+     *
+     * @param e
      */
     private scrollToTarget(e: PointerEvent): void {
         let row: Element = closest(e.target as Element, 'tr');
@@ -187,7 +201,7 @@ export class GanttChart {
      * @private
      */
     private documentMouseUp(e: PointerEvent): void {
-        if (this.parent.isDestroyed) {
+        if (this.parent.isDestroyed || e.which === 3) {
             return;
         }
         let isTaskbarEdited: boolean = false;
@@ -319,6 +333,7 @@ export class GanttChart {
         this.parent.updateContentHeight();
         this.updateWidthAndHeight();
         this.reRenderConnectorLines();
+        getValue('chartRow', args).setAttribute('aria-expanded', 'false');
         this.parent.trigger('collapsed', args);
     }
 
@@ -344,6 +359,7 @@ export class GanttChart {
         this.parent.updateContentHeight();
         this.updateWidthAndHeight();
         this.reRenderConnectorLines();
+        getValue('chartRow', args).setAttribute('aria-expanded', 'true');
         this.parent.trigger('expanded', args);
     }
 
@@ -410,6 +426,8 @@ export class GanttChart {
             this.parent.treeGrid.collapseAll();
         }
         this.isExpandAll = false;
+        let focussedElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-treegrid');
+        focussedElement.focus();
     }
 
     /**
@@ -445,8 +463,14 @@ export class GanttChart {
             EventHandler.add(this.parent.chartPane, mouseDown, this.ganttChartMouseDown, this);
             EventHandler.add(this.parent.chartPane, cancel, this.ganttChartLeave, this);
             EventHandler.add(this.parent.chartPane, mouseMove, this.ganttChartMove, this);
+            if (this.parent.isAdaptive) {
+                EventHandler.add(this.parent.chartPane, click, this.ganttChartMouseClick, this);
+                EventHandler.add(this.parent.chartPane, mouseUp, this.ganttChartMouseUp, this);
+            }
         }
-        EventHandler.add(document.body, mouseUp, this.documentMouseUp, this);
+        if (!this.parent.isAdaptive) {
+            EventHandler.add(document.body, mouseUp, this.documentMouseUp, this);
+        }
         if (this.parent.editSettings.allowEditing) {
             EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
         }
@@ -462,8 +486,14 @@ export class GanttChart {
             EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, mouseDown, this.ganttChartMouseDown);
             EventHandler.remove(this.parent.chartPane, cancel, this.ganttChartLeave);
             EventHandler.remove(this.parent.chartPane, mouseMove, this.ganttChartMove);
+            if (this.parent.isAdaptive) {
+                EventHandler.remove(this.parent.chartPane, click, this.ganttChartMouseClick);
+                EventHandler.remove(this.parent.chartPane, mouseUp, this.ganttChartMouseUp);
+            }
         }
-        EventHandler.remove(document.body, mouseUp, this.documentMouseUp);
+        if (!this.parent.isAdaptive) {
+            EventHandler.remove(document.body, mouseUp, this.documentMouseUp);
+        }
         if (this.parent.editSettings.allowEditing) {
             EventHandler.remove(this.parent.chartPane, 'dblclick', this.doubleClickHandler);
         }

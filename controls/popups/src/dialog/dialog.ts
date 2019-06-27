@@ -3,7 +3,7 @@ import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute }
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';
 import { ButtonPropsModel, DialogModel, AnimationSettingsModel } from './dialog-model';
-import { EventHandler } from '@syncfusion/ej2-base';
+import { EventHandler, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Draggable } from '@syncfusion/ej2-base';
 import { Popup, PositionData, getZindexPartial } from '../popup/popup';
 import { PositionDataModel } from '../popup/popup-model';
@@ -30,6 +30,7 @@ export class ButtonProps extends ChildProperty<ButtonProps> {
     /**
      * Event triggers when `click` the dialog button.
      * @event
+     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<Object>;
@@ -247,7 +248,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @default ''
      */
     @Property('')
-    public header: string;
+    public header: string | HTMLElement;
     /**
      * Specifies the value that represents whether the dialog component is visible.
      * @default true 
@@ -282,6 +283,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     public cssClass: string;
     /**
      * Specifies the z-order for rendering that determines whether the dialog is displayed in front or behind of another component.
+     * @default 1000
      */
     @Property(1000)
     public zIndex: number;
@@ -360,12 +362,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Event triggers when the dialog is created.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Event triggers when a dialog is opened.
      * @event
+     * @blazorProperty 'Opened'
      */
     @Event()
     public open: EmitType<Object>;
@@ -374,12 +378,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * If you cancel this event, the dialog remains closed.
      * Set the cancel argument to true to cancel the open of a dialog. 
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenEventArgs>;
     /**
      * Event triggers after the dialog has been closed.
      * @event
+     * @blazorProperty 'Closed'
      */
     @Event()
     public close: EmitType<Object>;
@@ -388,48 +394,56 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * If you cancel this event, the dialog remains opened.
      * Set the cancel argument to true to cancel the closure of a dialog. 
      * @event
+     * @blazorProperty 'OnClose'
      */
     @Event()
     public beforeClose: EmitType<BeforeCloseEventArgs>;
     /**
      * Event triggers when the user begins dragging the dialog.
      * @event
+     * @blazorProperty 'OnDragStart'
      */
     @Event()
     public dragStart: EmitType<Object>;
     /**
      * Event triggers when the user stop dragging the dialog.
      * @event
+     * @blazorProperty 'OnDragStop'
      */
     @Event()
     public dragStop: EmitType<Object>;
     /**
      * Event triggers when the user drags the dialog.
      * @event
+     * @blazorProperty 'OnDrag'
      */
     @Event()
     public drag: EmitType<Object>;
     /**
      * Event triggers when the overlay of dialog is clicked.
      * @event
+     * @blazorProperty 'OnOverlayClick'
      */
     @Event()
     public overlayClick: EmitType<Object>;
     /**
      * Event triggers when the user begins to resize a dialog.
      * @event
+     * @blazorProperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<Object>;
     /**
      * Event triggers when the user resize the dialog.
      * @event
+     * @blazorProperty 'Resizing'
      */
     @Event()
     public resizing: EmitType<Object>;
     /**
      * Event triggers when the user stop to resize a dialog.
      * @event
+     * @blazorProperty 'OnResizeStop'
      */
     @Event()
     public resizeStop: EmitType<Object>;
@@ -520,7 +534,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private getEle(list: NodeList, selector: string): Element {
+    private getEle(list: HTMLCollection, selector: string): Element {
         let element: Element = undefined;
         for (let i: number = 0; i < list.length; i++) {
             if ((list[i] as Element).classList.contains(selector)) {
@@ -538,7 +552,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (!isNullOrUndefined(this.element.querySelector('.' + DLG_HEADER_CONTENT))) {
             computedHeaderHeight = getComputedStyle(this.headerContent).height;
         }
-        let footerEle: Element = this.getEle(this.element.childNodes, DLG_FOOTER_CONTENT);
+        let footerEle: Element = this.getEle(this.element.children, DLG_FOOTER_CONTENT);
         if (!isNullOrUndefined(footerEle)) { computedFooterHeight = getComputedStyle(footerEle).height; }
         let headerHeight: number = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight: number = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
@@ -834,7 +848,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.innerContentElement) {
             this.contentEle.appendChild(this.innerContentElement);
         } else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
-            if (typeof (this.content) === 'string') {
+            let blazorContain: string[] = Object.keys(window) as string[];
+            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
                 this.contentEle.innerHTML = this.content;
             } else if (this.content instanceof HTMLElement) {
                 this.contentEle.appendChild(this.content);
@@ -854,16 +869,36 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setTemplate(template: string | HTMLElement, toElement: HTMLElement): void {
         let templateFn: Function;
+        let templateProps: string;
+        let blazorContain: string[] = Object.keys(window) as string[];
+        if (toElement.classList.contains(DLG_HEADER)) {
+            templateProps = this.element.id + 'header';
+        } else if (toElement.classList.contains(DLG_FOOTER_CONTENT)) {
+            templateProps = this.element.id + 'footerTemplate';
+        } else {
+            templateProps = this.element.id + 'content';
+        }
         if (!isNullOrUndefined((<HTMLElement>template).outerHTML)) {
             templateFn = compile((<HTMLElement>template).outerHTML);
-        } else {
+        } else if (typeof (template) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
             templateFn = compile(template as string);
+        } else {
+            toElement.innerHTML = template as string;
         }
         let fromElements: HTMLElement[] = [];
-        for (let item of templateFn({})) {
-            fromElements.push(item);
+        if (!isNullOrUndefined(templateFn)) {
+            for (let item of templateFn({}, null, null, templateProps)) {
+                fromElements.push(item);
+            }
+            append([].slice.call(fromElements), toElement);
         }
-        append([].slice.call(fromElements), toElement);
+        if (templateProps === this.element.id + 'header') {
+            updateBlazorTemplate(templateProps, 'Header');
+        } else if (templateProps === this.element.id + 'footerTemplate') {
+            updateBlazorTemplate(templateProps, 'FooterTemplate');
+        } else {
+            updateBlazorTemplate(templateProps, 'Content');
+        }
     }
 
     private setMaxHeight(): void {
@@ -1172,6 +1207,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.show();
         }
         this.positionChange();
+        if (this.isModal && this.dlgOverlay) {
+            EventHandler.add(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler, this);
+        }
     }
 
     private setzIndex(zIndexElement: HTMLElement, setPopupZindex: boolean): void {
@@ -1237,7 +1275,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             EventHandler.add(
                 this.closeIcon, 'click', this.closeIconClickEventHandler, this);
         }
-        if (this.isModal) {
+        if (this.isModal && this.dlgOverlay) {
             EventHandler.add(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler, this);
         }
     }
@@ -1287,50 +1325,52 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 target: this.target,
                 maxHeight: this.element.style.maxHeight
             };
-            this.trigger('beforeOpen', eventArgs);
-            if (eventArgs.cancel) { return; }
-            if (this.element.style.maxHeight !== eventArgs.maxHeight) {
-                this.allowMaxHeight = false;
-                this.element.style.maxHeight = eventArgs.maxHeight;
-            }
-            this.storeActiveElement = <HTMLElement>document.activeElement;
-            this.element.tabIndex = -1;
-            if (this.isModal && (!isNullOrUndefined(this.dlgOverlay))) {
-                this.dlgOverlay.style.display = 'block';
-                this.dlgContainer.style.display = 'flex';
-                removeClass([this.dlgOverlay], 'e-fade');
-                if (!isNullOrUndefined(this.targetEle)) {
-                    if (this.targetEle === document.body) {
-                        this.dlgContainer.style.position = 'fixed';
-                    } else {
-                        this.dlgContainer.style.position = 'absolute';
+            this.trigger('beforeOpen', eventArgs, (beforeOpenArgs: BeforeOpenEventArgs) => {
+                if (!beforeOpenArgs.cancel) {
+                    if (this.element.style.maxHeight !== eventArgs.maxHeight) {
+                        this.allowMaxHeight = false;
+                        this.element.style.maxHeight = eventArgs.maxHeight;
                     }
-                    this.dlgOverlay.style.position = 'absolute';
-                    this.element.style.position = 'relative';
-                    addClass([this.targetEle], SCROLL_DISABLED);
-                } else {
-                    addClass([document.body], SCROLL_DISABLED);
-                }
-            }
-            let openAnimation: Object = {
-                name: this.animationSettings.effect + 'In',
-                duration: this.animationSettings.duration,
-                delay: this.animationSettings.delay
-            };
-            let zIndexElement: HTMLElement = (this.isModal) ? this.element.parentElement : this.element;
-            if (this.calculatezIndex) {
-                this.setzIndex(zIndexElement, true);
-                setStyleAttribute(this.element, { 'zIndex': this.zIndex });
-                if (this.isModal) {
-                    this.setOverlayZindex(this.zIndex);
-                }
-            }
-            this.animationSettings.effect === 'None' ? this.popupObj.show() : this.popupObj.show(openAnimation);
-            this.dialogOpen = true;
-            let prevOnChange: boolean = this.isProtectedOnChange;
-            this.isProtectedOnChange = true;
-            this.visible = true;
-            this.isProtectedOnChange = prevOnChange;
+                    this.storeActiveElement = <HTMLElement>document.activeElement;
+                    this.element.tabIndex = -1;
+                    if (this.isModal && (!isNullOrUndefined(this.dlgOverlay))) {
+                        this.dlgOverlay.style.display = 'block';
+                        this.dlgContainer.style.display = 'flex';
+                        removeClass([this.dlgOverlay], 'e-fade');
+                        if (!isNullOrUndefined(this.targetEle)) {
+                            if (this.targetEle === document.body) {
+                                this.dlgContainer.style.position = 'fixed';
+                            } else {
+                                this.dlgContainer.style.position = 'absolute';
+                            }
+                            this.dlgOverlay.style.position = 'absolute';
+                            this.element.style.position = 'relative';
+                            addClass([this.targetEle], SCROLL_DISABLED);
+                        } else {
+                            addClass([document.body], SCROLL_DISABLED);
+                        }
+                    }
+                    let openAnimation: Object = {
+                        name: this.animationSettings.effect + 'In',
+                        duration: this.animationSettings.duration,
+                        delay: this.animationSettings.delay
+                    };
+                    let zIndexElement: HTMLElement = (this.isModal) ? this.element.parentElement : this.element;
+                    if (this.calculatezIndex) {
+                        this.setzIndex(zIndexElement, true);
+                        setStyleAttribute(this.element, { 'zIndex': this.zIndex });
+                        if (this.isModal) {
+                            this.setOverlayZindex(this.zIndex);
+                        }
+                    }
+                    this.animationSettings.effect === 'None' ? this.popupObj.show() : this.popupObj.show(openAnimation);
+                    this.dialogOpen = true;
+                    let prevOnChange: boolean = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    this.visible = true;
+                    this.isProtectedOnChange = prevOnChange;
+                 }
+             });
         }
     }
     /**
@@ -1348,24 +1388,26 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             container: this.isModal ? this.dlgContainer : this.element,
             event: event
         };
-        this.trigger('beforeClose', eventArgs);
         this.closeArgs = eventArgs;
-        if (eventArgs.cancel) { return; }
-        if (this.isModal) {
-            !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
-                removeClass([document.body], SCROLL_DISABLED);
-        }
-        let closeAnimation: Object = {
-            name: this.animationSettings.effect + 'Out',
-            duration: this.animationSettings.duration,
-            delay: this.animationSettings.delay
-        };
-        this.animationSettings.effect === 'None' ? this.popupObj.hide() : this.popupObj.hide(closeAnimation);
-        this.dialogOpen = false;
-        let prevOnChange: boolean = this.isProtectedOnChange;
-        this.isProtectedOnChange = true;
-        this.visible = false;
-        this.isProtectedOnChange = prevOnChange;
+        this.trigger('beforeClose', eventArgs, (beforeCloseArgs: BeforeCloseEventArgs) => {
+            if (!beforeCloseArgs.cancel) {
+                if (this.isModal) {
+                    !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
+                        removeClass([document.body], SCROLL_DISABLED);
+                }
+                let closeAnimation: Object = {
+                    name: this.animationSettings.effect + 'Out',
+                    duration: this.animationSettings.duration,
+                    delay: this.animationSettings.delay
+                };
+                this.animationSettings.effect === 'None' ? this.popupObj.hide() : this.popupObj.hide(closeAnimation);
+                this.dialogOpen = false;
+                let prevOnChange: boolean = this.isProtectedOnChange;
+                this.isProtectedOnChange = true;
+                this.visible = false;
+                this.isProtectedOnChange = prevOnChange;
+            }
+        });
     }
     /**
      * Specifies to view the Full screen Dialog.

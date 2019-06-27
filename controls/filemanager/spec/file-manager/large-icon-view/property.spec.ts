@@ -34,7 +34,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 cssClass: 'custom'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -51,7 +52,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 cssClass: null
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -68,7 +70,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 height: '500px'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -85,7 +88,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 height: 400
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -102,7 +106,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 height: '100%'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -119,7 +124,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 height: 'auto'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -136,7 +142,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 height: null
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -153,7 +160,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 toolbarSettings: { visible: false }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -170,7 +178,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 toolbarSettings: { items: toolbarItems1 }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -196,7 +205,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 width: '500px'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -214,7 +224,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 width: 400
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -231,7 +242,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 width: '100%'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -248,7 +260,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 width: 'auto'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -265,7 +278,8 @@ describe('FileManager control LargeIcons view', () => {
                 },
                 showThumbnail: false,
                 width: null
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -280,7 +294,8 @@ describe('FileManager control LargeIcons view', () => {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -297,7 +312,8 @@ describe('FileManager control LargeIcons view', () => {
                         url: '/FileOperations',
                         uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                     },
-                }, '#file');
+                });
+                feObj.appendTo('#file');
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
@@ -315,7 +331,8 @@ describe('FileManager control LargeIcons view', () => {
                             uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                         },
                         showThumbnail: false,
-                    }, '#file');
+                    });
+                    feObj.appendTo('#file');
                     this.request = jasmine.Ajax.requests.mostRecent();
                     this.request.respondWith({
                         status: 200,
@@ -333,7 +350,8 @@ describe('FileManager control LargeIcons view', () => {
                                 uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                             },
                             showThumbnail: false,
-                        }, '#file');
+                        });
+                        feObj.appendTo('#file');
                         this.request = jasmine.Ajax.requests.mostRecent();
                         this.request.respondWith({
                             status: 200,
@@ -357,7 +375,8 @@ describe('FileManager control LargeIcons view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 enableRtl: true
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -378,7 +397,8 @@ describe('FileManager control LargeIcons view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 enableRtl: false
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -399,7 +419,8 @@ describe('FileManager control LargeIcons view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 path: '/Employees/'
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,

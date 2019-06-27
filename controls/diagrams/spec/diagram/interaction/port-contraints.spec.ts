@@ -9,7 +9,7 @@ import { PortConstraints } from '../../../src/diagram/enum/enum';
 import { Node } from '../../../src/diagram/objects/node';
 import { PortVisibility, DiagramTools } from '../../../src/diagram/index';
 import { NodeConstraints } from '../../../src/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
 * Test cases for port constraints
@@ -24,11 +24,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -106,7 +106,7 @@ describe('Diagram Control', () => {
             expect((diagram.tool & DiagramTools.SingleSelect) != 0).toBe(true);
             done();
         })
-       })
+    })
 
     describe('Ports with constraints undo redo ', () => {
         let diagram: Diagram;
@@ -116,11 +116,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -163,7 +163,7 @@ describe('Diagram Control', () => {
             diagram.redo();
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -181,49 +181,49 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
                 id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 150, annotations: [{ content: 'Node1' }],
                 shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~NodeConstraints.InConnect,
                 ports: [
-                             { id: 'node1In', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect },
-                  ]
+                    { id: 'node1In', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect },
+                ]
             };
             let node2: NodeModel = {
                 id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 150, annotations: [{ content: 'Node2' }],
                 shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~NodeConstraints.OutConnect,
                 ports: [
-                             { id: 'node2Out', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.OutConnect },
-                  ]
+                    { id: 'node2Out', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.OutConnect },
+                ]
             };
             let node3: NodeModel = {
                 id: 'node3', width: 100, height: 100, offsetX: 100, offsetY: 300, annotations: [{ content: 'Node3' }],
                 shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~NodeConstraints.InConnect,
                 ports: [
-                             { id: 'node3In', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect },
-                  ]
+                    { id: 'node3In', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect },
+                ]
             };
             let node4: NodeModel = {
                 id: 'node4', width: 100, height: 100, offsetX: 400, offsetY: 300, annotations: [{ content: 'Node4' }],
                 shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~NodeConstraints.OutConnect,
                 ports: [
-                             { id: 'node4Out', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.OutConnect },
-                  ]
+                    { id: 'node4Out', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.OutConnect },
+                ]
             };
             let connectors: ConnectorModel[] = [
                 {
-                    id: 'connector1', sourcePoint: { x: 300, y: 150}, targetPoint: { x: 200, y: 150},
-                    type: 'Orthogonal', segments: [{ type: 'Orthogonal'}], targetDecorator: { height: 10, width: 10}
+                    id: 'connector1', sourcePoint: { x: 300, y: 150 }, targetPoint: { x: 200, y: 150 },
+                    type: 'Orthogonal', segments: [{ type: 'Orthogonal' }], targetDecorator: { height: 10, width: 10 }
                 },
                 {
-                    id: 'connector2', sourcePoint: { x: 300, y: 300}, targetPoint: { x: 200, y: 300},
-                    type: 'Orthogonal', segments: [{ type: 'Orthogonal'}], targetDecorator: { height: 10, width: 10}
+                    id: 'connector2', sourcePoint: { x: 300, y: 300 }, targetPoint: { x: 200, y: 300 },
+                    type: 'Orthogonal', segments: [{ type: 'Orthogonal' }], targetDecorator: { height: 10, width: 10 }
                 },
             ];
             diagram = new Diagram({
@@ -299,11 +299,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
 
@@ -355,11 +355,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
 
@@ -370,7 +370,7 @@ describe('Diagram Control', () => {
                     offsetY: 150,
                     width: 100,
                     height: 100,
-                    constraints: NodeConstraints.Default &~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    constraints: NodeConstraints.Default & ~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
                     ports: [
                         {
                             offset: {
@@ -397,7 +397,7 @@ describe('Diagram Control', () => {
                     offsetY: 150,
                     width: 100,
                     height: 100,
-                    constraints: NodeConstraints.Default &~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    constraints: NodeConstraints.Default & ~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
                     ports: [
                         {
                             id: "2port",
@@ -422,29 +422,29 @@ describe('Diagram Control', () => {
                     id: '3', width: 100, height: 100, offsetX: 100, offsetY: 300,
                     shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default,
                     ports: [
-                                 { id: '3port', visibility: 1, height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.None },
-                      ]
+                        { id: '3port', visibility: 1, height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.None },
+                    ]
                 },
                 {
                     id: '4', width: 100, height: 100, offsetX: 400, offsetY: 300, annotations: [{ content: 'Node4' }],
                     shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default,
                     ports: [
-                                 { id: '4port', visibility: 1, height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
-                      ]
+                        { id: '4port', visibility: 1, height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
+                    ]
                 },
                 {
                     id: '5', width: 100, height: 100, offsetX: 100, offsetY: 500,
-                    shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default &~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
                     ports: [
-                                 { id: '5port', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
-                      ]
+                        { id: '5port', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
+                    ]
                 },
                 {
                     id: '6', width: 100, height: 100, offsetX: 400, offsetY: 500,
-                    shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default &~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default & ~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
                     ports: [
-                                 { id: '6port', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
-                      ]
+                        { id: '6port', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
+                    ]
                 }
             ];
 
@@ -462,9 +462,9 @@ describe('Diagram Control', () => {
             },
             {
                 sourceID: "5",
-                targetID: "6",              
+                targetID: "6",
             }
-          ];
+            ];
 
             diagram = new Diagram({
                 width: '500px', height: '500px', nodes: nodes, connectors: connectors
@@ -505,20 +505,20 @@ describe('Diagram Control', () => {
             done();
         });
         it('Remove port inconnect runtime', (done: Function) => {
-             diagram.nodes[0].ports[1].constraints = PortConstraints.Default &~PortConstraints.OutConnect;
-             diagram.dataBind();
-             let mouseEvents: MouseEvents = new MouseEvents();
-             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-             mouseEvents.clickEvent(diagramCanvas, 160, 150);
-             mouseEvents.mouseDownEvent(diagramCanvas, 155, 155);
-             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
-             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
-             mouseEvents.mouseMoveEvent(diagramCanvas, 155, 155);
-             mouseEvents.mouseLeaveEvent(diagramCanvas);
-             expect(diagram.connectors[0].sourcePortID).toBe('');
-             done();
+            diagram.nodes[0].ports[1].constraints = PortConstraints.Default & ~PortConstraints.OutConnect;
+            diagram.dataBind();
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 160, 150);
+            mouseEvents.mouseDownEvent(diagramCanvas, 155, 155);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 155, 155);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.connectors[0].sourcePortID).toBe('');
+            done();
         });
-        it('sourceport and targetport not defined and port constraints as inconnect and outconnect', (done: Function) => {    
+        it('sourceport and targetport not defined and port constraints as inconnect and outconnect', (done: Function) => {
             expect(diagram.connectors[2].sourcePoint.x).toBe(0);
             expect(diagram.connectors[2].sourcePoint.y).toBe(0);
             expect(diagram.connectors[2].targetPoint.x).toBe(0);
@@ -591,4 +591,5 @@ describe('Diagram Control', () => {
             ele.remove();
         });
     });
+
 });

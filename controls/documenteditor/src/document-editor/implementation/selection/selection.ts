@@ -2,7 +2,8 @@ import { DocumentEditor } from '../../document-editor';
 import {
     Rect, Margin, IWidget, Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
-    FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters
+    FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
+    EditRangeStartElementBox, EditRangeEndElementBox
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -20,12 +21,13 @@ import {
     LineSpacingType, BaselineAlignment, HighlightColor,
     Strikethrough, Underline, TextAlignment
 } from '../../base/index';
-import { TextPositionInfo } from '../editor/editor-helper';
+import { TextPositionInfo, PositionInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
 import { HtmlExport } from '../writer/html-export';
 import { Popup } from '@syncfusion/ej2-popups';
 import { ContextType, RequestNavigateEventArgs } from '../../index';
 import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat } from './selection-helper';
+import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 /**
  * Selection 
  */
@@ -79,11 +81,57 @@ export class Selection {
     /**
      * @private
      */
+    public pasteElement: HTMLElement;
+    /**
+     * @private
+     */
+    public isViewPasteOptions: boolean = false;
+    /**
+     * @private
+     */
+    public skipEditRangeRetrieval: boolean = false;
+
+    /**
+     * @private
+     */
     public editPosition: string;
     /**
      * @private
      */
     public selectedWidgets: Dictionary<IWidget, object> = undefined;
+    /**
+     * @private
+     */
+    public isHighlightEditRegionIn: boolean = false;
+    /**
+     * @private
+     */
+    public editRangeCollection: EditRangeStartElementBox[];
+    /**
+     * @private
+     */
+    public isHightlightEditRegionInternal: boolean = false;
+    /**
+     * @private
+     */
+    public isCurrentUser: boolean = false;
+    /**
+     * @private
+     */
+    public editRegionHighlighters: Dictionary<LineWidget, SelectionWidgetInfo[]> = undefined;
+    /**
+     * @private
+     */
+    get isHighlightEditRegion(): boolean {
+        return this.isHighlightEditRegionIn;
+    }
+    /**
+     * @private
+     */
+    set isHighlightEditRegion(value: boolean) {
+        this.isHighlightEditRegionIn = value;
+        this.onHighlight();
+    }
     /**
      * @private
      */
@@ -117,57 +165,64 @@ export class Selection {
     /**
      * Gets the instance of selection character format.
      * @default undefined
+     * @asptype SelectionCharacterFormat
      * @return {SelectionCharacterFormat}
      */
-    get characterFormat(): SelectionCharacterFormat {
+    public get characterFormat(): SelectionCharacterFormat {
         return this.characterFormatIn;
     }
     /**
      * Gets the instance of selection paragraph format.
      * @default undefined
+     * @asptype SelectionParagraphFormat
      * @return {SelectionParagraphFormat}
      */
-    get paragraphFormat(): SelectionParagraphFormat {
+    public get paragraphFormat(): SelectionParagraphFormat {
         return this.paragraphFormatIn;
     }
     /**
      * Gets the instance of selection section format.
      * @default undefined
+     * @asptype SelectionSectionFormat
      * @return {SelectionSectionFormat}
      */
-    get sectionFormat(): SelectionSectionFormat {
+    public get sectionFormat(): SelectionSectionFormat {
         return this.sectionFormatIn;
     }
     /**
      * Gets the instance of selection table format.
      * @default undefined
+     * @asptype SelectionTableFormat
      * @return {SelectionTableFormat}
      */
-    get tableFormat(): SelectionTableFormat {
+    public get tableFormat(): SelectionTableFormat {
         return this.tableFormatIn;
     }
     /**
      * Gets the instance of selection cell format.
      * @default undefined
+     * @asptype SelectionCellFormat
      * @return {SelectionCellFormat}
      */
-    get cellFormat(): SelectionCellFormat {
+    public get cellFormat(): SelectionCellFormat {
         return this.cellFormatIn;
     }
     /**
      * Gets the instance of selection row format.
      * @default undefined
-     * @returns SelectionRowFormat
+     * @asptype SelectionRowFormat
+     * @returns {SelectionRowFormat}
      */
-    get rowFormat(): SelectionRowFormat {
+    public get rowFormat(): SelectionRowFormat {
         return this.rowFormatIn;
     }
     /**
      * Gets the instance of selection image format.
      * @default undefined
-     * @returns SelectionImageFormat
+     * @asptype SelectionImageFormat
+     * @returns {SelectionImageFormat}
      */
-    get imageFormat(): SelectionImageFormat {
+    public get imageFormat(): SelectionImageFormat {
         return this.imageFormatInternal;
     }
     /**
@@ -179,9 +234,8 @@ export class Selection {
     }
     /**
      * Gets the page number where the selection ends.
-     * @private
      */
-    get startPage(): number {
+    public get startPage(): number {
         if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer)
             || isNullOrUndefined(this.viewer.selectionStartPage)) {
             return 1;
@@ -190,9 +244,8 @@ export class Selection {
     }
     /**
      * Gets the page number where the selection ends.
-     * @private
      */
-    get endPage(): number {
+    public get endPage(): number {
         if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer)
             || isNullOrUndefined(this.viewer.selectionEndPage)) {
             return 1;
@@ -231,15 +284,16 @@ export class Selection {
     /**
      * Gets the text within selection.
      * @default ''
+     * @asptype string
      * @returns {string}
      */
-    get text(): string {
+    public get text(): string {
         return this.getText(false);
     }
     /**
      * Gets the context type of the selection.
      */
-    get contextType(): ContextType {
+    public get contextType(): ContextType {
         return this.contextTypeInternal;
     }
     /**
@@ -248,6 +302,7 @@ export class Selection {
     get isCleared(): boolean {
         return isNullOrUndefined(this.end);
     }
+
     /**
      * @private
      */
@@ -264,6 +319,8 @@ export class Selection {
         this.cellFormatIn = new SelectionCellFormat(this);
         this.tableFormatIn = new SelectionTableFormat(this);
         this.imageFormatInternal = new SelectionImageFormat(this);
+        this.editRangeCollection = [];
+        this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
     }
     private getModuleName(): string {
         return 'Selection';
@@ -511,34 +568,40 @@ export class Selection {
         }
         let page: Page = this.getPage(lineWidget.paragraph);
         let height: number = lineWidget.height;
+        let widgets: Dictionary<IWidget, object> = this.selectedWidgets;
         let selectionWidget: SelectionWidgetInfo = undefined;
         let selectionWidgetCollection: SelectionWidgetInfo[] = undefined;
-        if (this.selectedWidgets.containsKey(lineWidget)) {
-            if (this.selectedWidgets.get(lineWidget) instanceof SelectionWidgetInfo) {
-                selectionWidget = this.selectedWidgets.get(lineWidget) as SelectionWidgetInfo;
-                // if the line element has already added with SelectionWidgetInfo
-                // now its need to be added as ElementBox highlighting them remove it from dictionary and add it collection.
-                if (isElementBoxHighlight) {
-                    this.selectedWidgets.remove(lineWidget);
-                    selectionWidgetCollection = [];
-                    this.selectedWidgets.add(lineWidget, selectionWidgetCollection);
-                }
-
-            } else {
-                selectionWidgetCollection = this.selectedWidgets.get(lineWidget) as SelectionWidgetInfo[];
-            }
+        if (this.isHightlightEditRegionInternal) {
+            this.addEditRegionHighlight(lineWidget, left, width);
+            return;
         } else {
-            if (isElementBoxHighlight) {
-                selectionWidgetCollection = [];
-                this.selectedWidgets.add(lineWidget, selectionWidgetCollection);
+            if (widgets.containsKey(lineWidget)) {
+                if (widgets.get(lineWidget) instanceof SelectionWidgetInfo) {
+                    selectionWidget = widgets.get(lineWidget) as SelectionWidgetInfo;
+                    // if the line element has already added with SelectionWidgetInfo
+                    // now its need to be added as ElementBox highlighting them remove it from dictionary and add it collection.
+                    if (isElementBoxHighlight) {
+                        widgets.remove(lineWidget);
+                        selectionWidgetCollection = [];
+                        widgets.add(lineWidget, selectionWidgetCollection);
+                    }
+
+                } else {
+                    selectionWidgetCollection = widgets.get(lineWidget) as SelectionWidgetInfo[];
+                }
             } else {
-                selectionWidget = new SelectionWidgetInfo(left, width);
-                this.selectedWidgets.add(lineWidget, selectionWidget);
+                if (isElementBoxHighlight) {
+                    selectionWidgetCollection = [];
+                    widgets.add(lineWidget, selectionWidgetCollection);
+                } else {
+                    selectionWidget = new SelectionWidgetInfo(left, width);
+                    widgets.add(lineWidget, selectionWidget);
+                }
             }
-        }
-        if (selectionWidget === undefined) {
-            selectionWidget = new SelectionWidgetInfo(left, width);
-            this.selectedWidgets.add(lineWidget, selectionWidget);
+            if (selectionWidget === undefined) {
+                selectionWidget = new SelectionWidgetInfo(left, width);
+                widgets.add(lineWidget, selectionWidget);
+            }
         }
         let viewer: PageLayoutViewer = this.viewer as PageLayoutViewer;
         let pageTop: number = this.getPageTop(page);
@@ -551,7 +614,7 @@ export class Selection {
                 // tslint:disable-next-line:max-line-length
                 this.renderDashLine(viewer.selectionContext, page, lineWidget, (pageLeft + (left * zoomFactor)) - viewer.containerLeft, top, width * zoomFactor, height);
             } else {
-                viewer.selectionContext.fillStyle = 'gray';
+                this.viewer.selectionContext.fillStyle = 'gray';
                 viewer.selectionContext.globalAlpha = 0.4;
                 // tslint:disable-next-line:max-line-length
                 viewer.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - viewer.containerLeft, (pageTop + (top * zoomFactor)) - viewer.containerTop, width * zoomFactor, height * zoomFactor);
@@ -561,6 +624,25 @@ export class Selection {
         if (isElementBoxHighlight) {
             selectionWidgetCollection.push(selectionWidget);
         }
+    }
+    /**
+     * @private
+     */
+    public addEditRegionHighlight(lineWidget: LineWidget, left: number, width: number): SelectionWidgetInfo {
+        let highlighters: SelectionWidgetInfo[] = undefined;
+        let collection: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.editRegionHighlighters;
+        if (collection.containsKey(lineWidget)) {
+            highlighters = collection.get(lineWidget);
+        } else {
+            highlighters = [];
+            collection.add(lineWidget, highlighters);
+        }
+        let editRegionHighlight: SelectionWidgetInfo = new SelectionWidgetInfo(left, width);
+        if (this.isCurrentUser) {
+            editRegionHighlight.color = this.owner.userColor !== '' ? this.owner.userColor : '#FFFF00';
+        }
+        highlighters.push(editRegionHighlight);
+        return editRegionHighlight;
     }
     /**
      * Create selection highlight inside table
@@ -578,18 +660,21 @@ export class Selection {
         let pageLeft: number = page.boundingRectangle.x;
         let isVisiblePage: boolean = this.viewer.containerTop <= pageTop
             || pageTop < this.viewer.containerTop + this.viewer.selectionCanvas.height;
-        if (this.selectedWidgets.containsKey(cellWidget) && this.selectedWidgets.get(cellWidget) instanceof SelectionWidgetInfo) {
-            selectionWidget = this.selectedWidgets.get(cellWidget) as SelectionWidgetInfo;
-            if (isVisiblePage) {
-                // tslint:disable-next-line:max-line-length
-                this.viewer.selectionContext.clearRect((pageLeft + (selectionWidget.left * this.viewer.zoomFactor) - this.viewer.containerLeft), (pageTop + (top * this.viewer.zoomFactor)) - this.viewer.containerTop, selectionWidget.width * this.viewer.zoomFactor, height * this.viewer.zoomFactor);
+        let widgets: Dictionary<IWidget, object> = this.selectedWidgets;
+        if (!this.isHightlightEditRegionInternal) {
+            if (widgets.containsKey(cellWidget) && widgets.get(cellWidget) instanceof SelectionWidgetInfo) {
+                selectionWidget = widgets.get(cellWidget) as SelectionWidgetInfo;
+                if (isVisiblePage) {
+                    // tslint:disable-next-line:max-line-length
+                    this.viewer.selectionContext.clearRect((pageLeft + (selectionWidget.left * this.viewer.zoomFactor) - this.viewer.containerLeft), (pageTop + (top * this.viewer.zoomFactor)) - this.viewer.containerTop, selectionWidget.width * this.viewer.zoomFactor, height * this.viewer.zoomFactor);
+                }
+            } else {
+                selectionWidget = new SelectionWidgetInfo(left, width);
+                if (widgets.containsKey(cellWidget)) {
+                    widgets.remove(widgets.get(cellWidget));
+                }
+                widgets.add(cellWidget, selectionWidget);
             }
-        } else {
-            selectionWidget = new SelectionWidgetInfo(left, width);
-            if (this.selectedWidgets.containsKey(cellWidget)) {
-                this.selectedWidgets.remove(this.selectedWidgets.get(cellWidget));
-            }
-            this.selectedWidgets.add(cellWidget, selectionWidget);
         }
         if (isVisiblePage) {
             this.viewer.selectionContext.fillStyle = 'gray';
@@ -2602,6 +2687,7 @@ export class Selection {
                 continue;
             }
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
+                || inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox
                 || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                 return startOffset;
             }
@@ -2950,7 +3036,7 @@ export class Selection {
                 topMargin += lineSpacing - (topMargin + size.Height + bottomMargin);
             }
             topMargin += beforeSpacing;
-            bottomMargin += paragraph.paragraphFormat.afterSpacing;
+            bottomMargin += this.viewer.layout.getAfterSpacing(paragraph);
         }
         return { 'width': size.Width, 'height': size.Height, 'topMargin': topMargin, 'bottomMargin': bottomMargin };
     }
@@ -3987,7 +4073,7 @@ export class Selection {
                 maxLineHeight = sizeInfo.height;
                 isItalic = paragarph.characterFormat.italic;
                 if (!isEmptySelection) {
-                    maxLineHeight += paragarph.paragraphFormat.afterSpacing;
+                    maxLineHeight += this.viewer.layout.getAfterSpacing(paragarph);
                 }
             } else if (isNullOrUndefined(previousInline)) {
                 isItalic = nextInline.characterFormat.italic;
@@ -5150,6 +5236,9 @@ export class Selection {
         if (this.owner.isLayoutEnabled && !this.owner.isShiftingEnabled) {
             this.highlightSelection(true);
         }
+        if (this.viewer.restrictEditingPane.isShowRestrictPane && !this.skipEditRangeRetrieval) {
+            this.viewer.restrictEditingPane.updateUserInformation();
+        }
         if (isSelectionChanged) {
             if (this.start.paragraph.isInHeaderFooter && !this.owner.enableHeaderAndFooter) {
                 this.owner.enableHeaderAndFooter = true;
@@ -6113,6 +6202,52 @@ export class Selection {
         }
     }
     /**
+     * @private
+     */
+    public createPasteElement(top: string, left: string): void {
+        let items: ItemModel[] = [
+            {
+                text: 'Keep source formatting',
+                iconCss: 'e-icons e-de-paste-source'
+            },
+            {
+                text: 'Match destination formatting',
+                iconCss: 'e-icons e-de-paste-merge'
+            },
+            {
+                text: 'Text only',
+                iconCss: 'e-icons e-de-paste-text'
+            }
+        ];
+        if (!this.pasteElement) {
+            this.pasteElement = createElement('div', { className: 'e-de-tooltip' });
+            this.viewer.viewerContainer.appendChild(this.pasteElement);
+            let splitButtonEle: HTMLElement = createElement('button', { id: 'iconsplitbtn' });
+            this.pasteElement.appendChild(splitButtonEle);
+            let splitButton: DropDownButton = new DropDownButton({
+                items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
+            });
+            splitButton.appendTo('#iconsplitbtn');
+
+        }
+        this.pasteElement.style.display = 'block';
+        this.pasteElement.style.position = 'absolute';
+        this.pasteElement.style.left = left;
+        this.pasteElement.style.top = top;
+    }
+    /**
+     * @private
+     */
+    public pasteOptions = (event: MenuEventArgs) => {
+        if (event.item.text === 'Keep source formatting') {
+            this.owner.editor.applyPasteOptions('KeepSourceFormatting');
+        } else if (event.item.text === 'Match destination formatting') {
+            this.owner.editor.applyPasteOptions('MergeWithExistingFormatting');
+        } else {
+            this.owner.editor.applyPasteOptions('KeepTextOnly');
+        }
+    }
+    /**
      * Show hyperlink tooltip
      * @private
      */
@@ -6623,7 +6758,9 @@ export class Selection {
      * @private
      */
     public hideCaret = (): void => {
-        this.caret.style.display = 'none';
+        if (!isNullOrUndefined(this.caret)) {
+            this.caret.style.display = 'none';
+        }
     }
     /** 
      * Initializes caret.
@@ -6643,7 +6780,7 @@ export class Selection {
     public updateCaretPosition(): void {
         let caretPosition: Point = this.end.location;
         let page: Page = this.getSelectionPage(this.end);
-        if (page) {
+        if (page && !isNullOrUndefined(this.caret)) {
             this.caret.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.viewer.zoomFactor) + 'px';
             let caretInfo: CaretHeightInfo = this.updateCaretSize(this.owner.selection.end);
             let topMargin: number = caretInfo.topMargin;
@@ -6663,6 +6800,20 @@ export class Selection {
                 this.viewer.touchEnd.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.viewer.zoomFactor - 14) + 'px';
                 this.viewer.touchEnd.style.top = pageTop + ((caretPosition.y + caretInfo.height) * this.viewer.zoomFactor) + 'px';
             }
+        }
+        this.showHidePasteOptions(this.caret.style.top, this.caret.style.left);
+    }
+    /**
+     * @private
+     */
+    public showHidePasteOptions(top: string, left: string): void {
+        if (this.isViewPasteOptions) {
+            if (this.pasteElement && this.pasteElement.style.display === 'block') {
+                return;
+            }
+            this.createPasteElement(top, left);
+        } else if (this.pasteElement) {
+            this.pasteElement.style.display = 'none';
         }
     }
     /**
@@ -6796,7 +6947,7 @@ export class Selection {
             isItalic = caretHeightInfo.isItalic;
             bottom += caretHeightInfo.height;
             if (isEmptySelection) {
-                bottom -= HelperMethods.convertPointToPixel(textPosition.paragraph.paragraphFormat.afterSpacing);
+                bottom -= HelperMethods.convertPointToPixel(this.viewer.layout.getAfterSpacing(textPosition.paragraph));
             }
         }
         return bottom;
@@ -7063,6 +7214,9 @@ export class Selection {
         this.shiftBlockOnHeaderFooterEnableDisable();
         return true;
     }
+    /**
+     * @private
+     */
     public shiftBlockOnHeaderFooterEnableDisable(): void {
         for (let i: number = 0; i < this.viewer.headersFooters.length; i++) {
             let headerFooter: HeaderFooters = this.viewer.headersFooters[i];
@@ -7229,6 +7383,199 @@ export class Selection {
 
         return elements;
     }
+    /**
+     * @private
+     */
+    public updateEditRangeCollection(): void {
+        if (this.editRangeCollection.length > 0) {
+            this.editRangeCollection = [];
+        }
+        let editRangeStart: EditRangeStartElementBox[];
+        let everyOneArea: EditRangeStartElementBox[];
+        if (!this.viewer.isDocumentProtected) {
+            for (let i: number = 0; i < this.viewer.editRanges.length; i++) {
+                let user: string = this.viewer.editRanges.keys[i];
+                editRangeStart = this.viewer.editRanges.get(user);
+                for (let j: number = 0; j < editRangeStart.length; j++) {
+                    this.editRangeCollection.push(editRangeStart[j]);
+                }
+            }
+        } else {
+            if (this.viewer.editRanges.containsKey(this.owner.currentUser)) {
+                editRangeStart = this.viewer.editRanges.get(this.owner.currentUser);
+                for (let j: number = 0; j < editRangeStart.length; j++) {
+                    this.editRangeCollection.push(editRangeStart[j]);
+                }
+            }
+            if (this.viewer.editRanges.containsKey('Everyone')) {
+                let user: string = 'Everyone';
+                everyOneArea = this.viewer.editRanges.get(user);
+                for (let j: number = 0; j < everyOneArea.length; j++) {
+                    this.editRangeCollection.push(everyOneArea[j]);
+                }
+            }
+        }
+    }
+    //Restrict editing implementation starts
+    /**
+     * @private
+     */
+    public onHighlight(): void {
+        if (this.isHighlightEditRegion) {
+            this.highlightEditRegion();
+        } else {
+            this.unHighlightEditRegion();
+        }
+        this.viewer.renderVisiblePages();
+    }
+    /**
+     * @private
+     */
+    public highlightEditRegion(): void {
+        this.updateEditRangeCollection();
+        if (!this.isHighlightEditRegion) {
+            this.unHighlightEditRegion();
+            return;
+        }
+        this.isHightlightEditRegionInternal = true;
+        if (isNullOrUndefined(this.editRegionHighlighters)) {
+            this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        }
+        this.editRegionHighlighters.clear();
+        for (let j: number = 0; j < this.editRangeCollection.length; j++) {
+            this.highlightEditRegionInternal(this.editRangeCollection[j]);
+        }
+        this.isHightlightEditRegionInternal = false;
+        this.viewer.updateScrollBars();
+    }
+    /**
+     * @private
+     */
+    public unHighlightEditRegion(): void {
+        if (!isNullOrUndefined(this.editRegionHighlighters)) {
+            this.editRegionHighlighters.clear();
+            this.editRegionHighlighters = undefined;
+        }
+        this.isHightlightEditRegionInternal = false;
+    }
+    /**
+     * @private
+     */
+    public highlightEditRegionInternal(editRangeStart: EditRangeStartElementBox): void {
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let startPosition: TextPosition = positionInfo.startPosition;
+        let endPosition: TextPosition = positionInfo.endPosition;
+        // if (editRangeStart.user === this.owner.currentUser && editRangeStart.group === '') {
+        this.isCurrentUser = true;
+        // }
+        this.highlightEditRegions(editRangeStart, startPosition, endPosition);
+        this.isCurrentUser = false;
+    }
+    /**
+     * @private
+     */
+    public SelectAllEditRegion(): void {
+        if (this.editRangeCollection.length === 0) {
+            this.updateEditRangeCollection();
+        }
+        this.viewer.clearSelectionHighlight();
+        for (let j: number = 0; j < this.editRangeCollection.length; j++) {
+            let editRangeStart: EditRangeStartElementBox = this.editRangeCollection[j];
+            let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+            let startPosition: TextPosition = positionInfo.startPosition;
+            let endPosition: TextPosition = positionInfo.endPosition;
+            this.highlightEditRegions(editRangeStart, startPosition, endPosition);
+        }
+    }
+    private highlightEditRegions(editRangeStart: EditRangeStartElementBox, startPosition: TextPosition, endPosition: TextPosition): void {
+        if (!editRangeStart.line.paragraph.isInsideTable) {
+            this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
+        } else {
+            let row: TableRowWidget = editRangeStart.line.paragraph.associatedCell.ownerRow as TableRowWidget;
+            let cell: TableCellWidget = row.childWidgets[editRangeStart.columnFirst] as TableCellWidget;
+            for (let i: number = 0; i < cell.childWidgets.length; i++) {
+                if (cell.childWidgets[i] instanceof ParagraphWidget) {
+                    this.highlight(cell.childWidgets[i] as ParagraphWidget, startPosition, endPosition);
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public navigateNextEditRegion(): void {
+        let editRange: EditRangeStartElementBox = this.getEditRangeStartElement();
+
+        //Sort based on position
+        for (let i: number = this.editRangeCollection.length - 1; i >= 0; i--) {
+            for (let j: number = 1; j <= i; j++) {
+                let nextPosition: TextPosition = this.getPosition(this.editRangeCollection[j - 1]).startPosition;
+                let firstPosition: TextPosition = this.getPosition(this.editRangeCollection[j]).startPosition;
+                if (nextPosition.isExistAfter(firstPosition)) {
+                    let temp: EditRangeStartElementBox = this.editRangeCollection[j - 1];
+                    this.editRangeCollection[j - 1] = this.editRangeCollection[j];
+                    this.editRangeCollection[j] = temp;
+                }
+            }
+        }
+
+        let index: number = this.editRangeCollection.indexOf(editRange);
+        let editRangeStart: EditRangeStartElementBox = index < this.editRangeCollection.length - 1 ?
+            this.editRangeCollection[index + 1] as EditRangeStartElementBox : this.editRangeCollection[0] as EditRangeStartElementBox;
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let startPosition: TextPosition = positionInfo.startPosition;
+        let endPosition: TextPosition = positionInfo.endPosition;
+        this.selectRange(startPosition, endPosition);
+    }
+    /**
+     * @private
+     */
+    public getEditRangeStartElement(): EditRangeStartElementBox {
+        for (let i: number = 0; i < this.editRangeCollection.length; i++) {
+            let editStart: EditRangeStartElementBox = this.editRangeCollection[i];
+            let position: PositionInfo = this.getPosition(editStart);
+            let start: TextPosition = position.startPosition;
+            let end: TextPosition = position.endPosition;
+            if ((this.start.isExistAfter(start) || this.start.isAtSamePosition(start))
+                && (this.end.isExistBefore(end) || this.end.isAtSamePosition(end))) {
+                return editStart;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public isSelectionIsAtEditRegion(update: boolean): boolean {
+        if (!this.viewer.isDocumentProtected) {
+            return false;
+        }
+        return this.checkSelectionIsAtEditRegion();
+    }
+    public checkSelectionIsAtEditRegion(): boolean {
+        for (let i: number = 0; i < this.editRangeCollection.length; i++) {
+            let editRangeStart: EditRangeStartElementBox = this.editRangeCollection[i];
+            let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+            let startPosition: TextPosition = positionInfo.startPosition;
+            let endPosition: TextPosition = positionInfo.endPosition;
+            if ((this.start.isExistAfter(startPosition) || this.start.isAtSamePosition(startPosition))
+                && (this.end.isExistBefore(endPosition) || this.end.isAtSamePosition(endPosition))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private getPosition(element: ElementBox): PositionInfo {
+        let offset: number = element.line.getOffset(element, 1);
+        let startPosition: TextPosition = new TextPosition(this.viewer.owner);
+        startPosition.setPositionParagraph(element.line, offset);
+        let endElement: EditRangeEndElementBox = (element as EditRangeStartElementBox).editRangeEnd;
+        offset = endElement.line.getOffset(endElement, 1);
+        let endPosition: TextPosition = new TextPosition(this.viewer.owner);
+        endPosition.setPositionParagraph(endElement.line, offset);
+        return { 'startPosition': startPosition, 'endPosition': endPosition };
+    }
+    //Restrict editing implementation ends
 }
 /**
  *  Specifies the settings for selection.

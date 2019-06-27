@@ -8,7 +8,7 @@ import {
     ChartLocation, RectOption, CircleOption, withInBounds, getDraggedRectLocation,
     removeElement, getElement
 } from '../../common/utils/helper';
-import { Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { SelectionMode } from '../utils/enum';
 import { Chart } from '../chart';
 import { Series, Points } from '../series/chart-series';
@@ -23,7 +23,7 @@ import { BaseSelection } from '../../common/user-interaction/selection';
  */
 export class Selection extends BaseSelection {
 
-    private renderer: SvgRenderer;
+    private renderer: SvgRenderer | CanvasRenderer;
     private isSeriesMode: boolean;
     private resizing: boolean;
     /** @private */
@@ -68,7 +68,7 @@ export class Selection extends BaseSelection {
      */
     private mousedown(e: Event): void {
         let chart: Chart = this.chart;
-        if (chart.selectionMode === 'None' || chart.isChartDrag) {
+        if (chart.isPointMouseDown || chart.selectionMode === 'None' || chart.isChartDrag) {
             return;
         }
         if (chart.isDoubleTap || !chart.isTouch || this.rectPoints) {
@@ -468,9 +468,10 @@ export class Selection extends BaseSelection {
         if (element) {
             this.setAttributes(element, dragRect);
         } else {
-            let dragGroup: Element = chart.renderer.createGroup({ id: this.draggedRectGroup });
-            chart.svgObject.appendChild(dragGroup);
-            element = chart.renderer.drawRectangle(new RectOption(
+            let dragGroup: Element = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
+            let svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
+            chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
+            element = chart.svgRenderer.drawRectangle(new RectOption(
                 this.draggedRect, chart.themeStyle.selectionRectFill,
                 { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, dragRect));
             element.setAttribute('style', 'cursor:move;');
@@ -478,22 +479,23 @@ export class Selection extends BaseSelection {
         }
     }
     private createCloseButton(x: number, y: number): void {
-        let closeIcon: Element = this.chart.renderer.createGroup({
+        let closeIcon: Element = this.chart.svgRenderer.createGroup({
             id: this.closeIconId,
             style: 'cursor:pointer; visibility: visible;'
         });
-        closeIcon.appendChild(this.chart.renderer.drawCircle(
+        closeIcon.appendChild(this.chart.svgRenderer.drawCircle(
             new CircleOption(
                 this.closeIconId + '_circle', '#FFFFFF',
                 { color: this.chart.themeStyle.selectionCircleStroke, width: 1 }, 1, x, y, 10, )
         ));
         let direction: string = 'M ' + (x - 4) + ' ' + (y - 4) + ' L ' + (x + 4) + ' ' + (y + 4) + ' M ' + (x - 4) + ' ' + (y + 4) +
             ' L ' + (x + 4) + ' ' + (y - 4);
-        closeIcon.appendChild(this.chart.renderer.drawPath({
+        closeIcon.appendChild(this.chart.svgRenderer.drawPath(
+            {
             id: this.closeIconId + '_cross', d: direction,
             stroke: this.chart.themeStyle.selectionCircleStroke,
             'stroke-width': 2, fill: this.chart.themeStyle.selectionCircleStroke
-        }));
+        },  null));
         this.closeIcon = closeIcon;
         getElement(this.draggedRectGroup).appendChild(closeIcon);
     }

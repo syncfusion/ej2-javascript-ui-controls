@@ -49,6 +49,8 @@ $calendar-inline-block-style: inline-block !default;
 $calendar-display-style: inline-block !default;
 $calendar-wrapper-border-radius: 4px !default;
 $calendar-full-width: 100% !default;
+$calendar-lg-day-header-format-max-width: 100% !default;
+$calendar-lg-day-header-format-min-width: 540px !default;
 $calendar-pointer-events: initial !default;
 $calendar-float-right-style: right !default;
 $calendar-float-left-style: left !default;
@@ -193,3 +195,19 @@ $calendar-today-disabled-background-style: $white !default;
 $calendar-today-disabled-border-style: rgba($gray-900, .65) !default;
 $calendar-today-disabled-box-shadow: none !default;
 $calendar-today-disabled-color: $gray-500 !default;
+
+// small size
+$calendar-small-icon-size: 32px !default;
+$calendar-small-icon-font-size-style: 12px !default;
+$calendar-small-title-font-size: 13px !default;
+$calendar-small-icon-padding: 6px !default;
+$calendar-small-header-height: 32px !default;
+$calendar-small-day-header-height: 24px !default;
+$calendar-small-month-view-height: 24px !default;
+$calendar-small-date-font-size: 12px !default;
+$calendar-small-month-view-width: 34px !default;
+$calendar-small-popup-padding: 0 !default;
+$calendar-small-title-font-color: $gray-900 !default;
+$calendar-bigger-small-table-padding: 0 12px 12px 12px !default;
+$calendar-bigger-small-yeardecade-font-size: 14px !default;
+$calendar-small-font-size: 12px !default;

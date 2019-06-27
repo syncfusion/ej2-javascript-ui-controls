@@ -6,9 +6,10 @@ import { Node } from '../../../src/diagram/objects/node';
 import { HorizontalAlignment, VerticalAlignment, AnnotationConstraints, SnapConstraints } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from './../interaction/mouseevents.spec';
 import { ConnectorModel, PathModel, BasicShapeModel } from '../../../src';
-import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 Diagram.Inject(UndoRedo);
+
 /**
  * Annotations - Alignments
  */
@@ -410,8 +411,12 @@ describe('Diagram Control', () => {
         });
 
         it('Testing label style in SVG mode', (done: Function) => {
+            
             let transform: string = document.getElementById('node1_label1_text').getAttribute("transform");
             let transform2: string = document.getElementById('node2_label1_text').getAttribute("transform");
+            console.log('testcase5')
+            console.log(transform)//rotate(0,100.5,137.7)translate(73.3125,130.5)
+            console.log(transform2)//rotate(0,100.5,137.7)translate(82.65625,130.5)
             expect(transform === 'rotate(0,100.5,136.5)translate(73.484375,130.5)' ||transform==='rotate(0,100.5,137.7)translate(73.3125,130.5)'|| transform == 'rotate(0,100.5,136.5)translate(73.3203125,130.5)' || transform == 'rotate(0,100.5,137.7)translate(73.3203125,130.5)').toBe(true);
             expect(transform2 === 'rotate(0,100.5,136.5)translate(82.828125,130.5)'||transform2==='rotate(0,100.5,137.7)translate(82.65625,130.5)' || transform2 == 'rotate(0,100.5,136.5)translate(82.6640625,130.5)' || transform2 == 'rotate(0,100.5,137.7)translate(82.6640625,130.5)').toBe(true);
             done();
@@ -640,7 +645,6 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
-
     describe('Undo/redo not working for node annotation fontSize changed at runtime', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -711,7 +715,6 @@ describe('Diagram Control', () => {
         });
         
     });
-
     describe('Undo/redo not working for node annotation fontSize changed at runtime -update fix', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -857,4 +860,6 @@ describe('Diagram Control', () => {
         });
         
     });
+
+
 });

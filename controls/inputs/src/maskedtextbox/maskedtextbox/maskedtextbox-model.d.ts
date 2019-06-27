@@ -40,6 +40,13 @@ export interface MaskedTextBoxModel extends ComponentModel{
     floatLabelType?: FloatLabelType;
 
     /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string; };
+
+    /**
      * Sets a value that enables or disables the MaskedTextBox component.
      * @default true
      */
@@ -120,30 +127,35 @@ export interface MaskedTextBoxModel extends ComponentModel{
     /**
      * Triggers when the MaskedTextBox component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the MaskedTextBox component is destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the value of the MaskedTextBox changes.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType <MaskChangeEventArgs>;
 
     /**
      * Triggers when the MaskedTextBox got focus in.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<MaskFocusEventArgs>;
 
     /**
      * Triggers when the MaskedTextBox got focus out.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<MaskBlurEventArgs>;
 

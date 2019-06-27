@@ -149,7 +149,7 @@ describe('TreeGrid Hierarchy Selection', () => {
           childMapping: 'subtasks',
           treeColumnIndex: 1,
           allowPaging: true,
-          allowSorting: true,
+          allowFiltering: true,
           autoCheckHierarchy: true,
           columns: [
             { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 120 },

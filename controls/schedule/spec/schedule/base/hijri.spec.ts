@@ -1,15 +1,16 @@
 /**
  * Schedule hijri calendar spec 
  */
-import { createElement, remove, HijriParser } from '@syncfusion/ej2-base';
+import { createElement, HijriParser } from '@syncfusion/ej2-base';
 import { Islamic, Calendar, DateTimePicker } from '@syncfusion/ej2-calendars';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth, MonthAgenda, EJ2Instance
+    Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth, MonthAgenda, EJ2Instance, ScheduleModel
 } from '../../../src/schedule/index';
 import { disableScheduleAnimation, triggerMouseEvent } from '../util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/recurrence-editor';
+import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth);
@@ -29,21 +30,12 @@ describe('Schedule Islamic Calendar', () => {
 
     describe('Islamic in Day view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                currentView: 'Day',
-                selectedDate: new Date(2018, 12, 9),
-                calendarMode: 'Islamic'
-            });
-            schObj.appendTo('#Schedule');
+            let schOptions: ScheduleModel = { currentView: 'Day', selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic' };
+            schObj = util.createSchedule(schOptions, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-day-view')).toBeTruthy();
@@ -87,23 +79,12 @@ describe('Schedule Islamic Calendar', () => {
     });
     describe('Islamic in Week view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                selectedDate: new Date(2018, 12, 9),
-                calendarMode: 'Islamic',
-                views: [
-                    { option: 'Week' }
-                ],
-            });
-            schObj.appendTo('#Schedule');
+            let schOptions: ScheduleModel = { selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic', views: [{ option: 'Week' }] };
+            schObj = util.createSchedule(schOptions, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-week-view')).toBeTruthy();
@@ -164,23 +145,12 @@ describe('Schedule Islamic Calendar', () => {
     });
     describe('Islamic in Work Week view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                selectedDate: new Date(2018, 12, 9),
-                calendarMode: 'Islamic',
-                views: [
-                    { option: 'WorkWeek' }
-                ],
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date(2018, 12, 9), calendarMode: 'Islamic', views: [{ option: 'WorkWeek' }] };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-work-week-view')).toBeTruthy();
@@ -241,21 +211,12 @@ describe('Schedule Islamic Calendar', () => {
     });
     describe('Islamic in Month view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                selectedDate: new Date('9/12/2018'),
-                calendarMode: 'Islamic',
-                currentView: 'Month'
-            });
-            schObj.appendTo('#Schedule');
+            let model: ScheduleModel = { selectedDate: new Date('9/12/2018'), calendarMode: 'Islamic', currentView: 'Month' };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-month-view')).toBeTruthy();
@@ -274,7 +235,6 @@ describe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Safar 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(5);
         });
-
         it('(Rabiʻ I1440) month element checking', () => {
             schObj.selectedDate = new Date(2018, 10, 10);
             schObj.dataBind();
@@ -344,23 +304,16 @@ describe('Schedule Islamic Calendar', () => {
     });
     describe('Islamic in Timeline Month view', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 selectedDate: new Date('9/12/2018'),
                 calendarMode: 'Islamic',
-                views: [
-                    { option: 'TimelineMonth' }
-                ],
-            });
-            schObj.appendTo('#Schedule');
+                views: [{ option: 'TimelineMonth' }]
+            };
+            schObj = util.createSchedule(model, []);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-timeline-month-view')).toBeTruthy();
@@ -376,7 +329,6 @@ describe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Safar 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
-
         it('(Rabiʻ I1440) month element checking', () => {
             schObj.selectedDate = new Date(2018, 10, 10);
             schObj.dataBind();
@@ -452,24 +404,18 @@ describe('Schedule Islamic Calendar', () => {
     });
     describe('Check locale objects in default culture', () => {
         let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new Schedule({
+            let model: ScheduleModel = {
                 currentView: 'Week',
                 selectedDate: new Date(2017, 10, 6),
                 calendarMode: 'Islamic'
-            });
-            schObj.appendTo('#Schedule');
+            };
+            schObj = util.createSchedule(model, []);
             disableScheduleAnimation(schObj);
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(schObj);
         });
-
         it('checking day names', () => {
             expect((schObj.element.querySelector('.e-date-header-container .e-header-cells .e-header-day') as HTMLElement).innerText)
                 .toEqual('Sun');
@@ -512,25 +458,21 @@ describe('Schedule Islamic Calendar', () => {
         });
     });
     describe('checking rule', () => {
-        let schObj: RecurrenceEditor;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let recObj: RecurrenceEditor;
         beforeAll(() => {
-            document.body.appendChild(elem);
-            schObj = new RecurrenceEditor({ startDate: new Date('Tue, 06 May 2014'), firstDayOfWeek: 1, calendarMode: 'Islamic' });
-            schObj.appendTo('#Schedule');
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
+            recObj = new RecurrenceEditor({ startDate: new Date('Tue, 06 May 2014'), firstDayOfWeek: 1, calendarMode: 'Islamic' });
+            recObj.appendTo('#Schedule');
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            util.destroy(recObj);
         });
         it('getRuleSummary', () => {
-            schObj.setRecurrenceRule('FREQ=YEARLY;BYDAY=MO;BYSETPOS=4;BYMONTH=4;INTERVAL=2;COUNT=10;');
-            expect(schObj.getRecurrenceRule()).toBe('FREQ=YEARLY;BYDAY=MO;BYSETPOS=4;BYMONTH=4;INTERVAL=2;COUNT=10;');
-            expect('every 2 year(s) on Rab. II Fourth Mon, 10 time(s)').toBe(schObj.getRuleSummary());
-            schObj.calendarMode = 'Gregorian';
-            expect('every 2 year(s) on Apr Fourth Mon, 10 time(s)').toBe(schObj.getRuleSummary());
+            recObj.setRecurrenceRule('FREQ=YEARLY;BYDAY=MO;BYSETPOS=4;BYMONTH=4;INTERVAL=2;COUNT=10;');
+            expect(recObj.getRecurrenceRule()).toBe('FREQ=YEARLY;BYDAY=MO;BYSETPOS=4;BYMONTH=4;INTERVAL=2;COUNT=10;');
+            expect('every 2 year(s) on Rab. II Fourth Mon, 10 time(s)').toBe(recObj.getRuleSummary());
+            recObj.calendarMode = 'Gregorian';
+            expect('every 2 year(s) on Apr Fourth Mon, 10 time(s)').toBe(recObj.getRuleSummary());
         });
     });
 

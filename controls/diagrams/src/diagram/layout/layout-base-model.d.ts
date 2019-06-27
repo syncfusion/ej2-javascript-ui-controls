@@ -162,6 +162,7 @@ export interface LayoutModel {
      * ```
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     getLayoutInfo?: Function | string;
 
@@ -169,6 +170,7 @@ export interface LayoutModel {
      * Defines whether an object should be at the left/right of the mind map. Applicable only for the direct children of the root node
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     getBranch?: Function | string;
 

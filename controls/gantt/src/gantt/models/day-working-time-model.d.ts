@@ -6,13 +6,13 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export interface DayWorkingTimeModel {
 
     /**
-     * Defines start time of working time range
+     * Defines start time of working time range.
      * @default null
      */
     from?: number;
 
     /**
-     * Defines end time of working time range
+     * Defines end time of working time range.
      */
     to?: number;
 

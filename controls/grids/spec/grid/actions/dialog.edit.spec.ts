@@ -11,12 +11,15 @@ import { Reorder } from '../../../src/grid/actions/reorder';
 import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
-import { filterData } from '../base/datasource.spec';
+import { filterData, data } from '../base/datasource.spec';import { ColumnMenu} from '../../../src/grid/actions/column-menu';
+import { ContextMenu } from '../../../src/grid/actions/context-menu';
+import { ContextMenuOpenEventArgs } from '../../../src/grid/base/interface';
+import { ColumnMenuOpenEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, ColumnMenu, ContextMenu);
 
 describe('Dialog Editing module', () => {
 
@@ -423,6 +426,90 @@ describe('Dialog Editing module', () => {
     
         });
     });
+
+    describe('grid css class functionalities', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSelection: true,
+                    showColumnMenu: true,
+                    allowGrouping: true,
+                    selectionSettings: { type: 'Multiple' },
+                    toolbar:['Add','Delete','Edit','ColumnChooser'],
+                    editSettings:{allowEditing:true ,allowAdding:true,allowDeleting:true , mode:"Dialog"},
+                    enableHover: false,
+                    allowFiltering: true,
+                    showColumnChooser: true,
+                    filterSettings:{type:"Excel"},                   
+                    contextMenuItems: ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending',
+                    'Copy', 'Edit', 'Delete', 'Save', 'Cancel',
+                    'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+                    'LastPage', 'NextPage'],
+                    
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120, defaultValue: ''
+                        },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID', width: 140, defaultValue: ''
+                        },
+                        {
+                            field: 'Freight', headerText: 'Freight', textAlign: 'Right',
+                            width: 120, format: 'C2'
+                        },
+                        {
+                            field: 'OrderDate', headerText: 'Order Date',
+                            format: 'yMd', width: 170
+                        },
+                        {
+                            field: 'ShipCountry', headerText: 'Ship Country', width: 150
+                        }],
+                      
+                }, done);
+                gridObj.element.classList.add('e-bigger');                
+        });
+        it('context menu CSS class Test', (done: Function) => {
+            gridObj.contextMenuOpen = function (args: ContextMenuOpenEventArgs) {
+                   done();
+            }
+            let eventArgs = { target: gridObj.getHeaderTable().querySelector('th') };
+            let e = {
+                event: eventArgs,
+                items: gridObj.contextMenuModule.contextMenu.items,
+                parentItem: document.querySelector('tr.edoas')
+            };
+            (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);           
+            expect((gridObj.contextMenuModule as any).element.parentElement.classList.contains('e-bigger')).toBeTruthy();
+            (gridObj.contextMenuModule as any).contextMenu.close();
+               });
+               
+        it('dialog-css class Test', () => {  
+            
+                 
+            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+            expect(document.getElementById(gridObj.element.id +'_dialogEdit_wrapper').parentElement.classList.contains('e-bigger')).toBeTruthy();
+            gridObj.editModule.closeEdit();
+                                
+        });       
+        
+        it('column menu open', (done: Function) => {
+            gridObj.columnMenuOpen = function(args: ColumnMenuOpenEventArgs){               
+                done();
+            }
+            gridObj.dataBind();
+            (gridObj.getHeaderContent().querySelector('.e-columnmenu') as HTMLBRElement).click();           
+            expect((gridObj.columnMenuModule as any).element.parentElement.classList.contains('e-bigger')).toBeTruthy();                           
+            
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+        
+    });   
+
     describe('Dialog editing render => ', () => {
         let gridObj: Grid;      
         beforeAll((done: Function) => {

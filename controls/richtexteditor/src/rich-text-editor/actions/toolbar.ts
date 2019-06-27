@@ -312,14 +312,14 @@ export class Toolbar {
         args.baseToolbar.toolbarObj.addItems([args.baseToolbar.getObject(args.updateItem, 'toolbar')], index);
     }
 
-    public enableTBarItems(baseToolbar: BaseToolbar, items: string | string[], isEnable: boolean): void {
+    public enableTBarItems(baseToolbar: BaseToolbar, items: string | string[], isEnable: boolean , muteToolbarUpdate?: boolean): void {
         let trgItems: number[] = getTBarItemsIndex(getCollection(items), baseToolbar.toolbarObj.items);
         this.tbItems = selectAll('.' + classes.CLS_TB_ITEM, baseToolbar.toolbarObj.element);
         for (let i: number = 0; i < trgItems.length; i++) {
             let item: HTMLElement = this.tbItems[trgItems[i]];
             if (item) { baseToolbar.toolbarObj.enableItems(item, isEnable); }
         }
-        if (!select('.e-rte-srctextarea', this.parent.element)) {
+        if (!select('.e-rte-srctextarea', this.parent.element) && !muteToolbarUpdate) {
             updateUndoRedoStatus(baseToolbar, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
         }
     }

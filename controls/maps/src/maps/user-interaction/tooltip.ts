@@ -132,28 +132,33 @@ export class MapsTooltip {
                 maps: this.maps,
                 element: target, eventArgs: e
             };
-            this.maps.trigger(tooltipRender, tootipArgs);
-            if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData)) {
-                tootipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
-                    || tootipArgs.options['textStyle']['color'];
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    header: '',
-                    data: tootipArgs.options['data'],
-                    template: tootipArgs.options['template'],
-                    content: [currentData.toString()],
-                    shapes: [],
-                    location: tootipArgs.options['location'],
-                    palette: [markerFill],
-                    areaBounds: this.maps.mapAreaRect,
-                    textStyle: tootipArgs.options['textStyle'],
-                    fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
-                });
-                this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                this.svgTooltip.appendTo(tooltipEle);
-            } else {
-                this.removeTooltip();
-            }
+            this.maps.trigger('tooltipRender', tootipArgs, (observedArgs: ITooltipRenderEventArgs) => {
+                if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
+                (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1 )) {
+                    this.maps['isProtectedOnChange'] = true;
+                    tootipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
+                        || tootipArgs.options['textStyle']['color'];
+                    this.svgTooltip = new Tooltip({
+                        enable: true,
+                        header: '',
+                        data: tootipArgs.options['data'],
+                        template: tootipArgs.options['template'],
+                        content: [currentData.toString()],
+                        shapes: [],
+                        location: tootipArgs.options['location'],
+                        palette: [markerFill],
+                        areaBounds: this.maps.mapAreaRect,
+                        textStyle: tootipArgs.options['textStyle'],
+                        availableSize: this.maps.availableSize,
+                        fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
+                    });
+                    this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                    this.svgTooltip.appendTo(tooltipEle);
+                } else {
+                    this.removeTooltip();
+                }
+            });
+
         } else {
             this.removeTooltip();
         }

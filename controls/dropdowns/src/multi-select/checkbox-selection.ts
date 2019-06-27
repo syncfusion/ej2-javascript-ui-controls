@@ -108,13 +108,17 @@ export class CheckBoxSelection {
         } else {
             item = e;
         }
-        if ((item as HTMLElement).className !== 'e-list-group-item ' && (item as HTMLElement).className !== 'e-list-group-item') {
+        if (this.parent.enableGroupCheckBox || ((item as HTMLElement).className !== 'e-list-group-item '
+        && (item as HTMLElement).className !== 'e-list-group-item')) {
             let checkboxEle: HTMLElement | Element | string = createCheckBox(this.parent.createElement, true);
             let icon: Element = select('div.' + ICON, (item as HTMLElement));
             let id: string = (item as HTMLElement).getAttribute('data-uid');
             (item as HTMLElement).insertBefore(checkboxEle, (item as HTMLElement).childNodes[isNullOrUndefined(icon) ? 0 : 1]);
             select('.' + CHECKBOXFRAME, checkboxEle);
             let frame: Element = select('.' + CHECKBOXFRAME, checkboxEle);
+            if (this.parent.enableGroupCheckBox ) {
+                this.parent.popupWrapper.classList.add('e-multiselect-group');
+            }
             return item;
         } else {
             return item;
@@ -177,7 +181,7 @@ export class CheckBoxSelection {
         } else {
             target = args.li.lastElementChild.childNodes[1];
         }
-        if (this.parent.itemTemplate) {
+        if (this.parent.itemTemplate || this.parent.enableGroupCheckBox ) {
             target = args.li.firstElementChild.childNodes[1];
         }
         if (!isNullOrUndefined(target)) {
@@ -332,6 +336,7 @@ export class CheckBoxSelection {
     }
 
     private onBlur(e: MouseEvent): void {
+        if (!this.parent.element.classList.contains('e-listbox')) {
         let target: HTMLElement;
         if (this.parent.keyAction) { return; }
         if (Browser.isIE) {
@@ -368,6 +373,7 @@ export class CheckBoxSelection {
             this.parent.hidePopup();
         }
     }
+    }
     protected onDocumentClick(e: MouseEvent): void {
         let target: HTMLElement = <HTMLElement>e.target;
         if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
@@ -390,7 +396,7 @@ export class CheckBoxSelection {
             if (Browser.isIE) {
                 this.parent.onBlur();
             } else {
-                this.parent.inputElement.blur();
+                this.parent.onBlur(e);
             }
         }
         if (this.filterInput === target) { this.filterInput.focus(); }

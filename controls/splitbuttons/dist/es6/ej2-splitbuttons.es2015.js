@@ -405,34 +405,38 @@ let DropDownButton = class DropDownButton extends Component {
         }
         let ul = this.getULElement();
         let beforeOpenArgs = { element: ul, items: this.items, event: e, cancel: false };
-        this.trigger('beforeOpen', beforeOpenArgs);
-        if (!beforeOpenArgs.cancel) {
-            this.dropDown.show(null, this.element);
-            addClass([this.element], 'e-active');
-            this.element.setAttribute('aria-expanded', 'true');
-            ul.focus();
-            let openArgs = { element: ul, items: this.items };
-            this.trigger('open', openArgs);
-        }
+        this.trigger('beforeOpen', beforeOpenArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                let ul = this.getULElement();
+                this.dropDown.show(null, this.element);
+                addClass([this.element], 'e-active');
+                this.element.setAttribute('aria-expanded', 'true');
+                ul.focus();
+                let openArgs = { element: ul, items: this.items };
+                this.trigger('open', openArgs);
+            }
+        });
     }
     closePopup(e = null, focusEle) {
         let ul = this.getULElement();
         let beforeCloseArgs = { element: ul, items: this.items, event: e, cancel: false };
-        this.trigger('beforeClose', beforeCloseArgs);
-        if (!beforeCloseArgs.cancel) {
-            this.removeCustomSelection();
-            this.dropDown.hide();
-            removeClass(this.activeElem, 'e-active');
-            this.element.setAttribute('aria-expanded', 'false');
-            if (focusEle) {
-                focusEle.focus();
+        this.trigger('beforeClose', beforeCloseArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                let ul = this.getULElement();
+                this.removeCustomSelection();
+                this.dropDown.hide();
+                removeClass(this.activeElem, 'e-active');
+                this.element.setAttribute('aria-expanded', 'false');
+                if (focusEle) {
+                    focusEle.focus();
+                }
+                let closeArgs = { element: ul, items: this.items };
+                this.trigger('close', closeArgs);
+                if (!this.target && ul) {
+                    detach(ul);
+                }
             }
-            let closeArgs = { element: ul, items: this.items };
-            this.trigger('close', closeArgs);
-            if (!this.target && ul) {
-                detach(ul);
-            }
-        }
+        });
     }
     unWireEvents() {
         EventHandler.remove(document, 'mousedown touchstart', this.delegateMousedownHandler);
@@ -667,10 +671,14 @@ let SplitButton = class SplitButton extends DropDownButton {
                 this.trigger('beforeItemRender', args);
             },
             beforeOpen: (args) => {
-                this.trigger('beforeOpen', args);
+                this.trigger('beforeOpen', args, (observedArgs) => {
+                    args = observedArgs;
+                });
             },
             beforeClose: (args) => {
-                this.trigger('beforeClose', args);
+                this.trigger('beforeClose', args, (observedArgs) => {
+                    args = observedArgs;
+                });
             },
             open: (args) => {
                 this.trigger('open', args);
@@ -1124,53 +1132,69 @@ let ProgressButton = class ProgressButton extends Button {
             percent = percent + (timeDiff - timeDiffBuffer) / this.duration * 100;
             prevPercent = ((progressTime - prevProgressTime) % stepTime === 0 || percent === 100) ? percent : prevPercent;
             args = { percent: prevPercent, currentDuration: progressTime, step: step };
+            this.eIsVertical = isVertical;
             if (percent === 0) {
-                this.trigger('begin', args);
+                this.trigger('begin', args, (observedArgs) => {
+                    this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer, prevTime);
+                });
             }
             else if (percent === 100 || progressTime === this.duration) {
-                this.trigger('end', args);
+                this.trigger('end', args, (observedArgs) => {
+                    this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer, prevTime);
+                });
             }
             else {
-                this.trigger('progress', args);
-            }
-            if (percent !== args.percent && args.percent !== prevPercent) {
-                percent = args.percent;
-            }
-            this.percent = percent;
-            this.step = args.step;
-            if ((progressTime - prevProgressTime) % (this.duration * args.step / 100) === 0 || percent === 100) {
-                this.timerId = requestAnimationFrame(() => {
-                    if (this.enableProgress) {
-                        this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
-                    }
-                    this.element.setAttribute('aria-valuenow', percent.toString());
+                this.trigger('progress', args, (observedArgs) => {
+                    this.successCallback(observedArgs, percent, prevPercent, progressTime, prevProgressTime, timeDiffBuffer, prevTime);
                 });
-                prevPercent = percent;
-                prevProgressTime = progressTime;
-            }
-            if (!this.isPaused) {
-                if (progressTime < this.duration && percent < 100) {
-                    this.interval = window.setTimeout(() => {
-                        this.startAnimate(Date.now(), progressTime, prevTime, percent, prevPercent, args.step, prevProgressTime, isVertical);
-                        // tslint:disable-next-line
-                    }, (this.duration / 100) - timeDiffBuffer);
-                }
-                else {
-                    this.interval = window.setTimeout(() => {
-                        this.progressTime = this.percent = 0;
-                        if (this.enableProgress) {
-                            this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
-                        }
-                        this.element.setAttribute('aria-valuenow', '0');
-                        this.hideSpin();
-                        // tslint:disable-next-line
-                    }, 100);
-                }
             }
         }
         catch (e) {
             cancelAnimationFrame(this.timerId);
             this.trigger('fail', e);
+        }
+    }
+    successCallback(args, perc, pPerc, prgTim, pPrgTim, timDif, pTim) {
+        let percent = perc;
+        let prevPercent = pPerc;
+        let timeDiffBuffer = timDif;
+        let progressTime = prgTim;
+        let prevProgressTime = pPrgTim;
+        let prevTime = pTim;
+        let isVertical = this.eIsVertical;
+        if (percent !== args.percent && args.percent !== prevPercent) {
+            percent = args.percent;
+        }
+        this.percent = percent;
+        this.step = args.step;
+        if ((progressTime - prevProgressTime) % (this.duration * args.step / 100) === 0 || percent === 100) {
+            this.timerId = requestAnimationFrame(() => {
+                if (this.enableProgress) {
+                    this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
+                }
+                this.element.setAttribute('aria-valuenow', percent.toString());
+            });
+            prevPercent = percent;
+            prevProgressTime = progressTime;
+        }
+        if (!this.isPaused) {
+            if (progressTime < this.duration && percent < 100) {
+                this.interval = window.setTimeout(() => {
+                    this.startAnimate(Date.now(), progressTime, prevTime, percent, prevPercent, args.step, prevProgressTime, isVertical);
+                    // tslint:disable-next-line
+                }, (this.duration / 100) - timeDiffBuffer);
+            }
+            else {
+                this.interval = window.setTimeout(() => {
+                    this.progressTime = this.percent = 0;
+                    if (this.enableProgress) {
+                        this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
+                    }
+                    this.element.setAttribute('aria-valuenow', '0');
+                    this.hideSpin();
+                    // tslint:disable-next-line
+                }, 100);
+            }
         }
     }
     startContAnimate() {

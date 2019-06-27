@@ -34,7 +34,7 @@ let i: number = 1;
 let diagram: Diagram = new Diagram({
     width: 4000, height: 2500,
     dataSourceSettings: {
-        id: 'Name', parentId: 'Category', dataManager: items,
+        id: 'Name', parentId: 'Category', dataSource: items,
         doBinding: 'doBinding'
     },
     layout: { type: 'HierarchicalTree', verticalSpacing: 40 },

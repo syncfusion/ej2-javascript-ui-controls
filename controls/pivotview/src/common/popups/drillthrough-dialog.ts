@@ -73,7 +73,7 @@ export class DrillThroughDialog {
                     }
                     count = 0;
                     let items: IDataSet[] = [];
-                    for (let item of this.parent.dataSource.data as IDataSet[]) {
+                    for (let item of this.parent.dataSourceSettings.dataSource as IDataSet[]) {
                         delete item['__index'];
                         if (this.gridIndexObjects[count.toString()] === undefined) {
                             items.push(item);
@@ -82,8 +82,8 @@ export class DrillThroughDialog {
                     }
                     /* tslint:enable:no-string-literal */
                     items = items.concat(addItems);
-                    this.parent.setProperties({ dataSource: { data: items } }, true);
-                    this.parent.engineModule.updateGridData(this.parent.dataSource);
+                    this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
+                    this.parent.engineModule.updateGridData(this.parent.dataSourceSettings);
                     this.parent.pivotValues = this.parent.engineModule.pivotValues;
                 }
                 this.isUpdated = false;
@@ -101,6 +101,7 @@ export class DrillThroughDialog {
             close: this.removeDrillThroughDialog.bind(this)
         });
         this.dialogPopUp.appendTo(drillThroughDialog);
+        this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
         setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
     }
 

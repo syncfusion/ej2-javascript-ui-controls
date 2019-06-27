@@ -263,7 +263,7 @@ export function getEditValue(value: string, rteObj: IRichTextEditor): string {
 }
 export function updateTextNode(value: string): string {
     let tempNode: HTMLElement = document.createElement('div');
-    tempNode.innerHTML = value;
+    tempNode.innerHTML = value.replace(/>\s+</g, '><');
     let childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
     if (childNodes.length > 0) {
         [].slice.call(childNodes).forEach((childNode: Node) => {
@@ -276,6 +276,10 @@ export function updateTextNode(value: string): string {
         });
     }
     return tempNode.innerHTML;
+}
+
+export function isEditableValueEmpty(value: string): boolean {
+    return (value === '<p><br></p>' || value === '&lt;p&gt;&lt;br&gt;&lt;/p&gt;' || value === '') ? true : false;
 }
 
 export function decode(value: string): string {

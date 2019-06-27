@@ -1094,7 +1094,29 @@ describe("Sidebar DOM class Testing ", () => {
         expect(document.getElementById('sidebar').style.transform).toEqual("translateX(-100%) translateX(300px)");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("300px");
     });
+    it("without docksize with right position property test case", () => {
+        let sidebar: any;
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ enableDock: true, width: "auto", position: 'Right' }, ele);
+        expect(document.getElementById('sidebar').style.width).toEqual('auto');
+        sidebar.show();
+        sidebar.setTimeOut();
+        sidebar.hide();
+        sidebar.setTimeOut();
+    });
 
+    it("without docksize with right position property test case", () => {
+        let sidebar: any;
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ enableDock: true, width: "auto" }, ele);
+        expect(document.getElementById('sidebar').style.width).toEqual('auto');
+        sidebar.show();
+        sidebar.setTimeOut();
+        sidebar.hide();
+        sidebar.setTimeOut();
+    })
 
     // open event test case
     it("Sidebar open event test case", () => {
@@ -1195,16 +1217,17 @@ describe("Sidebar DOM class Testing ", () => {
         let sidebar: any;
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: "Push", enableDock: true, dockSize: 300, width: '300px' }, ele);
+        sidebar = new Sidebar({ type: "Push", enableDock: true, dockSize: 200, width: '300px' }, ele);
         sidebar.show();
         expect(document.getElementById('sidebar').style.transform).toEqual("");
         expect(document.getElementById('sidebar').style.width).toEqual("300px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("300px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(0px)");
         sidebar.hide();
-        expect(document.getElementById('sidebar').style.width).toEqual('300px');
-        expect(document.getElementById('sidebar').style.transform).toEqual("translateX(-100%) translateX(300px)");
-        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("300px");
+        sidebar.transitionEnd();
+        expect(document.getElementById('sidebar').style.width).toEqual('200px');
+        expect(document.getElementById('sidebar').style.transform).toEqual("translateX(-100%) translateX(200px)");
+        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("200px");
         expect(document.getElementById('sidebar').classList.contains('e-push')).toBe(true);
         expect(document.getElementById('sidebar').classList.contains('e-left')).toBe(true);
     });
@@ -1213,10 +1236,10 @@ describe("Sidebar DOM class Testing ", () => {
         let sidebar: any;
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: "Push", enableDock: true, position: 'Right', dockSize: 300, width: '300px' }, ele);
-        expect(document.getElementById('sidebar').style.transform).toEqual("translateX(100%) translateX(-300px)");
-        expect(document.getElementById('sidebar').style.width).toEqual("300px");
-        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("300px");
+        sidebar = new Sidebar({ type: "Push", enableDock: true, position: 'Right', dockSize: 200, width: '300px' }, ele);
+        expect(document.getElementById('sidebar').style.transform).toEqual("translateX(100%) translateX(-200px)");
+        expect(document.getElementById('sidebar').style.width).toEqual("200px");
+        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("200px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(0px)");
         sidebar.show();
         expect(document.getElementById('sidebar').style.transform).toEqual("");
@@ -1224,9 +1247,10 @@ describe("Sidebar DOM class Testing ", () => {
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("300px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(0px)");
         sidebar.hide();
-        expect(document.getElementById('sidebar').style.width).toEqual('300px');
-        expect(document.getElementById('sidebar').style.transform).toEqual("translateX(100%) translateX(-300px)");
-        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("300px");
+        sidebar.transitionEnd();
+        expect(document.getElementById('sidebar').style.width).toEqual('200px');
+        expect(document.getElementById('sidebar').style.transform).toEqual("translateX(100%) translateX(-200px)");
+        expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("200px");
         expect(document.getElementById('sidebar').classList.contains('e-push')).toBe(true);
         expect(document.getElementById('sidebar').classList.contains('e-right')).toBe(true);
     });
@@ -1246,6 +1270,7 @@ describe("Sidebar DOM class Testing ", () => {
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("0px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(300px)");
         sidebar.hide();
+        sidebar.transitionEnd();
         expect(document.getElementById('sidebar').style.transform).toEqual("translateX(-100%) translateX(300px)");
         expect(document.getElementById('sidebar').style.width).toEqual("300px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("0px");
@@ -1268,6 +1293,7 @@ describe("Sidebar DOM class Testing ", () => {
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("0px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(-300px)");
         sidebar.hide();
+        sidebar.transitionEnd();
         expect(document.getElementById('sidebar').style.transform).toEqual("translateX(100%) translateX(-200px)");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("0px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(-200px)");
@@ -1290,6 +1316,7 @@ describe("Sidebar DOM class Testing ", () => {
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("0px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(0px)");
         sidebar.hide();
+        sidebar.transitionEnd()
         expect(document.getElementById('sidebar').style.transform).toEqual("translateX(-100%) translateX(200px)");
         expect(document.getElementById('sidebar').style.width).toEqual("200px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginLeft).toBe("200px");
@@ -1313,6 +1340,7 @@ describe("Sidebar DOM class Testing ", () => {
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("0px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(0px)");
         sidebar.hide();
+        sidebar.transitionEnd();
         expect(document.getElementById('sidebar').style.transform).toEqual("translateX(100%) translateX(-200px)");
         expect(document.getElementById('sidebar').style.width).toEqual("200px");
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.marginRight).toBe("200px");

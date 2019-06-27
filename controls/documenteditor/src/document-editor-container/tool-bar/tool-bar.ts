@@ -4,7 +4,8 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { DropDownButton, DropDownButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditor } from '../../document-editor/document-editor';
-import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
+import { XmlHttpRequestHandler } from '../../document-editor/base/ajax-helper';
 
 const TOOLBAR_ID: string = '_toolbar';
 const NEW_ID: string = '_new';
@@ -28,6 +29,8 @@ const CLIPBOARD_ID: string = '_use_local_clipboard';
 const RESTRICT_EDITING_ID: string = '_restrict_edit';
 const PAGE_BREAK: string = '_page_break';
 const SECTION_BREAK: string = '_section_break';
+const READ_ONLY: string = '_read_only';
+const PROTECTIONS: string = '_protections';
 
 /**
  * Toolbar Module
@@ -56,6 +59,11 @@ export class Toolbar {
     /**
      * @private
      */
+    public importHandler: XmlHttpRequestHandler;
+
+    /**
+     * @private
+     */
     get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
@@ -64,6 +72,7 @@ export class Toolbar {
      */
     constructor(container: DocumentEditorContainer) {
         this.container = container;
+        this.importHandler = new XmlHttpRequestHandler();
     }
     private getModuleName(): string {
         return 'toolbar';
@@ -139,6 +148,15 @@ export class Toolbar {
         }) as HTMLInputElement;
         this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
         this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
+        let restrictEditing: HTMLElement = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild as HTMLElement;
+        let lockItems: DropDownButtonModel = {
+            items: [
+                { text: locale.getConstant('Read only'), id: id + READ_ONLY },
+                { text: locale.getConstant('Protections'), id: id + PROTECTIONS }],
+            cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+            select: this.onDropDownButtonSelect.bind(this)
+        };
+        let restrictDropDown: DropDownButton = new DropDownButton(lockItems, restrictEditing as HTMLButtonElement);
     }
     private showHidePropertiesPane(): void {
         if (this.container.previousContext === 'TableOfContents' && this.container.showPropertiesPaneInternal) {
@@ -270,7 +288,7 @@ export class Toolbar {
                 },
                 {
                     prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing.'), id: id + RESTRICT_EDITING_ID,
-                    text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: 'e-de-toolbar-btn-end'
+                    text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: 'e-de-toolbar-btn-end e-de-lock-dropdownbutton'
                 }
             ]
         });
@@ -321,9 +339,6 @@ export class Toolbar {
             case id + CLIPBOARD_ID:
                 this.toggleLocalPaste(args.item.id);
                 break;
-            case id + RESTRICT_EDITING_ID:
-                this.toggleEditing(args.item.id);
-                break;
         }
         if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
             this.container.documentEditor.focusIn();
@@ -336,7 +351,7 @@ export class Toolbar {
     private toggleEditing(id: string): void {
         this.container.restrictEditing = !this.container.restrictEditing;
         this.container.showPropertiesPane = !this.container.restrictEditing;
-        this.toggleButton(id, this.container.restrictEditing);
+        // this.toggleButton(id, this.container.restrictEditing);
     }
     private toggleButton(id: string, toggle: boolean): void {
         let element: HTMLElement = document.getElementById(id);
@@ -361,6 +376,11 @@ export class Toolbar {
             this.imagePicker.click();
         } else if (id === parentId + INSERT_IMAGE_ONLINE_ID) {
             // Need to implement image dialog;
+        } else if (id === parentId + READ_ONLY) {
+            this.container.restrictEditing = !this.container.restrictEditing;
+            this.container.showPropertiesPane = !this.container.restrictEditing;
+        } else if (id === parentId + PROTECTIONS) {
+            this.documentEditor.viewer.restrictEditingPane.showHideRestrictPane(true);
         }
         setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
     }
@@ -380,23 +400,30 @@ export class Toolbar {
         }
     }
     private convertToSfdt(file: File): void {
-        let httpRequest: XMLHttpRequest = new XMLHttpRequest();
-        httpRequest.open('POST', this.container.serviceUrl, true);
-        httpRequest.onreadystatechange = (): void => {
-            if (httpRequest.readyState === 4) {
-                if (httpRequest.status === 200 || httpRequest.status === 304) {
-                    this.container.documentEditor.open(httpRequest.responseText);
-                } else {
-                    alert('Failed to load the file');
-                }
-                hideSpinner(this.container.containerTarget);
-            }
-        };
+        showSpinner(this.container.containerTarget);
+        this.importHandler.url = this.container.serviceUrl + this.container.serverActionSettings.import;
+        this.importHandler.onSuccess = this.successHandler.bind(this);
+        this.importHandler.onFailure = this.failureHandler.bind(this);
+        this.importHandler.onError = this.failureHandler.bind(this);
         let formData: FormData = new FormData();
         formData.append('files', file);
-        httpRequest.send(formData);
-        showSpinner(this.container.containerTarget);
+        this.importHandler.send(formData);
     }
+    /* tslint:disable:no-any */
+    private failureHandler(args: any): void {
+        if (args.name === 'onError') {
+            // tslint:disable-next-line:max-line-length
+            DialogUtility.alert({ content: this.container.localObj.getConstant('Error in establishing connection with web server'), closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' } });
+        } else {
+            alert('Failed to load the file');
+        }
+        hideSpinner(this.container.containerTarget);
+    }
+    private successHandler(result: any): void {
+        this.container.documentEditor.open(result.data as string);
+        hideSpinner(this.container.containerTarget);
+    }
+    /* tslint:enable:no-any */
     private onImageChange(): void {
         let file: File = this.imagePicker.files[0];
         let fileReader: FileReader = new FileReader();
@@ -416,7 +443,7 @@ export class Toolbar {
     /**
      * @private
      */
-    public enableDisableToolBarItem(enable: boolean): void {
+    public enableDisableToolBarItem(enable: boolean, isProtectedContent: boolean): void {
         let id: string = this.container.element.id + TOOLBAR_ID;
         for (let item of this.toolbar.items) {
             let itemId: string = item.id;
@@ -426,7 +453,12 @@ export class Toolbar {
                 this.toolbar.enableItems(element.parentElement, enable);
             }
         }
-        classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
+        if (!isProtectedContent) {
+            classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
+        }
+        if (enable) {
+            this.enableDisableUndoRedo();
+        }
     }
     /**
      * @private

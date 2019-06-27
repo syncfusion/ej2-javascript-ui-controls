@@ -9,6 +9,7 @@ import { remove, extend } from '@syncfusion/ej2-base';
 import { StockSeriesModel } from '../model/base-model';
 import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { MarginModel } from '../../chart';
+import { DataManager } from '@syncfusion/ej2-data';
 
 interface Range {
     start: number;
@@ -171,8 +172,9 @@ export class CartesianChart {
      */
     public cartesianChartRefresh(stockChart: StockChart, start: number, end: number, data?: Object[]): void {
         stockChart.chart.series.forEach((series: Series) => {
-            series.dataSource = data ? data : ((stockChart.tempDataSource[series.index] ||
-                stockChart.dataSource) as Object[]).filter((data: Object) => {
+            series.dataSource = data ? data : ((stockChart.blazorDataSource[series.index] ||
+                this.checkDataSource(stockChart.tempDataSource[series.index]) || this.checkDataSource(stockChart.dataSource)) as Object[])
+            .filter((data: Object) => {
                 return (
                     new Date(Date.parse(data[series.xName])).getTime() >= start &&
                     new Date(Date.parse(data[series.xName])).getTime() <= end
@@ -186,6 +188,14 @@ export class CartesianChart {
             }
         });
         stockChart.cartesianChart.initializeChart();
+    }
+
+    private checkDataSource(data: Object[] | DataManager | Object): Object[] {
+        if (data instanceof DataManager) {
+            return(data.dataSource.json);
+        } else {
+            return data as Object[];
+        }
     }
 
     private copyObject(originalObject: Object): Object {

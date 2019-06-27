@@ -18,4 +18,15 @@
       font-size: $mask-bigger-font-size;
         }
      }
+
+  .e-content-placeholder.e-mask.e-placeholder-mask {
+    background-size: 300px 33px;
+    min-height: 33px;
+  }
+
+  .e-bigger .e-content-placeholder.e-mask.e-placeholder-mask,
+  .e-bigger.e-content-placeholder.e-mask.e-placeholder-mask {
+    background-size: 300px 40px;
+    min-height: 40px;
+  }
 }

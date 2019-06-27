@@ -10,6 +10,7 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 /** 
  * The Filter module is used to handle filter action.
  */
+
 export class Filter {
     public parent: Gantt;
     private filterMenuElement: HTMLElement;

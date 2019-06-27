@@ -36,8 +36,8 @@ export class Common implements IAction {
         if (!this.parent.pivotCommon) {
             let args: CommonArgs = {
                 pivotEngine: this.parent.engineModule,
-                dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties ?
-                    (<{ [key: string]: Object }>this.parent.dataSource).properties : this.parent.dataSource,
+                dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties ?
+                    (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties : this.parent.dataSourceSettings,
                 id: this.parent.element.id,
                 element: this.parent.element,
                 moduleName: this.parent.getModuleName(),
@@ -51,8 +51,8 @@ export class Common implements IAction {
             this.parent.pivotCommon.element = this.parent.element;
             this.parent.pivotCommon.engineModule = this.parent.engineModule;
             this.parent.pivotCommon.parentID = this.parent.element.id;
-            this.parent.pivotCommon.dataSource = (<{ [key: string]: Object }>this.parent.dataSource).properties ?
-                (<{ [key: string]: Object }>this.parent.dataSource).properties : this.parent.dataSource;
+            this.parent.pivotCommon.dataSourceSettings = (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties ?
+                (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties : this.parent.dataSourceSettings;
             this.parent.pivotCommon.moduleName = this.parent.getModuleName();
             this.parent.pivotCommon.enableRtl = this.parent.enableRtl;
             this.parent.pivotCommon.isAdaptive = Browser.isDevice as boolean;

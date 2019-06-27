@@ -36,6 +36,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     /**
      * Triggers when Switch state has been changed by user interaction.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
@@ -43,6 +44,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;

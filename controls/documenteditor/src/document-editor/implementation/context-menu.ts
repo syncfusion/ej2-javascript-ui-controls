@@ -2,9 +2,10 @@ import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs } f
 import { LayoutViewer } from './viewer';
 import { isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../document-editor';
-import { Selection } from './index';
+import { Selection, ContextElementInfo } from './index';
 import { TextPosition } from './selection/selection-helper';
 import { FieldElementBox } from './viewer/page';
+import { SpellChecker } from './spell-check/spell-checker';
 
 const CONTEXTMENU_COPY: string = '_contextmenu_copy';
 const CONTEXTMENU_CUT: string = '_contextmenu_cut';
@@ -35,6 +36,9 @@ const CONTEXTMENU_AUTO_FIT_TO_WINDOW: string = '_contextmenu_auto_fit_window';
 const CONTEXTMENU_FIXED_COLUMN_WIDTH: string = '_contextmenu_fixed_column_width';
 const CONTEXTMENU_CONTINUE_NUMBERING: string = '_contextmenu_continue_numbering';
 const CONTEXTMENU_RESTART_AT: string = '_contextmenu_restart_at';
+const CONTEXTMENU_SPELLING_DIALOG: string = '_contextmenu_spelling_dialog';
+const CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS: string = '_contextmenu_otherSuggestions_spellcheck_';
+const CONTEXTMENU_NO_SUGGESTION: string = '_contextmenu_no_suggestion';
 /**
  * Context Menu class
  */
@@ -72,6 +76,9 @@ export class ContextMenu {
      * @private
      */
     public enableCustomContextMenuBottom: boolean;
+
+    private currentContextInfo: ContextElementInfo;
+    private noSuggestion: HTMLElement;
     /**
      * @private
      */
@@ -80,6 +87,13 @@ export class ContextMenu {
         this.locale = new L10n('documenteditor', this.viewer.owner.defaultLocale);
         this.locale.setLocale(this.viewer.owner.locale);
         this.initContextMenu(this.locale, this.viewer.owner.enableRtl);
+    }
+    /**
+     * Gets the spell checker
+     * @private
+     */
+    get spellChecker(): SpellChecker {
+        return this.viewer.owner.spellChecker;
     }
     /**
      * Gets module name.
@@ -103,7 +117,6 @@ export class ContextMenu {
         ul.id = this.viewer.owner.containerId + 'e-de-contextmenu-list';
         ul.style.listStyle = 'none';
         ul.style.margin = '0px';
-        ul.style.padding = '0px';
         ul.style.maxHeight = 'auto';
         ul.oncontextmenu = this.disableBrowserContextmenu;
         this.contextMenu.appendChild(ul);
@@ -285,9 +298,9 @@ export class ContextMenu {
         this.contextMenuInstance.beforeOpen = () => {
             for (let index: number = 0; index < this.customMenuItems.length; index++) {
                 if (typeof this.customMenuItems[index].id !== 'undefined') {
-                this.ids[index] = this.customMenuItems[index].id;
+                    this.ids[index] = this.customMenuItems[index].id;
                 } else {
-                this.ids[index] = this.customMenuItems[index + 1].id;
+                    this.ids[index] = this.customMenuItems[index + 1].id;
                 }
             }
             this.viewer.owner.fireCustomContextMenuBeforeOpen(this.ids);
@@ -414,12 +427,38 @@ export class ContextMenu {
             case id + CONTEXTMENU_FIXED_COLUMN_WIDTH:
                 this.viewer.owner.editor.autoFitTable('FixedColumnWidth');
                 break;
-            default:
-                // fires customContextMenuSelect while selecting the added custom menu item
-                this.viewer.owner.fireCustomContextMenuSelect(item);
+            case id + CONTEXTMENU_SPELLING_DIALOG:
+                let contextInfo: ContextElementInfo = this.spellChecker.retriveText();
+                this.currentContextInfo = null;
+                this.viewer.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
                 break;
+            default:
+                let expectedData: string = this.viewer.owner.element.id + CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS;
+                if (item.substring(0, expectedData.length) === expectedData) {
+                    let content: string = item.substring(item.lastIndexOf('_') + 1);
+                    this.callSelectedOption(content);
+                    break;
+                } else {
+                    // fires customContextMenuSelect while selecting the added custom menu item
+                    this.viewer.owner.fireCustomContextMenuSelect(item);
+                    break;
+                }
         }
     }
+    /**
+     * Method to call the selected item
+     * @param {string} content 
+     */
+    private callSelectedOption(content: string): void {
+        if (content === 'Add To Dictionary') {
+            this.spellChecker.handleAddToDictionary();
+        } else if (content === 'Ignore All') {
+            this.spellChecker.handleIgnoreAllItems();
+        } else {
+            this.spellChecker.manageReplace(content);
+        }
+    }
+
     /**
      * To add and customize custom context menu
      * @param {MenuItemModel[]} items - To add custom menu item
@@ -455,11 +494,92 @@ export class ContextMenu {
      * @private
      */
     public onContextMenuInternal = (event: PointerEvent): void => {
-        if (this.showHideElements(this.viewer.selection)) {
+        if (this.viewer.owner.enableSpellCheck && this.spellChecker.allowSpellCheckAndSuggestion) {
+            event.preventDefault();
+            this.currentContextInfo = this.spellChecker.findCurretText();
+            let splittedSuggestion: string[];
+            /* tslint:disable:no-any */
+            let allSuggestions: any;
+            let exactData: string = this.spellChecker.manageSpecialCharacters(this.currentContextInfo.text, undefined, true);
+            if (!isNullOrUndefined(exactData) && this.spellChecker.errorWordCollection.containsKey(exactData)) {
+                this.spellChecker.currentContextInfo = this.currentContextInfo;
+                if (this.spellChecker.errorSuggestions.containsKey(exactData)) {
+                    allSuggestions = this.spellChecker.errorSuggestions.get(exactData).slice();
+                    splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions, event);
+                    this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                } else {
+                    this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                }
+            } else {
+                this.destroy();
+                this.initContextMenu(this.locale);
+                if (this.showHideElements(this.viewer.selection)) {
+                    this.contextMenuInstance.open(event.y, event.x);
+                    event.preventDefault();
+                }
+            }
+        } else {
+            this.destroy();
+            this.initContextMenu(this.locale);
+            if (this.showHideElements(this.viewer.selection)) {
+                this.contextMenuInstance.open(event.y, event.x);
+                event.preventDefault();
+            }
+        }
+    }
+    /**
+     * Method to process suggestions to add in context menu
+     * @param {any} allSuggestions 
+     * @param {string[]} splittedSuggestion 
+     * @param {PointerEvent} event 
+     * @private
+     */
+    /* tslint:disable:no-any */
+    public processSuggestions(allSuggestions: any, splittedSuggestion: string[], event: PointerEvent): void {
+        this.addCustomMenu(this.constructContextmenu(allSuggestions, splittedSuggestion));
+        this.noSuggestion = document.getElementById(this.viewer.owner.element.id + CONTEXTMENU_NO_SUGGESTION);
+        if (!isNullOrUndefined(this.noSuggestion)) {
+            this.noSuggestion.style.display = 'block';
+            classList(this.noSuggestion, ['e-disabled'], ['e-focused']);
+        }
+        if (!isNullOrUndefined(event) && this.showHideElements(this.viewer.selection)) {
             this.contextMenuInstance.open(event.y, event.x);
             event.preventDefault();
         }
     }
+    /**
+     * Method to add inline menu
+     * @private 
+     */
+    /* tslint:disable:no-any */
+    public constructContextmenu(allSuggestion: any[], splittedSuggestion: any): any[] {
+        let contextMenuItems: any[] = [];
+        // classList(this.noSuggestion,['e-disabled'],[]);
+        if (isNullOrUndefined(allSuggestion) || allSuggestion.length === 0) {
+            contextMenuItems.push({ text: 'no suggestions', id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
+        } else {
+            for (let i: number = 0; i < allSuggestion.length; i++) {
+                 // tslint:disable-next-line:max-line-length
+                contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
+            }
+        }
+        contextMenuItems.push({ separator: true });
+        if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
+            contextMenuItems.push({ text: 'More Suggestion', items: splittedSuggestion });
+            contextMenuItems.push({ separator: true });
+        } else {
+            // tslint:disable-next-line:max-line-length
+            contextMenuItems.push({ text: 'Add To Dictionary ', id: '_contextmenu_otherSuggestions_spellcheck_Add To Dictionary', iconCss: '' });
+        }
+        contextMenuItems.push({ text: 'Ignore Once', id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
+        contextMenuItems.push({ text: 'Ignore All', id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
+        contextMenuItems.push({ separator: true });
+        // tslint:disable-next-line:max-line-length
+        contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
+        contextMenuItems.push({ separator: true });
+        return contextMenuItems;
+    }
+
     private showHideElements(selection: Selection): boolean {
         if (isNullOrUndefined(selection)) {
             return false;

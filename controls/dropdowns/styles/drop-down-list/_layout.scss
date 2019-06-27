@@ -160,7 +160,44 @@
 
   ejs-autocomplete,
   ejs-combobox,
-  ejs-dropdownlist, {
+  ejs-dropdownlist {
     display: block;
   }
+
+  // Small Size 
+
+  .e-small .e-ddl#{&}.e-popup,
+  .e-input-group.e-ddl.e-small {
+    & .e-list-item,
+    & .e-list-group-item {
+      font-size: $ddl-small-list-font-size;
+    }
+  }
+
+  //touch small
+  .e-bigger.e-small .e-ddl#{&}.e-popup,
+  .e-bigger .e-input-group.e-ddl.e-small {
+    & .e-list-item,
+    & .e-list-group-item {
+      font-size: $ddl-bigger-small-list-font-size;
+    }
+  }
+
+  .e-content-placeholder.e-ddl.e-placeholder-ddl,
+  .e-content-placeholder.e-autocomplete.e-placeholder-autocomplete,
+  .e-content-placeholder.e-combobox.e-placeholder-combobox {
+    background-size: 300px 33px;
+    min-height: 33px;
+  }
+
+  .e-bigger .e-content-placeholder.e-ddl.e-placeholder-ddl,
+  .e-bigger.e-content-placeholder.e-ddl.e-placeholder-ddl,
+  .e-bigger .e-content-placeholder.e-autocomplete.e-placeholder-autocomplete,
+  .e-bigger.e-content-placeholder.e-autocomplete.e-placeholder-autocomplete,
+  .e-bigger .e-content-placeholder.e-combobox.e-placeholder-combobox,
+  .e-bigger.e-content-placeholder.e-combobox.e-placeholder-combobox {
+    background-size: 300px 40px;
+    min-height: 40px;
+  }
 }
+

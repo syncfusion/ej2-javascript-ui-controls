@@ -1,5 +1,5 @@
 import { DocumentEditor, ViewChangeEventArgs } from '../../document-editor/index';
-import { createElement, KeyboardEventArgs, L10n } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEventArgs, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditorContainer } from '../document-editor-container';
 /**
@@ -15,6 +15,9 @@ export class StatusBar {
     private editablePageNumber: HTMLElement;
     public startPage: number = 1;
     public localObj: L10n;
+    private spellCheckButton: DropDownButton;
+    private currentLanguage: number;
+    private allowSuggestion: boolean;
 
     get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -30,11 +33,14 @@ export class StatusBar {
     }
     private initializeStatusBar = (): void => {
         let isRtl: boolean = this.container.enableRtl;
+        this.documentEditor.enableSpellCheck = (this.container.enableSpellCheck) ? true : false;
+        // tslint:disable-next-line:max-line-length
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         // tslint:disable-next-line:max-line-length
         let styles: string = 'padding-top:8px;';
         styles += isRtl ? 'padding-right:16px' : 'padding-left:16px';
-        let div: HTMLElement = createElement('div', { className: 'e-de-ctnr-pg-no', styles: styles });
+        // tslint:disable-next-line:max-line-length
+        let div: HTMLElement = createElement('div', { className: (this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout', styles: styles });
         this.statusBarDiv.appendChild(div);
         let label: HTMLElement = createElement('label');
         label.textContent = this.localObj.getConstant('Page') + ' ';
@@ -60,8 +66,15 @@ export class StatusBar {
         this.pageCount = createElement('label');
         div.appendChild(this.pageCount);
         this.updatePageCount();
+        if (this.documentEditor.enableSpellCheck) {
+            let verticalLine: HTMLElement = createElement('div', { className: 'e-de-statusbar-seperator' });
+            this.statusBarDiv.appendChild(verticalLine);
+            let spellCheckBtn: HTMLButtonElement = this.addSpellCheckElement();
+            this.spellCheckButton.appendTo(spellCheckBtn);
+        }
         let zoomBtn: HTMLButtonElement = createElement('button', {
-            className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
+            // tslint:disable-next-line:max-line-length
+            className: (this.container.enableSpellCheck) ? 'e-de-statusbar-zoom-spell' : 'e-de-statusbar-zoom', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.statusBarDiv.appendChild(zoomBtn);
         zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
@@ -103,12 +116,84 @@ export class StatusBar {
         // tslint:disable-next-line:max-line-length
         this.zoom = new DropDownButton({ content: '100%', items: items, enableRtl: this.container.enableRtl, select: this.onZoom }, zoomBtn);
     }
+    private addSpellCheckElement(): HTMLButtonElement {
+        let spellCheckBtn: HTMLButtonElement = createElement('button', {
+            className: 'e-de-statusbar-spellcheck'
+        }) as HTMLButtonElement;
+        this.statusBarDiv.appendChild(spellCheckBtn);
+        spellCheckBtn.setAttribute('title', 'Spell Checker options');
+        let spellCheckItems: ItemModel[] = [
+            {
+                text: 'Spell Check',
+            },
+            {
+                text: 'Underline errors',
+            },
+        ];
+        // tslint:disable-next-line:max-line-length
+        this.spellCheckButton = new DropDownButton({
+            content: 'Spelling', items: spellCheckItems, enableRtl: this.container.enableRtl, select: this.onSpellCheck,
+            beforeItemRender: (args: MenuEventArgs) => {
+                args.element.innerHTML = '<span></span>' + args.item.text;
+                if (isNullOrUndefined(this.currentLanguage)) {
+                    this.currentLanguage = this.documentEditor.spellChecker.languageID;
+                }
+                if (isNullOrUndefined(this.allowSuggestion)) {
+                    this.allowSuggestion = this.documentEditor.spellChecker.allowSpellCheckAndSuggestion;
+                }
+                let span: HTMLElement = args.element.children[0] as HTMLElement;
+                if (args.item.text === 'Spell Check' && this.documentEditor.enableSpellCheck) {
+                    span.style.marginRight = '10px';
+                    span.setAttribute('class', 'e-de-selected-spellcheck-item');
+                    // tslint:disable-next-line:max-line-length
+                } else if (args.item.text === 'Underline errors' && this.documentEditor.enableSpellCheck && !this.documentEditor.spellChecker.removeUnderline) {
+                    span.style.marginRight = '10px';
+                    span.setAttribute('class', 'e-de-selected-underline-item');
+                } else {
+                    span.style.marginRight = '25px';
+                    (args.element.children[0] as HTMLElement).classList.remove('e-de-selected-spellcheck-item');
+                    (args.element.children[0] as HTMLElement).classList.remove('e-de-selected-underline-item');
+                }
+            }
+        });
+
+        return spellCheckBtn;
+    }
     private onZoom = (args: MenuEventArgs) => {
         this.setZoomValue(args.item.text);
         this.updateZoomContent();
     }
+    private onSpellCheck = (args: MenuEventArgs) => {
+        this.setSpellCheckValue(args.item.text, args.element);
+    }
     public updateZoomContent = (): void => {
         this.zoom.content = Math.round(this.documentEditor.zoomFactor * 100) + '%';
+    }
+    private setSpellCheckValue = (text: string, element: HTMLElement): void => {
+        this.spellCheckButton.content = 'Spelling';
+        if (text.match(this.localObj.getConstant('Spell Check'))) {
+            this.documentEditor.enableSpellCheck = (this.documentEditor.enableSpellCheck) ? false : true;
+            setTimeout(() => {
+                if (this.documentEditor.enableSpellCheck) {
+                    this.documentEditor.spellChecker.languageID = this.currentLanguage;
+                    this.documentEditor.spellChecker.allowSpellCheckAndSuggestion = this.allowSuggestion;
+                    this.documentEditor.viewer.triggerElementsOnLoading = true;
+                    this.documentEditor.viewer.triggerSpellCheck = true;
+                }
+                this.documentEditor.editor.reLayout(this.documentEditor.viewer.selection);
+            /* tslint:disable */
+            }, 50);
+             /* tslint:enable */
+            this.documentEditor.viewer.triggerSpellCheck = false;
+            this.documentEditor.viewer.triggerElementsOnLoading = false;
+            // tslint:disable-next-line:max-line-length
+        } else if (text.match(this.localObj.getConstant('Underline errors'))) {
+            if (this.documentEditor.enableSpellCheck) {
+                // tslint:disable-next-line:max-line-length
+                this.documentEditor.spellChecker.removeUnderline = (this.documentEditor.spellChecker.removeUnderline) ? false : true;
+                this.documentEditor.editor.reLayout(this.documentEditor.viewer.selection);
+            }
+        }
     }
     private setZoomValue = (text: string): void => {
         if (text.match(this.localObj.getConstant('Fit one page'))) {

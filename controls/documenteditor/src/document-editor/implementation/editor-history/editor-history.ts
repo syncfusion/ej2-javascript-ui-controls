@@ -84,11 +84,16 @@ export class EditorHistory {
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
+     * @asptype int
      */
-    get redoLimit(): number {
+    public get redoLimit(): number {
         return isNullOrUndefined(this.redoLimitIn) ? 0 : this.redoLimitIn;
     }
-    set redoLimit(value: number) {
+    /**
+     * Gets or Sets the limit of redo operations can be done.
+     * @asptype int
+     */
+    public set redoLimit(value: number) {
         if (value < 0) {
             throw new Error('The limit should be greater than or equal to zero.');
         }
@@ -323,8 +328,10 @@ export class EditorHistory {
             selection.end.updatePhysicalPosition(true);
         }
         selection.upDownSelectionLength = selection.end.location.x;
+        this.viewer.isScrollHandler = true;
         this.viewer.updateScrollBars();
         selection.fireSelectionChanged(true);
+        this.viewer.isScrollHandler = false;
         this.viewer.updateFocus();
         this.updateComplexHistoryInternal();
         this.owner.editorModule.fireContentChange();

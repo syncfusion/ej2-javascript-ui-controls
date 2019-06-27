@@ -53,7 +53,7 @@ let gauge: LinearGauge = new LinearGauge({
         }]
     }],
 });
-gauge.appendTo('#container');
+gauge.appendTo('#size-container');
 
 document.getElementById('size').onchange = () => {
     let ele: HTMLSelectElement = <HTMLSelectElement>document.getElementById('size');

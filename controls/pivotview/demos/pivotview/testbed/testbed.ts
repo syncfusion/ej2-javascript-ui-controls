@@ -15,7 +15,7 @@ import { FieldList } from '../../../src/common/actions/field-list';
 import { CalculatedField } from '../../../src/common/calculatedfield/calculated-field';
 import{ConditionalFormatting} from'../../../src/common/conditionalformatting/conditional-formatting';
 import{GroupingBar} from'../../../src/common/grouping-bar/grouping-bar';
-import{FilterModel} from '../../../src/pivotview/model/dataSource-model';
+import{FilterModel} from '../../../src/pivotview/model/datasourcesettings-model';
 //import{FilterModel} from '../../pivotview/'
 import { Operators, SummaryTypes } from '../../../src/base';
 import { enableRipple } from '@syncfusion/ej2-base';
@@ -23,7 +23,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 
 //import { VirtualScroll } from '../../demos/pivotview/virtualscrolling';
 import { VirtualScroll } from '../../../src/pivotview/actions/virtualscroll';
-import { DataSource } from '../../../src/pivotview/model/dataSource';
+import { DataSourceSettings } from '../../../src/pivotview/model/datasourcesettings';
 
 enableRipple(false);
 //335 or 315
@@ -219,8 +219,8 @@ let measures: { [key: string]: Object }[] = [
 // pivotGridObj.appendTo('#PivotView');
 
 let pivotGridObj:PivotView= new PivotView({
-    dataSource:{
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings:{
+        dataSource: pivot_dataset as IDataSet[],
         expandAll:false,
         enableSorting:true,
         allowLabelFilter:true,
@@ -279,7 +279,7 @@ let pivotGridObj:PivotView= new PivotView({
             values = fieldmemCollections[fieldsmem[0]];
             isInitial = false;
         }
-        for (let field of pivotGridObj.dataSource.filterSettings) {
+        for (let field of pivotGridObj.dataSourceSettings.filterSettings) {
             filterCollections[field.name] = field;
         }
     },
@@ -342,7 +342,7 @@ let virtualBtn: Button = new Button({ isPrimary: true});
          // pivotGridObj.dataSource={};
         let data1: IDataSet[] =   data(1000) as IDataSet[];
          let dataSource: IDataOptions =  {
-            data: data1,
+            dataSource: data1,
             enableSorting: false,
             expandAll: true, 
             drilledMembers:[],
@@ -362,7 +362,7 @@ let virtualBtn: Button = new Button({ isPrimary: true});
         };
        // pivotGridObj.appendTo('#PivotView');
         pivotGridObj.enableVirtualization=true;
-        pivotGridObj.dataSource = dataSource;
+        pivotGridObj.dataSourceSettings = dataSource;
         
       
     };
@@ -372,8 +372,8 @@ let virtualBtn: Button = new Button({ isPrimary: true});
     destroyBtn.appendTo('#destroy');
     document.getElementById('destroy').onclick=():void => {
         // pivotvirtualGridObj.isDestroyed=true;
-        pivotGridObj.dataSource=  {
-            data: pivot_dataset as IDataSet[],
+        pivotGridObj.dataSourceSettings=  {
+            dataSource: pivot_dataset as IDataSet[],
         
             expandAll: false,
             enableSorting: true,
@@ -585,14 +585,14 @@ clearmemfilterBtn.appendTo('#clearmemfilter');
 
 document.getElementById('applymemfilter').onclick = () => {
     //You can set your filter settings here. 
-    pivotGridObj.dataSource.filterSettings = [
+    pivotGridObj.dataSourceSettings.filterSettings = [
         { name: fieldsmem[0], items: getSelectedMembers(fieldsmem[0]), type: updateFilterType(fieldsmem[0]) },
         { name: fieldsmem[1], items: getSelectedMembers(fieldsmem[1]), type: updateFilterType(fieldsmem[1]) },
         { name: fieldsmem[2], items: getSelectedMembers(fieldsmem[2]), type: updateFilterType(fieldsmem[2]) }
     ];
 };
 document.getElementById('clearmemfilter').onclick=()=>{
-    pivotGridObj.dataSource.filterSettings=[];
+    pivotGridObj.dataSourceSettings.filterSettings=[];
 };
 function updateFilterType(fieldName: string) {
     if ((fieldsmemddl as any).itemData === fieldName) {
@@ -726,8 +726,8 @@ let order: string[] = ['Ascending', 'Descending'];
 
     document.getElementById('apply').onclick = () => {
        if (checkBoxObj.checked) {
-            pivotGridObj.dataSource.enableSorting = true;
-            pivotGridObj.dataSource.sortSettings = [
+            pivotGridObj.dataSourceSettings.enableSorting = true;
+            pivotGridObj.dataSourceSettings.sortSettings = [
                 { name: 'product', order: (fieldsddl.dataSource as { [key: string]: Object }[])[0].Order === 'product_asc' ? 'Ascending' : 'Descending' },
                 { name: 'eyeColor', order: (fieldsddl.dataSource as { [key: string]: Object }[])[1].Order === 'eyeColor_asc' ? 'Ascending' : 'Descending' },
                 { name: 'gender', order: (fieldsddl.dataSource as { [key: string]: Object }[])[2].Order === 'gender_asc' ? 'Ascending' : 'Descending' },
@@ -737,8 +737,8 @@ let order: string[] = ['Ascending', 'Descending'];
                 
             ];
         } else {
-            pivotGridObj.dataSource.enableSorting = false;
-            pivotGridObj.dataSource.sortSettings = [];
+            pivotGridObj.dataSourceSettings.enableSorting = false;
+            pivotGridObj.dataSourceSettings.sortSettings = [];
         }
        
     };
@@ -792,9 +792,9 @@ expand.appendTo('#expand');
 function checkcha(args: CheckChange)
 {
         if (args.checked) {
-            pivotGridObj.dataSource.expandAll=true;
+            pivotGridObj.dataSourceSettings.expandAll=true;
         } else {
-            pivotGridObj.dataSource.expandAll=false;
+            pivotGridObj.dataSourceSettings.expandAll=false;
         }
 }
 
@@ -836,7 +836,7 @@ let condFormat:CheckBox = new CheckBox({
 condFormat.appendTo('#cformatting');
 
 button1.element.onclick = (): void => {
-    if (pivotGridObj.dataSource.conditionalFormatSettings.length > 0) {
+    if (pivotGridObj.dataSourceSettings.conditionalFormatSettings.length > 0) {
         pivotGridObj.setProperties({ dataSource: { conditionalFormatSettings: [] } }, true);
         pivotGridObj.renderPivotGrid();
     }
@@ -1016,11 +1016,11 @@ let operatorfddl: DropDownList = new DropDownList({
                 filterOptions.push(fieldCollections[field]);
             }
         }
-        pivotGridObj.dataSource.filterSettings = filterOptions;
+        pivotGridObj.dataSourceSettings.filterSettings = filterOptions;
     };
 
     document.getElementById('clear').onclick = () => {
-        pivotGridObj.dataSource.filterSettings = [];
+        pivotGridObj.dataSourceSettings.filterSettings = [];
     }
 
 
@@ -1118,10 +1118,10 @@ document.getElementById('applyvaluefilter').onclick = () => {
         value1: valueInput01.value === null ? '1' : valueInput01.value.toString(),
         value2: valueInput02.value === null ? '1' : valueInput02.value.toString()
     }];
-    pivotGridObj.dataSource.filterSettings = filterOptions;
+    pivotGridObj.dataSourceSettings.filterSettings = filterOptions;
 };
 document.getElementById('clearvaluefilter').onclick = () => {
-    pivotGridObj.dataSource.filterSettings = [];
+    pivotGridObj.dataSourceSettings.filterSettings = [];
     
 };
 
@@ -1164,10 +1164,10 @@ aggregationcBox.appendTo('#aggregation');
 
     function setSummaryType(fieldName: string, summaryType: SummaryTypes): void {
         let isAvail: boolean = false;
-        for (let vCnt: number = 0; vCnt < pivotGridObj.dataSource.values.length; vCnt++) {
-            if (pivotGridObj.dataSource.values[vCnt].name === fieldName) {
-                pivotGridObj.dataSource.values[vCnt].type = summaryType;
-                isAvail = (<any>pivotGridObj.dataSource.values[vCnt]).properties ? false : true;
+        for (let vCnt: number = 0; vCnt < pivotGridObj.dataSourceSettings.values.length; vCnt++) {
+            if (pivotGridObj.dataSourceSettings.values[vCnt].name === fieldName) {
+                pivotGridObj.dataSourceSettings.values[vCnt].type = summaryType;
+                isAvail = (<any>pivotGridObj.dataSourceSettings.values[vCnt]).properties ? false : true;
             }
         }
         if (isAvail) {

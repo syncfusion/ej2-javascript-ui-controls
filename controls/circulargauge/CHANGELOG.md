@@ -10,7 +10,7 @@
 
 #### Bug Fixes
 
-- #I237023 - The issue with pointer animation on setting more than 80% of the pointer radius has been fixed.
+- #I237023 - The issue with pointer animation on setting more than 80% of the pointer radius has been fixed.
 
 ## 17.1.48 (2019-05-21)
 

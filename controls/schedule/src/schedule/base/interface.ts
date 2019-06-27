@@ -329,6 +329,7 @@ export interface EventFieldsMapping {
     recurrenceRule?: string;
     recurrenceException?: string;
     isReadonly?: string;
+    followingID?: string;
 }
 
 /** @hidden */

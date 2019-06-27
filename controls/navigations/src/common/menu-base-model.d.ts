@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged, AnimationModel } from '@syncfusion/ej2-base';import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardEventArgs, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { attributes, Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';import { getScrollableParent } from '@syncfusion/ej2-popups';import { HScroll } from '../common/h-scroll';import { VScroll } from '../common/v-scroll';
+import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged, AnimationModel } from '@syncfusion/ej2-base';import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardEventArgs, Touch, TapEventArgs } from '@syncfusion/ej2-base';import { attributes, Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';import { getScrollableParent } from '@syncfusion/ej2-popups';import { HScroll } from '../common/h-scroll';import { VScroll } from '../common/v-scroll';
 import {MenuEffect,MenuEventArgs,BeforeOpenCloseMenuEventArgs,OpenCloseMenuEventArgs} from "./menu-base";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -136,42 +136,49 @@ export interface MenuBaseModel extends ComponentModel{
     /**
      * Triggers while rendering each menu item.
      * @event
+     * @blazorProperty 'OnItemRender'
      */
     beforeItemRender?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers before opening the menu item.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers while opening the menu item.
      * @event
+     * @blazorProperty 'Opened'
      */
     onOpen?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers before closing the menu.
      * @event
+     * @blazorProperty 'OnClose'
      */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers while closing the menu.
      * @event
+     * @blazorProperty 'Closed'
      */
     onClose?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while selecting menu item.
      * @event
+     * @blazorProperty 'ItemSelected'
      */
     select?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 

@@ -93,6 +93,18 @@ export class TableProperties {
         // wire fnt property
         this.wireEvent();
     }
+
+    /**
+     * @private
+     */
+    public enableDisableElements(enable: boolean): void {
+        this.textProperties.enableDisableElements(enable);
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        } else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    }
     private addTablePropertyTab = (): void => {
         // tslint:disable-next-line:max-line-length
         this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });

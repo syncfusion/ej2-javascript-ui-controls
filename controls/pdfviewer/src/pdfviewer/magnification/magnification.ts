@@ -1,5 +1,6 @@
 import { Browser } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
+import { getDiagramElement } from '@syncfusion/ej2-drawings';
 
 /**
  * Magnification module
@@ -681,6 +682,23 @@ export class Magnification {
                                     textLayer.style.display = 'none';
                                 }
                             }
+                        }
+                        let adornerSvg: HTMLElement = getDiagramElement(this.pdfViewer.element.id + '_textLayer_' + i);
+                        if (adornerSvg) {
+                            let adonerLayer: HTMLElement = getDiagramElement(this.pdfViewer.element.id + i + '_diagramAdorner_svg');
+                            if (adonerLayer) {
+                                adonerLayer.style.width = width + 'px';
+                                adonerLayer.style.height = height + 'px';
+                            }
+                            let diagramAdornerLayer: HTMLElement =
+                                getDiagramElement(this.pdfViewer.element.id + i + '_diagramAdornerLayer');
+                            if (diagramAdornerLayer) {
+                                diagramAdornerLayer.style.width = width + 'px';
+                                diagramAdornerLayer.style.height = height + 'px';
+                            }
+                            adornerSvg.style.width = width + 'px';
+                            adornerSvg.style.height = height + 'px';
+                            this.pdfViewer.renderSelector(i);
                         }
                     }
                 }

@@ -285,6 +285,17 @@ export let projectData: Object[] = [
     }
 ];
 
+export let zoomingData: object[] = [ {
+    TaskID: 1,
+    TaskName: 'Project Initiation',
+    StartDate: new Date('04/02/2019'),
+    EndDate: new Date('04/21/2019'),
+    subtasks: [
+        { TaskID: 2, TaskName: 'Identify Site location', BaselineStartDate: new Date('07/08/2019'),  BaselineEndDate: new Date('09/14/2019'), StartDate: new Date('04/08/2019'), Duration: 100, Progress: 50 },
+        { TaskID: 3, TaskName: 'Perform Soil test', BaselineStartDate: new Date('03/04/2019'),Predecessor:'2FS', BaselineEndDate: new Date('04/19/2019'), StartDate: new Date('04/08/2019'), Duration: 100, Progress: 50 },
+        { TaskID: 4, TaskName: 'Soil test approval', BaselineStartDate: new Date('03/09/2019'), Predecessor:'3SF', BaselineEndDate: new Date('04/21/2019'), StartDate: new Date('04/12/2019'), Duration: 10, Progress: 50 },
+    ]
+},];
 export let projectData1: Object[] = [
     {
         TaskID: 1,
@@ -636,6 +647,55 @@ export let unscheduledData4: Object[] = [
     }
 ];
 
+export let zoomData: Object[] =[
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/02/2018'),
+        'EndDate': new Date('03/03/2018'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/04/2018'), 'EndDate': new Date('02/12/2018'),
+                'Progress': '40', 'Duration': '8minutes', 'DurationUnit':'minutes'
+            },
+            {
+                'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/04/2018'), 'EndDate': new Date('02/13/2018'),
+                'Progress': '40', 'Duration': '8minutes', 'DurationUnit':'minute'
+            },
+            {
+                'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/04/2018'), 'EndDate': new Date('02/14/2018'),
+                'Progress': '40', 'Duration': '8minutes', 'DurationUnit':'minute'
+            }
+        ]
+    },
+]
+
+export let zoomData1: Object[] =[
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/02/2018'),
+        'EndDate': new Date('03/03/2018'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/04/2018'), 'EndDate': new Date('02/12/2018'),
+                'Progress': '40', 'Duration': 400
+            },
+            {
+                'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/04/2018'), 'EndDate': new Date('02/13/2018'),
+                'Progress': '40', 'Duration': 4
+            },
+            {
+                'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/04/2018'), 'EndDate': new Date('02/14/2018'),
+                'Progress': '40', 'Duration': 4
+            }
+        ]
+    },
+]
 
 export let defaultGanttData: Object[] = [
     {
@@ -769,23 +829,9 @@ export let resourceData: Object[] = [
 
 export let sampleData: Object[] = [
     {
-        'resourceInfo': [1], 'TaskId': 1, 'TaskName': 'Start-Duration', 'cusClass': 'cusclass',
+        'resourceInfo': [1], 'TaskId': 1, 'TaskName': 'Start-Duration',
         'StartDate': new Date('10/23/2017'), 'BaselineStartDate': new Date('10/23/2017'),
         'BaselineEndDate': new Date('10/26/2017'), 'Duration': 4, 'Progress': 80, 'Notes': 'testing1',
-        'Indicators': [
-            {
-                'date': '10/29/2017',
-                'iconCls': 'fas fa-cat',
-                'name': 'Custom String',
-                'tooltip': 'Follow up'
-            },
-            {
-                'date': '11/1/2017',
-                'iconCls': 'fas fa-dragon',
-                'name': '<span style="color:red">String Template</span>',
-                'tooltip': 'Review results'
-            }
-        ]
     },
     {
         'resourceInfo': [2], 'TaskId': 2, 'TaskName': 'Start-End',
@@ -817,4 +863,57 @@ export let sampleData: Object[] = [
         EndDate: new Date('10/28/2017'), 'BaselineStartDate': new Date('10/24/2017'),
         'BaselineEndDate': new Date('10/28/2017'), 'Progress': 65, Duration: 0, 'Notes': 'testing7'
     },
+];
+
+export let cellEditData: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Parent Task',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Notes: 'Notes 1',
+              BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019') }, 
+            { TaskID: 3, TaskName: 'Child Task 2', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Notes: 'Notes 2',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [3, 1] },
+            { TaskID: 4, TaskName: 'Milestone Task', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "2", Notes: 'Notes 3',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [4]  },
+        ]
+    },
+    { TaskID: 5, TaskName: 'Unscheduled Start Task', StartDate: new Date('04/02/2019'), Notes: 'Notes 4',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [3]  },
+    { TaskID: 6, TaskName: 'Unscheduled End Task', EndDate: new Date('04/02/2019'), Notes: 'Notes 5',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019')  },
+    { TaskID: 7, TaskName: 'Unscheduled Duration Task', Duration: 5, Notes: 'Notes 6',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  },
+];
+
+export let dialogEditData: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Parent Task',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Notes: 'Notes 1',
+              BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019') }, 
+            { TaskID: 3, TaskName: 'Child Task 2', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30, Notes: 'Notes 2',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [3, 1] },
+            { TaskID: 4, TaskName: 'Milestone Task', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "2", Notes: 'Notes 3',
+            BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [4]  },
+        ]
+    },
+    { TaskID: 5, TaskName: 'Unscheduled Start Task', StartDate: new Date('04/02/2019'), Notes: 'Notes 4',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [3]  },
+    { TaskID: 6, TaskName: 'Unscheduled End Task', EndDate: new Date('04/02/2019'), Notes: 'Notes 5',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019')  },
+    { TaskID: 7, TaskName: 'Unscheduled Duration Task', Duration: 5, Notes: 'Notes 6',
+    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  },
+];
+
+export let resourcesData: Object[] = [
+    { resourceId: 1, resourceName: 'Resource 1' },
+    { resourceId: 2, resourceName: 'Resource 2' },
+    { resourceId: 3, resourceName: 'Resource 3' },
+    { resourceId: 4, resourceName: 'Resource 4' },
 ];

@@ -1555,6 +1555,178 @@ describe('Localization testing', () => {
 
     });
 });
+describe('HTML attributes at inline element testing', () => {
+    let datetimepicker: any;
+    beforeEach((): void => {
+        datetimepicker = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'datetime' });
+        ele.setAttribute('placeholder','Enter a date');
+        ele.setAttribute('readonly', '');
+        ele.setAttribute('disabled', '');
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Inline element testing', () => {
+        datetimepicker = new DateTimePicker();
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.placeholder).toBe("Enter a date");
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(true);
+        expect(datetimepicker.element.hasAttribute('enabled')).toBe(false);
+    });
+    it('Inline and API testing', () => {
+        datetimepicker = new DateTimePicker({placeholder:"Select a date", readonly: false, enabled: true});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.placeholder).toBe("Select a date");
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(false);
+        expect(datetimepicker.element.hasAttribute('disabled')).toBe(false);
+    });
+    it('Inline and html attributes API testing', () => {
+        datetimepicker = new DateTimePicker({ htmlAttributes:{placeholder:"Choose a date"}});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.placeholder).toBe("Choose a date");
+    });
+    it('Inline, API and html attributes API testing', () => {
+        datetimepicker = new DateTimePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: "",}, placeholder: "Select a date", readonly: false, enabled: true});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.placeholder).toBe("Select a date");
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(false);
+        expect(datetimepicker.element.hasAttribute('enabled')).toBe(false);
+    });
+});
+
+describe('HTML attribute API testing', () => {
+    let datetimepicker: any;
+    beforeEach((): void => {
+        datetimepicker = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'datetime' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('API testing', () => {
+        datetimepicker = new DateTimePicker({placeholder:"Select a date", readonly: false, enabled: true});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.placeholder).toBe("Select a date");
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(false);
+        expect(datetimepicker.element.hasAttribute('disabled')).toBe(false);
+    });
+    it('HTML attributes API testing', () => {
+        datetimepicker = new DateTimePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false"}});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.placeholder).toBe("Choose a date");
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(false);
+    });
+    it('API and HTML attributes API testing', () => {
+        datetimepicker = new DateTimePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: ""}, placeholder: "Select a date", readonly: false, enabled: true});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.placeholder).toBe("Select a date");
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(false);
+        expect(datetimepicker.element.hasAttribute('enabled')).toBe(false);
+    });
+    it('Other attribute testing with htmlAttributes API', () => {
+        datetimepicker = new DateTimePicker({ htmlAttributes:{name:"picker", class: "test", title:"sample"}});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.getAttribute('name')).toBe('picker');
+        expect(datetimepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
+        expect(datetimepicker.inputWrapper.container.getAttribute('class')).toBe('test');
+    });
+});
+
+describe('HTML attribute API dynamic testing', () => {
+    let datetimepicker: any;
+    beforeEach((): void => {
+        datetimepicker = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'datetime' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Dynamically change attributes with htmlAttributes API', () => {
+        datetimepicker = new DateTimePicker({ htmlAttributes:{placeholder:"Enter a date", readonly: "", disabled: "true", value: "2/20/2018", max: "2/25/2018", min: "2/10/2018", title:"sample", style: 'background-color:yellow'}});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.getAttribute('placeholder')).toBe('Enter a date');
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(true);
+        expect(datetimepicker.element.hasAttribute('disabled')).toBe(true);
+        expect(datetimepicker.element.value).toBe('2/20/2018 12:00 AM');
+        expect(datetimepicker.element.min).toBe('2/10/2018');
+        expect(datetimepicker.element.max).toBe('2/25/2018');
+        expect(datetimepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
+        expect(datetimepicker.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+        datetimepicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "", value: "4/20/2018", max: "4/25/2018", min: "4/10/2018", title:"heading", style: 'background-color:red'};
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.getAttribute('placeholder')).toBe('choose a date');
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(false);
+        expect(datetimepicker.element.hasAttribute('disabled')).toBe(false);
+        expect(datetimepicker.element.value).toBe('4/20/2018 12:00 AM');
+        expect(datetimepicker.element.min).toBe('4/10/2018');
+        expect(datetimepicker.element.max).toBe('4/25/2018');
+        expect(datetimepicker.inputWrapper.container.getAttribute('title')).toBe('heading');
+        expect(datetimepicker.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
+    });
+    it('Placeholder testing in auto case', () => {
+        datetimepicker = new DateTimePicker({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
+        datetimepicker.appendTo('#datetime');
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            datetimepicker.htmlAttributes = { placeholder:"choose a date"};
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datetimepicker.floatLabelType = "Always";
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datetimepicker.floatLabelType = "Never";
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in always case', () => {
+            datetimepicker = new DateTimePicker({ floatLabelType: "Always", htmlAttributes:{placeholder:"Enter a name" }});
+            datetimepicker.appendTo('#datetime');
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            datetimepicker.htmlAttributes = { placeholder:"choose a date"};
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datetimepicker.floatLabelType = "Auto";
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datetimepicker.floatLabelType = "Never";
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in never case', () => {
+            datetimepicker = new DateTimePicker({ floatLabelType: "Never", htmlAttributes:{placeholder:"Enter a name" }});
+            datetimepicker.appendTo('#datetime');
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe('Enter a name');
+            datetimepicker.htmlAttributes = { placeholder:"choose a date"};
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe('choose a date');
+            datetimepicker.floatLabelType = "Always";
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            datetimepicker.floatLabelType = "Auto";
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+        });
+});
 
 describe('keyboard events', () => {
     let datetimepicker: any;

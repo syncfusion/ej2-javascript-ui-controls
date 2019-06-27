@@ -14,11 +14,9 @@ import { Animation, AnimationOptions  } from '@syncfusion/ej2-base';
 export class LineBase {
 
     public chart: Chart;
-    private padding: number;
     /** @private */
     constructor(chartModule?: Chart) {
         this.chart = chartModule;
-        this.padding = 5;
     }
     /**
      * To improve the chart performance.
@@ -37,7 +35,6 @@ export class LineBase {
         let prevYValue: number = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
         let xVal: number = 0;
         let yVal: number = 0;
-        let currentPoint: Points;
         for (let currentPoint of seriesPoints) {
             currentPoint.symbolLocations = [];
             xVal = currentPoint.xValue ? currentPoint.xValue : xVisibleRange.min;
@@ -87,10 +84,15 @@ export class LineBase {
         let element: Element = getElement(options.id);
         let chart: Chart = series.chart;
         let previousDirection: string = element ? element.getAttribute('d') : null;
-        let htmlObject: HTMLElement = series.chart.renderer.drawPath(options) as HTMLElement;
-        htmlObject.setAttribute('clip-path', clipRect);
+        let htmlObject: HTMLElement =
+        series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
+        if (htmlObject) {
+            htmlObject.setAttribute('clip-path', clipRect);
+        }
         series.pathElement = htmlObject;
-        series.seriesElement.appendChild(htmlObject);
+        if (!series.chart.enableCanvas) {
+            series.seriesElement.appendChild(htmlObject);
+        }
         series.isRectSeries = false;
         pathAnimation(element, options.d, series.chart.redraw, previousDirection, chart.duration);
     }

@@ -1,4 +1,4 @@
-import { sampleData } from './datasource.spec';
+import { sampleData, zerothRecord } from './datasource.spec';
 import { createGrid, destroy } from './treegridutil.spec';
 import { TreeGrid } from '../../src';
 import { Data } from '@syncfusion/ej2-grids';
@@ -99,6 +99,31 @@ describe('TreeGrid Row module', () => {
       });
     });
 
+
+describe('Indent for 0th level Row', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: zerothRecord,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
+      },
+      done
+    );
+  });
+  it('Testing Indent for 0th level Row that has no childrecords and 0th level record with chidrecord', () => {
+    expect(gridObj.getRowByIndex(0).querySelector('.e-icons.e-none')).not.toBe(null);
+    expect(gridObj.getRowByIndex(1).querySelector('.e-icons.e-none')).not.toBe(null);
+    expect((gridObj.getRowByIndex(0).querySelectorAll('.e-icons.e-none')).length).toBe(2);
+    expect((gridObj.getRowByIndex(1).querySelectorAll('.e-icons.e-none')).length).toBe(1);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
 
 describe('height set through setmodel', () => {
   let gridObj: TreeGrid;

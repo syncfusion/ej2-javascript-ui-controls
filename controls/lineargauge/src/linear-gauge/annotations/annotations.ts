@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis } from '../axes/axis';
 import { Annotation } from '../model/base';
@@ -32,11 +32,15 @@ export class Annotations {
         });
         if (annotationGroup.childElementCount > 0 && !(isNullOrUndefined(getElement(secondaryID)))) {
             getElement(secondaryID).appendChild(annotationGroup);
+            updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate', 'ContentTemplate');
+        } else {
+            resetBlazorTemplate(this.gauge.element.id + '_ContentTemplate', 'ContentTemplate');
         }
     }
     /**
      * To create annotation elements
      */
+    //tslint:disable
     public createAnnotationTemplate(element: HTMLElement, annotationIndex: number): void {
         let left: number; let top: number; let templateFn: Function;
         let renderAnnotation: boolean = false;
@@ -53,76 +57,84 @@ export class Annotations {
             annotation: annotation, textStyle: annotation.font
         };
         argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
-        this.gauge.trigger(annotationRender, argsData);
-        if (!argsData.cancel) {
-            templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && templateFn(this.gauge).length) {
-                templateElement = Array.prototype.slice.call(templateFn(this.gauge));
-                let length: number = templateElement.length;
-                for (let i: number = 0; i < length; i++) {
-                    childElement.appendChild(templateElement[i]);
-                }
-            } else {
-                childElement.appendChild(createElement('div', {
-                    innerHTML: argsData.content,
-                    styles: getFontStyle(argsData.textStyle)
-                }));
-            }
-            let offset: Size = getElementOffset(<HTMLElement>childElement.cloneNode(true), this.gauge.element);
-            if (!(isNullOrUndefined(annotation.axisValue))) {
-                axisIndex = isNullOrUndefined(annotation.axisIndex) ? 0 : annotation.axisIndex;
-                axis = <Axis>this.gauge.axes[axisIndex];
-                let range: VisibleRange = axis.visibleRange;
-                renderAnnotation = (annotation.axisValue >= range.min && annotation.axisValue <= range.max) ? true : false;
-                let line: Rect = axis.lineBounds;
-                if (this.gauge.orientation === 'Vertical') {
-                    left = line.x + annotation.x;
-                    top = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.height) + line.y);
-                    top += annotation.y;
+        this.gauge.trigger(annotationRender, argsData, (observerArgs: IAnnotationRenderEventArgs) => {
+            if (!argsData.cancel) {
+                let blazor: string = 'Blazor';
+                templateFn = getTemplateFunction(argsData.content);
+                if (templateFn && (!window[blazor] ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate').length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate'));
+                    let length: number = templateElement.length;
+                    for (let i: number = 0; i < length; i++) {
+                        childElement.appendChild(templateElement[i]);
+                    }
                 } else {
-                    left = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.width) + line.x);
-                    left += annotation.x;
-                    top = line.y + annotation.y;
+                    childElement.appendChild(createElement('div', {
+                        innerHTML: argsData.content,
+                        styles: getFontStyle(argsData.textStyle)
+                    }));
                 }
-                left -= (offset.width / 2);
-                top -= (offset.height / 2);
+                let offset: Size = getElementOffset(<HTMLElement>childElement.cloneNode(true), this.gauge.element);
+                if (!(isNullOrUndefined(annotation.axisValue))) {
+                    axisIndex = isNullOrUndefined(annotation.axisIndex) ? 0 : annotation.axisIndex;
+                    axis = <Axis>this.gauge.axes[axisIndex];
+                    let range: VisibleRange = axis.visibleRange;
+                    renderAnnotation = (annotation.axisValue >= range.min && annotation.axisValue <= range.max) ? true : false;
+                    let line: Rect = axis.lineBounds;
+                    if (this.gauge.orientation === 'Vertical') {
+                        left = line.x + annotation.x;
+                        top = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.height) + line.y);
+                        top += annotation.y;
+                    } else {
+                        left = ((valueToCoefficient(annotation.axisValue, axis, this.gauge.orientation, range) * line.width) + line.x);
+                        left += annotation.x;
+                        top = line.y + annotation.y;
+                    }
+                    left -= (offset.width / 2);
+                    top -= (offset.height / 2);
+                } else {
+                    let elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+                    let bounds: ClientRect = this.gauge.svgObject.getBoundingClientRect();
+                    renderAnnotation = true;
+                    left = Math.abs(bounds.left - elementRect.left);
+                    top = Math.abs(bounds.top - elementRect.top);
+                    left = (annotation.horizontalAlignment === 'None') ? (left + annotation.x) : left;
+                    top = (annotation.verticalAlignment === 'None') ? top + annotation.y : top;
+                    switch (annotation.verticalAlignment) {
+                        case 'Near':
+                            top = top + annotation.y;
+                            break;
+                        case 'Center':
+                            top = top + annotation.y + ((bounds.height / 2) - (offset.height / 2));
+                            break;
+                        case 'Far':
+                            top = (top + bounds.height) + annotation.y - offset.height;
+                            break;
+                    }
+                    switch (annotation.horizontalAlignment) {
+                        case 'Near':
+                            left = left + annotation.x;
+                            break;
+                        case 'Center':
+                            left = left + annotation.x + ((bounds.width / 2) - (offset.width / 2));
+                            break;
+                        case 'Far':
+                            left = (left + bounds.width) + annotation.x - offset.width;
+                            break;
+                    }
+                }
+                childElement.style.left = left + 'px';
+                childElement.style.top = top + 'px';
+                if (renderAnnotation) {
+                    element.appendChild(childElement);
+                    setTimeout(() => {
+                        updateBlazorTemplate(element.id + ' content', 'Content');
+                    }, 0);
+                }
             } else {
-                let elementRect: ClientRect = this.gauge.element.getBoundingClientRect();
-                let bounds: ClientRect = this.gauge.svgObject.getBoundingClientRect();
-                renderAnnotation = true;
-                left = Math.abs(bounds.left - elementRect.left);
-                top = Math.abs(bounds.top - elementRect.top);
-                left = (annotation.horizontalAlignment === 'None') ? (left + annotation.x) : left;
-                top = (annotation.verticalAlignment === 'None') ? top + annotation.y : top;
-                switch (annotation.verticalAlignment) {
-                    case 'Near':
-                        top = top + annotation.y;
-                        break;
-                    case 'Center':
-                        top = top + annotation.y + ((bounds.height / 2) - (offset.height / 2));
-                        break;
-                    case 'Far':
-                        top = (top + bounds.height) + annotation.y - offset.height;
-                        break;
-                }
-                switch (annotation.horizontalAlignment) {
-                    case 'Near':
-                        left = left + annotation.x;
-                        break;
-                    case 'Center':
-                        left = left + annotation.x + ((bounds.width / 2) - (offset.width / 2));
-                        break;
-                    case 'Far':
-                        left = (left + bounds.width) + annotation.x - offset.width;
-                        break;
-                }
+                resetBlazorTemplate(element.id + ' content', 'Content');
             }
-            childElement.style.left = left + 'px';
-            childElement.style.top = top + 'px';
-            if (renderAnnotation) {
-                element.appendChild(childElement);
-            }
-        }
+        });
+
     }
 
     /*

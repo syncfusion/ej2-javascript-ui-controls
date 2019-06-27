@@ -30,14 +30,14 @@ export class Column {
 
     /**    
      * Gets the unique identifier value of the column. It is used to get the column object.   
-     * @default undefined    
+     * @default null    
      */
 
      public index: number;
     /**    
      * Defines the header text of column which is used to display in column header.    
      * If `headerText` is not defined, then field name value will be assigned to header text.   
-     * @default ''  
+     * @default null  
      */
 
     public headerText: string;
@@ -101,8 +101,8 @@ export class Column {
     /**    
      * It is used to change display value with the given format and does not affect the original data.  
      * Gets the format from the user which can be standard or custom 
-     * [`number`](../common/intl.html#number-formatter-and-parser) 
-     * and [`date`](../common/intl.html#date-formatter-and-parser) formats.  
+     * [`number`](../common/internationalization/#number-formatting/) 
+     * and [`date`](../common/internationalization/#number-formatting/) formats.  
      * @default null
      * @aspType string
      */
@@ -117,7 +117,7 @@ export class Column {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../common/template-engine.html) or HTML element ID.   
+     * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
      * @default null    
      */
 
@@ -316,7 +316,8 @@ export class Column {
 
     /**    
      * Defines default values for the component when adding a new record to the Grid.
-     * @default null         
+     * @default null
+     * @aspType object         
      */
     public defaultValue: string;
 
@@ -467,7 +468,7 @@ export class Column {
 
         if (this.sortComparer) {
             let a: Function = this.sortComparer as Function;
-            this.sortComparer = function comparer(x: number | string, y: number | string): number {
+            this.sortComparer = function comparer(x: number | string, y: number | string, xObj?: Object, yObj?: Object): number {
                 if (typeof a === 'string') {
                     a = getObject(a, window);
                 }
@@ -476,7 +477,7 @@ export class Column {
                     x = y;
                     y = z;
                 }
-                return a(x, y);
+                return a(x, y, xObj, yObj);
             };
         }
 
@@ -596,14 +597,14 @@ export interface ColumnModel {
 
     /**    
      * Gets the unique identifier value of the column. It is used to get the object.   
-     * @default undefined    
+     * @default null    
      */
     index?: number;
 
     /**    
      * Defines the header text of column which is used to display in column header.    
      * If `headerText` is not defined, then field name value will be assigned to header text.   
-     * @default ''    
+     * @default null  
      */
     headerText?: string;
 
@@ -661,8 +662,8 @@ export interface ColumnModel {
     /**    
      * It is used to change display value with the given format and does not affect the original data.   
      * Gets the format from the user which can be standard or custom 
-     * [`number`](../common/intl.html#number-formatter-and-parser) 
-     * and [`date`](../common/intl.html#date-formatter-and-parser) formats.  
+     * [`number`](../../common/internationalization/#number-formatting/) 
+     * and [`date`](../common/internationalization/#number-formatting/) formats.  
      * @default null
      * @aspType string
      */
@@ -676,7 +677,7 @@ export interface ColumnModel {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../common/template-engine.html) or HTML element ID.   
+     * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
      * @default null    
      */
     template?: string;

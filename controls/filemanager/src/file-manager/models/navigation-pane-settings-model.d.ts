@@ -6,7 +6,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export interface NavigationPaneSettingsModel {
 
     /**
-     * specifies the maximum width of navigationpane.
+     * Specifies the maximum width of navigationpane.
      * @default '650px'
      */
     maxWidth?: string | number;
@@ -18,7 +18,7 @@ export interface NavigationPaneSettingsModel {
     minWidth?: string | number;
 
     /**
-     * Enable or disable the navigation pane.
+     * Enables or disables the navigation pane.
      * @default true
      */
     visible?: boolean;

@@ -11,7 +11,7 @@ import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
 import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';
-import { findDistance, findPath, updatePathElement } from '../utility/diagram-util';
+import { findDistance, findPath, updatePathElement} from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { flipConnector } from './../utility/diagram-util';
 import { PathElement } from '../core/elements/path-element';
@@ -262,7 +262,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Default - Sets the type of Association flow as Default
      * * Directional - Sets the type of Association flow as Directional
      * * BiDirectional - Sets the type of Association flow as BiDirectional
-     * @default 'Default'
+     * * @default 'Default'
      */
     @Property('Default')
     public association: BpmnAssociationFlows;
@@ -282,6 +282,13 @@ export class ConnectorSegment extends ChildProperty<ConnectorSegment> {
      */
     @Property('Straight')
     public type: Segments;
+
+    /**
+     * Defines the segment to be drag or not
+     * @default true
+     */
+    @Property(true)
+    public allowDrag: boolean;
 
     /**
      * @private

@@ -7,7 +7,7 @@ import { world_Map } from './MapData/worldMap';
 Maps.Inject(Marker, MapsTooltip);
 
     let maps: Maps = new Maps({
-        load: (args :ILoadEventArgs) =>{
+        loaded: (args :ILoadEventArgs) =>{
             args.maps.print();
             },
         useGroupingSeparator: true,

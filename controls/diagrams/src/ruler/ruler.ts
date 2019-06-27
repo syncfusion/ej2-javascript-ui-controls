@@ -216,7 +216,7 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
 
     private updateSegments(start: number, end: number, svg: SVGElement, rulerSize: number): void {
         let run: number = start;
-        let trans: Trans = { trans: 0 };
+        let trans: SegmentTranslation = { trans: 0 };
         while (run < end) {
             let rulerSegment: RulerSegment = this.getNewSegment(run, svg);
             if (rulerSegment) {
@@ -226,7 +226,9 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
 
-    private updateSegment(start: number, end: number, rulerSegment: RulerSegment, run: number, trans: Trans, rulerSize: number): number {
+    private updateSegment(
+        start: number, end: number, rulerSegment: RulerSegment, run: number,
+        trans: SegmentTranslation, rulerSize: number): number {
         let segWidth: number = this.updateSegmentWidth(this.scale);
         if (run === start) {
             this.startValue = Math.floor(start / segWidth) * segWidth / this.scale;
@@ -466,6 +468,6 @@ export interface RulerSegment {
     label: SVGTextElement;
 }
 
-export interface Trans {
+export interface SegmentTranslation {
     trans: number;
 }

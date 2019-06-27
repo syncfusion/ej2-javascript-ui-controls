@@ -301,7 +301,7 @@ describe('Crud Datasource', () => {
                 crudAction: {
                     customFields: ['Id', 'Description', 'Color']
                 },
-                dataManager: nodedata,
+                dataSource: nodedata,
                 connectionDataSource: {
                     id: 'Name',
                     sourceID: 'sourceID',

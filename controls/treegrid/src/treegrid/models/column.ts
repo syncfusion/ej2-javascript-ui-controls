@@ -645,7 +645,7 @@ export interface ColumnModel {
     /**
      * If `lockColumn` set to true, then it disables Reordering of a particular column.
      * The locked column will be moved to first position.
-     * @default false
+     * @default false         
      */
     lockColumn?: boolean;
 }

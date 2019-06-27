@@ -19,6 +19,18 @@
     content: '\eb7d';
   }
 
+  .e-de-selected-spellcheck-item::before {
+    content: '\e935';
+    font-family: 'e-icons';
+    font-size: 10px;
+  }
+
+  .e-de-selected-underline-item::before {
+    content: '\e935';
+    font-family: 'e-icons';
+    font-size: 10px;
+  }
+
   .e-de-ctnr-italic::before {
     content: '\eb99';
   }

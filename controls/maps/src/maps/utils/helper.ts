@@ -6,8 +6,9 @@ import { AnimationOptions, Animation } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType } from '../../index';
 import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel } from '../index';
-import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel } from '../index';
-import { shapeSelected } from '../model/constants';
+import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel,
+    MarkerClusterSettingsModel, IMarkerRenderingEventArgs, MarkerSettings, markerClusterRendering,
+IMarkerClusterRenderingEventArgs} from '../index';
 import { CenterPositionModel } from '../model/base-model';
 
 /**
@@ -625,7 +626,177 @@ export function convertElementFromLabel(element: Element, labelId: string, data:
         styles: 'position: absolute'
     });
 }
-
+/* tslint:disable:no-string-literal */
+//tslint:disable
+export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point, markerID: string, shapeCustom: Object, markerCollection: Element, maps: Maps): Element {
+    let markerEle: Element; let x: number; let y: number;
+    let size: Size = <Size>shapeCustom['size'];
+    let borderColor: string = shapeCustom['borderColor'];
+    let borderWidth: number = parseFloat(shapeCustom['borderWidth']);
+    let fill: string = shapeCustom['fill'];
+    let dashArray: string = shapeCustom['dashArray'];
+    let border: Object = { color: borderColor, width: borderWidth };
+    let opacity: number = shapeCustom['opacity'];
+    let circleOptions: CircleOption; let pathOptions: PathOption; let rectOptions: RectOption;
+    pathOptions = new PathOption(markerID, fill, borderWidth, borderColor, opacity, dashArray, '');
+    if (shape === 'Circle') {
+        let radius: number = (size.width + size.height) / 4;
+        circleOptions = new CircleOption(markerID, fill, border, opacity, location.x, location.y, radius, dashArray);
+        markerEle = maps.renderer.drawCircle(circleOptions) as SVGCircleElement;
+    } else if (shape === 'Rectangle') {
+        x = location.x - (size.width / 2);
+        y = location.y - (size.height / 2);
+        rectOptions = new RectOption(
+            markerID, fill, border, opacity, new Rect(x, y, size.width, size.height), null, null, '', dashArray
+        );
+        markerEle = maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
+    } else if (shape === 'Image') {
+        x = location.x - (size.width / 2);
+        y = location.y - (size.height / 2); 
+        merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
+        markerEle = maps.renderer.drawImage(pathOptions) as SVGImageElement;
+    } else {
+        markerEle = calculateShapes(maps, shape, pathOptions, size, location, markerCollection);
+    }
+    return markerEle;
+}
+//tslint:disable
+export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps:Maps, layerIndex: number, markerCollection:Element): HTMLElement | Element {
+    let bounds: DOMRect[] = []
+    let colloideBounds: DOMRect[] = []
+    let tempX: number = 0;
+    let tempY: number = 0;
+    let data: object;
+    let style: FontModel = currentLayer.markerClusterSettings.labelStyle;
+    let options: TextOption;
+    let textElement: Element;
+    let postionY: number = (15 / 4);
+    let m: number = 0;
+    for (let n: number = 0; n < markerTemplate.childElementCount; n++) {
+        let tempElement: Element = markerTemplate.childNodes[n] as Element;
+        bounds.push(tempElement.getBoundingClientRect() as DOMRect);
+    }
+    for (let o:number = 0; o < bounds.length; o++) {
+        if(!isNullOrUndefined(bounds[o])) {
+            for(let p: number = o+1; p < bounds.length; p++) {
+                if(!isNullOrUndefined(bounds[p])) {
+                    if ( bounds[o].left > bounds[p].right || bounds[o].right < bounds[p].left
+                        || bounds[o].top > bounds[p].bottom || bounds[o].bottom < bounds[p].top){
+                    }
+                     else {
+                        colloideBounds.push(bounds[p])
+                    }
+            }
+        }
+            tempX = bounds[o].x
+            tempY = bounds[o].y
+            for (let q: number = 0; q < colloideBounds.length; q++) {
+                for (let k: number =0; k< bounds.length; k++) {
+                    if (!isNullOrUndefined(bounds[k])) {
+                        if(colloideBounds[q]['x'] === bounds[k]['x']) {
+                            delete bounds[k]
+                            for(let r: number = 0;r < markerTemplate.childElementCount; r++) {
+                                let tempElement: Element = markerTemplate.childNodes[r] as Element;
+                                if (colloideBounds[q]['x'] === tempElement.getBoundingClientRect()['x']) {
+                                    markerTemplate.childNodes[r]['style']['visibility'] ="hidden"
+                                    markerTemplate.childNodes[o]['style']['visibility'] ="hidden"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        
+        if (colloideBounds.length > 0) {
+            let padding: number = 10;
+            let container: ClientRect = maps.element.getBoundingClientRect();
+            tempX = Math.abs(container['x'] - tempX) + padding;
+            tempY = Math.abs(container['y'] - tempY) + padding;
+            let translate: Object = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
+            let transPoint: Point = (maps.isTileMap) ? {x:0, y:0} :(maps.translatePoint.x !== 0) ?
+            maps.translatePoint : translate['location'];
+            let dataIndex: number = parseInt( markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+            let markerIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+            let clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
+            let shapeCustom: Object = {
+                size: new Size(clusters.width, clusters.height),
+                fill: clusters.fill, borderColor: clusters.border.color,
+                borderWidth: clusters.border.width, opacity: clusters.opacity,
+                dashArray: clusters.dashArray
+            };            
+            let eventArg: IMarkerClusterRenderingEventArgs = {
+                cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
+                width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
+                data: data, maps: maps, cluster: clusters, border: clusters.border
+            }
+            shapeCustom['fill'] = eventArg.fill;
+            shapeCustom['size']['width'] = eventArg.width
+            shapeCustom['size']['height'] = eventArg.height
+            shapeCustom['imageUrl'] = eventArg.imageUrl
+            shapeCustom['shape'] = eventArg.shape;
+            shapeCustom['borderColor']  = eventArg.border.color;
+            shapeCustom['borderWidth']  = eventArg.border.width;
+            maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
+                tempX = (maps.isTileMap) ? tempX :(markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue)
+                tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY: ((tempY + transPoint.y) * maps.mapScaleValue)
+                let clusterID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m++);
+                let labelID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m) +'_datalabel_'+ m;
+                let ele: Element = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: 0 }, clusterID, shapeCustom, markerCollection, maps);
+                ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                options = new TextOption(labelID, (0), postionY, 'middle',(colloideBounds.length + 1).toString() , '', '');
+                textElement = renderTextElement(options, style, style.color, markerCollection)
+                textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                markerCollection.appendChild(ele);
+                markerCollection.appendChild(textElement);
+            });
+        }
+    }
+    colloideBounds =[];
+}
+return markerTemplate as HTMLElement | Element
+}
+export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: MarkerSettings, markerData: object[], dataIndex: number,
+    location: Point, transPoint: Point, markerID : string, offset: Point, scale: number, maps: Maps,
+    markerCollection: Element ): Element{
+    let shapeCustom: Object = {
+        size: new Size(eventArgs.width, eventArgs.height),
+        fill: eventArgs.fill, borderColor: eventArgs.border.color,
+        borderWidth: eventArgs.border.width, opacity: markerSettings.opacity,
+        dashArray: markerSettings.dashArray
+    };
+    let ele: Element = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps );
+    let x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
+    let y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
+    ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
+    markerCollection.appendChild(ele); 
+    let element: string = (markerData.length - 1) === dataIndex ? 'marker' : null;
+    let markerPoint: Point = new Point(x, y);
+    if (markerSettings.animationDuration > 0) {
+        elementAnimate(
+            ele, markerSettings.animationDelay, markerSettings.animationDuration, markerPoint, maps, element
+        );
+    }
+    return markerCollection
+}
+export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: Function, markerID: string, data:object,
+    markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement{
+    templateFn = getTemplateFunction(eventArgs.template);
+    if (templateFn && templateFn(maps).length) {
+        let templateElement: HTMLCollection = templateFn(maps);
+        let markerElement: HTMLElement = <HTMLElement>convertElement(
+            templateElement, markerID, data, markerIndex, maps
+        );
+        for (let i: number = 0; i < markerElement.children.length; i++) {
+            (<HTMLElement>markerElement.children[i]).style.pointerEvents = 'none';
+        }
+        markerElement.style.left = ((maps.isTileMap ? location.x :
+            ((Math.abs(maps.baseMapRectBounds['min']['x'] - location.x)) * scale)) + offset.x) + 'px';
+        markerElement.style.top = ((maps.isTileMap ? location.y :
+            ((Math.abs(maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
+        markerTemplate.appendChild(markerElement);
+    }
+    return markerTemplate
+}
 /**
  * Internal use of append shape element
  * @private

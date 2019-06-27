@@ -44,19 +44,21 @@ export class Annotations {
             cancel: false, name: annotationRendering, content: annotation.content,
             annotation: annotation
         };
-        this.map.trigger(annotationRendering, argsData);
-        templateFn = getTemplateFunction(argsData.content);
-        if (templateFn && templateFn(this.map).length) {
-            templateElement = Array.prototype.slice.call(templateFn(this.map));
-            let length: number = templateElement.length;
-            for (let i: number = 0; i < length; i++) {
-                childElement.appendChild(templateElement[i]);
+        this.map.trigger(annotationRendering, argsData, (annotationArgs: IAnnotationRenderingEventArgs) => {
+            templateFn = getTemplateFunction(argsData.content);
+            if (templateFn && templateFn(this.map).length) {
+                templateElement = Array.prototype.slice.call(templateFn(this.map));
+                let length: number = templateElement.length;
+                for (let i: number = 0; i < length; i++) {
+                    childElement.appendChild(templateElement[i]);
+                }
+            } else {
+                childElement.appendChild(createElement('div', {
+                    innerHTML: argsData.content
+                }));
             }
-        } else {
-            childElement.appendChild(createElement('div', {
-                innerHTML: argsData.content
-            }));
-        }
+        });
+
         let offset: Size = getElementOffset(<HTMLElement>childElement.cloneNode(true), map.element);
         let elementRect: ClientRect = map.element.getBoundingClientRect();
         let bounds: ClientRect = map.svgObject.getBoundingClientRect();

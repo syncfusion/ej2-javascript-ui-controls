@@ -7,7 +7,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { WParagraphFormat } from '../index';
 import { TextAlignment, LineSpacingType } from '../../base/types';
-import { RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
+import { RadioButton, ChangeArgs, CheckBox } from '@syncfusion/ej2-buttons';
 
 /**
  * The Paragraph dialog is used to modify formatting of selected paragraphs.
@@ -29,6 +29,7 @@ export class ParagraphDialog {
     private atIn: NumericTextBox;
     private rtlButton: RadioButton;
     private ltrButton: RadioButton;
+    private contextSpacing: CheckBox;
 
     //paragraph Format properties
 
@@ -42,6 +43,7 @@ export class ParagraphDialog {
     private lineSpacingType: LineSpacingType = undefined;
     private paragraphFormat: WParagraphFormat = undefined;
     private bidi: boolean = undefined;
+    private contextualSpacing: boolean = undefined;
     public isStyleDialog: boolean = false;
     private directionDiv: HTMLElement = undefined;
     /**
@@ -118,12 +120,21 @@ export class ParagraphDialog {
         let rightIndentionDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-right-sub-container', styles: 'float:right;position:relative;' }) as HTMLDivElement;
         indentionDiv.appendChild(rightIndentionDiv);
         // tslint:disable-next-line:max-line-length
-        let spacingDiv: HTMLDivElement = createElement('div', { id: 'spacing_div', styles: 'width: 400px;height: 150px;float:left;', className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
+        let spacingDiv: HTMLDivElement = createElement('div', { id: 'spacing_div' }) as HTMLDivElement;
         let leftSpacingDiv: HTMLDivElement = createElement('div', { id: 'left_spacing', styles: 'float:left;position:relative;' }) as HTMLDivElement;
         spacingDiv.appendChild(leftSpacingDiv);
+        let contextSpacingDiv: HTMLDivElement = createElement('div',
+            { id: 'context_spacing', styles: 'float:left;position:relative;' }) as HTMLDivElement;
+        spacingDiv.appendChild(contextSpacingDiv);
         // tslint:disable-next-line:max-line-length
-        let rightSpacingDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-right-sub-container', styles: 'float:right;position:relative;' }) as HTMLDivElement;
+        let rightSpacingDiv: HTMLDivElement = createElement('div', { styles: 'display:inline-flex;' }) as HTMLDivElement;
         spacingDiv.appendChild(rightSpacingDiv);
+
+        let contextInputEle: HTMLInputElement = createElement('input', {
+            attrs: { type: 'checkbox' },
+            id: ownerId + '_contextSpacing'
+        }) as HTMLInputElement;
+        contextSpacingDiv.appendChild(contextInputEle);
 
         // tslint:disable-next-line:max-line-length
         let indentLabel: HTMLLabelElement = createElement('div', {
@@ -160,9 +171,26 @@ export class ParagraphDialog {
 
         // tslint:disable-next-line:max-line-length
         let spaceLabel: HTMLLabelElement = createElement('div', { innerHTML: locale.getConstant('Spacing'), className: 'e-de-para-dlg-heading', id: ownerId + '_spaceLabel' }) as HTMLLabelElement;
+        let spacingWholeDiv: HTMLElement = createElement('div', { id: ownerId + '_spacingWholeDiv', styles: 'display:inline-flex;' }) as HTMLElement;
+        let beforeSpacingWholeDiv: HTMLElement = createElement('div', { id: ownerId + '_beforeSpacingWholeDiv' }) as HTMLElement;
+        // tslint:disable-next-line:max-line-length
         let beforeLabel: HTMLLabelElement = createElement('div', { className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Before'), id: ownerId + '_beforeLabel' }) as HTMLLabelElement;
         // tslint:disable-next-line:max-line-length
         let beforeSpacing: HTMLInputElement = createElement('input', { id: ownerId + '_beforeSpacing', attrs: { 'type': 'text' } }) as HTMLInputElement;
+        let afterSpacingWholeDiv: HTMLElement = createElement('div', { id: ownerId + '_afterSpacingWholeDiv', className: 'e-de-para-dlg-spacing-div' }) as HTMLElement;
+        // tslint:disable-next-line:max-line-length
+        let afterLabel: HTMLLabelElement = createElement('div', { innerHTML: locale.getConstant('After'), className: 'e-de-dlg-sub-header', id: ownerId + '_afterLabel' }) as HTMLLabelElement;
+        let afterSpacing: HTMLInputElement = createElement('input', { id: ownerId + '_afterSpacing', attrs: { 'type': 'text' } }) as HTMLInputElement;
+        leftSpacingDiv.appendChild(spaceLabel);
+        leftSpacingDiv.appendChild(spacingWholeDiv);
+        beforeSpacingWholeDiv.appendChild(beforeLabel);
+        beforeSpacingWholeDiv.appendChild(beforeSpacing);
+        spacingWholeDiv.appendChild(beforeSpacingWholeDiv);
+        afterSpacingWholeDiv.appendChild(afterLabel);
+        afterSpacingWholeDiv.appendChild(afterSpacing);
+        spacingWholeDiv.appendChild(afterSpacingWholeDiv);
+        let lineSpacingDiv: HTMLElement = createElement('div', { id: ownerId + '_lineSpacingWholeDiv' }) as HTMLElement;
+        // tslint:disable-next-line:max-line-length
         let lineSpaceLabel: HTMLLabelElement = createElement('div', { id: ownerId + '_lineSpaceLabel', className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Line Spacing') }) as HTMLLabelElement;
         // tslint:disable-next-line:max-line-length
         let lineSpacing: HTMLElement = createElement('select', {
@@ -171,21 +199,17 @@ export class ParagraphDialog {
                 '</option><option value="Exactly">' + locale.getConstant('Exactly') +
                 '</option><option value="Multiple">' + locale.getConstant('Multiple') + '</option>'
         }) as HTMLSelectElement;
-        leftSpacingDiv.appendChild(spaceLabel);
-        leftSpacingDiv.appendChild(beforeLabel);
-        leftSpacingDiv.appendChild(beforeSpacing);
-        leftSpacingDiv.appendChild(lineSpaceLabel);
-        leftSpacingDiv.appendChild(lineSpacing);
         // tslint:disable-next-line:max-line-length
-        let afterLabel: HTMLLabelElement = createElement('div', { innerHTML: locale.getConstant('After'), className: 'e-de-dlg-sub-header', id: ownerId + '_afterLabel' }) as HTMLLabelElement;
-        let afterSpacing: HTMLInputElement = createElement('input', { id: ownerId + '_afterSpacing', attrs: { 'type': 'text' } }) as HTMLInputElement;
+        let lineTypeDiv: HTMLElement = createElement('div', { id: ownerId + '_lineTypeWholeDiv', className: 'e-de-para-dlg-spacing-div' }) as HTMLElement;
         // tslint:disable-next-line:max-line-length
         let atLabel: HTMLLabelElement = createElement('div', { innerHTML: locale.getConstant('At'), id: ownerId + '_atLabel', className: 'e-de-dlg-sub-header' }) as HTMLLabelElement;
         let lineSpacingAt: HTMLInputElement = createElement('input', { id: ownerId + '_lineSpacingAt', attrs: { 'type': 'text' } }) as HTMLInputElement;
-        rightSpacingDiv.appendChild(afterLabel);
-        rightSpacingDiv.appendChild(afterSpacing);
-        rightSpacingDiv.appendChild(atLabel);
-        rightSpacingDiv.appendChild(lineSpacingAt);
+        lineSpacingDiv.appendChild(lineSpaceLabel);
+        lineSpacingDiv.appendChild(lineSpacing);
+        rightSpacingDiv.appendChild(lineSpacingDiv);
+        lineTypeDiv.appendChild(atLabel);
+        lineTypeDiv.appendChild(lineSpacingAt);
+        rightSpacingDiv.appendChild(lineTypeDiv);
         div.appendChild(generalDiv);
         div.appendChild(indentionDiv);
         div.appendChild(spacingDiv);
@@ -222,6 +246,13 @@ export class ParagraphDialog {
         this.alignment = new DropDownList({ width: 180, change: this.changeByTextAlignment, enableRtl: isRtl });
         this.alignment.appendTo(alignment);
         this.atIn.appendTo(lineSpacingAt);
+        this.contextSpacing = new CheckBox({
+            change: this.changeContextualSpacing,
+            label: locale.getConstant("Don't add space between the paragraphs of the same styles"),
+            enableRtl: isRtl,
+            cssClass: 'e-de-para-dlg-cs-check-box'
+        });
+        this.contextSpacing.appendTo(contextInputEle);
         this.target.addEventListener('keyup', instance.keyUpParagraphSettings);
     }
     /**
@@ -263,6 +294,9 @@ export class ParagraphDialog {
             this.bidi = true;
         }
         this.changeAlignmentByBidi();
+    };
+    private changeContextualSpacing = (args: any): void => {
+        this.contextualSpacing = args.checked;
     };
     private changeAlignmentByBidi(): void {
         if (this.textAlignment === 'Left') {
@@ -372,6 +406,7 @@ export class ParagraphDialog {
             this.ltrButton.checked = true;
             this.rtlButton.checked = false;
         }
+        this.contextSpacing.checked = selectionFormat.contextualSpacing;
     }
 
     private getAlignmentValue(textAlignment: TextAlignment): number {
@@ -427,6 +462,9 @@ export class ParagraphDialog {
         }
         if (!isNullOrUndefined(this.textAlignment)) {
             paraFormat.textAlignment = this.textAlignment;
+        }
+        if (!isNullOrUndefined(this.contextualSpacing)) {
+            paraFormat.contextualSpacing = this.contextualSpacing;
         }
 
         if (isApply) {

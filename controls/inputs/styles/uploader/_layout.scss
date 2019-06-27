@@ -540,5 +540,16 @@
         }
       }
     }
+
+    .e-content-placeholder.e-upload.e-placeholder-upload {
+      background-size: 400px 65px;
+      min-height: 65px;
+    }
+
+    .e-bigger .e-content-placeholder.e-upload.e-placeholder-upload,
+    .e-bigger.e-content-placeholder.e-upload.e-placeholder-upload {
+      background-size: 400px 80px;
+      min-height: 80px;
+    }
   }
 }

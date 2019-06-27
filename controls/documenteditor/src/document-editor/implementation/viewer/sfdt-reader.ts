@@ -9,9 +9,13 @@ import { LayoutViewer } from './viewer';
 import {
     Widget, LineWidget, ParagraphWidget, ImageElementBox, BodyWidget, TextElementBox, TableCellWidget,
     TableRowWidget, TableWidget, FieldElementBox, BlockWidget, HeaderFooterWidget, HeaderFooters,
-    BookmarkElementBox, FieldTextElementBox, TabElementBox
+    BookmarkElementBox, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
+    ChartElementBox, ChartCategoryAxis, ChartLegend, ChartLayout, ChartTitleArea, ChartDataFormat,
+    ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines, ChartSeriesFormat
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
+import { Dictionary } from '../../base/dictionary';
+import { ChartComponent } from '@syncfusion/ej2-office-chart';
 /** 
  * @private
  */
@@ -20,11 +24,14 @@ export class SfdtReader {
     private viewer: LayoutViewer = undefined;
     private fieldSeparator: FieldElementBox;
     private isPageBreakInsideTable: boolean = false;
+    private editableRanges: Dictionary<string, EditRangeStartElementBox>;
+
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
     }
     constructor(viewer: LayoutViewer) {
         this.viewer = viewer;
+        this.editableRanges = new Dictionary<string, EditRangeStartElementBox>();
     }
     /**
      * @private
@@ -39,6 +46,7 @@ export class SfdtReader {
         let paragraphFormat: any = isNullOrUndefined(jsonObject.paragraphFormat) ?
             this.viewer.owner.paragraphFormat : jsonObject.paragraphFormat;
         this.parseParagraphFormat(paragraphFormat, this.viewer.paragraphFormat);
+        this.parseDocumentProtection(jsonObject);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.viewer.defaultTabWidth = jsonObject.defaultTabWidth;
         }
@@ -58,6 +66,23 @@ export class SfdtReader {
             this.parseSections(jsonObject.sections, sections);
         }
         return sections;
+    }
+    private parseDocumentProtection(data: any): void {
+        if (!isNullOrUndefined(data.formatting)) {
+            this.viewer.restrictFormatting = data.formatting;
+        }
+        if (!isNullOrUndefined(data.enforcement)) {
+            this.viewer.isDocumentProtected = data.enforcement;
+        }
+        if (!isNullOrUndefined(data.protectionType)) {
+            this.viewer.protectionType = data.protectionType;
+        }
+        if (!isNullOrUndefined(data.hashValue)) {
+            this.viewer.hashValue = data.hashValue;
+        }
+        if (!isNullOrUndefined(data.saltValue)) {
+            this.viewer.saltValue = data.saltValue;
+        }
     }
     private parseStyles(data: any, styles: WStyles): void {
         for (let i: number = 0; i < data.styles.length; i++) {
@@ -415,6 +440,32 @@ export class SfdtReader {
                 textElement.text = inline.text;
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
+            } else if (inline.hasOwnProperty('chartType')) {
+                // chartPreservation
+                let chartElement: ChartElementBox = new ChartElementBox();
+                chartElement.title = inline.chartTitle;
+                chartElement.type = inline.chartType;
+                chartElement.chartGapWidth = inline.gapWidth;
+                chartElement.chartOverlap = inline.overlap;
+                this.parseChartTitleArea(inline.chartTitleArea, chartElement.chartTitleArea);
+                this.parseChartArea(inline.chartArea, chartElement.chartArea);
+                this.parseChartArea(inline.plotArea, chartElement.chartPlotArea);
+                this.parseChartLegend(inline.chartLegend, chartElement.chartLegend);
+                this.parseChartData(inline, chartElement);
+                this.parseChartCategoryAxis(inline.chartPrimaryCategoryAxis, chartElement.chartPrimaryCategoryAxis);
+                this.parseChartCategoryAxis(inline.chartPrimaryValueAxis, chartElement.chartPrimaryValueAxis);
+                if (inline.chartDataTable != null) {
+                    this.parseChartDataTable(inline.chartDataTable, chartElement.chartDataTable);
+                }
+                chartElement.line = lineWidget;
+                lineWidget.children.push(chartElement);
+                chartElement.height = HelperMethods.convertPointToPixel(inline.height);
+                chartElement.width = HelperMethods.convertPointToPixel(inline.width);
+
+                let officeChart: ChartComponent = new ChartComponent();
+                officeChart.chartRender(inline);
+                chartElement.officeChart = officeChart;
+                officeChart.chart.appendTo(chartElement.targetElement);
             } else if (inline.hasOwnProperty('imageString')) {
                 let image: ImageElementBox = new ImageElementBox(data[i].isInlineImage);
                 image.isMetaFile = data[i].isMetaFile;
@@ -434,6 +485,7 @@ export class SfdtReader {
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
             } else if (inline.hasOwnProperty('hasFieldEnd') || (inline.hasOwnProperty('fieldType') && inline.fieldType === 0)) {
                 let fieldBegin: FieldElementBox = new FieldElementBox(0);
+                fieldBegin.fieldCodeType = inline.fieldCodeType;
                 fieldBegin.hasFieldEnd = inline.hasFieldEnd;
                 this.viewer.fieldStacks.push(fieldBegin);
                 fieldBegin.line = lineWidget;
@@ -492,9 +544,209 @@ export class SfdtReader {
                         bookmark.reference = bookmarkStart;
                     }
                 }
+            } else if (inline.hasOwnProperty('editRangeId')) {
+                if (inline.hasOwnProperty('editableRangeStart')) {
+                    let permEnd: EditRangeEndElementBox = new EditRangeEndElementBox();
+                    if (this.editableRanges.containsKey(inline.editRangeId)) {
+                        let start: EditRangeStartElementBox = this.editableRanges.get(inline.editRangeId);
+                        permEnd.editRangeStart = start;
+                        start.editRangeEnd = permEnd;
+                        this.editableRanges.remove(inline.editRangeId);
+                    }
+                    lineWidget.children.push(permEnd);
+                    permEnd.line = lineWidget;
+                } else {
+                    let permStart: EditRangeStartElementBox = this.parseEditableRangeStart(inline);
+                    lineWidget.children.push(permStart);
+                    permStart.line = lineWidget;
+                    if (!this.editableRanges.containsKey(inline.editRangeId)) {
+                        this.editableRanges.add(inline.editRangeId, permStart);
+                    }
+                }
             }
         }
         paragraph.childWidgets.push(lineWidget);
+    }
+    private parseEditableRangeStart(data: any): EditRangeStartElementBox {
+        let permStart: EditRangeStartElementBox = new EditRangeStartElementBox();
+        if (!isNullOrUndefined(data.columnFirst)) {
+            permStart.columnFirst = data.columnFirst;
+        }
+        if (!isNullOrUndefined(data.columnLast)) {
+            permStart.columnLast = data.columnLast;
+        }
+        if (!isNullOrUndefined(data.user)) {
+            permStart.user = data.user;
+            if (this.viewer.userCollection.indexOf(permStart.user) === -1) {
+                this.viewer.userCollection.push(permStart.user);
+            }
+            this.addEditRangeCollection(permStart.user, permStart);
+        }
+        if (!isNullOrUndefined(data.group)) {
+            permStart.group = data.group;
+            permStart.group = permStart.group === 'everyone' ? 'Everyone' : permStart.group;
+            if (this.viewer.userCollection.indexOf(permStart.group) === -1) {
+                this.viewer.userCollection.push(permStart.group);
+            }
+            this.addEditRangeCollection(permStart.group, permStart);
+        }
+        return permStart;
+    }
+    private addEditRangeCollection(name: string, permStart: EditRangeStartElementBox): void {
+        if (this.viewer.editRanges.containsKey(name)) {
+            let editStartCollection: EditRangeStartElementBox[] = this.viewer.editRanges.get(name);
+            editStartCollection.push(permStart);
+        } else {
+            let newEditStartCollection: EditRangeStartElementBox[] = [];
+            newEditStartCollection.push(permStart);
+            this.viewer.editRanges.add(name, newEditStartCollection);
+        }
+    }
+    private parseChartTitleArea(titleArea: any, chartTitleArea: ChartTitleArea): void {
+        chartTitleArea.chartfontName = titleArea.fontName;
+        chartTitleArea.chartFontSize = titleArea.fontSize;
+        this.parseChartDataFormat(titleArea.dataFormat, chartTitleArea.dataFormat);
+        this.parseChartLayout(titleArea.layout, chartTitleArea.layout);
+
+    }
+    private parseChartDataFormat(format: any, dataFormat: ChartDataFormat): void {
+        dataFormat.fill.color = format.fill.foreColor;
+        dataFormat.fill.rgb = format.fill.rgb;
+        dataFormat.line.color = format.line.color;
+        dataFormat.line.rgb = format.line.rgb;
+    }
+    private parseChartLayout(layout: any, chartLayout: ChartLayout): void {
+        chartLayout.chartLayoutLeft = layout.layoutX;
+        chartLayout.chartLayoutTop = layout.layoutY;
+    }
+    private parseChartLegend(legend: any, chartLegend: ChartLegend): void {
+        chartLegend.chartLegendPostion = legend.position;
+        this.parseChartTitleArea(legend.chartTitleArea, chartLegend.chartTitleArea);
+    }
+    private parseChartCategoryAxis(categoryAxis: any, primaryAxis: ChartCategoryAxis): void {
+        primaryAxis.categoryAxisType = categoryAxis.categoryType;
+        primaryAxis.categoryNumberFormat = categoryAxis.numberFormat;
+        primaryAxis.interval = categoryAxis.majorUnit;
+        primaryAxis.axisFontSize = categoryAxis.fontSize;
+        primaryAxis.axisFontName = categoryAxis.fontName;
+        primaryAxis.max = categoryAxis.maximumValue;
+        primaryAxis.min = categoryAxis.minimumValue;
+        primaryAxis.majorGridLines = categoryAxis.hasMajorGridLines;
+        primaryAxis.minorGridLines = categoryAxis.hasMinorGridLines;
+        primaryAxis.majorTick = categoryAxis.majorTickMark;
+        primaryAxis.minorTick = categoryAxis.minorTickMark;
+        primaryAxis.tickPosition = categoryAxis.tickLabelPosition;
+        primaryAxis.categoryAxisTitle = categoryAxis.chartTitle;
+        if (categoryAxis.chartTitle != null) {
+            this.parseChartTitleArea(categoryAxis.chartTitleArea, primaryAxis.chartTitleArea);
+        }
+    }
+    private parseChartDataTable(dataTable: any, chartDataTable: ChartDataTable): void {
+        chartDataTable.showSeriesKeys = dataTable.showSeriesKeys;
+        chartDataTable.hasHorzBorder = dataTable.hasHorzBorder;
+        chartDataTable.hasVertBorder = dataTable.hasVertBorder;
+        chartDataTable.hasBorders = dataTable.hasBorders;
+    }
+    private parseChartArea(area: any, chartArea: ChartArea): void {
+        chartArea.chartForeColor = area.foreColor;
+    }
+    private parseChartData(inline: any, chart: ChartElementBox): void {
+        for (let i: number = 0; i < inline.chartCategory.length; i++) {
+            let chartCategory: ChartCategory = new ChartCategory();
+            let xData: any = inline.chartCategory[i];
+            if (xData.hasOwnProperty('categoryXName')) {
+                chartCategory.xName = xData.categoryXName;
+            }
+            for (let j: number = 0; j < xData.chartData.length; j++) {
+                let chartData: ChartData = new ChartData();
+                let yData: any = xData.chartData[j];
+                chartData.yAxisValue = yData.yValue;
+                if (inline.chartType === 'Bubble') {
+                    chartData.bubbleSize = yData.size;
+                }
+                chartCategory.chartData.push(chartData);
+            }
+            chart.chartCategory.push(chartCategory);
+        }
+        this.parseChartSeries(inline, chart);
+    }
+    private parseChartSeries(inline: any, chart: ChartElementBox): void {
+        let chartType: string = inline.chartType;
+        let isPieType: boolean = (chartType === 'Pie' || chartType === 'Doughnut');
+        for (let i: number = 0; i < inline.chartSeries.length; i++) {
+            let chartSeries: ChartSeries = new ChartSeries();
+            let xData: any = inline.chartSeries[i];
+            if (xData.hasOwnProperty('seriesName')) {
+                chartSeries.seriesName = xData.seriesName;
+                if (isPieType) {
+                    if (xData.hasOwnProperty('firstSliceAngle')) {
+                        chartSeries.firstSliceAngle = xData.firstSliceAngle;
+                    }
+                    if (chartType === 'Doughnut') {
+                        chartSeries.doughnutHoleSize = xData.holeSize;
+                    }
+                }
+                if (xData.hasOwnProperty('dataLabel')) {
+                    this.parseChartDataLabels(xData.dataLabel, chartSeries);
+                }
+                if (xData.hasOwnProperty('seriesFormat')) {
+                    let seriesFormat: ChartSeriesFormat = new ChartSeriesFormat();
+                    let format: any = xData.seriesFormat;
+                    seriesFormat.markerStyle = format.markerStyle;
+                    seriesFormat.markerColor = format.markerColor;
+                    seriesFormat.numberValue = format.markerSize;
+                    chartSeries.seriesFormat = seriesFormat;
+                }
+                if (xData.hasOwnProperty('errorBar')) {
+                    let errorBar: any = chartSeries.errorBar;
+                    errorBar.errorType = xData.errorBar.type;
+                    errorBar.errorDirection = xData.errorBar.direction;
+                    errorBar.errorEndStyle = xData.errorBar.endStyle;
+                    errorBar.numberValue = xData.errorBar.numberValue;
+                }
+                if (xData.hasOwnProperty('trendLines')) {
+                    this.parseChartTrendLines(xData.trendLines, chartSeries);
+                }
+                this.parseChartSeriesDataPoints(xData.dataPoints, chartSeries);
+            }
+            chart.chartSeries.push(chartSeries);
+        }
+    }
+    private parseChartDataLabels(dataLabels: any, series: ChartSeries): void {
+        let dataLabel: ChartDataLabels = new ChartDataLabels();
+        dataLabel.labelPosition = dataLabels.position;
+        dataLabel.fontName = dataLabels.fontName;
+        dataLabel.fontColor = dataLabels.fontColor;
+        dataLabel.fontSize = dataLabels.fontSize;
+        dataLabel.isLegendKey = dataLabels.isLegendKey;
+        dataLabel.isBubbleSize = dataLabels.isBubbleSize;
+        dataLabel.isCategoryName = dataLabels.isCategoryName;
+        dataLabel.isSeriesName = dataLabels.isSeriesName;
+        dataLabel.isValue = dataLabels.isValue;
+        dataLabel.isPercentage = dataLabels.isPercentage;
+        dataLabel.isLeaderLines = dataLabels.isLeaderLines;
+        series.dataLabels = dataLabel;
+    }
+    private parseChartSeriesDataPoints(dataPoints: any, series: ChartSeries): void {
+        for (let i: number = 0; i < dataPoints.length; i++) {
+            let chartFormat: ChartDataFormat = new ChartDataFormat();
+            this.parseChartDataFormat(dataPoints[i], chartFormat);
+            series.chartDataFormat.push(chartFormat);
+        }
+    }
+    private parseChartTrendLines(trendLines: any, series: ChartSeries): void {
+        for (let i: number = 0; i < trendLines.length; i++) {
+            let data: any = trendLines[i];
+            let trendLine: ChartTrendLines = new ChartTrendLines();
+            trendLine.trendLineName = data.name;
+            trendLine.trendLineType = data.type;
+            trendLine.forwardValue = data.forward;
+            trendLine.backwardValue = data.backward;
+            trendLine.interceptValue = data.intercept;
+            trendLine.isDisplayEquation = data.isDisplayEquation;
+            trendLine.isDisplayRSquared = data.isDisplayRSquared;
+            series.trendLines.push(trendLine);
+        }
     }
     private parseTableFormat(sourceFormat: any, tableFormat: WTableFormat): void {
         this.parseBorders(sourceFormat.borders, tableFormat.borders);
@@ -656,6 +908,9 @@ export class SfdtReader {
                 characterFormat.fontSize = sourceFormat.fontSize;
             }
             if (!isNullOrUndefined(sourceFormat.fontFamily)) {
+                if (sourceFormat.fontFamily.indexOf('"') !== -1) {
+                    sourceFormat.fontFamily = sourceFormat.fontFamily.replace('"', '');
+                }
                 characterFormat.fontFamily = sourceFormat.fontFamily;
             }
             if (!isNullOrUndefined(sourceFormat.bold)) {
@@ -728,6 +983,9 @@ export class SfdtReader {
             }
             if (!isNullOrUndefined(sourceFormat.outlineLevel)) {
                 paragraphFormat.outlineLevel = sourceFormat.outlineLevel;
+            }
+            if (!isNullOrUndefined(sourceFormat.contextualSpacing)) {
+                paragraphFormat.contextualSpacing = sourceFormat.contextualSpacing;
             }
             paragraphFormat.listFormat = new WListFormat();
             if (sourceFormat.hasOwnProperty('listFormat')) {

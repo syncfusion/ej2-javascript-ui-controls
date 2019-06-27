@@ -10,16 +10,19 @@ import { extendArray, getPlainData } from '../utils';
 
 export function editAction(details: { value: ITreeData, action: string }, control: TreeGrid, isSelfReference: boolean,
                            addRowIndex: number, selectedIndex: number, columnName?: string, addRowRecord?: ITreeData): void {
-    let value: ITreeData = details.value; let action: string = details.action;
+    let value: ITreeData = details.value;
+    let action: string = details.action;
     let i: number; let j: number;
     let key: string = control.grid.getPrimaryKeyFieldNames()[0];
     let treeData: ITreeData[] = control.dataSource instanceof DataManager ?
         control.dataSource.dataSource.json : <Object[]>control.dataSource;
-    let modifiedData: object[] = []; let originalData: ITreeData = value;
-    let isSkip: boolean = false; let currentViewRecords: ITreeData[] = <ITreeData[]>control.grid.getCurrentViewRecords();
+    let modifiedData: object[] = [];
+    let originalData: ITreeData = value;
+    let isSkip: boolean = false;
+    let currentViewRecords: ITreeData[] = <ITreeData[]>control.grid.getCurrentViewRecords();
     if (action === 'add') {
-        let addAct: { value: Object, isSkip: boolean } = addAction( details, treeData, control, isSelfReference,
-                                                                    addRowIndex, selectedIndex, addRowRecord);
+        let addAct: { value: Object, isSkip: boolean } = addAction(details, treeData, control, isSelfReference,
+                                                                   addRowIndex, selectedIndex, addRowRecord);
         value = addAct.value; isSkip = addAct.isSkip;
     }
     if (value instanceof Array) {
@@ -30,11 +33,13 @@ export function editAction(details: { value: ITreeData, action: string }, contro
     if (!isSkip && (action !== 'add' ||
         (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
         for (let k: number = 0; k < modifiedData.length; k++) {
-            let keys: string[] = Object.keys(modifiedData[k]); i = treeData.length;
+            let keys: string[] = Object.keys(modifiedData[k]);
+            i = treeData.length;
             while (i-- && i >= 0) {
                 if (treeData[i][key] === modifiedData[k][key]) {
                     if (action === 'delete') {
-                        let currentData: Object = treeData[i]; treeData.splice(i, 1);
+                        let currentData: Object = treeData[i];
+                        treeData.splice(i, 1);
                         if (isSelfReference) {
                             if (!isNullOrUndefined(currentData[control.parentIdMapping])) {
                                 let parentData: ITreeData = control.flatData.filter((e: ITreeData) =>
@@ -77,7 +82,8 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                             } else if (control.editSettings.newRowPosition === 'Below') {
                                 treeData.splice(i + 1, 0, originalData);
                             } else if (!addRowIndex) {
-                                index = 0; treeData.splice(index, 0, originalData);
+                                index = 0;
+                                treeData.splice(index, 0, originalData);
                             } else if (control.editSettings.newRowPosition === 'Above') {
                                 treeData.splice(i, 0, originalData);
                             }
@@ -96,7 +102,7 @@ export function editAction(details: { value: ITreeData, action: string }, contro
 }
 
 export function addAction(details: { value: ITreeData, action: string }, treeData: Object[], control: TreeGrid, isSelfReference: boolean,
-                          addRowIndex: number, selectedIndex: number,  addRowRecord: ITreeData): { value: Object, isSkip: boolean } {
+                          addRowIndex: number, selectedIndex: number, addRowRecord: ITreeData): { value: Object, isSkip: boolean } {
     let value: Object; let isSkip: boolean = false;
     let currentViewRecords: ITreeData[] = <ITreeData[]>control.grid.getCurrentViewRecords();
     value = extend({}, details.value);
@@ -161,7 +167,7 @@ export function removeChildRecords(childRecords: ITreeData[], modifiedData: obje
                         updateParentRow(key, childRecords[j], action, control, isSelfReference);
                     }
                 } else if (control.editSettings.newRowPosition === 'Above') {
-                        childRecords.splice(j, 0, originalData);
+                    childRecords.splice(j, 0, originalData);
                 } else if (control.editSettings.newRowPosition === 'Below') {
                     childRecords.splice(j + 1, 0, originalData);
                 }

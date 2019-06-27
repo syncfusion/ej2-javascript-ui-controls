@@ -6,7 +6,7 @@ import { AxisModel } from '../axis/axis-model';
 import { ZoomMode } from '../utils/enum';
 import { removeElement, RectOption, PolygonOption, createTooltip, minMax, getElement } from '../../common/utils/helper';
 import { textElement,  } from '../../common/utils/helper';
-import { PathOption, Rect, measureText, TextOption, Size, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { PathOption, Rect, measureText, TextOption, Size, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Zoom } from './zooming';
 import { zoomComplete } from '../../common/model/constants';
 import { IZoomCompleteEventArgs } from '../../chart/model/chart-interface';
@@ -35,6 +35,7 @@ export class Toolkit {
     constructor(chart: Chart) {
         this.chart = chart;
         this.elementId = chart.element.id;
+        this.chart.svgRenderer = new SvgRenderer(this.elementId);
         this.selectionColor = chart.theme === 'Bootstrap4' ? '#FFFFFF' : '#ff4081';
         this.fillColor = chart.theme === 'Bootstrap4' ? '#495057' : '#737373';
         this.iconRectOverFill = chart.theme === 'Bootstrap4' ? '#5A6268' : this.iconRectOverFill;
@@ -47,7 +48,7 @@ export class Toolkit {
      * @private
      */
     public createPanButton(childElement: Element, parentElement: Element, chart: Chart): void {
-        let render: SvgRenderer = this.chart.renderer;
+        let render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
         let fillColor: string = this.chart.zoomModule.isPanning ? this.selectionColor : this.fillColor;
         let direction: string = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
         direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
@@ -57,10 +58,11 @@ export class Toolkit {
         childElement.appendChild(render.drawRectangle(
             new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, this.iconRect)
         ) as HTMLElement);
-        childElement.appendChild(render.drawPath(new PathOption(
+        childElement.appendChild(render.drawPath(
+            new PathOption(
             this.elementId + '_Zooming_Pan_2', fillColor, null, null, 1, null,
-            direction)
-        ) as HTMLElement);
+            direction),
+            null) as HTMLElement);
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.pan);
     }
@@ -70,7 +72,7 @@ export class Toolkit {
      * @private
      */
     public createZoomButton(childElement: Element, parentElement: Element, chart: Chart): void {
-        let render: SvgRenderer = this.chart.renderer;
+        let render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
         let fillColor: string = this.chart.zoomModule.isPanning ? this.fillColor : this.selectionColor;
         let rectColor: string = this.chart.zoomModule.isPanning ? 'transparent' : this.iconRectSelectionFill;
         let direction: string = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
@@ -96,7 +98,7 @@ export class Toolkit {
      * @private
      */
     public createZoomInButton(childElement: Element, parentElement: Element, chart: Chart): void {
-        let render: SvgRenderer = this.chart.renderer;
+        let render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
         let fillColor: string = this.fillColor;
         let direction: string = 'M10.103,0C6.812,0,4.16,2.651,4.16,5.943c0,1.509,0.503,2.834,1.417,3.885l-0.274,0.229H4.571L0,';
         direction += '14.628l0,0L1.372,16l4.571-4.572v-0.685l0.228-0.275c1.052,0.868,2.423,1.417,3.885,1.417c3.291,0,5.943-2.651,';
@@ -107,10 +109,11 @@ export class Toolkit {
         childElement.appendChild(render.drawRectangle(
             new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, this.iconRect)
         ) as HTMLElement);
-        childElement.appendChild(render.drawPath(new PathOption(
+        childElement.appendChild(render.drawPath(
+            new PathOption(
             this.elementId + '_Zooming_ZoomIn_2', fillColor, null, null, 1, null,
-            direction + '4.114-4.114c2.286,0,4.114,1.828,4.114,4.114C14.172,8.229,12.344,10.058,10.058,10.058z')
-        ) as HTMLElement);
+            direction + '4.114-4.114c2.286,0,4.114,1.828,4.114,4.114C14.172,8.229,12.344,10.058,10.058,10.058z'),
+            null) as HTMLElement);
         childElement.appendChild(render.drawPolygon(
             new PolygonOption(
                 this.elementId + '_Zooming_ZoomIn_3',
@@ -128,7 +131,7 @@ export class Toolkit {
      * @private
      */
     public createZoomOutButton(childElement: Element, parentElement: Element, chart: Chart): void {
-        let render: SvgRenderer = this.chart.renderer;
+        let render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
         let fillColor: string = this.fillColor;
         let direction: string = 'M0,14.622L1.378,16l4.533-4.533v-0.711l0.266-0.266c1.022,0.889,2.4,1.422,3.866,';
         direction += '1.422c3.289,0,5.955-2.666,5.955-5.955S13.333,0,10.044,0S4.089,2.667,4.134,5.911c0,1.466,0.533,2.844,';
@@ -138,10 +141,11 @@ export class Toolkit {
         childElement.appendChild(render.drawRectangle(
             new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.iconRect)
         ) as HTMLElement);
-        childElement.appendChild(render.drawPath(new PathOption(
+        childElement.appendChild(render.drawPath(
+            new PathOption(
             this.elementId + '_Zooming_ZoomOut_2', fillColor, null, null, 1, null,
-            direction + '4.133s-1.866,4.133-4.133,4.133S5.911,8.222,5.911,5.911z M12.567,6.466h-5v-1h5V6.466z')
-        ) as HTMLElement);
+            direction + '4.133s-1.866,4.133-4.133,4.133S5.911,8.222,5.911,5.911z M12.567,6.466h-5v-1h5V6.466z'),
+            null) as HTMLElement);
         this.zoomOutElements = childElement;
         this.elementOpacity = chart.zoomModule.isPanning ? '0.2' : '1';
         childElement.setAttribute('opacity', this.elementOpacity);
@@ -154,7 +158,7 @@ export class Toolkit {
      * @private
      */
     public createResetButton(childElement: Element, parentElement: Element, chart: Chart, isDevice: Boolean): void {
-        let render: SvgRenderer = this.chart.renderer;
+        let render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
         let fillColor: string = this.fillColor;
         let size: Size;
         let direction: string = 'M12.364,8h-2.182l2.909,3.25L16,8h-2.182c0-3.575-2.618-6.5-5.818-6.5c-1.128,0-2.218,0.366-3.091,';
@@ -166,16 +170,18 @@ export class Toolkit {
             childElement.appendChild(render.drawRectangle(
                 new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.iconRect)
             ) as HTMLElement);
-            childElement.appendChild(render.drawPath(new PathOption(
+            childElement.appendChild(render.drawPath(
+                new PathOption(
                 this.elementId + '_Zooming_Reset_2', fillColor, null, null, 1, null,
-                direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')
-            ) as HTMLElement);
+                direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z'),
+                null) as HTMLElement);
         } else {
             size = measureText(this.chart.getLocalizedLabel('ResetZoom'), { size: '12px' });
             childElement.appendChild(render.drawRectangle(
                 new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new Rect(0, 0, size.width, size.height))
             ) as HTMLElement);
             textElement(
+                chart.renderer,
                 new TextOption(
                     this.elementId + '_Zooming_Reset_2',
                     0 + size.width / 2, 0 + size.height * 3 / 4,

@@ -1,7 +1,7 @@
 import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, closest } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
-import { Tab, TabModel, TabItemModel, EJ2Instance } from '@syncfusion/ej2-navigations';
+import { Tab, TabModel, TabItemModel, EJ2Instance, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel } from '@syncfusion/ej2-grids';
 import {
     ColumnModel as GridColumnModel, ForeignKey, Selection, Filter,
@@ -41,7 +41,7 @@ export class DialogEdit {
     public dialogObj: Dialog;
     private preTableCollection: IDependencyEditData[];
     private preTaskIds: string[];
-    private l10n: L10n;
+    private localeObj: L10n;
     private parent: Gantt;
     private rowIndex: number;
     private types: IDependencyEditData[];
@@ -63,7 +63,7 @@ export class DialogEdit {
      */
     constructor(parent: Gantt) {
         this.parent = parent;
-        this.l10n = this.parent.localeObj;
+        this.localeObj = this.parent.localeObj;
         this.beforeOpenArgs = { cancel: false };
         this.types = this.getPredecessorType();
         this.rowData = {};
@@ -94,8 +94,9 @@ export class DialogEdit {
 
     /**
      * Method to validate add and edit dialog fields property.
+     * @private
      */
-    private processDialogFields(): void {
+    public processDialogFields(): void {
         if (isNullOrUndefined(this.parent.editDialogFields) ||
             this.parent.editDialogFields && this.parent.editDialogFields.length === 0) {
             this.updatedEditFields = this.getDefaultDialogFields();
@@ -313,38 +314,43 @@ export class DialogEdit {
         this.beforeOpenArgs.dialogModel = dialogModel;
         this.beforeOpenArgs.rowData = this.editedRecord;
         this.beforeOpenArgs.rowIndex = this.rowIndex;
-        this.dialog = this.parent.createElement('div', { id: ganttObj.element.id + '_dialog', styles: 'max-width:600px' });
+        let dialogMaxWidth: string = this.parent.isAdaptive ? '' : '600px';
+        this.dialog = this.parent.createElement('div', { id: ganttObj.element.id + '_dialog', styles: 'max-width:' + dialogMaxWidth });
         ganttObj.element.appendChild(this.dialog);
-        let position: PositionDataModel = { X: 'center', Y: 'center' };
-        dialogModel.animationSettings = { effect: 'Zoom' };
-        dialogModel.header = this.l10n.getConstant(this.isEdit ? 'editDialogTitle' : 'addDialogTitle');
+        dialogModel.animationSettings = { effect: 'None' };
+        dialogModel.header = this.localeObj.getConstant(this.isEdit ? 'editDialogTitle' : 'addDialogTitle');
         dialogModel.isModal = true;
         dialogModel.cssClass = 'e-gantt-dialog';
-        dialogModel.allowDragging = true;
+        dialogModel.allowDragging = this.parent.isAdaptive ? false : true;
         dialogModel.showCloseIcon = true;
+        let position: PositionDataModel = this.parent.isAdaptive ? { X: 'top', Y: 'left' } : { X: 'center', Y: 'center' };
         dialogModel.position = position;
         //dialogModel.width = '750px';
+        dialogModel.height = this.parent.isAdaptive ? '100%' : 'auto';
         dialogModel.target = this.parent.element;
         dialogModel.close = this.dialogClose.bind(this);
         dialogModel.closeOnEscape = true;
         dialogModel.open = (args: object) => {
-            let generalTabElement: HTMLElement = getValue('element', args);
-            generalTabElement = generalTabElement.querySelector('#' + this.parent.element.id + 'GeneralTabContainer');
+            let dialogElement: HTMLElement = getValue('element', args);
+            let generalTabElement: HTMLElement = dialogElement.querySelector('#' + this.parent.element.id + 'GeneralTabContainer');
             if (generalTabElement && generalTabElement.scrollHeight > generalTabElement.offsetHeight) {
                 generalTabElement.classList.add('e-scroll');
             }
             if (this.tabObj.selectedItem === 0) {
                 this.tabObj.select(0);
             }
+            if (this.parent.isAdaptive) {
+                dialogElement.style.maxHeight = 'none';
+            }
         };
         dialogModel.locale = this.parent.locale;
         dialogModel.buttons = [{
             buttonModel: {
-                content: this.l10n.getConstant('saveButton'), cssClass: 'e-primary'
+                content: this.localeObj.getConstant('saveButton'), cssClass: 'e-primary'
             },
             click: this.buttonClick.bind(this)
         }, {
-            buttonModel: { cssClass: 'e-flat', content: this.l10n.getConstant('cancel') },
+            buttonModel: { cssClass: 'e-flat', content: this.localeObj.getConstant('cancel') },
             click: this.buttonClick.bind(this)
         }];
         let tabElement: HTMLElement = this.createTab();
@@ -369,7 +375,7 @@ export class DialogEdit {
     private buttonClick(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         target.style.pointerEvents = 'none';
-        if ((this.l10n.getConstant('cancel')).toLowerCase() === (e.target as HTMLInputElement).innerText.trim().toLowerCase()) {
+        if ((this.localeObj.getConstant('cancel')).toLowerCase() === (e.target as HTMLInputElement).innerText.trim().toLowerCase()) {
             if (this.dialog && !this.dialogObj.isDestroyed) {
                 this.dialogObj.hide();
                 this.dialogClose();
@@ -487,7 +493,7 @@ export class DialogEdit {
                         continue;
                     }
                     if (isNullOrUndefined(dialogField.headerText)) {
-                        dialogField.headerText = this.l10n.getConstant('generalTab');
+                        dialogField.headerText = this.localeObj.getConstant('generalTab');
                     }
                     tabItem.content = 'General';
                     this.beforeOpenArgs[tabItem.content] = this.getFieldsModel(dialogField.fields);
@@ -496,7 +502,7 @@ export class DialogEdit {
                         continue;
                     }
                     if (isNullOrUndefined(dialogField.headerText)) {
-                        dialogField.headerText = this.l10n.getConstant('dependency');
+                        dialogField.headerText = this.localeObj.getConstant('dependency');
                     }
                     tabItem.content = 'Dependency';
                     this.beforeOpenArgs[tabItem.content] = this.getPredecessorModel(dialogField.fields);
@@ -505,7 +511,7 @@ export class DialogEdit {
                         continue;
                     }
                     if (isNullOrUndefined(dialogField.headerText)) {
-                        dialogField.headerText = this.l10n.getConstant('resourceName');
+                        dialogField.headerText = this.localeObj.getConstant('resourceName');
                     }
                     tabItem.content = 'Resources';
                     this.beforeOpenArgs[tabItem.content] = this.getResourcesModel(dialogField.fields);
@@ -514,7 +520,7 @@ export class DialogEdit {
                         continue;
                     }
                     if (isNullOrUndefined(dialogField.headerText)) {
-                        dialogField.headerText = this.l10n.getConstant('notes');
+                        dialogField.headerText = this.localeObj.getConstant('notes');
                     }
                     tabItem.content = 'Notes';
                     this.beforeOpenArgs[tabItem.content] = this.getNotesModel(dialogField.fields);
@@ -523,7 +529,7 @@ export class DialogEdit {
                         continue;
                     }
                     if (isNullOrUndefined(dialogField.headerText)) {
-                        dialogField.headerText = this.l10n.getConstant('customTab');
+                        dialogField.headerText = this.localeObj.getConstant('customTab');
                         count++;
                     }
                     tabItem.content = 'Custom' + '' + index++;
@@ -539,10 +545,52 @@ export class DialogEdit {
         if (this.beforeOpenArgs.cancel) {
             return tabElement;
         }
+        tabModel.selected = this.tabSelectedEvent.bind(this);
+        tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';
+        tabModel.overflowMode = 'Scrollable';
         this.tabObj = new Tab(tabModel);
         tabElement = this.parent.createElement('div', { id: ganttObj.element.id + '_Tab' });
         this.tabObj.appendTo(tabElement);
         return tabElement;
+    }
+
+    private tabSelectedEvent(args: SelectEventArgs): void {
+        let ganttObj: Gantt = this.parent;
+        let id: string = (args.selectedContent.childNodes[0] as HTMLElement).id;
+        if (this.parent.isAdaptive) {
+            this.responsiveTabContent(id, ganttObj);
+        }
+        if (id === ganttObj.element.id + 'ResourcesTabContainer') {
+            let resourceGrid: Grid = <Grid>(<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0];
+            let resources: Object[] = this.ganttResources;
+            if (resources && resources.length > 0) {
+                resourceGrid.currentViewData.forEach((data: CObject, index: number): void => {
+                    for (let i: number = 0; i < resources.length; i++) {
+                        if (data[ganttObj.resourceIDMapping] === resources[i][ganttObj.resourceIDMapping] &&
+                            resourceGrid.selectionModule.selectedRowIndexes.indexOf(index) === -1) {
+                            resourceGrid.selectRow(index);
+                        }
+                    }
+                });
+            }
+        } else if (id === ganttObj.element.id + 'NotesTabContainer') {
+            ((<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0] as RichTextEditor).refresh();
+        }
+    }
+
+    private responsiveTabContent(id: string, ganttObj: Gantt): void {
+        let dialogContent: HTMLElement = document.getElementById(ganttObj.element.id + '_dialog_dialog-content');
+        let dialogContentHeight: number = dialogContent.clientHeight;
+        dialogContentHeight -= (dialogContent.querySelector('.e-tab-header') as HTMLElement).offsetHeight;
+        let grid: HTMLElement = document.querySelector('#' + id);
+        if (grid.classList.contains('e-grid')) {
+            dialogContentHeight -= (((grid as EJ2Instance).ej2_instances[0] as Grid).getHeaderContent() as HTMLElement).offsetHeight;
+            let toolbar: HTMLElement = grid.querySelector('.e-toolbar');
+            if (toolbar) {
+                dialogContentHeight -= toolbar.offsetHeight;
+            }
+        }
+        grid.parentElement.style.height = dialogContentHeight + 'px';
     }
 
     private getFieldsModel(fields: string[]): Object {
@@ -814,47 +862,50 @@ export class DialogEdit {
         inputModel.editSettings = { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
         inputModel.locale = this.parent.locale;
         inputModel.dataSource = [];
+        inputModel.rowHeight = this.parent.isAdaptive ? 48 : null;
         inputModel.toolbar = [
             {
                 id: this.parent.element.id + 'DependencyTabContainer' + '_add', prefixIcon: 'e-add',
-                text: this.l10n.getConstant('add'), tooltipText: this.l10n.getConstant('add'), align: 'Right'
+                tooltipText: this.localeObj.getConstant('add'), align: 'Right',
+                text: this.parent.isAdaptive ? '' : this.localeObj.getConstant('add')
             },
             {
                 id: this.parent.element.id + 'DependencyTabContainer' + '_delete', prefixIcon: 'e-delete',
-                text: this.l10n.getConstant('delete'), tooltipText: this.l10n.getConstant('delete'), align: 'Right'
-            }
+                tooltipText: this.localeObj.getConstant('delete'), align: 'Right',
+                text: this.parent.isAdaptive ? '' : this.localeObj.getConstant('delete')
+            },
         ];
         let columns: GridColumnModel[] = [];
         for (let i: number = 0; i < fields.length; i++) {
             let column: GridColumnModel = {};
             if (fields[i].toLowerCase() === 'id') {
                 column = {
-                    field: 'id', headerText: this.l10n.getConstant('id'), allowEditing: false, width: '70px'
+                    field: 'id', headerText: this.localeObj.getConstant('id'), allowEditing: false, width: '70px'
                 };
                 columns.push(column);
             } else if (fields[i].toLowerCase() === 'name') {
                 column = {
-                    field: 'name', headerText: this.l10n.getConstant('name'), editType: EditType.String, width: '250px',
+                    field: 'name', headerText: this.localeObj.getConstant('name'), editType: EditType.String, width: '250px',
                     validationRules: { required: true }
                 };
                 columns.push(column);
             } else if (fields[i].toLowerCase() === 'type') {
                 column = {
-                    field: 'type', headerText: this.l10n.getConstant('type'), editType: EditType.DropDown,
+                    field: 'type', headerText: this.localeObj.getConstant('type'), editType: EditType.DropDown,
                     dataSource: this.types, foreignKeyField: 'id', foreignKeyValue: 'text',
-                    defaultValue: 'FS', validationRules: { required: true }
+                    defaultValue: 'FS', validationRules: { required: true }, width: '150px'
                 };
                 columns.push(column);
             } else if (fields[i].toLowerCase() === 'offset') {
                 column = {
-                    field: 'offset', headerText: this.l10n.getConstant('offset'), editType: EditType.String,
-                    defaultValue: '0 days', validationRules: { required: true }
+                    field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: EditType.String,
+                    defaultValue: '0 days', validationRules: { required: true }, width: '100px'
                 };
                 columns.push(column);
             }
         }
         inputModel.columns = columns;
-        inputModel.height = '117px';
+        inputModel.height = this.parent.isAdaptive ? '100%' : '153px';
         return inputModel;
     }
     private getResourcesModel(fields: string[]): Object {
@@ -868,6 +919,7 @@ export class DialogEdit {
             allowFiltering: true,
             locale: this.parent.locale,
             allowSelection: true,
+            rowHeight: this.parent.isAdaptive ? 48 : null,
             filterSettings: { type: 'Menu' },
             selectionSettings: { checkboxOnly: true, checkboxMode: 'ResetOnRowClick', persistSelection: true, type: 'Multiple' }
         };
@@ -879,18 +931,18 @@ export class DialogEdit {
             if (fields[i] === ganttObj.resourceIDMapping) {
                 column = {
                     field: ganttObj.resourceIDMapping,
-                    headerText: this.l10n.getConstant('id'), isPrimaryKey: true, width: '100px'
+                    headerText: this.localeObj.getConstant('id'), isPrimaryKey: true, width: '100px'
                 };
                 columns.push(column);
             } else if (fields[i] === ganttObj.resourceNameMapping) {
                 column = {
-                    field: ganttObj.resourceNameMapping, headerText: this.l10n.getConstant('name'),
+                    field: ganttObj.resourceNameMapping, headerText: this.localeObj.getConstant('name'),
                 };
                 columns.push(column);
             }
         }
         inputModel.columns = columns;
-        inputModel.height = '160px';
+        inputModel.height = this.parent.isAdaptive ? '100%' : '196px';
         return inputModel;
     }
 
@@ -905,10 +957,11 @@ export class DialogEdit {
                 '|', 'Undo', 'Redo'];
         }
         let inputModel: RichTextEditorModel = {
-            placeholder: this.l10n.getConstant('writeNotes'),
+            placeholder: this.localeObj.getConstant('writeNotes'),
             toolbarSettings: {
                 items: fields
             },
+            height: this.parent.isAdaptive ? '100%' : 'auto',
             locale: this.parent.locale
         };
         return inputModel;
@@ -1058,30 +1111,7 @@ export class DialogEdit {
         inputModel.rowDeselected = (args: RowSelectEventArgs): void => {
             this.updateResourceCollection(args, resourceGridId);
         };
-        let tabModel: TabModel = this.beforeOpenArgs.tabModel;
-        tabModel.selected = (args: Object): void => {
-            let title: string = getValue('selectedItem.textContent', args);
-            if (title === 'Resources') {
-                let resourceGrid: Grid = <Grid>(<EJ2Instance>ganttObj.element.querySelector('#' + resourceGridId)).ej2_instances[0];
-                let resources: Object[] = this.ganttResources;
-                if (resources && resources.length > 0) {
-                    resourceGrid.currentViewData.forEach((data: CObject, index: number): void => {
-                        for (let i: number = 0; i < resources.length; i++) {
-                            if (data[ganttObj.resourceIDMapping] === resources[i][ganttObj.resourceIDMapping] &&
-                                resourceGrid.selectionModule.selectedRowIndexes.indexOf(index) === -1) {
-                                resourceGrid.selectRow(index);
-                            }
-                        }
-                    });
-                }
-            }
-            if (title === 'Notes') {
-                let notesTabId: string = '#' + ganttObj.element.id + 'Notes' + 'TabContainer';
-                let notesObj: RichTextEditor =
-                    <RichTextEditor>(<EJ2Instance>ganttObj.element.querySelector(notesTabId)).ej2_instances[0];
-                notesObj.refresh();
-            }
-        };
+
         let divElement: HTMLElement = this.createDivElement('e-resource-div', resourceGridId);
         Grid.Inject(Selection, Filter);
         let gridObj: Grid = new Grid(inputModel);
@@ -1200,7 +1230,6 @@ export class DialogEdit {
     }
 
     private getPredecessorType(): IDependencyEditData[] {
-        let localeObj: L10n = this.parent.localeObj;
         let typeText: string[] = [this.parent.getPredecessorTextValue('SS'), this.parent.getPredecessorTextValue('SF'),
         this.parent.getPredecessorTextValue('FS'), this.parent.getPredecessorTextValue('FF')];
         let types: IDependencyEditData[] = [
@@ -1371,6 +1400,9 @@ export class DialogEdit {
     }
 }
 
+/**
+ * @hidden
+ */
 export type Inputs =
     CheckBox |
     DropDownList |
@@ -1380,6 +1412,9 @@ export type Inputs =
     DateTimePicker |
     MaskedTextBox;
 
+/**
+ * @hidden
+ */
 export interface IPreData {
     id?: string;
     name?: string;

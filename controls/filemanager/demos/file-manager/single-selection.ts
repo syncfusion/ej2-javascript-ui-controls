@@ -2,42 +2,43 @@ import { FileManager } from '../../src/file-manager/base/file-manager';
 import { NavigationPane, DetailsView } from '../../src/file-manager/layout/index';
 import { Toolbar } from '../../src/file-manager/actions/toolbar';
 import {
-    FileBeforeSendEventArgs, FileOpenEventArgs, FileSelectEventArgs, FileMenuClickEventArgs, FileMenuOpenEventArgs,
-    FileToolbarClickEventArgs
+    BeforeSendEventArgs, FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs,
+    ToolbarClickEventArgs
 } from '../../src/file-manager/base/interface';
 
 FileManager.Inject(NavigationPane, DetailsView, Toolbar);
-
+// let hostUrl: string = 'https://ng2jq.syncfusion.com/ej2services/';
+let hostUrl = 'http://localhost:62869/';
 let feObj: FileManager = new FileManager({
     allowMultiSelection: false,
     ajaxSettings: {
-        url: 'http://localhost:59302/api/FileManager/FileOperations',
-        uploadUrl: 'http://localhost:59302/api/FileManager/Upload',
-        downloadUrl: 'http://localhost:59302/api/FileManager/Download',
-        getImageUrl: 'http://localhost:59302/api/FileManager/GetImage'
+        url: hostUrl + 'api/FileManager/FileOperations',
+        uploadUrl: hostUrl +'api/FileManager/Upload',
+        downloadUrl: hostUrl +'api/FileManager/Download',
+        getImageUrl: hostUrl +'api/FileManager/GetImage'
     },
-    beforeFileOpen: (args: FileOpenEventArgs) => {
+    fileOpen: (args: FileOpenEventArgs) => {
         addEventLog('The ' + (args.fileDetails as any)["name"] + ((<any>args.fileDetails).isFile ? ' file' : ' folder') + ' will be opened.');
     },
-    beforeSend: (args: FileBeforeSendEventArgs) => {
+    beforeSend: (args: BeforeSendEventArgs) => {
         addEventLog('beforeSend');
     },
     fileSelect: (args: FileSelectEventArgs) => {
         addEventLog(args.action + 'ed: ' + (args.fileDetails as any)["name"]);
     },
-    menuClick: (args: FileMenuClickEventArgs) => {
+    menuClick: (args: MenuClickEventArgs) => {
         addEventLog('"' + args.item.text + '" menu item is clicked');
     },
-    menuOpen: (args: FileMenuOpenEventArgs) => {
+    menuOpen: (args: MenuOpenEventArgs) => {
         addEventLog('context menu will be opened');
     },
-    onSuccess: (args: Object) => {
+    success: (args: Object) => {
         addEventLog('Success');
     },
-    onError: (args: Object) => {
-        addEventLog('Service error');
+    failure: (args: Object) => {
+        addEventLog('Service failure');
     },
-    toolbarClick: (args: FileToolbarClickEventArgs) => {
+    toolbarClick: (args: ToolbarClickEventArgs) => {
         if (args.item && args.item.text == "Custom tool") {
             window.alert("Custom tool is clicked");
         }

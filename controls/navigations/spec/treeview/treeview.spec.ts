@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7 } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8 } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
@@ -4444,6 +4444,26 @@ describe('TreeView control', () => {
                     done();
                 }, 100);
             });
+
+            it('isChecked property is set inside the child with loadOnDemand true ', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData6 , id: "nodeId", text: "nodeText", child: "nodeChild", expanded:"nodeExpanded",isChecked:"nodeChecked" },
+                    showCheckBox: true,
+                    autoCheck: false
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(1);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(1);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            
             it('isChecked property is set inside the root node with loadOnDemand true and local data', (done: Function) => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: localData6 , id: "nodeId", text: "nodeText", parentID: "nodePid", hasChildren:"hasChild",isChecked:"isChecked" },
@@ -4491,6 +4511,24 @@ describe('TreeView control', () => {
                 setTimeout(function() {
                     expect(treeObj.checkedNodes.length).toBe(8);
                     expect(treeObj.getAllCheckedNodes().length).toBe(8);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('isChecked property is set inside the child node with autocheck false and local data', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData7 , id: "id", text: "name", parentID: "pid", hasChildren:"hasChild",isChecked:"isChecked" },
+                    showCheckBox: true,
+                    autoCheck: false
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(6);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(6);
                     treeObj.uncheckAll()
                     treeObj.dataBind();
                     expect(treeObj.checkedNodes.length).toBe(0);

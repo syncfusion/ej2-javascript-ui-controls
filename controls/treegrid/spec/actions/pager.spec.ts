@@ -398,6 +398,28 @@ describe('TreeGrid Pager module', () => {
       destroy(gridObj);
     });
   });
+  describe('updateExternalMessage method testing', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                treeColumnIndex: 1,
+                allowPaging: true,
+                columns: ['taskID', 'taskName', 'startDate', 'endDate']
+            },
+            done
+        );
+    });
+    it('updateExternalMessage method testing', () => {
+        gridObj.updateExternalMessage('Testing');
+        expect(gridObj.grid.getPager().getElementsByClassName('e-pagerexternalmsg')[0].innerHTML == 'Testing').toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   describe('Checking enableCollapseAll with paging', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -432,7 +454,38 @@ describe('TreeGrid Pager module', () => {
         destroy(gridObj);
       });
     });
-  
+    describe(' EJ2-27659 - CollaspeAll method with current page other than 1 ', () => {
+        let gridObj: TreeGrid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: sampleData,
+                    childMapping: 'subtasks',
+                    treeColumnIndex: 1,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 3 },
+                    columns: ['taskID', 'taskName', 'startDate', 'duration']
+                },
+                done
+            );
+        });
+        it('Check the collapseAll Method -- All Mode', (done: Function) => {
+            gridObj.actionComplete = () => {
+                expect(gridObj.pageSettings.currentPage == 1).toBe(true);
+                expect(gridObj.getRows().length == 3).toBe(true);
+                expect(gridObj.getRows()[0].querySelector('.e-treecell').innerHTML == "Planning").toBe(true);
+                expect(gridObj.getRows()[1].querySelector('.e-treecell').innerHTML == "Design").toBe(true);
+                expect(gridObj.getRows()[2].querySelector('.e-treecell').innerHTML == "Implementation Phase").toBe(true);
+                done();
+            };
+            gridObj.goToPage(3);
+            gridObj.collapseAll();
+        });
+        afterAll(() => {
+          destroy(gridObj);
+        });
+      });
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

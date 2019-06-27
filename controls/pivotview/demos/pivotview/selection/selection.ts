@@ -18,8 +18,8 @@ let chart: Chart;
 let selectedCells: CellSelectedObject[];
 let chartSeries: SeriesModel[];
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_nodata as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_nodata as IDataSet[],
         enableSorting: true,
         rows: [{ name: 'Country' }, { name: 'State' }],
         columns: [{ name: 'Product' }, { name: 'Date' }],
@@ -30,7 +30,7 @@ let pivotGridObj: PivotView = new PivotView({
     height: 300,
     dataBound: () => {
         if (onInit) {
-            pivotGridObj.dataSource.values.forEach(function (value: IFieldOptions) { measureList[value.name] = value.caption || value.name });
+            pivotGridObj.dataSourceSettings.values.forEach(function (value: IFieldOptions) { measureList[value.name] = value.caption || value.name });
             chartSeries = frameChartSeries();
             chartUpdate();
         }
@@ -57,7 +57,7 @@ function frameChartSeries(): SeriesModel[] {
             for (let cellIndex of Object.keys(valuesContent[cCnt])) {
                 let cell: IAxisSet = valuesContent[cCnt][Number(cellIndex)];
                 if (cell.columnHeaders && cell.rowHeaders) {
-                    let columnSeries = pivotGridObj.dataSource.values.length > 1 ?
+                    let columnSeries = pivotGridObj.dataSourceSettings.values.length > 1 ?
                         (cell.columnHeaders.toString() + ' ~ ' + measureList[cell.actualText]) : cell.columnHeaders.toString();
                     if (columnGroupObject[columnSeries]) {
                         columnGroupObject[columnSeries].push({ x: cell.rowHeaders.toString(), y: Number(cell.value) });
@@ -70,7 +70,7 @@ function frameChartSeries(): SeriesModel[] {
     } else {
         for (let cell of selectedCells) {
             if (cell.measure !== '') {
-                let columnSeries = (pivotGridObj.dataSource.values.length > 1 && measureList[cell.measure]) ?
+                let columnSeries = (pivotGridObj.dataSourceSettings.values.length > 1 && measureList[cell.measure]) ?
                     (cell.columnHeaders.toString() + ' ~ ' + measureList[cell.measure]) : cell.columnHeaders.toString();
                 if (columnGroupObject[columnSeries]) {
                     columnGroupObject[columnSeries].push({ x: cell.rowHeaders == '' ? 'Grand Total' : cell.rowHeaders.toString(), y: Number(cell.value) });
@@ -107,19 +107,19 @@ function chartUpdate() {
                 enable: true
             },
             primaryYAxis: {
-                title: pivotGridObj.dataSource.values.map(function (args) { return args.caption || args.name }).join(' ~ '),
+                title: pivotGridObj.dataSourceSettings.values.map(function (args) { return args.caption || args.name }).join(' ~ '),
             },
             primaryXAxis: {
                 valueType: 'Category',
-                title: pivotGridObj.dataSource.rows.map(function (args) { return args.caption || args.name }).join(' ~ '),
+                title: pivotGridObj.dataSourceSettings.rows.map(function (args) { return args.caption || args.name }).join(' ~ '),
                 labelIntersectAction: 'Rotate45'
             },
             series: chartSeries,
         }, '#chart');
     } else {
         chart.series = chartSeries;
-        chart.primaryXAxis.title = pivotGridObj.dataSource.rows.map(function (args) { return args.caption || args.name }).join(' ~ ');
-        chart.primaryYAxis.title = pivotGridObj.dataSource.values.map(function (args) { return args.caption || args.name }).join(' ~ ');
+        chart.primaryXAxis.title = pivotGridObj.dataSourceSettings.rows.map(function (args) { return args.caption || args.name }).join(' ~ ');
+        chart.primaryYAxis.title = pivotGridObj.dataSourceSettings.values.map(function (args) { return args.caption || args.name }).join(' ~ ');
         chart.refresh();
     }
 }

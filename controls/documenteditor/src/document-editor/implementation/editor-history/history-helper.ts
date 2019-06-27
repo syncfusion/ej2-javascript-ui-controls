@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../index';
 import { WParagraphFormat } from '../index';
 import { WListLevel } from '../list/list-level';
-import { TableWidget, TableRowWidget, WTableHolder, TableCellWidget } from '../viewer/page';
+import { TableWidget, TableRowWidget, WTableHolder, TableCellWidget, EditRangeStartElementBox } from '../viewer/page';
 import { Point } from '../editor/editor-helper';
 import { WRowFormat } from '../format/row-format';
 import { HeightType, WidthType } from '../../base';
@@ -12,6 +12,15 @@ import { IWidget, BookmarkElementBox } from '../viewer/page';
  */
 export interface BookmarkInfo extends IWidget {
     bookmark: BookmarkElementBox;
+    startIndex: number;
+    endIndex: number;
+}
+
+/**
+ * @private
+ */
+export interface EditRangeInfo extends IWidget {
+    editStart: EditRangeStartElementBox;
     startIndex: number;
     endIndex: number;
 }

@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, FocusEventArgs, BlurEventArgs } from '../calendar/calendar';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs } from '../calendar/calendar';
 import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
@@ -42,6 +42,13 @@ export interface DatePickerModel extends CalendarModel{
      * @default true
      */
     enabled?: boolean;
+
+    /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string; };
 
     /**
      * Gets or sets multiple selected dates of the calendar.
@@ -113,37 +120,43 @@ export interface DatePickerModel extends CalendarModel{
 
     /**
      * Triggers when the popup is opened.
-     * @event 
+     * @event
+     * @blazorProperty 'OnOpen'
      */
     open?: EmitType<PreventableEventArgs | PopupObjectArgs>;
 
     /**
      * Triggers when the popup is closed.
-     * @event 
+     * @event
+     * @blazorProperty 'OnClose'
      */
     close?: EmitType<PreventableEventArgs | PopupObjectArgs>;
 
     /**
      * Triggers when the input loses the focus.
-     * @event 
+     * @event
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<BlurEventArgs>;
 
     /**
      *  Triggers when the input gets focus.
      * @event 
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<FocusEventArgs>;
 
     /**
      * Triggers when the component is created.
      * @event 
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
-     * @event 
+     * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

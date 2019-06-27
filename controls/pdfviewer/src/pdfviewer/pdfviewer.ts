@@ -1,6 +1,7 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel } from './pdfviewer-model';
+// tslint:disable-next-line:max-line-length
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
@@ -8,7 +9,7 @@ import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -17,8 +18,15 @@ import { TextSelection } from './index';
 import { TextSearch } from './index';
 import { Print } from './index';
 // tslint:disable-next-line:max-line-length
-import { LoadEventArgs, UnloadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';
-import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs } from './index';
+import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs } from './index';
+import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
+import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
+import { Drawing, ClipBoardObject } from '../diagram/drawing';
+import { Selector } from '../diagram/selector';
+import { SelectorModel } from '../diagram/selector-model';
+import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
+import { renderAdornerLayer } from '../diagram/dom-util';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -46,7 +54,7 @@ export class AjaxRequestSettings extends ChildProperty<AjaxRequestSettings> {
      * set the ajax Header values in the PdfViewer.
      */
     @Property()
-    public ajaxHeaders: IAjaxHeaders [];
+    public ajaxHeaders: IAjaxHeaders[];
 }
 
 export interface IAjaxHeaders {
@@ -118,6 +126,12 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
      */
     @Property('RenderThumbnailImages')
     public renderThumbnail: string;
+
+    /**
+     * specifies the annotation comments action of PdfViewer.
+     */
+    @Property('RenderAnnotationComments')
+    public renderComments: string;
 }
 
 /**
@@ -226,6 +240,649 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
 }
 
 /**
+ * The `LineSettings` module is used to provide the properties to line annotation.
+ */
+export class LineSettings extends ChildProperty<LineSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Line')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+
+    /**
+     * specifies the line head start style of the annotation.
+     */
+    @Property('None')
+    public lineHeadStartStyle: LineHeadStyle;
+
+    /**
+     * specifies the line head end style of the annotation.
+     */
+    @Property('None')
+    public lineHeadEndStyle: LineHeadStyle;
+
+    /**
+     * specifies the border dash array  of the annotation.
+     */
+    @Property(0)
+    public borderDashArray: number;
+}
+
+/**
+ * The `ArrowSettings` module is used to provide the properties to arrow annotation.
+ */
+export class ArrowSettings extends ChildProperty<ArrowSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Arrow')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+
+    /**
+     * specifies the line head start style of the annotation.
+     */
+    @Property('None')
+    public lineHeadStartStyle: LineHeadStyle;
+
+    /**
+     * specifies the line head start style of the annotation.
+     */
+    @Property('None')
+    public lineHeadEndStyle: LineHeadStyle;
+
+    /**
+     * specifies the border dash array  of the annotation.
+     */
+    @Property(0)
+    public borderDashArray: number;
+}
+
+/**
+ * The `RectangleSettings` module is used to provide the properties to rectangle annotation.
+ */
+export class RectangleSettings extends ChildProperty<RectangleSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Rectangle')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+}
+
+/**
+ * The `CircleSettings` module is used to provide the properties to circle annotation.
+ */
+export class CircleSettings extends ChildProperty<CircleSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Circle')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+}
+
+/**
+ * The `PolygonSettings` module is used to provide the properties to polygon annotation.
+ */
+export class PolygonSettings extends ChildProperty<PolygonSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Polygon')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+}
+
+/**
+ * The `stampSettings` module is used to provide the properties to stamp annotation.
+ */
+export class StampSettings extends ChildProperty<StampSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+}
+
+/**
+ * The `CustomStampSettings` module is used to provide the properties to customstamp annotation.
+ */
+export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specifies the width of the annotation.
+     */
+    @Property(0)
+    public width: number;
+
+    /**
+     * specifies the height of the annotation.
+     */
+    @Property(0)
+    public height: number;
+
+    /**
+     * specifies the left position of the annotation.
+     */
+    @Property(0)
+    public left: number;
+    /**
+     * specifies the top position of the annotation.
+     */
+    @Property(0)
+    public top: number;
+
+}
+
+/**
+ * The `DistanceSettings` module is used to provide the properties to distance calibrate annotation.
+ */
+export class DistanceSettings extends ChildProperty<DistanceSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ff0000')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Distance calculation')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+
+    /**
+     * specifies the line head start style of the annotation.
+     */
+    @Property('None')
+    public lineHeadStartStyle: LineHeadStyle;
+
+    /**
+     * specifies the line head start style of the annotation.
+     */
+    @Property('None')
+    public lineHeadEndStyle: LineHeadStyle;
+
+    /**
+     * specifies the border dash array  of the annotation.
+     */
+    @Property(0)
+    public borderDashArray: number;
+}
+
+/**
+ * The `PerimeterSettings` module is used to provide the properties to perimeter calibrate annotation.
+ */
+export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Perimeter calculation')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+
+    /**
+     * specifies the line head start style of the annotation.
+     */
+    @Property('None')
+    public lineHeadStartStyle: LineHeadStyle;
+
+    /**
+     * specifies the line head start style of the annotation.
+     */
+    @Property('None')
+    public lineHeadEndStyle: LineHeadStyle;
+
+    /**
+     * specifies the border dash array  of the annotation.
+     */
+    @Property(0)
+    public borderDashArray: number;
+}
+
+/**
+ * The `AreaSettings` module is used to provide the properties to area calibrate annotation.
+ */
+export class AreaSettings extends ChildProperty<AreaSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Area calculation')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+}
+
+/**
+ * The `RadiusSettings` module is used to provide the properties to radius calibrate annotation.
+ */
+export class RadiusSettings extends ChildProperty<RadiusSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Radius calculation')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+}
+
+/**
+ * The `VolumeSettings` module is used to provide the properties to volume calibrate annotation.
+ */
+export class VolumeSettings extends ChildProperty<VolumeSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the stroke color of the annotation.
+     */
+    @Property('#ff0000')
+    public strokeColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Volume calculation')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+}
+
+/**
+ * The `stickyNotesSettings` module is used to provide the properties to sticky notes annotation.
+ */
+export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Sticky Note')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+}
+/**
  * Represents the PDF viewer component.
  * ```html
  * <div id="pdfViewer"></div>
@@ -247,22 +904,25 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the page count of the document loaded in the PdfViewer control.
+     * @asptype int
      */
-    get pageCount(): number {
+    public get pageCount(): number {
         return this.viewerBase.pageCount;
     }
 
     /**
      * Checks whether the PDF document is edited.
+     * @asptype bool
      */
-    get isDocumentEdited(): boolean {
+    public get isDocumentEdited(): boolean {
         return this.viewerBase.isDocumentEdited;
     }
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
+     * @asptype int
      */
-    get currentPageNumber(): number {
+    public get currentPageNumber(): number {
         return this.viewerBase.currentPageNumber;
     }
 
@@ -274,8 +934,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the current zoom percentage of the PdfViewer control.
+     * @asptype int
      */
-    get zoomPercentage(): number {
+    public get zoomPercentage(): number {
         return this.magnificationModule.zoomFactor * 100;
     }
 
@@ -369,6 +1030,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableMagnification: boolean;
 
     /**
+     * Enable or disables the Pinch zoom of PdfViewer.
+     * @default true
+     */
+    @Property(true)
+    public enablePinchZoom: boolean;
+
+    /**
      * Enable or disables the text selection in the PdfViewer.
      * @default true
      */
@@ -397,6 +1065,34 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableTextMarkupAnnotation: boolean;
 
     /**
+     * Enable or disables the shape annotation in the PdfViewer.
+     * @default true
+     */
+    @Property(true)
+    public enableShapeAnnotation: boolean;
+
+    /**
+     * Enable or disables the calibrate annotation in the PdfViewer.
+     * @default true
+     */
+    @Property(true)
+    public enableMeasureAnnotation: boolean;
+
+    /**
+     * Enables and disables the stamp annotations when the PDF viewer control is loaded initially.
+     * @default true
+     */
+    @Property(true)
+    public enableStampAnnotations: boolean;
+
+    /**
+     * Enables and disables the stickyNotes annotations when the PDF viewer control is loaded initially.
+     * @default true
+     */
+    @Property(true)
+    public enableStickyNotesAnnotation: boolean;
+
+    /**
      * Sets the interaction mode of the PdfViewer
      * @default TextSelection
      */
@@ -407,7 +1103,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, toolbarItem: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentOption', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'] })
+    @Property({ showTooltip: true, toolbarItem: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
@@ -421,14 +1117,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer annotation toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool'] })
+    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool'] })
     public annotationToolbarSettings: AnnotationToolbarSettingsModel;
 
     /**
      * Defines the settings of the PdfViewer service.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages'  })
+    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments' })
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
@@ -449,7 +1145,134 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property({ opacity: 1, color: '#00ff00', author: 'Guest', subject: 'Underline', modifiedDate: '' })
     public underlineSettings: UnderlineSettingsModel;
 
-    private viewerBase: PdfViewerBase;
+    /**
+     * Defines the settings of line annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Line', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None' })
+    public lineSettings: LineSettingsModel;
+
+    /**
+     * Defines the settings of arrow annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Arrow', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed' })
+    public arrowSettings: ArrowSettingsModel;
+
+    /**
+     * Defines the settings of rectangle annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Rectangle', modifiedDate: '', thickness: 1 })
+    public rectangleSettings: RectangleSettingsModel;
+
+    /**
+     * Defines the settings of circle annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Circle', modifiedDate: '', thickness: 1 })
+    public circleSettings: CircleSettingsModel;
+
+    /**
+     * Defines the settings of polygon annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Polygon', modifiedDate: '', thickness: 1 })
+    public polygonSettings: PolygonSettingsModel;
+
+    /**
+     * Defines the settings of stamp annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, author: 'Guest', modifiedDate: '' })
+    public stampSettings: StampSettingsModel;
+
+    /**
+     * Defines the settings of customStamp annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, author: 'Guest', modifiedDate: '', width: 0, height: 0, left: 0, top: 0 })
+    public customStampSettings: CustomStampSettingsModel;
+
+    /**
+     * Defines the settings of distance annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Distance calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed' })
+    public distanceSettings: DistanceSettingsModel;
+
+    /**
+     * Defines the settings of perimeter annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Perimeter calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open' })
+    public perimeterSettings: PerimeterSettingsModel;
+
+    /**
+     * Defines the settings of area annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Area calculation', modifiedDate: '', thickness: 1 })
+    public areaSettings: AreaSettingsModel;
+
+    /**
+     * Defines the settings of radius annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Radius calculation', modifiedDate: '', thickness: 1 })
+    public radiusSettings: RadiusSettingsModel;
+
+    /**
+     * Defines the settings of volume annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Volume calculation', modifiedDate: '', thickness: 1 })
+    public volumeSettings: VolumeSettingsModel;
+
+    /**
+     * Defines the settings of stickyNotes annotation.
+     */
+    @Property({ author: 'Guest', subject: 'Sticky Note', modifiedDate: '', opacity: 1 })
+    public stickyNotesSettings: StickyNotesSettingsModel;
+
+    /**
+     * @private
+     */
+    public viewerBase: PdfViewerBase;
+    /**
+     * @private
+     */
+    public drawing: Drawing;
+    /**
+     * @private
+     */
+    /**
+     * Defines the collection of selected items, size and position of the selector
+     * @default {}
+     */
+    @Complex<SelectorModel>({}, Selector)
+    public selectedItems: SelectorModel;
+    /**
+     * @private
+     */
+    public adornerSvgLayer: SVGSVGElement;
+
+    /**
+     * @private
+     */
+    public zIndex: number = -1;
+    /**
+     * @private
+     */
+    public nameTable: {} = {};
+    /**   @private  */
+    public clipboardData: ClipBoardObject = {};
+
+    /**
+     * @private
+     */
+    public zIndexTable: ZOrderPageTable[] = [];
+
     /**
      * @private
      */
@@ -495,70 +1318,79 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /** 
      * Gets the bookmark view object of the pdf viewer.
+     * @asptype BookmarkView
      * @returns { BookmarkView }
      */
-    get bookmark(): BookmarkView {
+    public get bookmark(): BookmarkView {
         return this.bookmarkViewModule;
     }
 
     /** 
      * Gets the print object of the pdf viewer.
+     * @asptype Print 
      * @returns { Print }
      */
-    get print(): Print {
+    public get print(): Print {
         return this.printModule;
     }
 
     /** 
      * Gets the magnification object of the pdf viewer.
+     * @asptype Magnification
      * @returns { Magnification }
      */
-    get magnification(): Magnification {
+    public get magnification(): Magnification {
         return this.magnificationModule;
     }
     /** 
      * Gets the navigation object of the pdf viewer.
+     * @asptype Navigation
      * @returns { Navigation }
      */
-    get navigation(): Navigation {
+    public get navigation(): Navigation {
         return this.navigationModule;
     }
 
     /** 
      * Gets the text search object of the pdf viewer.
+     * @asptype TextSearch
      * @returns { TextSearch }
      */
-    get textSearch(): TextSearch {
+    public get textSearch(): TextSearch {
         return this.textSearchModule;
     }
 
     /** 
      * Gets the toolbar object of the pdf viewer.
+     * @asptype Toolbar
      * @returns { Toolbar }
      */
-    get toolbar(): Toolbar {
+    public get toolbar(): Toolbar {
         return this.toolbarModule;
     }
 
     /** 
      * Gets the thumbnail-view object of the pdf viewer.
+     * @asptype ThumbnailView
      * @returns { ThumbnailView }
      */
-    get thumbnailView(): ThumbnailView {
+    public get thumbnailView(): ThumbnailView {
         return this.thumbnailViewModule;
     }
 
     /**
      * Gets the annotation object of the pdf viewer.
+     * @asptype Annotation
      * @returns { Annotation }
      */
-    get annotation(): Annotation {
+    public get annotation(): Annotation {
         return this.annotationModule;
     }
 
     /**
      * Triggers while loading document into PdfViewer.
      * @event
+     * @blazorProperty 'DocumentLoaded'
      */
     @Event()
     public documentLoad: EmitType<LoadEventArgs>;
@@ -566,6 +1398,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while close the document
      * @event
+     * @blazorProperty 'DocumentUnloaded'
      */
     @Event()
     public documentUnload: EmitType<UnloadEventArgs>;
@@ -573,6 +1406,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while loading document got failed in PdfViewer.
      * @event
+     * @blazorProperty 'DocumentLoadFailed'
      */
     @Event()
     public documentLoadFailed: EmitType<LoadFailedEventArgs>;
@@ -580,6 +1414,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the AJAX request is failed.
      * @event
+     * @blazorProperty 'AjaxRequestFailed'
      */
     @Event()
     public ajaxRequestFailed: EmitType<AjaxRequestFailureEventArgs>;
@@ -587,6 +1422,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
      * @event
+     * @blazorProperty 'OnPageClick'
      */
     @Event()
     public pageClick: EmitType<PageClickEventArgs>;
@@ -594,6 +1430,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when there is change in current page number.
      * @event
+     * @blazorProperty 'PageChanged'
      */
     @Event()
     public pageChange: EmitType<PageChangeEventArgs>;
@@ -601,6 +1438,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when hyperlink in the PDF Document is clicked
      * @event
+     * @blazorProperty 'OnHyperlinkClick'
      */
     @Event()
     public hyperlinkClick: EmitType<HyperlinkClickEventArgs>;
@@ -608,6 +1446,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when there is change in the magnification value.
      * @event
+     * @blazorProperty 'ZoomChanged'
      */
     @Event()
     public zoomChange: EmitType<ZoomChangeEventArgs>;
@@ -615,6 +1454,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is added over the page of the PDF document.
      * @event
+     * @blazorProperty 'AnnotationAdded'
      */
     @Event()
     public annotationAdd: EmitType<AnnotationAddEventArgs>;
@@ -622,6 +1462,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
      * @event 
+     * @blazorProperty 'AnnotationRemoved'
      */
     @Event()
     public annotationRemove: EmitType<AnnotationRemoveEventArgs>;
@@ -629,13 +1470,52 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
+     * @blazorProperty 'AnnotationPropertiesChanged'
      */
     @Event()
-    public annotationPropertiesChange : EmitType<AnnotationPropertiesChangeEventArgs>;
+    public annotationPropertiesChange: EmitType<AnnotationPropertiesChangeEventArgs>;
+
+    /**
+     * Triggers when an annotation is resized over the page of the PDF document.
+     * @event
+     * @blazorProperty 'AnnotationResized'
+     */
+    @Event()
+    public annotationResize: EmitType<AnnotationResizeEventArgs>;
+
+    /**
+     * Triggers when the property of the annotation is changed in the page of the PDF document.
+     * @event
+     */
+    @Collection<PdfAnnotationBaseModel>([], PdfAnnotationBase)
+    public annotations: PdfAnnotationBaseModel[];
+
+    /**
+     * @private
+     */
+    /**
+     * tool denots the current tool
+     * @event
+     * @private
+     */
+    @Property('')
+    public tool: string;
+    /**
+     * @private
+     */
+    /**
+     * the objects for drawing tool
+     * @event
+     * @private
+     */
+    @Property()
+    public drawingObject: PdfAnnotationBaseModel;
+
 
     constructor(options?: PdfViewerModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
         this.viewerBase = new PdfViewerBase(this);
+        this.drawing = new Drawing(this);
     }
 
     protected preRender(): void {
@@ -649,6 +1529,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.viewerBase.disableTextSelectionMode();
         }
+        this.drawing.renderLabels(this);
     }
 
     public getModuleName(): string {
@@ -798,7 +1679,49 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Pan text': 'Pan',
         'Print text': 'Print',
         'Search text': 'Search',
-        'Annotation Edit text': 'Edit Annotation'
+        'Annotation Edit text': 'Edit Annotation',
+        'Line Thickness': 'Line Thickness',
+        'Line Properties': 'Line Properties',
+        'Start Arrow': 'Start Arrow',
+        'End Arrow': 'End Arrow',
+        'Line Style': 'Line Style',
+        'Fill Color': 'Fill Color',
+        'Line Color': 'Line Color',
+        'None': 'None',
+        'Open Arrow': 'Open',
+        'Closed Arrow': 'Closed',
+        'Round Arrow': 'Round',
+        'Square Arrow': 'Square',
+        'Diamond Arrow': 'Diamond',
+        'Cut': 'Cut',
+        'Paste': 'Paste',
+        'Delete Context': 'Delete',
+        'Properties': 'Properties',
+        'Add Stamp': 'Add Stamp',
+        'Add Shapes': 'Add Shapes',
+        'Stroke edit': 'Change Stroke Color',
+        'Change thickness': 'Change Border Thickness',
+        'Add line': 'Add Line',
+        'Add arrow': 'Add Arrow',
+        'Add rectangle': 'Add Rectangle',
+        'Add circle': 'Add Circle',
+        'Add polygon': 'Add Polygon',
+        'Add Comments': 'Add Comments',
+        'Comments': 'Comments',
+        'No Comments Yet': 'No Comments Yet',
+        'Accepted': 'Accepted',
+        'Completed': 'Completed',
+        'Cancelled': 'Cancelled',
+        'Rejected': 'Rejected',
+        'Leader Length': 'Leader Length',
+        'Scale Ratio': 'Scale Ratio',
+        'Calibrate': 'Calibrate',
+        'Calibrate Distance': 'Calibrate Distance',
+        'Calibrate Perimeter': 'Calibrate Perimeter',
+        'Calibrate Area': 'Calibrate Area',
+        'Calibrate Radius': 'Calibrate Radius',
+        'Calibrate Volume': 'Calibrate Volume',
+        'Depth': 'Depth'
     };
 
     /**
@@ -968,8 +1891,166 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    public fireAnnotationPropertiesChange(pageNumber: number, index: number, type: AnnotationType, isColorChanged: boolean, isOpacityChanged: boolean): void {
-        let eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged };
+    public fireAnnotationPropertiesChange(pageNumber: number, index: number, type: AnnotationType, isColorChanged: boolean, isOpacityChanged: boolean, isTextChanged: boolean, isCommentsChanged: boolean): void {
+        let eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged, isTextChanged: isTextChanged, isCommentsChanged: isCommentsChanged };
         this.trigger('annotationPropertiesChange', eventArgs);
     }
+    /**
+     * @private
+     */
+    public renderDrawing(canvas?: HTMLCanvasElement, index?: number): void {
+        if (!index && this.viewerBase.activeElements.activePageID) {
+            index = this.viewerBase.activeElements.activePageID;
+        }
+        this.annotation.renderAnnotations(index, null, null, null, canvas);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireAnnotationResize(pageNumber: number, index: number, type: AnnotationType, bounds: any, settings: any): void {
+        let eventArgs: AnnotationResizeEventArgs = { name: 'annotationResize', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
+        this.trigger('annotationResize', eventArgs);
+    }
+    /**
+     * @private
+     */
+    public renderAdornerLayer(bounds: ClientRect, commonStyle: string, cavas: HTMLElement, index: number): void {
+        renderAdornerLayer(bounds, commonStyle, cavas, index, this);
+    }
+    /**
+     * @private
+     */
+    public renderSelector(index: number): void {
+        this.drawing.renderSelector(index);
+    }
+    /**
+     * @private
+     */
+    public select(objArray: string[], multipleSelection?: boolean, preventUpdate?: boolean): void {
+        this.drawing.select(objArray, multipleSelection, preventUpdate);
+    }
+    /**
+     * @private
+     */
+    public getPageTable(pageId: number): ZOrderPageTable {
+        return this.drawing.getPageTable(pageId);
+    }
+    /**
+     * @private
+     */
+    public dragSelectedObjects(diffX: number, diffY: number, pageIndex: number, helper: PdfAnnotationBaseModel): boolean {
+        return this.drawing.dragSelectedObjects(diffX, diffY, pageIndex, helper);
+    }
+    /**
+     * @private
+     */
+    public scaleSelectedItems(sx: number, sy: number, pivot: PointModel): boolean {
+        return this.drawing.scaleSelectedItems(sx, sy, pivot);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    public dragConnectorEnds(endPoint: string, obj: IElement, point: PointModel, segment: PointModel, target?: IElement, targetPortId?: string): boolean {
+        return this.drawing.dragConnectorEnds(endPoint, obj, point, segment, target);
+    }
+    /**
+     * @private
+     */
+    public clearSelection(pageId: number): void {
+        let selectormodel: SelectorModel = this.selectedItems;
+        if (selectormodel.annotations.length > 0) {
+            selectormodel.offsetX = 0;
+            selectormodel.offsetY = 0;
+            selectormodel.width = 0;
+            selectormodel.height = 0;
+            selectormodel.rotateAngle = 0;
+            selectormodel.annotations = [];
+            selectormodel.wrapper = null;
+        }
+        this.drawing.clearSelectorLayer(pageId);
+    }
+    /**
+     * @private
+     */
+    public add(obj: PdfAnnotationBase): PdfAnnotationBaseModel {
+        return this.drawing.add(obj);
+    }
+    /**
+     * @private
+     */
+    public remove(obj: PdfAnnotationBaseModel): void {
+        return this.drawing.remove(obj);
+    }
+    /**
+     * @private
+     */
+    public copy(): Object {
+        this.annotation.isShapeCopied = true;
+        return this.drawing.copy();
+    }
+    /**
+     * @private
+     */
+    public rotate(angle: number): boolean {
+        return this.drawing.rotate(this.selectedItems, angle);
+    }
+    /**
+     * @private
+     */
+    public paste(obj?: PdfAnnotationBaseModel[]): void {
+        let index: number;
+        if (this.viewerBase.activeElements.activePageID) {
+            index = this.viewerBase.activeElements.activePageID;
+        }
+        return this.drawing.paste(obj, index || 0);
+    }
+    /**
+     * @private
+     */
+    public refresh(): void {
+        for (let i: number = 0; i < this.annotations.length; i++) {
+            if (this.zIndexTable.length !== undefined) {
+                let notFound: boolean = true;
+                for (let i: number = 0; i < this.zIndexTable.length; i++) {
+                    let objects: (PdfAnnotationBaseModel)[] = this.zIndexTable[i].objects;
+                    for (let j: number = 0; j < objects.length; j++) {
+                        objects.splice(j, 1);
+                    }
+                    delete this.zIndexTable[i];
+                }
+                this.annotations = [];
+                this.selectedItems.annotations = [];
+                this.zIndexTable = [];
+                this.renderDrawing();
+
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public cut(): void {
+        let index: number;
+        if (this.viewerBase.activeElements.activePageID) {
+            index = this.viewerBase.activeElements.activePageID;
+        }
+        this.annotation.isShapeCopied = true;
+        return this.drawing.cut(index || 0);
+    }
+    /**
+     * @private
+     */
+    public nodePropertyChange(
+        actualObject: PdfAnnotationBaseModel, node: PdfAnnotationBaseModel): void {
+        this.drawing.nodePropertyChange(actualObject, node);
+    }
+    /**
+     * @private
+     */
+    public checkBoundaryConstraints(tx: number, ty: number, pageIndex: number, nodeBounds?: Rect, isStamp?: boolean): boolean {
+        return this.drawing.checkBoundaryConstraints(tx, ty, pageIndex, nodeBounds, isStamp);
+    }
+
 }

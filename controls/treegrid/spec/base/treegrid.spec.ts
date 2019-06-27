@@ -1,19 +1,43 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
 import { sampleData, projectData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData } from './datasource.spec';
-import { PageEventArgs, extend, Page, doesImplementInterface, getObject } from '@syncfusion/ej2-grids';
+import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventArgs, SearchEventArgs, SortEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { Page } from '../../src/treegrid/actions/page';
+import { Filter } from '../../src/treegrid/actions/filter';
+import { Sort } from '../../src/treegrid/actions/sort';
 
 
 /**
  * Grid base spec 
  */
 
-TreeGrid.Inject(ColumnMenu, Toolbar);
+TreeGrid.Inject(ColumnMenu, Toolbar, Page, Filter, Sort);
+
+L10n.load({
+  'de-DE': {
+      'grid': {
+          'EmptyRecord': 'Keine Aufzeichnungen angezeigt',
+          'EmptyDataSourceError': 'DataSource darf bei der Erstauslastung nicht leer sein, da Spalten aus der dataSource im AutoGenerate Spaltenraster',
+          'Item': 'Artikel',
+          'Items': 'Artikel'
+      },
+      'pager': {
+          'currentPageInfo': '{0} von {1} Seiten',
+          'totalItemsInfo': '({0} Beiträge)',
+          'firstPageTooltip': 'Zur ersten Seite',
+          'lastPageTooltip': 'Zur letzten Seite',
+          'nextPageTooltip': 'Zur nächsten Seite',
+          'previousPageTooltip': 'Zurück zur letzten Seit',
+          'nextPagerTooltip': 'Zum nächsten Pager',
+          'previousPagerTooltip': 'Zum vorherigen Pager'
+      }
+  }
+});
 
 describe('TreeGrid base module', () => {
   
@@ -699,11 +723,196 @@ describe('TreeGrid base module', () => {
     });
     it('keyBoard Interaction', () => {
       //gridObj.selectCell({ cellIndex: 3, rowIndex: 0 }, true);
-      debugger;
       gridObj.keyboardModule.keyAction({ action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
           target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[3] } as any);
       rows = gridObj.getRows();
       expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-25984: check enablePersistence property in TreeGrid - pageSettings', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging:true,
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 80 },
+              { field: 'taskName', headerText: 'Task Name', width: 200 },
+              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+          ]
+        },
+        done
+      );
+    });
+    it('Checking pageSettings property with enablePersistence', (done: Function)  => {
+      actionComplete = (args?: PageEventArgs): void => {
+        if (args.requestType == 'paging') {
+        expect(gridObj.pageSettings.currentPage == 2).toBe(true);
+        done();
+        }
+      }
+       gridObj.actionComplete = actionComplete;
+       gridObj.goToPage(2);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  describe('EJ2-25984: check enablePersistence property in TreeGrid - filterSettings', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging:true,
+          allowFiltering: true,
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 80 },
+              { field: 'taskName', headerText: 'Task Name', width: 200 },
+              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+          ]
+        },
+        done
+      );
+    });
+    it('Checking filterSettings property with enablePersistence', (done: Function)  => {
+      actionComplete = (args?: FilterEventArgs): void => {
+        if (args.requestType == 'filtering') {
+        expect(gridObj.filterSettings.columns[0].value == 'Plan').toBe(true);
+        done();
+        }
+      }
+       gridObj.actionComplete = actionComplete;
+       gridObj.filterByColumn("taskName","startswith","Plan");
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  describe('EJ2-25984: check enablePersistence property in TreeGrid - searchSettings', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging:true,
+          allowFiltering: true,
+          toolbar: [ 'Search'],
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 80 },
+              { field: 'taskName', headerText: 'Task Name', width: 200 },
+              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+          ]
+        },
+        done
+      );
+    });
+    it('Checking searchSettings property with enablePersistence', (done: Function)  => {
+      actionComplete = (args?: SearchEventArgs): void => {
+        if (args.requestType == 'searching') {
+        expect(gridObj.searchSettings.key == 'Testing').toBe(true);
+        done();
+        }
+       }
+       gridObj.actionComplete = actionComplete;
+       gridObj.search("Testing");
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+    describe('EJ2-25984: check enablePersistence property in TreeGrid - sortSettings', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging:true,
+          allowSorting: true,
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 80 },
+              { field: 'taskName', headerText: 'Task Name', width: 200 },
+              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+          ]
+        },
+        done
+      );
+    });
+    it('Checking sortSettings property with enablePersistence ', (done: Function)  => {
+      actionComplete = (args?: SortEventArgs): void => {
+        if (args.requestType == 'sorting') {
+        expect(gridObj.sortSettings.columns[0].direction == 'Ascending').toBe(true);
+        expect(gridObj.sortSettings.columns[0].field == 'taskName').toBe(true);
+        done();
+        }
+     }
+      gridObj.actionComplete = actionComplete;
+      gridObj.sortByColumn("taskName", "Ascending", true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-22122-Locale change using SetModel', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let dataBound: ()=> void;
+    let rowSelected: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
+        },
+        done
+      );
+    });
+    it('locale testing', () => {
+      gridObj.dataBound = dataBound;
+      gridObj.locale = 'de-DE';
+      dataBound = (args?: Object): void => {
+        expect(((gridObj.getPager().getElementsByClassName('e-parentmsgbar')[0] as HTMLElement).innerText.search('von'))).toBe(2);
+    }
+    });
+    it('selectedrowindex testing', () => {
+      gridObj.rowSelected = rowSelected;
+      gridObj.selectedRowIndex = 2;
+      rowSelected = (args?: RowSelectEventArgs): void => {
+        expect(args.rowIndex).toBe(2);
+    }
     });
     afterAll(() => {
       destroy(gridObj);
@@ -731,25 +940,25 @@ describe('TreeGrid base module', () => {
       expect(rows[6].hasAttribute('aria-expanded') === false).toBe(true);
       expect(rows[11].hasAttribute('aria-expanded') === true).toBe(true);
       });
-      it('Checking aria-expanded attribute for tr element after collaping', () => {
-        gridObj.collapseRow(null,gridObj.flatData[0]);
-        rows = gridObj.getRows();
-        expect(rows[0].getAttribute('aria-expanded') == "false").toBe(true);
-        gridObj.expandRow(null,gridObj.flatData[0]);
-        expect(rows[0].getAttribute('aria-expanded') == "true").toBe(true);
-      });
-      afterAll(() => {
-        destroy(gridObj);
-      });
+    it('Checking aria-expanded attribute for tr element after collaping', () => {
+      gridObj.collapseRow(null,gridObj.flatData[0]);
+      rows = gridObj.getRows();
+      expect(rows[0].getAttribute('aria-expanded') == "false").toBe(true);
+      gridObj.expandRow(null,gridObj.flatData[0]);
+      expect(rows[0].getAttribute('aria-expanded') == "true").toBe(true);
     });
-
-    it('memory leak', () => {
-      profile.sample();
-      let average: any = inMB(profile.averageChange)
-      //Check average change in memory samples to not be over 10MB
-      expect(average).toBeLessThan(10);
-      let memory: any = inMB(getMemoryProfile())
-      //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-      expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    afterAll(() => {
+      destroy(gridObj);
     });
   });
+
+  it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+});
+});

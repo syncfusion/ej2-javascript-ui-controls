@@ -1591,8 +1591,8 @@ export class BpmnDiagrams {
     /** @private */
     public updateBPMNEvent(node: Node, newObject: Node, oldObject: Node): void {
         let bpmnShape: BpmnShapeModel = newObject.shape as BpmnShapeModel;
-        let elementWrapper: Canvas = node.wrapper.children[0] as Canvas;
         let trigger: string;
+        let elementWrapper: Canvas = node.wrapper.children[0] as Canvas;
         if (bpmnShape) {
             let elementWrapperChild0: DiagramElement = elementWrapper.children[0];
             let elementWrapperChild1: DiagramElement = elementWrapper.children[1];

@@ -57,10 +57,14 @@ export class WorkCellInteraction {
             this.parent.activeCellsData = this.parent.getCellDetails(target);
             let args: CellClickEventArgs =
                 <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
-            this.parent.trigger(event.cellClick, args);
-            if (args.cancel) { return; }
-            if (isWorkCell) { this.parent.selectCell(target); }
-            this.parent.notify(event.cellClick, args);
+            this.parent.trigger(event.cellClick, args, (clickArgs: CellClickEventArgs) => {
+                if (!clickArgs.cancel) {
+                    if (isWorkCell) {
+                        this.parent.selectCell(target);
+                    }
+                    this.parent.notify(event.cellClick, clickArgs);
+                }
+            });
         } else {
             let date: Date = this.parent.getDateFromElement(target);
             if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
@@ -76,9 +80,11 @@ export class WorkCellInteraction {
         }
         let args: CellClickEventArgs =
             <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellDoubleClick' });
-        this.parent.trigger(event.cellDoubleClick, args);
-        if (args.cancel) { return; }
-        this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
+        this.parent.trigger(event.cellDoubleClick, args, (clickArgs: CellClickEventArgs) => {
+            if (!clickArgs.cancel) {
+                this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
+            }
+        });
     }
 
     private isPreventAction(e: Event): boolean {

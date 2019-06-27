@@ -2,7 +2,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { EditMode, RowPosition  } from '../base/enum';
 
 /**
- * Configures edit settings of Gantt
+ * Configures edit settings of Gantt.
  */
 export class EditSettings extends ChildProperty<EditSettings> {
     /**

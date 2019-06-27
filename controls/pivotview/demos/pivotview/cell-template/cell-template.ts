@@ -12,8 +12,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 
 PivotView.Inject(GroupingBar, FieldList, CalculatedField);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: true,
         enableSorting: true,
         sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -29,7 +29,7 @@ let pivotGridObj: PivotView = new PivotView({
     allowCalculatedField: true,
     showGroupingBar: true,
     showFieldList: true,
-    height: 350,
+    height: 500,
     width: 1000,
     gridSettings: {
         rowHeight: 60

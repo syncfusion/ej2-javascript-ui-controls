@@ -4521,6 +4521,181 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.popupObj.element.querySelector('.e-disabled').classList.contains('.e-start-date')).toBe(false);
         });
     });
+    describe('HTML attributes at inline element testing', () => {
+        let daterangepicker: any;
+        beforeEach((): void => {
+            daterangepicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'daterange' });
+            ele.setAttribute('placeholder','Enter a date');
+            ele.setAttribute('readonly', '');
+            ele.setAttribute('disabled', '');
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Inline element testing', () => {
+            daterangepicker = new DateRangePicker();
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toBe("Enter a date");
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(true);
+            expect(daterangepicker.element.hasAttribute('enabled')).toBe(false);
+        });
+        it('Inline and API testing', () => {
+            daterangepicker = new DateRangePicker({placeholder:"Select a date", readonly: false, enabled: true});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toBe("Select a date");
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
+            expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
+        });
+        it('Inline and html attributes API testing', () => {
+            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false", disabled: "false"}});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toBe("Choose a date");
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
+            expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
+        });
+        it('Inline, API and html attributes API testing', () => {
+            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: ""}, placeholder: "Select a date", readonly: false, enabled: true});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toBe("Select a date");
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
+            expect(daterangepicker.element.hasAttribute('enabled')).toBe(false);
+        });
+    });
+    
+    describe('HTML attribute API testing', () => {
+        let daterangepicker: any;
+        beforeEach((): void => {
+            daterangepicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'daterange' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('API testing', () => {
+            daterangepicker = new DateRangePicker({placeholder:"Select a date", readonly: false, enabled: true});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toBe("Select a date");
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
+            expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
+        });
+        it('HTML attributes API testing', () => {
+            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "false", disabled: "false"}});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toBe("Choose a date");
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
+            expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
+        });
+        it('API and HTML attributes API testing', () => {
+            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", readonly: "true", disabled: ""}, placeholder: "Select a date", readonly: false, enabled: true});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toBe("Select a date");
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
+            expect(daterangepicker.element.hasAttribute('enabled')).toBe(false);
+        });
+        it('Other attribute testing with htmlAttributes API', () => {
+            daterangepicker = new DateRangePicker({ htmlAttributes:{class: "test", title:"sample"}});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
+            expect(daterangepicker.inputWrapper.container.getAttribute('class')).toBe('test');
+        });
+    });
+    describe('HTML attribute API dynamic testing', () => {
+        let daterangepicker: any;
+        beforeEach((): void => {
+            daterangepicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'daterange' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Dynamically change attributes with htmlAttributes API', () => {
+            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Enter a date", readonly: "", disabled: "disabled", value: "2/20/2018", max: "2/25/2018", min: "2/10/2018", class: "test", title:"sample", style: 'background-color:yellow'}});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe('Enter a date');
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(true);
+            expect(daterangepicker.element.hasAttribute('disabled')).toBe(true);
+            expect(daterangepicker.element.value).toBe('2/20/2018');
+            expect(daterangepicker.element.min).toBe('2/10/2018');
+            expect(daterangepicker.element.max).toBe('2/25/2018');
+            expect(daterangepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
+            expect(daterangepicker.inputWrapper.container.getAttribute('class')).toBe('test');
+            expect(daterangepicker.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+            daterangepicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "4/20/2018", max: "4/25/2018", min: "4/10/2018", title:"heading", style: 'background-color:red'};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe('choose a date');
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(false);
+            expect(daterangepicker.element.hasAttribute('disabled')).toBe(false);
+            expect(daterangepicker.element.value).toBe('4/20/2018');
+            expect(daterangepicker.element.min).toBe('4/10/2018');
+            expect(daterangepicker.element.max).toBe('4/25/2018');
+            expect(daterangepicker.inputWrapper.container.getAttribute('title')).toBe('heading');
+            expect(daterangepicker.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
+        });
+        it('Placeholder testing in auto case', () => {
+            daterangepicker = new DateRangePicker({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            daterangepicker.htmlAttributes = { placeholder:"choose a date"};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            daterangepicker.floatLabelType = "Always";
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            daterangepicker.floatLabelType = "Never";
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in always case', () => {
+            daterangepicker = new DateRangePicker({ floatLabelType: "Always", htmlAttributes:{placeholder:"Enter a name" }});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter a name');
+            daterangepicker.htmlAttributes = { placeholder:"choose a date"};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            daterangepicker.floatLabelType = "Auto";
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            daterangepicker.floatLabelType = "Never";
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe('choose a date');
+        });
+        it('Placeholder testing in never case', () => {
+            daterangepicker = new DateRangePicker({ floatLabelType: "Never", htmlAttributes:{placeholder:"Enter a name" }});
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe('Enter a name');
+            daterangepicker.htmlAttributes = { placeholder:"choose a date"};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe('choose a date');
+            daterangepicker.floatLabelType = "Always";
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+            daterangepicker.floatLabelType = "Auto";
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe(null);
+            expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
+        });
+    });
+
     describe('MinDays and MaxDays - Desktop', () => {
         let daterangepicker: any;
         let keyEventArgs: any = {

@@ -14,6 +14,12 @@ export class Dependency {
     private parent: Gantt;
     private dateValidateModule: DateProcessor;
     public validationPredecessor: IPredecessor[] = null;
+    /** @private */
+    public confirmPredecessorDialog: Dialog = null;
+    /** @private */
+    public predecessorIndex: number = null;
+    /** @private */
+    public childRecord: IGanttData = null;
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.dateValidateModule = this.parent.dateValidationModule;
@@ -928,5 +934,60 @@ export class Dependency {
                 }
             }
         }
+    }
+    /**
+     * Method to remove a predecessor from a record.
+     * @param childRecord
+     * @param index  
+     * @private
+     */
+    public removePredecessor(childRecord: IGanttData, index: number): void {
+        let childPredecessor: IPredecessor[] = childRecord.ganttProperties.predecessor;
+        let predecessor: IPredecessor = childPredecessor.splice(index, 1) as IPredecessor;
+        let parentRecord: IGanttData = this.parent.getRecordByID(predecessor[0].from);
+        let parentPredecessor: IPredecessor[] = parentRecord.ganttProperties.predecessor;
+        let parentIndex: number = getIndex(predecessor[0], 'from', parentPredecessor, 'to');
+        parentPredecessor.splice(parentIndex, 1);
+        let predecessorString: string = this.parent.predecessorModule.getPredecessorStringValue(childRecord);
+        childPredecessor.push(predecessor[0]);
+        this.parent.connectorLineEditModule.updatePredecessor(childRecord, predecessorString);
+    }
+
+    /**
+     * To render predecessor delete confirmation dialog
+     * @return {void}
+     * @private
+     */
+    public renderPredecessorDeleteConfirmDialog(): void {
+        this.confirmPredecessorDialog = new Dialog({
+            width: '320px',
+            isModal: true,
+            content: this.parent.localeObj.getConstant('confirmPredecessorDelete'),
+            buttons: [
+                {
+                    click: this.confirmOkDeleteButton.bind(this),
+                    buttonModel: { content: this.parent.localeObj.getConstant('okText'), isPrimary: true }
+                },
+                {
+                    click: this.confirmCloseDialog.bind(this),
+                    buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
+                }],
+            target: this.parent.element,
+            animationSettings: { effect: 'None' },
+        });
+        let confirmDialog: HTMLElement = createElement('div', {
+            id: this.parent.element.id + '_deletePredecessorConfirmDialog',
+        });
+        this.parent.element.appendChild(confirmDialog);
+        this.confirmPredecessorDialog.appendTo(confirmDialog);
+    }
+
+    private confirmCloseDialog(): void {
+        this.confirmPredecessorDialog.destroy();
+    }
+
+    private confirmOkDeleteButton(): void {
+        this.parent.predecessorModule.removePredecessor(this.childRecord, this.predecessorIndex);
+        this.confirmPredecessorDialog.destroy();
     }
 }

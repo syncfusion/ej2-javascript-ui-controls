@@ -53,6 +53,7 @@ $range-flex-justify-content: flex-end !default;
 $range-inline-block-style: inline-block !default;
 $range-block-style: block !default;
 $range-table-style: table !default;
+$range-lg-day-header-format-width: 100% !default;
 $range-display-none:  none !default;
 $range-align-center: center !default;
 $range-float-right: right !default;
@@ -170,3 +171,19 @@ $range-calendar-today-start-color: $range-calendar-active-border !default;
 $range-calendar-other-normal-border: none !default;
 $range-calendar-bigger-max: 296px !default;
 $range-active-font-color: $accent-font !default;
+// Mouse small size
+$range-small-header-label-size: 16px !default;
+$range-small-font-size: 12px !default;
+$range-start-end-container-small-height: 32px !default;
+$range-calendar-mouse-small-font-size: 12px !default;
+$range-indicator-small-margin: 0 0 10px 0 !default;
+$range-control-small-header-margin: 10px 10px 0 10px !default;
+$range-separator-small-margin: 0 10px !default;
+$range-small-footer-margin: 10px 10px 10px 8px !default;
+$range-preset-small-list-height: 26px !default;
+$range-presets-small-list-font-size: 12px !default;
+$calendar-bigger-small-max-width: 246px !default;
+// mouse small icon
+$range-small-icon-font-size: 14px !default;
+// touch small icon
+$range-bigger-small-icon-font-size: 18px !default;

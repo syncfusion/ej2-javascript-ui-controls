@@ -52,6 +52,13 @@ export interface TimePickerModel extends ComponentModel{
     readonly?: boolean;
 
     /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string; };
+
+    /**
      * Specifies the placeholder text to be floated.
      * Possible values are:
      * Never: The label will never float in the input when the placeholder is available.
@@ -146,48 +153,56 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Triggers when the value is changed.
      * @event  
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when the component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the popup is opened.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     open?: EmitType<PopupEventArgs>;
 
     /**
      * Triggers while rendering the each popup list item.
      * @event
+     * @blazorProperty 'OnItemRender'
      */
     itemRender?: EmitType<ItemEventArgs>;
 
     /**
      * Triggers when the popup is closed.
      * @event
+     * @blazorProperty 'OnClose'
      */
     close?: EmitType<PopupEventArgs>;
 
     /**
      * Triggers when the control loses the focus.
      * @event
+     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<BlurEventArgs>;
 
     /**
      * Triggers when the control gets focused.
      * @event
+     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<FocusEventArgs>;
 

@@ -2,6 +2,42 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### ListBox
+
+#### New Features
+
+- Checkbox position support provided.
+- Filter support provided.
+- #234507 - Provided support for drag and dropping the single list item when more than one list item is selected by setting `false` to `dragSelected` argument in `dragStart` event.
+
+#### Bug Fixes
+
+- #236715 - Drag and dropping the list item is not sorted when `sortOrder` enabled issue is fixed.
+
+#### Breaking Changes
+
+- Event `select` is removed instead `change` event is provided.
+
+### DropDownList
+
+#### Bug Fixes
+
+- #235631 - Issue with "updating default value after form reset" has been resolved.
+
+- #239136 - Now, you can change `allowFiltering` property value dynamically.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- #235699 - Change event not happening after the control has lost focus issue has been fixed.
+
+#### New Features
+
+- Now, you can render grouping with checkbox using enableGroupCheckBox property.
+
 ## 17.1.49 (2019-05-29)
 
 ### MultiSelect

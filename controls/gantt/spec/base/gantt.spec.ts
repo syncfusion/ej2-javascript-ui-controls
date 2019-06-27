@@ -31,6 +31,22 @@ describe('Gantt - Base', () => {
                 destroyGantt(ganttObj);
             }
         });
+        it('Grid columns method testing', () => {
+            ganttObj.getGridColumns();
+            expect(ganttObj.treeGrid.getColumns().length).toBe(8);
+         });
+         it('Gantt columns method testing', () => {
+             ganttObj.getGanttColumns();
+             expect(ganttObj.ganttColumns.length).toBe(8);
+         });
+         it('Hide column method testing', () => {
+             ganttObj.hideColumn('Duration','field');
+             expect(ganttObj.element.querySelector('.e-hide').getElementsByClassName('e-headertext')[0].textContent).toBe('Duration');
+         });
+         it('Show column method testing', () => {
+             ganttObj.ShowColumn('Duration','field');
+             expect(ganttObj.element.querySelectorAll('.e-headercell')[4].classList.contains('e-hide')).toBe(false);
+         });
         it('control class testing', () => {
             expect(ganttObj.element.classList.contains('e-gantt')).toEqual(true);
         });

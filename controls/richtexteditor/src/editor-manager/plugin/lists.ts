@@ -8,6 +8,7 @@ import { DOMNode, markerClassName } from './dom-node';
 import * as EVENTS from './../../common/constant';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Lists internal component
@@ -33,7 +34,63 @@ export class Lists {
         this.parent.observer.on(EVENTS.LIST_TYPE, this.applyListsHandler, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
     }
+    private testList(elem: Element): boolean {
+        let olListRegex: RegExp[] = [/^[\d]+[.]+$/,
+        /^(?=[MDCLXVI])M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})[.]$/gi,
+        /^[a-zA-Z][.]+$/];
+        let elementStart: string = !isNullOrUndefined(elem) ? (elem as HTMLElement).innerText.trim().split('.')[0] + '.' : null;
+        if (!isNullOrUndefined(elementStart)) {
+            for (let i: number = 0; i < olListRegex.length; i++) {
+                if (olListRegex[i].test(elementStart)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private testCurrentList(range: Range): boolean {
+        let olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
+        if (!isNullOrUndefined(range.startContainer.textContent.slice(0, range.startOffset))) {
+            for (let i: number = 0; i < olListStartRegex.length; i++) {
+                if (olListStartRegex[i].test(range.startContainer.textContent.slice(0, range.startOffset))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private spaceList(e: IHtmlKeyboardEvent): void {
+        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+        let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+        let preElement: Element = startNode.previousElementSibling;
+        let nextElement: Element = startNode.nextElementSibling;
+        let preElemULStart: string =  !isNullOrUndefined(preElement) ?
+        (preElement as HTMLElement).innerText.trim().substring(0, 1) : null;
+        let nextElemULStart: string =  !isNullOrUndefined(nextElement) ?
+        (nextElement as HTMLElement).innerText.trim().substring(0, 1) : null;
+        let startElementOLTest: boolean = this.testCurrentList(range);
+        let preElementOLTest : boolean = this.testList(preElement);
+        let nextElementOLTest : boolean = this.testList(nextElement);
+        if (!preElementOLTest && !nextElementOLTest && preElemULStart !== '*' && nextElemULStart !== '*') {
+            if (startElementOLTest) {
+                range.startContainer.textContent = range.startContainer.textContent.slice(
+                    range.startOffset, range.startContainer.textContent.length);
+                this.applyListsHandler({ subCommand: 'OL', callBack: e.callBack });
+                e.event.preventDefault();
+            } else if (range.startContainer.textContent.slice(0, range.startOffset) === '*') {
+                range.startContainer.textContent = range.startContainer.textContent.slice(
+                    range.startOffset, range.startContainer.textContent.length);
+                this.applyListsHandler({ subCommand: 'UL', callBack: e.callBack });
+                e.event.preventDefault();
+            }
+        }
+    }
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
+        if (e.event.which === 32) {
+            this.spaceList(e);
+        }
         if (e.event.which === 9) {
             let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
             this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);

@@ -80,57 +80,58 @@ export class Bubble {
                 cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor, maps: this.maps,
                 radius: radius
             };
-            this.maps.trigger(bubbleRendering, eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
-            let bubbleElement: Element;
-            if (bubbleSettings.bubbleType === 'Circle') {
-                let circle: CircleOption = new CircleOption(
-                    this.id, eventArgs.fill, eventArgs.border, opacity,
-                    0, 0, eventArgs.radius, null
-                );
-                bubbleElement = drawCircle(this.maps, circle, group);
-            } else {
-                let y: number = this.maps.projectionType === 'Mercator' ? (eventArgs.cy - radius) : (eventArgs.cy + radius);
-                let rectangle: RectOption = new RectOption(
-                    this.id, eventArgs.fill, eventArgs.border, opacity,
-                    new Rect(0, 0, radius * 2, radius * 2), 2, 2
-                );
-                eventArgs.cx -= radius; eventArgs.cy = y;
-                bubbleElement = drawRectangle(this.maps, rectangle, group);
-            }
-            this.bubbleCollection.push({
-                LayerIndex: layerIndex,
-                BubbleIndex: bubbleIndex,
-                DataIndex: dataIndex,
-                element: bubbleElement,
-                center: { x: eventArgs.cx, y: eventArgs.cy }
+            this.maps.trigger('bubbleRendering', eventArgs, (bubbleArgs: IBubbleRenderingEventArgs) => {
+                if (eventArgs.cancel) {
+                    return;
+                }
+                let bubbleElement: Element;
+                if (bubbleSettings.bubbleType === 'Circle') {
+                    let circle: CircleOption = new CircleOption(
+                        this.id, eventArgs.fill, eventArgs.border, opacity,
+                        0, 0, eventArgs.radius, null
+                    );
+                    bubbleElement = drawCircle(this.maps, circle, group);
+                } else {
+                    let y: number = this.maps.projectionType === 'Mercator' ? (eventArgs.cy - radius) : (eventArgs.cy + radius);
+                    let rectangle: RectOption = new RectOption(
+                        this.id, eventArgs.fill, eventArgs.border, opacity,
+                        new Rect(0, 0, radius * 2, radius * 2), 2, 2
+                    );
+                    eventArgs.cx -= radius; eventArgs.cy = y;
+                    bubbleElement = drawRectangle(this.maps, rectangle, group);
+                }
+                this.bubbleCollection.push({
+                    LayerIndex: layerIndex,
+                    BubbleIndex: bubbleIndex,
+                    DataIndex: dataIndex,
+                    element: bubbleElement,
+                    center: { x: eventArgs.cx, y: eventArgs.cy }
+                });
+                let translate: Object;
+                let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule)) {
+                    translate = getZoomTranslate(this.maps, layer, animate);
+                } else {
+                    translate = getTranslate(this.maps, layer, animate);
+                }
+                let scale: number = translate['scale']; let transPoint: Point = translate['location'] as Point;
+                let position: MapLocation = new MapLocation(
+                    (this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)),
+                    (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));
+                bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
+                let bubble: string = (bubbleSettings.dataSource.length - 1) === dataIndex ? 'bubble' : null;
+                if (bubbleSettings.bubbleType === 'Square') {
+                    position.x += radius;
+                    position.y += radius * (this.maps.projectionType === 'Mercator' ? 1 : -1);
+                } else {
+                    radius = 0;
+                }
+                if (bubbleSettings.animationDuration > 0) {
+                    elementAnimate(
+                        bubbleElement, bubbleSettings.animationDelay, bubbleSettings.animationDuration, position, this.maps, bubble, radius
+                    );
+                }
             });
-            let translate: Object;
-            let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-            if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule)) {
-                translate = getZoomTranslate(this.maps, layer, animate);
-            } else {
-                translate = getTranslate(this.maps, layer, animate);
-            }
-            let scale: number = translate['scale']; let transPoint: Point = translate['location'] as Point;
-            let position: MapLocation = new MapLocation(
-                (this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)),
-                (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));
-            bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
-            let bubble: string = (bubbleSettings.dataSource.length - 1) === dataIndex ? 'bubble' : null;
-            if (bubbleSettings.bubbleType === 'Square') {
-                position.x += radius;
-                position.y += radius * (this.maps.projectionType === 'Mercator' ? 1 : -1);
-            } else {
-                radius = 0;
-            }
-            if (bubbleSettings.animationDuration > 0) {
-                elementAnimate(
-                    bubbleElement, bubbleSettings.animationDelay, bubbleSettings.animationDuration, position, this.maps, bubble, radius
-                );
-            }
         }
     }
     private getPoints(shape: object[], points: MapLocation[]): MapLocation[] {

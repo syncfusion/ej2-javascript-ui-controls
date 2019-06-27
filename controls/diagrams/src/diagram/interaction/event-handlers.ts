@@ -53,6 +53,7 @@ import { GridPanel } from '../core/containers/grid';
 import { Canvas } from '../core/containers/canvas';
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { randomId } from '../index';
+import { Tooltip } from '@syncfusion/ej2-popups';
 
 
 /**
@@ -491,7 +492,8 @@ export class DiagramEventHandler {
                     if (obj !== null) {
                         sourceElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
                         if (obj !== this.hoverElement) {
-                            if (this.hoverElement) {
+                            let content: string | HTMLElement = this.getContent();
+                            if (this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                                 this.elementLeave();
                                 this.diagram.updatePortVisibility(this.hoverElement as Node, PortVisibility.Hover, true);
                             }
@@ -524,7 +526,8 @@ export class DiagramEventHandler {
                         isNode = true;
                     }
                     this.diagram.updatePortVisibility(this.hoverElement as Node, PortVisibility.Hover, isNode);
-                    if (obj === null && this.hoverElement) {
+                    let content: string | HTMLElement = this.getContent();
+                    if (obj === null && this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto' && content) {
                         this.hoverElement = null;
                         this.elementLeave();
                     }
@@ -556,6 +559,16 @@ export class DiagramEventHandler {
                 }
             }
         }
+    }
+
+    private getContent(): string | HTMLElement {
+        let isPrivateTooltip: number = ((this.hoverElement instanceof Node) &&
+            (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
+            ((this.hoverElement instanceof Connector) &&
+                (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip);
+        let content: string | HTMLElement = isPrivateTooltip ? this.hoverElement.tooltip.content :
+            this.diagram.tooltip.content;
+        return content;
     }
 
     private checkAutoScroll(e: PointerEvent | TouchEvent): void {
@@ -1023,13 +1036,18 @@ export class DiagramEventHandler {
             let isPrivateTooltip: number = ((this.hoverElement instanceof Node) &&
                 (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
                 ((this.hoverElement instanceof Connector) && (this.hoverElement as Connector).constraints & ConnectorConstraints.Tooltip);
-            updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
+            let content: string | HTMLElement = this.getContent();
+            if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
+                updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
+            }
             let offset: PointModel = getTooltipOffset(this.diagram, mousePosition, this.hoverElement);
-            this.diagram.tooltipObject.close();
-            this.diagram.tooltipObject.offsetX = offset.x;
-            this.diagram.tooltipObject.offsetY = offset.y;
-            this.diagram.tooltipObject.dataBind();
-            if (canEnableToolTip(this.hoverElement, this.diagram)) {
+            if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
+                this.diagram.tooltipObject.close();
+                this.diagram.tooltipObject.offsetX = offset.x;
+                this.diagram.tooltipObject.offsetY = offset.y;
+                this.diagram.tooltipObject.dataBind();
+            }
+            if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
                 this.diagram.tooltipObject.open(this.diagram.element);
             }
         }

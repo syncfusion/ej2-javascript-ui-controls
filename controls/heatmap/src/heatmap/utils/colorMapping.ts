@@ -11,7 +11,7 @@ import { PaletterColor, LegendRange } from './helper';
 export class PaletteSettings extends ChildProperty<PaletteSettings> {
 
     /**
-     * Specifies the color collection for heat map cell. 
+     * Specifies the color collection for heat map cell.
      * @default ''
      */
     @Collection<PaletteCollectionModel>([{}], PaletteCollection)
@@ -208,16 +208,16 @@ export class CellColor {
         if (this.heatMap.paletteSettings.type === 'Fixed' && (tempcolorMapping.isCompact || tempcolorMapping.isLabel)) {
             return;
         }
-        if (minValue < this.heatMap.legendColorCollection[0].value) {
+        if (Math.round(minValue * 100) / 100 < this.heatMap.legendColorCollection[0].value) {
             this.heatMap.legendColorCollection.unshift(new LegendColorCollection(
-                minValue,
+                Math.round(minValue * 100) / 100,
                 this.heatMap.legendColorCollection[0].color,
                 this.heatMap.legendColorCollection[0].label,
                 true));
         }
-        if (maxValue > this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].value) {
+        if (Math.round(maxValue * 100) / 100 > this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].value) {
             this.heatMap.legendColorCollection.push(new LegendColorCollection(
-                maxValue,
+                Math.round(maxValue * 100) / 100,
                 this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].color,
                 this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].label,
                 true));
@@ -234,7 +234,7 @@ export class CellColor {
         let label: string = 'label';
         returnCollection.isCompact = true;
         returnCollection.isLabel = true;
-        // tslint:disable-next-line:no-any 
+        // tslint:disable-next-line:no-any
         returnCollection.offsets = offsets.sort((a: any, b: any) => {
             if (isNullOrUndefined(a[label]) && isNullOrUndefined(b[label])) {
                 returnCollection.isLabel = false;

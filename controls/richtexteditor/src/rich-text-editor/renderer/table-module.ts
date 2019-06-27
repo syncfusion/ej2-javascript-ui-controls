@@ -3,6 +3,7 @@ import { isNullOrUndefined, EventHandler, addClass, removeClass, KeyboardEventAr
 import { IRichTextEditor, IRenderer, IDropDownItemModel, OffsetPosition, ResizeArgs } from '../base/interface';
 import { IColorPickerEventArgs, ITableArgs, ITableNotifyArgs, IToolbarItemModel, NotifyArgs } from '../base/interface';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
+import { DialogModel } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
@@ -14,10 +15,12 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { dispatchEvent, parseHtml } from '../base/util';
 import { EditorManager } from '../../editor-manager';
+import { DialogRenderer } from './dialog-renderer';
 /**
  * `Table` module is used to handle table actions.
  */
 export class Table {
+    public ensureInsideTableList: boolean = true ;
     public element: HTMLElement;
     private rteID: string;
     private parent: IRichTextEditor;
@@ -40,11 +43,13 @@ export class Table {
     private l10n: L10n;
     private moveEle: HTMLElement = null;
     private helper: HTMLElement;
+    private dialogRenderObj: DialogRenderer;
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
         this.l10n = serviceLocator.getService<L10n>('rteLocale');
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
+        this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
 
     }
@@ -234,8 +239,10 @@ export class Table {
             }
         }
         if (nodes.length > 1 || nodes.length && ((range.startOffset === 0 && range.endOffset === 0))) {
+            this.ensureInsideTableList = true;
             return true;
         } else {
+            this.ensureInsideTableList = false;
             return false;
         }
     }
@@ -582,11 +589,11 @@ export class Table {
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             } else {
                 let args: ResizeArgs = { event: e, requestType: 'Table' };
-                this.parent.trigger(events.resizeStart, args);
-                if (args.cancel) {
-                    this.cancelResizeAction();
-                    return;
-                }
+                this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
+                    if (resizeStartArgs.cancel) {
+                        this.cancelResizeAction();
+                    }
+                });
             }
             EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
             EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
@@ -644,47 +651,50 @@ export class Table {
         this.pageX = pageX;
         this.pageY = pageY;
         let args: ResizeArgs = { event: e, requestType: 'table' };
-        this.parent.trigger(events.onResize, args);
-        if (args.cancel) {
-            this.cancelResizeAction();
-            return;
-        }
-        let tableReBox: HTMLElement = this.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
-        let tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
-        let tableHeight: number = parseInt(getComputedStyle(this.curTable).height as string, 10);
-        if (this.resizeBtnStat.column) {
-            let cellColl: NodeListOf<Element> = this.curTable.rows[0].cells;
-            let width: number = parseFloat(getComputedStyle(this.columnEle).width as string);
-            let actualwid: number = width - mouseX;
-            let totalwid: number = parseFloat(getComputedStyle(this.columnEle).width) +
-                parseFloat(getComputedStyle(cellColl[this.colIndex - 1]).width);
-            for (let i: number = 0; i < this.curTable.rows.length; i++) {
-                if ((totalwid - actualwid) > 20 && actualwid > 20) {
-                    (this.curTable.rows[i].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width = totalwid - actualwid + 'px';
-                    (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width = actualwid + 'px';
+        this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
+            if (resizingArgs.cancel) {
+                this.cancelResizeAction();
+            } else {
+                let tableReBox: HTMLElement = this.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
+                let tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
+                let tableHeight: number = parseInt(getComputedStyle(this.curTable).height as string, 10);
+                if (this.resizeBtnStat.column) {
+                    let cellColl: NodeListOf<Element> = this.curTable.rows[0].cells;
+                    let width: number = parseFloat(getComputedStyle(this.columnEle).width as string);
+                    let actualwid: number = width - mouseX;
+                    let totalwid: number = parseFloat(getComputedStyle(this.columnEle).width) +
+                        parseFloat(getComputedStyle(cellColl[this.colIndex - 1]).width);
+                    for (let i: number = 0; i < this.curTable.rows.length; i++) {
+                        if ((totalwid - actualwid) > 20 && actualwid > 20) {
+                            (this.curTable.rows[i].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width =
+                            totalwid - actualwid + 'px';
+                            (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width =
+                            actualwid + 'px';
+                        }
+                    }
+                    this.updateHelper();
+                } else if (this.resizeBtnStat.row) {
+                    this.parent.preventDefaultResize(e as PointerEvent);
+                    let height: number = parseFloat(this.rowEle.clientHeight.toString()) + mouseY;
+                    if (height > 20) {
+                        this.rowEle.style.height = height + 'px';
+                    }
+                    this.curTable.style.height = '';
+                    tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
+                        'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
+                    this.updateHelper();
+                } else if (this.resizeBtnStat.tableBox) {
+                    if (!Browser.isDevice) {
+                        EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
+                    }
+                    this.curTable.style.width = tableWidth + mouseX + 'px';
+                    this.curTable.style.height = tableHeight + mouseY + 'px';
+                    tableReBox.classList.add('e-rbox-select');
+                    tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
+                        'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
                 }
             }
-            this.updateHelper();
-        } else if (this.resizeBtnStat.row) {
-            this.parent.preventDefaultResize(e as PointerEvent);
-            let height: number = parseFloat(getComputedStyle(this.rowEle).height) + mouseY;
-            if (height > 20) {
-                this.rowEle.style.height = height + 'px';
-            }
-            this.curTable.style.height = '';
-            tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
-                'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
-            this.updateHelper();
-        } else if (this.resizeBtnStat.tableBox) {
-            if (!Browser.isDevice) {
-                EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
-            }
-            this.curTable.style.width = tableWidth + mouseX + 'px';
-            this.curTable.style.height = tableHeight + mouseY + 'px';
-            tableReBox.classList.add('e-rbox-select');
-            tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
-                'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
-        }
+        });
     }
 
     private cancelResizeAction(): void {
@@ -819,9 +829,9 @@ export class Table {
         if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !isExist &&
             closest(target, '.e-rte-quick-popup') === null && target.offsetParent &&
             !target.offsetParent.classList.contains('e-quick-dropdown') &&
-            !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')) {
+            !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')
+            && !closest(target, '.e-rte-elements')) {
             removeClass(this.parent.element.querySelectorAll('table td'), classes.CLS_TABLE_SEL);
-            this.hideTableQuickToolbar();
         }
         if (target && target.classList && !target.classList.contains(classes.CLS_TB_COL_RES) &&
             !target.classList.contains(classes.CLS_TB_ROW_RES) && !target.classList.contains(classes.CLS_TB_BOX_RES)) {
@@ -933,7 +943,7 @@ export class Table {
         let insert: string = this.l10n.getConstant('dialogInsert');
         let cancel: string = this.l10n.getConstant('dialogCancel');
         let header: string = this.l10n.getConstant('tabledialogHeader');
-        this.editdlgObj = new Dialog({
+        let dialogModel: DialogModel = {
             header: header,
             cssClass: classes.CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
@@ -954,9 +964,11 @@ export class Table {
                 this.parent.isBlur = false;
                 this.editdlgObj.destroy();
                 detach(this.editdlgObj.element);
+                this.dialogRenderObj.close(this.editdlgObj);
                 this.editdlgObj = null;
-            },
-        });
+            }
+        };
+        this.editdlgObj = this.dialogRenderObj.render(dialogModel);
         this.editdlgObj.appendTo(tableDialog);
         if (this.quickToolObj && this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
             this.quickToolObj.inlineQTBar.hidePopup();

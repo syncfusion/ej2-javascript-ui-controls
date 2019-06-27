@@ -24,6 +24,9 @@ class DemoClass extends Base<HTMLElement> implements INotifyPropertyChanged {
         super({}, element);
     }
 
+    @Event()
+    public testCollection: Function[];
+
     protected getModuleName(): string {
         return 'demolib';
     }
@@ -124,8 +127,11 @@ describe('Library', (): void => {
             expect(obj.element.className.indexOf('e-lib e-demolib')).toEqual(-1);
         });
     });
-    describe('check whether the notify trigger after component destroyed', () => {
-        let destInst: DemoClass = new DemoClass(ele);
+   describe('check whether the notify trigger after component destroyed', () => {
+        let destInst: DemoClass;
+        beforeEach(() => {
+            destInst  = new DemoClass(ele);      
+        });        
         it('check destroyed before notify', () => {
             let spy: jasmine.Spy = jasmine.createSpy('test');
             destInst.test = spy;
@@ -133,7 +139,141 @@ describe('Library', (): void => {
             destInst.trigger('test');
             expect(spy).not.toHaveBeenCalled();
         });
+        it('notify with success', (done) => {
+            let spy: jasmine.Spy = jasmine.createSpy('test');
+            destInst.test = spy;           
+            destInst.trigger('test', {}, ()=> {
+                expect(spy).toHaveBeenCalled();              
+                done();
+            });           
+        });
+        it('notify with success for not registed event', (done) => {
+            let spy: jasmine.Spy = jasmine.createSpy('test');
+            destInst.test = spy;           
+            destInst.trigger('test1', {}, ()=> {
+                expect(spy).not.toHaveBeenCalled();             
+                done();
+            });           
+        });
+        it('notify with success', (done) => {
+            window["Blazor"] = true;
+
+            destInst.test =  ()=> {
+                let promise = new Promise(function(resolve, reject) {                    
+                    setTimeout(() => resolve("done"), 0);
+                });
+                return promise;               
+            };           
+            destInst.trigger('test', {}, ()=> {                 
+                window["Blazor"] = false;         
+                done();
+            });           
+        });
+        it('notify with success -non promise call', (done) => {
+            window["Blazor"] = true;
+            destInst.test =  ()=> {
+                             
+            };           
+            destInst.trigger('test', {}, ()=> {                 
+                window["Blazor"] = false;         
+                done();
+            });           
+        });
+        it('notify with success json', (done) => {
+            window["Blazor"] = true;
+
+            destInst.test =  ()=> {
+                let promise = new Promise(function(resolve, reject) {                    
+                    setTimeout(() => resolve('{"data":"success"}'), 0);
+                });
+                return promise;               
+            };           
+            destInst.trigger('test', {}, ()=> {                 
+                window["Blazor"] = false;         
+                done();
+            });           
+        });   
+        it('notify with error for registed event', (done) => {
+            window["Blazor"] = true;
+            destInst.test = ()=> {                       
+                return Promise.reject({data: {message: 'Error message'}});
+            };           
+            destInst.trigger('test', {}, ()=>{},  ()=> {
+                window["Blazor"] = false;               
+                done();
+            });           
+        });
+        it('notify with error for registed event -stringify', (done) => {
+            window["Blazor"] = true;
+            destInst.test = ()=> {                       
+                return Promise.reject('{"data":"error"}');
+            };           
+            destInst.trigger('test', {}, ()=>{},  ()=> {
+                window["Blazor"] = false;               
+                done();
+            });
+        });
     });
+
+    describe('check whether the notify trigger after component destroyed', () => {
+        let destInst: DemoClass;
+        var originalTimeout= 0;
+        beforeEach(() => {
+            destInst  = new DemoClass(ele);            
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;   
+        });        
+    
+       it('notify with success json with array', (done) => {
+           window["Blazor"] = true;
+           destInst.addEventListener("testCollection", () => {
+               let promise = new Promise(function (resolve, reject) {
+                   setTimeout(() => resolve('{"data":"success"}'), 0);
+               });
+               return promise;
+           });
+           destInst.addEventListener("testCollection", () => {
+               return { data2: "success" };
+           });
+           destInst.addEventListener("testCollection", () => {
+               let promise = new Promise(function (resolve, reject) {
+                   setTimeout(() => resolve({ data: "successs-done" }), 0);
+               });
+               return promise;
+           });
+           destInst.trigger('testCollection', { data: "preparing", add: "good" }, () => {
+               window["Blazor"] = false;
+               done();
+           });
+       }); 
+       it('notify with success json with array', (done) => {
+        window["Blazor"] = true;
+        destInst.addEventListener("testCollection", () => {
+            let promise = new Promise(function (resolve, reject) {
+                setTimeout(() => resolve('{"data":"success"}'), 0);
+            });
+            return promise;
+        });      
+        destInst.addEventListener("testCollection", () => {
+            return { data2: "success-final" };
+        });
+        destInst.trigger('testCollection', { data: "preparing", add: "good" }, () => {
+            window["Blazor"] = false;
+            done();
+        });        
+        }); 
+        it('notify with out success json with array', () => {
+            window["Blazor"] = true;          
+            let data: object =  destInst.trigger('testCollection', { data: "preparing", add: "good" }) as object;
+            expect(data).not.toBe(null);
+            window["Blazor"] = false;       
+        });         
+        afterEach(function() {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            destInst.destroy();
+        });
+    });
+
 
     describe('change detection inside of onproperty', (): void => {
         it('inside property change', () => {

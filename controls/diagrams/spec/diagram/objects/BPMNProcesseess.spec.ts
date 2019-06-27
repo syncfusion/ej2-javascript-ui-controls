@@ -114,6 +114,7 @@ describe('Diagram Control', () => {
 
             // expect(node.margin.left === 330).toBe(true);
             // done();
+            
             expect(value ===
                 "url(#nod_boundary_linear)" && diagram.nameTable['nodea'].wrapper.bounds.containsRect(diagram.nameTable['end'].wrapper.bounds)).toBe(true);
             done();

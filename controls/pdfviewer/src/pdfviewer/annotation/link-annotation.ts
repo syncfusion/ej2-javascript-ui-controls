@@ -1,5 +1,6 @@
 import { PdfViewer, PdfViewerBase } from '../index';
 import { createElement } from '@syncfusion/ej2-base';
+import { LineTool, PolygonDrawingTool } from '../../diagram/tools';
 
 /**
  * The `LinkAnnotation` module is used to handle link annotation actions of PDF viewer.
@@ -48,18 +49,32 @@ export class LinkAnnotation {
             if (this.pdfViewer.hyperlinkOpenState === 'CurrentTab') {
                 aTag.target = '_self';
                 aTag.onclick = () => {
-                    proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
+                    if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+                        return false;
+                    } else {
+                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
+                        return true;
+                    }
                 };
             } else if (this.pdfViewer.hyperlinkOpenState === 'NewTab') {
                 aTag.target = '_blank';
                 aTag.onclick = () => {
-                    proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
+                    if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+                        return false;
+                    } else {
+                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
+                        return true;
+                    }
                 };
             } else if (this.pdfViewer.hyperlinkOpenState === 'NewWindow') {
                 aTag.onclick = () => {
-                    proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
-                    window.open(hyperlinks[i], '_blank', 'scrollbars=yes,resizable=yes');
-                    return false;
+                    if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+                        return false;
+                    } else {
+                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
+                        window.open(hyperlinks[i], '_blank', 'scrollbars=yes,resizable=yes');
+                        return false;
+                    }
                 };
             }
             let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
@@ -90,9 +105,13 @@ export class LinkAnnotation {
                 if (scrollValue !== undefined) {
                     aTag.name = scrollValue.toString();
                     aTag.onclick = () => {
-                        // tslint:disable-next-line:radix
-                        proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name);
-                        return false;
+                        if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+                            return false;
+                        } else {
+                            // tslint:disable-next-line:radix
+                            proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(aTag.name);
+                            return false;
+                        }
                     };
                 }
                 let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);

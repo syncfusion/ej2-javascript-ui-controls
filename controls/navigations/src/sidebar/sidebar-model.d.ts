@@ -10,7 +10,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the size of the Sidebar in dock state.
      * > For more details about dockSize refer to 
-     * [`Dock`](../../sidebar/docking-sidebar#dock) documentation.
+     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
      * @default 'auto'
      */
     dockSize?: string | number;
@@ -23,7 +23,7 @@ export interface SidebarModel extends ComponentModel{
      *   });
      * ```
      * > For more details about mediaQuery refer to 
-     * [`Auto Close`](../../sidebar/auto-close#auto-close) documentation.
+     * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
      * @default null
      * @aspType string
      */
@@ -32,7 +32,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the docking state of the component.
      * > For more details about enableDock refer to 
-     * [`Dock`](../../sidebar/docking-sidebar/#dock) documentation.
+     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
      * @default false
      */
     enableDock?: boolean;
@@ -68,6 +68,12 @@ export interface SidebarModel extends ComponentModel{
     isOpen?: boolean;
 
     /**
+     * Specifies the Sidebar in RTL mode that displays the content in the right-to-left direction.
+     * @default false
+     */
+    enableRtl?: boolean;
+
+    /**
      * Enable or disable the animation transitions on expanding or collapsing the Sidebar.
      * @default true
      */
@@ -89,7 +95,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the position of the Sidebar (Left/Right) corresponding to the main content.
      * > For more details about SidebarPosition refer to 
-     * [`position`](../../sidebar/getting-started#position) documentation.
+     * [`position`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#position) documentation.
      * @default 'Left'
      */
     position?: SidebarPosition;
@@ -97,7 +103,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Allows to place the sidebar inside the target element.
      * > For more details about target refer to 
-     * [`Custom Context`](../../sidebar/custom-context#target) documentation.
+     * [`Custom Context`](https://ej2.syncfusion.com/documentation/sidebar/custom-context/) documentation.
      * @default null
      */
     target?: HTMLElement | string;
@@ -105,7 +111,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the whether to apply overlay options to main content when the Sidebar is in an open state.
      * > For more details about showBackdrop refer to 
-     * [`Backdrop`](../../sidebar/getting-started/#enable-backdrop) documentation.
+     * [`Backdrop`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#enable-backdrop) documentation.
      * @default false
      */
     showBackdrop?: boolean;
@@ -118,7 +124,7 @@ export interface SidebarModel extends ComponentModel{
      * The main content area will not be adjusted within the screen width.
      * * `Auto` - Sidebar with `Over` type in mobile resolution and `Push` type in other higher resolutions.
      * > For more details about SidebarType refer to 
-     * [`SidebarType`](../../sidebar/variations/#types) documentation.
+     * [`SidebarType`](./variations.html#types) documentation.
      * @default 'Auto'
      */
     type?: SidebarType;
@@ -132,38 +138,43 @@ export interface SidebarModel extends ComponentModel{
 
     /**
      * Specifies the z-index of the Sidebar. It is applicable only when sidebar act as overlay type.
-     * @default '1000'
-     * @aspType string
+     * @default 1000
+     * @aspType double
      */
     zIndex?: string | number;
 
     /**
      * Triggers when component is created.
      * @event 
+     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when component is closed.
      * @event 
+     * @blazorproperty 'OnClose'
      */
     close?: EmitType<EventArgs>;
 
     /**
      * Triggers when component is opened.
      * @event 
+     * @blazorproperty 'OnOpen'
      */
     open?: EmitType<EventArgs>;
 
     /**
      * Triggers when the state(expand/collapse) of the component is changed.
      * @event 
+     * @blazorproperty 'Changed'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when component gets destroyed.
      * @event 
+     * @blazorproperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

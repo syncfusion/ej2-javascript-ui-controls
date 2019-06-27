@@ -1,22 +1,17 @@
-import { IFileManager, ITreeView, ReadArgs, SortOrder } from '../base/interface';
+import { IFileManager, ReadArgs, SortOrder, SearchArgs, FileDragEventArgs } from '../base/interface';
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
-import { read } from '../common/operations';
+import { read, paste, Search } from '../common/operations';
 import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement } from '@syncfusion/ej2-base';
-import { closest } from '@syncfusion/ej2-base';
+import { closest, DragEventArgs, detach } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { createDialog } from '../pop-up/dialog';
 
 /**
  * Utility file for common actions
+ * @private
  */
-
-//Gets the path for tree nodes
-/* istanbul ignore next */
-export function copyPath(file: IFileManager): void {
-    let path: string = file.path.substr(0, file.path.length - 1);
-    file.targetPath = path.substr(0, path.lastIndexOf('/') + 1);
-}
 
 export function updatePath(node: HTMLLIElement, text: string, instance: IFileManager): void {
     instance.setProperties({ path: getPath(node, text) }, true);
@@ -54,78 +49,69 @@ export function getParents(element: Element, text: string, isId: boolean): strin
     return matched;
 }
 
-//Stores tree nodes while performing cut, copy and paste operation
-export function treeNodes(tree: ITreeView, gridFiles?: Object[], action?: string): void {
-    /* istanbul ignore next */
-    if (gridFiles) {
-        let i: number = 0;
-        for (i; i < gridFiles.length; i++) {
-            let files: { [key: string]: Object } = <{ [key: string]: Object }>gridFiles[i];
-            let id: string = <string>files.id;
-            if (files.isFile === false) {
-                (action === 'cut') ? tree.treeNodes.push(id) : tree.treeNodes = tree.treeNodes;
-                (action === 'copy') ?
-                    tree.copyNodes.push({ ['name']: files.name }) : tree.copyNodes = tree.copyNodes;
-                (action === 'Delete') ? tree.removeNodes.push(id) : tree.removeNodes = tree.removeNodes;
-            }
-        }
-    } else {
-        tree.treeNodes = (action === 'cut') ? tree.treeObj.selectedNodes : tree.treeNodes;
-        tree.removeNodes = (action === 'Delete') ? tree.treeObj.selectedNodes : tree.removeNodes;
+export function removeActive(parent: IFileManager): void {
+    if (parent.isCut) {
+        removeBlur(parent);
+        parent.selectedNodes = [];
+        parent.actionRecords = [];
+        parent.enablePaste = false;
+        parent.notify(events.hidePaste, {});
     }
 }
 
 // Selects active element in File Manager
-/* istanbul ignore next */
-export function activeElement(action: string, isGrid?: boolean, file?: IFileManager): Object[] {
-    let nodeNames: Object[] = [];
-    removeBlur(file as IFileManager);
-    let blurEle: NodeListOf<Element> = file.activeElements;
-    file.targetPath = file.path;
+export function activeElement(action: string, parent: IFileManager): boolean {
+    parent.isSearchCut = false;
+    parent.actionRecords = [];
+    parent.activeElements = [];
+    parent.notify(events.cutCopyInit, {});
+    if (parent.activeElements.length === 0) { return false; }
+    removeBlur(parent);
+    let blurEle: Element[] = parent.activeElements;
+    if (parent.activeModule !== 'navigationpane') {
+        parent.targetPath = parent.path;
+    } else {
+        parent.targetPath = getParentPath(parent);
+    }
     let i: number = 0;
-    let isFile: boolean;
-    let id: string;
     if (blurEle) {
-        getModule(blurEle[0], file as IFileManager);
-        while (i < blurEle.length) {
-            if (action === 'cut') {
+        getModule(parent, blurEle[0]);
+        if (action === 'cut') {
+            while (i < blurEle.length) {
                 addBlur(blurEle[i]);
-            }
-            isFile = (file.activeModule === 'largeiconsview') ?
-                ((blurEle[i].querySelector('.' + CLS.LARGE_ICON_FOLDER)) ? false : true) : null;
-            id = (isFile === false) ? closest(blurEle[i], 'li').getAttribute('data-uid') : null;
-            (blurEle[i].querySelector('.' + CLS.LIST_TEXT)) ?
-                nodeNames.push({ 'name': blurEle[i].querySelector('.' + CLS.LIST_TEXT).textContent, 'isFile': isFile, 'id': id }) :
-                nodeNames = nodeNames;
-            i++;
-        }
-        if (file.activeModule === 'detailsview' && isGrid !== false) {
-            nodeNames = file.detailsviewModule.gridSelectNodes();
-            if ((action === 'cut' || action === 'copy' || action === 'Delete') && file.navigationpaneModule) {
-                treeNodes(file.navigationpaneModule, nodeNames, action);
-            }
-        } else if (file.activeModule === 'largeiconsview' && file.navigationpaneModule) {
-            (action === 'cut' || action === 'copy' || action === 'Delete') ?
-                treeNodes(file.navigationpaneModule, nodeNames, action) : nodeNames = nodeNames;
-        } else {
-            ((action === 'cut' || action === 'copy' || action === 'Delete') && file.navigationpaneModule) ?
-                treeNodes(file.navigationpaneModule, null, action) : nodeNames = nodeNames;
-            if (file.activeModule === 'navigationpane') {
-                copyPath(file as IFileManager);
+                i++;
             }
         }
     }
-    return nodeNames;
+    i = 0;
+    parent.selectedNodes = [];
+    parent.enablePaste = true;
+    parent.notify(events.showPaste, {});
+    while (i < parent.activeRecords.length) {
+        parent.actionRecords.push(parent.activeRecords[i]);
+        parent.selectedNodes.push(getValue('name', parent.activeRecords[i]));
+        i++;
+    }
+    if (parent.breadcrumbbarModule.searchObj.element.value !== '' &&
+        parent.activeModule !== 'navigationpane') {
+        parent.selectedNodes = [];
+        parent.isSearchCut = true;
+        let i: number = 0;
+        while (i < parent.selectedItems.length) {
+            parent.selectedNodes.push(parent.selectedItems[i]);
+            i++;
+        }
+    }
+    return true;
 }
-
 
 export function addBlur(nodes: Element): void {
     nodes.classList.add(CLS.BLUR);
 }
 // Removes blur from elements
-export function removeBlur(file?: IFileManager, hover?: string): void {
-    let blurEle: NodeListOf<Element> = (!hover) ? file.element.querySelectorAll('.' + CLS.BLUR) :
-        file.element.querySelectorAll('.' + CLS.HOVER);
+export function removeBlur(parent?: IFileManager, hover?: string): void {
+    let blurEle: NodeListOf<Element> = (!hover) ? parent.element.querySelectorAll('.' + CLS.BLUR) :
+        parent.element.querySelectorAll('.' + CLS.HOVER);
     let i: number = 0;
     while (i < blurEle.length) {
         (!hover) ? blurEle[i].classList.remove(CLS.BLUR) : blurEle[i].classList.remove(CLS.HOVER);
@@ -134,39 +120,84 @@ export function removeBlur(file?: IFileManager, hover?: string): void {
 }
 
 // Gets module name
-/* istanbul ignore next */
-export function getModule(element: Element, file?: IFileManager): void {
+export function getModule(parent: IFileManager, element: Element): void {
     if (element) {
-        if (element.classList.contains(CLS.ROWCELL)) {
-            file.activeModule = 'detailsview';
+        if (element.classList.contains(CLS.ROW)) {
+            parent.activeModule = 'detailsview';
         } else if (closest(element, '.' + CLS.LARGE_ICON)) {
-            file.activeModule = 'largeiconsview';
+            parent.activeModule = 'largeiconsview';
         } else {
-            file.activeModule = 'navigationpane';
+            parent.activeModule = 'navigationpane';
         }
     }
+}
+
+export function searchWordHandler(parent: IFileManager, value: string, isLayoutChange: boolean): void {
+    let searchWord: string;
+    if (value.length === 0) {
+        parent.notify(events.pathColumn, { args: parent });
+    }
+    if (parent.searchSettings.filterType === 'startsWith') {
+        searchWord = value + '*';
+    } else if (parent.searchSettings.filterType === 'endsWith') {
+        searchWord = '*' + value;
+    } else {
+        searchWord = '*' + value + '*';
+    }
+    parent.searchWord = searchWord;
+    parent.itemData = [getPathObject(parent)];
+    if (value.length > 0) {
+        let caseSensitive: boolean = parent.searchSettings.ignoreCase;
+        let hiddenItems: boolean = parent.showHiddenItems;
+        Search(parent, isLayoutChange ? events.layoutChange : events.search, parent.path, searchWord, hiddenItems, !caseSensitive);
+    } else {
+        read(parent, isLayoutChange ? events.layoutChange : events.search, parent.path);
+    }
+}
+
+export function updateLayout(parent: IFileManager, view: string): void {
+    parent.setProperties({ view: view }, true);
+    if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
+        parent.layoutSelectedItems = parent.selectedItems;
+    }
+    let searchWord: string = '';
+    if (parent.breadcrumbbarModule.searchObj.element.value) {
+        searchWord = parent.breadcrumbbarModule.searchObj.element.value;
+    }
+    searchWordHandler(parent, searchWord, true);
+}
+
+/* istanbul ignore next */
+export function getTargetModule(parent: IFileManager, element: Element): void {
+    let tartgetModule: string = '';
+    if (element) {
+        if (closest(element, '.e-gridcontent')) {
+            tartgetModule = 'detailsview';
+        } else if (closest(element, '.' + CLS.LARGE_ICONS)) {
+            tartgetModule = 'largeiconsview';
+        } else if (element.classList.contains('e-fullrow') ||
+            element.classList.contains('e-icon-expandable')) {
+            tartgetModule = 'navigationpane';
+        } else if (closest(element, '.e-address-list-item')) {
+            tartgetModule = 'breadcrumbbar';
+        } else {
+            tartgetModule = '';
+        }
+    }
+    parent.targetModule = tartgetModule;
 }
 
 export function refresh(parent: IFileManager): void {
     parent.itemData = [getPathObject(parent)];
-    read(parent, events.refreshEnd, parent.path);
+    if (!hasReadAccess(parent.itemData[0])) {
+        createDeniedDialog(parent, parent.itemData[0]);
+    } else {
+        read(parent, events.refreshEnd, parent.path);
+    }
 }
 
 export function openAction(parent: IFileManager): void {
     read(parent, events.openEnd, parent.path);
-}
-
-export function getFileObject(parent: IFileManager): Object {
-    let currFiles: Object[] = getValue(parent.path, parent.feFiles);
-    if (currFiles) {
-        let item: string = parent.selectedItems[parent.selectedItems.length - 1];
-        for (let i: number = 0, len: number = currFiles.length; i < len; i++) {
-            if (item === getValue('name', currFiles[i])) {
-                return currFiles[i];
-            }
-        }
-    }
-    return getValue(parent.path, parent.feParent);
 }
 
 export function getPathObject(parent: IFileManager): Object {
@@ -175,38 +206,27 @@ export function getPathObject(parent: IFileManager): Object {
 
 // Copy files
 export function copyFiles(parent: IFileManager): void {
-    parent.cutNodes = [];
-    parent.navigationpaneModule.treeNodes = [];
-    parent.navigationpaneModule.copyNodes = [];
-    parent.nodeNames = [];
-    parent.selectedNodes = [];
-    parent.nodeNames = activeElement('copy', null, parent as IFileManager);
-    if (parent.nodeNames) {
-        parent.fileAction = 'CopyTo';
-        parent.enablePaste = true;
-        parent.notify(events.showPaste, {});
+    if (!activeElement('copy', parent)) {
+        return;
+    } else {
+        parent.fileAction = 'copy';
     }
 }
 
 // Cut files
 export function cutFiles(parent: IFileManager): void {
-    parent.navigationpaneModule.treeNodes = [];
-    parent.navigationpaneModule.copyNodes = [];
-    parent.nodeNames = [];
-    parent.selectedNodes = [];
-    parent.nodeNames = activeElement('cut', null, parent as IFileManager);
-    if (parent.nodeNames) {
-        parent.cutNodes = parent.nodeNames;
-        parent.fileAction = 'MoveTo';
-        parent.enablePaste = true;
-        parent.notify(events.showPaste, {});
+    if (!activeElement('cut', parent)) {
+        return;
+    } else {
+        parent.isCut = true;
+        parent.fileAction = 'move';
     }
 }
 // To add class for fileType
 export function fileType(file: Object): string {
     let isFile: string = getValue('isFile', file);
     if (!isFile) {
-        return 'e-fe-folder';
+        return CLS.FOLDER;
     }
     let imageFormat: string[] = ['bmp', 'dib', 'jpg', 'jpeg', 'jpe', 'jfif', 'gif', 'tif', 'tiff', 'png', 'ico'];
     let audioFormat: string[] = ['mp3', 'wav', 'aac', 'ogg', 'wma', 'aif', 'fla', 'm4a'];
@@ -233,16 +253,25 @@ export function fileType(file: Object): string {
     return iconType;
 }
 
-export function getImageUrl(parent: IFileManager, item: Object, ): string {
+export function getImageUrl(parent: IFileManager, item: Object): string {
     let baseUrl: string = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     let imgUrl: string;
+    let fileName: string = getValue('name', item);
     if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
-        imgUrl = baseUrl + '?path=' + getValue('filterPath', item);
+        imgUrl = baseUrl + '?path=' + getValue('filterPath', item).replace(/\\/g, '/') + fileName;
     } else {
-        imgUrl = baseUrl + '?path=' + parent.path + getValue('name', item);
+        imgUrl = baseUrl + '?path=' + parent.path + fileName;
     }
-
+    let imgId: string = getValue('id', item);
+    if (!isNOU(imgId)) { imgUrl = imgUrl + '&id=' + imgId; }
     return imgUrl;
+}
+
+export function getFullName(item: Object): string {
+    let fullName: string;
+    let fileName: string = getValue('name', item);
+    fullName = getValue('filterPath', item).replace(/\\/g, '/') + fileName;
+    return fullName;
 }
 
 export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
@@ -250,11 +279,6 @@ export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
     let query: Query = new Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
     let lists: Object[] = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
-}
-/* istanbul ignore next */
-export function getItemObject(parent: IFileManager, item: Element): Object {
-    let name: string = select('.' + CLS.LIST_TEXT, item).textContent;
-    return getObject(parent, name);
 }
 
 export function getObject(parent: IFileManager, name: string): Object {
@@ -264,7 +288,14 @@ export function getObject(parent: IFileManager, name: string): Object {
     return lists[0];
 }
 
-export function createEmptyElement(parent: IFileManager, operation: string, element: HTMLElement): void {
+export function createEmptyElement(parent: IFileManager, element: HTMLElement, args: ReadArgs | SearchArgs): void {
+    let top: number;
+    if (parent.view === 'Details') {
+        let ele: HTMLElement = <HTMLElement>select('.' + CLS.GRID_VIEW, element);
+        top = ele.offsetHeight;
+    } else {
+        top = element.offsetHeight;
+    }
     if (isNOU(element.querySelector('.' + CLS.EMPTY))) {
         let emptyDiv: Element = createElement('div', { className: CLS.EMPTY });
         let emptyFolder: Element = createElement('div', { className: CLS.LARGE_EMPTY_FOLDER });
@@ -280,7 +311,10 @@ export function createEmptyElement(parent: IFileManager, operation: string, elem
         emptyDiv.appendChild(dragFile);
     }
     if (element.querySelector('.' + CLS.EMPTY)) {
-        if (operation === 'search') {
+        if (!isNOU(args.error)) {
+            element.querySelector('.' + CLS.EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Access-Denied');
+            element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Access-Details');
+        } else if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
             element.querySelector('.' + CLS.EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Search-Empty');
             element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Search-Key');
         } else {
@@ -288,6 +322,9 @@ export function createEmptyElement(parent: IFileManager, operation: string, elem
             element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'File-Upload');
         }
     }
+    let eDiv: HTMLElement = <HTMLElement>select('.' + CLS.EMPTY, element);
+    top = (top - eDiv.offsetHeight) / 2;
+    eDiv.style.marginTop = top + 'px';
 }
 
 export function getDirectories(files: Object[]): Object[] {
@@ -295,17 +332,17 @@ export function getDirectories(files: Object[]): Object[] {
 }
 
 export function setNodeId(result: ReadArgs, rootId: string): void {
-    setValue('nodeId', rootId, result.cwd);
+    setValue('_fm_id', rootId, result.cwd);
     let dirs: Object[] = getDirectories(result.files);
     for (let i: number = 0, len: number = dirs.length; i < len; i++) {
-        setValue('nodeId', rootId + '_' + i, dirs[i]);
+        setValue('_fm_id', rootId + '_' + i, dirs[i]);
     }
 }
 
 export function setDateObject(args: Object[]): void {
     for (let i: number = 0; i < args.length; i++) {
-        setValue('dateCreated', new Date(getValue('dateCreated', args[i])), args[i]);
-        setValue('dateModified', new Date(getValue('dateModified', args[i])), args[i]);
+        setValue('_fm_created', new Date(getValue('dateCreated', args[i])), args[i]);
+        setValue('_fm_modified', new Date(getValue('dateModified', args[i])), args[i]);
     }
 }
 
@@ -351,7 +388,7 @@ export function getSortField(id: string): string {
     let field: string = text;
     switch (text) {
         case 'date':
-            field = 'dateModified';
+            field = '_fm_modified';
             break;
         case 'ascending':
             field = 'Ascending';
@@ -370,7 +407,7 @@ export function setNextPath(parent: IFileManager, path: string): void {
         let eventName: string = (folders[i + 1] === '') ? events.finalizeEnd : events.initialEnd;
         let newPath: string = (folders[i] === '') ? '/' : (parent.path + folders[i] + '/');
         let data: Object = getObject(parent, folders[i]);
-        let id: string = getValue('nodeId', data);
+        let id: string = getValue('_fm_id', data);
         parent.setProperties({ path: newPath }, true);
         parent.pathId.push(id);
         parent.itemData = [data];
@@ -380,9 +417,355 @@ export function setNextPath(parent: IFileManager, path: string): void {
 }
 
 export function openSearchFolder(parent: IFileManager, data: Object): void {
-    let fPath: string = getValue('filterPath', data) + '/';
+    let fPath: string = getValue('filterPath', data) + getValue('name', data) + '/';
     fPath = fPath.replace(/\\/g, '/');
     parent.notify(events.clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
     parent.originalPath = fPath;
     read(parent, (parent.path !== parent.originalPath) ? events.initialEnd : events.finalizeEnd, parent.path);
+}
+
+export function pasteHandler(parent: IFileManager): void {
+    parent.isDragDrop = false;
+    if (parent.selectedNodes.length !== 0 && parent.enablePaste) {
+        let path: string = parent.path + parent.folderPath;
+        let subFolder: boolean = validateSubFolder(parent, <{ [key: string]: Object; }[]>parent.actionRecords, path);
+        if (!subFolder) {
+            if ((parent.fileAction === 'move' && parent.targetPath !== path) || parent.fileAction === 'copy') {
+                parent.notify(events.pasteInit, {});
+                paste(
+                    parent, parent.targetPath, parent.selectedNodes, path, parent.fileAction, [], parent.actionRecords);
+            } else {
+                parent.enablePaste = false;
+                parent.notify(events.hidePaste, {});
+                removeBlur(parent);
+            }
+        }
+    }
+}
+export function validateSubFolder(parent: IFileManager, data: { [key: string]: Object; }[], path: string): boolean {
+    let subFolder: boolean = false;
+    for (let i: number = 0; i < data.length; i++) {
+        if (!getValue('isFile', data[i])) {
+            let tempTarget: string = <string>data[i].filterPath + <string>data[i].name + '/';
+            tempTarget = tempTarget.replace(/\\/g, '/');
+            if (path.indexOf(tempTarget) !== -1) {
+                let result: ReadArgs = {
+                    files: null,
+                    error: {
+                        code: '402',
+                        message: getLocaleText(parent, 'Sub-Folder-Error'),
+                        fileExists: null
+                    },
+                };
+                createDialog(parent, 'Error', result);
+                subFolder = true;
+                break;
+            }
+        }
+    }
+    return subFolder;
+}
+export function dropHandler(parent: IFileManager): void {
+    parent.isDragDrop = true;
+    if (parent.dragData.length !== 0) {
+        parent.dragPath = parent.dragPath.replace(/\\/g, '/');
+        parent.dropPath = parent.dropPath.replace(/\\/g, '/');
+        let subFolder: boolean = validateSubFolder(parent, parent.dragData, parent.dropPath);
+        if (!subFolder && (parent.dragPath !== parent.dropPath)) {
+            parent.itemData = [parent.dropData];
+            paste(
+                parent, parent.dragPath, parent.dragNodes, parent.dropPath, 'move', [], parent.dragData);
+            parent.notify(events.pasteInit, {});
+        }
+    }
+}
+
+export function getParentPath(parent: IFileManager): string {
+    let path: string[] = parent.path.split('/');
+    let newPath: string = '/';
+    for (let i: number = 1; i < path.length - 2; i++) {
+        newPath += path[i] + '/';
+    }
+    return newPath;
+}
+
+export function getDirectoryPath(args: ReadArgs): string {
+    let path: string = getValue('filterPath', args.cwd);
+    let newPath: string = '/';
+    if (path === '') {
+        return newPath;
+    } else {
+        path = path.replace(/\\/g, '/');
+        return (path + getValue('name', args.cwd) + newPath);
+    }
+}
+
+export function doPasteUpdate(parent: IFileManager, operation: string, result: ReadArgs): void {
+    if (operation === 'move') {
+        if (!parent.isDragDrop) {
+            parent.enablePaste = false;
+            parent.notify(events.hidePaste, {});
+            parent.notify(events.cutEnd, result);
+        } else {
+            parent.notify(events.dragEnd, result);
+        }
+    }
+    if (parent.duplicateItems.length === 0) {
+        parent.pasteNodes = [];
+    }
+    let flag: boolean = false;
+    for (let count: number = 0; (count < result.files.length) && !flag; count++) {
+        parent.pasteNodes.push(<string>result.files[count].name);
+        if (parent.isDragDrop) {
+            parent.droppedObjects.push(result.files[count]);
+        }
+    }
+    parent.duplicateItems = [];
+    parent.duplicateRecords = [];
+    if (parent.isDragDrop && !parent.isPasteError) {
+        parent.isDropEnd = true;
+    } else {
+        parent.isDropEnd = false;
+    }
+    if (!parent.isDragDrop || (parent.path === parent.dragPath) || (parent.path === parent.dropPath)
+        || parent.isSearchDrag) {
+        parent.isPathDrag = false;
+        read(parent, events.pasteEnd, parent.path);
+    } else {
+        readDropPath(parent);
+    }
+    parent.trigger('success', { action: operation, result: result });
+}
+export function readDropPath(parent: IFileManager): void {
+    let obj: Object = getValue(parent.dropPath, parent.feParent);
+    /* istanbul ignore next */
+    if (obj) {
+        parent.expandedId = getValue('_fm_id', obj);
+    }
+    parent.itemData = [parent.dropData];
+    if (parent.isPathDrag) {
+        parent.notify(events.pathDrag, parent.itemData);
+    } else {
+        read(parent, events.dropPath, parent.dropPath);
+    }
+}
+
+export function getDuplicateData(parent: IFileManager, name: string): object {
+    let data: object = null;
+    let records: object[] = parent.isDragDrop ? parent.dragData : parent.actionRecords;
+    for (let i: number = 0; i < records.length; i++) {
+        if (getValue('name', records[i]) === name) {
+            data = records[i];
+            break;
+        }
+    }
+    return data;
+}
+
+export function createVirtualDragElement(parent: IFileManager): void {
+    parent.isSearchDrag = false;
+    if (parent.breadcrumbbarModule.searchObj.element.value !== '') { parent.isSearchDrag = true; }
+    if (parent.activeModule !== 'navigationpane') {
+        parent.dragNodes = [];
+        let i: number = 0;
+        while (i < parent.selectedItems.length) {
+            parent.dragNodes.push(parent.selectedItems[i]);
+            i++;
+        }
+    }
+    let cloneIcon: HTMLElement = parent.createElement('div', {
+        className: 'e-fe-icon ' + fileType(parent.dragData[0])
+    });
+    let cloneName: HTMLElement = parent.createElement('div', {
+        className: 'e-fe-name',
+        innerHTML: <string>parent.dragData[0].name
+    });
+    let virtualEle: HTMLElement = parent.createElement('div', {
+        className: 'e-fe-content'
+    });
+    virtualEle.appendChild(cloneIcon);
+    virtualEle.appendChild(cloneName);
+    let ele: HTMLElement = parent.createElement('div', {
+        className: CLS.CLONE
+    });
+    ele.appendChild(virtualEle);
+    if (parent.dragNodes.length > 1) {
+        let badge: HTMLElement = parent.createElement('span', {
+            className: 'e-fe-count',
+            innerHTML: (parent.dragNodes.length).toString(10)
+        });
+        ele.appendChild(badge);
+    }
+    parent.virtualDragElement = ele;
+    parent.element.appendChild(parent.virtualDragElement);
+}
+
+export function dragStopHandler(parent: IFileManager, args: DragEventArgs): void {
+    let dragArgs: FileDragEventArgs = args;
+    dragArgs.cancel = false;
+    if (parent.treeExpandTimer != null) {
+        window.clearTimeout(parent.treeExpandTimer);
+        parent.treeExpandTimer = null;
+    }
+    removeDropTarget(parent);
+    parent.element.classList.remove('e-fe-drop', 'e-no-drop');
+    removeBlur(parent);
+    parent.uploadObj.dropArea = <HTMLElement>select('#' + parent.element.id + CLS.CONTENT_ID, parent.element);
+    let virtualEle: Element = select('.' + CLS.CLONE, parent.element);
+    if (virtualEle) { detach(virtualEle); }
+    getTargetModule(parent, args.target);
+    parent.notify(events.dropInit, args);
+    removeBlur(parent, 'hover');
+    dragArgs.fileDetails = parent.dragData;
+    parent.trigger('fileDragStop', dragArgs, (dragArgs: FileDragEventArgs) => {
+        if (!dragArgs.cancel && !isNOU(parent.targetModule) && parent.targetModule !== '') {
+            dropHandler(parent);
+        }
+    });
+}
+
+export function dragStartHandler(parent: IFileManager, args: DragEventArgs): void {
+    let dragArgs: FileDragEventArgs = args;
+    dragArgs.cancel = false;
+    dragArgs.fileDetails = parent.dragData;
+    parent.droppedObjects = [];
+    if (!parent.allowDragAndDrop || ((parent.activeModule === 'navigationpane') &&
+        (closest(args.element, 'li').getAttribute('data-uid') === parent.pathId[0]))) {
+        dragArgs.cancel = true;
+    }
+    if ((parent.activeModule === 'navigationpane') &&
+        (parent.pathId.indexOf(closest(args.element, 'li').getAttribute('data-uid')) !== -1)) {
+        parent.isPathDrag = true;
+    } else {
+        parent.isPathDrag = false;
+    }
+    removeBlur(parent);
+    if (dragArgs.cancel) {
+        dragCancel(parent);
+    } else if (!dragArgs.cancel) {
+        let i: number = 0;
+        while (i < parent.activeElements.length) {
+            addBlur(parent.activeElements[i]);
+            i++;
+        }
+        parent.trigger('fileDragStart', dragArgs, (dragArgs: FileDragEventArgs) => {
+            if (dragArgs.cancel) {
+                dragCancel(parent);
+            } else {
+                parent.uploadObj.dropArea = null;
+            }
+        });
+    }
+}
+export function dragCancel(parent: IFileManager): void {
+    removeBlur(parent);
+    let virtualEle: Element = select('.' + CLS.CLONE, parent.element);
+    if (virtualEle) { detach(virtualEle); }
+}
+export function removeDropTarget(parent: IFileManager): void {
+    removeItemClass(parent, CLS.DROP_FOLDER);
+    removeItemClass(parent, CLS.DROP_FILE);
+}
+export function removeItemClass(parent: IFileManager, value: string): void {
+    let ele: NodeListOf<Element> = parent.element.querySelectorAll('.' + value);
+    for (let i: number = 0; i < ele.length; i++) {
+        ele[i].classList.remove(value);
+    }
+}
+export function draggingHandler(parent: IFileManager, args: DragEventArgs): void {
+    let dragArgs: FileDragEventArgs = args;
+    dragArgs.fileDetails = parent.dragData;
+    let canDrop: boolean = false;
+    getTargetModule(parent, args.target);
+    removeDropTarget(parent);
+    if (parent.treeExpandTimer != null) {
+        window.clearTimeout(parent.treeExpandTimer);
+        parent.treeExpandTimer = null;
+    }
+    removeBlur(parent, 'hover');
+    let node: Element = null;
+    if (parent.targetModule === 'navigationpane') {
+        node = closest(args.target, 'li');
+        node.classList.add(CLS.HOVER, CLS.DROP_FOLDER);
+        canDrop = true;
+        /* istanbul ignore next */
+        parent.treeExpandTimer = window.setTimeout(() => { parent.notify(events.dragging, args); }, 800);
+    } else if (parent.targetModule === 'detailsview') {
+        node = closest(args.target, 'tr');
+        if (node && node.querySelector('.' + CLS.FOLDER) && !node.classList.contains(CLS.BLUR)) {
+            node.classList.add(CLS.DROP_FOLDER);
+        } else if (node && !node.querySelector('.' + CLS.FOLDER) && !node.classList.contains(CLS.BLUR)) {
+            node.classList.add(CLS.DROP_FILE);
+        }
+        canDrop = true;
+    } else if (parent.targetModule === 'largeiconsview') {
+        node = closest(args.target, 'li');
+        if (node && node.querySelector('.' + CLS.FOLDER) && !node.classList.contains(CLS.BLUR)) {
+            node.classList.add(CLS.HOVER, CLS.DROP_FOLDER);
+        }
+        canDrop = true;
+        /* istanbul ignore next */
+    } else if (parent.targetModule === 'breadcrumbbar') {
+        canDrop = true;
+    }
+    parent.element.classList.remove('e-fe-drop', 'e-no-drop');
+    parent.element.classList.add(canDrop ? 'e-fe-drop' : 'e-no-drop');
+    parent.trigger('fileDragging', dragArgs);
+}
+
+export function objectToString(data: Object): string {
+    let str: string = '';
+    let keys: string[] = Object.keys(data);
+    for (let i: number = 0; i < keys.length; i++) {
+        str += (i === 0 ? '' : ', ') + keys[i] + ': ' + getValue(keys[i], data);
+    }
+    return str;
+}
+
+export function doRename(parent: IFileManager): void {
+    if (!hasEditAccess(parent.itemData[0])) {
+        createDeniedDialog(parent, parent.itemData[0]);
+    } else {
+        createDialog(parent, 'Rename');
+    }
+}
+
+export function createDeniedDialog(parent: IFileManager, data: Object): void {
+    let response: ReadArgs = {
+        error: {
+            code: '401',
+            fileExists: null,
+            message: '"' + getFullName(data) + '" is not accessible. Access is denied.'
+        }
+    };
+    createDialog(parent, 'Error', response);
+}
+
+export function getAccessClass(data: Object): string {
+    return !hasReadAccess(data) ? 'e-fe-locked e-fe-hidden' : 'e-fe-locked';
+}
+
+export function hasReadAccess(data: Object): boolean {
+    let permission: Object = getValue('permission', data);
+    return (permission && !getValue('read', permission)) ? false : true;
+}
+
+export function hasEditAccess(data: Object): boolean {
+    let permission: Object = getValue('permission', data);
+    return permission ? ((getValue('read', permission) && getValue('edit', permission)) ? true : false) : true;
+}
+
+export function hasContentAccess(data: Object): boolean {
+    let permission: Object = getValue('permission', data);
+    return permission ? ((getValue('read', permission) && getValue('editContents', permission)) ? true : false) : true;
+}
+
+export function hasUploadAccess(data: Object): boolean {
+    let permission: Object = getValue('permission', data);
+    return permission ? ((getValue('read', permission) && getValue('upload', permission)) ? true : false) : true;
+}
+
+export function hasDownloadAccess(data: Object): boolean {
+    let permission: Object = getValue('permission', data);
+    return permission ? ((getValue('read', permission) && getValue('download', permission)) ? true : false) : true;
 }

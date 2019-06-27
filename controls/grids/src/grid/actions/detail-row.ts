@@ -1,5 +1,5 @@
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { closest, classList } from '@syncfusion/ej2-base';
+import { closest, classList, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
 import { parents, getUid, appendChildren } from '../base/util';
@@ -36,6 +36,7 @@ export class DetailRow {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.keyPressed, this.keyPressHandler, this);
         this.parent.on(events.expandChildGrid, this.expand, this);
+        this.parent.on(events.columnVisibilityChanged, this.refreshColSpan, this);
     }
 
     private clickHandler(e: MouseEvent): void {
@@ -79,7 +80,10 @@ export class DetailRow {
                 detailRow.appendChild(detailCell);
                 tr.parentNode.insertBefore(detailRow, tr.nextSibling);
                 if (gObj.detailTemplate) {
-                    appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate'));
+                    let detailTemplateID: string = gObj.element.id + 'detailTemplate';
+                    appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
+                    resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
+                    updateBlazorTemplate(detailTemplateID, 'DetailTemplate');
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
                     childGrid[parent] = {
@@ -174,6 +178,7 @@ export class DetailRow {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.keyPressed, this.keyPressHandler);
         this.parent.off(events.expandChildGrid, this.expand);
+        this.parent.off(events.columnVisibilityChanged, this.refreshColSpan);
     }
 
     private getTDfromIndex(index: number, className: string): Element {
@@ -265,6 +270,14 @@ export class DetailRow {
                 this.toogleExpandcollapse(element);
                 break;
         }
+    }
+
+    private refreshColSpan(): void {
+        let detailrows: NodeListOf<Element> = (<Grid>this.parent).contentModule.getTable().querySelectorAll('tr.e-detailrow');
+        let colSpan: number = (<Grid>this.parent).getVisibleColumns().length;
+        detailrows.forEach((detailrow: Node) => {
+            (<HTMLElement>detailrow).querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
+        });
     }
 
     /**

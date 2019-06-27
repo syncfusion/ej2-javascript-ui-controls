@@ -12,19 +12,19 @@ export interface TooltipSettingsModel {
     template?: string;
 
     /**
-     * Specifies the color collection for heat map cell.
+     * Specifies the color collection for heat map cell. 
      * @default ''
      */
     fill?: string;
 
     /**
-     * Specifies the cell border style.
+     * Specifies the cell border style. 
      * @default ''
      */
     border?: TooltipBorderModel;
 
     /**
-     * Specifies the cell label style.
+     * Specifies the cell label style. 
      * @default ''
      */
     textStyle?: FontModel;

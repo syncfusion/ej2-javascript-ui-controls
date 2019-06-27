@@ -246,6 +246,22 @@
       vertical-align: middle;
     }
 
+    &.e-right {
+      .e-checkbox-wrapper {
+        position: absolute;
+        right: 0;
+        top: 30%;
+      }
+    }
+
+    .e-input-group {
+      padding: 4px 8px;
+    }
+
+    .e-input-focus {
+      padding: 4px 4px 4px 8px;
+    }
+
     .e-hidden-select {
       height: 1px;
       opacity: 0;

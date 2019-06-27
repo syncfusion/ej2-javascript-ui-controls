@@ -1,4 +1,4 @@
-import { browser, element, By } from '@syncfusion/ej2-base/e2e/index';
+import { browser, element } from '@syncfusion/ej2-base/e2e/index';
 import { Helper } from './Helper/context-menu-helper.spec';
 
 let helper = new Helper();
@@ -6,13 +6,10 @@ let helper = new Helper();
 describe('Context Menu', () => {
     let sub_target: string = 'ul[id=contextmenu] li:nth-child(2)';
     let browserName: string;
-    browser.getCapabilities().then(function (cap) {
-        browserName = cap.get('browserName');
-    });
 
     it('Default', () => {
+        browserName = browser.browserName;
         browser.load('/demos/context-menu/test.html');
-        helper.waitUntilPresent(By.className('e-menu-caret-icon'));
         helper.rightClick(browserName);
         browser.compareScreen(browser.element(helper.snap_area), 'cmenu_default');
     });
@@ -28,6 +25,7 @@ describe('Context Menu', () => {
             browser.executeScript(helper.cm_inst + '.showItemOnClick = true');
             helper.rightClick(browserName);
             helper.click(sub_target);
+            helper.sleep(500);
             browser.compareScreen(browser.element(helper.snap_area), 'cmenu_submenu_click');
             browser.executeScript(helper.cm_inst + '.showItemOnClick = false');
             done();
@@ -81,7 +79,6 @@ describe('Context Menu', () => {
 
     it('Template', () => {
         browser.load('/demos/context-menu/template.html');
-        helper.waitUntilPresent(By.className('e-contextmenu'));
         helper.rightClick(browserName);
         browser.compareScreen(browser.element(helper.snap_area), 'cmenu_template');
     });

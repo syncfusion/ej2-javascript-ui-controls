@@ -142,6 +142,7 @@ export class ButtonModelProps extends ChildProperty<ButtonModelProps> {
   /**
    * Specifies the click event binding of action buttons created within Toast.
    * @event
+   * @blazorProperty 'OnClick'
    */
   @Property(null)
   public click: EmitType<Event>;
@@ -353,6 +354,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers the event after the Toast gets created.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
@@ -360,6 +362,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers the event after the Toast gets destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Event>;
@@ -368,6 +371,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers the event after the Toast shown on the target container.
      * @event
+     * @blazorProperty 'Opened'
      */
     @Event()
     public open: EmitType<ToastOpenArgs>;
@@ -375,18 +379,21 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers the event before the toast shown.
      * @event
+     * @blazorProperty 'OnOpen'
      */
     @Event()
     public beforeOpen: EmitType<ToastBeforeOpenArgs>;
     /**
      * Trigger the event after the Toast hides.
      * @event
+     * @blazorProperty 'Closed'
      */
     @Event()
     public close: EmitType<ToastCloseArgs>;
     /**
      * The event will be fired while clicking on the Toast.
      * @event
+     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<ToastClickEventArgs>;
@@ -798,17 +805,18 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         toastObj: this,
         element: this.toastEle,
         cancel: false };
-      this.trigger('beforeOpen', toastBeforeOpen);
-      if (toastBeforeOpen.cancel) {
-        return; }
-      this.toastEle.style.display = 'none';
-      if (this.newestOnTop && this.toastContainer.childElementCount !== 0) {
-        this.toastContainer.insertBefore(this.toastEle, this.toastContainer.children[0]);
-      } else {
-        this.toastContainer.appendChild(this.toastEle); }
-      EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
-      this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
-      this.displayToast(this.toastEle);
+      this.trigger('beforeOpen', toastBeforeOpen, (toastBeforeOpenArgs: ToastBeforeOpenArgs) => {
+        if (!toastBeforeOpenArgs.cancel) {
+          this.toastEle.style.display = 'none';
+          if (this.newestOnTop && this.toastContainer.childElementCount !== 0) {
+            this.toastContainer.insertBefore(this.toastEle, this.toastContainer.children[0]);
+          } else {
+            this.toastContainer.appendChild(this.toastEle); }
+          EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
+          this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
+          this.displayToast(this.toastEle);
+        }
+      });
     }
 
     private clickHandler(e: Event): void {
@@ -818,9 +826,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       let clickArgs: ToastClickEventArgs = {
         element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this };
       let isCloseIcon: boolean = target.classList.contains(CLOSEBTN);
-      this.trigger('click', clickArgs);
-      if ((isCloseIcon && !clickArgs.cancel ) || clickArgs.clickToClose) {
-         this.destroyToast(toastEle); }
+      this.trigger('click', clickArgs, (toastClickArgs: ToastClickEventArgs) => {
+        if ((isCloseIcon && !toastClickArgs.cancel ) || toastClickArgs.clickToClose) {
+          this.destroyToast(toastEle); }
+      });
     }
 
     private displayToast(toastEle: HTEle): void {

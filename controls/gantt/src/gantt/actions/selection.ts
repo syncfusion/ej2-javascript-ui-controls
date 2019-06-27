@@ -2,8 +2,9 @@ import { Gantt } from '../base/gantt';
 import { RowSelectEventArgs, RowSelectingEventArgs, RowDeselectEventArgs, parentsUntil, getActualProperties } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, ISelectedCell, setCssInGridPopUp, Grid } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, CellSelectEventArgs, IIndex } from '@syncfusion/ej2-grids';
-import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, Browser, extend } from '@syncfusion/ej2-base';
 import { IGanttData } from '../base/interface';
+import { TaskbarEdit } from './taskbar-edit';
 
 /** 
  * The Selection module is used to handle cell and row selection.
@@ -15,11 +16,13 @@ export class Selection {
     public isMultiShiftRequest: boolean;
     public isSelectionFromChart: Boolean = false;
     private actualTarget: EventTarget;
+    private isInteracted: boolean;
     private prevRowIndex: number;
     public selectedRowIndexes: number[] = [];
     public enableSelectMultiTouch: boolean = false;
     public startIndex: number;
     public endIndex: number;
+    private openPopup: boolean = false;
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.bindEvents();
@@ -38,10 +41,19 @@ export class Selection {
 
     private wireEvents(): void {
         this.parent.on('selectRowByIndex', this.selectRowByIndex, this);
-        this.parent.on('chartMouseUp', this.mouseUpHandler, this);
+        if (this.parent.isAdaptive) {
+            this.parent.on('chartMouseClick', this.mouseUpHandler, this);
+            this.parent.on('treeGridClick', this.popUpClickHandler, this);
+        } else {
+            this.parent.on('chartMouseUp', this.mouseUpHandler, this);
+        }
     }
-
-    private selectRowByIndex(): void {
+    /**
+     * To update selected index.
+     * @return {void}
+     * @private
+     */
+    public selectRowByIndex(): void {
         if (this.parent.selectedRowIndex !== -1 || this.parent.staticSelectedRowIndex !== -1) {
             this.selectRow(
                 this.parent.staticSelectedRowIndex !== -1 ? this.parent.staticSelectedRowIndex : this.parent.selectedRowIndex);
@@ -64,48 +76,54 @@ export class Selection {
         this.parent.treeGrid.cellDeselected = this.cellDeselected.bind(this);
     }
     private rowSelecting(args: RowSelectingEventArgs): void {
-        this.parent.trigger('rowSelecting', args);
-        this.isMultiCtrlRequest = args.isCtrlPressed;
-        this.isMultiShiftRequest = args.isShiftPressed;
-        if (!this.isSelectionFromChart) {
-            this.selectedRowIndexes.push(args.rowIndex);
+        args.isCtrlPressed = this.isMultiCtrlRequest;
+        args.isShiftPressed = this.isMultiShiftRequest;
+        args.target = this.actualTarget as Element;
+        if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
+            delete args.foreignKeyData;
         }
+        this.parent.trigger('rowSelecting', args);
     }
     private rowSelected(args: RowSelectEventArgs): void {
         let rowIndexes: string = 'rowIndexes';
         let index: number[] = args[rowIndexes] || [args.rowIndex];
         this.addClass(index);
-        this.parent.selectedRowIndex = this.parent.treeGrid.selectedRowIndex;
+        this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
+        this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.selectedRowIndex }, true);
         if (this.isMultiShiftRequest) {
             this.selectedRowIndexes = index;
         }
         if (this.parent.autoFocusTasks) {
             this.parent.ganttChartModule.updateScrollLeft(getValue('data.ganttProperties.left', args));
         }
-        this.parent.trigger('rowSelected', args);
+        args.target = this.actualTarget as Element;
+        if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
+            delete args.foreignKeyData;
+        }
         this.prevRowIndex = args.rowIndex;
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }
+        this.parent.trigger('rowSelected', args);
     }
     private rowDeselecting(args: RowDeselectEventArgs): void {
+        args.target = this.actualTarget as Element;
+        args.isInteracted = this.isInteracted;
         this.parent.trigger('rowDeselecting', args);
-        if (!args.cancel) {
-            this.removeClass(args.rowIndex);
-        }
     }
     private rowDeselected(args: RowDeselectEventArgs): void {
-        this.parent.trigger('rowDeselected', args);
-        if (!this.isSelectionFromChart) {
-            this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(args.rowIndex[0]), 1);
-        }
         let rowIndexes: string = 'rowIndexes';
         let index: number[] = args[rowIndexes] || args.rowIndex;
         this.removeClass(index);
-        this.parent.selectedRowIndex = -1;
+        this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
+        this.parent.setProperties({ selectedRowIndex: -1 }, true);
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }
+        args.target = this.actualTarget as Element;
+        args.isInteracted = this.isInteracted;
+        this.parent.trigger('rowDeselected', args);
+        this.isInteracted = false;
     }
     private cellSelecting(args: CellSelectingEventArgs): void {
         this.parent.trigger('cellSelecting', args);
@@ -143,32 +161,10 @@ export class Selection {
      */
     public selectRow(index: number, isToggle?: boolean): void {
         let selectedRow: HTMLElement = this.parent.getRowByIndex(index);
-        if (index === -1 || isNullOrUndefined(selectedRow)) {
+        if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
-        let isRowSelected: boolean = selectedRow.hasAttribute('aria-selected');
-        let can: string = 'cancel';
-        if (isRowSelected && isToggle) {
-            let rowDeselectObj: object = {
-                rowIndex: index, data: this.parent.ganttChartModule.getRecordByTaskBar(selectedRow),
-                row: selectedRow, cancel: false, target: this.actualTarget
-            };
-            this.parent.trigger('rowDeSelecting', rowDeselectObj);
-            this.clearSelection();
-        } else {
-            let args: object = {
-                data: this.parent.ganttChartModule.getRecordByTaskBar(selectedRow),
-                rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
-                isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
-                previousRow: this.parent.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false
-            };
-            this.parent.trigger('rowSelecting', args);
-            if (!args[can]) {
-                this.addClass([index]);
-                this.parent.treeGrid.selectRow(index, isToggle);
-            }
-        }
+        this.parent.treeGrid.selectRow(index, isToggle);
         this.prevRowIndex = index;
     }
 
@@ -178,24 +174,9 @@ export class Selection {
      * @return {void}
      */
     public selectRows(records: number[]): void {
-        let rowIndex: number = records[records.length - 1];
-        records = this.parent.selectionSettings.type === 'Single' ? [rowIndex] : records;
-        let can: string = 'cancel';
-        let selectedRow: HTMLElement = this.parent.getRowByIndex(rowIndex);
-        let args: object = {
-            data: this.parent.ganttChartModule.getRecordByTaskBar(selectedRow),
-            rowIndexes: records, rowIndex: rowIndex, row: selectedRow,
-            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-            previousRow: this.parent.getRowByIndex(this.prevRowIndex),
-            previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false
-        };
-        this.parent.trigger('rowSelecting', args);
-        if (!args[can]) {
-            for (let i: number = 0; i < records.length; i++) {
-                this.addClass([records[i]]);
-            }
+        if (!isNullOrUndefined(records) && records.length > 0) {
+            this.parent.treeGrid.selectRows(records);
         }
-        this.parent.treeGrid.selectRows(records);
     }
 
     /**
@@ -223,7 +204,7 @@ export class Selection {
     }
 
     /**
-     * To get the selected records for cell selection
+     * Get the selected records for cell selection.
      * @return {IGanttData[]}
      */
     public getCellSelectedRecords(): IGanttData[] {
@@ -255,6 +236,7 @@ export class Selection {
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }
+        this.isInteracted = false;
     }
 
     private highlightSelectedRows(e: PointerEvent, fromChart: boolean): void {
@@ -264,53 +246,19 @@ export class Selection {
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
         this.isMultiShiftRequest = e.shiftKey;
         this.actualTarget = e.target;
+        this.isInteracted = true;
         this.isSelectionFromChart = fromChart;
         if (fromChart) {
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
-                this.selectedRowIndexes = [];
-                this.selectedRowIndexes.push(rIndex);
-                this.selectRow(rIndex, true);
+                   this.selectRow(rIndex, true);
             } else {
                 if (this.isMultiShiftRequest) {
                     this.selectRowsByRange(isNullOrUndefined(this.prevRowIndex) ? rIndex : this.prevRowIndex, rIndex);
                 } else {
-                    this.addRowsToSelection(rIndex);
+                    this.parent.treeGrid.grid.selectionModule.addRowsToSelection([rIndex]);
                 }
             }
         }
-    }
-    /** 
-     * Select rows with existing row selection by passing row indexes.
-     * @param {number} index - Defines the row index. 
-     * @return {void} 
-     * @hidden
-     */
-    public addRowsToSelection(index: number): void {
-        let rowIndex: number = this.selectedRowIndexes.indexOf(index);
-        let selectedRow: HTMLElement = this.parent.getRowByIndex(index);
-        let can: string = 'cancel';
-        if (rowIndex > -1) {
-            this.selectedRowIndexes.splice(rowIndex, 1);
-            let rowDeselectObj: object = {
-                rowIndex: index, data: this.parent.ganttChartModule.getRecordByTaskBar(selectedRow),
-                row: selectedRow, cancel: false, target: this.actualTarget
-            };
-            this.parent.trigger('rowDeSelecting', rowDeselectObj);
-        } else {
-            this.selectedRowIndexes.push(index);
-            let args: object = {
-                data: this.parent.ganttChartModule.getRecordByTaskBar(selectedRow),
-                rowIndexes: this.selectedRowIndexes, rowIndex: rowIndex, row: selectedRow,
-                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                previousRow: this.parent.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false
-            };
-            this.parent.trigger('rowSelecting', args);
-            if (!args[can]) {
-                this.addClass([index]);
-            }
-        }
-        this.parent.treeGrid.grid.selectionModule.addRowsToSelection([index]);
     }
 
     private getselectedrowsIndex(startIndex: number, endIndex?: number): void {
@@ -328,8 +276,8 @@ export class Selection {
 
     /** 
      * Selects a range of rows from start and end row indexes. 
-     * @param  {number} startIndex - Specifies the start row index. 
-     * @param  {number} endIndex - Specifies the end row index. 
+     * @param  {number} startIndex - Defines the start row index. 
+     * @param  {number} endIndex - Defines the end row index. 
      * @return {void} 
      */
     public selectRowsByRange(startIndex: number, endIndex?: number): void {
@@ -362,31 +310,42 @@ export class Selection {
             setCssInGridPopUp(
                 <HTMLElement>this.parent.element.querySelector('.e-ganttpopup'), e,
                 'e-rowselect e-icons e-icon-rowselect' +
-                ((this.getSelectedRecords().length > 1 || this.getSelectedRowCellIndexes().length > 1) ? ' e-spanclicked' : ''));
+                ((this.enableSelectMultiTouch &&
+                    (this.getSelectedRecords().length > 1 || this.getSelectedRowCellIndexes().length > 1)) ? ' e-spanclicked' : ''));
             (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
+            this.openPopup = true;
         } else {
             this.hidePopUp();
         }
     }
-
-    private hidePopUp(): void {
-        (<HTMLElement>document.getElementsByClassName('e-ganttpopup')[0]).style.display = 'none';
+    /** @private */
+    public hidePopUp(): void {
+        if (this.openPopup) {
+            (<HTMLElement>document.getElementsByClassName('e-ganttpopup')[0]).style.display = 'none';
+            this.openPopup = false;
+        }
     }
 
     private popUpClickHandler(e: MouseEvent): void {
         let target: Element = e.target as Element;
         let grid: Grid = this.parent.treeGrid.grid;
-        if (closest(target, '.e-ganttpopup') || closest(target, '.e-gridpopup')) {
-            if (!target.classList.contains('e-spanclicked')) {
+        let $popUpElemet: Element = closest(target, '.e-ganttpopup') ?
+            closest(target, '.e-ganttpopup') : closest(target, '.e-gridpopup');
+        if ($popUpElemet) {
+            let spanElement: Element = $popUpElemet.querySelector('.' + 'e-rowselect');
+            if (closest(target, '.e-ganttpopup') &&
+                !spanElement.classList.contains('e-spanclicked')) {
                 this.enableSelectMultiTouch = true;
-                if (closest(target, '.e-ganttpopup')) {
-                    target.classList.add('e-spanclicked');
-                }
+                spanElement.classList.add('e-spanclicked');
+            } else if (closest(target, '.e-gridpopup') &&
+                spanElement.classList.contains('e-spanclicked')) {
+                this.openPopup = true;
+                this.enableSelectMultiTouch = true;
             } else {
                 this.hidePopUp();
                 this.enableSelectMultiTouch = false;
                 if (closest(target, '.e-ganttpopup')) {
-                    target.classList.remove('e-spanclicked');
+                    spanElement.classList.remove('e-spanclicked');
                 }
             }
         } else {
@@ -403,9 +362,11 @@ export class Selection {
      */
     private mouseUpHandler(e: PointerEvent): void {
         let isTaskbarEdited: boolean = false;
-        if (this.parent.editSettings.allowTaskbarEditing &&
-            getValue('editModule.taskbarEditModule.isMouseDragged', this.parent)) {
-            isTaskbarEdited = true;
+        if (this.parent.editSettings.allowTaskbarEditing) {
+            let taskbarEdit: TaskbarEdit = this.parent.editModule.taskbarEditModule;
+            if (taskbarEdit.isMouseDragged || taskbarEdit.tapPointOnFocus) {
+                isTaskbarEdited = true;
+            }
         }
         if (!isTaskbarEdited && this.parent.element.contains(e.target as Node)) {
             let parent: Element = parentsUntil(e.target as Element, 'e-chart-row');
@@ -430,7 +391,7 @@ export class Selection {
     }
 
     /**
-     * To destroy the selection.
+     * To destroy the selection module.
      * @return {void}
      * @private
      */
@@ -439,6 +400,11 @@ export class Selection {
             return;
         }
         this.parent.off('selectRowByIndex', this.selectRowByIndex);
-        this.parent.off('chartMouseUp', this.mouseUpHandler);
+        if (this.parent.isAdaptive) {
+            this.parent.off('chartMouseClick', this.mouseUpHandler);
+            this.parent.off('treeGridClick', this.popUpClickHandler);
+        } else {
+            this.parent.off('chartMouseUp', this.mouseUpHandler);
+        }
     }
 }

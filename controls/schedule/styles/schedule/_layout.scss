@@ -2426,6 +2426,29 @@
     }
   }
 
+  #{&}.e-dialog.e-quick-dialog.e-following-events-dialog {
+    width: 420px;
+
+    .e-footer-content {
+      @if ($schedule-skin == 'highcontrast' or $schedule-skin == 'fabric') {
+        padding: 2%;
+      }
+    }
+    @media screen and (max-width: 767px) {
+      width: 289px;
+
+      .e-footer-content {
+        @if ($schedule-skin == 'highcontrast' or $schedule-skin == 'fabric') {
+          padding: 5%;
+
+          button {
+            margin-bottom: 5%;
+          }
+        }
+      }
+    }
+  }
+
   #{&}.e-dialog.e-quick-dialog {
     user-select: none;
     width: 320px;
@@ -2604,9 +2627,9 @@
       text-indent: 10px;
 
       .e-resource-color {
-        height: 15px;
-        margin-top: 10px;
-        width: 15px;
+        height: $schedule-resource-color-size;
+        margin-top: $schedule-resource-color-margin-top;
+        width: $schedule-resource-color-size;
       }
     }
   }
@@ -2616,7 +2639,9 @@
       padding: 0 15px;
 
       .e-resource-color {
-        margin-top: 15px;
+        height: $schedule-bigger-resource-color-size;
+        margin-top: $schedule-bigger-resource-color-margin-top;
+        width: $schedule-bigger-resource-color-size;
       }
     }
 
@@ -3209,7 +3234,7 @@
         right: auto;
 
         @if ($schedule-skin == 'highcontrast') {
-          margin-right: 2px;
+          margin-right: 10px;
         }
 
         &:disabled {
@@ -3539,8 +3564,8 @@
 
     .e-recurrence-icon,
     .e-recurrence-edit-icon,
-    .e-left-icon,
-    .e-right-icon,
+    .e-indicator.e-left-icon,
+    .e-indicator.e-right-icon,
     .e-event-resize.e-left-handler,
     .e-event-resize.e-right-handler {
       display: none;

@@ -4,7 +4,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
-import { DiagramModel } from '../../../src/diagram/index';
+import { DiagramModel, DiagramElement, NodeModel } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
@@ -251,6 +251,81 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('Text element With text overflow', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramoverflow' });
+            document.body.appendChild(ele);
+
+            let node: NodeModel = {
+                id: 'node1', width: 75, height: 75, offsetX: 300, offsetY: 200,
+                annotations: [{
+                    content: 'The text element given with property of overflow as clip and wrapping as wrap so that element to be clipped',
+                    style: { textWrapping: 'Wrap', textOverflow: 'Clip' }
+                }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 75, height: 75, offsetX: 400, offsetY: 200,
+                annotations: [{
+                    content: 'The text element given with property of overflow as clip and wrapping as wrap so that element to be clipped',
+                    style: { textOverflow: 'Ellipsis', textWrapping: 'Wrap' }
+                }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 75, height: 75, offsetX: 500, offsetY: 200, annotations: [{ content: 'Node3', style: { textOverflow: 'Clip', textWrapping: 'WrapWithOverflow' } }]
+            };
+            diagram = new Diagram({
+                width: '1000px', height: '500px', nodes: [node, node2, node3]
+            });
+            diagram.appendTo('#diagramoverflow');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Text overflow - Clip', (done: Function) => {
+            let node: DiagramElement = diagram.nodes[0].wrapper.children[1];
+            console.log('testcase3')
+            console.log((node as TextElement).wrapBounds.x);
+            console.log((node as TextElement).wrapBounds.width);
+            expect((node as TextElement).wrapBounds.x === -37.34375||(node as TextElement).wrapBounds.x === -37.3515625).toBe(true);
+            expect(Math.ceil((node as TextElement).wrapBounds.width) === 77 ||
+                Math.floor((node as TextElement).wrapBounds.width) === 76).toBe(true);
+            done();
+        });
+
+        it('Checking Text overflow - Ellipsis', (done: Function) => {
+            let node: DiagramElement = diagram.nodes[1].wrapper.children[1];
+            console.log('testcase4')
+            console.log((node as TextElement).wrapBounds.x);
+            console.log((node as TextElement).wrapBounds.width);
+            expect((node as TextElement).wrapBounds.x === -37.34375||(node as TextElement).wrapBounds.x === -37.3515625).toBe(true);
+            expect(Math.ceil((node as TextElement).wrapBounds.width) === 77 ||
+                Math.floor((node as TextElement).wrapBounds.width) === 76).toBe(true);
+            done();
+        });
+
+        it('Checking Text Wrapping - Wrap with overflow', (done: Function) => {
+            let node: DiagramElement = diagram.nodes[2].wrapper.children[1];
+            console.log((node as TextElement).wrapBounds.x);
+            console.log((node as TextElement).wrapBounds.width);
+            expect((node as TextElement).wrapBounds.x === -17.6796875 ||
+                (node as TextElement).wrapBounds.x === -17.84375).toBe(true);
+            expect((node as TextElement).wrapBounds.width === 35.359375 ||
+                (node as TextElement).wrapBounds.width === 35.6875).toBe(true);
+            done();
+        });
+    });
+
     describe('Text element style with Text Align', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

@@ -10,6 +10,7 @@ import { Matrix, identityMatrix, transformPointByMatrix, rotateMatrix } from '..
 import { ITouches } from '../objects/interface/interfaces';
 import { compile, createElement, Browser } from '@syncfusion/ej2-base';
 import { DiagramHtmlElement } from '../core/elements/html-element';
+import { Node } from '../objects/node';
 import { DiagramNativeElement } from '../core/elements/native-element';
 import { BaseAttributes, TextAttributes, SubTextElement, TextBounds } from '../rendering/canvas-interface';
 import { getElement } from './diagram-util';
@@ -17,6 +18,14 @@ import { getElement } from './diagram-util';
 /**
  * Defines the functionalities that need to access DOM
  */
+
+/** @private */
+export function removeElementsByClass(className: string): void {
+    let elements: HTMLCollectionOf<Element> = document.getElementsByClassName(className);
+    while (elements.length > 0) {
+        elements[0].parentNode.removeChild(elements[0]);
+    }
+}
 
 /** @private */
 export function findSegmentPoints(element: PathElement): PointModel[] {
@@ -617,11 +626,44 @@ export function getContent(element: DiagramHtmlElement | DiagramNativeElement, i
         div = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     }
     let node: Object = getElement(element);
+    let content: string = '';
+    let sentNode: Object = {};
+    if (node instanceof Node) {
+        sentNode = node;
+        let blazor: string = 'Blazor';
+        if (window[blazor]) {
+            sentNode = {};
+            let id: string = 'id';
+            let height: string = 'height';
+            let width: string = 'width';
+            let offsetX: string = 'offsetX';
+            let offsetY: string = 'offsetY';
+            let text: string = 'content';
+            let annotations: string = 'annotations';
+            let addInfo: string = 'addInfo';
+            content = element.diagramId + 'content_diagram';
+            sentNode[id] = node[id];
+            sentNode[height] = node[height];
+            sentNode[width] = node[width];
+            sentNode[offsetX] = node[offsetX];
+            sentNode[offsetY] = node[offsetY];
+            sentNode[addInfo] = node[addInfo];
+            if (node.annotations && node.annotations.length > 0) {
+                sentNode[annotations] = [];
+                for (let i: number = 0; i < node.annotations.length; i++) {
+                    sentNode[annotations][i] = { content: node.annotations[i][text] };
+                }
+            }
+        }
+    } else {
+        sentNode = node;
+        content = element.diagramId + 'template_diagram';
+    }
     let item: HTMLElement | SVGElement;
     if (typeof element.content === 'string') {
         let compiledString: Function;
         compiledString = compile(element.content);
-        for (item of compiledString(node)) {
+        for (item of compiledString(sentNode, null, null, content)) {
             div.appendChild(item);
         }
     } else {
@@ -678,4 +720,15 @@ export function createMeasureElements(): void {
     } else {
         window[measureElement].usageCount += 1;
     }
+}
+
+/** @private */
+export function setChildPosition(temp: SubTextElement, childNodes: SubTextElement[], i: number, options: TextAttributes): number {
+    if (childNodes.length > 1 && temp.x === 0 &&
+        (options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
+        options.textWrapping === 'Wrap') {
+        temp.x = childNodes[i - 1] ? childNodes[i - 1].x : -(temp.width / 2);
+        return temp.x;
+    }
+    return temp.x;
 }

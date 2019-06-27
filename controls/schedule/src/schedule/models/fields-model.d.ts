@@ -103,4 +103,10 @@ export interface FieldModel {
      */
     isReadonly?: string;
 
+    /**
+     * The `followingID` field is mapped from dataSource and usually holds the ID value of the main parent event.
+     * @default null
+     */
+    followingID?: string;
+
 }

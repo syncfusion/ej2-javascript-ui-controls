@@ -363,6 +363,7 @@ export class ContextMenu implements IAction {
                 args.cancel = true;
             }
         }
+        this.parent.applyBiggerTheme(this.contextMenu.element.parentElement);
     }
 
     private ensureTarget(targetElement: HTMLElement, selector: string): boolean {

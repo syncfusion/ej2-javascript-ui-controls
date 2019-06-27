@@ -281,6 +281,10 @@ describe('ChildProperty', () => {
                 let obj: Object = { bookID: '123', name: 'Collections' };
                 let colAr: any = [];
                 colAr.push(obj);
+                beforeEach(() => {
+                    demoClass3 = new Demo(ele);
+                    window["Blazor"] = true; 
+                });
                 it("success", (done: Function) => {
                     demoClass3.subjectArray[0].subClick =  ()=> {
                         let promise = new Promise(function(resolve, reject) {                    
@@ -291,17 +295,62 @@ describe('ChildProperty', () => {
                     demoClass3.trigger('subjectArray[0].subClick', {}, () => {
                         done();
                     });
-                   
+                });
+                it("without success", () => {
+                    demoClass3.subjectArray[0].subClick = () => {
+                        let promise = new Promise(function (resolve, reject) {
+                            setTimeout(() => resolve("done"), 0);
+                        });
+                        return promise;
+                    }
+                    let data: object = demoClass3.trigger('subjectArray[0].subClick', {}) as object;
+                    expect(data).not.toBe(null);
+                });
+
+                it("success with json", (done: Function) => {
+                    demoClass3.subjectArray[0].subClick =  ()=> {
+                        let promise = new Promise(function(resolve, reject) {                    
+                            setTimeout(() => resolve({data: "resolved"}), 0);
+                        });
+                        return promise;
+                    }
+                    demoClass3.trigger('subjectArray[0].subClick', {}, () => {
+                        done();
+                    });                   
                 });
 
                 it("error", (done: Function) => {
-                    demoClass3.subjectArray[0].subClick =  ()=> {
+                    window["Blazor"] = true;
+                    demoClass3.subjectArray[0].subClick =  ()=> {                       
                         return Promise.reject({data: {message: 'Error message'}});
                     }
                     demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {}, () => {
+                        window["Blazor"] = false;
                         done();
-                    });
-                   
+                    });                   
+                });
+
+                it("success with json string", (done: Function) => {
+                    demoClass3.subjectArray[0].subClick =  ()=> {
+                        let promise = new Promise(function(resolve, reject) {                    
+                            setTimeout(() => resolve('{"data":"success"}'), 0);
+                        });
+                        return promise;
+                    }
+                    demoClass3.trigger('subjectArray[0].subClick', {}, () => {
+                        done();
+                    });                   
+                });
+
+                it("error with json string ", (done: Function) => {
+                    window["Blazor"] = true;
+                    demoClass3.subjectArray[0].subClick =  ()=> {                       
+                        return Promise.reject('{"data":"success"}');
+                    }
+                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {}, () => {
+                        window["Blazor"] = false;
+                        done();
+                    });                   
                 });
 
                 it("success - non promise ", (done: Function) => {
@@ -310,7 +359,21 @@ describe('ChildProperty', () => {
                         done();
                     });                   
                 });
-                
+                it("success - non promise - non blazor ", (done: Function) => {
+                    window['Blazor'] = false;
+                    demoClass3.subjectArray[0].subClick =  ()=> {};
+                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {
+                        done();
+                    });                   
+                });
+                it("success - trigger when event not registered ", (done: Function) => {  
+                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {
+                        done();
+                    });                   
+                });
+                afterEach(() => {
+                    window["Blazor"] = false; 
+                });
             });
         });
     });

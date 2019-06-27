@@ -117,6 +117,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
     /**
      * Triggers on typing a character in the component.
      * @event
+     * @blazorProperty 'Filtering'
      */
     filtering?: EmitType<FilteringEventArgs>;
 

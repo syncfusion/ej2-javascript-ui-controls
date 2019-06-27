@@ -1,9 +1,10 @@
 import { Maps, doubleClick, Orientation, ITouches, ZoomSettings } from '../../index';
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
-import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim } from '../utils/helper';
+import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker,
+markerTemplate } from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
-import { MarkerSettings, LayerSettings, changeBorderWidth } from '../index';
+import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering, } from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
 import { zoomIn, zoomOut, pan } from '../model/constants';
 import { PanDirection } from '../utils/enum';
@@ -317,6 +318,8 @@ export class Zoom {
                             }
 
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
+                            this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
+                            currentEle = layerElement.childNodes[j] as Element;
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                 this.markerTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate);
                             }
@@ -361,6 +364,83 @@ export class Zoom {
             }
         }
     }
+    //tslint:disable
+    private markerTranslates(
+        element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, layerElement: Element, animate: boolean = false,
+        ): void {
+            let markerSVGObject: Element;
+            let templateFn: Function;   
+            let layerIndex: number = parseInt(element.id.split('_LayerIndex_')[1].split('_')[0], 10);   
+            markerSVGObject = this.maps.renderer.createGroup({
+                id: this.maps.element.id + '_Markers_Group',
+                style: 'pointer-events: auto;'
+            });
+            if (document.getElementById(markerSVGObject.id)) {
+                document.getElementById(markerSVGObject.id).remove();
+            }
+            let markerTemplateEle: HTMLElement = createElement('div', {
+                id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
+                className: 'template',
+                styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
+                    'top:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.y) + 'px;' +
+                    'left:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.x) + 'px;' +
+                    'height:' + this.maps.mapAreaRect.height + 'px;' +
+                    'width:' + this.maps.mapAreaRect.width + 'px;'
+            });
+            if (document.getElementById(markerTemplateEle.id)) {
+                document.getElementById(markerTemplateEle.id).remove();
+            }      
+            let markerIndex: number = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+            let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
+            currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
+                let markerDatas: Object[] = <Object[]>markerSettings.dataSource;
+                markerDatas.forEach((data: Object, dataIndex: number) => {
+                    let eventArgs: IMarkerRenderingEventArgs = {
+                        template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
+                        cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
+                        width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,                        
+                        border: markerSettings.border
+                    };
+                    this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
+                        let long: number = data['longitude'];
+                        let lati: number = data['latitude'];
+                        let offset: Point = markerSettings.offset;
+                        if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
+                            let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                                + markerIndex + '_dataIndex_' + dataIndex;
+                            let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
+                                new MapLocation(long, lati), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
+                            ) : convertGeoToPoint(lati, long, factor, currentLayer, this.maps);
+                            let animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                            let transPoint: Point = {x: x, y:y};
+                            if (eventArgs.template) {
+                                markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location,
+                                    scale, offset, this.maps);   
+                            } else {
+                                marker(eventArgs, markerSettings, markerDatas, dataIndex, location, transPoint,
+                                    markerID, offset, scale, this.maps, markerSVGObject);
+                            }
+                        }
+                    });
+                });
+            });
+            if (markerSVGObject.childElementCount > 0 && (type !== 'Template')) {
+                layerElement.appendChild(markerSVGObject);
+                if (currentLayer.markerClusterSettings.allowClustering) {
+                    this.maps.svgObject.appendChild(markerSVGObject);
+                    this.maps.element.appendChild(this.maps.svgObject);
+                    clusterTemplate(currentLayer, markerSVGObject, this.maps, layerIndex, markerSVGObject) as Element;        
+                    layerElement.appendChild(markerSVGObject);
+                }
+            }
+            if (markerTemplateEle.childElementCount > 0 && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+                getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+                if (currentLayer.markerClusterSettings.allowClustering) {
+                   clusterTemplate(currentLayer, markerTemplateEle, this.maps,layerIndex, markerSVGObject ) as HTMLElement;      
+                   getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
+                }
+            }
+        };
     /**
      * To translate the layer template elements
      * @private
@@ -522,6 +602,7 @@ export class Zoom {
             let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                 new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
             ) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
+            location.y = (this.maps.zoomSettings.enable && this.maps.isTileMap) ? location.y - 10 : location.y;
             if (this.maps.isTileMap) {
                 if (type === 'Template') {
                     let templateOffset: ClientRect = element.getBoundingClientRect();
@@ -1039,7 +1120,7 @@ export class Zoom {
         this.touchMoveList = [];
         this.lastScale = 1;
         this.maps.element.style.cursor = 'auto';
-        if (!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) {
+        if ((!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) && this.currentLayer.type === 'SubLayer') {
             this.toAlignSublayer();
             this.distanceX = this.distanceY = null;
         }

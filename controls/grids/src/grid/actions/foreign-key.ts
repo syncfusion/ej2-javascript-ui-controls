@@ -120,7 +120,7 @@ export class ForeignKey extends Data {
 
     private isFiltered(column: Column): { column: PredicateModel[], isTrue: boolean } {
         let filterColumn: PredicateModel[] = this.parent.filterSettings.columns.filter((fColumn: PredicateModel) => {
-            return (fColumn.field === column.foreignKeyValue);
+            return (fColumn.uid === column.uid);
         });
         return {
             column: filterColumn, isTrue: !!filterColumn.length

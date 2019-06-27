@@ -85,8 +85,19 @@ export const updateData: string = 'update-data';
 /** @hidden */
 export const doubleTap: string = 'double-tap';
 /** @hidden */
+export const virtualColumnIndex: string = 'virtualColumnIndex';
+/** @hidden */
+export const virtualActionArgs: string = 'virtual-action-args';
+/** @hidden */
+export const dataListener: string = 'data-listener';
+/** @hidden */
+export const indexModifier: string = 'index-modifier';
+/** @hidden */
 export const beforeStartEdit: string = 'edit-form';
 /** @hidden */
 export const beforeBatchCancel: string = 'before-batch-cancel';
 /** @hidden */
 export const batchEditFormRendered: string = 'batcheditform-rendered';
+/** @hidden */
+export const detailDataBound: string = 'detailDataBound';
+

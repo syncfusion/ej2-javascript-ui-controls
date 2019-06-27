@@ -6,7 +6,7 @@ import { NavigationPane } from '../../src/file-manager/layout/navigation-pane';
 import { DetailsView } from '../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../src/file-manager/actions/toolbar';
 import { createElement, Browser, Instance, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, data3, data10, data11, stringData } from './data';
+import { toolbarItems, toolbarItems1, data1, data2, data3, data10, data11, stringData, accessData1 } from './data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -36,7 +36,8 @@ describe('FileManager control', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -63,7 +64,8 @@ describe('FileManager control', () => {
                 ajaxSettings: {
                     url: '/FileOperations',
                 }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -122,7 +124,8 @@ describe('FileManager control', () => {
                     url: '/FileOperations',
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -193,7 +196,8 @@ describe('FileManager control', () => {
                     url: '/FileOperations',
                 },
                 showThumbnail: false
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -253,7 +257,8 @@ describe('FileManager control', () => {
                     url: '/FileOperations',
                 },
                 showThumbnail: false
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -300,7 +305,8 @@ describe('FileManager control', () => {
                 ajaxSettings: {
                     url: '/FileOperations',
                 }
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -424,7 +430,8 @@ describe('FileManager control', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -448,6 +455,166 @@ describe('FileManager control', () => {
                     expect(JSON.parse(stringData).files.length).toBe(treeObj.length);
                     done();
                 }, 500);
+            }, 500);
+        });
+    });
+    describe('Access control Large icons view', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('initial testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aLargeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aLargeLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-locked');
+                let aLargeLi1: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item.e-fe-locked');
+                expect(aTreeLi1.length).toEqual(4);
+                expect(aLargeLi1.length).toEqual(6);
+                expect(treeLi[2].classList.contains('e-fe-locked')).toBe(true);
+                expect(largeLi[1].classList.contains('e-fe-locked')).toBe(true);
+                done();
+            }, 500);
+        });
+    });
+    describe('Access control details view', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('initial testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(accessData1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(gridLi.length).toEqual(9);
+                let aTreeLi: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                let aGridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row.e-fe-hidden');
+                expect(aTreeLi.length).toEqual(2);
+                expect(aGridLi.length).toEqual(4);
+                expect(treeLi[2].classList.contains('e-fe-hidden')).toBe(true);
+                expect(gridLi[1].classList.contains('e-fe-hidden')).toBe(true);
+                let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-locked');
+                let aGridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row.e-fe-locked');
+                expect(aTreeLi1.length).toEqual(4);
+                expect(aGridLi1.length).toEqual(6);
+                expect(treeLi[2].classList.contains('e-fe-locked')).toBe(true);
+                expect(gridLi[1].classList.contains('e-fe-locked')).toBe(true);
+                done();
+            }, 500);
+        });
+    });
+    describe('Worst case testing', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement, demo: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            demo = createElement('div', { id: 'demo', className: 'e-active' });
+            document.body.appendChild(demo);
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            demo.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        fit('page having active class', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileAccessOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            feObj.dataBind();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(largeLi.length).toEqual(5);
+                done();
             }, 500);
         });
     });

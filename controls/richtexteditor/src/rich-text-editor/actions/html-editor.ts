@@ -1,5 +1,6 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer, NotifyArgs, IToolbarOptions } from '../base/interface';
+import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer } from '../base/interface';
+import { NotifyArgs, IToolbarOptions } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
@@ -15,6 +16,8 @@ import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
 import { getTextNodesUnder } from '../base/util';
 import { isIDevice } from '../../common/util';
+import { SanitizeHtmlHelper } from './sanitize-helper';
+import { RichTextEditorModel } from '../base/rich-text-editor-model';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -29,11 +32,13 @@ export class HtmlEditor {
     private nodeSelectionObj: NodeSelection;
     private rangeCollection: Range[] = [];
     private saveSelection: NodeSelection;
+    private sanitize: SanitizeHtmlHelper;
 
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
+        this.sanitize = new SanitizeHtmlHelper();
         this.addEventListener();
     }
     /**
@@ -43,6 +48,14 @@ export class HtmlEditor {
      */
     public destroy(): void {
         this.removeEventListener();
+    }
+
+    /** 
+     * @hidden
+     */
+    public sanitizeHelper(value: string): string {
+        value = this.sanitize.initialize(value, this.parent);
+        return value;
     }
 
     private addEventListener(): void {
@@ -133,7 +146,7 @@ export class HtmlEditor {
             let httpSplitText: string[] = httpText.split(' ');
             let splittedText: string = '';
             for (let i: number = 1; i < httpSplitText.length; i++) {
-                splittedText =  splittedText + ' ' + httpSplitText[i];
+                splittedText = splittedText + ' ' + httpSplitText[i];
             }
             let lastElement: HTMLElement = this.parent.createElement('span');
             lastElement.innerHTML = splittedText;
@@ -154,7 +167,11 @@ export class HtmlEditor {
             if (lastElement.innerHTML !== '') {
                 resultElement.appendChild(lastElement);
             }
-            this.parent.executeCommand('insertHTML', resultElement);
+            if (!isNullOrUndefined(this.parent.pasteCleanupModule)) {
+                e.callBack(resultElement.innerHTML);
+            } else {
+                this.parent.executeCommand('insertHTML', resultElement);
+            }
         }
     }
     private spaceLink(e?: KeyboardEvent): void {
@@ -163,6 +180,8 @@ export class HtmlEditor {
         let text: string = range.startContainer.textContent;
         let splitText: string[] = text.split(' ');
         let urlText: string = splitText[splitText.length - 1];
+        let urlTextRange: number = range.startOffset - (text.length - splitText[splitText.length - 1].length);
+        urlText = urlText.slice(0, urlTextRange);
         let regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
         if (selectNodeEle[0].nodeName !== 'A' && urlText.match(regex)) {
             let selection: NodeSelection = this.nodeSelectionObj.save(
@@ -302,11 +321,12 @@ export class HtmlEditor {
         let editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
         let option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
         if (isNullOrUndefined(this.parent.formatter)) {
-            this.parent.formatter = new HTMLFormatter({
+            let formatterClass: HTMLFormatter = new HTMLFormatter({
                 currentDocument: this.contentRenderer.getDocument(),
                 element: editElement,
                 options: option
             });
+            this.parent.setProperties({ formatter: formatterClass }, true);
         } else {
             this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
         }
@@ -320,8 +340,13 @@ export class HtmlEditor {
      * Called internally if any of the property value changed.
      * @hidden
      */
-    protected onPropertyChanged(e: NotifyArgs): void {
+    protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         // On property code change here
+        if (!isNullOrUndefined(e.newProp.formatter)) {
+            let editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
+            let option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps, undoRedoTimer: this.parent.undoRedoTimer };
+            this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
+        }
     }
 
     /**

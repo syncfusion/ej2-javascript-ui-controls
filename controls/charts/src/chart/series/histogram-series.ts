@@ -101,11 +101,14 @@ export class HistogramSeries extends ColumnSeries {
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index + '_NDLine', 'transparent',
                 2, series.chart.themeStyle.errorBar, series.opacity, series.dashArray, direction
-            )
+            ),
+            new Int32Array([series.clipRect.x, series.clipRect.y])
         );
-        (<HTMLElement>distributionLine).style.visibility = (series.animation.enable && series.chart.animateSeries) ?
-            'hidden' : 'visible';
-        series.seriesElement.appendChild(distributionLine);
+        (<HTMLElement>distributionLine).style.visibility = (!series.chart.enableCanvas) ? ((series.animation.enable &&
+                                                            series.chart.animateSeries) ? 'hidden' : 'visible') : null;
+        if (!series.chart.enableCanvas) {
+            series.seriesElement.appendChild(distributionLine);
+        }
     }
     /**
      * Animates the series.

@@ -6,6 +6,9 @@
 export const loaded: string = 'loaded';
 
 /** @private */
+export const legendClick: string = 'legendClick';
+
+/** @private */
 export const load: string = 'load';
 
 /** @private */
@@ -61,3 +64,11 @@ export const scrollEnd : string = 'scrollEnd';
 export const scrollChanged : string = 'scrollChanged';
 /** @private */
 export const stockEventRender: string = 'stockEventRender';
+/** @private */
+export const multiLevelLabelClick: string = 'multiLevelLabelClick';
+/** @private */
+export const dragStart: string = 'dragStart';
+/** @private */
+export const drag: string = 'drag';
+/** @private */
+export const dragEnd: string = 'dragEnd';

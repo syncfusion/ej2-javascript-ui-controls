@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <meta name="description" content="Typescript UI Controls" />
     <meta name="author" content="Syncfusion" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../../css/material.css" />
     <script data-main="views-config-group" src="../../../node_modules/requirejs/require.js"></script>
     <script src="require.config.js"></script>
@@ -16,9 +16,20 @@
 <body>
     <div class="container-fluid" style="margin-top:15px;">
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-9">
                 <div id="schedule">
                 </div>
+            </div>
+            <div class="col-lg-3 property-section">
+                <table id="property">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input class="e-btn" id="printSchedule" type="button" value="Print" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

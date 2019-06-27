@@ -149,10 +149,19 @@ export class DataSource extends ChildProperty<DataSource> {
     /**
      * Sets the data source either as a collection of objects or as an URL of DataManager
      * @default null
+     * @deprecated
      */
 
     @Property(null)
     public dataManager: DataManager;
+
+    /**
+     * Sets the data source either as a collection of objects or as an URL of DataManager
+     * @default null
+     */
+
+    @Property(null)
+    public dataSource: DataManager;
 
     /**
      * Sets the unique id of the root data source item
@@ -172,6 +181,7 @@ export class DataSource extends ChildProperty<DataSource> {
      * Binds the custom data with node model
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public doBinding: Function | string;

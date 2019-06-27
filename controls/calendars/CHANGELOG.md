@@ -2,19 +2,47 @@
 
 ## [Unreleased]
 
-## 17.1.51 (2019-06-11)
+## 17.2.28-beta (2019-06-27)
+
+### Calendar
+
+#### New Features
+
+- #233255, #232782 - Now, you can change the day header format of calendar using  'dayHeaderFormat' property.
 
 ### DatePicker
+
+#### New Features
+
+- #228310, #233267 - Now, you can add additional html attribute to the element using  `htmlAttributes` property.
 
 #### Bug Fixes
 
 - #231616, #234495 - In mobile device, DatePicker popup displays in the center of the viewport.
 
+- #238455 – Now, change event argument `isInteracted` return as true when edit the date value using keyboard.
+
 ### DateRangePicker
+
+#### New Features
+
+- #228310, #233267 - Now, you can add additional html attribute to the element using  `htmlAttributes` property.
 
 #### Bug Fixes
 
 - #231616, #234495 - In mobile device, DateRangePicker popup displays in the center of the viewport.
+
+### DateTimePicker
+
+#### New Features
+
+- #228310, #233267 - Now, you can add additional html attribute to the element using  `htmlAttributes` property.
+
+### TimePicker
+
+#### New Features
+
+- #228310, #233267 - Now, you can add additional html attribute to the element using  `htmlAttributes` property.
 
 ## 17.1.49 (2019-05-29)
 
@@ -91,7 +119,8 @@
 #### Bug Fixes
 
 - #231596, #232441 - Issue with clear button not shown when disable the `allowEdit` property has been fixed.
-- #231003 Issue with different icon size in bootstrap theme has been fixed.
+
+- #231003 - Issue with different icon size in bootstrap theme has been fixed.
 
 ## 17.1.32-beta (2019-03-13)
 

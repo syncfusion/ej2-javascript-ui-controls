@@ -1,4 +1,4 @@
-import { DropDownBase, dropDownBaseClasses, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
 import {SelectionMode,ToolBarPosition,BeforeItemRenderEventArgs,ListBoxChangeEventArgs,DragEventArgs} from "./list-box";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -26,6 +26,12 @@ export interface SelectionSettingsModel {
      * @default false
      */
     showSelectAll?: boolean;
+
+    /**
+     * Set the position of the checkbox.
+     * @default 'Left'
+     */
+    checkboxPosition?: 'Left' | 'Right';
 
 }
 
@@ -85,6 +91,14 @@ export interface ListBoxModel extends DropDownBaseModel{
     allowDragAndDrop?: boolean;
 
     /**
+     * To enable the filtering option in this component. 
+     * Filter action performs when type in search box and collect the matched item through `filtering` event.
+     * If searching character does not match, `noRecordsTemplate` property value will be shown.
+     * @default false
+     */
+    allowFiltering?: boolean;
+
+    /**
      * Defines the scope value to group sets of draggable and droppable ListBox.
      * A draggable with the same scope value will be accepted by the droppable.
      * @default ''
@@ -94,36 +108,49 @@ export interface ListBoxModel extends DropDownBaseModel{
     /**
      * Triggers while rendering each list item.
      * @event
+     * @blazorProperty 'OnItemRender'
      */
     beforeItemRender?: EmitType<BeforeItemRenderEventArgs>;
 
     /**
-     * Triggers while selecting the list item.
+     * Triggers on typing a character in the component.
      * @event
+     * @blazorProperty 'ItemSelected'
+     */
+    filtering?: EmitType<FilteringEventArgs>;
+
+    /**
+     * Triggers when an item in the popup is selected by the user either with mouse/tap or with keyboard navigation.
+     * @event
+     * @private
      */
     select?: EmitType<SelectEventArgs>;
 
     /**
      * Triggers while select / unselect the list item.
      * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ListBoxChangeEventArgs>;
 
     /**
      * Triggers after dragging the list item.
      * @event
+     * @blazorProperty 'OnDragStart'
      */
     dragStart?: EmitType<DragEventArgs>;
 
     /**
      * Triggers while dragging the list item.
      * @event
+     * @blazorProperty 'Dragging'
      */
     drag?: EmitType<DragEventArgs>;
 
     /**
      * Triggers before dropping the list item on another list item.
      * @event
+     * @blazorProperty 'Dropped'
      */
     drop?: EmitType<DragEventArgs>;
 

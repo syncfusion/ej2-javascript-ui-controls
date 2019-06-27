@@ -1,7 +1,11 @@
+import { ContextMenuType } from './enum';
+import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { IGanttData, IValidateMode } from '../base/interface';
 import { Column } from '../models/column';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
+import { TimelineViewMode } from '../base/enum';
+import { TimelineTierSettingsModel } from '../models/timeline-settings-model';
 /**
  * Specifies Gantt-chart interfaces
  * 
@@ -23,7 +27,7 @@ export interface IGanttData {
     /** Defines the direct parent item of task. */
     parentItem?: IParent;
     /** Defines the parent unique id of task. */
-    parentUniqueID?: number;
+    parentUniqueID?: string;
     /** Defines the data which specified in data source. */
     taskData?: Object;
     /** Defines the unique id of task. */
@@ -147,8 +151,8 @@ export interface IQueryTaskbarInfoEventArgs {
     taskbarBorderColor?: string;
     /** Defines the progressbar background color. */
     progressBarBgColor?: string;
-    //progressBarBorderColor?: string;
     /** Defines the milestone color. */
+    //progressBarBorderColor?: string;
     milestoneColor?: string;
     /** Defines the right label color. */
     rightLabelColor?: string;
@@ -184,6 +188,14 @@ export interface ITaskbarEditedEventArgs {
     cancel?: boolean;
     /** Defines the action. */
     action?: string;
+}
+export interface IKeyPressedEventArgs {
+    /** Defines the request type. */
+    requestType?: string;
+    /** Defines the key action. */
+    action?: string;
+    /** Defines the event. */
+    keyEvent?: Event;
 }
 
 export interface ITaskDeletedEventArgs {
@@ -355,4 +367,77 @@ export interface ITaskAddedEventArgs {
     action?: string;
 }
 
+export interface ContextMenuOpenEventArgs extends ContextMenuOpenEventArgs {
+    /** Defines the TreeGrid row element */
+    gridRow?: Element;
+    /** Defines the chart row element */
+    chartRow?: Element;
+    /** Defines the selected row record */
+    rowData?: IGanttData;
+    /** Defines the context menu type */
+    type?: ContextMenuType;
+    /** Defines the hidden items collection */
+    hideItems?: string[];
+    /** Defines the disabled items collection */
+    disableItems?: string[];
+}
+
+export interface ContextMenuClickEventArgs extends ContextMenuClickEventArgs {
+    /** Defines the selected row record */
+    rowData?: IGanttData;
+    /** Defines the context menu type */
+    type?: ContextMenuType;
+}
+
 export type ITimelineFormatter = (date?: Date, format?: string, tier?: string, mode?: string) => string;
+
+export interface ZoomEventArgs {
+    requestType?: string;
+    timeline?: ZoomTimelineSettings;
+}
+
+export interface ZoomTimelineSettings {
+    /** Defines the timeline view mode. */
+    timelineViewMode?: TimelineViewMode;
+    /** Defines top tier values. */
+    topTier?: TimelineTierSettingsModel;
+    /** Defines bottom tier values. */
+    bottomTier?: TimelineTierSettingsModel;
+    /** Defines timeline unit size. */
+    timelineUnitSize?: number;
+    weekStartDay?: number;
+    /** Defines weekend background color. */
+    weekendBackground?: string;
+    /** Defines showTooltip whether the tooltip will rendered or not. */
+    showTooltip?: boolean;
+    /** Defines perDay width. */
+    perDayWidth?: number;
+    /** Defines zooming level. */
+    level?: number;
+    /** Defines the updateTimescaleView. */
+    updateTimescaleView?: boolean;
+}
+/** @private */
+export interface MousePoint {
+    pageX?: number;
+    pageY?: number;
+}
+
+/** @private */
+export interface ITemplateData {
+    expanded?: boolean;
+    hasChildRecords?: boolean;
+    index?: number;
+    level?: number;
+    baselineLeft?: number;
+    baselineWidth?: number;
+    taskStartDate?: Date;
+    taskEndDate?: Date;
+    taskDuration?: number;
+    taskDurationUnit?: string;
+    isAutoSchedule?: boolean;
+    isMilestone?: boolean;
+    left?: number;
+    progressWidth?: number;
+    width?: number;
+}

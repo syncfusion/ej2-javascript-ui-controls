@@ -46,6 +46,7 @@ export function getNearestValue(values: number[], point: number): number {
     });
 }
 
+
 /**
  * Data point
  * @public

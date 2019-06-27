@@ -52,9 +52,10 @@ class SvgRenderer {
     /**
      * To draw a path
      * @param {PathAttributes} options - Options to draw a path in SVG
+     * @param {Int32Array} canvasTranslate - Used as dummy variable for canvas rendering
      * @return {Element}
      */
-    drawPath(options) {
+    drawPath(options, canvasTranslate) {
         let path = document.getElementById(options.id);
         if (path === null) {
             path = document.createElementNS(this.svgLink, 'path');
@@ -80,7 +81,7 @@ class SvgRenderer {
      * @param {BaseAttibutes} options - Required options to draw a rectangle in SVG
      * @return {Element}
      */
-    drawRectangle(options) {
+    drawRectangle(options, canvasTranslate) {
         let rectangle = document.getElementById(options.id);
         if (rectangle === null) {
             rectangle = document.createElementNS(this.svgLink, 'rect');
@@ -167,7 +168,7 @@ class SvgRenderer {
      * @param {TextAttributes} options - Options needed to draw a text in SVG
      * @return {Element}
      */
-    createText(options, label) {
+    createText(options, label, transX, transY) {
         let text = document.createElementNS(this.svgLink, 'text');
         text = this.setElementAttributes(options, text);
         if (!isNullOrUndefined(label)) {
@@ -364,6 +365,15 @@ class SvgRenderer {
         }
         return element;
     }
+    /**
+     * To create a Html5 canvas element
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options to create canvas
+     * @return {HTMLCanvasElement}
+     */
+    createCanvas(options) {
+        return null;
+    }
 }
 
 /**
@@ -442,18 +452,20 @@ class CanvasRenderer {
         this.ctx.lineTo(options.x2, options.y2);
         this.ctx.stroke();
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     }
     /**
      * To draw a rectangle
      * @param {RectAttributes} options - required options to draw a rectangle on the canvas
      * @return {void}
      */
-    drawRectangle(options) {
+    drawRectangle(options, canvasTranslate) {
         let canvasCtx = this.ctx;
         let cornerRadius = options.rx;
         this.ctx.save();
         this.ctx.beginPath();
+        if (canvasTranslate) {
+            this.ctx.translate(canvasTranslate[0], canvasTranslate[1]);
+        }
         this.ctx.globalAlpha = this.getOptionValue(options, 'opacity');
         this.setAttributes(options);
         this.ctx.rect(options.x, options.y, options.width, options.height);
@@ -470,7 +482,7 @@ class CanvasRenderer {
         }
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return (this.canvasObj);
     }
     // To draw the corner of a rectangle
     drawCornerRadius(options) {
@@ -498,7 +510,6 @@ class CanvasRenderer {
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
-        this.dataUrl = this.canvasObj.toDataURL();
     }
     /**
      * To draw a path on the canvas
@@ -533,6 +544,12 @@ class CanvasRenderer {
                         this.ctx.lineTo(x1, y1);
                     }
                     break;
+                case 'Q':
+                    let q1 = parseFloat(dataSplit[i + 3]);
+                    let q2 = parseFloat(dataSplit[i + 4]);
+                    this.ctx.quadraticCurveTo(x1, y1, q1, q2);
+                    i = i + 2;
+                    break;
                 case 'C':
                     let c1 = parseFloat(dataSplit[i + 3]);
                     let c2 = parseFloat(dataSplit[i + 4]);
@@ -560,7 +577,10 @@ class CanvasRenderer {
                     i = i + 5;
                     break;
                 case 'z':
+                case 'Z':
                     this.ctx.closePath();
+                    //since for loop is incremented by 3, to get next value after 'z' i is decremented for 2.
+                    i = i - 2;
                     break;
             }
         }
@@ -573,7 +593,7 @@ class CanvasRenderer {
         }
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     }
     /**
      * To draw a text
@@ -581,7 +601,7 @@ class CanvasRenderer {
      * @param {string} label - Specifies the text which has to be drawn on the canvas
      * @return {void}
      */
-    drawText(options, label) {
+    createText(options, label, transX, transY) {
         let fontWeight = this.getOptionValue(options, 'font-weight');
         if (!isNullOrUndefined(fontWeight) && fontWeight.toLowerCase() === 'regular') {
             fontWeight = 'normal';
@@ -604,18 +624,18 @@ class CanvasRenderer {
             this.ctx.textBaseline = options.baseline;
         }
         let txtlngth = 0;
-        this.ctx.translate(options.x + (txtlngth / 2), options.y);
+        this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
         this.ctx.rotate(options.labelRotation * Math.PI / 180);
         this.ctx.fillText(label, 0, 0);
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     }
     /**
      * To draw circle on the canvas
      * @param {CircleAttributes} options - required options to draw the circle
      * @return {void}
      */
-    drawCircle(options) {
+    drawCircle(options, canvasTranslate) {
         let canvasCtx = this.ctx;
         this.ctx.save();
         this.ctx.beginPath();
@@ -623,11 +643,14 @@ class CanvasRenderer {
         this.ctx.fillStyle = options.fill;
         this.ctx.globalAlpha = options.opacity;
         this.ctx.fill();
+        if (canvasTranslate) {
+            this.ctx.translate(canvasTranslate[0], canvasTranslate[1]);
+        }
         this.setAttributes(options);
         this.ctx.stroke();
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     }
     /**
      * To draw polyline
@@ -653,14 +676,13 @@ class CanvasRenderer {
         this.ctx.strokeStyle = options.stroke;
         this.ctx.stroke();
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     }
     /**
      * To draw an ellipse on the canvas
      * @param {EllipseAttributes} options - options needed to draw ellipse
      * @return {void}
      */
-    drawEllipse(options) {
+    drawEllipse(options, canvasTranslate) {
         let canvasCtx = this.ctx;
         let circumference = Math.max(options.rx, options.ry);
         let scaleX = options.rx / circumference;
@@ -668,6 +690,9 @@ class CanvasRenderer {
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.translate(options.cx, options.cy);
+        if (canvasTranslate) {
+            this.ctx.translate(canvasTranslate[0], canvasTranslate[1]);
+        }
         this.ctx.save();
         this.ctx.scale(scaleX, scaleY);
         this.ctx.arc(0, 0, circumference, 0, 2 * Math.PI, false);
@@ -679,7 +704,6 @@ class CanvasRenderer {
         this.ctx.stroke();
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
     }
     /**
      * To draw an image
@@ -694,7 +718,6 @@ class CanvasRenderer {
             this.ctx.drawImage(imageObj, options.x, options.y, options.width, options.height);
         }
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     }
     /**
      * To create a linear gradient
@@ -737,7 +760,6 @@ class CanvasRenderer {
         else {
             colorName = colors[0].color.toString();
         }
-        this.dataUrl = this.canvasObj.toDataURL();
         return colorName;
     }
     /**
@@ -752,7 +774,7 @@ class CanvasRenderer {
         for (let i = 0; i < keys.length; i++) {
             element.setAttribute(keys[i], values[i]);
         }
-        return element;
+        return null;
     }
     /**
      * To update the values of the canvas element attributes
@@ -770,6 +792,86 @@ class CanvasRenderer {
             img.src = this.dataUrl;
         }
     }
+    /**
+     * This method clears the given rectangle region
+     * @param options
+     */
+    clearRect(rect) {
+        this.ctx.restore();
+        this.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
+    }
+    ;
+    /**
+     * For canvas rendering in chart
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options needed to create group
+     * @return {Element}
+     */
+    createGroup(options) {
+        return null;
+    }
+    /**
+     * To render a clip path
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options required to render a clip path
+     * @return {Element}
+     */
+    drawClipPath(options) {
+        return null;
+    }
+    /**
+     * Clip method to perform clip in canvas mode
+     * @param options
+     */
+    canvasClip(options) {
+        this.ctx.save();
+        this.ctx.fillStyle = 'transparent';
+        this.ctx.rect(options.x, options.y, options.width, options.height);
+        this.ctx.fill();
+        this.ctx.clip();
+    }
+    /**
+     * Tp restore the canvas
+     * @param options
+     */
+    canvasRestore() {
+        this.ctx.restore();
+    }
+    /**
+     * To draw a polygon
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {PolylineAttributes} options - Options needed to draw a polygon in SVG
+     * @return {Element}
+     */
+    drawPolygon(options) {
+        return null;
+    }
+    /**
+     * To create defs element in SVG
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @return {Element}
+     */
+    createDefs() {
+        return null;
+    }
+    /**
+     * To create clip path in SVG
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options needed to create clip path
+     * @return {Element}
+     */
+    createClipPath(options) {
+        return null;
+    }
+    /**
+     * To create a Html5 SVG element
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {SVGAttributes} options - Options to create SVG
+     * @return {Element}
+     */
+    createSvg(options) {
+        return null;
+    }
 }
 
 /**
@@ -780,6 +882,7 @@ class CanvasRenderer {
 function getTooltipThemeColor(theme) {
     let style;
     switch (theme) {
+        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 tooltipFill: '#ffffff',
@@ -827,6 +930,7 @@ function getTooltipThemeColor(theme) {
  * @private
  */
 function measureText(text, font) {
+    let breakText = text || ''; // For avoid NuLL value
     let htmlObject = document.getElementById('chartmeasuretext');
     if (htmlObject === null) {
         htmlObject = createElement('text', { id: 'chartmeasuretext' });
@@ -841,7 +945,7 @@ function measureText(text, font) {
         }
         text = textArray.join(' ');
     }
-    htmlObject.innerHTML = text;
+    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
@@ -960,16 +1064,18 @@ class CustomizeOption {
 }
 /** @private */
 class TextOption extends CustomizeOption {
-    constructor(id, x, y, anchor, text, transform = '', baseLine) {
+    constructor(id, x, y, anchor, text, transform = '', baseLine, labelRotation) {
         super(id);
         this.transform = '';
         this.baseLine = 'auto';
+        this.labelRotation = 0;
         this.x = x;
         this.y = y;
         this.anchor = anchor;
         this.text = text;
         this.transform = transform;
         this.baseLine = baseLine;
+        this.labelRotation = labelRotation;
     }
 }
 /** @private */
@@ -1127,7 +1233,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 };
 /**
  * Configures the fonts in charts.
- * @public
+ * @private
  */
 class TextStyle extends ChildProperty {
 }
@@ -1200,7 +1306,7 @@ __decorate([
  *   tooltipObj.appendTo("#tooltip");
  * </script>
  * ```
- * @public
+ * @private
  */
 let Tooltip = class Tooltip extends Component {
     /**
@@ -1216,7 +1322,9 @@ let Tooltip = class Tooltip extends Component {
      */
     preRender() {
         this.initPrivateVariable();
-        this.removeSVG();
+        if (!this.isCanvas) {
+            this.removeSVG();
+        }
         this.createTooltipElement();
     }
     initPrivateVariable() {
@@ -1268,7 +1376,11 @@ let Tooltip = class Tooltip extends Component {
             let svgObject = this.renderer.createSvg({ id: this.element.id + '_svg' });
             this.element.appendChild(svgObject);
             // Group to hold text and path.
-            let groupElement = this.renderer.createGroup({ id: this.element.id + '_group' });
+            let groupElement = document.getElementById(this.element.id + '_group');
+            if (!groupElement) {
+                groupElement = this.renderer.createGroup({ id: this.element.id + '_group' });
+                groupElement.setAttribute('transform', 'translate(0,0)');
+            }
             svgObject.appendChild(groupElement);
             let pathElement = this.renderer.drawPath({
                 'id': this.element.id + '_path', 'stroke-width': this.theme === 'Bootstrap4' ? 0 : this.border.width,
@@ -1363,7 +1475,7 @@ let Tooltip = class Tooltip extends Component {
             shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
             shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
             let defElement = this.renderer.createDefs();
-            defElement.setAttribute('id', 'SVG_tooltip_definition');
+            defElement.setAttribute('id', this.element.id + 'SVG_tooltip_definition');
             groupElement.appendChild(defElement);
             defElement.innerHTML = shadow;
         }
@@ -1413,11 +1525,11 @@ let Tooltip = class Tooltip extends Component {
         let fontWeight = 'Normal';
         let labelColor = this.themeStyle.tooltipLightLabel;
         let dy = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
-        if (!isRender) {
+        if (!isRender || this.isCanvas) {
             removeElement(this.element.id + '_text');
             removeElement(this.element.id + '_header_path');
             removeElement(this.element.id + '_trackball_group');
-            removeElement('SVG_tooltip_definition');
+            removeElement(this.element.id + 'SVG_tooltip_definition');
         }
         let options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), 'start', '');
         let parentElement = textElement(options, font, null, groupElement);
@@ -1503,6 +1615,9 @@ let Tooltip = class Tooltip extends Component {
         let argsData = { cancel: false, name: 'tooltipRender', tooltip: this };
         this.trigger('tooltipRender', argsData);
         let parent = document.getElementById(this.element.id);
+        if (this.isCanvas) {
+            this.removeSVG();
+        }
         let firstElement = parent.firstElementChild;
         if (firstElement) {
             remove(firstElement);
@@ -1514,7 +1629,8 @@ let Tooltip = class Tooltip extends Component {
                 elem.appendChild(templateElement[0]);
             }
             parent.appendChild(elem);
-            let rect = this.element.getBoundingClientRect();
+            let element = this.isCanvas ? elem : this.element;
+            let rect = element.getBoundingClientRect();
             this.padding = 0;
             this.elementSize = new Size(rect.width, rect.height);
             let tooltipRect = this.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
@@ -1522,7 +1638,7 @@ let Tooltip = class Tooltip extends Component {
                 this.animateTooltipDiv(this.element, tooltipRect);
             }
             else {
-                this.updateDiv(this.element, tooltipRect.x, tooltipRect.y);
+                this.updateDiv(element, tooltipRect.x, tooltipRect.y);
             }
         }
         else {
@@ -1651,10 +1767,18 @@ let Tooltip = class Tooltip extends Component {
     }
     /** @private */
     fadeOut() {
-        let tooltipElement = getElement(this.element.id);
+        let tooltipElement = (this.isCanvas && !this.template) ? getElement(this.element.id + '_svg') :
+            getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup = tooltipElement.firstChild;
-            let opacity = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
+            if (this.isCanvas && !this.template) {
+                tooltipGroup = document.getElementById(this.element.id + '_group') ? document.getElementById(this.element.id + '_group') :
+                    tooltipGroup;
+            }
+            let opacity;
+            if (tooltipGroup) {
+                opacity = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
+            }
             new Animation({}).animate(tooltipGroup, {
                 duration: 200,
                 progress: (args) => {
@@ -1796,6 +1920,12 @@ __decorate([
 __decorate([
     Complex({ x: 0, y: 0, width: 0, height: 0 }, AreaBounds)
 ], Tooltip.prototype, "areaBounds", void 0);
+__decorate([
+    Property(null)
+], Tooltip.prototype, "availableSize", void 0);
+__decorate([
+    Property(false)
+], Tooltip.prototype, "isCanvas", void 0);
 __decorate([
     Event()
 ], Tooltip.prototype, "tooltipRender", void 0);

@@ -1,5 +1,6 @@
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
 import { cldrData, removeClass, getValue, getDefaultDateObject, closest } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { Dialog, BeforeOpenEventArgs, DialogModel } from '@syncfusion/ej2-popups';
@@ -77,7 +78,8 @@ export class EventWindow {
             visible: false,
             width: '500px',
             beforeOpen: this.onBeforeOpen.bind(this),
-            beforeClose: this.onBeforeClose.bind(this)
+            beforeClose: this.onBeforeClose.bind(this),
+            close: this.onDialogClose.bind(this)
         };
         if (this.parent.isAdaptive) {
             dialogModel.cssClass = cls.EVENT_WINDOW_DIALOG_CLASS + ' ' + cls.DEVICE_CLASS;
@@ -139,6 +141,7 @@ export class EventWindow {
             case 'Save':
             case 'EditOccurrence':
             case 'EditSeries':
+            case 'EditFollowingEvents':
                 if (type === 'EditOccurrence' && !this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
                     addClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
                 }
@@ -164,24 +167,31 @@ export class EventWindow {
         if (this.cellClickAction) {
             eventProp.duration = this.getSlotDuration();
         }
-        this.parent.trigger(event.popupOpen, eventProp);
-        args.cancel = eventProp.cancel;
-        this.duration = this.cellClickAction ? eventProp.duration : null;
-        this.refreshDateTimePicker(this.duration);
-        if (this.cellClickAction && eventProp.duration !== this.getSlotDuration() && isNullOrUndefined(this.parent.editorTemplate)) {
-            let startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
-            let endObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
-            endObj.value = new Date(startObj.value.getTime() + (util.MS_PER_MINUTE * eventProp.duration));
-            endObj.dataBind();
-        }
-        if (this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
-            this.recurrenceEditor = this.getInstance('e-recurrenceeditor') as RecurrenceEditor;
-        }
+        this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
+            args.cancel = popupArgs.cancel;
+            this.duration = this.cellClickAction ? popupArgs.duration : null;
+            this.refreshDateTimePicker(this.duration);
+            if (this.cellClickAction && popupArgs.duration !== this.getSlotDuration() && isNullOrUndefined(this.parent.editorTemplate)) {
+                let startObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+                let endObj: DateTimePicker = this.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+                endObj.value = new Date(startObj.value.getTime() + (util.MS_PER_MINUTE * popupArgs.duration));
+                endObj.dataBind();
+            }
+            if (this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
+                this.recurrenceEditor = this.getInstance('e-recurrenceeditor') as RecurrenceEditor;
+            }
+        });
     }
 
     private onBeforeClose(): void {
         this.resetForm();
         this.parent.eventBase.focusElement();
+    }
+
+    private onDialogClose(): void {
+        if (this.parent.editorTemplate) {
+            resetBlazorTemplate(this.parent.element.id + 'editorTemplate', 'EditorTemplate');
+        }
     }
 
     private getEventWindowContent(): HTMLElement {
@@ -202,7 +212,10 @@ export class EventWindow {
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
             }
-            append(this.parent.getEditorTemplate()(args), form);
+            let templateId: string = this.parent.element.id + 'editorTemplate';
+            let editorTemplate: NodeList = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId);
+            append(editorTemplate, form);
+            updateBlazorTemplate(templateId, 'EditorTemplate');
         } else {
             form.appendChild(this.getDefaultEventWindowContent());
         }
@@ -294,12 +307,13 @@ export class EventWindow {
             calendarMode: this.parent.calendarMode,
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             floatLabelType: 'Always',
             format: (isNullOrUndefined(this.parent.dateFormat) ?
                 this.getFormat('dateFormats') : this.parent.dateFormat) + ' ' + this.getFormat('timeFormats'),
             placeholder: this.getFieldLabel(value),
             step: this.getSlotDuration(),
-            value: new Date(), width: '100%'
+            value: this.parent.getCurrentTime(), width: '100%'
         });
         dateTimePicker.appendTo(dateTimeInput);
         return dateTimeDiv;
@@ -842,7 +856,7 @@ export class EventWindow {
             }
         } else {
             startDate = new Date(this.parent.activeCellsData.startTime.getTime());
-            if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' || this.parent.activeCellsData.isAllDay) {
+            if (this.parent.activeCellsData.isAllDay) {
                 let startHour: Date = this.parent.getStartEndTime(this.parent.workHours.start);
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
@@ -1069,6 +1083,7 @@ export class EventWindow {
             let currentAction: CurrentAction;
             if (!isNullOrUndefined(editedData[this.fields.recurrenceRule])) {
                 currentAction = this.parent.currentAction;
+                eventObj.Guid = (<{ [key: string]: Object }>this.parent.activeEventData.event).Guid;
                 if (this.parent.currentAction === 'EditOccurrence') {
                     if (!eventObj[this.fields.recurrenceID]) {
                         eventObj[this.fields.id] = this.parent.eventBase.getEventMaxID();
@@ -1084,6 +1099,9 @@ export class EventWindow {
                 }
                 if (this.parent.currentAction === 'EditSeries' || eventObj[this.fields.id] !== editedData[this.fields.id]) {
                     eventObj[this.fields.recurrenceID] = editedData[this.fields.id];
+                } else if (this.parent.currentAction === 'EditFollowingEvents') {
+                    eventObj[this.fields.id] = this.parent.eventBase.getEventMaxID();
+                    eventObj[this.fields.followingID] = editedData[this.fields.id];
                 }
             }
             if (isResourceEventExpand) {
@@ -1135,8 +1153,25 @@ export class EventWindow {
         let recEditor: RecurrenceEditor = this.recurrenceEditor;
         let interval: number = (this.getInstance('e-repeat-interval.e-numerictextbox') as NumericTextBox).value;
         if (alert !== this.l10n.getConstant('ok')) {
-            if (this.parent.currentAction === 'EditSeries' &&
-                !isNullOrUndefined(this.eventData[this.parent.eventFields.recurrenceException])) {
+            let activeEvent: { [key: string]: Object } = <{ [key: string]: Object }>this.parent.activeEventData.event;
+            let excludedEvents: Object[] = [];
+            if ((this.parent.currentAction === 'EditSeries' || this.parent.currentAction === 'EditFollowingEvents')
+                && !isNullOrUndefined(activeEvent)) {
+                let eventStartTime: string = activeEvent[this.parent.eventFields.startTime] as string;
+                let seriesEvents: { [key: string]: Object }[] = this.parent.eventBase.getSeriesEvents(this.eventData, eventStartTime);
+                if (seriesEvents.length > 0) {
+                    excludedEvents = this.parent.eventBase.getEditedOccurrences(seriesEvents, eventStartTime);
+                } else {
+                    let event: { [key: string]: Object } = this.parent.eventBase.getEventById(
+                        activeEvent[this.parent.eventFields.id] as string);
+                    excludedEvents = this.parent.eventBase.getEditedOccurrences([event], eventStartTime);
+                }
+                if (this.parent.currentAction === 'EditSeries'
+                    && !isNullOrUndefined(this.eventData[this.parent.eventFields.recurrenceException])) {
+                    excludedEvents.push(this.eventData);
+                }
+            }
+            if (excludedEvents.length > 0) {
                 alertMessage = 'seriesChangeAlert';
             }
             if ((this.getInstance('e-end-on-left .e-ddl .e-dropdownlist') as DropDownList).value === 'until' &&
@@ -1286,6 +1321,9 @@ export class EventWindow {
             if (this.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastlevel))) {
                 let lastResource: { [key: string]: Object }[] = lastResouceData.dataSource as { [key: string]: Object }[];
                 let index: number = util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string);
+                if (index < 0) {
+                    return;
+                }
                 let groupId: object = lastResource[index][lastResouceData.groupIDField];
                 let filter: TdData = lastlevel.filter((obj: TdData) => obj.resourceData[lastResouceData.idField] === resourceData[i]).
                     filter((obj: TdData) => obj.resourceData[lastResouceData.groupIDField] === groupId)[0];
@@ -1398,11 +1436,11 @@ export class EventWindow {
     private setDefaultValueToElement(element: HTMLElement): void {
         if (element.classList.contains('e-datepicker')) {
             let instance: DatePicker = (element as EJ2Instance).ej2_instances[0] as DatePicker;
-            instance.value = new Date();
+            instance.value = this.parent.getCurrentTime();
             instance.dataBind();
         } else if (element.classList.contains('e-datetimepicker')) {
             let instance: DateTimePicker = (element as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            instance.value = new Date();
+            instance.value = this.parent.getCurrentTime();
             instance.dataBind();
         } else if (element.classList.contains('e-dropdownlist')) {
             let instance: DropDownList = (element as EJ2Instance).ej2_instances[0] as DropDownList;

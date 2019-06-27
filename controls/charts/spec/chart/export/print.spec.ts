@@ -194,6 +194,7 @@ describe('Chart Control', () => {
                 done();
             }, 500);
         });
+        
         it('Checking export - PDF - multi controls in horizontal mode', (done: Function) => {
             chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj], 500, 450, false);
             setTimeout(() => {
@@ -201,6 +202,7 @@ describe('Chart Control', () => {
                 done();
             }, 500);
         });
+
         it('Checking export - PDF - multi controls width out size', (done: Function) => {
             chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj]);
             setTimeout(() => {

@@ -27,10 +27,10 @@ export class AxisFieldRenderer {
         this.createPivotButtons();
     }
     private createPivotButtons(): void {
-        let rows: IFieldOptions[] = this.parent.dataSource.rows;
-        let columns: IFieldOptions[] = this.parent.dataSource.columns;
-        let values: IFieldOptions[] = this.parent.dataSource.values;
-        let filters: IFieldOptions[] = this.parent.dataSource.filters;
+        let rows: IFieldOptions[] = this.parent.dataSourceSettings.rows;
+        let columns: IFieldOptions[] = this.parent.dataSourceSettings.columns;
+        let values: IFieldOptions[] = this.parent.dataSourceSettings.values;
+        let filters: IFieldOptions[] = this.parent.dataSourceSettings.filters;
         let fields: IFieldOptions[][] = [rows, columns, values, filters];
         let parentElement: HTMLElement = this.parent.dialogRenderer.parentElement;
         if (parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-filters')) {

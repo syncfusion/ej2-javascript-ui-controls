@@ -70,6 +70,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
      * diagram.appendTo('#diagram');
      * ```
      * @default null
+     * @deprecated
      */
     @Property(null)
     public arrangeTick: Function | string;

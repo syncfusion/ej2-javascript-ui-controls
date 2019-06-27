@@ -1,11 +1,12 @@
 import { closest, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { initialEnd, click, keyPressed } from '../base/constant';
+import { initialEnd, click, keyPressed, commandClick } from '../base/constant';
 import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
-import { IGrid, EJ2Intance } from '../base/interface';
+import { IGrid, EJ2Intance, CommandClickEventArgs } from '../base/interface';
 import { CellRendererFactory } from '../services/cell-render-factory';
 import { CommandColumnRenderer } from '../renderer/command-column-renderer';
 import { ButtonModel } from '@syncfusion/ej2-buttons';
+import { Column } from '../models/column';
 
 /**
  * `CommandColumn` used to handle the command column actions.
@@ -33,35 +34,54 @@ export class CommandColumn {
         let gObj: IGrid = this.parent;
         let gID: string = gObj.element.id;
         let target: HTMLElement = (<HTMLElement>closest(<Node>e.target, 'button'));
-        if (!target || !gObj.editModule || !(<HTMLElement>closest(<Node>e.target, '.e-unboundcell'))) {
+        if (!target || !(<HTMLElement>closest(<Node>e.target, '.e-unboundcell'))) {
             return;
         }
         let buttonObj: ButtonModel = (<EJ2Intance>target).ej2_instances[0];
         let type: string = (<{ commandType?: string }>buttonObj).commandType;
-        if (buttonObj.disabled || !gObj.editModule) {
-            return;
-        }
-        switch (type) {
-            case 'Edit':
-                gObj.editModule.endEdit();
-                gObj.editModule.startEdit(<HTMLTableRowElement>closest(target, 'tr'));
-                break;
-            case 'Cancel':
-                gObj.editModule.closeEdit();
-                break;
-            case 'Save':
-                gObj.editModule.endEdit();
-                break;
-            case 'Delete':
-                if (gObj.editSettings.mode !== 'Batch') {
+        let commandColumn: Object;
+        (<{columnModel?: Column[]}>this.parent).columnModel.forEach((col: Column) => {
+            if (col.commands) {
+                col.commands.forEach((commandCol: Object) => {
+                    let typeInString: string = 'type';
+                    if (commandCol[typeInString] === type) {
+                        commandColumn = commandCol;
+                    }
+                });
+            }
+        });
+        let args: CommandClickEventArgs = {
+            cancel: false,
+            target: target,
+            commandColumn: commandColumn,
+            rowData: gObj.getRowObjectFromUID(closest(target, '.e-row').getAttribute('data-uid')).data
+        };
+        this.parent.trigger(commandClick, args, (commandclickargs: CommandClickEventArgs) => {
+            if (buttonObj.disabled || !gObj.editModule || commandclickargs.cancel) {
+                return;
+            }
+            switch (type) {
+                case 'Edit':
                     gObj.editModule.endEdit();
-                }
-                gObj.clearSelection();
-                //for toogle issue when dbl click
-                gObj.selectRow(parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10), false);
-                gObj.editModule.deleteRecord();
-                break;
-        }
+                    gObj.editModule.startEdit(<HTMLTableRowElement>closest(target, 'tr'));
+                    break;
+                case 'Cancel':
+                    gObj.editModule.closeEdit();
+                    break;
+                case 'Save':
+                    gObj.editModule.endEdit();
+                    break;
+                case 'Delete':
+                    if (gObj.editSettings.mode !== 'Batch') {
+                        gObj.editModule.endEdit();
+                    }
+                    gObj.clearSelection();
+                    //for toogle issue when dbl click
+                    gObj.selectRow(parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10), false);
+                    gObj.editModule.deleteRecord();
+                    break;
+            }
+        });
     }
 
     /**

@@ -420,7 +420,7 @@ describe('Scrollbar Chart ', () => {
                 chartObj.loaded = null;
                 trigger.draganddropEvent(ele, 150, 150, 400, 400);
                 let mulitiLevelLabel: Element = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
-                let border: string = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0').getAttribute('d').split('M')[1];
+                let border: string = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0').getAttribute('d').split('M')[1];
                 let x: string = mulitiLevelLabel.getAttribute('x');
                 let y: string = mulitiLevelLabel.getAttribute('y');
                 expect(x === '469.17125000000004' || x === '457.1112499999999').toBe(true);
@@ -435,7 +435,7 @@ describe('Scrollbar Chart ', () => {
             loaded = (args: Object): void => {
                 chartObj.loaded = null;
                 let mulitiLevelLabel: Element = document.getElementById('container0_Axis_MultiLevelLabel_Level_0_Text_0');
-                let border: string = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0').getAttribute('d').split('M')[1];
+                let border: string = document.getElementById('container0_Axis_MultiLevelLabel_Rect_0_0').getAttribute('d').split('M')[1];
                 let x: string = mulitiLevelLabel.getAttribute('x');
                 let y: string = mulitiLevelLabel.getAttribute('y');
                 expect(x === '469.17125000000004' || x === '457.1112499999999').toBe(true);
@@ -610,11 +610,15 @@ describe('Scrollbar Chart ', () => {
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 550, 390, true)));
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 650, 390)));
             let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-            expect(thumbEle.getAttribute('x') === '234.5' || thumbEle.getAttribute('x') === '238.5').toBe(true);
-            expect(thumbEle.getAttribute('width') === '350').toBe(true);
+            let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(1)).toString();
+            let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+            expect(thumbX === '234.5' || thumbX === '238.5').toBe(true);
+            expect(thumbWidth === '350').toBe(true);
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
-            expect(thumbEle.getAttribute('x') === '234.5' || thumbEle.getAttribute('x') === '238.5').toBe(true);
-            expect(thumbEle.getAttribute('width') === '150').toBe(true);
+            thumbX = (parseFloat(thumbEle.getAttribute('x')).toFixed(1)).toString();
+            thumbWidth = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+            expect(thumbX === '234.5' || thumbX === '238.5').toBe(true);
+            expect(thumbWidth === '150').toBe(true);
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 450, 390)));
             done();
         });
@@ -623,11 +627,15 @@ describe('Scrollbar Chart ', () => {
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 120, 390)));
             let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-            expect(thumbEle.getAttribute('x') === '54.5' || thumbEle.getAttribute('x') === '58.5').toBe(true);
-            expect(thumbEle.getAttribute('width') === '330').toBe(true);
+            let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(1)).toString();
+            let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+            expect(thumbX === '54.5' || thumbX === '58.5').toBe(true);
+            expect(thumbWidth === '330').toBe(true);
             chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 250, 390)));
-            expect(thumbEle.getAttribute('x') === '184.5' || thumbEle.getAttribute('x') === '188.5').toBe(true);
-            expect(thumbEle.getAttribute('width') === '200').toBe(true);
+            thumbX = (parseFloat(thumbEle.getAttribute('x')).toFixed(1)).toString();
+            thumbWidth = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+            expect(thumbX === '184.5' || thumbX === '188.5').toBe(true);
+            expect(thumbWidth === '200').toBe(true);
             done();
         });
 
@@ -644,9 +652,10 @@ describe('Scrollbar Chart ', () => {
                 };
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '204.98499215253867' || thumbEle.getAttribute('x') === '209.8458249606484').toBe(true);
-                expect(thumbEle.getAttribute('width') === '60.06006006006006' ||
-                    thumbEle.getAttribute('width') === '59.77286312014346').toBe(true);
+                let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
+                let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+                expect(thumbX === '204.98' || thumbX === '209.85').toBe(true);
+                expect(thumbWidth === '60' || thumbWidth === '60').toBe(true);
                 done();
             };
             chartObj.zoomSettings.enableMouseWheelZooming = true;
@@ -670,8 +679,10 @@ describe('Scrollbar Chart ', () => {
                 };
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '210.9453445522114' || thumbEle.getAttribute('x') === '216.03119470743226').toBe(true);
-                expect(thumbEle.getAttribute('width') === '40').toBe(true);
+                let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
+                let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+                expect(thumbX === '210.95' || thumbX === '216.03').toBe(true);
+                expect(thumbWidth === '40').toBe(true);
                 done();
             };
             chartObj.theme = 'HighContrastLight';
@@ -694,8 +705,10 @@ describe('Scrollbar Chart ', () => {
                 };
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '212.75573526148483' || thumbEle.getAttribute('x') === '217.90025241723998').toBe(true);
-                expect(thumbEle.getAttribute('width') === '40').toBe(true);
+                let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
+                let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+                expect(thumbX === '212.76' || thumbX === '217.90').toBe(true);
+                expect(thumbWidth === '40').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1100,8 +1113,12 @@ describe('Scrollbar Chart ', () => {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 120, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '127.96011210089091' || thumbEle.getAttribute('x') === '127.95924732259039').toBe(true);
-                expect(thumbEle.getAttribute('width') === '456.5398878991091' || thumbEle.getAttribute('width') === '460.5407526774096').toBe(true);
+                let thumbX : string = (parseFloat(thumbEle.getAttribute('x')).toFixed(2)).toString();
+                let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+                console.log(thumbX);
+                console.log(thumbWidth);
+                expect(thumbX === '127.96').toBe(true);
+                expect(thumbWidth === '457' || thumbWidth === '461').toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 120, 390)));
                 done();
             });
@@ -1169,8 +1186,10 @@ describe('Inversed Scrollbar ', function () {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 800, 390)));
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '8' || thumbEle.getAttribute('x') === '358').toBe(true);
-                expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '240').toBe(true);
+                let thumbX : string =  Math.round((parseFloat(thumbEle.getAttribute('x')))).toLocaleString();
+                let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+                expect(thumbX === '8' || thumbX === '358').toBe(true);
+                expect(thumbWidth === '100' || thumbWidth === '240').toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 450, 390)));
                 done();
             });
@@ -1179,8 +1198,10 @@ describe('Inversed Scrollbar ', function () {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 450, 390)));
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '8' || thumbEle.getAttribute('x') === '358').toBe(true);
-                expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '240').toBe(true);
+                let thumbX : string =  Math.round((parseFloat(thumbEle.getAttribute('x')))).toLocaleString();
+                let thumbWidth : string = Math.round((parseFloat(thumbEle.getAttribute('width')))).toLocaleString();
+                expect(thumbX === '8' || thumbX === '358').toBe(true);
+                expect(thumbWidth === '100' || thumbWidth === '240').toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 450, 390)));
                 done();
             });

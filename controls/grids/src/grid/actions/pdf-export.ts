@@ -119,6 +119,10 @@ export class PdfExport {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport);
                 });
             });
+        } else if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType === 'CurrentPage') {
+            return new Promise((resolve: Function, reject: Function) => {
+                this.exportWithData(parent, pdfDoc, resolve, this.parent.getCurrentViewRecords(), pdfExportProperties, isMultipleExport);
+            });
         } else {
             let allPromise: Promise<Object>[] = [];
             allPromise.push(this.data.getData({}, ExportHelper.getQuery(parent, this.data)));

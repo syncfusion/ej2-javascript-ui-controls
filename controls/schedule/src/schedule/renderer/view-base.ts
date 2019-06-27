@@ -10,32 +10,33 @@ import * as cls from '../base/css-constant';
 /**
  * view base
  */
+
+export namespace ViewHelper {
+    export const getDayName: Function = (proxy: Schedule, date: Date) => {
+        return proxy.getDayNames('abbreviated')[date.getDay()];
+    };
+    export const getDate: Function = (proxy: Schedule, date: Date) => {
+        return proxy.globalize.formatDate(date, { format: 'd', calendar: proxy.getCalendarMode() });
+    };
+    export const getTime: Function = (proxy: Schedule, date: Date) => {
+        if (proxy.isAdaptive) {
+            if (proxy.timeFormat === 'HH:mm') {
+                return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
+            }
+            return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
+        }
+        return proxy.getTimeString(date);
+    };
+    export const getTimelineDate: Function = (proxy: Schedule, date: Date) => {
+        return proxy.globalize.formatDate(date, { skeleton: 'MMMd', calendar: proxy.getCalendarMode() }) + ', ' +
+            proxy.getDayNames('wide')[date.getDay()];
+    };
+}
 export class ViewBase {
     public element: HTMLElement;
     public parent: Schedule;
     public renderDates: Date[];
     public colLevels: TdData[][];
-    public customHelper: Object = {
-        getDayName: (dt: Date) => {
-            return this.parent.getDayNames('abbreviated')[dt.getDay()];
-        },
-        getDate: (dt: Date) => {
-            return this.parent.globalize.formatDate(dt, { format: 'd', calendar: this.parent.getCalendarMode() });
-        },
-        getTime: (dt: Date) => {
-            if (this.parent.isAdaptive) {
-                if (this.parent.timeFormat === 'HH:mm') {
-                    return this.parent.globalize.formatDate(dt, { format: 'H', calendar: this.parent.getCalendarMode() });
-                }
-                return this.parent.globalize.formatDate(dt, { skeleton: 'h', calendar: this.parent.getCalendarMode() });
-            }
-            return this.parent.getTimeString(dt);
-        },
-        getTimelineDate: (dt: Date) => {
-            return this.parent.globalize.formatDate(
-                dt, { skeleton: 'MMMd', calendar: this.parent.getCalendarMode() }) + ', ' + this.parent.getDayNames('wide')[dt.getDay()];
-        }
-    };
     /**
      * Constructor
      */
@@ -196,10 +197,11 @@ export class ViewBase {
         return endHour;
     }
     public isCurrentDate(date: Date): boolean {
-        return date.setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0);
+        return date.setHours(0, 0, 0, 0) === this.parent.getCurrentTime().setHours(0, 0, 0, 0);
     }
     public isCurrentMonth(date: Date): boolean {
-        return date.getFullYear() === new Date().getFullYear() && date.getMonth() === new Date().getMonth();
+        return date.getFullYear() ===
+            this.parent.getCurrentTime().getFullYear() && date.getMonth() === this.parent.getCurrentTime().getMonth();
     }
     public isWorkDay(date: Date, workDays: number[] = this.parent.activeViewOptions.workDays): boolean {
         if (workDays.indexOf(date.getDay()) >= 0) {
@@ -353,11 +355,10 @@ export class ViewBase {
     }
     public setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string = 'e-text-ellipsis'): void {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            let data: ResourceDetails = {
-                resource: tdData.resource,
-                resourceData: tdData.resourceData
-            };
-            append(this.parent.getResourceHeaderTemplate()(data), tdElement);
+            let data: ResourceDetails = { resource: tdData.resource, resourceData: tdData.resourceData };
+            let templateId: string = this.parent.element.id + 'resourceHeaderTemplate';
+            let quickTemplate: NodeList = this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId);
+            append(quickTemplate, tdElement);
         } else {
             tdElement.appendChild(createElement('div', {
                 className: className, innerHTML: tdData.resourceData[tdData.resource.textField] as string

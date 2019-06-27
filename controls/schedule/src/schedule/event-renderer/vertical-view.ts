@@ -107,11 +107,11 @@ export class VerticalEvent extends EventBase {
         }
         let eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
         let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
-        this.parent.trigger(events.eventRendered, args);
-        if (args.cancel) {
-            return;
-        }
-        appointmentWrap[index].appendChild(appointmentElement);
+        this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
+            if (!eventArgs.cancel) {
+                appointmentWrap[index].appendChild(appointmentElement);
+            }
+        });
     }
 
     private processBlockEvents(): void {
@@ -166,7 +166,9 @@ export class VerticalEvent extends EventBase {
         let resources: number[] = this.getResourceList();
         let dateCount: number = 0;
         for (let resource of resources) {
+            this.slots = [];
             let renderDates: Date[] = this.dateRender[resource];
+            this.slots.push(renderDates.map((date: Date) => { return +date; }));
             for (let day: number = 0, length: number = renderDates.length; day < length; day++) {
                 this.renderedEvents = [];
                 let startDate: Date = new Date(renderDates[day].getTime());
@@ -238,7 +240,8 @@ export class VerticalEvent extends EventBase {
         let templateElement: HTMLElement[];
         let eventData: { [key: string]: Object } = <{ [key: string]: Object }>data;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            templateElement = this.parent.getAppointmentTemplate()(record);
+            let templateId: string = this.parent.element.id + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId);
         } else {
             let appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: recordSubject });
             if (isAllDay) {
@@ -406,26 +409,26 @@ export class VerticalEvent extends EventBase {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(eventObj, true, record.data, resource);
                 addClass([appointmentElement], cls.ALLDAY_APPOINTMENT_CLASS);
                 let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false };
-                this.parent.trigger(events.eventRendered, args);
-                if (args.cancel) {
-                    return;
-                }
-                eventWrapper.appendChild(appointmentElement);
-                let appHeight: number = appointmentElement.offsetHeight;
-                topValue += (allDayIndex === 0 ? cellTop : (cellTop + (allDayIndex * appHeight))) + 1;
-                setStyleAttribute(appointmentElement, { 'width': appWidth + '%', 'top': topValue + 'px' });
-                if (allDayIndex > 1) {
-                    this.moreEvents.push(appointmentElement);
-                    for (let count: number = 0, length: number = allDayDifference; count < length; count++) {
-                        this.createMoreIndicator(allDayRow, count, wIndex);
+                this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
+                    if (!eventArgs.cancel) {
+                        eventWrapper.appendChild(appointmentElement);
+                        let appHeight: number = appointmentElement.offsetHeight;
+                        topValue += (allDayIndex === 0 ? cellTop : (cellTop + (allDayIndex * appHeight))) + 1;
+                        setStyleAttribute(appointmentElement, { 'width': appWidth + '%', 'top': formatUnit(topValue) });
+                        if (allDayIndex > 1) {
+                            this.moreEvents.push(appointmentElement);
+                            for (let count: number = 0, length: number = allDayDifference; count < length; count++) {
+                                this.createMoreIndicator(allDayRow, count, wIndex);
+                            }
+                        }
+                        allDayRowCell.setAttribute('data-count', this.allDayLevel.toString());
+                        let allDayRowHeight: number = ((!this.parent.uiStateValues.expand && this.allDayLevel > 2) ?
+                            (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
+                        this.setAllDayRowHeight(allDayRowHeight);
+                        this.addOrRemoveClass();
+                        this.wireAppointmentEvents(appointmentElement, true, eventObj);
                     }
-                }
-                allDayRowCell.setAttribute('data-count', this.allDayLevel.toString());
-                let allDayRowHeight: number = ((!this.parent.uiStateValues.expand && this.allDayLevel > 2) ?
-                    (3 * appHeight) : ((this.allDayLevel + 1) * appHeight)) + 4;
-                this.setAllDayRowHeight(allDayRowHeight);
-                this.addOrRemoveClass();
-                this.wireAppointmentEvents(appointmentElement, true, eventObj);
+                });
             }
         }
     }

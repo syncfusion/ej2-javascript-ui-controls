@@ -21,7 +21,8 @@ export class Double {
     public min: Object;
     /** @private */
     public max: Object;
-
+    private isDrag: boolean;
+    private interval: number;
     private paddingInterval: number;
 
     /**
@@ -129,13 +130,13 @@ export class Double {
                     || (series.type.indexOf('Bar') > -1 && axis.orientation === 'Vertical')) {
                     if ((series.xAxis.valueType === 'Double' || series.xAxis.valueType === 'DateTime')
                         && series.xAxis.rangePadding === 'Auto') {
-                        this.paddingInterval = getMinPointsDelta(series.xAxis, axis.series) / 2;
+                        this.paddingInterval = getMinPointsDelta(series.xAxis, axis.series) * 0.5;
                     }
                 }
                 //For xRange
                 if (axis.orientation === 'Horizontal') {
                     if (this.chart.requireInvertedAxis) {
-                        this.findMinMax(series.yMin, series.yMax);
+                        this.yAxisRange(axis, series);
                     } else {
                         this.findMinMax(<number>series.xMin - this.paddingInterval, <number>series.xMax + this.paddingInterval);
                     }
@@ -145,11 +146,22 @@ export class Double {
                     if (this.chart.requireInvertedAxis) {
                         this.findMinMax(<number>series.xMin - this.paddingInterval, <number>series.xMax + this.paddingInterval);
                     } else {
-                        this.findMinMax(series.yMin, series.yMax);
+                        this.yAxisRange(axis, series);
                     }
                 }
             }
         }
+    }
+    private yAxisRange(axis: Axis, series: Series): void {
+        if (series.dragSettings.enable && this.chart.dragY) {
+            if (this.chart.dragY >= axis.visibleRange.max) {
+                series.yMax = this.chart.dragY + axis.visibleRange.interval;
+            }
+            if (this.chart.dragY <= axis.visibleRange.min) {
+                series.yMin = this.chart.dragY - axis.visibleRange.interval;
+            }
+        }
+        this.findMinMax(series.yMin, series.yMax);
     }
     private findMinMax(min: Object, max: Object): void {
         if (this.min === null || this.min > min) {
@@ -186,9 +198,12 @@ export class Double {
     }
 
     public updateActualRange(axis: Axis, minimum: number, maximum: number, interval: number): void {
-        axis.actualRange.min = axis.minimum != null ? <number>axis.minimum : minimum;
-        axis.actualRange.max = axis.maximum != null ? <number>axis.maximum : maximum;
-        axis.actualRange.interval = axis.interval != null ? axis.interval : interval;
+        axis.actualRange = {
+            min: axis.minimum != null ? <number>axis.minimum : minimum,
+            max: axis.maximum != null ? <number>axis.maximum : maximum,
+            interval: axis.interval != null ? axis.interval : interval,
+            delta: axis.actualRange.delta
+        };
     }
 
     private findAdditional(axis: Axis, start: number, end: number, interval: number): void {
@@ -207,7 +222,7 @@ export class Double {
         let startValue: number = start;
         if (start < 0) {
             startValue = 0;
-            minimum = start + (start / 20);
+            minimum = start + (start * 0.05);
             remaining = interval + (minimum % interval);
             if ((0.365 * interval) >= remaining) {
                 minimum -= interval;
@@ -216,13 +231,13 @@ export class Double {
                 minimum = (minimum - interval) - (minimum % interval);
             }
         } else {
-            minimum = start < ((5.0 / 6.0) * end) ? 0 : (start - (end - start) / 2);
+            minimum = start < ((5.0 / 6.0) * end) ? 0 : (start - (end - start) * 0.5);
             if (minimum % interval > 0) {
                 minimum -= (minimum % interval);
             }
         }
 
-        maximum = (end > 0) ? (end + (end - startValue) / 20) : (end - (end - startValue) / 20);
+        maximum = (end > 0) ? (end + (end - startValue) * 0.05) : (end - (end - startValue) * 0.05);
         remaining = interval - (maximum % interval);
         if ((0.365 * interval) >= remaining) {
             maximum += interval;

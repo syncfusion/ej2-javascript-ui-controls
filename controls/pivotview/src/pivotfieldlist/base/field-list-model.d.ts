@@ -1,4 +1,4 @@
-import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties } from '../../base/engine';import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, AggregateEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs } from '../../common/base/interface';import { Mode } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { CommonArgs } from '../../common/base/interface';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceModel, FieldOptionsModel } from '../../pivotview/model/dataSource-model';import { DataSource } from '../../pivotview/model/dataSource';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { PivotUtil } from '../../base/util';
+import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties } from '../../base/engine';import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, AggregateEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs } from '../../common/base/interface';import { Mode } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { CommonArgs } from '../../common/base/interface';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceSettingsModel, FieldOptionsModel } from '../../pivotview/model/datasourcesettings-model';import { DataSourceSettings } from '../../pivotview/model/datasourcesettings';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { PivotUtil } from '../../base/util';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -9,7 +9,7 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * It allows to feed raw data, dataSource and properties to customize the data source
      */
-    dataSource?: DataSourceModel;
+    dataSourceSettings?: DataSourceSettingsModel;
 
     /**
      * It allows to render Pivot Field List at fixed or popup mode.
@@ -60,48 +60,57 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * This allows any customization of Pivot Field List properties before rendering.
      * @event
+     * @blazorproperty 'OnLoad'
+     * @deprecated
      */
     load?: EmitType<LoadEventArgs>;
 
     /**
      * This allows any customization of Pivot Field List properties before pivotengine populate.
      * @event
+     * @blazorproperty 'EnginePopulating'
+     * @deprecated
      */
     enginePopulating?: EmitType<EnginePopulatingEventArgs>;
 
     /**
      * This allows any customization of Pivot Field List properties before pivotengine populate.
      * @event
+     * @blazorproperty 'EnginePopulated'
+     * @deprecated
      */
     enginePopulated?: EmitType<EnginePopulatedEventArgs>;
 
     /**
      * Triggers when a field getting dropped into any axis.
      * @event
+     * @blazorproperty 'FieldDropped'
+     * @deprecated
      */
     onFieldDropped?: EmitType<FieldDroppedEventArgs>;
 
     /**
      * This allows to change the cell value.
      * @event
+     * @deprecated
      */
     aggregateCellInfo?: EmitType<AggregateEventArgs>;
 
     /**
      * Triggers when data source is populated in the Pivot Field List.
-     * @event 
+     * @event
      */
     dataBound?: EmitType<Object>;
 
     /**
      * Triggers when data source is created in the Pivot Field List.
-     * @event 
+     * @event
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when data source is destroyed in the Pivot Field List.
-     * @event 
+     * @event
      */
     destroyed?: EmitType<Object>;
 

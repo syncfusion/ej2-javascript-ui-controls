@@ -240,7 +240,7 @@ export class DateProcessor {
     }
     /**
      * To calculate duration from start date and end date
-     * @param {IGanttData} ganttData - Defines the gantt data.
+     * @param {IGanttData} ganttData - Defines the gantt data. 
      */
     public calculateDuration(ganttData: IGanttData): void {
         let ganttProperties: ITaskData = ganttData.ganttProperties;
@@ -451,8 +451,11 @@ export class DateProcessor {
         let dayWorkingTime: DayWorkingTimeModel[] = this.parent.dayWorkingTime;
         let length: number = dayWorkingTime.length;
         let totalSeconds: number = 0; let startDate: Date = new Date('10/11/2018'); let endDate: Date = new Date('10/12/2018');
+        this.parent.nonWorkingHours = [];
         let nonWorkingHours: number[] = this.parent.nonWorkingHours;
+        this.parent.workingTimeRanges = [];
         let workingTimeRanges: IWorkingTimeRange[] = this.parent.workingTimeRanges;
+        this.parent.nonWorkingTimeRanges = [];
         let nonWorkingTimeRanges: IWorkingTimeRange[] = this.parent.nonWorkingTimeRanges;
 
         for (let count: number = 0; count < length; count++) {
@@ -514,10 +517,10 @@ export class DateProcessor {
         let duration: number = null;
 
         if (typeof value === 'string') {
-            let values: Object[] = value.match(/(\d*\.*\d+|[A-z]+)/g);
+            let values: Object[] = value.match(/(\d*\.*\d+|.+$)/g);
             if (values && values.length <= 2) {
-                duration = parseFloat(values[0].toString());
-                let unit: string = values[1] ? values[1].toString().toLowerCase() : null;
+                duration = parseFloat(values[0].toString().trim());
+                let unit: string = values[1] ? values[1].toString().trim().toLowerCase() : null;
                 if (getValue('minute', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
                     durationUnit = DurationUnits.Minute.toString();
                 } else if (getValue('hour', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
@@ -898,17 +901,21 @@ export class DateProcessor {
      * @private
      */
     public calculateProjectDates(editArgs?: Object): void {
-        let projectStartDate: Date = this.getDateFromFormat(this.parent.projectStartDate);
-        let projectEndDate: Date = this.getDateFromFormat(this.parent.projectEndDate);
+        let projectStartDate: Date = this.parent.timelineModule.isZooming && this.parent.cloneProjectStartDate
+            ? this.getDateFromFormat(this.parent.cloneProjectStartDate) : this.getDateFromFormat(this.parent.projectStartDate);
+        let projectEndDate: Date = this.parent.timelineModule.isZooming && this.parent.cloneProjectEndDate
+            ? this.getDateFromFormat(this.parent.cloneProjectEndDate) : this.getDateFromFormat(this.parent.projectEndDate);
         let minStartDate: Date = null; let maxEndDate: Date = null;
         let flatData: IGanttData[] = this.parent.flatData;
-        if (((!projectStartDate || !projectEndDate) && flatData.length > 0) || editArgs) {
+        if (((!projectStartDate || !projectEndDate) && flatData.length > 0) || editArgs || this.parent.timelineModule.isZoomToFit) {
             flatData.forEach((data: IGanttData, index: number) => {
                 let task: ITaskData = data.ganttProperties;
                 let tempStartDate: Date = this.getValidStartDate(task);
                 let tempEndDate: Date = this.getValidEndDate(task);
-                let baselineStartDate: Date = task.baselineStartDate ? new Date(task.baselineStartDate.getTime()) : null;
-                let baselineEndDate: Date = task.baselineEndDate ? new Date(task.baselineEndDate.getTime()) : null;
+                let baselineStartDate: Date = this.parent.timelineModule.isZoomToFit ? null
+                : task.baselineStartDate ? new Date(task.baselineStartDate.getTime()) : null;
+                let baselineEndDate: Date = this.parent.timelineModule.isZoomToFit ? null
+                : task.baselineEndDate ? new Date(task.baselineEndDate.getTime()) : null;
                 if (minStartDate) {
                     if (tempStartDate && this.compareDates(minStartDate, tempStartDate) === 1) {
                         minStartDate = tempStartDate;
@@ -933,9 +940,9 @@ export class DateProcessor {
                         maxEndDate = tempEndDate;
                     }
                     if (baselineEndDate && this.parent.renderBaseline && this.compareDates(maxEndDate, baselineEndDate) === -1) {
-                        maxEndDate = baselineStartDate;
-                    } else if (baselineEndDate && this.parent.renderBaseline && this.compareDates(maxEndDate, baselineStartDate) === -1) {
                         maxEndDate = baselineEndDate;
+                    } else if (baselineEndDate && this.parent.renderBaseline && this.compareDates(maxEndDate, baselineStartDate) === -1) {
+                        maxEndDate = baselineStartDate;
                     }
                 } else {
                     if (baselineEndDate && this.parent.renderBaseline && this.compareDates(tempEndDate, baselineEndDate) === -1) {

@@ -163,6 +163,8 @@ export class GanttTreeGrid {
             deleteObject(updatedArgs, 'isFrozen');
         } else if (getValue('requestType', args) === 'filtering') {
             this.parent.notify('updateModel', {});
+            let focussedElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-treegrid');
+            focussedElement.focus();
         } else if (getValue('type', args) === 'save') {
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
@@ -184,6 +186,18 @@ export class GanttTreeGrid {
     private updateKeyConfigSettings(): void {
         delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.delete;
         delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.insert;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.upArrow;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.downArrow;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.ctrlHome;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.ctrlEnd;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.enter;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.enter;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.upArrow;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.downArrow;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.ctrlShiftUpArrow;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.ctrlShiftDownArrow;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.ctrlUpArrow;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.ctrlDownArrow;
     }
 
     /**
@@ -194,12 +208,18 @@ export class GanttTreeGrid {
         if (content) {
             EventHandler.add(content, 'scroll', this.scrollHandler, this);
         }
+        if (this.parent.isAdaptive) {
+            EventHandler.add(this.parent.treeGridPane, 'click', this.treeGridClickHandler, this);
+        }
     }
     private unWireEvents(): void {
         let content: HTMLElement = this.parent.treeGrid.element &&
             this.parent.treeGrid.element.querySelector('.e-content');
         if (content) {
             EventHandler.remove(content, 'scroll', this.scrollHandler);
+        }
+        if (this.parent.isAdaptive) {
+            EventHandler.remove(this.parent.treeGridPane, 'click', this.treeGridClickHandler);
         }
     }
     private scrollHandler(e: WheelEvent): void {
@@ -209,7 +229,10 @@ export class GanttTreeGrid {
         }
         this.previousScroll.top = content.scrollTop;
     }
-    private validateGanttColumns(): void {
+    /**
+     * @private
+     */
+    public validateGanttColumns(): void {
         let ganttObj: Gantt = this.parent;
         let length: number = ganttObj.columns.length;
         let tasks: TaskFieldsModel = this.parent.taskFields;
@@ -598,6 +621,9 @@ export class GanttTreeGrid {
     private updateScrollTop(args: object): void {
         this.treeGridElement.querySelector('.e-content').scrollTop = getValue('top', args);
         this.previousScroll.top = this.treeGridElement.querySelector('.e-content').scrollTop;
+    }
+    private treeGridClickHandler(e: PointerEvent): void {
+        this.parent.notify('treeGridClick', e);
     }
     private removeEventListener(): void {
         this.parent.off('renderPanels', this.createContainer);

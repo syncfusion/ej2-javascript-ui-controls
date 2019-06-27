@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile, closest } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile, closest, resetBlazorTemplate } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser } from '@syncfusion/ej2-base';
 import {ChangeEventArgs,DragStartArgs,DraggedEventArgs,DragStopArgs,ResizeArgs} from "./dashboard-layout";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -204,54 +204,63 @@ export interface DashboardLayoutModel extends ComponentModel{
     /**
      * Triggers whenever the panels positions are changed.
      * @event
+     * @blazorProperty 'Changed'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when a panel is about to drag.
      * @event
+     * @blazorProperty 'OnDragStart'
      */
     dragStart?: EmitType<DragStartArgs>;
 
     /**
      * Triggers while a panel is dragged continuously.
      * @event
+     * @blazorProperty 'Dragging'
      */
     drag?: EmitType<DraggedEventArgs>;
 
     /**
      * Triggers when a dragged panel is dropped.
      * @event
+     * @blazorProperty 'OnDragStop'
      */
     dragStop?: EmitType<DragStopArgs>;
 
     /**
      * Triggers when a panel is about to resize.
      * @event
+     * @blazorProperty 'OnResizeStart'
      */
     resizeStart?: EmitType<ResizeArgs>;
 
     /**
      * Triggers when a panel is being resized continuously.
      * @event
+     * @blazorProperty 'Resizing'
      */
     resize?: EmitType<ResizeArgs>;
 
     /**
      * Triggers when a panel resize ends.
      * @event
+     * @blazorProperty 'OnResizeStop'
      */
     resizeStop?: EmitType<ResizeArgs>;
 
     /**
      * Triggers when Dashboard Layout is created.
      * @event 
+     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when Dashboard Layout is destroyed.
      * @event 
+     * @blazorproperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

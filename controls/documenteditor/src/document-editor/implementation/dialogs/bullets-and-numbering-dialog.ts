@@ -21,6 +21,7 @@ export class BulletsAndNumberingDialog {
     private listFormat: WListFormat;
     private abstractList: WAbstractList;
     private tabObj: Tab;
+
     /**
      * @private
      */
@@ -355,13 +356,13 @@ export class BulletsAndNumberingDialog {
             this.listFormat.destroy();
             this.listFormat = undefined;
         }
-        if (this.abstractList) {
-            this.abstractList.destroy();
-            this.abstractList = undefined;
-        }
         if (this.tabObj) {
             this.tabObj.destroy();
             this.tabObj = undefined;
+        }
+        if (this.abstractList) {
+            this.abstractList.destroy();
+            this.abstractList = undefined;
         }
         if (this.target && this.target.parentElement) {
             this.target.parentElement.removeChild(this.target);

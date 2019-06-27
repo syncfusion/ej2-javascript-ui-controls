@@ -21,11 +21,11 @@ import { AccumulationSeriesModel, PieCenterModel} from './model/acc-base-model';
 import { LegendSettings } from '../common/legend/legend';
 import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
-import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement } from '../common/utils/helper';
+import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset } from '../common/utils/helper';
 import { RectOption, showTooltip } from '../common/utils/helper';
 import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase } from '../common/utils/helper';
 import { getElement, titlePositionX } from '../common/utils/helper';
-import { Rect, Size, measureText, TextOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { Rect, Size, measureText, TextOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Data } from '../common/model/data';
 import { AccumulationTooltip } from './user-interaction/tooltip';
 import { AccumulationBase } from './renderer/accumulation-base';
@@ -302,6 +302,13 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public theme: AccumulationTheme;
 
     /**
+     * Specifies whether a grouping separator should be used for a number.
+     * @default false
+     */
+    @Property(false)
+    public useGroupingSeparator: boolean;
+
+    /**
      * To enable export feature in chart.
      * @default true
      */
@@ -311,6 +318,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after accumulation chart loaded.
      * @event
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<IAccLoadedEventArgs>;
@@ -318,6 +326,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before accumulation chart load.
      * @event
+     * @deprecated
      */
     @Event()
     public load: EmitType<IAccLoadedEventArgs>;
@@ -325,6 +334,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the series gets rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public seriesRender: EmitType<IAccSeriesRenderEventArgs>;
@@ -332,6 +342,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the legend gets rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public legendRender: EmitType<ILegendRenderEventArgs>;
@@ -339,6 +350,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the data label for series gets rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public textRender: EmitType<IAccTextRenderEventArgs>;
@@ -346,6 +358,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the tooltip for series gets rendered.
      * @event
+     * @deprecated
      */
     @Event()
     public tooltipRender: EmitType<IAccTooltipRenderEventArgs>;
@@ -353,6 +366,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before each points for series gets rendered.
      * @event
+     * @deprecated
      */
 
     @Event()
@@ -361,6 +375,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the annotation gets rendered.
      * @event
+     * @deprecated
      */
 
     @Event()
@@ -369,6 +384,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
 
     @Event()
@@ -377,6 +393,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on hovering the accumulation chart.
      * @event
+     * @blazorProperty 'OnChartMouseMove'
      */
 
     @Event()
@@ -385,6 +402,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on clicking the accumulation chart.
      * @event
+     * @blazorProperty 'OnChartMouseClick'
      */
 
     @Event()
@@ -393,6 +411,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on point click.
      * @event
+     * @blazorProperty 'OnPointClick'
      */
 
     @Event()
@@ -401,6 +420,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on point move.
      * @event
+     * @blazorProperty 'PointMoved'
      */
 
     @Event()
@@ -409,6 +429,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after animation gets completed for series.
      * @event
+     * @blazorProperty 'OnAnimationComplete'
      */
     @Event()
     public animationComplete: EmitType<IAccAnimationCompleteEventArgs>;
@@ -416,6 +437,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on mouse down.
      * @event
+     * @blazorProperty 'OnChartMouseDown'
      */
 
     @Event()
@@ -424,6 +446,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers while cursor leaves the accumulation chart.
      * @event
+     * @blazorProperty 'OnChartMouseLeave'
      */
 
     @Event()
@@ -432,6 +455,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers on mouse up.
      * @event
+     * @blazorProperty 'OnChartMouseUp'
      */
 
     @Event()
@@ -440,6 +464,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers after window resize.
      * @event
+     * @blazorProperty 'Resized'
      */
 
     @Event()
@@ -528,7 +553,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /** @private */
     public availableSize: Size;
     /** @private */
-    public renderer: SvgRenderer;
+    public renderer: SvgRenderer | CanvasRenderer;
     /** @private */
     public intl: Internationalization;
     /** @private */
@@ -923,6 +948,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.redraw) {
             return null;
         }
+        blazorTemplatesReset(this);
         removeElement(this.element.id + '_Secondary_Element');
         if (this.svgObject) {
                 while (this.svgObject.childNodes.length > 0) {
@@ -944,7 +970,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 id: this.element.id + '_Secondary_Element',
                 styles: 'position: relative'
             });
-        appendChildElement(this.element, element, this.redraw);
+        appendChildElement(false, this.element, element, this.redraw);
     }
 
     /**
@@ -1048,7 +1074,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
         this.renderLegend();
 
-        appendChildElement(this.element, this.svgObject, this.redraw);
+        appendChildElement(false, this.element, this.svgObject, this.redraw);
 
         this.processSelection();
 
@@ -1122,7 +1148,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     private renderBorder(): void {
         let padding: number = this.border.width;
         appendChildElement(
-            this.svgObject, this.renderer.drawRectangle(new RectOption(
+            false, this.svgObject, this.renderer.drawRectangle(new RectOption(
                 this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1,
                 new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding))
             ),
@@ -1184,7 +1210,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             getAnchor, this.titleCollection, '', 'auto'
         );
         let element: Element = textElement(
-            options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw
+            this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw
         );
         if (this.subTitle) {
             this.renderSubTitle(options);
@@ -1217,7 +1243,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             getAnchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto'
         );
         let element: Element = textElement(
-        subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject, false,
+        this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject, false,
         this.redraw );
     }
     /**
@@ -1329,18 +1355,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         return false;
     }
     /**
-     * Get visible series for accumulation chart by index
-     */
-    private changeVisibleSeries(visibleSeries: AccumulationSeries[], index: number): AccumulationSeries {
-        for (let series of visibleSeries) {
-            visibleSeries[0].dataSource = [];
-            if (index === series.index) {
-                return series;
-            }
-        }
-        return null;
-    }
-    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -1392,11 +1406,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                     if (!this.animateselected) {
                         let len: number = this.series.length;
                         let seriesRefresh: boolean = false;
-                        let series: AccumulationSeriesModel;
                         for (let i: number = 0; i < len; i++) {
-                            series = newProp.series[i];
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
-                                extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                             if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {

@@ -1,8 +1,9 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { WCharacterFormat, WCellFormat } from '../index';
-import { LineWidget, ElementBox, BodyWidget, ParagraphWidget } from '../viewer/page';
+import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox } from '../viewer/page';
+import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
 import { HighlightColor } from '../../base/types';
 import { Widget, FieldElementBox } from '../viewer/page';
+import { Dictionary } from '../..';
 /** 
  * @private
  */
@@ -386,6 +387,133 @@ export class Point {
         this.yIn = undefined;
     }
 }
+/**
+ * @private
+ */
+export class Base64 {
+    private keyStr: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    // public method for encoding
+    public encodeString(input: string): string {
+        let output: string = '';
+        let chr1: number;
+        let chr2: number;
+        let chr3: number;
+        let enc1: number;
+        let enc2: number;
+        let enc3: number;
+        let enc4: number;
+        let i: number = 0;
+
+        input = this.unicodeEncode(input);
+
+        while (i < input.length) {
+
+            chr1 = input.charCodeAt(i++);
+            chr2 = input.charCodeAt(i++);
+            chr3 = input.charCodeAt(i++);
+
+            enc1 = chr1 >> 2;
+            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+            enc4 = chr3 & 63;
+
+            if (isNaN(chr2)) {
+                enc3 = enc4 = 64;
+            } else if (isNaN(chr3)) {
+                enc4 = 64;
+            }
+
+            output = output +
+                this.keyStr.charAt(enc1) + this.keyStr.charAt(enc2) +
+                this.keyStr.charAt(enc3) + this.keyStr.charAt(enc4);
+        }
+        return output;
+    }
+    // private method for UTF-8 encoding
+    private unicodeEncode(input: string): string {
+        let tempInput: string = input.replace(/\r\n/g, '\n');
+        let utftext: string = '';
+
+        for (let n: number = 0; n < tempInput.length; n++) {
+
+            let c: number = tempInput.charCodeAt(n);
+
+            if (c < 128) {
+                utftext += String.fromCharCode(c);
+            } else if ((c > 127) && (c < 2048)) {
+                utftext += String.fromCharCode((c >> 6) | 192);
+                utftext += String.fromCharCode((c & 63) | 128);
+            } else {
+                utftext += String.fromCharCode((c >> 12) | 224);
+                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+
+        }
+
+        return utftext;
+    }
+    /**
+     * @private
+     */
+    public decodeString(input: string): Uint8Array {
+        let chr1: number;
+        let chr2: number;
+        let chr3: number;
+        let enc1: number;
+        let enc2: number;
+        let enc3: number;
+        let enc4: number;
+        let i: number = 0;
+        let resultIndex: number = 0;
+
+        /*let dataUrlPrefix: string = 'data:';*/
+
+        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
+
+        let totalLength: number = input.length * 3 / 4;
+        if (input.charAt(input.length - 1) === this.keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (input.charAt(input.length - 2) === this.keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (totalLength % 1 !== 0) {
+            // totalLength is not an integer, the length does not match a valid
+            // base64 content. That can happen if:
+            // - the input is not a base64 content
+            // - the input is *almost* a base64 content, with a extra chars at the
+            // beginning or at the end
+            // - the input uses a base64 variant (base64url for example)
+            throw new Error('Invalid base64 input, bad content length.');
+        }
+
+
+        let output: Uint8Array = new Uint8Array(totalLength | 0);
+
+        while (i < input.length) {
+
+            enc1 = this.keyStr.indexOf(input.charAt(i++));
+            enc2 = this.keyStr.indexOf(input.charAt(i++));
+            enc3 = this.keyStr.indexOf(input.charAt(i++));
+            enc4 = this.keyStr.indexOf(input.charAt(i++));
+
+            chr1 = (enc1 << 2) | (enc2 >> 4);
+            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+            chr3 = ((enc3 & 3) << 6) | enc4;
+
+            output[resultIndex++] = chr1;
+
+            if (enc3 !== 64) {
+                output[resultIndex++] = chr2;
+            }
+            if (enc4 !== 64) {
+                output[resultIndex++] = chr3;
+            }
+        }
+        return output;
+    }
+}
 /** 
  * @private
  */
@@ -472,6 +600,44 @@ export interface ParagraphInfo {
 /** 
  * @private
  */
+export interface ErrorInfo {
+    errorFound: boolean;
+    /* tslint:disable:no-any */
+    elements: any[];
+}
+/** 
+ * @private
+ */
+export interface SpaceCharacterInfo {
+    width: number;
+    wordLength: number;
+    isBeginning: boolean;
+}
+/** 
+ * @private
+ */
+export interface SpecialCharacterInfo {
+    beginningWidth: number;
+    endWidth: number;
+    wordLength: number;
+}
+/** 
+ * @private
+ */
+export interface ContextElementInfo {
+    element: ElementBox;
+    text: string;
+}
+/** 
+ * @private
+ */
+export interface TextInLineInfo {
+    elementsWithOffset: Dictionary<TextElementBox, number>;
+    fullText: string;
+}
+/** 
+ * @private
+ */
 export interface CellInfo {
     start: number;
     end: number;
@@ -496,6 +662,14 @@ export interface LineInfo {
 export interface ElementInfo {
     element: ElementBox;
     index: number;
+}
+/** 
+ * @private
+ */
+export interface MatchResults {
+    matches: RegExpExecArray[];
+    elementInfo: Dictionary<TextElementBox, number>;
+    textResults: TextSearchResults;
 }
 
 /** 
@@ -542,4 +716,12 @@ export interface RtlInfo {
 export interface ImageInfo {
     extension: string;
     formatClippedString: string;
+}
+
+/**
+ * @private
+ */
+export interface PositionInfo {
+    startPosition: TextPosition;
+    endPosition: TextPosition;
 }

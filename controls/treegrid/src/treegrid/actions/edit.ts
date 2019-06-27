@@ -81,19 +81,18 @@ export class Edit {
         this.parent.grid.on(events.beforeBatchCancel, this.beforeBatchCancel, this);
         //this.parent.grid.on(events.batchEditFormRendered, this.batchEditFormRendered, this);
       }
-    private beforeStartEdit(args: Object) : void {
-      this.parent.trigger(events.actionBegin, args);
-    }
-    private beforeBatchCancel(args: CellSaveEventArgs) : void {
-      args.type = 'cancel';
-      this.parent.trigger(events.actionComplete, args);
-    }
-    /*private batchEditFormRendered(args: Object):void {
-      this.parent.trigger(events.actionComplete, args);
-    }*/
-    /**
-     * @hidden
-     */
+      private beforeStartEdit(args: Object) : void {
+        this.parent.trigger(events.actionBegin, args);
+      }
+      private beforeBatchCancel(args: Object) : void {
+        this.parent.trigger(events.actionComplete, args);
+      }
+      /*private batchEditFormRendered(args: Object):void {
+        this.parent.trigger(events.actionComplete, args);
+      }*/
+      /**
+       * @hidden
+       */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.crudAction, this.crudAction);
@@ -129,7 +128,10 @@ export class Edit {
     private recordDoubleClick(args: RecordDoubleClickEventArgs): void {
       let target: HTMLElement = <HTMLElement>args.target;
       this.doubleClickTarget = target;
-      let column: Column = this.parent.grid.getColumnByIndex(+target.closest('td').getAttribute('aria-colindex'));
+      if (isNullOrUndefined(target.closest('td.e-rowcell'))) {
+        return;
+      }
+      let column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
       if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
         column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
                  target.classList.contains('e-treegridcollapse'))) {
@@ -223,7 +225,7 @@ export class Edit {
     //   });
     // }
   }
-   private cellSave(args: CellSaveArgs): void {
+    private cellSave(args: CellSaveArgs): void {
       if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
           args.cancel = true;
           setValue('isEdit', false, this.parent.grid);
@@ -236,13 +238,13 @@ export class Edit {
                  if (e[primaryKeys[0]] === args.rowData[primaryKeys[0]]) { rowIndex = i; return; }
                 });
           } else {
-            rowIndex = row.rowIndex;
+            rowIndex = this.parent.getDataRows().indexOf(row);
           }
           let arg: CellSaveEventArgs = {};
           extend(arg, args);
           arg.cancel = false;
           arg.type = 'save';
-          row = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
+          row = <HTMLTableRowElement>this.parent.grid.getRows()[row.rowIndex];
           this.parent.trigger(events.actionBegin, arg);
           if (!arg.cancel) {
             this.updateCell(args, rowIndex);
@@ -258,7 +260,7 @@ export class Edit {
             removeClass([row], ['e-editedrow', 'e-batchrow']);
             removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
             editAction({ value: <ITreeData>args.rowData, action: 'edit' }, this.parent, this.isSelfReference,
-                       this.addRowIndex, this.selectedIndex, args.columnName, this.addRowRecord);
+                       this.addRowIndex, this.selectedIndex, args.columnName);
             let saveArgs: CellSaveEventArgs = {
               type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
               previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
@@ -290,7 +292,7 @@ export class Edit {
       }
     }
     private updateIndex (data: Object, rows: Object, records: Object): void {
-      for (let j: number = 0; j < this.parent.getRows().length; j++ ) {
+      for (let j: number = 0; j < this.parent.getDataRows().length; j++ ) {
         let data1: ITreeData = records[j];
         let index: number = getValue('uniqueIDCollection.' + data1.uniqueID + '.index', this.parent);
         data1.index = index;
@@ -299,8 +301,12 @@ export class Edit {
           data1.parentItem.index = parentIndex;
         }
       }
+      let count: number = -1;
       for (let k: number = 0; k < this.parent.getRows().length; k++) {
-        let data2: ITreeData = records[k];
+        if (!rows[k].classList.contains('e-detailrow')) {
+          count++;
+          }
+        let data2: ITreeData = records[count];
         let index: number = data2.index;
         let level: number = data2.level;
         let row: Element = rows[k];
@@ -310,12 +316,21 @@ export class Edit {
         for (let l: number = 0; l < row.classList.length; l++) {
           let value: string = row.classList[l];
           let remove: RegExp = /e-gridrowindex/i;
+          let removed: RegExp = /e-griddetailrowindex/i;
           let result: RegExpMatchArray = value.match(remove);
+          let results: RegExpMatchArray = value.match(removed);
           if (result != null) {
            removeClass([row], value);
           }
+          if (results != null) {
+            removeClass([row], value);
+           }
         }
-        addClass([row], 'e-gridrowindex' + index + 'level' + level);
+        if (!rows[k].classList.contains('e-detailrow')) {
+          addClass([row], 'e-gridrowindex' + index + 'level' + level);
+        }else {
+          addClass([row], 'e-griddetailrowindex' + index + 'level' + level);
+        }
       }
     }
     private beginAdd(args?: SaveEventArgs): void {
@@ -489,6 +504,9 @@ export class Edit {
                 args.index = dataSource.length;
               }
           }
+          if (isNullOrUndefined(value.level)) {
+            value.level = level;
+          }
           // this.addedIndex = args.index;
           value.hasChildRecords = false;
           value.childRecords = [];
@@ -543,6 +561,19 @@ export class Edit {
       this.updateIndex(this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
     }
   }
+
+    /**
+     * If the row index and field is given, edits the particular cell in a row.
+     * @return {void}
+     */
+
+    public editCell(rowIndex?: number, field?: string): void {
+      if (this.parent.editSettings.mode === 'Cell') {
+        this.isOnBatch = true;
+        this.updateGridEditMode('Batch');
+        this.parent.grid.editModule.editCell(rowIndex, field);
+      }
+    }
 
     //   private beforeBatchAdd(e: BeforeBatchAddArgs): void {
       //     this.selectedIndex = this.parent.grid.selectedRowIndex ;

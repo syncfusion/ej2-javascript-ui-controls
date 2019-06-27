@@ -1,6 +1,6 @@
-import { Ajax, Browser, ChildProperty, Collection, CollectionFactory, Complex, ComplexFactory, Component, Draggable, Droppable, Event, EventHandler, L10n, Property, compile, createElement, getValue, remove } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Collection, CollectionFactory, Complex, ComplexFactory, Component, Draggable, Droppable, Event, EventHandler, L10n, Property, compile, createElement, getValue, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
-import { DataManager } from '@syncfusion/ej2-data';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Accordion, ContextMenu } from '@syncfusion/ej2-navigations';
 
 /**
@@ -1225,6 +1225,308 @@ function assignMatrix(matrix1, matrix2) {
     matrix1.type = matrix2.type;
 }
 
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**   @private  */
+let getGradientType = (obj) => {
+    switch (obj.type) {
+        case 'Linear':
+            return LinearGradient;
+        case 'Radial':
+            return RadialGradient;
+        default:
+            return LinearGradient;
+    }
+};
+/**
+ * Layout Model module defines the styles and types to arrange objects in containers
+ */
+class Thickness {
+    constructor(left, right, top, bottom) {
+        this.left = left;
+        this.right = right;
+        this.top = top;
+        this.bottom = bottom;
+    }
+}
+/**
+ * Defines the space to be left between an object and its immediate parent
+ */
+class Margin extends ChildProperty {
+}
+__decorate$3([
+    Property(0)
+], Margin.prototype, "left", void 0);
+__decorate$3([
+    Property(0)
+], Margin.prototype, "right", void 0);
+__decorate$3([
+    Property(0)
+], Margin.prototype, "top", void 0);
+__decorate$3([
+    Property(0)
+], Margin.prototype, "bottom", void 0);
+/**
+ * Defines the Shadow appearance of the objects
+ * ```html
+ * <div id='diagram'></div>
+ * ```
+ * ```typescript
+ *  let nodes: NodeModel[] = [{ id: 'node2', width: 100, height: 100,
+ *  constraints: NodeConstraints.Default | NodeConstraints.Shadow,
+ *  shadow: { angle: 45, distance: 5, opacity: 0.7, color: 'grey'}
+ * }];
+ * let diagram: Diagram = new Diagram({
+ * ...
+ *   nodes: nodes,
+ * ...
+ * });
+ * diagram.appendTo('#diagram');
+ * ```
+ */
+class Shadow extends ChildProperty {
+}
+__decorate$3([
+    Property(45)
+], Shadow.prototype, "angle", void 0);
+__decorate$3([
+    Property(5)
+], Shadow.prototype, "distance", void 0);
+__decorate$3([
+    Property(0.7)
+], Shadow.prototype, "opacity", void 0);
+__decorate$3([
+    Property('lightgrey')
+], Shadow.prototype, "color", void 0);
+/**
+ * Defines the different colors and the region of color transitions
+ * ```html
+ * <div id='diagram'></div>
+ * ```
+ * ```typescript
+ * let stopscol: StopModel[] = [];
+ * let stops1: StopModel = { color: 'white', offset: 0, opacity: 0.7 };
+ * stopscol.push(stops1);
+ * let stops2: StopModel = { color: 'red', offset: 0, opacity: 0.3 };
+ * stopscol.push(stops2);
+ * let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stopscol, type: 'Radial' };
+ * let nodes: NodeModel[] = [{ id: 'node1', width: 100, height: 100,
+ * style: { gradient: gradient }
+ * }];
+ * let diagram: Diagram = new Diagram({
+ * ...
+ *   nodes: nodes,
+ * ...
+ * });
+ * diagram.appendTo('#diagram');
+ * ```
+ */
+class Stop extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class Stop
+     */
+    getClassName() {
+        return 'Stop';
+    }
+}
+__decorate$3([
+    Property('')
+], Stop.prototype, "color", void 0);
+__decorate$3([
+    Property(0)
+], Stop.prototype, "offset", void 0);
+__decorate$3([
+    Property(1)
+], Stop.prototype, "opacity", void 0);
+/**
+ * Paints the node with a smooth transition from one color to another color
+ */
+class Gradient extends ChildProperty {
+}
+__decorate$3([
+    Collection([], Stop)
+], Gradient.prototype, "stops", void 0);
+__decorate$3([
+    Property('None')
+], Gradient.prototype, "type", void 0);
+__decorate$3([
+    Property('')
+], Gradient.prototype, "id", void 0);
+/**
+ * Defines the linear gradient of styles
+ * ```html
+ * <div id='diagram'></div>
+ * ```
+ * ```typescript
+ * let stopscol: StopModel[] = [];
+ * let stops1: StopModel = { color: 'white', offset: 0, opacity: 0.7 };
+ * stopscol.push(stops1);
+ * let stops2: StopModel = { color: 'red', offset: 0, opacity: 0.3 };
+ * stopscol.push(stops2);
+ * let gradient: LinearGradientModel = { x1: 0, x2: 50, y1: 0, y2: 50, stops: stopscol, type: 'Linear' };
+ * let nodes: NodeModel[] = [{ id: 'node1', width: 100, height: 100,
+ * style: { gradient: gradient }
+ * }];
+ * let diagram: Diagram = new Diagram({
+ * ...
+ *   nodes: nodes,
+ * ...
+ * });
+ * diagram.appendTo('#diagram');
+ * ```
+ */
+/**
+ * Paints the node with linear color transitions
+ */
+class LinearGradient extends Gradient {
+}
+__decorate$3([
+    Property(0)
+], LinearGradient.prototype, "x1", void 0);
+__decorate$3([
+    Property(0)
+], LinearGradient.prototype, "x2", void 0);
+__decorate$3([
+    Property(0)
+], LinearGradient.prototype, "y1", void 0);
+__decorate$3([
+    Property(0)
+], LinearGradient.prototype, "y2", void 0);
+/**
+ * A focal point defines the beginning of the gradient, and a circle defines the end point of the gradient
+ * ```html
+ * <div id='diagram'></div>
+ * ```
+ * ```typescript
+ * let stopscol: StopModel[] = [];
+ * let stops1: StopModel = { color: 'white', offset: 0, opacity: 0.7 };
+ * stopscol.push(stops1);
+ * let stops2: StopModel = { color: 'red', offset: 0, opacity: 0.3 };
+ * stopscol.push(stops2);
+ * let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stopscol, type: 'Radial' };
+ * let nodes: NodeModel[] = [{ id: 'node1', width: 100, height: 100,
+ * style: { gradient: gradient }
+ * }];
+ * let diagram: Diagram = new Diagram({
+ * ...
+ *   nodes: nodes,
+ * ...
+ * });
+ * diagram.appendTo('#diagram');
+ * ```
+ */
+class RadialGradient extends Gradient {
+}
+__decorate$3([
+    Property(0)
+], RadialGradient.prototype, "cx", void 0);
+__decorate$3([
+    Property(0)
+], RadialGradient.prototype, "cy", void 0);
+__decorate$3([
+    Property(0)
+], RadialGradient.prototype, "fx", void 0);
+__decorate$3([
+    Property(0)
+], RadialGradient.prototype, "fy", void 0);
+__decorate$3([
+    Property(50)
+], RadialGradient.prototype, "r", void 0);
+/**
+ * Defines the style of shape/path
+ */
+class ShapeStyle extends ChildProperty {
+}
+__decorate$3([
+    Property('white')
+], ShapeStyle.prototype, "fill", void 0);
+__decorate$3([
+    Property('black')
+], ShapeStyle.prototype, "strokeColor", void 0);
+__decorate$3([
+    Property('')
+], ShapeStyle.prototype, "strokeDashArray", void 0);
+__decorate$3([
+    Property(1)
+], ShapeStyle.prototype, "strokeWidth", void 0);
+__decorate$3([
+    Property(1)
+], ShapeStyle.prototype, "opacity", void 0);
+__decorate$3([
+    ComplexFactory(getGradientType)
+], ShapeStyle.prototype, "gradient", void 0);
+/**
+ * Defines the stroke style of a path
+ */
+class StrokeStyle extends ShapeStyle {
+}
+__decorate$3([
+    Property('transparent')
+], StrokeStyle.prototype, "fill", void 0);
+/**
+ * Defines the appearance of text
+ * ```html
+ * <div id='diagram'></div>
+ * ```
+ * ```typescript
+ * let style: TextStyleModel = { strokeColor: 'black', opacity: 0.5, whiteSpace:'CollapseSpace', strokeWidth: 1 };
+ * let node: NodeModel;
+ * node = {
+ * ...
+ * id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
+ * annotations : [{
+ * content: 'text', style: style }];
+ * ...
+ * };
+ * let diagram: Diagram = new Diagram({
+ * ...
+ *   nodes: [node],
+ * ...
+ * });
+ * diagram.appendTo('#diagram');
+ * ```
+ */
+class TextStyle extends ShapeStyle {
+}
+__decorate$3([
+    Property('black')
+], TextStyle.prototype, "color", void 0);
+__decorate$3([
+    Property('Arial')
+], TextStyle.prototype, "fontFamily", void 0);
+__decorate$3([
+    Property(12)
+], TextStyle.prototype, "fontSize", void 0);
+__decorate$3([
+    Property(false)
+], TextStyle.prototype, "italic", void 0);
+__decorate$3([
+    Property(false)
+], TextStyle.prototype, "bold", void 0);
+__decorate$3([
+    Property('CollapseSpace')
+], TextStyle.prototype, "whiteSpace", void 0);
+__decorate$3([
+    Property('WrapWithOverflow')
+], TextStyle.prototype, "textWrapping", void 0);
+__decorate$3([
+    Property('Center')
+], TextStyle.prototype, "textAlign", void 0);
+__decorate$3([
+    Property('None')
+], TextStyle.prototype, "textDecoration", void 0);
+__decorate$3([
+    Property('Wrap')
+], TextStyle.prototype, "textOverflow", void 0);
+__decorate$3([
+    Property('transparent')
+], TextStyle.prototype, "fill", void 0);
+
 /**
  * enum module defines the public enumerations
  */
@@ -2010,6 +2312,7 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["mouseLeave"] = 21] = "mouseLeave";
     DiagramEvent[DiagramEvent["mouseOver"] = 22] = "mouseOver";
     DiagramEvent[DiagramEvent["expandStateChange"] = 23] = "expandStateChange";
+    DiagramEvent[DiagramEvent["segmentCollectionChange"] = 24] = "segmentCollectionChange";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
@@ -2353,308 +2656,6 @@ class DiagramElement {
     }
 }
 
-var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**   @private  */
-let getGradientType = (obj) => {
-    switch (obj.type) {
-        case 'Linear':
-            return LinearGradient;
-        case 'Radial':
-            return RadialGradient;
-        default:
-            return LinearGradient;
-    }
-};
-/**
- * Layout Model module defines the styles and types to arrange objects in containers
- */
-class Thickness {
-    constructor(left, right, top, bottom) {
-        this.left = left;
-        this.right = right;
-        this.top = top;
-        this.bottom = bottom;
-    }
-}
-/**
- * Defines the space to be left between an object and its immediate parent
- */
-class Margin extends ChildProperty {
-}
-__decorate$2([
-    Property(0)
-], Margin.prototype, "left", void 0);
-__decorate$2([
-    Property(0)
-], Margin.prototype, "right", void 0);
-__decorate$2([
-    Property(0)
-], Margin.prototype, "top", void 0);
-__decorate$2([
-    Property(0)
-], Margin.prototype, "bottom", void 0);
-/**
- * Defines the Shadow appearance of the objects
- * ```html
- * <div id='diagram'></div>
- * ```
- * ```typescript
- *  let nodes: NodeModel[] = [{ id: 'node2', width: 100, height: 100,
- *  constraints: NodeConstraints.Default | NodeConstraints.Shadow,
- *  shadow: { angle: 45, distance: 5, opacity: 0.7, color: 'grey'}
- * }];
- * let diagram: Diagram = new Diagram({
- * ...
- *   nodes: nodes,
- * ...
- * });
- * diagram.appendTo('#diagram');
- * ```
- */
-class Shadow extends ChildProperty {
-}
-__decorate$2([
-    Property(45)
-], Shadow.prototype, "angle", void 0);
-__decorate$2([
-    Property(5)
-], Shadow.prototype, "distance", void 0);
-__decorate$2([
-    Property(0.7)
-], Shadow.prototype, "opacity", void 0);
-__decorate$2([
-    Property('lightgrey')
-], Shadow.prototype, "color", void 0);
-/**
- * Defines the different colors and the region of color transitions
- * ```html
- * <div id='diagram'></div>
- * ```
- * ```typescript
- * let stopscol: StopModel[] = [];
- * let stops1: StopModel = { color: 'white', offset: 0, opacity: 0.7 };
- * stopscol.push(stops1);
- * let stops2: StopModel = { color: 'red', offset: 0, opacity: 0.3 };
- * stopscol.push(stops2);
- * let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stopscol, type: 'Radial' };
- * let nodes: NodeModel[] = [{ id: 'node1', width: 100, height: 100,
- * style: { gradient: gradient }
- * }];
- * let diagram: Diagram = new Diagram({
- * ...
- *   nodes: nodes,
- * ...
- * });
- * diagram.appendTo('#diagram');
- * ```
- */
-class Stop extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class Stop
-     */
-    getClassName() {
-        return 'Stop';
-    }
-}
-__decorate$2([
-    Property('')
-], Stop.prototype, "color", void 0);
-__decorate$2([
-    Property(0)
-], Stop.prototype, "offset", void 0);
-__decorate$2([
-    Property(1)
-], Stop.prototype, "opacity", void 0);
-/**
- * Paints the node with a smooth transition from one color to another color
- */
-class Gradient extends ChildProperty {
-}
-__decorate$2([
-    Collection([], Stop)
-], Gradient.prototype, "stops", void 0);
-__decorate$2([
-    Property('None')
-], Gradient.prototype, "type", void 0);
-__decorate$2([
-    Property('')
-], Gradient.prototype, "id", void 0);
-/**
- * Defines the linear gradient of styles
- * ```html
- * <div id='diagram'></div>
- * ```
- * ```typescript
- * let stopscol: StopModel[] = [];
- * let stops1: StopModel = { color: 'white', offset: 0, opacity: 0.7 };
- * stopscol.push(stops1);
- * let stops2: StopModel = { color: 'red', offset: 0, opacity: 0.3 };
- * stopscol.push(stops2);
- * let gradient: LinearGradientModel = { x1: 0, x2: 50, y1: 0, y2: 50, stops: stopscol, type: 'Linear' };
- * let nodes: NodeModel[] = [{ id: 'node1', width: 100, height: 100,
- * style: { gradient: gradient }
- * }];
- * let diagram: Diagram = new Diagram({
- * ...
- *   nodes: nodes,
- * ...
- * });
- * diagram.appendTo('#diagram');
- * ```
- */
-/**
- * Paints the node with linear color transitions
- */
-class LinearGradient extends Gradient {
-}
-__decorate$2([
-    Property(0)
-], LinearGradient.prototype, "x1", void 0);
-__decorate$2([
-    Property(0)
-], LinearGradient.prototype, "x2", void 0);
-__decorate$2([
-    Property(0)
-], LinearGradient.prototype, "y1", void 0);
-__decorate$2([
-    Property(0)
-], LinearGradient.prototype, "y2", void 0);
-/**
- * A focal point defines the beginning of the gradient, and a circle defines the end point of the gradient
- * ```html
- * <div id='diagram'></div>
- * ```
- * ```typescript
- * let stopscol: StopModel[] = [];
- * let stops1: StopModel = { color: 'white', offset: 0, opacity: 0.7 };
- * stopscol.push(stops1);
- * let stops2: StopModel = { color: 'red', offset: 0, opacity: 0.3 };
- * stopscol.push(stops2);
- * let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stopscol, type: 'Radial' };
- * let nodes: NodeModel[] = [{ id: 'node1', width: 100, height: 100,
- * style: { gradient: gradient }
- * }];
- * let diagram: Diagram = new Diagram({
- * ...
- *   nodes: nodes,
- * ...
- * });
- * diagram.appendTo('#diagram');
- * ```
- */
-class RadialGradient extends Gradient {
-}
-__decorate$2([
-    Property(0)
-], RadialGradient.prototype, "cx", void 0);
-__decorate$2([
-    Property(0)
-], RadialGradient.prototype, "cy", void 0);
-__decorate$2([
-    Property(0)
-], RadialGradient.prototype, "fx", void 0);
-__decorate$2([
-    Property(0)
-], RadialGradient.prototype, "fy", void 0);
-__decorate$2([
-    Property(50)
-], RadialGradient.prototype, "r", void 0);
-/**
- * Defines the style of shape/path
- */
-class ShapeStyle extends ChildProperty {
-}
-__decorate$2([
-    Property('white')
-], ShapeStyle.prototype, "fill", void 0);
-__decorate$2([
-    Property('black')
-], ShapeStyle.prototype, "strokeColor", void 0);
-__decorate$2([
-    Property('')
-], ShapeStyle.prototype, "strokeDashArray", void 0);
-__decorate$2([
-    Property(1)
-], ShapeStyle.prototype, "strokeWidth", void 0);
-__decorate$2([
-    Property(1)
-], ShapeStyle.prototype, "opacity", void 0);
-__decorate$2([
-    ComplexFactory(getGradientType)
-], ShapeStyle.prototype, "gradient", void 0);
-/**
- * Defines the stroke style of a path
- */
-class StrokeStyle extends ShapeStyle {
-}
-__decorate$2([
-    Property('transparent')
-], StrokeStyle.prototype, "fill", void 0);
-/**
- * Defines the appearance of text
- * ```html
- * <div id='diagram'></div>
- * ```
- * ```typescript
- * let style: TextStyleModel = { strokeColor: 'black', opacity: 0.5, whiteSpace:'CollapseSpace', strokeWidth: 1 };
- * let node: NodeModel;
- * node = {
- * ...
- * id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
- * annotations : [{
- * content: 'text', style: style }];
- * ...
- * };
- * let diagram: Diagram = new Diagram({
- * ...
- *   nodes: [node],
- * ...
- * });
- * diagram.appendTo('#diagram');
- * ```
- */
-class TextStyle extends ShapeStyle {
-}
-__decorate$2([
-    Property('black')
-], TextStyle.prototype, "color", void 0);
-__decorate$2([
-    Property('Arial')
-], TextStyle.prototype, "fontFamily", void 0);
-__decorate$2([
-    Property(12)
-], TextStyle.prototype, "fontSize", void 0);
-__decorate$2([
-    Property(false)
-], TextStyle.prototype, "italic", void 0);
-__decorate$2([
-    Property(false)
-], TextStyle.prototype, "bold", void 0);
-__decorate$2([
-    Property('CollapseSpace')
-], TextStyle.prototype, "whiteSpace", void 0);
-__decorate$2([
-    Property('WrapWithOverflow')
-], TextStyle.prototype, "textWrapping", void 0);
-__decorate$2([
-    Property('Center')
-], TextStyle.prototype, "textAlign", void 0);
-__decorate$2([
-    Property('None')
-], TextStyle.prototype, "textDecoration", void 0);
-__decorate$2([
-    Property('Wrap')
-], TextStyle.prototype, "textOverflow", void 0);
-__decorate$2([
-    Property('transparent')
-], TextStyle.prototype, "fill", void 0);
-
 /**
  * Container module is used to group related objects
  */
@@ -2858,206 +2859,6 @@ class Container extends DiagramElement {
 }
 
 /**
- * PathElement takes care of how to align the path based on offsetX and offsetY
- */
-class PathElement extends DiagramElement {
-    /**
-     * set the id for each element
-     */
-    constructor() {
-        super();
-        /**
-         * Gets or sets the geometry of the path element
-         */
-        this.pathData = '';
-        /**
-         * Gets/Sets whether the path has to be transformed to fit the given x,y, width, height
-         */
-        this.transformPath = true;
-        /**
-         * Gets/Sets the equivalent path, that will have the origin as 0,0
-         */
-        this.absolutePath = '';
-        /**   @private  */
-        this.canMeasurePath = false;
-        //Private variables
-        /**   @private  */
-        this.absoluteBounds = new Rect();
-    }
-    /**
-     * Gets the geometry of the path element
-     */
-    get data() {
-        return this.pathData;
-    }
-    /**
-     * Sets the geometry of the path element
-     */
-    set data(value) {
-        if (this.pathData !== value) {
-            this.pathData = value;
-            this.isDirt = true;
-        }
-    }
-    /** @private */
-    getPoints() {
-        if (!this.pointTimer) {
-            this.pointTimer = setTimeout(() => {
-                this.points = null;
-                this.pointTimer = null;
-            }, 200);
-        }
-        this.points = this.points || findSegmentPoints(this);
-        return translatePoints(this, this.points);
-    }
-    /**
-     * Measures the minimum space that is required to render the element
-     * @param availableSize
-     */
-    measure(availableSize) {
-        //Performance issue - Avoiding measuring the connector path
-        if (this.staticSize && this.width !== undefined && this.height !== undefined) {
-            this.absoluteBounds = new Rect(this.offsetX - this.width * this.pivot.x, this.offsetY - this.height * this.pivot.y, this.width, this.height);
-        }
-        else if (this.isDirt && (this.transformPath || (this.width === undefined || this.height === undefined))
-            && (!this.absoluteBounds || this.absoluteBounds.height === 0) || this.canMeasurePath) {
-            //Measure the element only whent the path data is changed/ size is not specified
-            this.absoluteBounds = measurePath(this.data ? this.data : '');
-        }
-        if (this.width === undefined) {
-            this.desiredSize = new Size(this.absoluteBounds.width, this.height || this.absoluteBounds.height);
-        }
-        else if (this.height === undefined) {
-            this.desiredSize = new Size(this.width || this.absoluteBounds.width, this.absoluteBounds.height);
-        }
-        else {
-            this.desiredSize = new Size(this.width, this.height);
-        }
-        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
-        this.canMeasurePath = false;
-        return this.desiredSize;
-    }
-    /**
-     * Arranges the path element
-     * @param desiredSize
-     */
-    arrange(desiredSize) {
-        if (this.isDirt || this.actualSize.width !== desiredSize.width || this.actualSize.height !== desiredSize.height) {
-            this.isDirt = true;
-            this.absolutePath = this.updatePath(this.data, this.absoluteBounds, desiredSize);
-            if (!this.staticSize) {
-                this.points = null;
-            }
-        }
-        this.actualSize = this.desiredSize;
-        this.updateBounds();
-        this.isDirt = false;
-        return this.actualSize;
-    }
-    /**
-     * Translates the path to 0,0 and scales the path based on the actual size
-     * @param pathData
-     * @param bounds
-     * @param actualSize
-     */
-    updatePath(pathData, bounds, actualSize) {
-        let isScale = false;
-        let newPathString = '';
-        let scaleX = -bounds.x;
-        let scaleY = -bounds.y;
-        let arrayCollection = [];
-        if (actualSize.width !== bounds.width || actualSize.height !== bounds.height) {
-            scaleX = actualSize.width / Number(bounds.width ? bounds.width : 1);
-            scaleY = actualSize.height / Number(bounds.height ? bounds.height : 1);
-            isScale = true;
-        }
-        arrayCollection = processPathData(pathData);
-        arrayCollection = splitArrayCollection(arrayCollection);
-        if ((isScale || this.isDirt) && this.transformPath) {
-            newPathString = transformPath(arrayCollection, scaleX, scaleY, isScale, bounds.x, bounds.y, 0, 0);
-        }
-        else {
-            newPathString = getPathString(arrayCollection);
-        }
-        isScale = false;
-        return newPathString;
-    }
-}
-
-/**
- * NativeElement defines the basic native elements
- */
-class DiagramNativeElement extends DiagramElement {
-    /**
-     * set the id for each element
-     */
-    constructor(nodeId, diagramId) {
-        super();
-        this.data = '';
-        /**
-         * set the node id
-         */
-        this.nodeId = '';
-        /**
-         * set the diagram id
-         */
-        this.diagramId = '';
-        /**
-         * sets scaling factor of the Native Element
-         */
-        this.scale = 'Stretch';
-        this.diagramId = diagramId;
-        this.nodeId = nodeId;
-    }
-    /**   @private  */
-    get content() {
-        return this.data;
-    }
-    /**
-     * sets the geometry of the native element
-     */
-    set content(value) {
-        this.data = value;
-        this.template = getContent(this, false);
-        this.isDirt = true;
-    }
-    /**
-     * Measures minimum space that is required to render the Native Element
-     * @param availableSize
-     */
-    measure(availableSize) {
-        if (this.isDirt) {
-            let rect = measureNativeContent(this.template);
-            this.contentSize = new Size();
-            this.contentSize.width = rect.width;
-            this.contentSize.height = rect.height;
-            let x = rect.x;
-            let y = rect.y;
-            this.templatePosition = { x, y };
-            this.isDirt = false;
-        }
-        if (this.width === undefined || this.height === undefined) {
-            let getAvailableSize = measureNativeSvg(this.template);
-            this.desiredSize = new Size(getAvailableSize.width, getAvailableSize.height);
-        }
-        else {
-            this.desiredSize = new Size(this.width, this.height);
-        }
-        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
-        return this.desiredSize;
-    }
-    /**
-     * Arranges the Native Element
-     * @param desiredSize
-     */
-    arrange(desiredSize) {
-        this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);
-        this.updateBounds();
-        return this.actualSize;
-    }
-}
-
-/**
  * TextElement is used to display text/annotations
  */
 class TextElement extends DiagramElement {
@@ -3178,211 +2979,6 @@ class TextElement extends DiagramElement {
         return this.actualSize;
     }
 }
-
-/**
- * ImageElement defines a basic image elements
- */
-class ImageElement extends DiagramElement {
-    /**
-     * set the id for each element
-     */
-    constructor() {
-        super();
-        /**
-         * sets or gets the image source
-         */
-        this.imageSource = '';
-        /**
-         * sets scaling factor of the image
-         */
-        this.imageScale = 'None';
-        /**
-         * sets the alignment of the image
-         */
-        this.imageAlign = 'None';
-        /**
-         * Sets how to stretch the image
-         */
-        this.stretch = 'Stretch';
-    }
-    /**
-     * Gets the source for the image element
-     */
-    get source() {
-        return this.imageSource;
-    }
-    /**
-     * Sets the source for the image element
-     */
-    set source(value) {
-        this.imageSource = value;
-        this.isDirt = true;
-    }
-    /**
-     * Measures minimum space that is required to render the image
-     * @param availableSize
-     */
-    measure(availableSize) {
-        if (this.isDirt && (this.stretch !== 'Stretch' || this.width === undefined && this.height === undefined)) {
-            this.contentSize = measureImage(this.source, this.contentSize);
-            this.isDirt = false;
-        }
-        if (this.width !== undefined && this.height !== undefined) {
-            this.desiredSize = new Size(this.width, this.height);
-            this.contentSize = this.desiredSize;
-        }
-        else {
-            this.desiredSize = this.contentSize;
-        }
-        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
-        return this.desiredSize;
-    }
-    /**
-     * Arranges the image
-     * @param desiredSize
-     */
-    arrange(desiredSize) {
-        this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);
-        this.updateBounds();
-        return this.actualSize;
-    }
-}
-
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Defines the hyperlink for the annotations in the nodes/connectors
- */
-class Hyperlink extends ChildProperty {
-}
-__decorate$3([
-    Property('blue')
-], Hyperlink.prototype, "color", void 0);
-__decorate$3([
-    Property('')
-], Hyperlink.prototype, "content", void 0);
-__decorate$3([
-    Property('')
-], Hyperlink.prototype, "link", void 0);
-__decorate$3([
-    Property('None')
-], Hyperlink.prototype, "textDecoration", void 0);
-/**
- * Defines the textual description of nodes/connectors
- */
-class Annotation extends ChildProperty {
-    // tslint:disable-next-line:no-any
-    constructor(parent, propName, defaultValue, isArray) {
-        super(parent, propName, defaultValue, isArray);
-        if (!defaultValue.id) {
-            if (parent.parentObj && parent.parentObj.propName && parent.parentObj.propName === 'phases') {
-                this.id = parent.parentObj.id;
-            }
-            else {
-                this.id = randomId();
-            }
-        }
-    }
-}
-__decorate$3([
-    Property('')
-], Annotation.prototype, "content", void 0);
-__decorate$3([
-    Property(undefined)
-], Annotation.prototype, "template", void 0);
-__decorate$3([
-    Property(true)
-], Annotation.prototype, "visibility", void 0);
-__decorate$3([
-    Property(AnnotationConstraints.InheritReadOnly)
-], Annotation.prototype, "constraints", void 0);
-__decorate$3([
-    Complex(undefined, Hyperlink)
-], Annotation.prototype, "hyperlink", void 0);
-__decorate$3([
-    Property('')
-], Annotation.prototype, "id", void 0);
-__decorate$3([
-    Property()
-], Annotation.prototype, "width", void 0);
-__decorate$3([
-    Property()
-], Annotation.prototype, "height", void 0);
-__decorate$3([
-    Property(0)
-], Annotation.prototype, "rotateAngle", void 0);
-__decorate$3([
-    Complex({ strokeWidth: 0, strokeColor: 'transparent', fill: 'transparent' }, TextStyle)
-], Annotation.prototype, "style", void 0);
-__decorate$3([
-    Property('Center')
-], Annotation.prototype, "horizontalAlignment", void 0);
-__decorate$3([
-    Property('Center')
-], Annotation.prototype, "verticalAlignment", void 0);
-__decorate$3([
-    Complex({}, Margin)
-], Annotation.prototype, "margin", void 0);
-__decorate$3([
-    Complex({ top: undefined, bottom: undefined, left: undefined, right: undefined }, Margin)
-], Annotation.prototype, "dragLimit", void 0);
-__decorate$3([
-    Property('Shape')
-], Annotation.prototype, "type", void 0);
-__decorate$3([
-    Property()
-], Annotation.prototype, "addInfo", void 0);
-/**
- * Defines the textual description of nodes/connectors with respect to bounds
- */
-class ShapeAnnotation extends Annotation {
-    // tslint:disable-next-line:no-any
-    constructor(parent, propName, defaultValue, isArray) {
-        super(parent, propName, defaultValue, isArray);
-    }
-    /**
-     * @private
-     * Returns the module of class ShapeAnnotation
-     */
-    getClassName() {
-        return 'ShapeAnnotation';
-    }
-}
-__decorate$3([
-    Complex({ x: 0.5, y: 0.5 }, Point)
-], ShapeAnnotation.prototype, "offset", void 0);
-/**
- * Defines the connector annotation
- */
-class PathAnnotation extends Annotation {
-    // tslint:disable-next-line:no-any
-    constructor(parent, propName, defaultValue, isArray) {
-        super(parent, propName, defaultValue, isArray);
-    }
-    /**
-     * @private
-     * Returns the module of class PathAnnotation
-     */
-    getClassName() {
-        return 'PathAnnotation';
-    }
-}
-__decorate$3([
-    Property(0.5)
-], PathAnnotation.prototype, "offset", void 0);
-__decorate$3([
-    Complex({ x: 0, y: 0 }, Point)
-], PathAnnotation.prototype, "displacement", void 0);
-__decorate$3([
-    Property('Center')
-], PathAnnotation.prototype, "alignment", void 0);
-__decorate$3([
-    Property(false)
-], PathAnnotation.prototype, "segmentAngle", void 0);
 
 /**
  * Canvas module is used to define a plane(canvas) and to arrange the children based on margin
@@ -3642,7 +3238,276 @@ let basicShapes = {
     'Diamond': 'M397.784,287.875 L369.5,316.159 L341.216,287.875 L369.5,259.591 L397.784,287.875 z'
 };
 
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+/**
+ * PathElement takes care of how to align the path based on offsetX and offsetY
+ */
+class PathElement extends DiagramElement {
+    /**
+     * set the id for each element
+     */
+    constructor() {
+        super();
+        /**
+         * Gets or sets the geometry of the path element
+         */
+        this.pathData = '';
+        /**
+         * Gets/Sets whether the path has to be transformed to fit the given x,y, width, height
+         */
+        this.transformPath = true;
+        /**
+         * Gets/Sets the equivalent path, that will have the origin as 0,0
+         */
+        this.absolutePath = '';
+        /**   @private  */
+        this.canMeasurePath = false;
+        //Private variables
+        /**   @private  */
+        this.absoluteBounds = new Rect();
+    }
+    /**
+     * Gets the geometry of the path element
+     */
+    get data() {
+        return this.pathData;
+    }
+    /**
+     * Sets the geometry of the path element
+     */
+    set data(value) {
+        if (this.pathData !== value) {
+            this.pathData = value;
+            this.isDirt = true;
+        }
+    }
+    /** @private */
+    getPoints() {
+        if (!this.pointTimer) {
+            this.pointTimer = setTimeout(() => {
+                this.points = null;
+                this.pointTimer = null;
+            }, 200);
+        }
+        this.points = this.points || findSegmentPoints(this);
+        return translatePoints(this, this.points);
+    }
+    /**
+     * Measures the minimum space that is required to render the element
+     * @param availableSize
+     */
+    measure(availableSize) {
+        //Performance issue - Avoiding measuring the connector path
+        if (this.staticSize && this.width !== undefined && this.height !== undefined) {
+            this.absoluteBounds = new Rect(this.offsetX - this.width * this.pivot.x, this.offsetY - this.height * this.pivot.y, this.width, this.height);
+        }
+        else if (this.isDirt && (this.transformPath || (this.width === undefined || this.height === undefined))
+            && (!this.absoluteBounds || this.absoluteBounds.height === 0) || this.canMeasurePath) {
+            //Measure the element only whent the path data is changed/ size is not specified
+            this.absoluteBounds = measurePath(this.data ? this.data : '');
+        }
+        if (this.width === undefined) {
+            this.desiredSize = new Size(this.absoluteBounds.width, this.height || this.absoluteBounds.height);
+        }
+        else if (this.height === undefined) {
+            this.desiredSize = new Size(this.width || this.absoluteBounds.width, this.absoluteBounds.height);
+        }
+        else {
+            this.desiredSize = new Size(this.width, this.height);
+        }
+        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        this.canMeasurePath = false;
+        return this.desiredSize;
+    }
+    /**
+     * Arranges the path element
+     * @param desiredSize
+     */
+    arrange(desiredSize) {
+        if (this.isDirt || this.actualSize.width !== desiredSize.width || this.actualSize.height !== desiredSize.height) {
+            this.isDirt = true;
+            this.absolutePath = this.updatePath(this.data, this.absoluteBounds, desiredSize);
+            if (!this.staticSize) {
+                this.points = null;
+            }
+        }
+        this.actualSize = this.desiredSize;
+        this.updateBounds();
+        this.isDirt = false;
+        return this.actualSize;
+    }
+    /**
+     * Translates the path to 0,0 and scales the path based on the actual size
+     * @param pathData
+     * @param bounds
+     * @param actualSize
+     */
+    updatePath(pathData, bounds, actualSize) {
+        let isScale = false;
+        let newPathString = '';
+        let scaleX = -bounds.x;
+        let scaleY = -bounds.y;
+        let arrayCollection = [];
+        if (actualSize.width !== bounds.width || actualSize.height !== bounds.height) {
+            scaleX = actualSize.width / Number(bounds.width ? bounds.width : 1);
+            scaleY = actualSize.height / Number(bounds.height ? bounds.height : 1);
+            isScale = true;
+        }
+        arrayCollection = processPathData(pathData);
+        arrayCollection = splitArrayCollection(arrayCollection);
+        if ((isScale || this.isDirt) && this.transformPath) {
+            newPathString = transformPath(arrayCollection, scaleX, scaleY, isScale, bounds.x, bounds.y, 0, 0);
+        }
+        else {
+            newPathString = getPathString(arrayCollection);
+        }
+        isScale = false;
+        return newPathString;
+    }
+}
+
+/**
+ * ImageElement defines a basic image elements
+ */
+class ImageElement extends DiagramElement {
+    /**
+     * set the id for each element
+     */
+    constructor() {
+        super();
+        /**
+         * sets or gets the image source
+         */
+        this.imageSource = '';
+        /**
+         * sets scaling factor of the image
+         */
+        this.imageScale = 'None';
+        /**
+         * sets the alignment of the image
+         */
+        this.imageAlign = 'None';
+        /**
+         * Sets how to stretch the image
+         */
+        this.stretch = 'Stretch';
+    }
+    /**
+     * Gets the source for the image element
+     */
+    get source() {
+        return this.imageSource;
+    }
+    /**
+     * Sets the source for the image element
+     */
+    set source(value) {
+        this.imageSource = value;
+        this.isDirt = true;
+    }
+    /**
+     * Measures minimum space that is required to render the image
+     * @param availableSize
+     */
+    measure(availableSize) {
+        if (this.isDirt && (this.stretch !== 'Stretch' || this.width === undefined && this.height === undefined)) {
+            this.contentSize = measureImage(this.source, this.contentSize);
+            this.isDirt = false;
+        }
+        if (this.width !== undefined && this.height !== undefined) {
+            this.desiredSize = new Size(this.width, this.height);
+            this.contentSize = this.desiredSize;
+        }
+        else {
+            this.desiredSize = this.contentSize;
+        }
+        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        return this.desiredSize;
+    }
+    /**
+     * Arranges the image
+     * @param desiredSize
+     */
+    arrange(desiredSize) {
+        this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);
+        this.updateBounds();
+        return this.actualSize;
+    }
+}
+
+/**
+ * NativeElement defines the basic native elements
+ */
+class DiagramNativeElement extends DiagramElement {
+    /**
+     * set the id for each element
+     */
+    constructor(nodeId, diagramId) {
+        super();
+        this.data = '';
+        /**
+         * set the node id
+         */
+        this.nodeId = '';
+        /**
+         * set the diagram id
+         */
+        this.diagramId = '';
+        /**
+         * sets scaling factor of the Native Element
+         */
+        this.scale = 'Stretch';
+        this.diagramId = diagramId;
+        this.nodeId = nodeId;
+    }
+    /**   @private  */
+    get content() {
+        return this.data;
+    }
+    /**
+     * sets the geometry of the native element
+     */
+    set content(value) {
+        this.data = value;
+        this.template = getContent(this, false);
+        this.isDirt = true;
+    }
+    /**
+     * Measures minimum space that is required to render the Native Element
+     * @param availableSize
+     */
+    measure(availableSize) {
+        if (this.isDirt) {
+            let rect = measureNativeContent(this.template);
+            this.contentSize = new Size();
+            this.contentSize.width = rect.width;
+            this.contentSize.height = rect.height;
+            let x = rect.x;
+            let y = rect.y;
+            this.templatePosition = { x, y };
+            this.isDirt = false;
+        }
+        if (this.width === undefined || this.height === undefined) {
+            let getAvailableSize = measureNativeSvg(this.template);
+            this.desiredSize = new Size(getAvailableSize.width, getAvailableSize.height);
+        }
+        else {
+            this.desiredSize = new Size(this.width, this.height);
+        }
+        this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);
+        return this.desiredSize;
+    }
+    /**
+     * Arranges the Native Element
+     * @param desiredSize
+     */
+    arrange(desiredSize) {
+        this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);
+        this.updateBounds();
+        return this.actualSize;
+    }
+}
+
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -3653,40 +3518,40 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class Port extends ChildProperty {
 }
-__decorate$5([
+__decorate$4([
     Property('')
 ], Port.prototype, "id", void 0);
-__decorate$5([
+__decorate$4([
     Property('Center')
 ], Port.prototype, "horizontalAlignment", void 0);
-__decorate$5([
+__decorate$4([
     Property('Center')
 ], Port.prototype, "verticalAlignment", void 0);
-__decorate$5([
+__decorate$4([
     Complex({}, Margin)
 ], Port.prototype, "margin", void 0);
-__decorate$5([
+__decorate$4([
     Property(12)
 ], Port.prototype, "width", void 0);
-__decorate$5([
+__decorate$4([
     Property(12)
 ], Port.prototype, "height", void 0);
-__decorate$5([
+__decorate$4([
     Complex({}, ShapeStyle)
 ], Port.prototype, "style", void 0);
-__decorate$5([
+__decorate$4([
     Property('Square')
 ], Port.prototype, "shape", void 0);
-__decorate$5([
+__decorate$4([
     Property(PortVisibility.Connect)
 ], Port.prototype, "visibility", void 0);
-__decorate$5([
+__decorate$4([
     Property('')
 ], Port.prototype, "pathData", void 0);
-__decorate$5([
+__decorate$4([
     Property(PortConstraints.Default)
 ], Port.prototype, "constraints", void 0);
-__decorate$5([
+__decorate$4([
     Property()
 ], Port.prototype, "addInfo", void 0);
 /**
@@ -3705,9 +3570,145 @@ class PointPort extends Port {
         return 'PointPort';
     }
 }
-__decorate$5([
+__decorate$4([
     Complex({ x: 0.5, y: 0.5 }, Point)
 ], PointPort.prototype, "offset", void 0);
+
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the hyperlink for the annotations in the nodes/connectors
+ */
+class Hyperlink extends ChildProperty {
+}
+__decorate$5([
+    Property('blue')
+], Hyperlink.prototype, "color", void 0);
+__decorate$5([
+    Property('')
+], Hyperlink.prototype, "content", void 0);
+__decorate$5([
+    Property('')
+], Hyperlink.prototype, "link", void 0);
+__decorate$5([
+    Property('None')
+], Hyperlink.prototype, "textDecoration", void 0);
+/**
+ * Defines the textual description of nodes/connectors
+ */
+class Annotation extends ChildProperty {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+        if (!defaultValue.id) {
+            if (parent.parentObj && parent.parentObj.propName && parent.parentObj.propName === 'phases') {
+                this.id = parent.parentObj.id;
+            }
+            else {
+                this.id = randomId();
+            }
+        }
+    }
+}
+__decorate$5([
+    Property('')
+], Annotation.prototype, "content", void 0);
+__decorate$5([
+    Property(undefined)
+], Annotation.prototype, "template", void 0);
+__decorate$5([
+    Property(true)
+], Annotation.prototype, "visibility", void 0);
+__decorate$5([
+    Property(AnnotationConstraints.InheritReadOnly)
+], Annotation.prototype, "constraints", void 0);
+__decorate$5([
+    Complex(undefined, Hyperlink)
+], Annotation.prototype, "hyperlink", void 0);
+__decorate$5([
+    Property('')
+], Annotation.prototype, "id", void 0);
+__decorate$5([
+    Property()
+], Annotation.prototype, "width", void 0);
+__decorate$5([
+    Property()
+], Annotation.prototype, "height", void 0);
+__decorate$5([
+    Property(0)
+], Annotation.prototype, "rotateAngle", void 0);
+__decorate$5([
+    Complex({ strokeWidth: 0, strokeColor: 'transparent', fill: 'transparent' }, TextStyle)
+], Annotation.prototype, "style", void 0);
+__decorate$5([
+    Property('Center')
+], Annotation.prototype, "horizontalAlignment", void 0);
+__decorate$5([
+    Property('Center')
+], Annotation.prototype, "verticalAlignment", void 0);
+__decorate$5([
+    Complex({}, Margin)
+], Annotation.prototype, "margin", void 0);
+__decorate$5([
+    Complex({ top: undefined, bottom: undefined, left: undefined, right: undefined }, Margin)
+], Annotation.prototype, "dragLimit", void 0);
+__decorate$5([
+    Property('Shape')
+], Annotation.prototype, "type", void 0);
+__decorate$5([
+    Property()
+], Annotation.prototype, "addInfo", void 0);
+/**
+ * Defines the textual description of nodes/connectors with respect to bounds
+ */
+class ShapeAnnotation extends Annotation {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+    }
+    /**
+     * @private
+     * Returns the module of class ShapeAnnotation
+     */
+    getClassName() {
+        return 'ShapeAnnotation';
+    }
+}
+__decorate$5([
+    Complex({ x: 0.5, y: 0.5 }, Point)
+], ShapeAnnotation.prototype, "offset", void 0);
+/**
+ * Defines the connector annotation
+ */
+class PathAnnotation extends Annotation {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+    }
+    /**
+     * @private
+     * Returns the module of class PathAnnotation
+     */
+    getClassName() {
+        return 'PathAnnotation';
+    }
+}
+__decorate$5([
+    Property(0.5)
+], PathAnnotation.prototype, "offset", void 0);
+__decorate$5([
+    Complex({ x: 0, y: 0 }, Point)
+], PathAnnotation.prototype, "displacement", void 0);
+__decorate$5([
+    Property('Center')
+], PathAnnotation.prototype, "alignment", void 0);
+__decorate$5([
+    Property(false)
+], PathAnnotation.prototype, "segmentAngle", void 0);
 
 /**
  * ShapeDictionary defines the shape of the default nodes and ports
@@ -3858,201 +3859,6 @@ let flowShapes = {
     // StoredData
     'StoredData': 'M 5.55 0L 50 0A 1.5,30 0 0,1 50,0A 5.555,25 0 0,0 50,50A 1.5,30 0 0,1 50,50L 5.555 50A 5.55,25 0 0,1 5.555,0Z',
 };
-
-var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Defines the behavior of default IconShapes
- */
-class IconShape extends ChildProperty {
-}
-__decorate$7([
-    Property('None')
-], IconShape.prototype, "shape", void 0);
-__decorate$7([
-    Property('white')
-], IconShape.prototype, "fill", void 0);
-__decorate$7([
-    Property('Auto')
-], IconShape.prototype, "horizontalAlignment", void 0);
-__decorate$7([
-    Property('Auto')
-], IconShape.prototype, "verticalAlignment", void 0);
-__decorate$7([
-    Property(10)
-], IconShape.prototype, "width", void 0);
-__decorate$7([
-    Property(10)
-], IconShape.prototype, "height", void 0);
-__decorate$7([
-    Complex({ x: 0.5, y: 1 }, Point)
-], IconShape.prototype, "offset", void 0);
-__decorate$7([
-    Property('#1a1a1a')
-], IconShape.prototype, "borderColor", void 0);
-__decorate$7([
-    Property(1)
-], IconShape.prototype, "borderWidth", void 0);
-__decorate$7([
-    Complex({}, Margin)
-], IconShape.prototype, "margin", void 0);
-__decorate$7([
-    Property('')
-], IconShape.prototype, "pathData", void 0);
-__decorate$7([
-    Property('')
-], IconShape.prototype, "content", void 0);
-__decorate$7([
-    Property(0)
-], IconShape.prototype, "cornerRadius", void 0);
-__decorate$7([
-    Complex({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
-], IconShape.prototype, "padding", void 0);
-
-var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Defines the tooltip that should be shown when the mouse hovers over node.
- * An object that defines the description, appearance and alignments of tooltip
- */
-class DiagramTooltip extends ChildProperty {
-}
-__decorate$8([
-    Property('')
-], DiagramTooltip.prototype, "content", void 0);
-__decorate$8([
-    Property('TopLeft')
-], DiagramTooltip.prototype, "position", void 0);
-__decorate$8([
-    Property('Mouse')
-], DiagramTooltip.prototype, "relativeMode", void 0);
-__decorate$8([
-    Property(true)
-], DiagramTooltip.prototype, "showTipPointer", void 0);
-__decorate$8([
-    Property('auto')
-], DiagramTooltip.prototype, "width", void 0);
-__decorate$8([
-    Property('auto')
-], DiagramTooltip.prototype, "height", void 0);
-__decorate$8([
-    Property()
-], DiagramTooltip.prototype, "animation", void 0);
-/**
- * @private
- * defines the Tooltip.
- * @param diagram
- */
-function initTooltip(diagram) {
-    let tooltipOption = new Tooltip;
-    tooltipOption = updateTooltipContent(diagram.tooltip, tooltipOption);
-    let tooltip = new Tooltip(tooltipOption);
-    tooltip.beforeCollision = beforeCollision;
-    tooltip.beforeOpen = beforeOpen;
-    tooltip.cssClass = 'e-diagram-tooltip';
-    tooltip.opensOn = 'custom';
-    tooltip.appendTo('#' + diagram.element.id);
-    tooltip.close();
-    return tooltip;
-}
-function beforeOpen(args) {
-    if ((this.content === '' || this.content === undefined)) {
-        args.element.style.display = 'none';
-    }
-}
-function beforeCollision(args) {
-    if ((args.collidedPosition && args.collidedPosition !== this.position)) {
-        args.element.style.display = 'none';
-    }
-}
-/**
- * @private
- * updates the contents of the tooltip.
- * @param diagram
- * @param node
- */
-function updateTooltip(diagram, node) {
-    let tooltip;
-    let tooltipObject = diagram.tooltipObject;
-    tooltip = node ? node.tooltip : diagram.tooltip;
-    updateTooltipContent(tooltip, tooltipObject);
-    return tooltipObject;
-}
-function updateTooltipContent(tooltip, tooltipObject) {
-    if (tooltip.content) {
-        tooltipObject.content = tooltip.content;
-        tooltipObject.position = tooltip.position;
-        tooltipObject.showTipPointer = tooltip.showTipPointer;
-        tooltipObject.width = tooltip.width;
-        tooltipObject.height = tooltip.height;
-        if (!tooltip.animation) {
-            tooltipObject.animation = { close: { effect: 'None' } };
-        }
-        else {
-            tooltipObject.animation = tooltip.animation;
-        }
-    }
-    else {
-        tooltipObject.close();
-    }
-    return tooltipObject;
-}
-
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Defines the common behavior of nodes, connectors and groups
- */
-class NodeBase extends ChildProperty {
-}
-__decorate$6([
-    Property('')
-], NodeBase.prototype, "id", void 0);
-__decorate$6([
-    Property(-1)
-], NodeBase.prototype, "zIndex", void 0);
-__decorate$6([
-    Complex({}, Margin)
-], NodeBase.prototype, "margin", void 0);
-__decorate$6([
-    Property(true)
-], NodeBase.prototype, "visible", void 0);
-__decorate$6([
-    Collection([], PointPort)
-], NodeBase.prototype, "ports", void 0);
-__decorate$6([
-    Property(true)
-], NodeBase.prototype, "isExpanded", void 0);
-__decorate$6([
-    Complex({}, DiagramTooltip)
-], NodeBase.prototype, "tooltip", void 0);
-__decorate$6([
-    Complex({}, IconShape)
-], NodeBase.prototype, "expandIcon", void 0);
-__decorate$6([
-    Complex({}, IconShape)
-], NodeBase.prototype, "collapseIcon", void 0);
-__decorate$6([
-    Property(false)
-], NodeBase.prototype, "excludeFromLayout", void 0);
-__decorate$6([
-    Property()
-], NodeBase.prototype, "addInfo", void 0);
-__decorate$6([
-    Property('None')
-], NodeBase.prototype, "flip", void 0);
 
 /**
  * Connector modules are used to dock and update the connectors
@@ -6754,6 +6560,204 @@ function getOppositeDirection(direction) {
     return 'auto';
 }
 
+var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the behavior of default IconShapes
+ */
+class IconShape extends ChildProperty {
+}
+__decorate$8([
+    Property('None')
+], IconShape.prototype, "shape", void 0);
+__decorate$8([
+    Property('white')
+], IconShape.prototype, "fill", void 0);
+__decorate$8([
+    Property('Auto')
+], IconShape.prototype, "horizontalAlignment", void 0);
+__decorate$8([
+    Property('Auto')
+], IconShape.prototype, "verticalAlignment", void 0);
+__decorate$8([
+    Property(10)
+], IconShape.prototype, "width", void 0);
+__decorate$8([
+    Property(10)
+], IconShape.prototype, "height", void 0);
+__decorate$8([
+    Complex({ x: 0.5, y: 1 }, Point)
+], IconShape.prototype, "offset", void 0);
+__decorate$8([
+    Property('#1a1a1a')
+], IconShape.prototype, "borderColor", void 0);
+__decorate$8([
+    Property(1)
+], IconShape.prototype, "borderWidth", void 0);
+__decorate$8([
+    Complex({}, Margin)
+], IconShape.prototype, "margin", void 0);
+__decorate$8([
+    Property('')
+], IconShape.prototype, "pathData", void 0);
+__decorate$8([
+    Property('')
+], IconShape.prototype, "content", void 0);
+__decorate$8([
+    Property(0)
+], IconShape.prototype, "cornerRadius", void 0);
+__decorate$8([
+    Complex({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
+], IconShape.prototype, "padding", void 0);
+
+var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the tooltip that should be shown when the mouse hovers over node.
+ * An object that defines the description, appearance and alignments of tooltip
+ */
+class DiagramTooltip extends ChildProperty {
+}
+__decorate$9([
+    Property('')
+], DiagramTooltip.prototype, "content", void 0);
+__decorate$9([
+    Property('TopLeft')
+], DiagramTooltip.prototype, "position", void 0);
+__decorate$9([
+    Property('Mouse')
+], DiagramTooltip.prototype, "relativeMode", void 0);
+__decorate$9([
+    Property(true)
+], DiagramTooltip.prototype, "showTipPointer", void 0);
+__decorate$9([
+    Property('auto')
+], DiagramTooltip.prototype, "width", void 0);
+__decorate$9([
+    Property('auto')
+], DiagramTooltip.prototype, "height", void 0);
+__decorate$9([
+    Property('Auto')
+], DiagramTooltip.prototype, "openOn", void 0);
+__decorate$9([
+    Property()
+], DiagramTooltip.prototype, "animation", void 0);
+/**
+ * @private
+ * defines the Tooltip.
+ * @param diagram
+ */
+function initTooltip(diagram) {
+    let tooltipOption = new Tooltip;
+    tooltipOption = updateTooltipContent(diagram.tooltip, tooltipOption);
+    let tooltip = new Tooltip(tooltipOption);
+    tooltip.beforeCollision = beforeCollision;
+    tooltip.beforeOpen = beforeOpen;
+    tooltip.cssClass = 'e-diagram-tooltip';
+    tooltip.opensOn = 'custom';
+    tooltip.appendTo('#' + diagram.element.id);
+    tooltip.close();
+    return tooltip;
+}
+function beforeOpen(args) {
+    if ((this.content === '' || this.content === undefined)) {
+        args.element.style.display = 'none';
+    }
+}
+function beforeCollision(args) {
+    if ((args.collidedPosition && args.collidedPosition !== this.position)) {
+        args.element.style.display = 'none';
+    }
+}
+/**
+ * @private
+ * updates the contents of the tooltip.
+ * @param diagram
+ * @param node
+ */
+function updateTooltip(diagram, node) {
+    let tooltip;
+    let tooltipObject = diagram.tooltipObject;
+    tooltip = node ? node.tooltip : diagram.tooltip;
+    updateTooltipContent(tooltip, tooltipObject);
+    return tooltipObject;
+}
+function updateTooltipContent(tooltip, tooltipObject) {
+    if (tooltip.content) {
+        tooltipObject.content = tooltip.content;
+        tooltipObject.position = tooltip.position;
+        tooltipObject.showTipPointer = tooltip.showTipPointer;
+        tooltipObject.width = tooltip.width;
+        tooltipObject.height = tooltip.height;
+        if (!tooltip.animation) {
+            tooltipObject.animation = { close: { effect: 'None' } };
+        }
+        else {
+            tooltipObject.animation = tooltip.animation;
+        }
+    }
+    else {
+        tooltipObject.close();
+    }
+    return tooltipObject;
+}
+
+var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the common behavior of nodes, connectors and groups
+ */
+class NodeBase extends ChildProperty {
+}
+__decorate$7([
+    Property('')
+], NodeBase.prototype, "id", void 0);
+__decorate$7([
+    Property(-1)
+], NodeBase.prototype, "zIndex", void 0);
+__decorate$7([
+    Complex({}, Margin)
+], NodeBase.prototype, "margin", void 0);
+__decorate$7([
+    Property(true)
+], NodeBase.prototype, "visible", void 0);
+__decorate$7([
+    Collection([], PointPort)
+], NodeBase.prototype, "ports", void 0);
+__decorate$7([
+    Property(true)
+], NodeBase.prototype, "isExpanded", void 0);
+__decorate$7([
+    Complex({}, DiagramTooltip)
+], NodeBase.prototype, "tooltip", void 0);
+__decorate$7([
+    Complex({}, IconShape)
+], NodeBase.prototype, "expandIcon", void 0);
+__decorate$7([
+    Complex({}, IconShape)
+], NodeBase.prototype, "collapseIcon", void 0);
+__decorate$7([
+    Property(false)
+], NodeBase.prototype, "excludeFromLayout", void 0);
+__decorate$7([
+    Property()
+], NodeBase.prototype, "addInfo", void 0);
+__decorate$7([
+    Property('None')
+], NodeBase.prototype, "flip", void 0);
+
 /**
  * HTMLElement defines the basic html elements
  */
@@ -6797,7 +6801,7 @@ class DiagramHtmlElement extends DiagramElement {
     }
 }
 
-var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -6833,22 +6837,22 @@ let getSegmentType = (obj) => {
  */
 class Decorator extends ChildProperty {
 }
-__decorate$9([
+__decorate$6([
     Property(10)
 ], Decorator.prototype, "width", void 0);
-__decorate$9([
+__decorate$6([
     Property(10)
 ], Decorator.prototype, "height", void 0);
-__decorate$9([
+__decorate$6([
     Property('Arrow')
 ], Decorator.prototype, "shape", void 0);
-__decorate$9([
+__decorate$6([
     Complex({ fill: 'black', strokeColor: 'black', strokeWidth: 1 }, ShapeStyle)
 ], Decorator.prototype, "style", void 0);
-__decorate$9([
+__decorate$6([
     Complex({ x: 0, y: 0.5 }, Point)
 ], Decorator.prototype, "pivot", void 0);
-__decorate$9([
+__decorate$6([
     Property('')
 ], Decorator.prototype, "pathData", void 0);
 /**
@@ -6856,10 +6860,10 @@ __decorate$9([
  */
 class Vector extends ChildProperty {
 }
-__decorate$9([
+__decorate$6([
     Property(0)
 ], Vector.prototype, "angle", void 0);
-__decorate$9([
+__decorate$6([
     Property(0)
 ], Vector.prototype, "distance", void 0);
 /**
@@ -6867,7 +6871,7 @@ __decorate$9([
  */
 class ConnectorShape extends ChildProperty {
 }
-__decorate$9([
+__decorate$6([
     Property('None')
 ], ConnectorShape.prototype, "type", void 0);
 /**
@@ -6875,10 +6879,10 @@ __decorate$9([
  */
 class ActivityFlow extends ConnectorShape {
 }
-__decorate$9([
+__decorate$6([
     Property('Object')
 ], ActivityFlow.prototype, "flow", void 0);
-__decorate$9([
+__decorate$6([
     Property(30)
 ], ActivityFlow.prototype, "exceptionFlowHeight", void 0);
 /**
@@ -6886,16 +6890,16 @@ __decorate$9([
  */
 class BpmnFlow extends ConnectorShape {
 }
-__decorate$9([
+__decorate$6([
     Property('Sequence')
 ], BpmnFlow.prototype, "flow", void 0);
-__decorate$9([
+__decorate$6([
     Property('Normal')
 ], BpmnFlow.prototype, "sequence", void 0);
-__decorate$9([
+__decorate$6([
     Property('Default')
 ], BpmnFlow.prototype, "message", void 0);
-__decorate$9([
+__decorate$6([
     Property('Default')
 ], BpmnFlow.prototype, "association", void 0);
 /**
@@ -6908,9 +6912,12 @@ class ConnectorSegment extends ChildProperty {
         this.points = [];
     }
 }
-__decorate$9([
+__decorate$6([
     Property('Straight')
 ], ConnectorSegment.prototype, "type", void 0);
+__decorate$6([
+    Property(true)
+], ConnectorSegment.prototype, "allowDrag", void 0);
 /**
  * Defines the behavior of straight segments
  */
@@ -6923,7 +6930,7 @@ class StraightSegment extends ConnectorSegment {
         return 'StraightSegment';
     }
 }
-__decorate$9([
+__decorate$6([
     Complex({ x: 0, y: 0 }, Point)
 ], StraightSegment.prototype, "point", void 0);
 /**
@@ -6938,16 +6945,16 @@ class BezierSegment extends StraightSegment {
         return 'BezierSegment';
     }
 }
-__decorate$9([
+__decorate$6([
     Complex({ x: 0, y: 0 }, Point)
 ], BezierSegment.prototype, "point1", void 0);
-__decorate$9([
+__decorate$6([
     Complex({ x: 0, y: 0 }, Point)
 ], BezierSegment.prototype, "point2", void 0);
-__decorate$9([
+__decorate$6([
     Complex({ angle: 0, distance: 0 }, Vector)
 ], BezierSegment.prototype, "vector1", void 0);
-__decorate$9([
+__decorate$6([
     Complex({ angle: 0, distance: 0 }, Vector)
 ], BezierSegment.prototype, "vector2", void 0);
 /**
@@ -6962,10 +6969,10 @@ class OrthogonalSegment extends ConnectorSegment {
         return 'OrthogonalSegment';
     }
 }
-__decorate$9([
+__decorate$6([
     Property(null)
 ], OrthogonalSegment.prototype, "length", void 0);
-__decorate$9([
+__decorate$6([
     Property(null)
 ], OrthogonalSegment.prototype, "direction", void 0);
 /**
@@ -7091,13 +7098,13 @@ function bezierPoints(connector, startPoint, point1, point2, endPoint, i, max) {
  */
 class MultiplicityLabel extends ChildProperty {
 }
-__decorate$9([
+__decorate$6([
     Property(true)
 ], MultiplicityLabel.prototype, "optional", void 0);
-__decorate$9([
+__decorate$6([
     Property(undefined)
 ], MultiplicityLabel.prototype, "lowerBounds", void 0);
-__decorate$9([
+__decorate$6([
     Property(undefined)
 ], MultiplicityLabel.prototype, "upperBounds", void 0);
 /**
@@ -7105,13 +7112,13 @@ __decorate$9([
  */
 class ClassifierMultiplicity extends ChildProperty {
 }
-__decorate$9([
+__decorate$6([
     Property('OneToOne')
 ], ClassifierMultiplicity.prototype, "type", void 0);
-__decorate$9([
+__decorate$6([
     Complex({}, MultiplicityLabel)
 ], ClassifierMultiplicity.prototype, "target", void 0);
-__decorate$9([
+__decorate$6([
     Complex({}, MultiplicityLabel)
 ], ClassifierMultiplicity.prototype, "source", void 0);
 /**
@@ -7119,16 +7126,16 @@ __decorate$9([
  */
 class RelationShip extends ConnectorShape {
 }
-__decorate$9([
+__decorate$6([
     Property('UmlClassifier')
 ], RelationShip.prototype, "type", void 0);
-__decorate$9([
+__decorate$6([
     Property('Aggregation')
 ], RelationShip.prototype, "relationship", void 0);
-__decorate$9([
+__decorate$6([
     Property('Directional')
 ], RelationShip.prototype, "associationType", void 0);
-__decorate$9([
+__decorate$6([
     Complex({}, ClassifierMultiplicity)
 ], RelationShip.prototype, "multiplicity", void 0);
 /**
@@ -7897,71 +7904,614 @@ class Connector extends NodeBase {
         return 'Connector';
     }
 }
-__decorate$9([
+__decorate$6([
     ComplexFactory(getConnectorType)
 ], Connector.prototype, "shape", void 0);
-__decorate$9([
+__decorate$6([
     Property(ConnectorConstraints.Default)
 ], Connector.prototype, "constraints", void 0);
-__decorate$9([
+__decorate$6([
     Property(10)
 ], Connector.prototype, "bridgeSpace", void 0);
-__decorate$9([
+__decorate$6([
     Collection([], PathAnnotation)
 ], Connector.prototype, "annotations", void 0);
-__decorate$9([
+__decorate$6([
     Complex({}, Point)
 ], Connector.prototype, "sourcePoint", void 0);
-__decorate$9([
+__decorate$6([
     Complex({}, Point)
 ], Connector.prototype, "targetPoint", void 0);
-__decorate$9([
+__decorate$6([
     CollectionFactory(getSegmentType)
 ], Connector.prototype, "segments", void 0);
-__decorate$9([
+__decorate$6([
     Property('')
 ], Connector.prototype, "sourceID", void 0);
-__decorate$9([
+__decorate$6([
     Property('')
 ], Connector.prototype, "targetID", void 0);
-__decorate$9([
+__decorate$6([
     Property(10)
 ], Connector.prototype, "hitPadding", void 0);
-__decorate$9([
+__decorate$6([
     Property('Straight')
 ], Connector.prototype, "type", void 0);
-__decorate$9([
+__decorate$6([
     Property(0)
 ], Connector.prototype, "cornerRadius", void 0);
-__decorate$9([
+__decorate$6([
     Complex({ shape: 'None' }, Decorator)
 ], Connector.prototype, "sourceDecorator", void 0);
-__decorate$9([
+__decorate$6([
     Complex({ shape: 'Arrow' }, Decorator)
 ], Connector.prototype, "targetDecorator", void 0);
-__decorate$9([
+__decorate$6([
     Complex({}, DiagramTooltip)
 ], Connector.prototype, "tooltip", void 0);
-__decorate$9([
+__decorate$6([
     Property('')
 ], Connector.prototype, "sourcePortID", void 0);
-__decorate$9([
+__decorate$6([
     Property('')
 ], Connector.prototype, "targetPortID", void 0);
-__decorate$9([
+__decorate$6([
     Property(0)
 ], Connector.prototype, "sourcePadding", void 0);
-__decorate$9([
+__decorate$6([
     Property(0)
 ], Connector.prototype, "targetPadding", void 0);
-__decorate$9([
+__decorate$6([
     Complex({ strokeWidth: 1, strokeColor: 'black' }, StrokeStyle)
 ], Connector.prototype, "style", void 0);
-__decorate$9([
+__decorate$6([
     Property(null)
 ], Connector.prototype, "wrapper", void 0);
 
 var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Represents the Ruler component that measures the Diagram objects, indicate positions, and align Diagram elements.
+ * ```html
+ * <div id='ruler'>Show Ruler</div>
+ * ```
+ * ```typescript
+ * <script>
+ *   var rulerObj = new Ruler({ showRuler: true });
+ *   rulerObj.appendTo('#ruler');
+ * </script>
+ * ```
+ */
+class Ruler extends Component {
+    /**
+     * Constructor for creating the Ruler Component
+     */
+    constructor(options, element) {
+        super(options, element);
+        /**   @private  */
+        this.offset = 0;
+        /**   @private  */
+        this.scale = 1;
+    }
+    /**
+     * Initializes the values of private members.
+     * @private
+     */
+    preRender() {
+        this.unWireEvents();
+        this.wireEvents();
+    }
+    /**
+     * Renders the rulers.
+     * @private
+     */
+    render() {
+        this.updateRulerGeometry();
+    }
+    /**
+     * Core method to return the component name.
+     * @private
+     */
+    getModuleName() {
+        return 'Ruler';
+    }
+    /**
+     * To destroy the ruler
+     * @return {void}
+     */
+    destroy() {
+        this.unWireEvents();
+        this.notify('destroy', {});
+        super.destroy();
+        this.element.classList.remove('e-ruler');
+    }
+    /**
+     * Get the properties to be maintained in the persisted state.
+     * @return {string}
+     */
+    getPersistData() {
+        let keyEntity = ['loaded'];
+        return this.addOnPersist(keyEntity);
+    }
+    /**
+     * Refreshes the ruler when the Ruler properties are updated
+     * @param options
+     */
+    onPropertyChanged(newProp, oldProp) {
+        for (let prop of Object.keys(newProp)) {
+            switch (prop) {
+                case 'length':
+                case 'interval':
+                case 'segmentWidth':
+                case 'tickAlignment':
+                case 'markerColor':
+                case 'thickness':
+                    this.updateRuler();
+                    break;
+            }
+        }
+    }
+    updateRulerGeometry() {
+        this.element.style.textAlign = 'left';
+        this.renderRulerSpace();
+        this.updateRuler();
+    }
+    renderRulerSpace() {
+        let rulerGeometry = this.getRulerGeometry();
+        let div = document.getElementById(this.element.id + '_ruler_space');
+        if (!div) {
+            div = createHtmlElement('div', {
+                'id': this.element.id + '_ruler_space',
+                'style': 'height:' + rulerGeometry.height + 'px;width:' + rulerGeometry.width + 'px;cssFloat:' + 'left;'
+            });
+            this.element.appendChild(div);
+        }
+        return div;
+    }
+    updateRuler() {
+        let rulerSize = this.getRulerSize();
+        let rulerGeometry = this.getRulerGeometry();
+        let length = 0;
+        let offset = 0;
+        let availableSize = new Size();
+        let svg = this.getRulerSVG(rulerGeometry);
+        if (svg) {
+            length = this.length;
+            availableSize.height = rulerSize;
+            offset = this.offset;
+            if (length && length !== Infinity) {
+                let unitLength = length + this.segmentWidth;
+                let unitOffset = offset;
+                this.updateSegments(unitOffset, (unitLength + Math.abs(unitOffset)), svg, rulerSize);
+            }
+        }
+    }
+    updateSegments(start, end, svg, rulerSize) {
+        let run = start;
+        let trans = { trans: 0 };
+        while (run < end) {
+            let rulerSegment = this.getNewSegment(run, svg);
+            if (rulerSegment) {
+                svg.appendChild(rulerSegment.segment);
+                run = this.updateSegment(start, end, rulerSegment, run, trans, rulerSize);
+            }
+        }
+    }
+    updateSegment(start, end, rulerSegment, run, trans, rulerSize) {
+        let segWidth = this.updateSegmentWidth(this.scale);
+        if (run === start) {
+            this.startValue = Math.floor(start / segWidth) * segWidth / this.scale;
+            this.startValue = (this.startValue % 1) !== 0 ? Number((this.startValue).toFixed(1)) : this.startValue;
+            rulerSegment.label.textContent = this.startValue.toString();
+            this.defStartValue = run = this.startValue * this.scale;
+            if (this.orientation === 'Horizontal') {
+                this.hRulerOffset = start - run;
+            }
+            else {
+                this.vRulerOffset = start - run;
+            }
+        }
+        else {
+            this.startValue = (run / this.scale);
+            this.startValue = (this.startValue % 1) !== 0 ? Number((this.startValue).toFixed(1)) : this.startValue;
+            rulerSegment.label.textContent = this.startValue.toString();
+        }
+        this.updateTickLabel(rulerSegment, rulerSize);
+        let translate = (this.orientation === 'Horizontal') ? ((trans.trans + 0.5) + ',0.5') : ('0.5,' + (trans.trans + 0.5));
+        rulerSegment.segment.setAttribute('transform', 'translate(' + translate + ')');
+        trans.trans += segWidth;
+        run += segWidth;
+        return run;
+    }
+    updateTickLabel(rulerSegment, rulerSize) {
+        let bBox = rulerSegment.segment.lastChild.getBBox();
+        let isHorizontal = (this.orientation === 'Horizontal') ? true : false;
+        let isRightOrBottom = (this.tickAlignment === 'RightOrBottom') ? true : false;
+        let x = isHorizontal ? 2 : 0;
+        let y = isHorizontal ? (isRightOrBottom ? (rulerSize / 2 + (11 / 2) - (11 / 2)) :
+            (rulerSize / 2 + (11 / 2))) : bBox.height;
+        let translate = isRightOrBottom ? (-(bBox.width + 2) + ',' + ((rulerSize / 2) - bBox.height)) :
+            (-(bBox.width + 2) + ',' + ((rulerSize / 2) - bBox.height / 2));
+        let attr = isHorizontal ? { 'x': x, 'y': y } :
+            { 'x': x, 'y': y, 'transform': 'rotate(270)' + 'translate(' + translate + ')' };
+        setAttributeSvg(rulerSegment.segment.lastChild, attr);
+    }
+    getNewSegment(run, svg) {
+        let segment = this.createNewTicks(run, svg);
+        let label = this.createTickLabel(svg, segment);
+        return { segment: segment, label: label };
+    }
+    createNewTicks(run, svg) {
+        let tick;
+        let tickInterval;
+        let segmentWidth = this.updateSegmentWidth(this.scale);
+        let g;
+        let attr = { 'class': 'e-ruler-segment' };
+        g = createSvgElement('g', attr);
+        for (let i = 0; i < this.interval; i++) {
+            tickInterval = segmentWidth / this.interval;
+            tick = this.createTick(svg, tickInterval, i + 1, run);
+            g.appendChild(tick);
+        }
+        return g;
+    }
+    getLinePoint(svg, tickInterval, length) {
+        let segmentWidth = this.updateSegmentWidth(this.scale);
+        let rulerSize = this.getRulerSize();
+        tickInterval = tickInterval * (length - 1);
+        length = ((tickInterval % segmentWidth) === 0) ? rulerSize : rulerSize * 0.3;
+        return length;
+    }
+    createTick(svg, tickInterval, length, run) {
+        let ruler;
+        let line;
+        let linePoint = this.getLinePoint(svg, tickInterval, length);
+        let rulerSize = this.getRulerSize();
+        let args;
+        let attr;
+        let isHorizontal = (this.orientation === 'Horizontal') ? true : false;
+        let isRightOrBottom = (this.tickAlignment === 'RightOrBottom') ? true : false;
+        let arrangeTick = getFunction(this.arrangeTick);
+        args = { ruler: ruler, tickLength: linePoint, tickInterval: ((this.segmentWidth / this.interval) * (length - 1)) };
+        if (arrangeTick) {
+            arrangeTick(args);
+        }
+        linePoint = args.tickLength;
+        let point = tickInterval * (length - 1);
+        let x1 = isHorizontal ? point : (isRightOrBottom ? rulerSize : 0);
+        let x2 = isHorizontal ? point : (isRightOrBottom ? (rulerSize - linePoint) : (rulerSize - (rulerSize - linePoint)));
+        let y1 = isHorizontal ? (isRightOrBottom ? rulerSize : (rulerSize - (rulerSize - linePoint))) : point;
+        let y2 = isHorizontal ? (isRightOrBottom ? (rulerSize - linePoint) : 0) : point;
+        attr = { 'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'stroke-width': '1', 'stroke': 'black' };
+        line = createSvgElement('line', attr);
+        line.setAttribute('class', 'e-ruler-tick');
+        return line;
+    }
+    createTickLabel(svg, segment) {
+        let text;
+        if (segment) {
+            let attr = { 'class': 'e-ruler-tick-label' };
+            text = createSvgElement('text', attr);
+            segment.appendChild(text);
+        }
+        return text;
+    }
+    /**
+     * @private
+     * @param scale
+     */
+    updateSegmentWidth(scale) {
+        if (this.segmentWidth !== 100) {
+            return this.segmentWidth;
+        }
+        let five = 25;
+        let multiples = 1;
+        let div;
+        let scaleRound;
+        let fifty = 100;
+        scaleRound = Math.pow(2, Math.round(Math.log(scale) / Math.log(2)));
+        div = fifty;
+        div = (fifty / scaleRound);
+        while (div > 100) {
+            multiples /= 10;
+            div /= 10;
+        }
+        while (div < 25) {
+            multiples *= 10;
+            div *= 10;
+        }
+        if (div >= five && div % five !== 0) {
+            div = Math.round(div / five) * five;
+        }
+        return div * scale / multiples;
+    }
+    createMarkerLine(rulerSvg, rulerObj, attr) {
+        let line;
+        if (rulerObj) {
+            line = rulerSvg.getElementById(rulerObj.id + '_marker');
+            if (line) {
+                line.parentNode.removeChild(line);
+            }
+            line = createSvgElement('line', attr);
+        }
+        return line;
+    }
+    /**
+     * @private
+     * @param rulerObj
+     * @param currentPoint
+     */
+    drawRulerMarker(rulerObj, currentPoint, offset) {
+        let rulerSvg;
+        let rulerSize;
+        let scale;
+        let diff;
+        let i;
+        let attr;
+        let line;
+        let isHorizontal = this.orientation === 'Horizontal' ? true : false;
+        let rulerSvgElements = rulerObj.getElementsByTagName('svg');
+        for (i = 0; i < rulerSvgElements.length; i++) {
+            if (rulerSvgElements[i]) {
+                rulerSvg = rulerSvgElements[i];
+            }
+            break;
+        }
+        if (rulerSvg) {
+            rulerSize = this.getRulerSize();
+            attr = {
+                'id': rulerObj.id + '_marker', 'x1': 0, 'y1': 0, 'x2': (isHorizontal ? 0 : rulerSize),
+                'y2': (isHorizontal ? rulerSize : 0), 'stroke': this.markerColor, 'stroke-width': 1.5,
+                'class': 'e-d-ruler-marker'
+            };
+            line = this.createMarkerLine(rulerSvg, rulerObj, attr);
+            scale = this.scale;
+            diff = this.offset - this.defStartValue;
+            let point = isHorizontal ? currentPoint.x : currentPoint.y;
+            let move = (point * scale) + offset + diff;
+            line.setAttribute('transform', 'translate(' + (isHorizontal ? ((move + 0.5) + ' 0.5') : ('0.5 ' + (move + 0.5))) + ')');
+            rulerSvg.appendChild(line);
+        }
+    }
+    getRulerGeometry() {
+        return new Size(this.element ? this.element.getBoundingClientRect().width : 0, this.element ? this.element.getBoundingClientRect().height : 0);
+    }
+    getRulerSize() {
+        return this.thickness;
+    }
+    getRulerSVG(rulerGeometry) {
+        let rulerSpace;
+        let rulerSize = this.getRulerSize();
+        let svg;
+        if (this.element) {
+            rulerSpace = document.getElementById(this.element.id + '_ruler_space');
+            if (rulerSpace) {
+                let attr = {
+                    'id': this.element.id + '_Ruler_svg',
+                    width: this.orientation === 'Horizontal' ? (rulerGeometry.width + 200) : rulerSize + 'px',
+                    height: this.orientation === 'Horizontal' ? rulerSize : (rulerGeometry.height + 200) + 'px',
+                    style: 'position:inherit;'
+                };
+                svg = createSvgElement('svg', attr);
+                if (rulerSpace.childNodes.length > 0) {
+                    for (let i = rulerSpace.childNodes.length - 1; i >= 0; i--) {
+                        rulerSpace.childNodes[i].parentNode.removeChild(rulerSpace.childNodes[i]);
+                    }
+                }
+                rulerSpace.appendChild(svg);
+            }
+        }
+        return svg;
+    }
+    /**
+     * Method to bind events for the ruler
+     */
+    wireEvents() {
+        //wire Events
+    }
+    /**
+     * Method to unbind events for the ruler
+     */
+    unWireEvents() {
+        //unWire Events
+    }
+}
+__decorate$10([
+    Property(5)
+], Ruler.prototype, "interval", void 0);
+__decorate$10([
+    Property(100)
+], Ruler.prototype, "segmentWidth", void 0);
+__decorate$10([
+    Property('Horizontal')
+], Ruler.prototype, "orientation", void 0);
+__decorate$10([
+    Property('RightOrBottom')
+], Ruler.prototype, "tickAlignment", void 0);
+__decorate$10([
+    Property('red')
+], Ruler.prototype, "markerColor", void 0);
+__decorate$10([
+    Property(25)
+], Ruler.prototype, "thickness", void 0);
+__decorate$10([
+    Property(null)
+], Ruler.prototype, "arrangeTick", void 0);
+__decorate$10([
+    Property(400)
+], Ruler.prototype, "length", void 0);
+
+/**
+ * Exported Ruler files
+ */
+
+/**
+ * defines the helper methods for the ruler
+ */
+/**
+ * @private
+ */
+function renderOverlapElement(diagram) {
+    let rulerSize = getRulerSize(diagram);
+    let attributes = {
+        'id': diagram.element.id + '_overlapRuler',
+        style: 'height:' + rulerSize.height + 'px;width:' + rulerSize.width + 'px;position:absolute;left:0;top:0',
+        class: 'e-ruler-overlap'
+    };
+    let overlap = createHtmlElement('div', attributes);
+    diagram.element.insertBefore(overlap, diagram.element.firstChild);
+}
+/**
+ * @private
+ */
+function renderRuler(diagram, isHorizontal) {
+    let div = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
+    let rulerSize = getRulerSize(diagram);
+    let rulerGeometry = getRulerGeometry(diagram);
+    let margin = isHorizontal ? ('margin-left:' + rulerSize.width + 'px;') : ('margin-top:' + rulerSize.height + 'px;');
+    if (!div) {
+        let style = 'height:' + (isHorizontal ? rulerSize.height : (rulerGeometry.height + 100)) + 'px;overflow:hidden;width:' +
+            (isHorizontal ? (rulerGeometry.width + 100) : rulerSize.width) + 'px;position:absolute;font-size:11px;' + margin;
+        let attributes = {
+            'id': diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'),
+            style: style
+        };
+        div = createHtmlElement('div', attributes);
+    }
+    diagram.element.insertBefore(div, diagram.element.firstChild);
+    let diagramRuler = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
+    let ruler = new Ruler(diagramRuler);
+    ruler.orientation = isHorizontal ? 'Horizontal' : 'Vertical';
+    ruler.length = (isHorizontal ? rulerGeometry.width : rulerGeometry.height) + diagramRuler.segmentWidth;
+    ruler.appendTo('#' + diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
+    isHorizontal ? diagram.hRuler = ruler : diagram.vRuler = ruler;
+    let rulerObj = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
+    isHorizontal ? diagram.hRuler.element = rulerObj : diagram.vRuler.element = rulerObj;
+}
+/**
+ * @private
+ */
+function updateRuler(diagram) {
+    let hOffset = -diagram.scroller.horizontalOffset;
+    let vOffset = -diagram.scroller.verticalOffset;
+    if (diagram && diagram.rulerSettings.showRulers) {
+        diagram.hRuler.length = 0;
+        diagram.vRuler.length = 0;
+        if (hOffset !== undefined && diagram.hRuler.element) {
+            updateRulerDimension(diagram, diagram.hRuler, hOffset, true);
+        }
+        if (vOffset !== undefined && diagram.vRuler.element) {
+            updateRulerDimension(diagram, diagram.vRuler, vOffset, false);
+        }
+    }
+    else {
+        removeRulerElements(diagram);
+    }
+}
+/**
+ * @private
+ */
+function removeRulerElements(diagram) {
+    removeElement(diagram.element.id + '_hRuler');
+    removeElement(diagram.element.id + '_vRuler');
+    removeElement(diagram.element.id + '_overlapRuler');
+}
+/** @private */
+function getRulerSize(diagram) {
+    let top = 0;
+    let left = 0;
+    if (diagram.rulerSettings.showRulers) {
+        top = diagram.rulerSettings.horizontalRuler.thickness;
+        left = diagram.rulerSettings.verticalRuler.thickness;
+    }
+    return new Size(left, top);
+}
+/** @private */
+function getRulerGeometry(diagram) {
+    let rulerSize = getRulerSize(diagram);
+    let height = diagram.scroller.viewPortHeight;
+    let width = diagram.scroller.viewPortWidth;
+    if (width < diagram.element.clientWidth - rulerSize.width) {
+        width = diagram.element.clientWidth - rulerSize.width;
+    }
+    if (height < diagram.element.clientHeight - rulerSize.height) {
+        height = diagram.element.clientHeight - rulerSize.height;
+    }
+    if (diagram.hRuler && diagram.hRuler.length) {
+        width = diagram.hRuler.length;
+    }
+    if (diagram.vRuler && diagram.vRuler.length) {
+        height = diagram.vRuler.length;
+    }
+    return new Size(width, height);
+}
+/**
+ * @private
+ */
+function removeRulerMarkers() {
+    let markers = document.getElementsByClassName('e-d-ruler-marker');
+    let marker;
+    let i;
+    if (markers && markers.length > 0) {
+        for (i = markers.length - 1; i >= 0; i--) {
+            marker = markers[i];
+            if (marker) {
+                marker.parentNode.removeChild(marker);
+            }
+        }
+    }
+}
+function drawRulerMarkers(diagram, currentPoint) {
+    if (diagram.rulerSettings.showRulers) {
+        diagram.hRuler.drawRulerMarker(diagram.hRuler.element, currentPoint, diagram.scroller.horizontalOffset);
+        diagram.vRuler.drawRulerMarker(diagram.vRuler.element, currentPoint, diagram.scroller.verticalOffset);
+    }
+}
+function updateRulerDimension(diagram, ruler, offset, isHorizontal) {
+    let rulerSize = getRulerSize(diagram);
+    let rulerGeometry = getRulerGeometry(diagram);
+    let diagramRuler = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
+    updateRulerDiv(diagram, rulerGeometry, isHorizontal);
+    updateRulerSpace(diagram, rulerGeometry, isHorizontal);
+    ruler.offset = offset;
+    ruler.scale = diagram.scroller.currentZoom;
+    ruler.length = rulerGeometry.width + 100;
+    ruler.arrangeTick = getFunction(diagramRuler.arrangeTick);
+    ruler.dataBind();
+    let rulerObj = isHorizontal ? diagram.hRuler.element : diagram.vRuler.element;
+    if (isHorizontal) {
+        rulerObj.style.marginLeft = (rulerSize.width - ruler.hRulerOffset) + 'px';
+    }
+    else {
+        rulerObj.style.marginTop = (rulerSize.height - ruler.vRulerOffset) + 'px';
+    }
+}
+function updateRulerSpace(diagram, rulerGeometry, isHorizontal) {
+    let div = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler_ruler_space' : '_vRuler_ruler_space'));
+    let ruler = isHorizontal ? diagram.hRuler : diagram.vRuler;
+    if (div && diagram && rulerGeometry) {
+        div.style.width = (isHorizontal ? (rulerGeometry.width + (ruler.segmentWidth * 2)) : ruler.thickness) + 'px';
+        div.style.height = (isHorizontal ? ruler.thickness : (rulerGeometry.height + (ruler.segmentWidth * 2))) + 'px';
+    }
+}
+function updateRulerDiv(diagram, rulerGeometry, isHorizontal) {
+    let div = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
+    let ruler = isHorizontal ? diagram.hRuler : diagram.vRuler;
+    if (div && diagram && rulerGeometry) {
+        div.style.width = (isHorizontal ? (rulerGeometry.width + ruler.segmentWidth) : ruler.thickness) + 'px';
+        div.style.height = (isHorizontal ? ruler.thickness : (rulerGeometry.height + ruler.segmentWidth)) + 'px';
+        div = document.getElementById(diagram.element.id + '_overlapRuler');
+        if (div) {
+            isHorizontal ? (div.style.height = ruler.thickness + 'px') : (div.style.width = ruler.thickness + 'px');
+        }
+    }
+}
+
+var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8015,46 +8565,52 @@ class UserHandle extends ChildProperty {
         return 'UserHandle';
     }
 }
-__decorate$10([
+__decorate$11([
     Property('')
 ], UserHandle.prototype, "name", void 0);
-__decorate$10([
+__decorate$11([
     Property('')
 ], UserHandle.prototype, "pathData", void 0);
-__decorate$10([
+__decorate$11([
+    Property('')
+], UserHandle.prototype, "content", void 0);
+__decorate$11([
+    Property('')
+], UserHandle.prototype, "source", void 0);
+__decorate$11([
     Property('#000000')
 ], UserHandle.prototype, "backgroundColor", void 0);
-__decorate$10([
+__decorate$11([
     Property('top')
 ], UserHandle.prototype, "side", void 0);
-__decorate$10([
+__decorate$11([
     Property('')
 ], UserHandle.prototype, "borderColor", void 0);
-__decorate$10([
+__decorate$11([
     Property(0.5)
 ], UserHandle.prototype, "borderWidth", void 0);
-__decorate$10([
+__decorate$11([
     Property(25)
 ], UserHandle.prototype, "size", void 0);
-__decorate$10([
+__decorate$11([
     Property('white')
 ], UserHandle.prototype, "pathColor", void 0);
-__decorate$10([
+__decorate$11([
     Property(10)
 ], UserHandle.prototype, "displacement", void 0);
-__decorate$10([
+__decorate$11([
     Property(true)
 ], UserHandle.prototype, "visible", void 0);
-__decorate$10([
+__decorate$11([
     Property(0)
 ], UserHandle.prototype, "offset", void 0);
-__decorate$10([
+__decorate$11([
     Complex({}, Margin)
 ], UserHandle.prototype, "margin", void 0);
-__decorate$10([
+__decorate$11([
     Property('Center')
 ], UserHandle.prototype, "horizontalAlignment", void 0);
-__decorate$10([
+__decorate$11([
     Property('Center')
 ], UserHandle.prototype, "verticalAlignment", void 0);
 /**
@@ -8100,42 +8656,45 @@ class Selector extends ChildProperty {
         return container;
     }
 }
-__decorate$10([
+__decorate$11([
     Property(null)
 ], Selector.prototype, "wrapper", void 0);
-__decorate$10([
+__decorate$11([
     Collection([], Node)
 ], Selector.prototype, "nodes", void 0);
-__decorate$10([
+__decorate$11([
     Collection([], Connector)
 ], Selector.prototype, "connectors", void 0);
-__decorate$10([
+__decorate$11([
     Property()
 ], Selector.prototype, "width", void 0);
-__decorate$10([
+__decorate$11([
     Property()
 ], Selector.prototype, "height", void 0);
-__decorate$10([
+__decorate$11([
     Property(0)
 ], Selector.prototype, "rotateAngle", void 0);
-__decorate$10([
+__decorate$11([
     Property(0)
 ], Selector.prototype, "offsetX", void 0);
-__decorate$10([
+__decorate$11([
     Property(0)
 ], Selector.prototype, "offsetY", void 0);
-__decorate$10([
+__decorate$11([
     Complex({ x: 0.5, y: 0.5 }, Point)
 ], Selector.prototype, "pivot", void 0);
-__decorate$10([
+__decorate$11([
     Property('CompleteIntersect')
 ], Selector.prototype, "rubberBandSelectionMode", void 0);
-__decorate$10([
+__decorate$11([
     Collection([], UserHandle)
 ], Selector.prototype, "userHandles", void 0);
-__decorate$10([
+__decorate$11([
     Property(SelectorConstraints.All)
 ], Selector.prototype, "constraints", void 0);
+__decorate$11([
+    Property()
+], Selector.prototype, "setTooltipTemplate", void 0);
 
 /**
  * constraints-util module contains the common constraints
@@ -8453,175 +9012,107 @@ function avoidDrawSelector(rendererActions) {
 }
 
 /**
- * StackPanel module is used to arrange its children in a line
+ * UMLActivityShapeDictionary defines the shape of the built-in uml activity shapes
  */
-class StackPanel extends Container {
-    constructor() {
-        super(...arguments);
-        /**
-         * Gets/Sets the orientation of the stack panel
-         */
-        this.orientation = 'Vertical';
-        /**
-         * Not applicable for canvas
-         * to avoid the child size updation with respect to parent ser true
-         * @private
-         */
-        this.measureChildren = undefined;
-    }
+/** @private */
+function getUMLActivityShape(shape) {
+    return umlActivityShapes[shape.toString()];
+}
+let umlActivityShapes = {
+    // Action,
+    'Action': 'M 90 82.895 C 90 86.819 86.776 90 82.8 90 H 7.2 C 3.224 90 0 86.819 0 82.895' +
+        ' V 7.105 C 0 3.181 3.224 0 7.2 0 h 75.6 C 86.776 0 90 3.181 90 7.105 V 82.895 Z',
+    // Decision,
+    'Decision': 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z',
+    // MergeNode,
+    'MergeNode': 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z',
+    // InitialNode,
+    'InitialNode': 'M10,19.5c-5.238,0-9.5-4.262-9.5-9.5S4.762,0.5,10,0.5s9.5,4.262,9.5,9.5S15.238,19.5,10,19.5z',
+    // ForkNode,
+    'ForkNode': 'm0.75,0.75l636.00002,0l0,290l-636.00002,0l0,-290z',
+    // JoinNode,
+    'JoinNode': 'm0.75,0.75l636.00002,0l0,290l-636.00002,0l0,-290z',
+    // TimeEvent,
+    'TimeEvent': 'M50.001,0.00286865 L25.001,25.0029 L0.000976562,0.00286865 L50.001,0.00286865 z' +
+        ' M0.000976562,50.0029 L25.001,25.0029 L50.001,50.0029 L0.000976562,50.0029 z',
+    // AcceptingEvent,
+    'AcceptingEvent': 'M17.8336 32.164 L29.64 24 L17.32 16 L48.1664 16 L48.5 32 Z',
+    // SendSignal,
+    'SendSignal': 'M48.164 31.8336 L56 23.832 L47.836 16 L16.168 16 L16.1668 31.8336 Z',
+    // ReceiveSignal,
+    'ReceiveSignal': 'M48.1664 31.8336 L39.836 24 L47.836 16 L16.168 16 L16.168 31.836 Z',
+    // StructuredNode,
+    'StructuredNode': 'M0,0 L50,0 L50,50 L0,50 z',
+    // Note,
+    'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
+};
+
+var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the combination of keys and modifier keys
+ */
+class KeyGesture extends ChildProperty {
+}
+__decorate$12([
+    Property()
+], KeyGesture.prototype, "key", void 0);
+__decorate$12([
+    Property()
+], KeyGesture.prototype, "keyModifiers", void 0);
+/**
+ * Defines a command and a key gesture to define when the command should be executed
+ */
+class Command extends ChildProperty {
     /**
-     * Measures the minimum space that the panel needs
-     * @param availableSize
+     * @private
+     * Returns the name of class Command
      */
-    measure(availableSize) {
-        let updateSize = this.orientation === 'Horizontal' ? this.updateHorizontalStack : this.updateVerticalStack;
-        this.desiredSize = this.measureStackPanel(availableSize, updateSize);
-        return this.desiredSize;
-    }
-    /**
-     * Arranges the child elements of the stack panel
-     * @param desiredSize
-     */
-    arrange(desiredSize) {
-        let updateSize = this.orientation === 'Horizontal' ? this.arrangeHorizontalStack : this.arrangeVerticalStack;
-        this.actualSize = this.arrangeStackPanel(desiredSize, updateSize);
-        this.updateBounds();
-        return this.actualSize;
-    }
-    /**
-     * Measures the minimum space that the panel needs
-     * @param availableSize
-     */
-    measureStackPanel(availableSize, updateSize) {
-        let desired = undefined;
-        if (this.children !== undefined && this.children.length > 0) {
-            for (let child of this.children) {
-                child.parentTransform = this.rotateAngle + this.parentTransform;
-                //Measure children
-                if (this.measureChildren) {
-                    child.measure(child.desiredSize);
-                }
-                else {
-                    child.measure(availableSize);
-                }
-                let childSize = child.desiredSize.clone();
-                //Consider Child's margin
-                this.applyChildMargin(child, childSize);
-                //Consider children's rotation
-                if (child.rotateAngle !== 0) {
-                    childSize = rotateSize(childSize, child.rotateAngle);
-                }
-                //Measure stack panel
-                if (desired === undefined) {
-                    desired = childSize;
-                }
-                else {
-                    if (!child.preventContainer) {
-                        updateSize(childSize, desired);
-                    }
-                }
-            }
-        }
-        desired = super.validateDesiredSize(desired, availableSize);
-        this.stretchChildren(desired);
-        //Considering padding values
-        this.applyPadding(desired);
-        return desired;
-    }
-    arrangeStackPanel(desiredSize, updatePosition) {
-        if (this.children !== undefined && this.children.length > 0) {
-            let x;
-            let y;
-            x = this.offsetX - desiredSize.width * this.pivot.x + this.padding.left;
-            y = this.offsetY - desiredSize.height * this.pivot.y + this.padding.top;
-            for (let child of this.children) {
-                let childSize = child.desiredSize.clone();
-                let rotatedSize = childSize;
-                if (this.orientation === 'Vertical') {
-                    y += child.margin.top;
-                }
-                else {
-                    x += child.margin.left;
-                }
-                if (child.rotateAngle !== 0) {
-                    rotatedSize = rotateSize(childSize, child.rotateAngle);
-                }
-                let center = updatePosition(x, y, child, this, desiredSize, rotatedSize);
-                super.findChildOffsetFromCenter(child, center);
-                child.arrange(childSize, true);
-                if (this.orientation === 'Vertical') {
-                    y += rotatedSize.height + child.margin.bottom;
-                }
-                else {
-                    x += rotatedSize.width + child.margin.right;
-                }
-            }
-        }
-        return desiredSize;
-    }
-    updateHorizontalStack(child, parent) {
-        parent.height = Math.max(child.height, parent.height);
-        parent.width += child.width;
-    }
-    updateVerticalStack(child, parent) {
-        parent.width = Math.max(child.width, parent.width);
-        parent.height += child.height;
-    }
-    arrangeHorizontalStack(x, y, child, parent, parenBounds, childBounds) {
-        let centerY = 0;
-        if (child.verticalAlignment === 'Top') {
-            centerY = y + child.margin.top + childBounds.height / 2;
-        }
-        else if (child.verticalAlignment === 'Bottom') {
-            let parentBottom = parent.offsetY + parenBounds.height * (1 - parent.pivot.y);
-            centerY = parentBottom - parent.padding.bottom - child.margin.bottom - childBounds.height / 2;
-        }
-        else {
-            centerY = parent.offsetY - parenBounds.height * parent.pivot.y + parenBounds.height / 2;
-            if (child.margin.top) {
-                centerY = y + child.margin.top + childBounds.height / 2;
-            }
-        }
-        return { x: x + childBounds.width / 2, y: centerY };
-    }
-    arrangeVerticalStack(x, y, child, parent, parentSize, childSize) {
-        let centerX = 0;
-        if (child.horizontalAlignment === 'Left') {
-            centerX = x + child.margin.left + childSize.width / 2;
-        }
-        else if (child.horizontalAlignment === 'Right') {
-            let parentRight = parent.offsetX + parentSize.width * (1 - parent.pivot.x);
-            centerX = parentRight - parent.padding.right - child.margin.right - childSize.width / 2;
-        }
-        else {
-            centerX = parent.offsetX - parentSize.width * parent.pivot.x + parentSize.width / 2;
-            if (child.margin.left) {
-                centerX = x + child.margin.left + childSize.width / 2;
-            }
-        }
-        return { x: centerX, y: y + childSize.height / 2 };
-    }
-    stretchChildren(size) {
-        if (this.children !== undefined && this.children.length > 0) {
-            for (let child of this.children) {
-                if (this.orientation === 'Vertical') {
-                    if (child.horizontalAlignment === 'Stretch') {
-                        child.desiredSize.width = size.width - (child.margin.left + child.margin.right);
-                    }
-                }
-                else {
-                    if (child.verticalAlignment === 'Stretch') {
-                        child.desiredSize.height = size.height - (child.margin.top + child.margin.bottom);
-                    }
-                }
-            }
-        }
-    }
-    applyChildMargin(child, size) {
-        size.height += child.margin.top + child.margin.bottom;
-        size.width += child.margin.left + child.margin.right;
+    getClassName() {
+        return 'Command';
     }
 }
+__decorate$12([
+    Property('')
+], Command.prototype, "name", void 0);
+__decorate$12([
+    Property()
+], Command.prototype, "canExecute", void 0);
+__decorate$12([
+    Property()
+], Command.prototype, "execute", void 0);
+__decorate$12([
+    Complex({}, KeyGesture)
+], Command.prototype, "gesture", void 0);
+__decorate$12([
+    Property('')
+], Command.prototype, "parameter", void 0);
+/**
+ * Defines the collection of commands and the corresponding key gestures
+ */
+class CommandManager extends ChildProperty {
+}
+__decorate$12([
+    Collection([], Command)
+], CommandManager.prototype, "commands", void 0);
+/**
+ * Defines the behavior of the context menu items
+ */
+class ContextMenuSettings extends ChildProperty {
+}
+__decorate$12([
+    Property()
+], ContextMenuSettings.prototype, "show", void 0);
+__decorate$12([
+    Property()
+], ContextMenuSettings.prototype, "showCustomMenuOnly", void 0);
+__decorate$12([
+    Property()
+], ContextMenuSettings.prototype, "items", void 0);
 
 /**
  * Grid panel is used to arrange the children in a table like structure
@@ -9233,254 +9724,6 @@ class GridCellItem extends DiagramElement {
         this.rowSpan = 1;
         this.columnSpan = 1;
     }
-}
-
-/**
- * These utility methods help to process the data and to convert it to desired dimensions
- */
-/** @private */
-function getULMClassifierShapes(content, node, diagram) {
-    let classifier;
-    let textWrap = 'NoWrap';
-    if (node.shape.classifier === 'Class') {
-        classifier = node.shape.classShape;
-    }
-    else if (node.shape.classifier === 'Enumeration') {
-        classifier = node.shape.enumerationShape;
-    }
-    else if (node.shape.classifier === 'Interface') {
-        classifier = node.shape.interfaceShape;
-    }
-    node.container = { type: 'Stack', orientation: 'Vertical' };
-    node.constraints = (NodeConstraints.Default | NodeConstraints.HideThumbs) &
-        ~(NodeConstraints.Rotate | NodeConstraints.Resize);
-    node.style = {
-        fill: node.style.fill, strokeColor: 'black',
-        strokeWidth: 1.5
-    };
-    node.children = [];
-    if (node.maxWidth) {
-        textWrap = 'Wrap';
-    }
-    let newObj = new Node(diagram, 'nodes', {
-        id: node.id + '_umlClass_header',
-        annotations: [
-            {
-                id: 'name', content: classifier.name,
-                offset: { x: 0.5, y: 0.65 }, margin: { left: 10, right: 10 },
-                style: {
-                    bold: true, fontSize: 14, color: classifier.style.color, fill: classifier.style.fill,
-                    textWrapping: textWrap
-                }
-            }, {
-                content: '<<' + node.shape.classifier + '>>', margin: { left: 10, right: 10 },
-                id: 'class', style: {
-                    fontSize: classifier.style.fontSize,
-                    color: classifier.style.color, fill: classifier.style.fill,
-                    textWrapping: textWrap
-                }, offset: { x: 0.5, y: 0.3 }, constraints: AnnotationConstraints.ReadOnly
-            },
-        ],
-        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-        verticalAlignment: 'Stretch',
-        horizontalAlignment: 'Stretch',
-        style: { fill: node.style.fill, strokeColor: '#ffffff00' }
-    }, true);
-    diagram.initObject(newObj);
-    diagram.nodes.push(newObj);
-    node.children.push(newObj.id);
-    getClassNodes(node, diagram, classifier, textWrap);
-    getClassMembers(node, diagram, classifier, textWrap);
-    node.offsetX = node.offsetX;
-    node.offsetY = node.offsetY;
-    node.style.fill = node.style.fill;
-    node.borderColor = node.borderColor;
-    diagram.initObject(node);
-    return content;
-}
-/** @private */
-function getClassNodes(node, diagram, classifier, textWrap) {
-    if (node.shape.classifier === 'Enumeration') {
-        let member = classifier.members;
-        if (member && member.length) {
-            addSeparator(node, diagram);
-            let memberText = '';
-            for (let i = 0; i < member.length; i++) {
-                let members = member[i];
-                if (members.name !== '') {
-                    memberText += members.name;
-                }
-                if (i !== member.length) {
-                    let style = getStyle(node, members);
-                    let temp = new Node(diagram, 'nodes', {
-                        id: randomId() + '_umlMember',
-                        annotations: [
-                            {
-                                id: 'name', content: memberText, offset: { x: 0, y: 0.5 },
-                                style: {
-                                    bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                    textWrapping: textWrap
-                                },
-                                margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
-                            }
-                        ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
-                        style: { fill: node.style.fill, strokeColor: '#ffffff00', textWrapping: textWrap },
-                        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-                        minHeight: 25
-                    }, true);
-                    diagram.initObject(temp);
-                    diagram.nodes.push(temp);
-                    node.children.push(temp.id);
-                    memberText = '';
-                    if (members.isSeparator && (i !== member.length - 1)) {
-                        addSeparator(node, diagram);
-                    }
-                }
-            }
-        }
-    }
-    else {
-        let attributes = classifier.attributes;
-        if (attributes.length) {
-            let attributeText = '';
-            addSeparator(node, diagram);
-            for (let i = 0; i < attributes.length; i++) {
-                let text;
-                let attribute = attributes[i];
-                if (attribute.scope && (attribute).scope === 'Public') {
-                    text = ' +';
-                }
-                else if (attribute.scope && attribute.scope === 'Private') {
-                    text = '-';
-                }
-                else if (attribute.scope && attribute.scope === 'Protected') {
-                    text = '#';
-                }
-                else {
-                    text = '~';
-                }
-                if (attribute.name !== '') {
-                    if (text) {
-                        attributeText += text + ' ' + attribute.name + ' ' + ': ' + attribute.type;
-                    }
-                }
-                if (i !== attributes.length) {
-                    let style = getStyle(node, attribute);
-                    let temp = new Node(diagram, 'nodes', {
-                        id: randomId() + '_umlProperty', style: { fill: node.style.fill, strokeColor: '#ffffff00' },
-                        annotations: [
-                            {
-                                id: 'name', content: attributeText, offset: { x: 0, y: 0.5 },
-                                style: {
-                                    bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                    textWrapping: textWrap
-                                },
-                                margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
-                            }
-                        ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
-                        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-                        minHeight: 25
-                    }, true);
-                    diagram.initObject(temp);
-                    diagram.nodes.push(temp);
-                    node.children.push(temp.id);
-                    attributeText = '';
-                    if (attribute.isSeparator && (i !== attributes.length - 1)) {
-                        addSeparator(node, diagram);
-                    }
-                }
-            }
-        }
-    }
-}
-/** @private */
-function getClassMembers(node, diagram, classifier, textWrap) {
-    if (classifier.methods && classifier.methods.length) {
-        let methods = classifier.methods;
-        addSeparator(node, diagram);
-        let argumentText = '';
-        let methodText = '';
-        let text;
-        for (let i = 0; i < methods.length; i++) {
-            let method = methods[i];
-            if (method.scope && method.scope === 'Public') {
-                text = ' +';
-            }
-            else if (method.scope && method.scope === 'Private') {
-                text = '-';
-            }
-            else if (method.scope && method.scope === 'Protected') {
-                text = '#';
-            }
-            else {
-                text = '~';
-            }
-            if (method.parameters) {
-                for (let j = 0; j < method.parameters.length; j++) {
-                    if (method.parameters[j].type) {
-                        argumentText += method.parameters[j].name + ':' + method.parameters[j].type;
-                    }
-                    else {
-                        argumentText += method.parameters[j].name;
-                    }
-                    if (j !== method.parameters.length - 1) {
-                        argumentText += ',';
-                    }
-                }
-            }
-            if (method.name !== '') {
-                if (text) {
-                    methodText += text + ' ' + method.name + '(' + argumentText + ')' + ' ' + ':' + ' ' + method.type;
-                }
-            }
-            if (i !== methods.length) {
-                let style = getStyle(node, method);
-                let temp = new Node(diagram, 'nodes', {
-                    id: randomId() + '_umlMethods', verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
-                    annotations: [
-                        {
-                            id: 'name', content: methodText, offset: { x: 0, y: 0.5 },
-                            style: {
-                                bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
-                                textWrapping: textWrap
-                            },
-                            margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
-                        }
-                    ],
-                    style: { fill: node.style.fill, strokeColor: '#ffffff00' }, minHeight: 25,
-                    constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize)
-                }, true);
-                diagram.initObject(temp);
-                diagram.nodes.push(temp);
-                node.children.push(temp.id);
-                methodText = '';
-                if (method.isSeparator && (i !== methods.length - 1)) {
-                    addSeparator(node, diagram);
-                }
-            }
-        }
-    }
-}
-/** @private */
-function addSeparator(stack, diagram) {
-    let lineObject = new Node(diagram, 'nodes', {
-        id: randomId() + '_path', height: 1, constraints: NodeConstraints.Default & ~(NodeConstraints.Select),
-        verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
-    }, true);
-    diagram.initObject(lineObject);
-    diagram.nodes.push(lineObject);
-    stack.children.push(lineObject.id);
-}
-/** @private */
-function getStyle(stack, node) {
-    let newStyle = {};
-    let style = node.style;
-    newStyle.fill = (style.fill !== 'transparent') ? style.fill : stack.style.fill;
-    newStyle.color = style.color;
-    newStyle.fontSize = (style.fontSize !== 12) ? style.fontSize : stack.style.fontSize;
-    newStyle.strokeColor = (style.strokeColor !== 'black') ? style.strokeColor : stack.style.strokeColor;
-    newStyle.strokeWidth = (style.strokeWidth !== 1) ? style.strokeWidth : stack.style.strokeWidth;
-    return newStyle;
 }
 
 /**
@@ -11615,1990 +11858,6 @@ function checkLaneChildrenOffset(swimLane) {
     }
 }
 
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/// <reference path='./node-base-model.d.ts'/>
-let getShapeType = (obj) => {
-    switch (obj.type) {
-        case 'Basic':
-            return BasicShape;
-        case 'Flow':
-            return FlowShape;
-        case 'Path':
-            return Path;
-        case 'Image':
-            return Image$1;
-        case 'Text':
-            return Text;
-        case 'Bpmn':
-            return BpmnShape;
-        case 'Native':
-            return Native;
-        case 'HTML':
-            return Html;
-        case 'UmlActivity':
-            return UmlActivityShape;
-        case 'UmlClassifier':
-            return UmlClassifierShape;
-        case 'SwimLane':
-            return SwimLane;
-        default:
-            return BasicShape;
-    }
-};
-/**
- * Defines the behavior of default shape
- */
-class Shape extends ChildProperty {
-}
-__decorate$4([
-    Property('Basic')
-], Shape.prototype, "type", void 0);
-/**
- * Defines the behavior of path shape
- */
-class Path extends Shape {
-    /**
-     * @private
-     * Returns the name of class Path
-     */
-    getClassName() {
-        return 'Path';
-    }
-}
-__decorate$4([
-    Property('Path')
-], Path.prototype, "type", void 0);
-__decorate$4([
-    Property('')
-], Path.prototype, "data", void 0);
-/**
- * Defines the behavior of Native shape
- */
-class Native extends Shape {
-    /**
-     * @private
-     * Returns the name of class Native
-     */
-    getClassName() {
-        return 'Native';
-    }
-}
-__decorate$4([
-    Property('Native')
-], Native.prototype, "type", void 0);
-__decorate$4([
-    Property('')
-], Native.prototype, "content", void 0);
-__decorate$4([
-    Property('Stretch')
-], Native.prototype, "scale", void 0);
-/**
- * Defines the behavior of html shape
- */
-class Html extends Shape {
-    /**
-     * @private
-     * Returns the name of class Html
-     */
-    getClassName() {
-        return 'Html';
-    }
-}
-__decorate$4([
-    Property('HTML')
-], Html.prototype, "type", void 0);
-__decorate$4([
-    Property('')
-], Html.prototype, "content", void 0);
-/**
- * Defines the behavior of image shape
- */
-class Image$1 extends Shape {
-    /**
-     * @private
-     * Returns the name of class Image
-     */
-    getClassName() {
-        return 'Image';
-    }
-}
-__decorate$4([
-    Property('Image')
-], Image$1.prototype, "type", void 0);
-__decorate$4([
-    Property('')
-], Image$1.prototype, "source", void 0);
-__decorate$4([
-    Property('None')
-], Image$1.prototype, "scale", void 0);
-__decorate$4([
-    Property('None')
-], Image$1.prototype, "align", void 0);
-/**
- * Defines the behavior of the text shape
- */
-class Text extends Shape {
-    /**
-     * @private
-     * Returns the name of class Text
-     */
-    getClassName() {
-        return 'Text';
-    }
-}
-__decorate$4([
-    Property('Text')
-], Text.prototype, "type", void 0);
-__decorate$4([
-    Property('')
-], Text.prototype, "content", void 0);
-__decorate$4([
-    Complex({}, Margin)
-], Text.prototype, "margin", void 0);
-/**
- * Defines the behavior of the basic shape
- */
-class BasicShape extends Shape {
-    /**
-     * @private
-     * Returns the name of class BasicShape
-     */
-    getClassName() {
-        return 'BasicShape';
-    }
-}
-__decorate$4([
-    Property('Basic')
-], BasicShape.prototype, "type", void 0);
-__decorate$4([
-    Property('Rectangle')
-], BasicShape.prototype, "shape", void 0);
-__decorate$4([
-    Property(0)
-], BasicShape.prototype, "cornerRadius", void 0);
-__decorate$4([
-    Collection([], Point)
-], BasicShape.prototype, "points", void 0);
-/**
- * Defines the behavior of the flow shape
- */
-class FlowShape extends Shape {
-    /**
-     * @private
-     * Returns the name of class FlowShape
-     */
-    getClassName() {
-        return 'FlowShape';
-    }
-}
-__decorate$4([
-    Property('Flow')
-], FlowShape.prototype, "type", void 0);
-__decorate$4([
-    Property('Terminator')
-], FlowShape.prototype, "shape", void 0);
-/**
- * Defines the behavior of the bpmn gateway shape
- */
-class BpmnGateway extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class BpmnGateway
-     */
-    getClassName() {
-        return 'BpmnGateway';
-    }
-}
-__decorate$4([
-    Property('None')
-], BpmnGateway.prototype, "type", void 0);
-/**
- * Defines the behavior of the bpmn data object
- */
-class BpmnDataObject extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class BpmnDataObject
-     */
-    getClassName() {
-        return 'BpmnDataObject';
-    }
-}
-__decorate$4([
-    Property('None')
-], BpmnDataObject.prototype, "type", void 0);
-__decorate$4([
-    Property(false)
-], BpmnDataObject.prototype, "collection", void 0);
-/**
- * Defines the behavior of the bpmn task shape
- */
-class BpmnTask extends ChildProperty {
-}
-__decorate$4([
-    Property('None')
-], BpmnTask.prototype, "type", void 0);
-__decorate$4([
-    Property('None')
-], BpmnTask.prototype, "loop", void 0);
-__decorate$4([
-    Property(false)
-], BpmnTask.prototype, "call", void 0);
-__decorate$4([
-    Property(false)
-], BpmnTask.prototype, "compensation", void 0);
-/**
- * Defines the behavior of the bpmn Event shape
- */
-class BpmnEvent extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class BpmnEvent
-     */
-    getClassName() {
-        return 'BpmnEvent';
-    }
-}
-__decorate$4([
-    Property('Start')
-], BpmnEvent.prototype, "event", void 0);
-__decorate$4([
-    Property('None')
-], BpmnEvent.prototype, "trigger", void 0);
-/**
- * Defines the behavior of the bpmn sub event
- */
-class BpmnSubEvent extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class BpmnSubEvent
-     */
-    getClassName() {
-        return 'BpmnSubEvent';
-    }
-}
-__decorate$4([
-    Property('None')
-], BpmnSubEvent.prototype, "trigger", void 0);
-__decorate$4([
-    Property('Start')
-], BpmnSubEvent.prototype, "event", void 0);
-__decorate$4([
-    Property('')
-], BpmnSubEvent.prototype, "id", void 0);
-__decorate$4([
-    Complex({}, Point)
-], BpmnSubEvent.prototype, "offset", void 0);
-__decorate$4([
-    Collection([], ShapeAnnotation)
-], BpmnSubEvent.prototype, "annotations", void 0);
-__decorate$4([
-    Collection([], PointPort)
-], BpmnSubEvent.prototype, "ports", void 0);
-__decorate$4([
-    Property()
-], BpmnSubEvent.prototype, "width", void 0);
-__decorate$4([
-    Property()
-], BpmnSubEvent.prototype, "height", void 0);
-__decorate$4([
-    Complex({}, Margin)
-], BpmnSubEvent.prototype, "margin", void 0);
-__decorate$4([
-    Property('Center')
-], BpmnSubEvent.prototype, "horizontalAlignment", void 0);
-__decorate$4([
-    Property('Center')
-], BpmnSubEvent.prototype, "verticalAlignment", void 0);
-__decorate$4([
-    Property(true)
-], BpmnSubEvent.prototype, "visible", void 0);
-/**
- * Defines the behavior of the BpmnTransactionSubProcess
- */
-class BpmnTransactionSubProcess extends ChildProperty {
-}
-__decorate$4([
-    Complex({ id: 'success', event: 'End', offset: { x: 1, y: 0.5 } }, BpmnSubEvent)
-], BpmnTransactionSubProcess.prototype, "success", void 0);
-__decorate$4([
-    Complex({ id: 'failure', event: 'Intermediate', trigger: 'Error', offset: { x: 0.25, y: 1 } }, BpmnSubEvent)
-], BpmnTransactionSubProcess.prototype, "failure", void 0);
-__decorate$4([
-    Complex({ id: 'cancel', event: 'Intermediate', trigger: 'Cancel', offset: { x: 0.75, y: 1 } }, BpmnSubEvent)
-], BpmnTransactionSubProcess.prototype, "cancel", void 0);
-/**
- * Defines the behavior of the BPMNSubProcess
- */
-class BpmnSubProcess extends ChildProperty {
-}
-__decorate$4([
-    Property('None')
-], BpmnSubProcess.prototype, "type", void 0);
-__decorate$4([
-    Property(false)
-], BpmnSubProcess.prototype, "adhoc", void 0);
-__decorate$4([
-    Property('Default')
-], BpmnSubProcess.prototype, "boundary", void 0);
-__decorate$4([
-    Property(false)
-], BpmnSubProcess.prototype, "compensation", void 0);
-__decorate$4([
-    Property('None')
-], BpmnSubProcess.prototype, "loop", void 0);
-__decorate$4([
-    Property(true)
-], BpmnSubProcess.prototype, "collapsed", void 0);
-__decorate$4([
-    Collection([], BpmnSubEvent)
-], BpmnSubProcess.prototype, "events", void 0);
-__decorate$4([
-    Complex({}, BpmnTransactionSubProcess)
-], BpmnSubProcess.prototype, "transaction", void 0);
-__decorate$4([
-    Property(undefined)
-], BpmnSubProcess.prototype, "processes", void 0);
-/**
- * Defines the behavior of the bpmn activity shape
- */
-class BpmnActivity extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class BpmnActivity
-     */
-    getClassName() {
-        return 'BpmnActivity';
-    }
-}
-__decorate$4([
-    Property('Task')
-], BpmnActivity.prototype, "activity", void 0);
-__decorate$4([
-    Complex({}, BpmnTask)
-], BpmnActivity.prototype, "task", void 0);
-__decorate$4([
-    Complex({}, BpmnSubProcess)
-], BpmnActivity.prototype, "subProcess", void 0);
-/**
- * Defines the behavior of the bpmn annotation
- */
-class BpmnAnnotation extends ChildProperty {
-    // tslint:disable-next-line:no-any
-    constructor(parent, propName, defaultValue, isArray) {
-        super(parent, propName, defaultValue, isArray);
-    }
-    /**
-     * @private
-     * Returns the name of class BpmnAnnotation
-     */
-    getClassName() {
-        return 'BpmnAnnotation';
-    }
-}
-__decorate$4([
-    Property('')
-], BpmnAnnotation.prototype, "text", void 0);
-__decorate$4([
-    Property('')
-], BpmnAnnotation.prototype, "id", void 0);
-__decorate$4([
-    Property(0)
-], BpmnAnnotation.prototype, "angle", void 0);
-__decorate$4([
-    Property()
-], BpmnAnnotation.prototype, "height", void 0);
-__decorate$4([
-    Property()
-], BpmnAnnotation.prototype, "width", void 0);
-__decorate$4([
-    Property(0)
-], BpmnAnnotation.prototype, "length", void 0);
-/**
- * Defines the behavior of the bpmn shape
- */
-class BpmnShape extends Shape {
-    /**
-     * @private
-     * Returns the name of class BpmnShape
-     */
-    getClassName() {
-        return 'BpmnShape';
-    }
-}
-__decorate$4([
-    Property('Bpmn')
-], BpmnShape.prototype, "type", void 0);
-__decorate$4([
-    Property('Event')
-], BpmnShape.prototype, "shape", void 0);
-__decorate$4([
-    Complex({}, BpmnEvent)
-], BpmnShape.prototype, "event", void 0);
-__decorate$4([
-    Complex({}, BpmnGateway)
-], BpmnShape.prototype, "gateway", void 0);
-__decorate$4([
-    Complex({}, BpmnDataObject)
-], BpmnShape.prototype, "dataObject", void 0);
-__decorate$4([
-    Complex({}, BpmnActivity)
-], BpmnShape.prototype, "activity", void 0);
-__decorate$4([
-    Complex({}, BpmnAnnotation)
-], BpmnShape.prototype, "annotation", void 0);
-__decorate$4([
-    Collection([], BpmnAnnotation)
-], BpmnShape.prototype, "annotations", void 0);
-/**
- * Defines the behavior of the UMLActivity shape
- */
-class UmlActivityShape extends Shape {
-    /**
-     * @private
-     * Returns the name of class UmlActivityShape
-     */
-    getClassName() {
-        return 'UmlActivityShape';
-    }
-}
-__decorate$4([
-    Property('UmlActivity')
-], UmlActivityShape.prototype, "type", void 0);
-__decorate$4([
-    Property('Action')
-], UmlActivityShape.prototype, "shape", void 0);
-/**
- * Defines the behavior of the uml class method
- */
-class MethodArguments extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class MethodArguments
-     */
-    getClassName() {
-        return 'MethodArguments';
-    }
-}
-__decorate$4([
-    Property('')
-], MethodArguments.prototype, "name", void 0);
-__decorate$4([
-    Property('')
-], MethodArguments.prototype, "type", void 0);
-__decorate$4([
-    Complex({}, TextStyle)
-], MethodArguments.prototype, "style", void 0);
-/**
- * Defines the behavior of the uml class attributes
- */
-class UmlClassAttribute extends MethodArguments {
-    /**
-     * @private
-     * Returns the name of class UmlClassAttribute
-     */
-    getClassName() {
-        return 'UmlClassAttribute';
-    }
-}
-__decorate$4([
-    Property('Public')
-], UmlClassAttribute.prototype, "scope", void 0);
-__decorate$4([
-    Property(false)
-], UmlClassAttribute.prototype, "isSeparator", void 0);
-/**
- * Defines the behavior of the uml class method
- */
-class UmlClassMethod extends UmlClassAttribute {
-    /**
-     * @private
-     * Returns the name of class UmlClassMethod
-     */
-    getClassName() {
-        return 'UmlClassMethod';
-    }
-}
-__decorate$4([
-    Collection([], MethodArguments)
-], UmlClassMethod.prototype, "parameters", void 0);
-/**
- * Defines the behavior of the uml class shapes
- */
-class UmlClass extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class UmlClass
-     */
-    getClassName() {
-        return 'UmlClass';
-    }
-}
-__decorate$4([
-    Property('')
-], UmlClass.prototype, "name", void 0);
-__decorate$4([
-    Collection([], UmlClassAttribute)
-], UmlClass.prototype, "attributes", void 0);
-__decorate$4([
-    Collection([], UmlClassMethod)
-], UmlClass.prototype, "methods", void 0);
-__decorate$4([
-    Complex({}, TextStyle)
-], UmlClass.prototype, "style", void 0);
-/**
- * Defines the behavior of the uml interface shapes
- */
-class UmlInterface extends UmlClass {
-    /**
-     * @private
-     * Returns the name of class UmlInterface
-     */
-    getClassName() {
-        return 'UmlInterface';
-    }
-}
-__decorate$4([
-    Property(false)
-], UmlInterface.prototype, "isSeparator", void 0);
-/**
- * Defines the behavior of the uml interface shapes
- */
-class UmlEnumerationMember extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class UmlEnumerationMember
-     */
-    getClassName() {
-        return 'UmlEnumerationMember';
-    }
-}
-__decorate$4([
-    Property('')
-], UmlEnumerationMember.prototype, "name", void 0);
-__decorate$4([
-    Property('')
-], UmlEnumerationMember.prototype, "value", void 0);
-__decorate$4([
-    Property(false)
-], UmlEnumerationMember.prototype, "isSeparator", void 0);
-__decorate$4([
-    Complex({}, TextStyle)
-], UmlEnumerationMember.prototype, "style", void 0);
-/**
- * Defines the behavior of the uml interface shapes
- */
-class UmlEnumeration extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class UmlEnumeration
-     */
-    getClassName() {
-        return 'UmlEnumeration';
-    }
-}
-__decorate$4([
-    Property('')
-], UmlEnumeration.prototype, "name", void 0);
-__decorate$4([
-    Collection([], UmlEnumerationMember)
-], UmlEnumeration.prototype, "members", void 0);
-__decorate$4([
-    Complex({}, TextStyle)
-], UmlEnumeration.prototype, "style", void 0);
-/**
- * Defines the behavior of the UMLActivity shape
- */
-class UmlClassifierShape extends Shape {
-    /**
-     * @private
-     * Returns the name of class UmlClassifierShape
-     */
-    getClassName() {
-        return 'UmlClassifierShape';
-    }
-}
-__decorate$4([
-    Property('UmlClassifier')
-], UmlClassifierShape.prototype, "type", void 0);
-__decorate$4([
-    Complex({}, UmlClass)
-], UmlClassifierShape.prototype, "classShape", void 0);
-__decorate$4([
-    Complex({}, UmlInterface)
-], UmlClassifierShape.prototype, "interfaceShape", void 0);
-__decorate$4([
-    Complex({}, UmlEnumeration)
-], UmlClassifierShape.prototype, "enumerationShape", void 0);
-__decorate$4([
-    Property('Class')
-], UmlClassifierShape.prototype, "classifier", void 0);
-/**
- * Defines the behavior of nodes
- */
-class Node extends NodeBase {
-    // tslint:disable-next-line:no-any
-    constructor(parent, propName, defaultValue, isArray) {
-        super(parent, propName, defaultValue, isArray);
-        /** @private */
-        this.isCanvasUpdate = false;
-        /** @private */
-        this.status = 'None';
-        /** @private */
-        this.parentId = '';
-        /** @private */
-        this.processId = '';
-        /** @private */
-        this.umlIndex = -1;
-        /** @private */
-        this.outEdges = [];
-        /** @private */
-        this.inEdges = [];
-        /** @private */
-        this.isHeader = false;
-        /** @private */
-        this.isLane = false;
-        /** @private */
-        this.isPhase = false;
-        let nodeDefault;
-        if (this.children && this.children.length > 0) {
-            nodeDefault = defaultValue;
-            if (!nodeDefault.style || !nodeDefault.style.fill) {
-                this.style.fill = 'transparent';
-            }
-            if (!nodeDefault.style || !nodeDefault.style.strokeColor) {
-                this.style.strokeColor = 'transparent';
-            }
-        }
-        if (this.shape && this.shape.type === 'UmlActivity') {
-            setUMLActivityDefaults(defaultValue, this);
-        }
-        if (this.shape && this.shape.type === 'SwimLane') {
-            setSwimLaneDefaults(defaultValue, this);
-        }
-    }
-    /** @private */
-    get actualSize() {
-        if (this.wrapper !== null) {
-            return this.wrapper.actualSize;
-        }
-        else {
-            return new Size(this.width || 0, this.height || 0);
-        }
-    }
-    /**
-     * Allows to initialize the UI of a node
-     */
-    /** @private */
-    /* tslint:disable */
-    init(diagram) {
-        let content;
-        if (this.shape.type != 'SwimLane') {
-            content = new DiagramElement();
-        }
-        else {
-            content = new GridPanel();
-        }
-        let textStyle;
-        let changedProperties = 'changedProperties';
-        let oldProperties = 'oldProperties';
-        this.shape[changedProperties] = {};
-        this.shape[oldProperties] = {};
-        switch (this.shape.type) {
-            case 'Path':
-                let pathContent = new PathElement();
-                pathContent.data = this.shape.data;
-                content = pathContent;
-                break;
-            case 'Image':
-                let imageContent = new ImageElement();
-                imageContent.source = this.shape.source;
-                imageContent.imageAlign = this.shape.align;
-                imageContent.imageScale = this.shape.scale;
-                content = imageContent;
-                break;
-            case 'Text':
-                let textContent = new TextElement();
-                textContent.content = this.shape.content;
-                content = textContent;
-                textStyle = this.style;
-                content.style = textStyle;
-                break;
-            case 'Basic':
-                if (this.shape.shape === 'Rectangle') {
-                    let basicshape = new DiagramElement();
-                    content = basicshape;
-                    content.cornerRadius = this.shape.cornerRadius;
-                }
-                else if (this.shape.shape === 'Polygon') {
-                    let path = new PathElement();
-                    path.data = getPolygonPath(this.shape.points);
-                    content = path;
-                }
-                else {
-                    let basicshape = new PathElement();
-                    let basicshapedata = getBasicShape(this.shape.shape);
-                    basicshape.data = basicshapedata;
-                    content = basicshape;
-                }
-                break;
-            case 'Flow':
-                let flowshape = new PathElement();
-                let flowshapedata = getFlowShape(this.shape.shape);
-                flowshape.data = flowshapedata;
-                content = flowshape;
-                break;
-            case 'UmlActivity':
-                let umlactivityshape = new PathElement();
-                content = getUMLActivityShapes(umlactivityshape, content, this);
-                break;
-            case 'Bpmn':
-                if (diagram.bpmnModule) {
-                    content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
-                    this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
-                    let subProcess = this.shape.activity.subProcess;
-                    if (subProcess.processes && subProcess.processes.length) {
-                        let children = this.shape.activity.subProcess.processes;
-                        for (let i of children) {
-                            if (diagram.nameTable[i] && (!diagram.nameTable[i].processId || diagram.nameTable[i].processId === this.id)) {
-                                diagram.nameTable[i].processId = this.id;
-                                if (subProcess.collapsed) {
-                                    diagram.updateElementVisibility(diagram.nameTable[i].wrapper, diagram.nameTable[i], !subProcess.collapsed);
-                                }
-                                content.children.push(diagram.nameTable[i].wrapper);
-                            }
-                        }
-                    }
-                }
-                break;
-            case 'Native':
-                let nativeContent = new DiagramNativeElement(this.id, diagram.element.id);
-                nativeContent.content = this.shape.content;
-                nativeContent.scale = this.shape.scale;
-                content = nativeContent;
-                break;
-            case 'HTML':
-                let htmlContent = new DiagramHtmlElement(this.id, diagram.element.id);
-                htmlContent.content = this.shape.content;
-                content = htmlContent;
-                break;
-            case 'UmlClassifier':
-                //   let umlClassifierShape: StackPanel = new StackPanel();
-                content = getULMClassifierShapes(content, this, diagram);
-                break;
-            case 'SwimLane':
-                this.annotations = [];
-                this.ports = [];
-                content.cellStyle.fill = "none";
-                content.cellStyle.strokeColor = "none";
-                this.container = { type: 'Grid', orientation: this.shape.orientation };
-                content.id = this.id;
-                this.container.orientation = this.shape.orientation;
-                this.constraints |= NodeConstraints.HideThumbs;
-                initSwimLane(content, diagram, this);
-                break;
-        }
-        content.id = this.id + '_content';
-        content.relativeMode = 'Object';
-        if (this.width !== undefined) {
-            content.width = this.width;
-        }
-        content.horizontalAlignment = 'Stretch';
-        if (this.height !== undefined) {
-            content.height = this.height;
-        }
-        if (this.minHeight !== undefined) {
-            content.minHeight = this.minHeight;
-        }
-        if (this.maxHeight !== undefined) {
-            content.maxHeight = this.maxHeight;
-        }
-        if (this.minWidth !== undefined) {
-            content.minWidth = this.minWidth;
-        }
-        if (this.maxWidth !== undefined) {
-            content.maxWidth = this.maxWidth;
-        }
-        if (this.shape.shape === 'Rectangle' && !this.shape.cornerRadius) {
-            content.isRectElement = true;
-        }
-        content.verticalAlignment = 'Stretch';
-        if (this.shape instanceof Text) {
-            content.margin = this.shape.margin;
-        }
-        if (canShadow(this)) {
-            if ((this.constraints & NodeConstraints.Shadow) !== 0) {
-                content.shadow = this.shadow;
-            }
-        }
-        if ((this.shape.type !== 'Bpmn' || this.shape.shape === 'Message' ||
-            this.shape.shape === 'DataSource') && ((this.shape.type !== 'UmlActivity' || this.shape.shape !== 'FinalNode'))) {
-            if (this.shape.type !== 'Text') {
-                content.style = this.style;
-            }
-        }
-        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === 'Horizontal' || this.flip === 'Vertical') {
-            content.flip = this.flip;
-        }
-        return content;
-    }
-    /* tslint:enable */
-    /** @private */
-    initContainer() {
-        if (!this.id) {
-            this.id = randomId();
-        }
-        // Creates canvas element
-        let canvas;
-        if (!this.container || this.shape instanceof SwimLane) {
-            canvas = this.children ? new Container() : new Canvas();
-        }
-        else {
-            switch (this.container.type) {
-                case 'Canvas':
-                    canvas = new Canvas();
-                    break;
-                case 'Stack':
-                    canvas = new StackPanel();
-                    break;
-                case 'Grid':
-                    canvas = new GridPanel();
-                    canvas.setDefinitions(this.rows, this.columns);
-                    break;
-            }
-        }
-        canvas.id = this.id;
-        canvas.offsetX = this.offsetX;
-        canvas.offsetY = this.offsetY;
-        canvas.visible = this.visible;
-        canvas.horizontalAlignment = this.horizontalAlignment;
-        canvas.verticalAlignment = this.verticalAlignment;
-        if (this.container) {
-            canvas.width = this.width;
-            canvas.height = this.height;
-            if (this.container.type === 'Stack') {
-                canvas.orientation = this.container.orientation;
-            }
-        }
-        canvas.style.fill = this.backgroundColor;
-        canvas.style.strokeColor = this.borderColor;
-        canvas.style.strokeWidth = this.borderWidth;
-        canvas.rotateAngle = this.rotateAngle;
-        canvas.minHeight = this.minHeight;
-        canvas.minWidth = this.minWidth;
-        canvas.maxHeight = this.maxHeight;
-        canvas.maxWidth = this.maxWidth;
-        canvas.pivot = this.pivot;
-        canvas.margin = this.margin;
-        canvas.flip = this.flip;
-        this.wrapper = canvas;
-        return canvas;
-    }
-    /** @private */
-    initPorts(accessibilityContent, container) {
-        let canvas = this.wrapper;
-        let port;
-        for (let i = 0; this.ports !== undefined, i < this.ports.length; i++) {
-            port = this.initPortWrapper(this.ports[i]);
-            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
-            // tslint:disable-next-line:no-any
-            let wrapperContent;
-            let contentAccessibility = getFunction(accessibilityContent);
-            if (contentAccessibility) {
-                wrapperContent = contentAccessibility(port, this);
-            }
-            port.description = wrapperContent ? wrapperContent : port.id;
-            container.children.push(port);
-        }
-    }
-    getIconOffet(layout, icon) {
-        let x;
-        let y;
-        if (layout.orientation === 'BottomToTop') {
-            x = icon.offset.x;
-            y = 1 - icon.offset.y;
-        }
-        else if (layout.orientation === 'LeftToRight') {
-            x = icon.offset.y;
-            y = icon.offset.x;
-        }
-        else if (layout.orientation === 'RightToLeft') {
-            x = 1 - icon.offset.y;
-            y = icon.offset.x;
-        }
-        else {
-            x = icon.offset.x;
-            y = icon.offset.y;
-        }
-        return { x, y };
-    }
-    /** @private */
-    initIcons(accessibilityContent, layout, container, diagramId) {
-        let canvas = this.wrapper;
-        let offset;
-        let icon = this.isExpanded ? this.expandIcon : this.collapseIcon;
-        if (icon.shape !== 'None') {
-            let iconContainer = new Canvas();
-            iconContainer.float = true;
-            let children = [];
-            iconContainer.id = this.id + '_icon_content';
-            iconContainer.children = children;
-            iconContainer.height = icon.height;
-            iconContainer.width = icon.width;
-            iconContainer.style.strokeColor = 'transparent';
-            iconContainer.margin = icon.margin;
-            iconContainer.horizontalAlignment = 'Center';
-            iconContainer.verticalAlignment = 'Center';
-            iconContainer.visible = this.visible;
-            offset = this.getIconOffet(layout, icon);
-            iconContainer.setOffsetWithRespectToBounds(offset.x, offset.y, 'Fraction');
-            iconContainer.relativeMode = 'Point';
-            this.initIconSymbol(icon, iconContainer, accessibilityContent, diagramId);
-            // tslint:disable-next-line:no-any
-            let wrapperContent;
-            let contentAccessibility = getFunction(accessibilityContent);
-            if (contentAccessibility) {
-                wrapperContent = contentAccessibility(icon, this);
-            }
-            iconContainer.description = wrapperContent ? wrapperContent : iconContainer.id;
-            container.children.push(iconContainer);
-        }
-    }
-    /** @private */
-    initAnnotations(accessibilityContent, container, diagramId, virtualize) {
-        let annotation;
-        for (let i = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            annotation = this.initAnnotationWrapper(this.annotations[i], diagramId, virtualize, i);
-            // tslint:disable-next-line:no-any
-            let wrapperContent;
-            let contentAccessibility = getFunction(accessibilityContent);
-            if (contentAccessibility) {
-                wrapperContent = contentAccessibility(annotation, this);
-            }
-            annotation.description = wrapperContent ? wrapperContent : annotation.id;
-            container.children.push(annotation);
-        }
-    }
-    /** @private */
-    initPortWrapper(ports) {
-        ports.id = ports.id || randomId();
-        // Creates port element
-        let portContent = new PathElement();
-        portContent.height = ports.height;
-        portContent.width = ports.width;
-        let pathdata = (ports.shape === 'Custom') ? ports.pathData : getPortShape(ports.shape);
-        portContent.id = this.id + '_' + (ports.id);
-        portContent.margin = ports.margin;
-        portContent.data = pathdata;
-        let style = ports.style;
-        portContent.style = {
-            fill: style.fill, strokeColor: style.strokeColor, gradient: null,
-            opacity: style.opacity, strokeDashArray: style.strokeDashArray, strokeWidth: style.strokeWidth
-        };
-        portContent.horizontalAlignment = ports.horizontalAlignment;
-        portContent.verticalAlignment = ports.verticalAlignment;
-        portContent = updatePortEdges(portContent, this.flip, ports);
-        if (this.width !== undefined || this.height !== undefined) {
-            portContent.float = true;
-        }
-        portContent.relativeMode = 'Point';
-        portContent.visible = checkPortRestriction(ports, PortVisibility.Visible) &&
-            !checkPortRestriction(ports, PortVisibility.Hover) && !checkPortRestriction(ports, PortVisibility.Connect) ? true : false;
-        return portContent;
-    }
-    /** @private */
-    initAnnotationWrapper(annotation, diagramId, virtualize, value) {
-        annotation.id = annotation.id || value + 'annotation' || randomId();
-        let label = annotation;
-        let annotationcontent;
-        if (diagramId && annotation.template) {
-            annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id);
-            annotationcontent.content = annotation.template;
-        }
-        else {
-            annotationcontent = new TextElement();
-            annotationcontent.canMeasure = !virtualize;
-            let style = annotation.style;
-            let link = annotation.hyperlink.link ? annotation.hyperlink : undefined;
-            annotationcontent.style = {
-                fill: style.fill, strokeColor: style.strokeColor, strokeWidth: style.strokeWidth,
-                bold: style.bold, textWrapping: style.textWrapping,
-                color: link ? link.color || annotationcontent.hyperlink.color : style.color, whiteSpace: style.whiteSpace,
-                fontFamily: style.fontFamily, fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
-                strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textOverflow: annotation.style.textOverflow,
-                textDecoration: link ? link.textDecoration ||
-                    annotationcontent.hyperlink.textDecoration : style.textDecoration,
-            };
-            annotationcontent.hyperlink.link = annotation.hyperlink.link || undefined;
-            annotationcontent.hyperlink.content = annotation.hyperlink.content || undefined;
-            annotationcontent.hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
-            annotationcontent.content = link ? link.content ||
-                annotationcontent.hyperlink.link : annotation.content;
-        }
-        annotationcontent.constraints = annotation.constraints;
-        annotationcontent.height = annotation.height;
-        annotationcontent.width = annotation.width;
-        annotationcontent.visible = annotation.visibility;
-        annotationcontent.rotateAngle = annotation.rotateAngle;
-        annotationcontent.id = this.id + '_' + annotation.id;
-        if (this.width !== undefined && !annotation.template) {
-            if (annotation.width === undefined || (annotation.width > this.width &&
-                (annotation.style.textWrapping === 'Wrap' || annotation.style.textWrapping === 'WrapWithOverflow'))) {
-                annotationcontent.width = this.width;
-            }
-        }
-        annotationcontent.margin = annotation.margin;
-        annotationcontent.horizontalAlignment = annotation.horizontalAlignment;
-        annotationcontent.verticalAlignment = annotation.verticalAlignment;
-        annotationcontent.setOffsetWithRespectToBounds(label.offset.x, label.offset.y, 'Fraction');
-        if (this.width !== undefined || this.height !== undefined) {
-            annotationcontent.float = true;
-        }
-        annotationcontent.relativeMode = 'Point';
-        return annotationcontent;
-    }
-    initIconContainer(options, iconContainer) {
-        let rect = new DiagramElement();
-        rect.id = iconContainer.id + '_rect';
-        rect.height = options.height;
-        rect.width = options.width;
-        rect.visible = iconContainer.visible;
-        rect.margin = options.margin;
-        rect.cornerRadius = options.cornerRadius;
-        rect.style = {
-            fill: options.fill, strokeColor: options.borderColor,
-            strokeWidth: options.borderWidth
-        };
-        rect.setOffsetWithRespectToBounds(0.5, 0.5, 'Fraction');
-        rect.horizontalAlignment = 'Center';
-        rect.verticalAlignment = 'Center';
-        rect.relativeMode = 'Object';
-        rect.description = rect.description || 'Click here to expand or collapse';
-        return rect;
-    }
-    initIconSymbol(options, iconContainer, accessibilityContent, diagramId) {
-        let iconContent;
-        iconContainer.children.push(this.initIconContainer(options, iconContainer));
-        if (options.shape === 'Template') {
-            iconContent = new DiagramNativeElement(this.id, diagramId);
-            iconContent.content = options.content;
-            iconContent.height = 10;
-            iconContent.width = 10;
-        }
-        else {
-            iconContent = new PathElement();
-            iconContent.data = getIconShape(options);
-            let iconContentBounds = measurePath(iconContent.data);
-            iconContent.height =
-                iconContentBounds.height < 10 ? iconContentBounds.height : 10 - (options.padding.bottom + options.padding.top);
-            iconContent.width =
-                iconContentBounds.width < 10 ? iconContentBounds.width : 10 - (options.padding.left + options.padding.right);
-        }
-        iconContent.id = iconContainer.id + '_shape';
-        iconContent.horizontalAlignment = 'Center';
-        iconContent.verticalAlignment = 'Center';
-        iconContent.visible = iconContainer.visible;
-        iconContent.visible = iconContainer.visible;
-        iconContent.style = {
-            fill: 'black', strokeColor: options.borderColor,
-            strokeWidth: options.borderWidth
-        };
-        iconContent.setOffsetWithRespectToBounds(0.5, 0.5, 'Fraction');
-        iconContent.relativeMode = 'Object';
-        iconContent.description = iconContainer.description || 'Click here to expand or collapse';
-        iconContainer.children.push(iconContent);
-    }
-    /**
-     * @private
-     * Returns the name of class Node
-     */
-    getClassName() {
-        return 'Node';
-    }
-}
-__decorate$4([
-    Collection([], ShapeAnnotation)
-], Node.prototype, "annotations", void 0);
-__decorate$4([
-    Property(0)
-], Node.prototype, "offsetX", void 0);
-__decorate$4([
-    Property(0)
-], Node.prototype, "offsetY", void 0);
-__decorate$4([
-    Complex({ x: 0.5, y: 0.5 }, Point)
-], Node.prototype, "pivot", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "width", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "height", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "minWidth", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "minHeight", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "maxWidth", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "maxHeight", void 0);
-__decorate$4([
-    Property(0)
-], Node.prototype, "rotateAngle", void 0);
-__decorate$4([
-    Complex({ fill: 'white' }, TextStyle)
-], Node.prototype, "style", void 0);
-__decorate$4([
-    Property('transparent')
-], Node.prototype, "backgroundColor", void 0);
-__decorate$4([
-    Property('none')
-], Node.prototype, "borderColor", void 0);
-__decorate$4([
-    Property(0)
-], Node.prototype, "borderWidth", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "data", void 0);
-__decorate$4([
-    ComplexFactory(getShapeType)
-], Node.prototype, "shape", void 0);
-__decorate$4([
-    Property(null)
-], Node.prototype, "wrapper", void 0);
-__decorate$4([
-    Property(NodeConstraints.Default)
-], Node.prototype, "constraints", void 0);
-__decorate$4([
-    Complex({}, Shadow)
-], Node.prototype, "shadow", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "children", void 0);
-__decorate$4([
-    Property(null)
-], Node.prototype, "container", void 0);
-__decorate$4([
-    Property('Left')
-], Node.prototype, "horizontalAlignment", void 0);
-__decorate$4([
-    Property('Top')
-], Node.prototype, "verticalAlignment", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "rows", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "columns", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "rowIndex", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "columnIndex", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "rowSpan", void 0);
-__decorate$4([
-    Property()
-], Node.prototype, "columnSpan", void 0);
-/**
- * Defines the behavior of header in swimLane
- */
-class Header extends ChildProperty {
-}
-__decorate$4([
-    Property('')
-], Header.prototype, "id", void 0);
-__decorate$4([
-    Complex({ style: { fill: '#111111' } }, Annotation)
-], Header.prototype, "annotation", void 0);
-__decorate$4([
-    Complex({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
-], Header.prototype, "style", void 0);
-__decorate$4([
-    Property(50)
-], Header.prototype, "height", void 0);
-__decorate$4([
-    Property(50)
-], Header.prototype, "width", void 0);
-/**
- * Defines the behavior of lane in swimLane
- */
-class Lane extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class Lane
-     */
-    getClassName() {
-        return 'Lane';
-    }
-}
-__decorate$4([
-    Property('')
-], Lane.prototype, "id", void 0);
-__decorate$4([
-    Complex({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
-], Lane.prototype, "style", void 0);
-__decorate$4([
-    Collection([], Node)
-], Lane.prototype, "children", void 0);
-__decorate$4([
-    Property(100)
-], Lane.prototype, "height", void 0);
-__decorate$4([
-    Property(100)
-], Lane.prototype, "width", void 0);
-__decorate$4([
-    Complex({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } }, Header)
-], Lane.prototype, "header", void 0);
-/**
- * Defines the behavior of phase in swimLane
- */
-class Phase extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class Phase
-     */
-    getClassName() {
-        return 'Phase';
-    }
-}
-__decorate$4([
-    Property('')
-], Phase.prototype, "id", void 0);
-__decorate$4([
-    Complex({ strokeColor: '#CCCCCC' }, ShapeStyle)
-], Phase.prototype, "style", void 0);
-__decorate$4([
-    Complex({ annotation: { content: 'Phase' } }, Header)
-], Phase.prototype, "header", void 0);
-__decorate$4([
-    Property(100)
-], Phase.prototype, "offset", void 0);
-/**
- * Defines the behavior of swimLane shape
- */
-class SwimLane extends Shape {
-    constructor() {
-        super(...arguments);
-        /**
-         * @private
-         * Defines space between children and lane
-         */
-        this.padding = 20;
-        /**
-         * @private
-         * Defines header by user or not
-         */
-        this.hasHeader = true;
-    }
-    /**
-     * @private
-     * Returns the name of class Phase
-     */
-    getClassName() {
-        return 'SwimLane';
-    }
-}
-__decorate$4([
-    Property('SwimLane')
-], SwimLane.prototype, "type", void 0);
-__decorate$4([
-    Property(20)
-], SwimLane.prototype, "phaseSize", void 0);
-__decorate$4([
-    Collection([], Phase)
-], SwimLane.prototype, "phases", void 0);
-__decorate$4([
-    Property('Horizontal')
-], SwimLane.prototype, "orientation", void 0);
-__decorate$4([
-    Collection([], Lane)
-], SwimLane.prototype, "lanes", void 0);
-__decorate$4([
-    Complex({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } }, Header)
-], SwimLane.prototype, "header", void 0);
-__decorate$4([
-    Property(false)
-], SwimLane.prototype, "isLane", void 0);
-__decorate$4([
-    Property(false)
-], SwimLane.prototype, "isPhase", void 0);
-/**
- * Defines the behavior of container
- */
-class ChildContainer {
-    /**
-     * @private
-     * Returns the name of class ChildContainer
-     */
-    getClassName() {
-        return 'ChildContainer';
-    }
-}
-__decorate$4([
-    Property('Canvas')
-], ChildContainer.prototype, "type", void 0);
-__decorate$4([
-    Property('Vertical')
-], ChildContainer.prototype, "orientation", void 0);
-
-var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Represents the Ruler component that measures the Diagram objects, indicate positions, and align Diagram elements.
- * ```html
- * <div id='ruler'>Show Ruler</div>
- * ```
- * ```typescript
- * <script>
- *   var rulerObj = new Ruler({ showRuler: true });
- *   rulerObj.appendTo('#ruler');
- * </script>
- * ```
- */
-class Ruler extends Component {
-    /**
-     * Constructor for creating the Ruler Component
-     */
-    constructor(options, element) {
-        super(options, element);
-        /**   @private  */
-        this.offset = 0;
-        /**   @private  */
-        this.scale = 1;
-    }
-    /**
-     * Initializes the values of private members.
-     * @private
-     */
-    preRender() {
-        this.unWireEvents();
-        this.wireEvents();
-    }
-    /**
-     * Renders the rulers.
-     * @private
-     */
-    render() {
-        this.updateRulerGeometry();
-    }
-    /**
-     * Core method to return the component name.
-     * @private
-     */
-    getModuleName() {
-        return 'Ruler';
-    }
-    /**
-     * To destroy the ruler
-     * @return {void}
-     */
-    destroy() {
-        this.unWireEvents();
-        this.notify('destroy', {});
-        super.destroy();
-        this.element.classList.remove('e-ruler');
-    }
-    /**
-     * Get the properties to be maintained in the persisted state.
-     * @return {string}
-     */
-    getPersistData() {
-        let keyEntity = ['loaded'];
-        return this.addOnPersist(keyEntity);
-    }
-    /**
-     * Refreshes the ruler when the Ruler properties are updated
-     * @param options
-     */
-    onPropertyChanged(newProp, oldProp) {
-        for (let prop of Object.keys(newProp)) {
-            switch (prop) {
-                case 'length':
-                case 'interval':
-                case 'segmentWidth':
-                case 'tickAlignment':
-                case 'markerColor':
-                case 'thickness':
-                    this.updateRuler();
-                    break;
-            }
-        }
-    }
-    updateRulerGeometry() {
-        this.element.style.textAlign = 'left';
-        this.renderRulerSpace();
-        this.updateRuler();
-    }
-    renderRulerSpace() {
-        let rulerGeometry = this.getRulerGeometry();
-        let div = document.getElementById(this.element.id + '_ruler_space');
-        if (!div) {
-            div = createHtmlElement('div', {
-                'id': this.element.id + '_ruler_space',
-                'style': 'height:' + rulerGeometry.height + 'px;width:' + rulerGeometry.width + 'px;cssFloat:' + 'left;'
-            });
-            this.element.appendChild(div);
-        }
-        return div;
-    }
-    updateRuler() {
-        let rulerSize = this.getRulerSize();
-        let rulerGeometry = this.getRulerGeometry();
-        let length = 0;
-        let offset = 0;
-        let availableSize = new Size();
-        let svg = this.getRulerSVG(rulerGeometry);
-        if (svg) {
-            length = this.length;
-            availableSize.height = rulerSize;
-            offset = this.offset;
-            if (length && length !== Infinity) {
-                let unitLength = length + this.segmentWidth;
-                let unitOffset = offset;
-                this.updateSegments(unitOffset, (unitLength + Math.abs(unitOffset)), svg, rulerSize);
-            }
-        }
-    }
-    updateSegments(start, end, svg, rulerSize) {
-        let run = start;
-        let trans = { trans: 0 };
-        while (run < end) {
-            let rulerSegment = this.getNewSegment(run, svg);
-            if (rulerSegment) {
-                svg.appendChild(rulerSegment.segment);
-                run = this.updateSegment(start, end, rulerSegment, run, trans, rulerSize);
-            }
-        }
-    }
-    updateSegment(start, end, rulerSegment, run, trans, rulerSize) {
-        let segWidth = this.updateSegmentWidth(this.scale);
-        if (run === start) {
-            this.startValue = Math.floor(start / segWidth) * segWidth / this.scale;
-            this.startValue = (this.startValue % 1) !== 0 ? Number((this.startValue).toFixed(1)) : this.startValue;
-            rulerSegment.label.textContent = this.startValue.toString();
-            this.defStartValue = run = this.startValue * this.scale;
-            if (this.orientation === 'Horizontal') {
-                this.hRulerOffset = start - run;
-            }
-            else {
-                this.vRulerOffset = start - run;
-            }
-        }
-        else {
-            this.startValue = (run / this.scale);
-            this.startValue = (this.startValue % 1) !== 0 ? Number((this.startValue).toFixed(1)) : this.startValue;
-            rulerSegment.label.textContent = this.startValue.toString();
-        }
-        this.updateTickLabel(rulerSegment, rulerSize);
-        let translate = (this.orientation === 'Horizontal') ? ((trans.trans + 0.5) + ',0.5') : ('0.5,' + (trans.trans + 0.5));
-        rulerSegment.segment.setAttribute('transform', 'translate(' + translate + ')');
-        trans.trans += segWidth;
-        run += segWidth;
-        return run;
-    }
-    updateTickLabel(rulerSegment, rulerSize) {
-        let bBox = rulerSegment.segment.lastChild.getBBox();
-        let isHorizontal = (this.orientation === 'Horizontal') ? true : false;
-        let isRightOrBottom = (this.tickAlignment === 'RightOrBottom') ? true : false;
-        let x = isHorizontal ? 2 : 0;
-        let y = isHorizontal ? (isRightOrBottom ? (rulerSize / 2 + (11 / 2) - (11 / 2)) :
-            (rulerSize / 2 + (11 / 2))) : bBox.height;
-        let translate = isRightOrBottom ? (-(bBox.width + 2) + ',' + ((rulerSize / 2) - bBox.height)) :
-            (-(bBox.width + 2) + ',' + ((rulerSize / 2) - bBox.height / 2));
-        let attr = isHorizontal ? { 'x': x, 'y': y } :
-            { 'x': x, 'y': y, 'transform': 'rotate(270)' + 'translate(' + translate + ')' };
-        setAttributeSvg(rulerSegment.segment.lastChild, attr);
-    }
-    getNewSegment(run, svg) {
-        let segment = this.createNewTicks(run, svg);
-        let label = this.createTickLabel(svg, segment);
-        return { segment: segment, label: label };
-    }
-    createNewTicks(run, svg) {
-        let tick;
-        let tickInterval;
-        let segmentWidth = this.updateSegmentWidth(this.scale);
-        let g;
-        let attr = { 'class': 'e-ruler-segment' };
-        g = createSvgElement('g', attr);
-        for (let i = 0; i < this.interval; i++) {
-            tickInterval = segmentWidth / this.interval;
-            tick = this.createTick(svg, tickInterval, i + 1, run);
-            g.appendChild(tick);
-        }
-        return g;
-    }
-    getLinePoint(svg, tickInterval, length) {
-        let segmentWidth = this.updateSegmentWidth(this.scale);
-        let rulerSize = this.getRulerSize();
-        tickInterval = tickInterval * (length - 1);
-        length = ((tickInterval % segmentWidth) === 0) ? rulerSize : rulerSize * 0.3;
-        return length;
-    }
-    createTick(svg, tickInterval, length, run) {
-        let ruler;
-        let line;
-        let linePoint = this.getLinePoint(svg, tickInterval, length);
-        let rulerSize = this.getRulerSize();
-        let args;
-        let attr;
-        let isHorizontal = (this.orientation === 'Horizontal') ? true : false;
-        let isRightOrBottom = (this.tickAlignment === 'RightOrBottom') ? true : false;
-        let arrangeTick = getFunction(this.arrangeTick);
-        args = { ruler: ruler, tickLength: linePoint, tickInterval: ((this.segmentWidth / this.interval) * (length - 1)) };
-        if (arrangeTick) {
-            arrangeTick(args);
-        }
-        linePoint = args.tickLength;
-        let point = tickInterval * (length - 1);
-        let x1 = isHorizontal ? point : (isRightOrBottom ? rulerSize : 0);
-        let x2 = isHorizontal ? point : (isRightOrBottom ? (rulerSize - linePoint) : (rulerSize - (rulerSize - linePoint)));
-        let y1 = isHorizontal ? (isRightOrBottom ? rulerSize : (rulerSize - (rulerSize - linePoint))) : point;
-        let y2 = isHorizontal ? (isRightOrBottom ? (rulerSize - linePoint) : 0) : point;
-        attr = { 'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'stroke-width': '1', 'stroke': 'black' };
-        line = createSvgElement('line', attr);
-        line.setAttribute('class', 'e-ruler-tick');
-        return line;
-    }
-    createTickLabel(svg, segment) {
-        let text;
-        if (segment) {
-            let attr = { 'class': 'e-ruler-tick-label' };
-            text = createSvgElement('text', attr);
-            segment.appendChild(text);
-        }
-        return text;
-    }
-    /**
-     * @private
-     * @param scale
-     */
-    updateSegmentWidth(scale) {
-        if (this.segmentWidth !== 100) {
-            return this.segmentWidth;
-        }
-        let five = 25;
-        let multiples = 1;
-        let div;
-        let scaleRound;
-        let fifty = 100;
-        scaleRound = Math.pow(2, Math.round(Math.log(scale) / Math.log(2)));
-        div = fifty;
-        div = (fifty / scaleRound);
-        while (div > 100) {
-            multiples /= 10;
-            div /= 10;
-        }
-        while (div < 25) {
-            multiples *= 10;
-            div *= 10;
-        }
-        if (div >= five && div % five !== 0) {
-            div = Math.round(div / five) * five;
-        }
-        return div * scale / multiples;
-    }
-    createMarkerLine(rulerSvg, rulerObj, attr) {
-        let line;
-        if (rulerObj) {
-            line = rulerSvg.getElementById(rulerObj.id + '_marker');
-            if (line) {
-                line.parentNode.removeChild(line);
-            }
-            line = createSvgElement('line', attr);
-        }
-        return line;
-    }
-    /**
-     * @private
-     * @param rulerObj
-     * @param currentPoint
-     */
-    drawRulerMarker(rulerObj, currentPoint, offset) {
-        let rulerSvg;
-        let rulerSize;
-        let scale;
-        let diff;
-        let i;
-        let attr;
-        let line;
-        let isHorizontal = this.orientation === 'Horizontal' ? true : false;
-        let rulerSvgElements = rulerObj.getElementsByTagName('svg');
-        for (i = 0; i < rulerSvgElements.length; i++) {
-            if (rulerSvgElements[i]) {
-                rulerSvg = rulerSvgElements[i];
-            }
-            break;
-        }
-        if (rulerSvg) {
-            rulerSize = this.getRulerSize();
-            attr = {
-                'id': rulerObj.id + '_marker', 'x1': 0, 'y1': 0, 'x2': (isHorizontal ? 0 : rulerSize),
-                'y2': (isHorizontal ? rulerSize : 0), 'stroke': this.markerColor, 'stroke-width': 1.5,
-                'class': 'e-d-ruler-marker'
-            };
-            line = this.createMarkerLine(rulerSvg, rulerObj, attr);
-            scale = this.scale;
-            diff = this.offset - this.defStartValue;
-            let point = isHorizontal ? currentPoint.x : currentPoint.y;
-            let move = (point * scale) + offset + diff;
-            line.setAttribute('transform', 'translate(' + (isHorizontal ? ((move + 0.5) + ' 0.5') : ('0.5 ' + (move + 0.5))) + ')');
-            rulerSvg.appendChild(line);
-        }
-    }
-    getRulerGeometry() {
-        return new Size(this.element ? this.element.getBoundingClientRect().width : 0, this.element ? this.element.getBoundingClientRect().height : 0);
-    }
-    getRulerSize() {
-        return this.thickness;
-    }
-    getRulerSVG(rulerGeometry) {
-        let rulerSpace;
-        let rulerSize = this.getRulerSize();
-        let svg;
-        if (this.element) {
-            rulerSpace = document.getElementById(this.element.id + '_ruler_space');
-            if (rulerSpace) {
-                let attr = {
-                    'id': this.element.id + '_Ruler_svg',
-                    width: this.orientation === 'Horizontal' ? (rulerGeometry.width + 200) : rulerSize + 'px',
-                    height: this.orientation === 'Horizontal' ? rulerSize : (rulerGeometry.height + 200) + 'px',
-                    style: 'position:inherit;'
-                };
-                svg = createSvgElement('svg', attr);
-                if (rulerSpace.childNodes.length > 0) {
-                    for (let i = rulerSpace.childNodes.length - 1; i >= 0; i--) {
-                        rulerSpace.childNodes[i].parentNode.removeChild(rulerSpace.childNodes[i]);
-                    }
-                }
-                rulerSpace.appendChild(svg);
-            }
-        }
-        return svg;
-    }
-    /**
-     * Method to bind events for the ruler
-     */
-    wireEvents() {
-        //wire Events
-    }
-    /**
-     * Method to unbind events for the ruler
-     */
-    unWireEvents() {
-        //unWire Events
-    }
-}
-__decorate$11([
-    Property(5)
-], Ruler.prototype, "interval", void 0);
-__decorate$11([
-    Property(100)
-], Ruler.prototype, "segmentWidth", void 0);
-__decorate$11([
-    Property('Horizontal')
-], Ruler.prototype, "orientation", void 0);
-__decorate$11([
-    Property('RightOrBottom')
-], Ruler.prototype, "tickAlignment", void 0);
-__decorate$11([
-    Property('red')
-], Ruler.prototype, "markerColor", void 0);
-__decorate$11([
-    Property(25)
-], Ruler.prototype, "thickness", void 0);
-__decorate$11([
-    Property(null)
-], Ruler.prototype, "arrangeTick", void 0);
-__decorate$11([
-    Property(400)
-], Ruler.prototype, "length", void 0);
-
-/**
- * Exported Ruler files
- */
-
-/**
- * defines the helper methods for the ruler
- */
-/**
- * @private
- */
-function renderOverlapElement(diagram) {
-    let rulerSize = getRulerSize(diagram);
-    let attributes = {
-        'id': diagram.element.id + '_overlapRuler',
-        style: 'height:' + rulerSize.height + 'px;width:' + rulerSize.width + 'px;position:absolute;left:0;top:0',
-        class: 'e-ruler-overlap'
-    };
-    let overlap = createHtmlElement('div', attributes);
-    diagram.element.insertBefore(overlap, diagram.element.firstChild);
-}
-/**
- * @private
- */
-function renderRuler(diagram, isHorizontal) {
-    let div = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
-    let rulerSize = getRulerSize(diagram);
-    let rulerGeometry = getRulerGeometry(diagram);
-    let margin = isHorizontal ? ('margin-left:' + rulerSize.width + 'px;') : ('margin-top:' + rulerSize.height + 'px;');
-    if (!div) {
-        let style = 'height:' + (isHorizontal ? rulerSize.height : (rulerGeometry.height + 100)) + 'px;overflow:hidden;width:' +
-            (isHorizontal ? (rulerGeometry.width + 100) : rulerSize.width) + 'px;position:absolute;font-size:11px;' + margin;
-        let attributes = {
-            'id': diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'),
-            style: style
-        };
-        div = createHtmlElement('div', attributes);
-    }
-    diagram.element.insertBefore(div, diagram.element.firstChild);
-    let diagramRuler = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
-    let ruler = new Ruler(diagramRuler);
-    ruler.orientation = isHorizontal ? 'Horizontal' : 'Vertical';
-    ruler.length = (isHorizontal ? rulerGeometry.width : rulerGeometry.height) + diagramRuler.segmentWidth;
-    ruler.appendTo('#' + diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
-    isHorizontal ? diagram.hRuler = ruler : diagram.vRuler = ruler;
-    let rulerObj = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
-    isHorizontal ? diagram.hRuler.element = rulerObj : diagram.vRuler.element = rulerObj;
-}
-/**
- * @private
- */
-function updateRuler(diagram) {
-    let hOffset = -diagram.scroller.horizontalOffset;
-    let vOffset = -diagram.scroller.verticalOffset;
-    if (diagram && diagram.rulerSettings.showRulers) {
-        diagram.hRuler.length = 0;
-        diagram.vRuler.length = 0;
-        if (hOffset !== undefined && diagram.hRuler.element) {
-            updateRulerDimension(diagram, diagram.hRuler, hOffset, true);
-        }
-        if (vOffset !== undefined && diagram.vRuler.element) {
-            updateRulerDimension(diagram, diagram.vRuler, vOffset, false);
-        }
-    }
-    else {
-        removeRulerElements(diagram);
-    }
-}
-/**
- * @private
- */
-function removeRulerElements(diagram) {
-    removeElement(diagram.element.id + '_hRuler');
-    removeElement(diagram.element.id + '_vRuler');
-    removeElement(diagram.element.id + '_overlapRuler');
-}
-/** @private */
-function getRulerSize(diagram) {
-    let top = 0;
-    let left = 0;
-    if (diagram.rulerSettings.showRulers) {
-        top = diagram.rulerSettings.horizontalRuler.thickness;
-        left = diagram.rulerSettings.verticalRuler.thickness;
-    }
-    return new Size(left, top);
-}
-/** @private */
-function getRulerGeometry(diagram) {
-    let rulerSize = getRulerSize(diagram);
-    let height = diagram.scroller.viewPortHeight;
-    let width = diagram.scroller.viewPortWidth;
-    if (width < diagram.element.clientWidth - rulerSize.width) {
-        width = diagram.element.clientWidth - rulerSize.width;
-    }
-    if (height < diagram.element.clientHeight - rulerSize.height) {
-        height = diagram.element.clientHeight - rulerSize.height;
-    }
-    if (diagram.hRuler && diagram.hRuler.length) {
-        width = diagram.hRuler.length;
-    }
-    if (diagram.vRuler && diagram.vRuler.length) {
-        height = diagram.vRuler.length;
-    }
-    return new Size(width, height);
-}
-/**
- * @private
- */
-function removeRulerMarkers() {
-    let markers = document.getElementsByClassName('e-d-ruler-marker');
-    let marker;
-    let i;
-    if (markers && markers.length > 0) {
-        for (i = markers.length - 1; i >= 0; i--) {
-            marker = markers[i];
-            if (marker) {
-                marker.parentNode.removeChild(marker);
-            }
-        }
-    }
-}
-function drawRulerMarkers(diagram, currentPoint) {
-    if (diagram.rulerSettings.showRulers) {
-        diagram.hRuler.drawRulerMarker(diagram.hRuler.element, currentPoint, diagram.scroller.horizontalOffset);
-        diagram.vRuler.drawRulerMarker(diagram.vRuler.element, currentPoint, diagram.scroller.verticalOffset);
-    }
-}
-function updateRulerDimension(diagram, ruler, offset, isHorizontal) {
-    let rulerSize = getRulerSize(diagram);
-    let rulerGeometry = getRulerGeometry(diagram);
-    let diagramRuler = isHorizontal ? diagram.rulerSettings.horizontalRuler : diagram.rulerSettings.verticalRuler;
-    updateRulerDiv(diagram, rulerGeometry, isHorizontal);
-    updateRulerSpace(diagram, rulerGeometry, isHorizontal);
-    ruler.offset = offset;
-    ruler.scale = diagram.scroller.currentZoom;
-    ruler.length = rulerGeometry.width + 100;
-    ruler.arrangeTick = getFunction(diagramRuler.arrangeTick);
-    ruler.dataBind();
-    let rulerObj = isHorizontal ? diagram.hRuler.element : diagram.vRuler.element;
-    if (isHorizontal) {
-        rulerObj.style.marginLeft = (rulerSize.width - ruler.hRulerOffset) + 'px';
-    }
-    else {
-        rulerObj.style.marginTop = (rulerSize.height - ruler.vRulerOffset) + 'px';
-    }
-}
-function updateRulerSpace(diagram, rulerGeometry, isHorizontal) {
-    let div = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler_ruler_space' : '_vRuler_ruler_space'));
-    let ruler = isHorizontal ? diagram.hRuler : diagram.vRuler;
-    if (div && diagram && rulerGeometry) {
-        div.style.width = (isHorizontal ? (rulerGeometry.width + (ruler.segmentWidth * 2)) : ruler.thickness) + 'px';
-        div.style.height = (isHorizontal ? ruler.thickness : (rulerGeometry.height + (ruler.segmentWidth * 2))) + 'px';
-    }
-}
-function updateRulerDiv(diagram, rulerGeometry, isHorizontal) {
-    let div = document.getElementById(diagram.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
-    let ruler = isHorizontal ? diagram.hRuler : diagram.vRuler;
-    if (div && diagram && rulerGeometry) {
-        div.style.width = (isHorizontal ? (rulerGeometry.width + ruler.segmentWidth) : ruler.thickness) + 'px';
-        div.style.height = (isHorizontal ? ruler.thickness : (rulerGeometry.height + ruler.segmentWidth)) + 'px';
-        div = document.getElementById(diagram.element.id + '_overlapRuler');
-        if (div) {
-            isHorizontal ? (div.style.height = ruler.thickness + 'px') : (div.style.width = ruler.thickness + 'px');
-        }
-    }
-}
-
-/**
- * UMLActivityShapeDictionary defines the shape of the built-in uml activity shapes
- */
-/** @private */
-function getUMLActivityShape(shape) {
-    return umlActivityShapes[shape.toString()];
-}
-let umlActivityShapes = {
-    // Action,
-    'Action': 'M 90 82.895 C 90 86.819 86.776 90 82.8 90 H 7.2 C 3.224 90 0 86.819 0 82.895' +
-        ' V 7.105 C 0 3.181 3.224 0 7.2 0 h 75.6 C 86.776 0 90 3.181 90 7.105 V 82.895 Z',
-    // Decision,
-    'Decision': 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z',
-    // MergeNode,
-    'MergeNode': 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z',
-    // InitialNode,
-    'InitialNode': 'M10,19.5c-5.238,0-9.5-4.262-9.5-9.5S4.762,0.5,10,0.5s9.5,4.262,9.5,9.5S15.238,19.5,10,19.5z',
-    // ForkNode,
-    'ForkNode': 'm0.75,0.75l636.00002,0l0,290l-636.00002,0l0,-290z',
-    // JoinNode,
-    'JoinNode': 'm0.75,0.75l636.00002,0l0,290l-636.00002,0l0,-290z',
-    // TimeEvent,
-    'TimeEvent': 'M50.001,0.00286865 L25.001,25.0029 L0.000976562,0.00286865 L50.001,0.00286865 z' +
-        ' M0.000976562,50.0029 L25.001,25.0029 L50.001,50.0029 L0.000976562,50.0029 z',
-    // AcceptingEvent,
-    'AcceptingEvent': 'M17.8336 32.164 L29.64 24 L17.32 16 L48.1664 16 L48.5 32 Z',
-    // SendSignal,
-    'SendSignal': 'M48.164 31.8336 L56 23.832 L47.836 16 L16.168 16 L16.1668 31.8336 Z',
-    // ReceiveSignal,
-    'ReceiveSignal': 'M48.1664 31.8336 L39.836 24 L47.836 16 L16.168 16 L16.168 31.836 Z',
-    // StructuredNode,
-    'StructuredNode': 'M0,0 L50,0 L50,50 L0,50 z',
-    // Note,
-    'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
-};
-
-var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Defines the combination of keys and modifier keys
- */
-class KeyGesture extends ChildProperty {
-}
-__decorate$12([
-    Property()
-], KeyGesture.prototype, "key", void 0);
-__decorate$12([
-    Property()
-], KeyGesture.prototype, "keyModifiers", void 0);
-/**
- * Defines a command and a key gesture to define when the command should be executed
- */
-class Command extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class Command
-     */
-    getClassName() {
-        return 'Command';
-    }
-}
-__decorate$12([
-    Property('')
-], Command.prototype, "name", void 0);
-__decorate$12([
-    Property()
-], Command.prototype, "canExecute", void 0);
-__decorate$12([
-    Property()
-], Command.prototype, "execute", void 0);
-__decorate$12([
-    Complex({}, KeyGesture)
-], Command.prototype, "gesture", void 0);
-__decorate$12([
-    Property('')
-], Command.prototype, "parameter", void 0);
-/**
- * Defines the collection of commands and the corresponding key gestures
- */
-class CommandManager extends ChildProperty {
-}
-__decorate$12([
-    Collection([], Command)
-], CommandManager.prototype, "commands", void 0);
-/**
- * Defines the behavior of the context menu items
- */
-class ContextMenuSettings extends ChildProperty {
-}
-__decorate$12([
-    Property()
-], ContextMenuSettings.prototype, "show", void 0);
-__decorate$12([
-    Property()
-], ContextMenuSettings.prototype, "showCustomMenuOnly", void 0);
-__decorate$12([
-    Property()
-], ContextMenuSettings.prototype, "items", void 0);
-
 /** @private */
 function completeRegion(region, selectedObjects) {
     let collection = [];
@@ -15367,8 +13626,1772 @@ let findDistance = (point1, point2) => {
 };
 
 /**
+ * StackPanel module is used to arrange its children in a line
+ */
+class StackPanel extends Container {
+    constructor() {
+        super(...arguments);
+        /**
+         * Gets/Sets the orientation of the stack panel
+         */
+        this.orientation = 'Vertical';
+        /**
+         * Not applicable for canvas
+         * to avoid the child size updation with respect to parent ser true
+         * @private
+         */
+        this.measureChildren = undefined;
+    }
+    /**
+     * Measures the minimum space that the panel needs
+     * @param availableSize
+     */
+    measure(availableSize) {
+        let updateSize = this.orientation === 'Horizontal' ? this.updateHorizontalStack : this.updateVerticalStack;
+        this.desiredSize = this.measureStackPanel(availableSize, updateSize);
+        return this.desiredSize;
+    }
+    /**
+     * Arranges the child elements of the stack panel
+     * @param desiredSize
+     */
+    arrange(desiredSize) {
+        let updateSize = this.orientation === 'Horizontal' ? this.arrangeHorizontalStack : this.arrangeVerticalStack;
+        this.actualSize = this.arrangeStackPanel(desiredSize, updateSize);
+        this.updateBounds();
+        return this.actualSize;
+    }
+    /**
+     * Measures the minimum space that the panel needs
+     * @param availableSize
+     */
+    measureStackPanel(availableSize, updateSize) {
+        let desired = undefined;
+        if (this.children !== undefined && this.children.length > 0) {
+            for (let child of this.children) {
+                child.parentTransform = this.rotateAngle + this.parentTransform;
+                //Measure children
+                if (this.measureChildren) {
+                    child.measure(child.desiredSize);
+                }
+                else {
+                    child.measure(availableSize);
+                }
+                let childSize = child.desiredSize.clone();
+                //Consider Child's margin
+                this.applyChildMargin(child, childSize);
+                //Consider children's rotation
+                if (child.rotateAngle !== 0) {
+                    childSize = rotateSize(childSize, child.rotateAngle);
+                }
+                //Measure stack panel
+                if (desired === undefined) {
+                    desired = childSize;
+                }
+                else {
+                    if (!child.preventContainer) {
+                        updateSize(childSize, desired);
+                    }
+                }
+            }
+        }
+        desired = super.validateDesiredSize(desired, availableSize);
+        this.stretchChildren(desired);
+        //Considering padding values
+        this.applyPadding(desired);
+        return desired;
+    }
+    arrangeStackPanel(desiredSize, updatePosition) {
+        if (this.children !== undefined && this.children.length > 0) {
+            let x;
+            let y;
+            x = this.offsetX - desiredSize.width * this.pivot.x + this.padding.left;
+            y = this.offsetY - desiredSize.height * this.pivot.y + this.padding.top;
+            for (let child of this.children) {
+                let childSize = child.desiredSize.clone();
+                let rotatedSize = childSize;
+                if (this.orientation === 'Vertical') {
+                    y += child.margin.top;
+                }
+                else {
+                    x += child.margin.left;
+                }
+                if (child.rotateAngle !== 0) {
+                    rotatedSize = rotateSize(childSize, child.rotateAngle);
+                }
+                let center = updatePosition(x, y, child, this, desiredSize, rotatedSize);
+                super.findChildOffsetFromCenter(child, center);
+                child.arrange(childSize, true);
+                if (this.orientation === 'Vertical') {
+                    y += rotatedSize.height + child.margin.bottom;
+                }
+                else {
+                    x += rotatedSize.width + child.margin.right;
+                }
+            }
+        }
+        return desiredSize;
+    }
+    updateHorizontalStack(child, parent) {
+        parent.height = Math.max(child.height, parent.height);
+        parent.width += child.width;
+    }
+    updateVerticalStack(child, parent) {
+        parent.width = Math.max(child.width, parent.width);
+        parent.height += child.height;
+    }
+    arrangeHorizontalStack(x, y, child, parent, parenBounds, childBounds) {
+        let centerY = 0;
+        if (child.verticalAlignment === 'Top') {
+            centerY = y + child.margin.top + childBounds.height / 2;
+        }
+        else if (child.verticalAlignment === 'Bottom') {
+            let parentBottom = parent.offsetY + parenBounds.height * (1 - parent.pivot.y);
+            centerY = parentBottom - parent.padding.bottom - child.margin.bottom - childBounds.height / 2;
+        }
+        else {
+            centerY = parent.offsetY - parenBounds.height * parent.pivot.y + parenBounds.height / 2;
+            if (child.margin.top) {
+                centerY = y + child.margin.top + childBounds.height / 2;
+            }
+        }
+        return { x: x + childBounds.width / 2, y: centerY };
+    }
+    arrangeVerticalStack(x, y, child, parent, parentSize, childSize) {
+        let centerX = 0;
+        if (child.horizontalAlignment === 'Left') {
+            centerX = x + child.margin.left + childSize.width / 2;
+        }
+        else if (child.horizontalAlignment === 'Right') {
+            let parentRight = parent.offsetX + parentSize.width * (1 - parent.pivot.x);
+            centerX = parentRight - parent.padding.right - child.margin.right - childSize.width / 2;
+        }
+        else {
+            centerX = parent.offsetX - parentSize.width * parent.pivot.x + parentSize.width / 2;
+            if (child.margin.left) {
+                centerX = x + child.margin.left + childSize.width / 2;
+            }
+        }
+        return { x: centerX, y: y + childSize.height / 2 };
+    }
+    stretchChildren(size) {
+        if (this.children !== undefined && this.children.length > 0) {
+            for (let child of this.children) {
+                if (this.orientation === 'Vertical') {
+                    if (child.horizontalAlignment === 'Stretch') {
+                        child.desiredSize.width = size.width - (child.margin.left + child.margin.right);
+                    }
+                }
+                else {
+                    if (child.verticalAlignment === 'Stretch') {
+                        child.desiredSize.height = size.height - (child.margin.top + child.margin.bottom);
+                    }
+                }
+            }
+        }
+    }
+    applyChildMargin(child, size) {
+        size.height += child.margin.top + child.margin.bottom;
+        size.width += child.margin.left + child.margin.right;
+    }
+}
+
+/**
+ * These utility methods help to process the data and to convert it to desired dimensions
+ */
+/** @private */
+function getULMClassifierShapes(content, node, diagram) {
+    let classifier;
+    let textWrap = 'NoWrap';
+    if (node.shape.classifier === 'Class') {
+        classifier = node.shape.classShape;
+    }
+    else if (node.shape.classifier === 'Enumeration') {
+        classifier = node.shape.enumerationShape;
+    }
+    else if (node.shape.classifier === 'Interface') {
+        classifier = node.shape.interfaceShape;
+    }
+    node.container = { type: 'Stack', orientation: 'Vertical' };
+    node.constraints = (NodeConstraints.Default | NodeConstraints.HideThumbs) &
+        ~(NodeConstraints.Rotate | NodeConstraints.Resize);
+    node.style = {
+        fill: node.style.fill, strokeColor: 'black',
+        strokeWidth: 1.5
+    };
+    node.children = [];
+    if (node.maxWidth) {
+        textWrap = 'Wrap';
+    }
+    let newObj = new Node(diagram, 'nodes', {
+        id: node.id + '_umlClass_header',
+        annotations: [
+            {
+                id: 'name', content: classifier.name,
+                offset: { x: 0.5, y: 0.65 }, margin: { left: 10, right: 10 },
+                style: {
+                    bold: true, fontSize: 14, color: classifier.style.color, fill: classifier.style.fill,
+                    textWrapping: textWrap
+                }
+            }, {
+                content: '<<' + node.shape.classifier + '>>', margin: { left: 10, right: 10 },
+                id: 'class', style: {
+                    fontSize: classifier.style.fontSize,
+                    color: classifier.style.color, fill: classifier.style.fill,
+                    textWrapping: textWrap
+                }, offset: { x: 0.5, y: 0.3 }, constraints: AnnotationConstraints.ReadOnly
+            },
+        ],
+        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+        verticalAlignment: 'Stretch',
+        horizontalAlignment: 'Stretch',
+        style: { fill: node.style.fill, strokeColor: '#ffffff00' }
+    }, true);
+    diagram.initObject(newObj);
+    diagram.nodes.push(newObj);
+    node.children.push(newObj.id);
+    getClassNodes(node, diagram, classifier, textWrap);
+    getClassMembers(node, diagram, classifier, textWrap);
+    node.offsetX = node.offsetX;
+    node.offsetY = node.offsetY;
+    node.style.fill = node.style.fill;
+    node.borderColor = node.borderColor;
+    diagram.initObject(node);
+    return content;
+}
+/** @private */
+function getClassNodes(node, diagram, classifier, textWrap) {
+    if (node.shape.classifier === 'Enumeration') {
+        let member = classifier.members;
+        if (member && member.length) {
+            addSeparator(node, diagram);
+            let memberText = '';
+            for (let i = 0; i < member.length; i++) {
+                let members = member[i];
+                if (members.name !== '') {
+                    memberText += members.name;
+                }
+                if (i !== member.length) {
+                    let style = getStyle(node, members);
+                    let temp = new Node(diagram, 'nodes', {
+                        id: randomId() + '_umlMember',
+                        annotations: [
+                            {
+                                id: 'name', content: memberText, offset: { x: 0, y: 0.5 },
+                                style: {
+                                    bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
+                                    textWrapping: textWrap
+                                },
+                                margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
+                            }
+                        ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+                        style: { fill: node.style.fill, strokeColor: '#ffffff00', textWrapping: textWrap },
+                        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                        minHeight: 25
+                    }, true);
+                    diagram.initObject(temp);
+                    diagram.nodes.push(temp);
+                    node.children.push(temp.id);
+                    memberText = '';
+                    if (members.isSeparator && (i !== member.length - 1)) {
+                        addSeparator(node, diagram);
+                    }
+                }
+            }
+        }
+    }
+    else {
+        let attributes = classifier.attributes;
+        if (attributes.length) {
+            let attributeText = '';
+            addSeparator(node, diagram);
+            for (let i = 0; i < attributes.length; i++) {
+                let text;
+                let attribute = attributes[i];
+                if (attribute.scope && (attribute).scope === 'Public') {
+                    text = ' +';
+                }
+                else if (attribute.scope && attribute.scope === 'Private') {
+                    text = '-';
+                }
+                else if (attribute.scope && attribute.scope === 'Protected') {
+                    text = '#';
+                }
+                else {
+                    text = '~';
+                }
+                if (attribute.name !== '') {
+                    if (text) {
+                        attributeText += text + ' ' + attribute.name + ' ' + ': ' + attribute.type;
+                    }
+                }
+                if (i !== attributes.length) {
+                    let style = getStyle(node, attribute);
+                    let temp = new Node(diagram, 'nodes', {
+                        id: randomId() + '_umlProperty', style: { fill: node.style.fill, strokeColor: '#ffffff00' },
+                        annotations: [
+                            {
+                                id: 'name', content: attributeText, offset: { x: 0, y: 0.5 },
+                                style: {
+                                    bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
+                                    textWrapping: textWrap
+                                },
+                                margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
+                            }
+                        ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+                        constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                        minHeight: 25
+                    }, true);
+                    diagram.initObject(temp);
+                    diagram.nodes.push(temp);
+                    node.children.push(temp.id);
+                    attributeText = '';
+                    if (attribute.isSeparator && (i !== attributes.length - 1)) {
+                        addSeparator(node, diagram);
+                    }
+                }
+            }
+        }
+    }
+}
+/** @private */
+function getClassMembers(node, diagram, classifier, textWrap) {
+    if (classifier.methods && classifier.methods.length) {
+        let methods = classifier.methods;
+        addSeparator(node, diagram);
+        let argumentText = '';
+        let methodText = '';
+        let text;
+        for (let i = 0; i < methods.length; i++) {
+            let method = methods[i];
+            if (method.scope && method.scope === 'Public') {
+                text = ' +';
+            }
+            else if (method.scope && method.scope === 'Private') {
+                text = '-';
+            }
+            else if (method.scope && method.scope === 'Protected') {
+                text = '#';
+            }
+            else {
+                text = '~';
+            }
+            if (method.parameters) {
+                for (let j = 0; j < method.parameters.length; j++) {
+                    if (method.parameters[j].type) {
+                        argumentText += method.parameters[j].name + ':' + method.parameters[j].type;
+                    }
+                    else {
+                        argumentText += method.parameters[j].name;
+                    }
+                    if (j !== method.parameters.length - 1) {
+                        argumentText += ',';
+                    }
+                }
+            }
+            if (method.name !== '') {
+                if (text) {
+                    methodText += text + ' ' + method.name + '(' + argumentText + ')' + ' ' + ':' + ' ' + method.type;
+                }
+            }
+            if (i !== methods.length) {
+                let style = getStyle(node, method);
+                let temp = new Node(diagram, 'nodes', {
+                    id: randomId() + '_umlMethods', verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+                    annotations: [
+                        {
+                            id: 'name', content: methodText, offset: { x: 0, y: 0.5 },
+                            style: {
+                                bold: true, fontSize: style.fontSize, color: style.color, fill: style.fill,
+                                textWrapping: textWrap
+                            },
+                            margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
+                        }
+                    ],
+                    style: { fill: node.style.fill, strokeColor: '#ffffff00' }, minHeight: 25,
+                    constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~(NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize)
+                }, true);
+                diagram.initObject(temp);
+                diagram.nodes.push(temp);
+                node.children.push(temp.id);
+                methodText = '';
+                if (method.isSeparator && (i !== methods.length - 1)) {
+                    addSeparator(node, diagram);
+                }
+            }
+        }
+    }
+}
+/** @private */
+function addSeparator(stack, diagram) {
+    let lineObject = new Node(diagram, 'nodes', {
+        id: randomId() + '_path', height: 1, constraints: NodeConstraints.Default & ~(NodeConstraints.Select),
+        verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+    }, true);
+    diagram.initObject(lineObject);
+    diagram.nodes.push(lineObject);
+    stack.children.push(lineObject.id);
+}
+/** @private */
+function getStyle(stack, node) {
+    let newStyle = {};
+    let style = node.style;
+    newStyle.fill = (style.fill !== 'transparent') ? style.fill : stack.style.fill;
+    newStyle.color = style.color;
+    newStyle.fontSize = (style.fontSize !== 12) ? style.fontSize : stack.style.fontSize;
+    newStyle.strokeColor = (style.strokeColor !== 'black') ? style.strokeColor : stack.style.strokeColor;
+    newStyle.strokeWidth = (style.strokeWidth !== 1) ? style.strokeWidth : stack.style.strokeWidth;
+    return newStyle;
+}
+
+var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/// <reference path='./node-base-model.d.ts'/>
+let getShapeType = (obj) => {
+    switch (obj.type) {
+        case 'Basic':
+            return BasicShape;
+        case 'Flow':
+            return FlowShape;
+        case 'Path':
+            return Path;
+        case 'Image':
+            return Image$1;
+        case 'Text':
+            return Text;
+        case 'Bpmn':
+            return BpmnShape;
+        case 'Native':
+            return Native;
+        case 'HTML':
+            return Html;
+        case 'UmlActivity':
+            return UmlActivityShape;
+        case 'UmlClassifier':
+            return UmlClassifierShape;
+        case 'SwimLane':
+            return SwimLane;
+        default:
+            return BasicShape;
+    }
+};
+/**
+ * Defines the behavior of default shape
+ */
+class Shape extends ChildProperty {
+}
+__decorate$2([
+    Property('Basic')
+], Shape.prototype, "type", void 0);
+/**
+ * Defines the behavior of path shape
+ */
+class Path extends Shape {
+    /**
+     * @private
+     * Returns the name of class Path
+     */
+    getClassName() {
+        return 'Path';
+    }
+}
+__decorate$2([
+    Property('Path')
+], Path.prototype, "type", void 0);
+__decorate$2([
+    Property('')
+], Path.prototype, "data", void 0);
+/**
+ * Defines the behavior of Native shape
+ */
+class Native extends Shape {
+    /**
+     * @private
+     * Returns the name of class Native
+     */
+    getClassName() {
+        return 'Native';
+    }
+}
+__decorate$2([
+    Property('Native')
+], Native.prototype, "type", void 0);
+__decorate$2([
+    Property('')
+], Native.prototype, "content", void 0);
+__decorate$2([
+    Property('Stretch')
+], Native.prototype, "scale", void 0);
+/**
+ * Defines the behavior of html shape
+ */
+class Html extends Shape {
+    /**
+     * @private
+     * Returns the name of class Html
+     */
+    getClassName() {
+        return 'Html';
+    }
+}
+__decorate$2([
+    Property('HTML')
+], Html.prototype, "type", void 0);
+__decorate$2([
+    Property('')
+], Html.prototype, "content", void 0);
+/**
+ * Defines the behavior of image shape
+ */
+class Image$1 extends Shape {
+    /**
+     * @private
+     * Returns the name of class Image
+     */
+    getClassName() {
+        return 'Image';
+    }
+}
+__decorate$2([
+    Property('Image')
+], Image$1.prototype, "type", void 0);
+__decorate$2([
+    Property('')
+], Image$1.prototype, "source", void 0);
+__decorate$2([
+    Property('None')
+], Image$1.prototype, "scale", void 0);
+__decorate$2([
+    Property('None')
+], Image$1.prototype, "align", void 0);
+/**
+ * Defines the behavior of the text shape
+ */
+class Text extends Shape {
+    /**
+     * @private
+     * Returns the name of class Text
+     */
+    getClassName() {
+        return 'Text';
+    }
+}
+__decorate$2([
+    Property('Text')
+], Text.prototype, "type", void 0);
+__decorate$2([
+    Property('')
+], Text.prototype, "content", void 0);
+__decorate$2([
+    Complex({}, Margin)
+], Text.prototype, "margin", void 0);
+/**
+ * Defines the behavior of the basic shape
+ */
+class BasicShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class BasicShape
+     */
+    getClassName() {
+        return 'BasicShape';
+    }
+}
+__decorate$2([
+    Property('Basic')
+], BasicShape.prototype, "type", void 0);
+__decorate$2([
+    Property('Rectangle')
+], BasicShape.prototype, "shape", void 0);
+__decorate$2([
+    Property(0)
+], BasicShape.prototype, "cornerRadius", void 0);
+__decorate$2([
+    Collection([], Point)
+], BasicShape.prototype, "points", void 0);
+/**
+ * Defines the behavior of the flow shape
+ */
+class FlowShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class FlowShape
+     */
+    getClassName() {
+        return 'FlowShape';
+    }
+}
+__decorate$2([
+    Property('Flow')
+], FlowShape.prototype, "type", void 0);
+__decorate$2([
+    Property('Terminator')
+], FlowShape.prototype, "shape", void 0);
+/**
+ * Defines the behavior of the bpmn gateway shape
+ */
+class BpmnGateway extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnGateway
+     */
+    getClassName() {
+        return 'BpmnGateway';
+    }
+}
+__decorate$2([
+    Property('None')
+], BpmnGateway.prototype, "type", void 0);
+/**
+ * Defines the behavior of the bpmn data object
+ */
+class BpmnDataObject extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnDataObject
+     */
+    getClassName() {
+        return 'BpmnDataObject';
+    }
+}
+__decorate$2([
+    Property('None')
+], BpmnDataObject.prototype, "type", void 0);
+__decorate$2([
+    Property(false)
+], BpmnDataObject.prototype, "collection", void 0);
+/**
+ * Defines the behavior of the bpmn task shape
+ */
+class BpmnTask extends ChildProperty {
+}
+__decorate$2([
+    Property('None')
+], BpmnTask.prototype, "type", void 0);
+__decorate$2([
+    Property('None')
+], BpmnTask.prototype, "loop", void 0);
+__decorate$2([
+    Property(false)
+], BpmnTask.prototype, "call", void 0);
+__decorate$2([
+    Property(false)
+], BpmnTask.prototype, "compensation", void 0);
+/**
+ * Defines the behavior of the bpmn Event shape
+ */
+class BpmnEvent extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnEvent
+     */
+    getClassName() {
+        return 'BpmnEvent';
+    }
+}
+__decorate$2([
+    Property('Start')
+], BpmnEvent.prototype, "event", void 0);
+__decorate$2([
+    Property('None')
+], BpmnEvent.prototype, "trigger", void 0);
+/**
+ * Defines the behavior of the bpmn sub event
+ */
+class BpmnSubEvent extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnSubEvent
+     */
+    getClassName() {
+        return 'BpmnSubEvent';
+    }
+}
+__decorate$2([
+    Property('None')
+], BpmnSubEvent.prototype, "trigger", void 0);
+__decorate$2([
+    Property('Start')
+], BpmnSubEvent.prototype, "event", void 0);
+__decorate$2([
+    Property('')
+], BpmnSubEvent.prototype, "id", void 0);
+__decorate$2([
+    Complex({}, Point)
+], BpmnSubEvent.prototype, "offset", void 0);
+__decorate$2([
+    Collection([], ShapeAnnotation)
+], BpmnSubEvent.prototype, "annotations", void 0);
+__decorate$2([
+    Collection([], PointPort)
+], BpmnSubEvent.prototype, "ports", void 0);
+__decorate$2([
+    Property()
+], BpmnSubEvent.prototype, "width", void 0);
+__decorate$2([
+    Property()
+], BpmnSubEvent.prototype, "height", void 0);
+__decorate$2([
+    Complex({}, Margin)
+], BpmnSubEvent.prototype, "margin", void 0);
+__decorate$2([
+    Property('Center')
+], BpmnSubEvent.prototype, "horizontalAlignment", void 0);
+__decorate$2([
+    Property('Center')
+], BpmnSubEvent.prototype, "verticalAlignment", void 0);
+__decorate$2([
+    Property(true)
+], BpmnSubEvent.prototype, "visible", void 0);
+/**
+ * Defines the behavior of the BpmnTransactionSubProcess
+ */
+class BpmnTransactionSubProcess extends ChildProperty {
+}
+__decorate$2([
+    Complex({ id: 'success', event: 'End', offset: { x: 1, y: 0.5 } }, BpmnSubEvent)
+], BpmnTransactionSubProcess.prototype, "success", void 0);
+__decorate$2([
+    Complex({ id: 'failure', event: 'Intermediate', trigger: 'Error', offset: { x: 0.25, y: 1 } }, BpmnSubEvent)
+], BpmnTransactionSubProcess.prototype, "failure", void 0);
+__decorate$2([
+    Complex({ id: 'cancel', event: 'Intermediate', trigger: 'Cancel', offset: { x: 0.75, y: 1 } }, BpmnSubEvent)
+], BpmnTransactionSubProcess.prototype, "cancel", void 0);
+/**
+ * Defines the behavior of the BPMNSubProcess
+ */
+class BpmnSubProcess extends ChildProperty {
+}
+__decorate$2([
+    Property('None')
+], BpmnSubProcess.prototype, "type", void 0);
+__decorate$2([
+    Property(false)
+], BpmnSubProcess.prototype, "adhoc", void 0);
+__decorate$2([
+    Property('Default')
+], BpmnSubProcess.prototype, "boundary", void 0);
+__decorate$2([
+    Property(false)
+], BpmnSubProcess.prototype, "compensation", void 0);
+__decorate$2([
+    Property('None')
+], BpmnSubProcess.prototype, "loop", void 0);
+__decorate$2([
+    Property(true)
+], BpmnSubProcess.prototype, "collapsed", void 0);
+__decorate$2([
+    Collection([], BpmnSubEvent)
+], BpmnSubProcess.prototype, "events", void 0);
+__decorate$2([
+    Complex({}, BpmnTransactionSubProcess)
+], BpmnSubProcess.prototype, "transaction", void 0);
+__decorate$2([
+    Property(undefined)
+], BpmnSubProcess.prototype, "processes", void 0);
+/**
+ * Defines the behavior of the bpmn activity shape
+ */
+class BpmnActivity extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnActivity
+     */
+    getClassName() {
+        return 'BpmnActivity';
+    }
+}
+__decorate$2([
+    Property('Task')
+], BpmnActivity.prototype, "activity", void 0);
+__decorate$2([
+    Complex({}, BpmnTask)
+], BpmnActivity.prototype, "task", void 0);
+__decorate$2([
+    Complex({}, BpmnSubProcess)
+], BpmnActivity.prototype, "subProcess", void 0);
+/**
+ * Defines the behavior of the bpmn annotation
+ */
+class BpmnAnnotation extends ChildProperty {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+    }
+    /**
+     * @private
+     * Returns the name of class BpmnAnnotation
+     */
+    getClassName() {
+        return 'BpmnAnnotation';
+    }
+}
+__decorate$2([
+    Property('')
+], BpmnAnnotation.prototype, "text", void 0);
+__decorate$2([
+    Property('')
+], BpmnAnnotation.prototype, "id", void 0);
+__decorate$2([
+    Property(0)
+], BpmnAnnotation.prototype, "angle", void 0);
+__decorate$2([
+    Property()
+], BpmnAnnotation.prototype, "height", void 0);
+__decorate$2([
+    Property()
+], BpmnAnnotation.prototype, "width", void 0);
+__decorate$2([
+    Property(0)
+], BpmnAnnotation.prototype, "length", void 0);
+/**
+ * Defines the behavior of the bpmn shape
+ */
+class BpmnShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class BpmnShape
+     */
+    getClassName() {
+        return 'BpmnShape';
+    }
+}
+__decorate$2([
+    Property('Bpmn')
+], BpmnShape.prototype, "type", void 0);
+__decorate$2([
+    Property('Event')
+], BpmnShape.prototype, "shape", void 0);
+__decorate$2([
+    Complex({}, BpmnEvent)
+], BpmnShape.prototype, "event", void 0);
+__decorate$2([
+    Complex({}, BpmnGateway)
+], BpmnShape.prototype, "gateway", void 0);
+__decorate$2([
+    Complex({}, BpmnDataObject)
+], BpmnShape.prototype, "dataObject", void 0);
+__decorate$2([
+    Complex({}, BpmnActivity)
+], BpmnShape.prototype, "activity", void 0);
+__decorate$2([
+    Complex({}, BpmnAnnotation)
+], BpmnShape.prototype, "annotation", void 0);
+__decorate$2([
+    Collection([], BpmnAnnotation)
+], BpmnShape.prototype, "annotations", void 0);
+/**
+ * Defines the behavior of the UMLActivity shape
+ */
+class UmlActivityShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class UmlActivityShape
+     */
+    getClassName() {
+        return 'UmlActivityShape';
+    }
+}
+__decorate$2([
+    Property('UmlActivity')
+], UmlActivityShape.prototype, "type", void 0);
+__decorate$2([
+    Property('Action')
+], UmlActivityShape.prototype, "shape", void 0);
+/**
+ * Defines the behavior of the uml class method
+ */
+class MethodArguments extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class MethodArguments
+     */
+    getClassName() {
+        return 'MethodArguments';
+    }
+}
+__decorate$2([
+    Property('')
+], MethodArguments.prototype, "name", void 0);
+__decorate$2([
+    Property('')
+], MethodArguments.prototype, "type", void 0);
+__decorate$2([
+    Complex({}, TextStyle)
+], MethodArguments.prototype, "style", void 0);
+/**
+ * Defines the behavior of the uml class attributes
+ */
+class UmlClassAttribute extends MethodArguments {
+    /**
+     * @private
+     * Returns the name of class UmlClassAttribute
+     */
+    getClassName() {
+        return 'UmlClassAttribute';
+    }
+}
+__decorate$2([
+    Property('Public')
+], UmlClassAttribute.prototype, "scope", void 0);
+__decorate$2([
+    Property(false)
+], UmlClassAttribute.prototype, "isSeparator", void 0);
+/**
+ * Defines the behavior of the uml class method
+ */
+class UmlClassMethod extends UmlClassAttribute {
+    /**
+     * @private
+     * Returns the name of class UmlClassMethod
+     */
+    getClassName() {
+        return 'UmlClassMethod';
+    }
+}
+__decorate$2([
+    Collection([], MethodArguments)
+], UmlClassMethod.prototype, "parameters", void 0);
+/**
+ * Defines the behavior of the uml class shapes
+ */
+class UmlClass extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class UmlClass
+     */
+    getClassName() {
+        return 'UmlClass';
+    }
+}
+__decorate$2([
+    Property('')
+], UmlClass.prototype, "name", void 0);
+__decorate$2([
+    Collection([], UmlClassAttribute)
+], UmlClass.prototype, "attributes", void 0);
+__decorate$2([
+    Collection([], UmlClassMethod)
+], UmlClass.prototype, "methods", void 0);
+__decorate$2([
+    Complex({}, TextStyle)
+], UmlClass.prototype, "style", void 0);
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+class UmlInterface extends UmlClass {
+    /**
+     * @private
+     * Returns the name of class UmlInterface
+     */
+    getClassName() {
+        return 'UmlInterface';
+    }
+}
+__decorate$2([
+    Property(false)
+], UmlInterface.prototype, "isSeparator", void 0);
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+class UmlEnumerationMember extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class UmlEnumerationMember
+     */
+    getClassName() {
+        return 'UmlEnumerationMember';
+    }
+}
+__decorate$2([
+    Property('')
+], UmlEnumerationMember.prototype, "name", void 0);
+__decorate$2([
+    Property('')
+], UmlEnumerationMember.prototype, "value", void 0);
+__decorate$2([
+    Property(false)
+], UmlEnumerationMember.prototype, "isSeparator", void 0);
+__decorate$2([
+    Complex({}, TextStyle)
+], UmlEnumerationMember.prototype, "style", void 0);
+/**
+ * Defines the behavior of the uml interface shapes
+ */
+class UmlEnumeration extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class UmlEnumeration
+     */
+    getClassName() {
+        return 'UmlEnumeration';
+    }
+}
+__decorate$2([
+    Property('')
+], UmlEnumeration.prototype, "name", void 0);
+__decorate$2([
+    Collection([], UmlEnumerationMember)
+], UmlEnumeration.prototype, "members", void 0);
+__decorate$2([
+    Complex({}, TextStyle)
+], UmlEnumeration.prototype, "style", void 0);
+/**
+ * Defines the behavior of the UMLActivity shape
+ */
+class UmlClassifierShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class UmlClassifierShape
+     */
+    getClassName() {
+        return 'UmlClassifierShape';
+    }
+}
+__decorate$2([
+    Property('UmlClassifier')
+], UmlClassifierShape.prototype, "type", void 0);
+__decorate$2([
+    Complex({}, UmlClass)
+], UmlClassifierShape.prototype, "classShape", void 0);
+__decorate$2([
+    Complex({}, UmlInterface)
+], UmlClassifierShape.prototype, "interfaceShape", void 0);
+__decorate$2([
+    Complex({}, UmlEnumeration)
+], UmlClassifierShape.prototype, "enumerationShape", void 0);
+__decorate$2([
+    Property('Class')
+], UmlClassifierShape.prototype, "classifier", void 0);
+/**
+ * Defines the behavior of nodes
+ */
+class Node extends NodeBase {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+        /** @private */
+        this.isCanvasUpdate = false;
+        /** @private */
+        this.status = 'None';
+        /** @private */
+        this.parentId = '';
+        /** @private */
+        this.processId = '';
+        /** @private */
+        this.umlIndex = -1;
+        /** @private */
+        this.outEdges = [];
+        /** @private */
+        this.inEdges = [];
+        /** @private */
+        this.isHeader = false;
+        /** @private */
+        this.isLane = false;
+        /** @private */
+        this.isPhase = false;
+        let nodeDefault;
+        if (this.children && this.children.length > 0) {
+            nodeDefault = defaultValue;
+            if (!nodeDefault.style || !nodeDefault.style.fill) {
+                this.style.fill = 'transparent';
+            }
+            if (!nodeDefault.style || !nodeDefault.style.strokeColor) {
+                this.style.strokeColor = 'transparent';
+            }
+        }
+        if (this.shape && this.shape.type === 'UmlActivity') {
+            setUMLActivityDefaults(defaultValue, this);
+        }
+        if (this.shape && this.shape.type === 'SwimLane') {
+            setSwimLaneDefaults(defaultValue, this);
+        }
+    }
+    /** @private */
+    get actualSize() {
+        if (this.wrapper !== null) {
+            return this.wrapper.actualSize;
+        }
+        else {
+            return new Size(this.width || 0, this.height || 0);
+        }
+    }
+    /**
+     * Allows to initialize the UI of a node
+     */
+    /** @private */
+    /* tslint:disable */
+    init(diagram) {
+        let content;
+        if (this.shape.type != 'SwimLane') {
+            content = new DiagramElement();
+        }
+        else {
+            content = new GridPanel();
+        }
+        let textStyle;
+        let changedProperties = 'changedProperties';
+        let oldProperties = 'oldProperties';
+        this.shape[changedProperties] = {};
+        this.shape[oldProperties] = {};
+        switch (this.shape.type) {
+            case 'Path':
+                let pathContent = new PathElement();
+                pathContent.data = this.shape.data;
+                content = pathContent;
+                break;
+            case 'Image':
+                let imageContent = new ImageElement();
+                imageContent.source = this.shape.source;
+                imageContent.imageAlign = this.shape.align;
+                imageContent.imageScale = this.shape.scale;
+                content = imageContent;
+                break;
+            case 'Text':
+                let textContent = new TextElement();
+                textContent.content = this.shape.content;
+                content = textContent;
+                textStyle = this.style;
+                content.style = textStyle;
+                break;
+            case 'Basic':
+                if (this.shape.shape === 'Rectangle') {
+                    let basicshape = new DiagramElement();
+                    content = basicshape;
+                    content.cornerRadius = this.shape.cornerRadius;
+                }
+                else if (this.shape.shape === 'Polygon') {
+                    let path = new PathElement();
+                    path.data = getPolygonPath(this.shape.points);
+                    content = path;
+                }
+                else {
+                    let basicshape = new PathElement();
+                    let basicshapedata = getBasicShape(this.shape.shape);
+                    basicshape.data = basicshapedata;
+                    content = basicshape;
+                }
+                break;
+            case 'Flow':
+                let flowshape = new PathElement();
+                let flowshapedata = getFlowShape(this.shape.shape);
+                flowshape.data = flowshapedata;
+                content = flowshape;
+                break;
+            case 'UmlActivity':
+                let umlactivityshape = new PathElement();
+                content = getUMLActivityShapes(umlactivityshape, content, this);
+                break;
+            case 'Bpmn':
+                if (diagram.bpmnModule) {
+                    content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
+                    this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
+                    let subProcess = this.shape.activity.subProcess;
+                    if (subProcess.processes && subProcess.processes.length) {
+                        let children = this.shape.activity.subProcess.processes;
+                        for (let i of children) {
+                            if (diagram.nameTable[i] && (!diagram.nameTable[i].processId || diagram.nameTable[i].processId === this.id)) {
+                                diagram.nameTable[i].processId = this.id;
+                                if (subProcess.collapsed) {
+                                    diagram.updateElementVisibility(diagram.nameTable[i].wrapper, diagram.nameTable[i], !subProcess.collapsed);
+                                }
+                                content.children.push(diagram.nameTable[i].wrapper);
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'Native':
+                let nativeContent = new DiagramNativeElement(this.id, diagram.element.id);
+                nativeContent.content = this.shape.content;
+                nativeContent.scale = this.shape.scale;
+                content = nativeContent;
+                break;
+            case 'HTML':
+                let htmlContent = new DiagramHtmlElement(this.id, diagram.element.id);
+                htmlContent.content = this.shape.content;
+                content = htmlContent;
+                break;
+            case 'UmlClassifier':
+                //   let umlClassifierShape: StackPanel = new StackPanel();
+                content = getULMClassifierShapes(content, this, diagram);
+                break;
+            case 'SwimLane':
+                this.annotations = [];
+                this.ports = [];
+                content.cellStyle.fill = "none";
+                content.cellStyle.strokeColor = "none";
+                this.container = { type: 'Grid', orientation: this.shape.orientation };
+                content.id = this.id;
+                this.container.orientation = this.shape.orientation;
+                this.constraints |= NodeConstraints.HideThumbs;
+                initSwimLane(content, diagram, this);
+                break;
+        }
+        content.id = this.id + '_content';
+        content.relativeMode = 'Object';
+        if (this.width !== undefined) {
+            content.width = this.width;
+        }
+        content.horizontalAlignment = 'Stretch';
+        if (this.height !== undefined) {
+            content.height = this.height;
+        }
+        if (this.minHeight !== undefined) {
+            content.minHeight = this.minHeight;
+        }
+        if (this.maxHeight !== undefined) {
+            content.maxHeight = this.maxHeight;
+        }
+        if (this.minWidth !== undefined) {
+            content.minWidth = this.minWidth;
+        }
+        if (this.maxWidth !== undefined) {
+            content.maxWidth = this.maxWidth;
+        }
+        if (this.shape.shape === 'Rectangle' && !this.shape.cornerRadius) {
+            content.isRectElement = true;
+        }
+        content.verticalAlignment = 'Stretch';
+        if (this.shape instanceof Text) {
+            content.margin = this.shape.margin;
+        }
+        if (canShadow(this)) {
+            if ((this.constraints & NodeConstraints.Shadow) !== 0) {
+                content.shadow = this.shadow;
+            }
+        }
+        if ((this.shape.type !== 'Bpmn' || this.shape.shape === 'Message' ||
+            this.shape.shape === 'DataSource') && ((this.shape.type !== 'UmlActivity' || this.shape.shape !== 'FinalNode'))) {
+            if (this.shape.type !== 'Text') {
+                content.style = this.style;
+            }
+        }
+        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === 'Horizontal' || this.flip === 'Vertical') {
+            content.flip = this.flip;
+        }
+        return content;
+    }
+    /* tslint:enable */
+    /** @private */
+    initContainer() {
+        if (!this.id) {
+            this.id = randomId();
+        }
+        // Creates canvas element
+        let canvas;
+        if (!this.container || this.shape instanceof SwimLane) {
+            canvas = this.children ? new Container() : new Canvas();
+        }
+        else {
+            switch (this.container.type) {
+                case 'Canvas':
+                    canvas = new Canvas();
+                    break;
+                case 'Stack':
+                    canvas = new StackPanel();
+                    break;
+                case 'Grid':
+                    canvas = new GridPanel();
+                    canvas.setDefinitions(this.rows, this.columns);
+                    break;
+            }
+        }
+        canvas.id = this.id;
+        canvas.offsetX = this.offsetX;
+        canvas.offsetY = this.offsetY;
+        canvas.visible = this.visible;
+        canvas.horizontalAlignment = this.horizontalAlignment;
+        canvas.verticalAlignment = this.verticalAlignment;
+        if (this.container) {
+            canvas.width = this.width;
+            canvas.height = this.height;
+            if (this.container.type === 'Stack') {
+                canvas.orientation = this.container.orientation;
+            }
+        }
+        canvas.style.fill = this.backgroundColor;
+        canvas.style.strokeColor = this.borderColor;
+        canvas.style.strokeWidth = this.borderWidth;
+        canvas.rotateAngle = this.rotateAngle;
+        canvas.minHeight = this.minHeight;
+        canvas.minWidth = this.minWidth;
+        canvas.maxHeight = this.maxHeight;
+        canvas.maxWidth = this.maxWidth;
+        canvas.pivot = this.pivot;
+        canvas.margin = this.margin;
+        canvas.flip = this.flip;
+        this.wrapper = canvas;
+        return canvas;
+    }
+    /** @private */
+    initPorts(accessibilityContent, container) {
+        let canvas = this.wrapper;
+        let port;
+        for (let i = 0; this.ports !== undefined, i < this.ports.length; i++) {
+            port = this.initPortWrapper(this.ports[i]);
+            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
+            // tslint:disable-next-line:no-any
+            let wrapperContent;
+            let contentAccessibility = getFunction(accessibilityContent);
+            if (contentAccessibility) {
+                wrapperContent = contentAccessibility(port, this);
+            }
+            port.description = wrapperContent ? wrapperContent : port.id;
+            container.children.push(port);
+        }
+    }
+    getIconOffet(layout, icon) {
+        let x;
+        let y;
+        if (layout.orientation === 'BottomToTop') {
+            x = icon.offset.x;
+            y = 1 - icon.offset.y;
+        }
+        else if (layout.orientation === 'LeftToRight') {
+            x = icon.offset.y;
+            y = icon.offset.x;
+        }
+        else if (layout.orientation === 'RightToLeft') {
+            x = 1 - icon.offset.y;
+            y = icon.offset.x;
+        }
+        else {
+            x = icon.offset.x;
+            y = icon.offset.y;
+        }
+        return { x, y };
+    }
+    /** @private */
+    initIcons(accessibilityContent, layout, container, diagramId) {
+        let canvas = this.wrapper;
+        let offset;
+        let icon = this.isExpanded ? this.expandIcon : this.collapseIcon;
+        if (icon.shape !== 'None') {
+            let iconContainer = new Canvas();
+            iconContainer.float = true;
+            let children = [];
+            iconContainer.id = this.id + '_icon_content';
+            iconContainer.children = children;
+            iconContainer.height = icon.height;
+            iconContainer.width = icon.width;
+            iconContainer.style.strokeColor = 'transparent';
+            iconContainer.margin = icon.margin;
+            iconContainer.horizontalAlignment = 'Center';
+            iconContainer.verticalAlignment = 'Center';
+            iconContainer.visible = this.visible;
+            offset = this.getIconOffet(layout, icon);
+            iconContainer.setOffsetWithRespectToBounds(offset.x, offset.y, 'Fraction');
+            iconContainer.relativeMode = 'Point';
+            this.initIconSymbol(icon, iconContainer, accessibilityContent, diagramId);
+            // tslint:disable-next-line:no-any
+            let wrapperContent;
+            let contentAccessibility = getFunction(accessibilityContent);
+            if (contentAccessibility) {
+                wrapperContent = contentAccessibility(icon, this);
+            }
+            iconContainer.description = wrapperContent ? wrapperContent : iconContainer.id;
+            container.children.push(iconContainer);
+        }
+    }
+    /** @private */
+    initAnnotations(accessibilityContent, container, diagramId, virtualize) {
+        let annotation;
+        for (let i = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
+            annotation = this.initAnnotationWrapper(this.annotations[i], diagramId, virtualize, i);
+            // tslint:disable-next-line:no-any
+            let wrapperContent;
+            let contentAccessibility = getFunction(accessibilityContent);
+            if (contentAccessibility) {
+                wrapperContent = contentAccessibility(annotation, this);
+            }
+            annotation.description = wrapperContent ? wrapperContent : annotation.id;
+            container.children.push(annotation);
+        }
+    }
+    /** @private */
+    initPortWrapper(ports) {
+        ports.id = ports.id || randomId();
+        // Creates port element
+        let portContent = new PathElement();
+        portContent.height = ports.height;
+        portContent.width = ports.width;
+        let pathdata = (ports.shape === 'Custom') ? ports.pathData : getPortShape(ports.shape);
+        portContent.id = this.id + '_' + (ports.id);
+        portContent.margin = ports.margin;
+        portContent.data = pathdata;
+        let style = ports.style;
+        portContent.style = {
+            fill: style.fill, strokeColor: style.strokeColor, gradient: null,
+            opacity: style.opacity, strokeDashArray: style.strokeDashArray, strokeWidth: style.strokeWidth
+        };
+        portContent.horizontalAlignment = ports.horizontalAlignment;
+        portContent.verticalAlignment = ports.verticalAlignment;
+        portContent = updatePortEdges(portContent, this.flip, ports);
+        if (this.width !== undefined || this.height !== undefined) {
+            portContent.float = true;
+        }
+        portContent.relativeMode = 'Point';
+        portContent.visible = checkPortRestriction(ports, PortVisibility.Visible) &&
+            !checkPortRestriction(ports, PortVisibility.Hover) && !checkPortRestriction(ports, PortVisibility.Connect) ? true : false;
+        return portContent;
+    }
+    /** @private */
+    initAnnotationWrapper(annotation, diagramId, virtualize, value) {
+        annotation.id = annotation.id || value + 'annotation' || randomId();
+        let label = annotation;
+        let annotationcontent;
+        if (diagramId && annotation.template) {
+            annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id);
+            annotationcontent.content = annotation.template;
+        }
+        else {
+            annotationcontent = new TextElement();
+            annotationcontent.canMeasure = !virtualize;
+            let style = annotation.style;
+            let link = annotation.hyperlink.link ? annotation.hyperlink : undefined;
+            annotationcontent.style = {
+                fill: style.fill, strokeColor: style.strokeColor, strokeWidth: style.strokeWidth,
+                bold: style.bold, textWrapping: style.textWrapping,
+                color: link ? link.color || annotationcontent.hyperlink.color : style.color, whiteSpace: style.whiteSpace,
+                fontFamily: style.fontFamily, fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
+                strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textOverflow: annotation.style.textOverflow,
+                textDecoration: link ? link.textDecoration ||
+                    annotationcontent.hyperlink.textDecoration : style.textDecoration,
+            };
+            annotationcontent.hyperlink.link = annotation.hyperlink.link || undefined;
+            annotationcontent.hyperlink.content = annotation.hyperlink.content || undefined;
+            annotationcontent.hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
+            annotationcontent.content = link ? link.content ||
+                annotationcontent.hyperlink.link : annotation.content;
+        }
+        annotationcontent.constraints = annotation.constraints;
+        annotationcontent.height = annotation.height;
+        annotationcontent.width = annotation.width;
+        annotationcontent.visible = annotation.visibility;
+        annotationcontent.rotateAngle = annotation.rotateAngle;
+        annotationcontent.id = this.id + '_' + annotation.id;
+        if (this.width !== undefined && !annotation.template) {
+            if (annotation.width === undefined || (annotation.width > this.width &&
+                (annotation.style.textWrapping === 'Wrap' || annotation.style.textWrapping === 'WrapWithOverflow'))) {
+                annotationcontent.width = this.width;
+            }
+        }
+        annotationcontent.margin = annotation.margin;
+        annotationcontent.horizontalAlignment = annotation.horizontalAlignment;
+        annotationcontent.verticalAlignment = annotation.verticalAlignment;
+        annotationcontent.setOffsetWithRespectToBounds(label.offset.x, label.offset.y, 'Fraction');
+        if (this.width !== undefined || this.height !== undefined) {
+            annotationcontent.float = true;
+        }
+        annotationcontent.relativeMode = 'Point';
+        return annotationcontent;
+    }
+    initIconContainer(options, iconContainer) {
+        let rect = new DiagramElement();
+        rect.id = iconContainer.id + '_rect';
+        rect.height = options.height;
+        rect.width = options.width;
+        rect.visible = iconContainer.visible;
+        rect.margin = options.margin;
+        rect.cornerRadius = options.cornerRadius;
+        rect.style = {
+            fill: options.fill, strokeColor: options.borderColor,
+            strokeWidth: options.borderWidth
+        };
+        rect.setOffsetWithRespectToBounds(0.5, 0.5, 'Fraction');
+        rect.horizontalAlignment = 'Center';
+        rect.verticalAlignment = 'Center';
+        rect.relativeMode = 'Object';
+        rect.description = rect.description || 'Click here to expand or collapse';
+        return rect;
+    }
+    initIconSymbol(options, iconContainer, accessibilityContent, diagramId) {
+        let iconContent;
+        iconContainer.children.push(this.initIconContainer(options, iconContainer));
+        if (options.shape === 'Template') {
+            iconContent = new DiagramNativeElement(this.id, diagramId);
+            iconContent.content = options.content;
+            iconContent.height = 10;
+            iconContent.width = 10;
+        }
+        else {
+            iconContent = new PathElement();
+            iconContent.data = getIconShape(options);
+            let iconContentBounds = measurePath(iconContent.data);
+            iconContent.height =
+                iconContentBounds.height < 10 ? iconContentBounds.height : 10 - (options.padding.bottom + options.padding.top);
+            iconContent.width =
+                iconContentBounds.width < 10 ? iconContentBounds.width : 10 - (options.padding.left + options.padding.right);
+        }
+        iconContent.id = iconContainer.id + '_shape';
+        iconContent.horizontalAlignment = 'Center';
+        iconContent.verticalAlignment = 'Center';
+        iconContent.visible = iconContainer.visible;
+        iconContent.visible = iconContainer.visible;
+        iconContent.style = {
+            fill: 'black', strokeColor: options.borderColor,
+            strokeWidth: options.borderWidth
+        };
+        iconContent.setOffsetWithRespectToBounds(0.5, 0.5, 'Fraction');
+        iconContent.relativeMode = 'Object';
+        iconContent.description = iconContainer.description || 'Click here to expand or collapse';
+        iconContainer.children.push(iconContent);
+    }
+    /**
+     * @private
+     * Returns the name of class Node
+     */
+    getClassName() {
+        return 'Node';
+    }
+}
+__decorate$2([
+    Collection([], ShapeAnnotation)
+], Node.prototype, "annotations", void 0);
+__decorate$2([
+    Property(0)
+], Node.prototype, "offsetX", void 0);
+__decorate$2([
+    Property(0)
+], Node.prototype, "offsetY", void 0);
+__decorate$2([
+    Complex({ x: 0.5, y: 0.5 }, Point)
+], Node.prototype, "pivot", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "width", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "height", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "minWidth", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "minHeight", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "maxWidth", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "maxHeight", void 0);
+__decorate$2([
+    Property(0)
+], Node.prototype, "rotateAngle", void 0);
+__decorate$2([
+    Complex({ fill: 'white' }, TextStyle)
+], Node.prototype, "style", void 0);
+__decorate$2([
+    Property('transparent')
+], Node.prototype, "backgroundColor", void 0);
+__decorate$2([
+    Property('none')
+], Node.prototype, "borderColor", void 0);
+__decorate$2([
+    Property(0)
+], Node.prototype, "borderWidth", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "data", void 0);
+__decorate$2([
+    ComplexFactory(getShapeType)
+], Node.prototype, "shape", void 0);
+__decorate$2([
+    Property(null)
+], Node.prototype, "wrapper", void 0);
+__decorate$2([
+    Property(NodeConstraints.Default)
+], Node.prototype, "constraints", void 0);
+__decorate$2([
+    Complex({}, Shadow)
+], Node.prototype, "shadow", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "children", void 0);
+__decorate$2([
+    Property(null)
+], Node.prototype, "container", void 0);
+__decorate$2([
+    Property('Left')
+], Node.prototype, "horizontalAlignment", void 0);
+__decorate$2([
+    Property('Top')
+], Node.prototype, "verticalAlignment", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "rows", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "columns", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "rowIndex", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "columnIndex", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "rowSpan", void 0);
+__decorate$2([
+    Property()
+], Node.prototype, "columnSpan", void 0);
+/**
+ * Defines the behavior of header in swimLane
+ */
+class Header extends ChildProperty {
+}
+__decorate$2([
+    Property('')
+], Header.prototype, "id", void 0);
+__decorate$2([
+    Complex({ style: { fill: '#111111' } }, Annotation)
+], Header.prototype, "annotation", void 0);
+__decorate$2([
+    Complex({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
+], Header.prototype, "style", void 0);
+__decorate$2([
+    Property(50)
+], Header.prototype, "height", void 0);
+__decorate$2([
+    Property(50)
+], Header.prototype, "width", void 0);
+/**
+ * Defines the behavior of lane in swimLane
+ */
+class Lane extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class Lane
+     */
+    getClassName() {
+        return 'Lane';
+    }
+}
+__decorate$2([
+    Property('')
+], Lane.prototype, "id", void 0);
+__decorate$2([
+    Complex({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
+], Lane.prototype, "style", void 0);
+__decorate$2([
+    Collection([], Node)
+], Lane.prototype, "children", void 0);
+__decorate$2([
+    Property(100)
+], Lane.prototype, "height", void 0);
+__decorate$2([
+    Property(100)
+], Lane.prototype, "width", void 0);
+__decorate$2([
+    Complex({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } }, Header)
+], Lane.prototype, "header", void 0);
+/**
+ * Defines the behavior of phase in swimLane
+ */
+class Phase extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class Phase
+     */
+    getClassName() {
+        return 'Phase';
+    }
+}
+__decorate$2([
+    Property('')
+], Phase.prototype, "id", void 0);
+__decorate$2([
+    Complex({ strokeColor: '#CCCCCC' }, ShapeStyle)
+], Phase.prototype, "style", void 0);
+__decorate$2([
+    Complex({ annotation: { content: 'Phase' } }, Header)
+], Phase.prototype, "header", void 0);
+__decorate$2([
+    Property(100)
+], Phase.prototype, "offset", void 0);
+/**
+ * Defines the behavior of swimLane shape
+ */
+class SwimLane extends Shape {
+    constructor() {
+        super(...arguments);
+        /**
+         * @private
+         * Defines space between children and lane
+         */
+        this.padding = 20;
+        /**
+         * @private
+         * Defines header by user or not
+         */
+        this.hasHeader = true;
+    }
+    /**
+     * @private
+     * Returns the name of class Phase
+     */
+    getClassName() {
+        return 'SwimLane';
+    }
+}
+__decorate$2([
+    Property('SwimLane')
+], SwimLane.prototype, "type", void 0);
+__decorate$2([
+    Property(20)
+], SwimLane.prototype, "phaseSize", void 0);
+__decorate$2([
+    Collection([], Phase)
+], SwimLane.prototype, "phases", void 0);
+__decorate$2([
+    Property('Horizontal')
+], SwimLane.prototype, "orientation", void 0);
+__decorate$2([
+    Collection([], Lane)
+], SwimLane.prototype, "lanes", void 0);
+__decorate$2([
+    Complex({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } }, Header)
+], SwimLane.prototype, "header", void 0);
+__decorate$2([
+    Property(false)
+], SwimLane.prototype, "isLane", void 0);
+__decorate$2([
+    Property(false)
+], SwimLane.prototype, "isPhase", void 0);
+/**
+ * Defines the behavior of container
+ */
+class ChildContainer {
+    /**
+     * @private
+     * Returns the name of class ChildContainer
+     */
+    getClassName() {
+        return 'ChildContainer';
+    }
+}
+__decorate$2([
+    Property('Canvas')
+], ChildContainer.prototype, "type", void 0);
+__decorate$2([
+    Property('Vertical')
+], ChildContainer.prototype, "orientation", void 0);
+
+/**
  * Defines the functionalities that need to access DOM
  */
+/** @private */
+function removeElementsByClass(className) {
+    let elements = document.getElementsByClassName(className);
+    while (elements.length > 0) {
+        elements[0].parentNode.removeChild(elements[0]);
+    }
+}
 /** @private */
 function findSegmentPoints(element) {
     let pts = [];
@@ -15947,11 +15970,45 @@ function getContent(element, isHtml) {
         div = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     }
     let node = getElement(element);
+    let content = '';
+    let sentNode = {};
+    if (node instanceof Node) {
+        sentNode = node;
+        let blazor = 'Blazor';
+        if (window[blazor]) {
+            sentNode = {};
+            let id = 'id';
+            let height = 'height';
+            let width = 'width';
+            let offsetX = 'offsetX';
+            let offsetY = 'offsetY';
+            let text = 'content';
+            let annotations = 'annotations';
+            let addInfo = 'addInfo';
+            content = element.diagramId + 'content_diagram';
+            sentNode[id] = node[id];
+            sentNode[height] = node[height];
+            sentNode[width] = node[width];
+            sentNode[offsetX] = node[offsetX];
+            sentNode[offsetY] = node[offsetY];
+            sentNode[addInfo] = node[addInfo];
+            if (node.annotations && node.annotations.length > 0) {
+                sentNode[annotations] = [];
+                for (let i = 0; i < node.annotations.length; i++) {
+                    sentNode[annotations][i] = { content: node.annotations[i][text] };
+                }
+            }
+        }
+    }
+    else {
+        sentNode = node;
+        content = element.diagramId + 'template_diagram';
+    }
     let item;
     if (typeof element.content === 'string') {
         let compiledString;
         compiledString = compile(element.content);
-        for (item of compiledString(node)) {
+        for (item of compiledString(sentNode, null, null, content)) {
             div.appendChild(item);
         }
     }
@@ -16003,6 +16060,16 @@ function createMeasureElements() {
     else {
         window[measureElement].usageCount += 1;
     }
+}
+/** @private */
+function setChildPosition(temp, childNodes, i, options) {
+    if (childNodes.length > 1 && temp.x === 0 &&
+        (options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
+        options.textWrapping === 'Wrap') {
+        temp.x = childNodes[i - 1] ? childNodes[i - 1].x : -(temp.width / 2);
+        return temp.x;
+    }
+    return temp.x;
 }
 
 /**
@@ -16765,7 +16832,7 @@ class CanvasRenderer {
         }
     }
     /**   @private  */
-    drawText(canvas, options, parentSvg, ariaLabel, diagramId, scaleValue) {
+    drawText(canvas, options, parentSvg, ariaLabel, diagramId, scaleValue, parentNode) {
         if (options.content && options.visible === true) {
             let ctx = CanvasRenderer.getContext(canvas);
             ctx.save();
@@ -16786,12 +16853,28 @@ class CanvasRenderer {
                 let position = this.labelAlign(options, wrapBounds, childNodes);
                 for (i = 0; i < childNodes.length; i++) {
                     let child = childNodes[i];
+                    child.x = setChildPosition(child, childNodes, i, options);
                     let offsetX = position.x + (scaleValue ? child.x * scaleValue : child.x) - wrapBounds.x;
                     let offsetY = position.y + (scaleValue ? child.dy * scaleValue : child.dy) * i + ((options.fontSize) * 0.8);
-                    if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
+                    if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap' && options.textWrapping === 'NoWrap') {
                         child.text = overFlow(child.text, options);
                     }
-                    ctx.fillText(child.text, offsetX, offsetY);
+                    if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') && options.textWrapping === 'Wrap') {
+                        if (offsetY < parentNode.actualSize.height + parentNode.bounds.y) {
+                            if (options.textOverflow === 'Ellipsis' && childNodes[i + 1]) {
+                                let temp = childNodes[i + 1];
+                                let y = position.y + temp.dy * (i + 1) + ((options.fontSize) * 0.8);
+                                if (y > parentNode.actualSize.height + parentNode.bounds.y) {
+                                    child.text = child.text.slice(0, child.text.length - 3);
+                                    child.text = child.text.concat('...');
+                                }
+                            }
+                            ctx.fillText(child.text, offsetX, offsetY);
+                        }
+                    }
+                    else {
+                        ctx.fillText(child.text, offsetX, offsetY);
+                    }
                     if (options.textDecoration === 'Underline'
                         || options.textDecoration === 'Overline'
                         || options.textDecoration === 'LineThrough') {
@@ -16989,7 +17072,12 @@ class CanvasRenderer {
         }
         else if (text.textAlign === 'center') {
             if (wrapBounds.width > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
-                pointx = 0;
+                if (text.textWrapping === 'NoWrap') {
+                    pointx = 0;
+                }
+                else {
+                    pointx = text.width * 0.5;
+                }
             }
             else {
                 pointx = text.width * 0.5;
@@ -17271,7 +17359,7 @@ class SvgRenderer {
         text.style.fontFamily = options.fontFamily;
     }
     /**   @private  */
-    drawText(canvas, options, parentSvg, ariaLabel, diagramId) {
+    drawText(canvas, options, parentSvg, ariaLabel, diagramId, scaleValue, parentNode) {
         if (options.content !== undefined) {
             let textNode;
             let childNodes;
@@ -17314,19 +17402,36 @@ class SvgRenderer {
                 childNodes = options.childNodes;
                 wrapBounds = options.wrapBounds;
                 position = this.svgLabelAlign(options, wrapBounds, childNodes);
-                if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
+                if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap' && options.textWrapping === 'NoWrap') {
                     childNodes[0].text = overFlow(options.content, options);
                 }
                 for (i = 0; i < childNodes.length; i++) {
                     tspanElement = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
                     textNode = document.createTextNode(childNodes[i].text);
                     child = childNodes[i];
+                    child.x = setChildPosition(child, childNodes, i, options);
                     offsetX = position.x + child.x - wrapBounds.x;
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
-                    setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString() });
-                    text.setAttribute('fill', child.text);
-                    tspanElement.appendChild(textNode);
-                    text.appendChild(tspanElement);
+                    if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') && options.textWrapping === 'Wrap') {
+                        if (offsetY < parentNode.actualSize.height) {
+                            if (options.textOverflow === 'Ellipsis' && childNodes[i + 1]) {
+                                let temp = childNodes[i + 1];
+                                let y = position.y + temp.dy * (i + 1) + ((options.fontSize) * 0.8);
+                                if (y > parentNode.actualSize.height) {
+                                    child.text = child.text.slice(0, child.text.length - 3);
+                                    child.text = child.text.concat('...');
+                                    textNode.data = child.text;
+                                }
+                            }
+                            this.setText(text, tspanElement, child, textNode, offsetX, offsetY);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    else {
+                        this.setText(text, tspanElement, child, textNode, offsetX, offsetY);
+                    }
                 }
             }
             if (options.textDecoration && options.textDecoration === 'LineThrough') {
@@ -17341,6 +17446,12 @@ class SvgRenderer {
             };
             setAttributeSvg(text, attr);
         }
+    }
+    setText(text, tspanElement, child, textNode, offsetX, offsetY) {
+        setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString() });
+        text.setAttribute('fill', child.text);
+        tspanElement.appendChild(textNode);
+        text.appendChild(tspanElement);
     }
     /**   @private  */
     drawImage(canvas, obj, parentSvg, fromPalette) {
@@ -17581,7 +17692,12 @@ class SvgRenderer {
         }
         else if (text.textAlign === 'center') {
             if (wrapBound.width > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
-                pointX = 0;
+                if (text.textWrapping === 'NoWrap') {
+                    pointX = 0;
+                }
+                else {
+                    pointX = text.width * 0.5;
+                }
             }
             else {
                 pointX = text.width * 0.5;
@@ -17915,7 +18031,7 @@ class DiagramRenderer {
         for (j = 0; j < segment.points.length - 1; j++) {
             length = Point.distancePoints(segment.points[j], segment.points[j + 1]);
             orientation = (segment.points[j].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
-            visible = (length >= 50) ? true : false;
+            visible = (length >= 50 && segment.allowDrag) ? true : false;
             this.renderOrthogonalThumb((id + '_' + (j + 1)), selector, (((segment.points[j].x + segment.points[j + 1].x) / 2)), (((segment.points[j].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
         }
     }
@@ -18062,45 +18178,82 @@ class DiagramRenderer {
         for (let obj of selectorItem.userHandles) {
             let element = new PathElement();
             let newPoint;
-            let data = obj.pathData;
             newPoint = getUserHandlePosition(selectorItem, obj, transform);
             newPoint.x = (newPoint.x + transform.tx) * transform.scale;
             newPoint.y = (newPoint.y + transform.ty) * transform.scale;
             if (obj.visible) {
                 obj.visible = (selectorItem.constraints & SelectorConstraints.UserHandle) ? true : false;
             }
-            let option = this.getBaseAttributes(wrapper);
-            option.id = obj.name + '_userhandle';
-            option.fill = obj.backgroundColor;
-            option.stroke = obj.borderColor;
-            option.strokeWidth = obj.borderWidth;
-            option.centerX = newPoint.x;
-            option.centerY = newPoint.y;
-            option.radius = obj.size * 0.5;
-            option.class = 'e-diagram-userhandle-circle';
-            option.angle = 0;
-            option.visible = obj.visible;
-            option.opacity = 1;
-            this.svgRenderer.drawCircle(canvas, option, 1, { 'aria-label': obj.name + 'user handle' });
-            let pathPading = 5;
-            let arrayCollection = [];
-            arrayCollection = processPathData(data);
-            arrayCollection = splitArrayCollection(arrayCollection);
-            let pathSize = measurePath(data);
-            //requiredSize/contentSize
-            let scaleX = (obj.size - 0.45 * obj.size) / pathSize.width;
-            let scaleY = (obj.size - 0.45 * obj.size) / pathSize.height;
-            let newData = transformPath(arrayCollection, scaleX, scaleY, true, pathSize.x, pathSize.y, 0, 0);
-            pathSize = measurePath(newData);
-            let options = {
-                x: newPoint.x - pathSize.width / 2,
-                y: newPoint.y - pathSize.height / 2,
-                angle: 0, id: '',
-                class: 'e-diagram-userhandle-path',
-                fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
-                width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
-            };
-            this.svgRenderer.drawPath(canvas, options, this.diagramId, undefined, undefined, { 'aria-label': obj.name + 'user handle' });
+            if (obj.content === '' && obj.source === '') {
+                let data = obj.pathData ? obj.pathData : obj.content;
+                let option = this.getBaseAttributes(wrapper);
+                option.id = obj.name + '_userhandle';
+                option.fill = obj.backgroundColor;
+                option.stroke = obj.borderColor;
+                option.strokeWidth = obj.borderWidth;
+                option.centerX = newPoint.x;
+                option.centerY = newPoint.y;
+                option.radius = obj.size * 0.5;
+                option.class = 'e-diagram-userhandle-circle';
+                option.angle = 0;
+                option.visible = obj.visible;
+                option.opacity = 1;
+                this.svgRenderer.drawCircle(canvas, option, 1, { 'aria-label': obj.name + 'user handle' });
+                let pathPading = 5;
+                let arrayCollection = [];
+                arrayCollection = processPathData(data);
+                arrayCollection = splitArrayCollection(arrayCollection);
+                let pathSize = measurePath(data);
+                //requiredSize/contentSize
+                let scaleX = (obj.size - 0.45 * obj.size) / pathSize.width;
+                let scaleY = (obj.size - 0.45 * obj.size) / pathSize.height;
+                let newData = transformPath(arrayCollection, scaleX, scaleY, true, pathSize.x, pathSize.y, 0, 0);
+                pathSize = measurePath(newData);
+                let options = {
+                    x: newPoint.x - pathSize.width / 2,
+                    y: newPoint.y - pathSize.height / 2,
+                    angle: 0, id: '',
+                    class: 'e-diagram-userhandle-path',
+                    fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
+                    width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
+                };
+                this.svgRenderer.drawPath(canvas, options, this.diagramId, undefined, undefined, { 'aria-label': obj.name + 'user handle' });
+            }
+            else if (obj.content !== '') {
+                let handleContent;
+                handleContent = new DiagramNativeElement(obj.name, this.diagramId);
+                handleContent.content = obj.content;
+                handleContent.offsetX = newPoint.x;
+                handleContent.offsetY = newPoint.y;
+                handleContent.height = obj.size;
+                handleContent.width = obj.size;
+                handleContent.id = obj.name + '_shape';
+                handleContent.horizontalAlignment = 'Center';
+                handleContent.verticalAlignment = 'Center';
+                handleContent.visible = obj.visible;
+                handleContent.setOffsetWithRespectToBounds(newPoint.x, newPoint.y, 'Fraction');
+                handleContent.relativeMode = 'Object';
+                handleContent.description = obj.name || 'User handle';
+                handleContent.measure(new Size(obj.size, obj.size));
+                handleContent.arrange(handleContent.desiredSize);
+                this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
+            }
+            else {
+                let element = new ImageElement();
+                let options = this.getBaseAttributes(element, transform);
+                options.width = obj.size;
+                options.height = obj.size;
+                options.x = newPoint.x - (obj.size / 2);
+                options.y = newPoint.y - (obj.size / 2);
+                options.sourceWidth = obj.size;
+                options.sourceHeight = obj.size;
+                options.alignment = element.imageAlign;
+                options.source = obj.source;
+                options.scale = element.imageScale;
+                options.description = obj.name || 'User handle';
+                options.id = obj.name + '_';
+                this.renderer.drawImage(canvas, options, this.adornerSvgLayer, false);
+            }
         }
     }
     /**   @private  */
@@ -18377,6 +18530,7 @@ class DiagramRenderer {
         options.fontSize = element.style.fontSize;
         options.fontFamily = element.style.fontFamily;
         options.textOverflow = element.style.textOverflow;
+        options.textWrapping = element.style.textWrapping;
         options.textDecoration = element.style.textDecoration;
         options.doWrap = element.doWrap;
         options.wrapBounds = element.wrapBounds;
@@ -18385,8 +18539,12 @@ class DiagramRenderer {
         options.strokeWidth = 0;
         options.fill = element.style.fill;
         let ariaLabel = element.description ? element.description : element.content ? element.content : element.id;
+        if (element.style.textWrapping === 'Wrap' && this.groupElement && options.height > this.groupElement.actualSize.height &&
+            (element.style.textOverflow === 'Clip' || element.style.textOverflow === 'Ellipsis')) {
+            options.y = options.y + (options.height - this.groupElement.actualSize.height) / 2;
+        }
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
-        this.renderer.drawText(canvas, options, parentSvg, ariaLabel, this.diagramId, (element.isExport && Math.min(element.exportScaleValue.x || element.exportScaleValue.y)));
+        this.renderer.drawText(canvas, options, parentSvg, ariaLabel, this.diagramId, (element.isExport && Math.min(element.exportScaleValue.x || element.exportScaleValue.y)), this.groupElement);
         if (this.isSvgMode) {
             element.doWrap = false;
         }
@@ -18523,6 +18681,7 @@ class DiagramRenderer {
             }
         }
         this.renderRect(group, canvas, transform, parentSvg);
+        this.groupElement = group;
         if (group.hasChildren()) {
             let parentG;
             let svgParent;
@@ -19044,6 +19203,9 @@ __decorate$16([
     Property(null)
 ], DataSource.prototype, "dataManager", void 0);
 __decorate$16([
+    Property(null)
+], DataSource.prototype, "dataSource", void 0);
+__decorate$16([
     Property('')
 ], DataSource.prototype, "root", void 0);
 __decorate$16([
@@ -19311,13 +19473,15 @@ function checkForConnectorSegment(conn, handle, position, diagram) {
                 let segment;
                 let segPoint = { x: 0, y: 0 };
                 segment = (conn.segments)[i];
-                for (let j = 0; j < segment.points.length - 1; j++) {
-                    let length = Point.distancePoints(segment.points[j], segment.points[j + 1]);
-                    if (length >= 50) {
-                        segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
-                        segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
-                        if (contains(position, segPoint, 30)) {
-                            return 'OrthoThumb';
+                if (segment.allowDrag) {
+                    for (let j = 0; j < segment.points.length - 1; j++) {
+                        let length = Point.distancePoints(segment.points[j], segment.points[j + 1]);
+                        if (length >= 50) {
+                            segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
+                            segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
+                            if (contains(position, segPoint, 30)) {
+                                return 'OrthoThumb';
+                            }
                         }
                     }
                 }
@@ -19865,6 +20029,8 @@ class SelectTool extends ToolBase {
 class ConnectTool extends ToolBase {
     constructor(commandHandler, endPoint) {
         super(commandHandler, true);
+        /**   @private  */
+        this.pointChangeParameter = {};
         this.endPoint = endPoint;
     }
     /**   @private  */
@@ -19982,12 +20148,8 @@ class ConnectTool extends ToolBase {
         }
         this.currentPosition = args.position;
         if (this.currentPosition && this.prevPosition) {
-            let diffX = this.currentPosition.x - this.prevPosition.x;
-            let diffY = this.currentPosition.y - this.prevPosition.y;
             let newValue;
             let oldValue;
-            let inPort;
-            let outPort;
             this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition);
             let connector;
             if (args.source && args.source.connectors) {
@@ -20009,50 +20171,66 @@ class ConnectTool extends ToolBase {
                 connector: connector, state: 'Progress', targetNode: targetNodeId,
                 oldValue: oldValue, newValue: newValue, cancel: false, targetPort: targetPortId
             };
+            this.pointChangeParameter = { args: args, targetPortId: targetPortId, targetNodeId: targetNodeId };
             if (!(this instanceof ConnectorDrawingTool)) {
                 let trigger = this.endPoint === 'ConnectorSourceEnd' ?
                     DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
-                this.commandHandler.triggerEvent(trigger, arg);
+                this.commandHandler.triggerEvent(trigger, arg, this.onSuccessPointChange.bind(this));
             }
-            if (args.target) {
-                inPort = getInOutConnectPorts(args.target, true);
-                outPort = getInOutConnectPorts(args.target, false);
-            }
-            if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
-                this.blocked = !this.commandHandler.dragConnectorEnds(this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
-                this.commandHandler.updateSelector();
-                if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
-                    || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
-                    if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
-                        this.commandHandler.disConnect(args.source, this.endPoint);
-                    }
-                    let target = this.commandHandler.findTarget(args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true);
-                    if (target instanceof Node) {
-                        if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
-                            || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
-                            this.commandHandler.connect(this.endPoint, args);
-                        }
-                    }
-                    else {
-                        let isConnect = this.checkConnect(target);
-                        if (isConnect) {
-                            this.commandHandler.connect(this.endPoint, args);
-                        }
-                    }
-                }
-                else if (this.endPoint.indexOf('Bezier') === -1) {
-                    this.commandHandler.disConnect(args.source, this.endPoint);
-                    this.commandHandler.updateSelector();
-                }
-            }
-            if (this.commandHandler.canEnableDefaultTooltip()) {
-                let content = this.getTooltipContent(args.position);
-                this.commandHandler.showTooltip(args.source, args.position, content, 'ConnectTool', this.isTooltipVisible);
-                this.isTooltipVisible = false;
+            else {
+                this.onSuccessPointChange(arg);
             }
         }
         this.prevPosition = this.currentPosition;
         return !this.blocked;
+    }
+    onSuccessPointChange(arg) {
+        let argsChar = 'args';
+        let args = this.pointChangeParameter[argsChar];
+        let targetPortIdChar = 'targetPortId';
+        let targetPortId = this.pointChangeParameter[targetPortIdChar];
+        let targetNodeIdChar = 'targetNodeId';
+        let targetNodeId = this.pointChangeParameter[targetNodeIdChar];
+        let diffX = this.currentPosition.x - this.prevPosition.x;
+        let diffY = this.currentPosition.y - this.prevPosition.y;
+        let inPort;
+        let outPort;
+        if (args.target) {
+            inPort = getInOutConnectPorts(args.target, true);
+            outPort = getInOutConnectPorts(args.target, false);
+        }
+        if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
+            this.blocked = !this.commandHandler.dragConnectorEnds(this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
+            this.commandHandler.updateSelector();
+            if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
+                || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
+                if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
+                    this.commandHandler.disConnect(args.source, this.endPoint);
+                }
+                let target = this.commandHandler.findTarget(args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true);
+                if (target instanceof Node) {
+                    if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
+                        || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
+                        this.commandHandler.connect(this.endPoint, args);
+                    }
+                }
+                else {
+                    let isConnect = this.checkConnect(target);
+                    if (isConnect) {
+                        this.commandHandler.connect(this.endPoint, args);
+                    }
+                }
+            }
+            else if (this.endPoint.indexOf('Bezier') === -1) {
+                this.commandHandler.disConnect(args.source, this.endPoint);
+                this.commandHandler.updateSelector();
+            }
+        }
+        if (this.commandHandler.canEnableDefaultTooltip()) {
+            let content = this.getTooltipContent(args.position);
+            this.commandHandler.showTooltip(args.source, args.position, content, 'ConnectTool', this.isTooltipVisible);
+            this.isTooltipVisible = false;
+        }
     }
     /**   @private  */
     mouseLeave(args) {
@@ -20342,6 +20520,8 @@ class MoveTool extends ToolBase {
 class RotateTool extends ToolBase {
     constructor(commandHandler) {
         super(commandHandler, true);
+        /**   @private  */
+        this.rotateEventArgs = {};
     }
     /**   @private  */
     mouseDown(args) {
@@ -20403,10 +20583,8 @@ class RotateTool extends ToolBase {
             source: args.source, state: 'Progress', oldValue: oldValue,
             newValue: newValue, cancel: false
         };
-        this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
-        if (!arg.cancel) {
-            this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
-        }
+        this.rotateEventArgs = { angle: angle, object: object };
+        this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg, this.successRotateEvent.bind(this));
         if (this.commandHandler.canEnableDefaultTooltip()) {
             let content = this.getTooltipContent(args.source);
             this.commandHandler.showTooltip(args.source, args.position, content, 'RotateTool', this.isTooltipVisible);
@@ -20416,6 +20594,14 @@ class RotateTool extends ToolBase {
     }
     getTooltipContent(node) {
         return Math.round((node.rotateAngle % 360)).toString() + '\xB0';
+    }
+    successRotateEvent(arg) {
+        if (!arg.cancel) {
+            let angleChar = 'angle';
+            let objectChar = 'object';
+            this.blocked = !(this.commandHandler.rotateSelectedItems(this.rotateEventArgs[angleChar] - this.rotateEventArgs[objectChar].wrapper.rotateAngle));
+        }
+        return null;
     }
     /**   @private  */
     mouseLeave(args) {
@@ -20434,6 +20620,8 @@ class ResizeTool extends ToolBase {
         super(commandHandler, true);
         /**   @private  */
         this.initialBounds = new Rect();
+        /**   @private  */
+        this.sizeChangeParameters = {};
         this.corner = corner;
     }
     /**   @private  */
@@ -20581,6 +20769,7 @@ class ResizeTool extends ToolBase {
             offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
+        this.sizeChangeParameters = { 'deltaWidth': deltaWidth, 'deltaHeight': deltaHeight };
         this.blocked = this.commandHandler.scaleSelectedItems(deltaWidth, deltaHeight, this.getPivot(this.corner));
         let newValue = {
             offsetX: source.offsetX, offsetY: source.offsetY,
@@ -20588,11 +20777,17 @@ class ResizeTool extends ToolBase {
         };
         let arg;
         arg = { source: source, state: 'Progress', oldValue: oldValue, newValue: newValue, cancel: false };
-        this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
-        if (arg.cancel) {
-            this.commandHandler.scaleSelectedItems(1 / deltaWidth, 1 / deltaHeight, this.getPivot(this.corner));
-        }
+        this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg, this.sizeChangeSuccessCallback.bind(this));
         return this.blocked;
+    }
+    sizeChangeSuccessCallback(arg) {
+        if (arg.cancel) {
+            let deltaHeight = 'deltaHeight';
+            let deltaWidth = 'deltaWidth';
+            this.commandHandler.scaleSelectedItems(1 / this.sizeChangeParameters[deltaWidth], 1 / this.sizeChangeParameters[deltaHeight], this.getPivot(this.corner));
+        }
+        this.sizeChangeParameters = {};
+        return null;
     }
 }
 /**
@@ -21212,7 +21407,7 @@ class ConnectorEditing extends ToolBase {
             if (args.source && args.source.connectors) {
                 connector = args.source.connectors[0];
             }
-            if (this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
+            if ((this.inAction && this.selectedSegment !== undefined && this.endPoint !== undefined) && (diffX !== 0 || diffY !== 0)) {
                 if (this.endPoint === 'OrthoThumb') {
                     this.blocked = !this.dragOrthogonalSegment(connector, this.selectedSegment, this.currentPosition, this.segmentIndex);
                 }
@@ -21280,21 +21475,28 @@ class ConnectorEditing extends ToolBase {
         let next = connector.segments[index + 1];
         let length = (next.length || next.length === 0) ? next.length : Point.distancePoints(next.points[0], next.points[1]);
         if (!(length <= 5)) {
-            let last = connector.segments[index + 1];
-            connector.segments.splice(index - 1, 2);
-            let segment = this.selectedSegment;
-            if (segment.direction === 'Left' || segment.direction === 'Right') {
-                first.points[first.points.length - 1].x = last.points[0].x;
-                last.points[0].y = first.points[first.points.length - 1].y;
+            let removeSegments = connector.segments.slice(index - 1, index + 1);
+            let args = {
+                element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
+            };
+            this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+            if (!args.cancel) {
+                let last = connector.segments[index + 1];
+                connector.segments.splice(index - 1, 2);
+                let segment = this.selectedSegment;
+                if (segment.direction === 'Left' || segment.direction === 'Right') {
+                    first.points[first.points.length - 1].x = last.points[0].x;
+                    last.points[0].y = first.points[first.points.length - 1].y;
+                }
+                else {
+                    first.points[first.points.length - 1].y = last.points[0].y;
+                    last.points[0].x = first.points[first.points.length - 1].x;
+                }
+                if (segment.length || segment.length === 0) {
+                    this.findSegmentDirection(first);
+                }
+                this.findSegmentDirection(last);
             }
-            else {
-                first.points[first.points.length - 1].y = last.points[0].y;
-                last.points[0].x = first.points[first.points.length - 1].x;
-            }
-            if (segment.length || segment.length === 0) {
-                this.findSegmentDirection(first);
-            }
-            this.findSegmentDirection(last);
         }
     }
     findSegmentDirection(segment) {
@@ -21308,29 +21510,45 @@ class ConnectorEditing extends ToolBase {
         let first = connector.segments[index - 1];
         let last = connector.segments[index + 2];
         let next = connector.segments[index + 1];
+        let removeSegments;
+        let args;
         if (next.length || next.length === 0) {
-            connector.segments.splice(index, 2);
-            if (segment.direction === 'Top' || segment.direction === 'Bottom') {
-                last.points[0].y = segment.points[0].y;
-                first.points[first.points.length - 1].x = last.points[0].x;
-            }
-            else {
-                last.points[0].x = segment.points[0].x;
-                first.points[first.points.length - 1].y = last.points[0].y;
+            removeSegments = connector.segments.slice(index, 2);
+            args = {
+                element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
+            };
+            this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+            if (!args.cancel) {
+                connector.segments.splice(index, 2);
+                if (segment.direction === 'Top' || segment.direction === 'Bottom') {
+                    last.points[0].y = segment.points[0].y;
+                    first.points[first.points.length - 1].x = last.points[0].x;
+                }
+                else {
+                    last.points[0].x = segment.points[0].x;
+                    first.points[first.points.length - 1].y = last.points[0].y;
+                }
             }
         }
         else {
-            connector.segments.splice(index + 1, 1);
-            if (segment.direction === 'Top' || segment.direction === 'Bottom') {
-                first.points[first.points.length - 1].x = next.points[next.points.length - 1].x;
+            removeSegments = connector.segments.slice(index + 1, 1);
+            args = {
+                element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
+            };
+            this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+            if (!args.cancel) {
+                connector.segments.splice(index + 1, 1);
+                if (segment.direction === 'Top' || segment.direction === 'Bottom') {
+                    first.points[first.points.length - 1].x = next.points[next.points.length - 1].x;
+                }
+                else {
+                    first.points[first.points.length - 1].y = next.points[next.points.length - 1].y;
+                }
+                this.findSegmentDirection(first);
+                segment.length = segment.direction = null;
             }
-            else {
-                first.points[first.points.length - 1].y = next.points[next.points.length - 1].y;
-            }
-            this.findSegmentDirection(first);
-            segment.length = segment.direction = null;
         }
-        if (first && last) {
+        if (first && last && !args.cancel) {
             first.length = Point.distancePoints(first.points[0], last.points[0]);
             first.direction = Point.direction(first.points[0], last.points[0]);
             if (last.length || last.length === 0) {
@@ -21438,12 +21656,14 @@ class ConnectorEditing extends ToolBase {
                 index = this.insertFirstSegment(obj, segment, tx, ty, index);
                 update = true;
             }
-            if (update) {
-                this.selectedSegment = segment = obj.segments[index];
-                this.segmentIndex = 0;
+            if (index) {
+                if (update) {
+                    this.selectedSegment = segment = obj.segments[index];
+                    this.segmentIndex = 0;
+                }
+                this.updateAdjacentSegments(obj, index, tx, ty);
+                this.commandHandler.updateEndPoint(obj, oldValues);
             }
-            this.updateAdjacentSegments(obj, index, tx, ty);
-            this.commandHandler.updateEndPoint(obj, oldValues);
         }
         return true;
     }
@@ -21459,8 +21679,14 @@ class ConnectorEditing extends ToolBase {
         len = (segment.points[0].x === segment.points[1].x) ? ty : tx;
         segments.push(new OrthogonalSegment(obj, 'segments', { type: 'Orthogonal', direction: direction, length: len }, true));
         segments.push(new OrthogonalSegment(obj, 'segments', { type: 'Orthogonal', direction: segmentDirection, length: length / 2 }, true));
-        obj.segments = segments.concat(obj.segments);
-        index = coll + 2;
+        let args = {
+            element: obj, addSegments: segments, type: 'Addition', cancel: false
+        };
+        this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+        if (!args.cancel) {
+            obj.segments = segments.concat(obj.segments);
+            index = coll + 2;
+        }
         return index;
     }
     insertFirstSegment(obj, segment, tx, ty, coll) {
@@ -21471,7 +21697,6 @@ class ConnectorEditing extends ToolBase {
         let index;
         let insertseg;
         if (obj.sourcePortID && segment.length && obj.segments[0].points.length > 2) {
-            obj.segments.splice(0, 1);
             let prev;
             for (let i = 0; i < segment.points.length - 1; i++) {
                 let len = Point.distancePoints(segment.points[i], segment.points[i + 1]);
@@ -21488,8 +21713,6 @@ class ConnectorEditing extends ToolBase {
                 prev = insertseg;
                 segments.push(insertseg);
             }
-            obj.segments = segments.concat(obj.segments);
-            index = 1;
         }
         else {
             segValues = { type: 'Orthogonal', direction: segment.direction, length: segment.length / 3 };
@@ -21504,12 +21727,24 @@ class ConnectorEditing extends ToolBase {
             }
             insertseg = new OrthogonalSegment(obj, 'segments', { type: 'Orthogonal', direction: direction, length: length }, true);
             segments.push(insertseg);
-            let nextseg = obj.segments[1];
-            if (nextseg && nextseg.length) {
-                nextseg.length = (direction !== nextseg.direction) ? nextseg.length + length : nextseg.length - length;
+        }
+        let args = {
+            element: obj, addSegments: segments, type: 'Addition', cancel: false
+        };
+        this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+        if (!args.cancel) {
+            if (obj.sourcePortID && segment.length && obj.segments[0].points.length > 2) {
+                obj.segments.splice(0, 1);
+                index = 1;
             }
-            index = 2;
-            segment.length = 2 * segment.length / 3;
+            else {
+                let nextseg = obj.segments[1];
+                if (nextseg && nextseg.length) {
+                    nextseg.length = (direction !== nextseg.direction) ? nextseg.length + length : nextseg.length - length;
+                }
+                index = 2;
+                segment.length = 2 * segment.length / 3;
+            }
             obj.segments = segments.concat(obj.segments);
         }
         return index;
@@ -21539,14 +21774,15 @@ class ConnectorEditing extends ToolBase {
         let insertseg;
         let len;
         let dir;
-        connector.segments.pop();
+        let segments = [];
+        let removeSegment = connector.segments.pop();
         let last = connector.segments[connector.segments.length - 1];
         first = (last && last.type === 'Orthogonal') ? last : null;
         for (let i = 0; i < segment.points.length - 2; i++) {
             len = Point.distancePoints(segment.points[i], segment.points[i + 1]);
             dir = Point.direction(segment.points[i], segment.points[i + 1]);
             insertseg = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal', length: len, direction: dir }, true);
-            connector.segments.push(insertseg);
+            segments.push(insertseg);
             first = insertseg;
         }
         let sec = segmentIndex;
@@ -21559,13 +21795,23 @@ class ConnectorEditing extends ToolBase {
                 len = 2 * Point.distancePoints(segment.points[segment.points.length - 2], segment.points[segment.points.length - 1]) / 3;
                 dir = Point.direction(segment.points[segment.points.length - 2], segment.points[segment.points.length - 1]);
                 newseg = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal', length: len, direction: dir });
-                connector.segments.push(newseg);
+                segments.push(newseg);
             }
         }
         let lastseg = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-        connector.segments.push(lastseg);
-        this.commandHandler.updateEndPoint(connector, oldValues);
-        index = index + segmentIndex;
+        segments.push(lastseg);
+        let args = {
+            element: connector, addSegments: segments, type: 'Addition', cancel: false
+        };
+        this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
+        if (!args.cancel) {
+            connector.segments = connector.segments.concat(segments);
+            index = index + segmentIndex;
+        }
+        else {
+            connector.segments.push(removeSegment);
+        }
+        this.commandHandler.updateEndPoint(connector);
         return index;
     }
     updatePortSegment(prev, connector, index, tx, ty) {
@@ -22194,7 +22440,8 @@ class DiagramEventHandler {
                     if (obj !== null) {
                         sourceElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
                         if (obj !== this.hoverElement) {
-                            if (this.hoverElement) {
+                            let content = this.getContent();
+                            if (this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                                 this.elementLeave();
                                 this.diagram.updatePortVisibility(this.hoverElement, PortVisibility.Hover, true);
                             }
@@ -22231,7 +22478,8 @@ class DiagramEventHandler {
                         isNode = true;
                     }
                     this.diagram.updatePortVisibility(this.hoverElement, PortVisibility.Hover, isNode);
-                    if (obj === null && this.hoverElement) {
+                    let content = this.getContent();
+                    if (obj === null && this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto' && content) {
                         this.hoverElement = null;
                         this.elementLeave();
                     }
@@ -22264,6 +22512,15 @@ class DiagramEventHandler {
                 }
             }
         }
+    }
+    getContent() {
+        let isPrivateTooltip = ((this.hoverElement instanceof Node) &&
+            this.hoverElement.constraints & NodeConstraints.Tooltip) ||
+            ((this.hoverElement instanceof Connector) &&
+                this.hoverElement.constraints & ConnectorConstraints.Tooltip);
+        let content = isPrivateTooltip ? this.hoverElement.tooltip.content :
+            this.diagram.tooltip.content;
+        return content;
     }
     checkAutoScroll(e) {
         let autoScrollPosition = this.startAutoScroll(e);
@@ -22769,13 +23026,18 @@ class DiagramEventHandler {
             let isPrivateTooltip = ((this.hoverElement instanceof Node) &&
                 this.hoverElement.constraints & NodeConstraints.Tooltip) ||
                 ((this.hoverElement instanceof Connector) && this.hoverElement.constraints & ConnectorConstraints.Tooltip);
-            updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
+            let content = this.getContent();
+            if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
+                updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
+            }
             let offset = getTooltipOffset(this.diagram, mousePosition, this.hoverElement);
-            this.diagram.tooltipObject.close();
-            this.diagram.tooltipObject.offsetX = offset.x;
-            this.diagram.tooltipObject.offsetY = offset.y;
-            this.diagram.tooltipObject.dataBind();
-            if (canEnableToolTip(this.hoverElement, this.diagram)) {
+            if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
+                this.diagram.tooltipObject.close();
+                this.diagram.tooltipObject.offsetX = offset.x;
+                this.diagram.tooltipObject.offsetY = offset.y;
+                this.diagram.tooltipObject.dataBind();
+            }
+            if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
                 this.diagram.tooltipObject.open(this.diagram.element);
             }
         }
@@ -23721,6 +23983,14 @@ class CommandHandler {
         this.isContainer = false;
         this.childTable = {};
         this.parentTable = {};
+        this.connectionChangeEvent = {};
+        this.connectionChange = {};
+        this.connectionChangeConnect = {};
+        /**
+         * @private
+         */
+        this.selectObjectParameters = {};
+        this.onClearSelectionParameters = {};
         this.diagram = diagram;
     }
     /**   @private  */
@@ -23757,6 +24027,19 @@ class CommandHandler {
             this.diagram.tooltip.relativeMode = toolName === 'ConnectTool' ? 'Mouse' : 'Object';
             this.diagram.tooltipObject.openDelay = 0;
             this.diagram.tooltipObject.closeDelay = 0;
+        }
+        if (this.diagram.selectedItems.setTooltipTemplate) {
+            let template;
+            let setTooltipTemplate = getFunction(this.diagram.selectedItems.setTooltipTemplate);
+            if (setTooltipTemplate) {
+                template = setTooltipTemplate(node, this.diagram);
+            }
+            if (template instanceof HTMLElement) {
+                content = template.cloneNode(true);
+            }
+            else {
+                content = template ? template : content;
+            }
         }
         this.diagram.tooltipObject.content = content;
         let tooltipOffset = getTooltipOffset(this.diagram, { x: position.x, y: position.y }, node);
@@ -23795,7 +24078,7 @@ class CommandHandler {
     /**
      * @private
      */
-    triggerEvent(event, args) {
+    triggerEvent(event, args, onSuccessCallBack, onFailureCallback) {
         if (event === DiagramEvent.drop || event === DiagramEvent.positionChange ||
             event === DiagramEvent.connectionChange) {
             if (this.diagram.currentSymbol) {
@@ -23808,7 +24091,7 @@ class CommandHandler {
                 return;
             }
         }
-        this.diagram.triggerEvent(event, args);
+        this.diagram.triggerEvent(event, args, onSuccessCallBack, onFailureCallback);
     }
     /**
      * @private
@@ -23869,23 +24152,34 @@ class CommandHandler {
                     connector: connector, oldValue: oldChanges,
                     newValue: newChanges, cancel: false, state: 'Changing', connectorEnd: endPoint
                 };
-                this.triggerEvent(DiagramEvent.connectionChange, arg);
-                if (arg.cancel) {
-                    connector.sourceID = oldChanges.sourceID;
-                    connector.sourcePortID = oldChanges.sourcePortID;
-                    connector.targetID = oldChanges.targetID;
-                    connector.targetPortID = oldChanges.targetPortID;
-                }
-                else {
-                    this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
-                    this.diagram.updateDiagramObject(connector);
-                    arg = {
-                        connector: connector, oldValue: oldChanges,
-                        newValue: newChanges, cancel: false, state: 'Changed', connectorEnd: endPoint
-                    };
-                    this.triggerEvent(DiagramEvent.connectionChange, arg);
-                }
+                this.connectionChangeEvent = { connector: connector, oldChanges: oldChanges, newChanges: newChanges, endPoint: endPoint };
+                this.triggerEvent(DiagramEvent.connectionChange, arg, this.successDisconnect.bind(this));
             }
+        }
+    }
+    successDisconnect(arg) {
+        let conn = 'connector';
+        let old = 'oldChanges';
+        let char = 'newChanges';
+        let end = 'endPoint';
+        let connector = this.connectionChangeEvent[conn];
+        let oldChanges = this.connectionChangeEvent[old];
+        let newChanges = this.connectionChangeEvent[char];
+        let endPoint = this.connectionChangeEvent[end];
+        if (arg.cancel) {
+            connector.sourceID = oldChanges.sourceID;
+            connector.sourcePortID = oldChanges.sourcePortID;
+            connector.targetID = oldChanges.targetID;
+            connector.targetPortID = oldChanges.targetPortID;
+        }
+        else {
+            this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
+            this.diagram.updateDiagramObject(connector);
+            arg = {
+                connector: connector, oldValue: oldChanges,
+                newValue: newChanges, cancel: false, state: 'Changed', connectorEnd: endPoint
+            };
+            this.triggerEvent(DiagramEvent.connectionChange, arg);
         }
     }
     connectionEventChange(connector, oldChanges, newChanges, endPoint) {
@@ -23896,7 +24190,25 @@ class CommandHandler {
             newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] },
             cancel: false, state: 'Changing', connectorEnd: endPoint
         };
-        this.triggerEvent(DiagramEvent.connectionChange, arg);
+        this.connectionChange = {
+            connector: connector, oldChanges: oldChanges, newChanges: newChanges,
+            endPoint: endPoint, nodeEndId: nodeEndId, portEndId: portEndId
+        };
+        this.triggerEvent(DiagramEvent.connectionChange, arg, this.successConnectionChange.bind(this));
+    }
+    successConnectionChange(arg) {
+        let connChar = 'connector';
+        let oldChar = 'oldChanges';
+        let newChar = 'newChanges';
+        let endChar = 'endPoint';
+        let nodeChar = 'nodeEndId';
+        let portChar = 'portEndId';
+        let connector = this.connectionChange[connChar];
+        let oldChanges = this.connectionChange[oldChar];
+        let newChanges = this.connectionChange[newChar];
+        let endPoint = this.connectionChange[endChar];
+        let nodeEndId = this.connectionChange[nodeChar];
+        let portEndId = this.connectionChange[portChar];
         if (arg.cancel) {
             connector[nodeEndId] = oldChanges[nodeEndId];
             connector[portEndId] = oldChanges[portEndId];
@@ -24058,25 +24370,48 @@ class CommandHandler {
                 newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] },
                 cancel: false, state: 'Changing', connectorEnd: endPoint
             };
-            this.triggerEvent(DiagramEvent.connectionChange, arg);
-            if (arg.cancel) {
-                connector[nodeEndId] = oldNodeId;
-                connector[portEndId] = oldPortId;
-                newChanges[nodeEndId] = oldNodeId;
-                newChanges[portEndId] = oldPortId;
-            }
-            else {
-                this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
-                this.diagram.updateDiagramObject(connector);
-                arg = {
-                    connector: connector, oldValue: { nodeId: oldNodeId, portId: oldPortId },
-                    newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }, cancel: false,
-                    state: 'Changed', connectorEnd: endPoint
-                };
-                this.triggerEvent(DiagramEvent.connectionChange, arg);
-            }
+            this.connectionChangeConnect = {
+                connector: connector, oldChanges: oldChanges, newChanges: newChanges,
+                endPoint: endPoint, oldNodeId: oldNodeId, oldPortId: oldPortId,
+                nodeEndId: nodeEndId, portEndId: portEndId
+            };
+            this.triggerEvent(DiagramEvent.connectionChange, arg, this.successConnect.bind(this));
         }
         this.renderHighlighter(args, undefined, endPoint === 'ConnectorSourceEnd');
+    }
+    successConnect(arg) {
+        let connSuccess = 'connector';
+        let oldSuccess = 'oldChanges';
+        let charSuccess = 'newChanges';
+        let endSuccess = 'endPoint';
+        let nodeEndSuccess = 'nodeEndId';
+        let portEndSuccess = 'portEndId';
+        let oldNodeSuccess = 'oldNodeId';
+        let oldPortSuccess = 'oldPortId';
+        let connector = this.connectionChangeConnect[connSuccess];
+        let oldChanges = this.connectionChangeConnect[oldSuccess];
+        let newChanges = this.connectionChangeConnect[charSuccess];
+        let endPoint = this.connectionChangeConnect[endSuccess];
+        let nodeEndId = this.connectionChangeConnect[nodeEndSuccess];
+        let portEndId = this.connectionChangeConnect[portEndSuccess];
+        let oldNodeId = this.connectionChangeConnect[oldNodeSuccess];
+        let oldPortId = this.connectionChangeConnect[oldPortSuccess];
+        if (arg.cancel) {
+            connector[nodeEndId] = oldNodeId;
+            connector[portEndId] = oldPortId;
+            newChanges[nodeEndId] = oldNodeId;
+            newChanges[portEndId] = oldPortId;
+        }
+        else {
+            this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
+            this.diagram.updateDiagramObject(connector);
+            arg = {
+                connector: connector, oldValue: { nodeId: oldNodeId, portId: oldPortId },
+                newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }, cancel: false,
+                state: 'Changed', connectorEnd: endPoint
+            };
+            this.triggerEvent(DiagramEvent.connectionChange, arg);
+        }
     }
     /** @private */
     cut() {
@@ -24720,9 +25055,18 @@ class CommandHandler {
             oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
         };
-        let select = true;
-        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+        this.selectObjectParameters = { oldValue: oldValue, multipleSelection: multipleSelection, obj: obj };
+        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg, this.selectObjectSuccess.bind(this));
+    }
+    selectObjectSuccess(arg) {
         let canDoMultipleSelection = canMultiSelect(this.diagram);
+        let select = true;
+        let objChar = 'obj';
+        let multipleSelectionChar = 'multipleSelection';
+        let oldValueChar = 'oldValue';
+        let obj = this.selectObjectParameters[objChar];
+        let multipleSelection = this.selectObjectParameters[multipleSelectionChar];
+        let oldValue = this.selectObjectParameters[oldValueChar];
         let canDoSingleSelection = canSingleSelect(this.diagram);
         if (canDoSingleSelection || canDoMultipleSelection) {
             if (!canDoMultipleSelection && ((obj.length > 1) || (multipleSelection && obj.length === 1))) {
@@ -25295,7 +25639,7 @@ class CommandHandler {
     /** @private */
     clearSelection(triggerAction) {
         if (hasSelection(this.diagram)) {
-            let selectormodel = this.diagram.selectedItems;
+            this.onClearSelectionParameters = {};
             let arrayNodes = this.getSelectedObject();
             if (this.diagram.currentSymbol) {
                 this.diagram.previousSelectedObject = arrayNodes;
@@ -25304,27 +25648,39 @@ class CommandHandler {
                 oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
                 state: 'Changing', type: 'Removal', cancel: false
             };
+            this.onClearSelectionParameters = { arrayNodes: arrayNodes, triggerAction: triggerAction };
             if (triggerAction) {
-                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg, this.onClearSelectionSuccess.bind(this));
             }
-            if (!arg.cancel) {
-                selectormodel.offsetX = 0;
-                selectormodel.offsetY = 0;
-                selectormodel.width = 0;
-                selectormodel.height = 0;
-                selectormodel.rotateAngle = 0;
-                selectormodel.nodes = [];
-                selectormodel.connectors = [];
-                selectormodel.wrapper = null;
-                selectormodel.annotation = undefined;
-                this.diagram.clearSelectorLayer();
-                if (triggerAction) {
-                    arg = {
-                        oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
-                        state: 'Changed', type: 'Removal', cancel: false
-                    };
-                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-                }
+            else {
+                this.onClearSelectionSuccess(arg);
+            }
+        }
+    }
+    /** @private */
+    onClearSelectionSuccess(arg) {
+        let selectormodel = this.diagram.selectedItems;
+        let triggerActionChar = 'triggerAction';
+        let triggerAction = this.onClearSelectionParameters[triggerActionChar];
+        let arrayNodesChar = 'arrayNodes';
+        let arrayNodes = this.onClearSelectionParameters[arrayNodesChar];
+        if (!arg.cancel) {
+            selectormodel.offsetX = 0;
+            selectormodel.offsetY = 0;
+            selectormodel.width = 0;
+            selectormodel.height = 0;
+            selectormodel.rotateAngle = 0;
+            selectormodel.nodes = [];
+            selectormodel.connectors = [];
+            selectormodel.wrapper = null;
+            selectormodel.annotation = undefined;
+            this.diagram.clearSelectorLayer();
+            if (triggerAction) {
+                arg = {
+                    oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
+                    state: 'Changed', type: 'Removal', cancel: false
+                };
+                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
             }
         }
     }
@@ -28409,7 +28765,12 @@ class Diagram extends Component {
         this.crudDeleteNodes = [];
         /** @private */
         this.selectedObject = { helperObject: undefined, actualObject: undefined };
+        /** @private */
+        this.removeCollectionParameters = {};
         this.renderTimer = null;
+        this.textEditEvent = {};
+        /** @private */
+        this.dragEnterEvent = {};
         let child;
         let node;
         for (let i = 0; options && options.nodes && i < options.nodes.length; i++) {
@@ -28624,6 +28985,7 @@ class Diagram extends Component {
             this.initObjects(true);
             this.refreshDiagramLayer();
         }
+        this.resetTemplate();
     }
     /* tslint:enable */
     updateSnapSettings(newProp) {
@@ -28678,6 +29040,7 @@ class Diagram extends Component {
             window[measureElement] = null;
         }
         this.initDiagram();
+        this.updateTemplate();
         this.initViews();
         this.unWireEvents();
         this.wireEvents();
@@ -28780,12 +29143,83 @@ class Diagram extends Component {
         this.initCommands();
         this.isLoading = false;
     }
+    updateTemplate() {
+        let node;
+        let annotation;
+        let pathAnnotation;
+        for (let i = 0; i < this.nodes.length; i++) {
+            node = this.nodes[i];
+            annotation = node.annotations[0];
+            if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    updateBlazorTemplate(this.element.id + 'content_diagram', 'Content');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+            else if (annotation && annotation.template instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    updateBlazorTemplate(this.element.id + 'template_diagram', 'Template');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+        }
+        for (let i = 0; i < this.connectors.length; i++) {
+            pathAnnotation = this.connectors[i].annotations[0];
+            if (pathAnnotation && pathAnnotation.template instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    updateBlazorTemplate(this.element.id + 'template_diagram', 'Template');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+        }
+    }
+    resetTemplate() {
+        let htmlNode;
+        let templateAnnotation;
+        let path;
+        for (let i = 0; i < this.nodes.length; i++) {
+            htmlNode = this.nodes[i];
+            templateAnnotation = htmlNode.annotations[0];
+            if (htmlNode.shape.type === 'HTML' && htmlNode.shape.content instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    resetBlazorTemplate(this.element.id + 'content', 'Content');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+            else if (templateAnnotation && templateAnnotation.template instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    resetBlazorTemplate(this.element.id + 'template', 'Template');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+        }
+        for (let i = 0; i < this.connectors.length; i++) {
+            path = this.connectors[i].annotations[0];
+            if (path && path.template instanceof HTMLElement) {
+                setTimeout(() => {
+                    // tslint:disable-next-line:curly
+                    resetBlazorTemplate(this.element.id + 'template', 'Template');
+                    // tslint:disable-next-line:align
+                }, 5);
+            }
+        }
+    }
     renderInitialCrud() {
         let tempObj = this;
         if (tempObj.dataSourceSettings.crudAction.read) {
             let callback = new Ajax(tempObj.dataSourceSettings.crudAction.read, 'GET', false);
             callback.onSuccess = (data) => {
-                tempObj.dataSourceSettings.dataManager = JSON.parse(data);
+                if (tempObj.dataSourceSettings.dataManager) {
+                    tempObj.dataSourceSettings.dataManager = JSON.parse(data);
+                }
+                else {
+                    tempObj.dataSourceSettings.dataSource = JSON.parse(data);
+                }
                 tempObj.dataBind();
             };
             callback.send().then();
@@ -28890,7 +29324,7 @@ class Diagram extends Component {
                 args: []
             });
         }
-        if (this.dataSourceSettings.dataManager ||
+        if (this.dataSourceSettings.dataManager || this.dataSourceSettings.dataSource ||
             this.dataSourceSettings.crudAction.read || this.dataSourceSettings.connectionDataSource.crudAction.read) {
             modules.push({
                 member: 'DataBinding',
@@ -29599,16 +30033,44 @@ class Diagram extends Component {
         this.scroller.zoom(1 / this.scroller.currentZoom, -this.scroller.horizontalOffset, -this.scroller.verticalOffset, { x: 0, y: 0 });
     }
     /** @private */
-    triggerEvent(eventName, args) {
+    triggerEvent(eventName, args, onSuccessCallBack, onFailureCallback) {
         if (args) {
             this.updateEventValue(args);
         }
-        this.trigger(DiagramEvent[eventName], args);
+        this.trigger(DiagramEvent[eventName], args, onSuccessCallBack, onFailureCallback);
     }
     updateEventValue(args) {
         let element = args.element;
         if (args.element && element instanceof Selector && (element.nodes.length + element.connectors.length === 1)) {
             args.element = (element.nodes.length === 1) ? element.nodes[0] : element.connectors[0];
+        }
+    }
+    /**
+     * Shows tooltip for corresponding diagram object
+     * @param obj Defines the object for that tooltip has to be shown
+     */
+    showTooltip(obj) {
+        let bounds = getBounds(obj.wrapper);
+        let position = { x: 0, y: 0 };
+        let content = obj.tooltip.content ?
+            obj.tooltip.content : 'X:' + Math.round(bounds.x) + ' ' + 'Y:' + Math.round(bounds.y);
+        if (obj && obj.tooltip.openOn === 'Custom') {
+            if (obj instanceof Node) {
+                position = { x: obj.offsetX + (obj.width / 2), y: obj.offsetY + (obj.height / 2) };
+            }
+            else {
+                position = { x: obj.targetPoint.x, y: obj.targetPoint.x };
+            }
+            this.commandHandler.showTooltip(obj, position, content, 'SelectTool', true);
+        }
+    }
+    /**
+     * hides tooltip for corresponding diagram object
+     * @param obj Defines the object for that tooltip has to be hide
+     */
+    hideTooltip(obj) {
+        if (obj && obj.tooltip.openOn === 'Custom') {
+            this.tooltipObject.close();
         }
     }
     /**
@@ -29877,119 +30339,12 @@ class Diagram extends Component {
                     element: obj, cause: this.diagramActions,
                     state: 'Changing', type: 'Removal', cancel: false
                 };
+                this.removeCollectionParameters = { groupAction: groupAction, obj: obj, selectedItems: selectedItems };
                 if (!(this.diagramActions & DiagramAction.Clear) && (obj.id !== 'helper')) {
-                    this.triggerEvent(DiagramEvent.collectionChange, args);
+                    this.triggerEvent(DiagramEvent.collectionChange, args, this.onRemoveCollectionChangeSuccess.bind(this));
                 }
-                if (!args.cancel) {
-                    if (this.bpmnModule) {
-                        if (this.bpmnModule.checkAndRemoveAnnotations(obj, this)) {
-                            this.refreshCanvasLayers();
-                            return;
-                        }
-                    }
-                    if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
-                        (obj instanceof Node || obj instanceof Connector)) {
-                        let entry = {
-                            type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
-                            redoObject: cloneObject(obj), category: 'Internal'
-                        };
-                        if (!(this.diagramActions & DiagramAction.Clear)) {
-                            if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
-                                this.historyManager.startGroupAction();
-                                groupAction = true;
-                            }
-                        }
-                        if (obj instanceof Node) {
-                            this.removeDependentConnector(obj);
-                        }
-                        if (!obj.isLane && !obj.isPhase) {
-                            if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj)) {
-                                this.addHistoryEntry(entry);
-                            }
-                        }
-                    }
-                    if (obj.children && !obj.isLane && !obj.isPhase) {
-                        this.deleteGroup(obj);
-                    }
-                    if (obj.parentId) {
-                        this.deleteChild(obj);
-                        if (this.nameTable[obj.parentId] && this.nameTable[obj.parentId].shape.type === 'UmlClassifier') {
-                            this.updateDiagramObject(this.nameTable[obj.parentId]);
-                            this.updateConnectorEdges(this.nameTable[obj.parentId]);
-                        }
-                    }
-                    let index;
-                    this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
-                    let currentObj = this.nameTable[obj.id];
-                    if (currentObj instanceof Node) {
-                        if (currentObj.shape.type === 'Bpmn' && this.bpmnModule) {
-                            this.bpmnModule.removeBpmnProcesses(currentObj, this);
-                        }
-                        if (currentObj.isLane || currentObj.isPhase || currentObj.shape.type === 'SwimLane') {
-                            let swimLaneNode = (currentObj.isLane || currentObj.isPhase) ?
-                                this.nameTable[currentObj.parentId] : this.nameTable[currentObj.id];
-                            let grid = swimLaneNode.wrapper.children[0];
-                            if (currentObj.isLane) {
-                                removeLane(this, currentObj, swimLaneNode);
-                            }
-                            else if (currentObj.isPhase) {
-                                removePhase(this, currentObj, swimLaneNode);
-                            }
-                        }
-                        index = this.nodes.indexOf(currentObj);
-                        if (index !== -1) {
-                            this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
-                            this.nodes.splice(index, 1);
-                            this.updateNodeEdges(currentObj);
-                        }
-                    }
-                    else {
-                        index = this.connectors.indexOf(currentObj);
-                        if (index !== -1) {
-                            this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
-                            this.connectors.splice(index, 1);
-                        }
-                        this.updateEdges(currentObj);
-                        this.spliceConnectorEdges(obj, true);
-                        this.spliceConnectorEdges(obj, false);
-                    }
-                    if (groupAction) {
-                        this.historyManager.endGroupAction();
-                    }
-                    if (isSelected(this, currentObj)) {
-                        this.unSelect(currentObj);
-                    }
-                    if (!currentObj.isPhase) {
-                        this.removeObjectsFromLayer(obj);
-                        if (this.currentDrawingObject) {
-                            this.currentDrawingObject.wrapper = undefined;
-                        }
-                        delete this.nameTable[obj.id];
-                        if (selectedItems.length > 0 && selectedItems[0].id === currentObj.id && currentObj.parentId) {
-                            let parentnode = this.nameTable[currentObj.parentId];
-                            if (parentnode && parentnode.isLane && this.nameTable[parentnode.parentId].shape.type === 'SwimLane') {
-                                let swimLaneNode = this.nameTable[parentnode.parentId];
-                                removeLaneChildNode(this, swimLaneNode, parentnode, currentObj);
-                            }
-                        }
-                        this.removeElements(currentObj);
-                        this.updateBridging();
-                        if (this.mode !== 'SVG') {
-                            this.refreshDiagramLayer();
-                        }
-                        if (!(this.diagramActions & DiagramAction.Clear)) {
-                            this.removeFromAQuad(currentObj);
-                            args = {
-                                element: obj, cause: this.diagramActions,
-                                state: 'Changed', type: 'Removal', cancel: false
-                            };
-                            if (obj.id !== 'helper') {
-                                this.triggerEvent(DiagramEvent.collectionChange, args);
-                            }
-                            this.resetTool();
-                        }
-                    }
-                }
+                else
+                    this.onRemoveCollectionChangeSuccess(args);
             }
         }
         else if (selectedItems.length > 0) {
@@ -30013,6 +30368,130 @@ class Diagram extends Component {
             }
             this.clearSelection();
         }
+        this.tooltipObject.close();
+    }
+    /* tslint:enable */
+    /* tslint:disable */
+    onRemoveCollectionChangeSuccess(args) {
+        if (!args.cancel) {
+            let objChart = 'obj';
+            let groupActionChar = 'groupAction';
+            let selectedItemsChar = 'selectedItems';
+            let groupAction = this.removeCollectionParameters[groupActionChar];
+            let obj = this.removeCollectionParameters[objChart];
+            let selectedItems = this.removeCollectionParameters[selectedItemsChar];
+            if (this.bpmnModule) {
+                if (this.bpmnModule.checkAndRemoveAnnotations(obj, this)) {
+                    this.refreshCanvasLayers();
+                    return;
+                }
+            }
+            if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
+                (obj instanceof Node || obj instanceof Connector)) {
+                let entry = {
+                    type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
+                    redoObject: cloneObject(obj), category: 'Internal'
+                };
+                if (!(this.diagramActions & DiagramAction.Clear)) {
+                    if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
+                        this.historyManager.startGroupAction();
+                        groupAction = true;
+                    }
+                }
+                if (obj instanceof Node) {
+                    this.removeDependentConnector(obj);
+                }
+                if (!obj.isLane && !obj.isPhase) {
+                    if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj)) {
+                        this.addHistoryEntry(entry);
+                    }
+                }
+            }
+            if (obj.children && !obj.isLane && !obj.isPhase) {
+                this.deleteGroup(obj);
+            }
+            if (obj.parentId) {
+                this.deleteChild(obj);
+                if (this.nameTable[obj.parentId] &&
+                    this.nameTable[obj.parentId].shape.type === 'UmlClassifier') {
+                    this.updateDiagramObject(this.nameTable[obj.parentId]);
+                    this.updateConnectorEdges(this.nameTable[obj.parentId]);
+                }
+            }
+            let index;
+            this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
+            let currentObj = this.nameTable[obj.id];
+            if (currentObj instanceof Node) {
+                if (currentObj.shape.type === 'Bpmn' && this.bpmnModule) {
+                    this.bpmnModule.removeBpmnProcesses(currentObj, this);
+                }
+                if (currentObj.isLane || currentObj.isPhase || currentObj.shape.type === 'SwimLane') {
+                    let swimLaneNode = (currentObj.isLane || currentObj.isPhase) ?
+                        this.nameTable[currentObj.parentId] : this.nameTable[currentObj.id];
+                    let grid = swimLaneNode.wrapper.children[0];
+                    if (currentObj.isLane) {
+                        removeLane(this, currentObj, swimLaneNode);
+                    }
+                    else if (currentObj.isPhase) {
+                        removePhase(this, currentObj, swimLaneNode);
+                    }
+                }
+                index = this.nodes.indexOf(currentObj);
+                if (index !== -1) {
+                    this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
+                    this.nodes.splice(index, 1);
+                    this.updateNodeEdges(currentObj);
+                }
+            }
+            else {
+                index = this.connectors.indexOf(currentObj);
+                if (index !== -1) {
+                    this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
+                    this.connectors.splice(index, 1);
+                }
+                this.updateEdges(currentObj);
+                this.spliceConnectorEdges(obj, true);
+                this.spliceConnectorEdges(obj, false);
+            }
+            if (groupAction) {
+                this.historyManager.endGroupAction();
+            }
+            if (isSelected(this, currentObj)) {
+                this.unSelect(currentObj);
+            }
+            if (!currentObj.isPhase) {
+                this.removeObjectsFromLayer(obj);
+                if (this.currentDrawingObject) {
+                    this.currentDrawingObject.wrapper = undefined;
+                }
+                delete this.nameTable[obj.id];
+                if (selectedItems.length > 0 && selectedItems[0].id === currentObj.id && currentObj.parentId) {
+                    let parentnode = this.nameTable[currentObj.parentId];
+                    if (parentnode && parentnode.isLane && this.nameTable[parentnode.parentId].shape.type === 'SwimLane') {
+                        let swimLaneNode = this.nameTable[parentnode.parentId];
+                        removeLaneChildNode(this, swimLaneNode, parentnode, currentObj);
+                    }
+                }
+                this.removeElements(currentObj);
+                this.updateBridging();
+                if (this.mode !== 'SVG') {
+                    this.refreshDiagramLayer();
+                }
+                if (!(this.diagramActions & DiagramAction.Clear)) {
+                    this.removeFromAQuad(currentObj);
+                    args = {
+                        element: obj, cause: this.diagramActions,
+                        state: 'Changed', type: 'Removal', cancel: false
+                    };
+                    if (obj.id !== 'helper') {
+                        this.triggerEvent(DiagramEvent.collectionChange, args);
+                    }
+                    this.resetTool();
+                }
+            }
+        }
+        this.removeCollectionParameters = {};
+        return null;
     }
     /* tslint:enable */
     isStackChild(obj) {
@@ -30846,6 +31325,12 @@ class Diagram extends Component {
         this.scroller.scrollerWidth = scrollerSize;
         this.scroller.setViewPortSize(bounds.width, bounds.height);
         this.renderRulers();
+        let measureElement = 'measureElement';
+        if (window[measureElement]) {
+            window[measureElement] = null;
+            let measureElements = document.getElementById('measureElement');
+            measureElements.remove();
+        }
         createMeasureElements();
         // this.renderBackgroundImageLayer(bounds, commonStyle);
         this.renderBackgroundLayer(bounds, commonStyle);
@@ -31052,13 +31537,17 @@ class Diagram extends Component {
         }
     }
     initData() {
+        let dataSourceSettings = this.dataSourceSettings.dataManager || this.dataSourceSettings.dataSource;
+        let adapter = 'adaptorName';
         if (this.dataBindingModule && !(this.realActions & RealAction.PreventDataInit)) {
-            if (this.dataSourceSettings.dataManager && this.dataSourceSettings.connectionDataSource.dataManager) {
-                this.nodes = this.generateData(this.dataSourceSettings.dataManager, true);
+            if (dataSourceSettings && this.dataSourceSettings.connectionDataSource.dataManager) {
+                let dataManager = this.dataSourceSettings.dataManager || this.dataSourceSettings.dataSource;
+                this.nodes = this.generateData(dataManager, true);
                 this.connectors = this.generateData(this.dataSourceSettings.connectionDataSource.dataManager, false);
             }
-            else if (this.dataSourceSettings.dataManager && this.dataSourceSettings.dataManager.dataSource &&
-                this.dataSourceSettings.dataManager.dataSource.url !== undefined) {
+            else if (dataSourceSettings && dataSourceSettings.dataSource &&
+                (dataSourceSettings.dataSource.url || (dataSourceSettings[adapter] === 'BlazorAdaptor' &&
+                    !dataSourceSettings.dataSource.url))) {
                 this.dataBindingModule.initSource(this.dataSourceSettings, this);
             }
             else {
@@ -32591,10 +33080,8 @@ class Diagram extends Component {
                 bpmnAnnotation = node ? true : false;
                 if (bpmnAnnotation) {
                     if (element.textContent !== text || text !== this.activeLabel.text) {
-                        this.triggerEvent(DiagramEvent.textEdit, args);
-                        if (!args.cancel) {
-                            this.bpmnModule.updateTextAnnotationContent(node, this.activeLabel, text, this);
-                        }
+                        this.textEditEvent = { node: node, text: text };
+                        this.triggerEvent(DiagramEvent.textEdit, args, this.successTextEdit.bind(this));
                     }
                 }
             }
@@ -32669,6 +33156,13 @@ class Diagram extends Component {
                 this.endGroupAction();
             }
             this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
+        }
+    }
+    successTextEdit(args) {
+        let node = 'node';
+        let text = 'text';
+        if (!args.cancel) {
+            this.bpmnModule.updateTextAnnotationContent(this.textEditEvent[node], this.activeLabel, this.textEditEvent[text], this);
         }
     }
     /** @private */
@@ -33923,6 +34417,160 @@ class Diagram extends Component {
             node.margin.right = changes.margin.right;
         }
     }
+    successDragEnter(arg) {
+        let newObj = arg.element;
+        let headerChar = 'header';
+        let argsChar = 'args';
+        let laneChar = 'lane';
+        let entryTableChar = 'entryTable';
+        let selectedSymbolChar = 'selectedSymbol';
+        let header = this.dragEnterEvent[headerChar];
+        let isHorizontal;
+        let position = this.eventHandler.getMousePosition(this.dragEnterEvent[argsChar].event);
+        let lane = this.dragEnterEvent[laneChar];
+        if ((newObj instanceof Node) && newObj.shape.type === 'SwimLane' && newObj.shape.isLane) {
+            let swimLaneObj = arg.element;
+            let laneObj = swimLaneObj.shape.lanes[0];
+            let child1;
+            let child2;
+            isHorizontal = (swimLaneObj.shape.orientation === 'Horizontal') ? true : false;
+            child1 = this.nameTable[newObj.children[0]];
+            child2 = this.nameTable[newObj.children[1]];
+            if (isHorizontal) {
+                header.width = laneObj.header.width;
+                header.height = laneObj.height;
+                lane.width = laneObj.width - header.width;
+                lane.height = laneObj.height;
+                lane.offsetX = position.x + 5 + (laneObj.header.width + (child2.width / 2));
+                lane.offsetY = position.y + child2.height / 2;
+            }
+            else {
+                header.width = laneObj.width;
+                header.height = laneObj.header.height;
+                lane.width = laneObj.width;
+                lane.height = laneObj.height - header.height;
+                lane.offsetX = position.x + 5 + child2.width / 2;
+                lane.offsetY = position.y + (laneObj.header.height + (child2.height / 2));
+            }
+            header.offsetX = position.x + 5 + child1.width / 2;
+            header.offsetY = position.y + child1.height / 2;
+            newObj.width = laneObj.width;
+            newObj.height = laneObj.height;
+        }
+        if ((newObj instanceof Node) && newObj.shape.isPhase) {
+            if (isHorizontal) {
+                newObj.height = 1;
+            }
+            else {
+                newObj.width = 1;
+            }
+        }
+        if (!this.activeLayer.lock && !arg.cancel) {
+            this.preventUpdate = true;
+            if (newObj.children) {
+                this.findChild(newObj, this.dragEnterEvent[entryTableChar]);
+            }
+            this.preventUpdate = true;
+            if (newObj.zIndex !== -1) {
+                newObj.zIndex = -1;
+            }
+            this.initObject(newObj, undefined, undefined, true);
+            this.currentSymbol = newObj;
+            if (this.mode !== 'SVG') {
+                this.refreshDiagramLayer();
+            }
+            this.commandHandler.select(newObj);
+            this.eventHandler.mouseDown(this.dragEnterEvent[argsChar].event);
+            this.eventHandler.mouseMove(this.dragEnterEvent[argsChar].event, this.dragEnterEvent[argsChar]);
+            this.preventUpdate = false;
+            this.updatePage();
+            this.dragEnterEvent[selectedSymbolChar].style.opacity = '0';
+        }
+        return null;
+    }
+    // /** @private */
+    // dropEventParameters: object = {};
+    onDropEventSuccess(arg) {
+        let value;
+        let isPhase = false;
+        let orientation;
+        let isConnector;
+        let source = 'sourceElement';
+        let newObj;
+        isConnector = (this.currentSymbol instanceof Connector) ? true : false;
+        let clonedObject;
+        let id = 'id';
+        let hasTargetArgs = 'hasTarget';
+        clonedObject = cloneObject(this.currentSymbol);
+        clonedObject[hasTargetArgs] = this.currentSymbol[hasTargetArgs];
+        this.removeFromAQuad(this.currentSymbol);
+        this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
+        this.removeElements(this.currentSymbol);
+        if (this.currentSymbol.shape.isLane ||
+            this.currentSymbol.shape.isPhase) {
+            this.removeChildInNodes(this.currentSymbol);
+        }
+        if (arg.cancel) {
+            removeChildNodes(this.currentSymbol, this);
+        }
+        if (this.currentSymbol.shape.isPhase) {
+            isPhase = true;
+            orientation = this.currentSymbol.shape.orientation;
+        }
+        delete this.nameTable[this.currentSymbol.id];
+        this.currentSymbol = null;
+        this.protectPropertyChange(true);
+        if (!arg.cancel) {
+            this.startGroupAction();
+            if (clonedObject && (clonedObject.shape.isLane || isPhase)) {
+                if (isPhase) {
+                    clonedObject.shape.isPhase = isPhase;
+                    clonedObject.shape.orientation = orientation;
+                }
+                this.eventHandler.addSwimLaneObject(clonedObject);
+            }
+            let hasTargetArgs = 'hasTarget';
+            if (clonedObject.shape.type === 'Bpmn' && clonedObject.shape.annotation
+                && clonedObject[hasTargetArgs]) {
+                let nodeId = clonedObject.shape.annotation.nodeId;
+                clonedObject.shape.annotation.id = clonedObject.id;
+                this.addTextAnnotation(clonedObject.shape.annotation, this.nameTable[nodeId]);
+                clonedObject.nodeId = '';
+            }
+            if (!clonedObject.shape.isLane && !isPhase) {
+                if (clonedObject.children) {
+                    this.addChildNodes(clonedObject);
+                }
+                if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(this, arg.target)
+                    && canAllowDrop(arg.target)) {
+                    addChildToContainer(this, arg.target, clonedObject);
+                }
+                else {
+                    value = this.add(clonedObject, true);
+                }
+                if ((clonedObject || value) && canSingleSelect(this)) {
+                    this.select([this.nameTable[clonedObject[id]]]);
+                }
+            }
+        }
+        this.protectPropertyChange(false);
+        newObj = this.nameTable[clonedObject[id]];
+        if (clonedObject[hasTargetArgs]) {
+            clonedObject.nodeId = clonedObject[hasTargetArgs];
+            this.remove(clonedObject);
+        }
+        if (this.bpmnModule && newObj instanceof Node && clonedObject.processId) {
+            newObj.processId = clonedObject.processId;
+            this.bpmnModule.dropBPMNchild(this.nameTable[newObj.processId], newObj, this);
+        }
+        this.endGroupAction();
+        if (this.mode !== 'SVG') {
+            this.refreshDiagramLayer();
+        }
+        delete this.droppable[source];
+        let selectedSymbols = 'selectedSymbols';
+        remove(this.droppable[selectedSymbols]);
+    }
     //property changes - end region
     /* tslint:disable */
     initDroppables() {
@@ -34057,64 +34705,8 @@ class Diagram extends Component {
                             this['enterObject'] = newObj;
                             this['enterTable'] = entryTable;
                             this.triggerEvent(DiagramEvent.dragEnter, arg);
-                            if ((newObj instanceof Node) && newObj.shape.type === 'SwimLane' && newObj.shape.isLane) {
-                                let swimLaneObj = arg.element;
-                                let laneObj = swimLaneObj.shape.lanes[0];
-                                let child1;
-                                let child2;
-                                isHorizontal = (swimLaneObj.shape.orientation === 'Horizontal') ? true : false;
-                                child1 = this.nameTable[newObj.children[0]];
-                                child2 = this.nameTable[newObj.children[1]];
-                                if (isHorizontal) {
-                                    header.width = laneObj.header.width;
-                                    header.height = laneObj.height;
-                                    lane.width = laneObj.width - header.width;
-                                    lane.height = laneObj.height;
-                                    lane.offsetX = position.x + 5 + (laneObj.header.width + (child2.width / 2));
-                                    lane.offsetY = position.y + child2.height / 2;
-                                }
-                                else {
-                                    header.width = laneObj.width;
-                                    header.height = laneObj.header.height;
-                                    lane.width = laneObj.width;
-                                    lane.height = laneObj.height - header.height;
-                                    lane.offsetX = position.x + 5 + child2.width / 2;
-                                    lane.offsetY = position.y + (laneObj.header.height + (child2.height / 2));
-                                }
-                                header.offsetX = position.x + 5 + child1.width / 2;
-                                header.offsetY = position.y + child1.height / 2;
-                                newObj.width = laneObj.width;
-                                newObj.height = laneObj.height;
-                            }
-                            if ((newObj instanceof Node) && newObj.shape.isPhase) {
-                                if (isHorizontal) {
-                                    newObj.height = 1;
-                                }
-                                else {
-                                    newObj.width = 1;
-                                }
-                            }
-                            if (!this.activeLayer.lock && !arg.cancel) {
-                                this.preventUpdate = true;
-                                if (newObj.children) {
-                                    this.findChild(newObj, entryTable);
-                                }
-                                this.preventUpdate = true;
-                                if (newObj.zIndex !== -1) {
-                                    newObj.zIndex = -1;
-                                }
-                                this.initObject(newObj, undefined, undefined, true);
-                                this.currentSymbol = newObj;
-                                if (this.mode !== 'SVG') {
-                                    this.refreshDiagramLayer();
-                                }
-                                this.commandHandler.select(newObj);
-                                this.eventHandler.mouseDown(args.event);
-                                this.eventHandler.mouseMove(args.event, args);
-                                this.preventUpdate = false;
-                                this.updatePage();
-                                selectedSymbol.style.opacity = '0';
-                            }
+                            this.dragEnterEvent = { args: args, entryTable: entryTable, selectedSymbol: selectedSymbol, header: header, lane: lane };
+                            this.triggerEvent(DiagramEvent.dragEnter, arg, this.successDragEnter.bind(this));
                             delete this['enterObject'];
                             delete this['enterTable'];
                         }
@@ -34131,93 +34723,17 @@ class Diagram extends Component {
         // tslint:disable-next-line:no-any
         this.droppable.drop = (args) => {
             let source = 'sourceElement';
-            let value;
             if (this.currentSymbol) {
-                let isPhase = false;
-                let orientation;
-                let isConnector;
-                isConnector = (this.currentSymbol instanceof Connector) ? true : false;
                 if (args.event.touches) {
                     this.eventHandler.mouseUp(args.event);
                 }
-                let newObj;
                 let arg = {
                     source: this.droppable[source],
                     element: this.currentSymbol,
                     target: this.eventHandler['hoverNode'] || this.eventHandler['lastObjectUnderMouse'] || this, cancel: false,
                     position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
                 };
-                this.triggerEvent(DiagramEvent.drop, arg);
-                let clonedObject;
-                let id = 'id';
-                clonedObject = cloneObject(this.currentSymbol);
-                clonedObject['hasTarget'] = this.currentSymbol['hasTarget'];
-                this.removeFromAQuad(this.currentSymbol);
-                this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
-                this.removeElements(this.currentSymbol);
-                if (this.currentSymbol.shape.isLane ||
-                    this.currentSymbol.shape.isPhase) {
-                    this.removeChildInNodes(this.currentSymbol);
-                }
-                if (arg.cancel) {
-                    removeChildNodes(this.currentSymbol, this);
-                }
-                if (this.currentSymbol.shape.isPhase) {
-                    isPhase = true;
-                    orientation = this.currentSymbol.shape.orientation;
-                }
-                delete this.nameTable[this.currentSymbol.id];
-                this.currentSymbol = null;
-                this.protectPropertyChange(true);
-                if (!arg.cancel) {
-                    this.startGroupAction();
-                    if (clonedObject && (clonedObject.shape.isLane || isPhase)) {
-                        if (isPhase) {
-                            clonedObject.shape.isPhase = isPhase;
-                            clonedObject.shape.orientation = orientation;
-                        }
-                        this.eventHandler.addSwimLaneObject(clonedObject);
-                    }
-                    if (clonedObject.shape.type === 'Bpmn' && clonedObject.shape.annotation
-                        && clonedObject['hasTarget']) {
-                        let nodeId = clonedObject.shape.annotation.nodeId;
-                        clonedObject.shape.annotation.id = clonedObject.id;
-                        this.addTextAnnotation(clonedObject.shape.annotation, this.nameTable[nodeId]);
-                        clonedObject.nodeId = '';
-                    }
-                    if (!clonedObject.shape.isLane && !isPhase) {
-                        if (clonedObject.children) {
-                            this.addChildNodes(clonedObject);
-                        }
-                        if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(this, arg.target)
-                            && canAllowDrop(arg.target)) {
-                            addChildToContainer(this, arg.target, clonedObject);
-                        }
-                        else {
-                            value = this.add(clonedObject, true);
-                        }
-                        if ((clonedObject || value) && canSingleSelect(this)) {
-                            this.select([this.nameTable[clonedObject[id]]]);
-                        }
-                    }
-                }
-                this.protectPropertyChange(false);
-                newObj = this.nameTable[clonedObject[id]];
-                if (clonedObject['hasTarget']) {
-                    clonedObject.nodeId = clonedObject['hasTarget'];
-                    this.remove(clonedObject);
-                }
-                if (this.bpmnModule && newObj instanceof Node && clonedObject.processId) {
-                    newObj.processId = clonedObject.processId;
-                    this.bpmnModule.dropBPMNchild(this.nameTable[newObj.processId], newObj, this);
-                }
-                this.endGroupAction();
-                if (this.mode !== 'SVG') {
-                    this.refreshDiagramLayer();
-                }
-                delete this.droppable[source];
-                let selectedSymbols = 'selectedSymbols';
-                remove(this.droppable[selectedSymbols]);
+                this.triggerEvent(DiagramEvent.drop, arg, this.onDropEventSuccess.bind(this));
             }
             else {
                 let arg = {
@@ -34630,6 +35146,9 @@ __decorate([
 __decorate([
     Event()
 ], Diagram.prototype, "collectionChange", void 0);
+__decorate([
+    Event()
+], Diagram.prototype, "segmentCollectionChange", void 0);
 __decorate([
     Event()
 ], Diagram.prototype, "expandStateChange", void 0);
@@ -35477,9 +35996,12 @@ class DataBinding {
         let dataSource;
         let dataProp = 'data';
         let jsonProp = 'json';
-        let dataManager = data.dataManager || {};
+        let dataManager = data.dataManager || data.dataSource || {};
         dataSource = dataManager[dataProp] || dataManager[jsonProp] ||
             (dataManager.dataSource ? dataManager.dataSource.json : undefined);
+        if (dataSource && dataSource.length === 0 && dataManager.dataSource.data) {
+            dataSource = dataManager.dataSource.data;
+        }
         if (dataSource && dataSource.length) {
             this.applyDataSource(data, dataSource, diagram);
         }
@@ -35494,9 +36016,11 @@ class DataBinding {
         let dataSource = data;
         let result;
         let mapper = data;
-        if (dataSource.dataManager instanceof DataManager) {
-            let query = mapper.dataManager.defaultQuery;
-            data.dataManager.executeQuery(query).then((e) => {
+        if (dataSource.dataManager instanceof DataManager || dataSource.dataSource instanceof DataManager) {
+            let tempObj = mapper.dataManager || mapper.dataSource;
+            let query = tempObj.defaultQuery || new Query();
+            let dataManager = data.dataManager || data.dataSource;
+            dataManager.executeQuery(query).then((e) => {
                 let prop = 'result';
                 result = e[prop];
                 if (!diagram.isDestroyed) {
@@ -37649,8 +38173,8 @@ class BpmnDiagrams {
     /** @private */
     updateBPMNEvent(node, newObject, oldObject) {
         let bpmnShape = newObject.shape;
-        let elementWrapper = node.wrapper.children[0];
         let trigger;
+        let elementWrapper = node.wrapper.children[0];
         if (bpmnShape) {
             let elementWrapperChild0 = elementWrapper.children[0];
             let elementWrapperChild1 = elementWrapper.children[1];
@@ -46037,7 +46561,7 @@ class SymbolPalette extends Component {
         if (symbolGroup.height) {
             style += 'height:' + symbolGroup.height + 'px';
         }
-        let paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id, style: style });
+        let paletteDiv = createHtmlElement('div', { 'id': symbolGroup.id, style: style, class: 'e-remove-palette' });
         this.element.appendChild(paletteDiv);
         let item = {
             header: symbolGroup.title, expanded: symbolGroup.expanded,
@@ -46779,6 +47303,7 @@ class SymbolPalette extends Component {
     }
     refreshPalettes() {
         this.accordionElement.items = [];
+        removeElementsByClass('e-remove-palette');
         this.updatePalettes();
         this.accordionElement.dataBind();
     }
@@ -46847,6 +47372,10 @@ class SymbolPalette extends Component {
             let element = document.getElementById('iconSearch');
             element.className = 'e-input-group-icon e-search e-icons';
             this.accordionElement.removeItem(0);
+            let searchPalette = document.getElementById('SearchPalette');
+            if (searchPalette) {
+                searchPalette.remove();
+            }
         }
     }
     createSearchPalette(paletteDiv) {

@@ -110,11 +110,15 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking different labels margin with different values in SVG rendering Mode', (done: Function) => {
+            console.log('testcase7');
+            console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width)
+            console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height)
+            console.log( (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX)
+            console.log( (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY)
             expect(((Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 80 || Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 79)
                 && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 57.599999999999994 &&
                 Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX) === 104 &&
                 (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 88.8)).toBe(true);
-
             done();
         });
         it('annotation OverFlow issue and node readonly issue', (done: Function) => {

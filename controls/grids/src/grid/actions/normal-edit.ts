@@ -103,29 +103,30 @@ export class NormalEdit {
             rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
             foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
         };
-        gObj.trigger(events.beginEdit, args);
-        args.type = 'actionBegin';
-        gObj.trigger(events.actionBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        gObj.isEdit = true;
-        if (gObj.editSettings.mode !== 'Dialog') {
-            gObj.clearSelection();
-        }
-        if (gObj.editSettings.mode === 'Dialog' && (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule) {
-            (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule.preventFocus = true;
-            args.row.classList.add('e-dlgeditrow');
-        }
-        this.renderer.update(args);
-        this.uid = tr.getAttribute('data-uid');
-        gObj.editModule.applyFormValidation();
-        args.type = 'actionComplete';
-        gObj.trigger(events.actionComplete, args);
-        this.args = args;
-        if (this.parent.allowTextWrap) {
-            this.parent.notify(events.freezeRender, { case: 'textwrap' });
-        }
+        gObj.trigger(events.beginEdit, args, (begineditargs: EditEventArgs) => {
+            begineditargs.type = 'actionBegin';
+            gObj.trigger(events.actionBegin, begineditargs, (editargs: EditEventArgs) => {
+                if (!editargs.cancel) {
+                gObj.isEdit = true;
+                if (gObj.editSettings.mode !== 'Dialog') {
+                    gObj.clearSelection();
+                }
+                if (gObj.editSettings.mode === 'Dialog' && (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule) {
+                    (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule.preventFocus = true;
+                    editargs.row.classList.add('e-dlgeditrow');
+                }
+                this.renderer.update(editargs);
+                this.uid = tr.getAttribute('data-uid');
+                gObj.editModule.applyFormValidation();
+                editargs.type = 'actionComplete';
+                gObj.trigger(events.actionComplete, editargs);
+                this.args = editargs;
+                if (this.parent.allowTextWrap) {
+                    this.parent.notify(events.freezeRender, { case: 'textwrap' });
+                }
+            }
+            });
+        });
     }
 
     protected updateRow(index: number, data: Object): void {
@@ -175,12 +176,13 @@ export class NormalEdit {
         }
         if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
-            gObj.trigger(events.actionBegin, args);
-            if (args.cancel) {
-                return;
-            }
-            gObj.showSpinner();
-            gObj.notify(events.updateData, args);
+            gObj.trigger(events.actionBegin, args, (endEditArgs: SaveEventArgs) => {
+                if (endEditArgs.cancel) {
+                    return;
+                }
+                gObj.showSpinner();
+                gObj.notify(events.updateData, endEditArgs);
+            });
         } else {
             args.action = 'add';
             args.selectedRow = 0;
@@ -286,24 +288,26 @@ export class NormalEdit {
         let args: { data: Object, requestType: string, selectedRow: Number, type: string } = extend(this.args, {
             requestType: 'cancel', type: events.actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
         }) as { data: Object, requestType: string, selectedRow: Number, type: string };
-        gObj.trigger(events.actionBegin, args);
-        if (this.parent.editSettings.mode === 'Dialog') {
-            this.parent.notify(events.dialogDestroy, {});
-        }
-        gObj.isEdit = false;
-        this.stopEditStatus();
-        args.type = events.actionComplete;
-        if (gObj.editSettings.mode !== 'Dialog') {
-            this.refreshRow(args.data);
-        }
-        if (gObj.getContentTable().querySelector('tr.e-emptyrow') &&
-            !gObj.getContentTable().querySelector('tr.e-row')) {
-            gObj.getContentTable().querySelector('tr.e-emptyrow').classList.remove('e-hide');
-        }
-        if (gObj.editSettings.mode !== 'Dialog') {
-            gObj.selectRow(this.rowIndex);
-        }
-        gObj.trigger(events.actionComplete, args);
+        gObj.trigger(events.actionBegin, args,
+                     (closeEditArgs: { data: Object, requestType: string, selectedRow: Number, type: string }) => {
+            if (this.parent.editSettings.mode === 'Dialog') {
+                this.parent.notify(events.dialogDestroy, {});
+            }
+            gObj.isEdit = false;
+            this.stopEditStatus();
+            closeEditArgs.type = events.actionComplete;
+            if (gObj.editSettings.mode !== 'Dialog') {
+                this.refreshRow(closeEditArgs.data);
+            }
+            if (gObj.getContentTable().querySelector('tr.e-emptyrow') &&
+                !gObj.getContentTable().querySelector('tr.e-row')) {
+                gObj.getContentTable().querySelector('tr.e-emptyrow').classList.remove('e-hide');
+            }
+            if (gObj.editSettings.mode !== 'Dialog') {
+                gObj.selectRow(this.rowIndex);
+            }
+            gObj.trigger(events.actionComplete, closeEditArgs);
+        });
     }
 
     protected addRecord(data?: Object, index?: number): void {
@@ -330,20 +334,22 @@ export class NormalEdit {
             requestType: 'add', data: this.previousData, type: events.actionBegin, index: index,
             rowData: this.previousData, target: undefined
         };
-        gObj.trigger(events.actionBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        gObj.isEdit = true;
-        if (gObj.editSettings.mode !== 'Dialog') {
-            gObj.clearSelection();
-        }
-        this.renderer.addNew(args);
-        gObj.editModule.applyFormValidation();
-        args.type = events.actionComplete;
-        args.row = gObj.element.querySelector('.e-addedrow');
-        gObj.trigger(events.actionComplete, args);
-        this.args = args as EditArgs;
+        gObj.trigger(events.actionBegin, args, (addArgs: AddEventArgs) => {
+            if (addArgs.cancel) {
+                return;
+            }
+            gObj.isEdit = true;
+            if (gObj.editSettings.mode !== 'Dialog') {
+                gObj.clearSelection();
+            }
+            this.renderer.addNew(addArgs);
+            gObj.editModule.applyFormValidation();
+            addArgs.type = events.actionComplete;
+            addArgs.row = gObj.element.querySelector('.e-addedrow');
+            gObj.trigger(events.actionComplete, addArgs);
+            this.args = addArgs as EditArgs;
+        });
+
     }
 
     protected deleteRecord(fieldname?: string, data?: Object): void {

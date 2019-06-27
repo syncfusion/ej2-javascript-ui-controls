@@ -1,6 +1,6 @@
 /// <reference path='../common/menu-base-model.d.ts'/>
 import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
-import { Browser, Complex } from '@syncfusion/ej2-base';
+import { Browser, Complex, getUniqueID } from '@syncfusion/ej2-base';
 import { MenuBase, FieldSettings } from '../common/menu-base';
 import { MenuItemModel, FieldSettingsModel } from '../common/menu-base-model';
 import { MenuModel } from './menu-model';
@@ -108,6 +108,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
      */
     protected preRender(): void {
         this.isMenu = true;
+        this.element.id = this.element.id || getUniqueID('ej2-menu');
         if (this.template) {
             try {
                 if (document.querySelectorAll(this.template).length) {

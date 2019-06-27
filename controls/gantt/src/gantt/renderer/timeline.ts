@@ -3,7 +3,7 @@ import { Gantt } from '../base/gantt';
 import { TimelineSettingsModel } from '../models/timeline-settings-model';
 import * as cls from '../base/css-constants';
 import { TimelineViewMode } from '../base/enum';
-import { ITimeSpanEventArgs, ITimelineFormatter, IGanttData } from '../base/interface';
+import { ITimeSpanEventArgs, ITimelineFormatter, IGanttData, ZoomEventArgs, ZoomTimelineSettings } from '../base/interface';
 import { DataUtil } from '@syncfusion/ej2-data';
 /**   
  * Configures the `Timeline` of the gantt.    
@@ -22,6 +22,9 @@ export class Timeline {
     private previousIsSingleTier: boolean;
     public timelineRoundOffEndDate: Date;
     public totalTimelineWidth: number;
+    public isZoomIn: boolean = false;
+    public isZooming: boolean = false;
+    public isZoomToFit: boolean = false;
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
         this.initProperties();
@@ -37,7 +40,7 @@ export class Timeline {
         this.timelineEndDate = null;
         this.totalTimelineWidth = 0;
         this.customTimelineSettings = null;
-        this.parent.isTimelineRoundOff = isNullOrUndefined(this.parent.projectStartDate) ? true : false;
+        this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
     }
 
     /**
@@ -83,9 +86,178 @@ export class Timeline {
     public updateChartByNewTimeline(): void {
         this.parent.chartRowsModule.refreshChartByTimeline();
         this.parent.notify('refreshDayMarkers', {});
+
+    }
+    /**
+     * Function used to perform Zoomin and Zoomout actions in Gantt control.
+     * @param isZoomIn 
+     * @private
+     * @return {void}
+     */
+    public processZooming(isZoomIn: boolean): void {
+        this.isZoomToFit = false;
+        if (!isNullOrUndefined(this.parent.zoomingProjectStartDate)) {
+            this.parent.cloneProjectStartDate = this.parent.cloneProjectStartDate.getTime() < this.parent.zoomingProjectStartDate.getTime()
+                ? this.parent.cloneProjectStartDate : this.parent.zoomingProjectStartDate;
+            this.parent.cloneProjectEndDate = this.parent.cloneProjectEndDate.getTime() > this.parent.zoomingProjectEndDate.getTime()
+                ? this.parent.cloneProjectEndDate : this.parent.zoomingProjectEndDate;
+        }
+        this.parent.zoomingProjectStartDate = null;
+        this.parent.zoomingProjectEndDate = null;
+        let currentLevel: number;
+        let currentZoomingLevel: number = this.checkCurrentZoomingLevel();
+        this.isZoomIn = isZoomIn;
+        this.isZooming = true;
+        currentLevel = isZoomIn ? currentZoomingLevel + 1 : currentZoomingLevel - 1;
+        if (this.parent.toolbarModule) {
+            if (isZoomIn) {
+                if (currentLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false); // disable toolbar items.
+                } else {
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], true); // disable toolbar items.
+                }
+            } else {
+                if (currentLevel === this.parent.zoomingLevels[0].level) {
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], false); // disable toolbar items.
+                } else {
+                    this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], true); // enable toolbar items.
+                }
+            }
+        }
+
+        let newTimeline: ZoomTimelineSettings = this.parent.zoomingLevels[currentLevel];
+        let args: ZoomEventArgs = {
+            requestType: isZoomIn ? 'beforeZoomIn' : 'beforeZoomOut',
+            timeline: newTimeline
+        };
+        this.parent.trigger('actionBegin', args);
+        newTimeline = args.timeline;
+        this.changeTimelineSettings(newTimeline);
     }
 
+    /**
+     * To change the timeline settings property values based upon the Zooming levels.
+     * @return {void}
+     * @private
+     */
+    private changeTimelineSettings(newTimeline: ZoomTimelineSettings): void {
+        let skipProperty: string = this.isSingleTier ?
+            this.customTimelineSettings.topTier.unit === 'None' ?
+                'topTier' : 'bottomTier' : null;
+        Object.keys(this.customTimelineSettings).forEach((property: string) => {
+            if (property !== skipProperty) {
+                this.customTimelineSettings[property] = (typeof newTimeline[property] === 'object'
+                    && !isNullOrUndefined(newTimeline[property])) ? { ...newTimeline[property] } : newTimeline[property];
+            } else {
+                let value: string = property === 'topTier' ? 'bottomTier' : 'topTier';
+                let assignValue: string = 'bottomTier';
+                this.customTimelineSettings[value] = { ...newTimeline[assignValue] };
+            }
+        });
+        this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
+        this.processTimelineUnit();
+        this.parent.updateProjectDates(
+            this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
+        if (this.isZooming || this.isZoomToFit) {
+            let args: ZoomEventArgs = {
+                requestType: this.isZoomIn ? 'AfterZoomIn' : this.isZoomToFit ? 'afterZoomToProject' : 'AfterZoomOut',
+            };
+            this.parent.trigger('actionComplete', args);
+        }
 
+    }
+    /**
+     * To perform the zoom to fit operation in Gantt.
+     * @return {void}
+     * @private
+     */
+    public processZoomToFit(): void {
+        this.isZoomToFit = true;
+        this.isZooming = false;
+        if (!this.parent.zoomingProjectStartDate) {
+            this.parent.zoomingProjectStartDate = this.parent.cloneProjectStartDate;
+            this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
+        }
+        this.parent.dataOperation.calculateProjectDates();
+        let timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
+        let totalDays: number = (timeDifference / (1000 * 3600 * 24));
+        let chartWidth: number = this.parent.ganttChartModule.chartElement.offsetWidth;
+        let perDayWidth: number = chartWidth / totalDays;
+        let zoomingLevel: ZoomTimelineSettings;
+        let firstValue: ZoomTimelineSettings;
+        let secondValue: ZoomTimelineSettings;
+        let zoomingCollections: ZoomTimelineSettings[] = [...this.parent.zoomingLevels];
+        let sortedCollectons: ZoomTimelineSettings[] = zoomingCollections.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings) =>
+           (a.perDayWidth < b.perDayWidth) ? 1 : -1);
+        if (perDayWidth === 0) { // return when the Gantt chart is not in viewable state.
+            return;
+        }
+        for (let i: number = 0; i < sortedCollectons.length; i++) {
+            firstValue = sortedCollectons[i];
+            if (i === sortedCollectons.length - 1) {
+                zoomingLevel = sortedCollectons[i];
+                break;
+            } else {
+                secondValue = sortedCollectons[i + 1];
+            }
+            if (perDayWidth >= firstValue.perDayWidth) {
+                zoomingLevel = sortedCollectons[i];
+                break;
+            }
+            if (perDayWidth < firstValue.perDayWidth && perDayWidth > secondValue.perDayWidth) {
+                zoomingLevel = sortedCollectons[i + 1];
+                break;
+            }
+        }
+        let newTimeline: ZoomTimelineSettings = { ...zoomingLevel };
+        this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
+        this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
+        let numberOfCells: number = this.calculateNumberOfTimelineCells(newTimeline);
+        newTimeline.timelineUnitSize = Math.abs((chartWidth - 25)) / numberOfCells;
+        this.changeTimelineSettings(newTimeline);
+        let args: ZoomEventArgs = {
+            requestType: 'beforeZoomToProject',
+            timeline: newTimeline
+        };
+        this.parent.trigger('actionBegin', args);
+    }
+
+    private roundOffDateToZoom(date: Date, isStartDate: boolean, perDayWidth: number, tierMode: string): void {
+        let width: number = tierMode === 'Month' || tierMode === 'Year' ? 60 : 20;
+        let roundOffTime: number = (width / perDayWidth) * (24 * 60 * 60 * 1000);
+        if (isStartDate) {
+            date.setTime(date.getTime() - roundOffTime);
+        } else {
+            date.setTime(date.getTime() + roundOffTime);
+        }
+        if (tierMode === 'Hour') {
+            date.setMinutes(isStartDate ? -120 : 120);
+        } else if (tierMode === 'Minutes') {
+            date.setSeconds(isStartDate ? -120 : 120);
+        } else {
+            date.setHours(isStartDate ? -48 : 48, 0, 0, 0);
+        }
+    };
+
+    private calculateNumberOfTimelineCells(newTimeline: ZoomTimelineSettings): number {
+        let numberOfDays: number = Math.abs((this.parent.cloneProjectEndDate.getTime() -
+            this.parent.cloneProjectStartDate.getTime()) / (24 * 60 * 60 * 1000));
+        let count: number = newTimeline.bottomTier.count;
+        let unit: string = newTimeline.bottomTier.unit;
+        if (unit === 'Day') {
+            return numberOfDays / count;
+        } else if (unit === 'Week') {
+            return (numberOfDays / count) / 7;
+        } else if (unit === 'Month') {
+            return (numberOfDays / count) / 28;
+        } else if (unit === 'Year') {
+            return (numberOfDays / count) / (12 * 28);
+        } else if (unit === 'Hour') {
+            return numberOfDays * (24 / count);
+        } else {
+            return numberOfDays * ((60 * 24) / count);
+        }
+    }
     /**
      * To validate time line unit.
      * @return {void}
@@ -98,7 +270,8 @@ export class Timeline {
             'bottomTier': ['unit', 'format', 'count', 'formatter']
         };
         let tierUnits: string[] = ['Year', 'Month', 'Week', 'Day', 'Hour', 'Minutes'];
-        this.customTimelineSettings = this.extendFunction(this.parent.timelineSettings, directProperty, innerProperty);
+        this.customTimelineSettings = this.customTimelineSettings ? this.customTimelineSettings :
+         this.extendFunction(this.parent.timelineSettings, directProperty, innerProperty);
         if ((tierUnits.indexOf(this.customTimelineSettings.topTier.unit) === -1) &&
             (tierUnits.indexOf(this.customTimelineSettings.bottomTier.unit) === -1)) {
             this.customTimelineSettings.topTier.unit = tierUnits.indexOf(this.customTimelineSettings.timelineViewMode) !== -1 ?
@@ -128,6 +301,7 @@ export class Timeline {
      * @private
      */
     private processTimelineProperty(): void {
+
         this.customTimelineSettings.topTier.count = (this.topTier === 'None') ?
             1 : this.validateCount(this.customTimelineSettings.topTier.unit, this.customTimelineSettings.topTier.count, 'topTier');
         this.customTimelineSettings.bottomTier.count = this.customTimelineSettings.bottomTier.unit === 'None' ?
@@ -137,8 +311,161 @@ export class Timeline {
         this.customTimelineSettings.topTier.format = this.validateFormat(this.topTier, this.customTimelineSettings.topTier.format);
         this.customTimelineSettings.weekStartDay = this.customTimelineSettings.weekStartDay >= 0 &&
             this.customTimelineSettings.weekStartDay <= 6 ? this.customTimelineSettings.weekStartDay : 0;
+        this.checkCurrentZoomingLevel();
     }
+    /**
+     * To find the current zooming level of the Gantt control.
+     * @return {void}
+     * @private
+     */
+    public calculateZoomingLevelsPerDayWidth(): void {
+        let collections: ZoomTimelineSettings[] = this.parent.zoomingLevels;
+        for (let i: number = 0; i < collections.length; i++) {
+            let perDayWidth: number =
+                this.getPerDayWidth(
+                    collections[i].timelineUnitSize,
+                    collections[i].bottomTier.count,
+                    collections[i].bottomTier.unit);
+            collections[i].perDayWidth = perDayWidth;
+        }
+    }
+    /**
+     * To find the current zooming level of the Gantt control.
+     * @return {void}
+     * @private
+     */
+    private checkCurrentZoomingLevel(): number {
+        let count: number = this.customTimelineSettings.bottomTier.unit !== 'None' ?
+            this.customTimelineSettings.bottomTier.count : this.customTimelineSettings.topTier.count;
+        let unit: string = this.customTimelineSettings.bottomTier.unit !== 'None' ?
+            this.customTimelineSettings.bottomTier.unit : this.customTimelineSettings.topTier.unit;
+        let zoomLevel: number = this.getCurrentZoomingLevel(unit, count);
+        if (this.parent.toolbarModule) {
+            if (zoomLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {
+                this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false);
+            } else if (zoomLevel === this.parent.zoomingLevels[0].level) {
+                this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], false);
+            }
 
+        }
+        this.parent.currentZoomingLevel = this.parent.zoomingLevels[zoomLevel];
+        return zoomLevel;
+    }
+    /**
+     * @private
+     */
+    private getCurrentZoomingLevel(unit: string, count: number): number {
+        let level: number;
+        let currentZoomCollection: ZoomTimelineSettings;
+        let checkSameCountLevels: ZoomTimelineSettings[];
+        let secondValue: ZoomTimelineSettings;
+        let firstValue: ZoomTimelineSettings;
+        if (!this.parent.zoomingLevels.length) {
+            this.parent.zoomingLevels = this.parent.getZoomingLevels();
+        }
+        let sameUnitLevels: ZoomTimelineSettings[] = this.parent.zoomingLevels.filter((tempLevel: ZoomTimelineSettings) => {
+            return tempLevel.bottomTier.unit === unit;
+        });
+        if (sameUnitLevels.length === 0) {
+            let closestUnit: string = this.getClosestUnit(unit, '', false);
+            sameUnitLevels = this.parent.zoomingLevels.filter((tempLevel: ZoomTimelineSettings) => {
+                return tempLevel.bottomTier.unit === closestUnit;
+            });
+        }
+        let sortedUnitLevels: ZoomTimelineSettings[] = sameUnitLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings)  =>
+         (a.bottomTier.count < b.bottomTier.count) ? 1 : -1);
+        for (let i: number = 0; i < sortedUnitLevels.length; i++) {
+            firstValue = sortedUnitLevels[i];
+            if (i === sortedUnitLevels.length - 1) {
+                level = sortedUnitLevels[i].level;
+                break;
+            } else {
+                secondValue = sortedUnitLevels[i + 1];
+            }
+
+            if (count >= firstValue.bottomTier.count) {
+                currentZoomCollection = sortedUnitLevels[i];
+                checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
+                    return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
+                });
+                if (checkSameCountLevels.length > 1) {
+                    level = this.checkCollectionsWidth(checkSameCountLevels);
+                } else {
+                    level = checkSameCountLevels[0].level;
+                }
+                break;
+            } else if (count < firstValue.bottomTier.count && count > secondValue.bottomTier.count) {
+                currentZoomCollection = sortedUnitLevels[i + 1];
+                checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
+                    return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
+                });
+                if (checkSameCountLevels.length > 1) {
+                    level = this.checkCollectionsWidth(checkSameCountLevels);
+                } else {
+                    level = checkSameCountLevels[0].level;
+                }
+                break;
+            }
+        }
+        return level;
+    }
+    /**
+     * Getting closest zooimg level.
+     * @private
+     */
+    private getClosestUnit(unit: string, closetUnit: string, isCont: boolean): string {
+        let bottomTierUnits: string[] = ['Year', 'Month', 'Week', 'Day', 'Hour', 'Minutes'];
+        let index: number = bottomTierUnits.indexOf(unit);
+        if (index === 0) {
+            isCont = true;
+        }
+        if (this.isZoomIn || isCont) {
+            unit = bottomTierUnits[index + 1];
+        } else {
+            unit = bottomTierUnits[index - 1];
+
+        }
+        let sameUnitLevels: ZoomTimelineSettings[] = this.parent.zoomingLevels.filter((tempLevel: ZoomTimelineSettings) => {
+            return tempLevel.bottomTier.unit === unit;
+        });
+        if (sameUnitLevels.length === 0) {
+            if (unit === 'Year') {
+                isCont = true;
+            }
+            closetUnit = unit;
+            return this.getClosestUnit(unit, closetUnit, isCont);
+        } else {
+            return unit;
+        }
+
+
+    }
+    private checkCollectionsWidth(checkSameLevels: ZoomTimelineSettings[]): number {
+        let zoomLevels: ZoomTimelineSettings[] = checkSameLevels;
+        let width: number = this.customTimelineSettings.timelineUnitSize;
+        let level: number;
+        let secondValue: ZoomTimelineSettings;
+        let firstValue: ZoomTimelineSettings;
+        let sortedZoomLevels: ZoomTimelineSettings[] = zoomLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings) =>
+           (a.timelineUnitSize < b.timelineUnitSize) ? 1 : -1);
+        for (let i: number = 0; i < sortedZoomLevels.length; i++) {
+            firstValue = sortedZoomLevels[i];
+            if (i === sortedZoomLevels.length - 1) {
+                level = sortedZoomLevels[i].level;
+                break;
+            } else {
+                secondValue = sortedZoomLevels[i + 1];
+            }
+            if (width >= firstValue.timelineUnitSize) {
+                level = sortedZoomLevels[i].level;
+                break;
+            } else if (width < firstValue.timelineUnitSize && width > secondValue.timelineUnitSize) {
+                level = sortedZoomLevels[i + 1].level;
+                break;
+            }
+        }
+        return level;
+    }
     /**
      * To create timeline header template.
      * @return {void}
@@ -198,6 +525,8 @@ export class Timeline {
             this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
             tier = 'bottomTier';
             tr = null;
+
+
         }
     }
 
@@ -253,6 +582,13 @@ export class Timeline {
                     tierCount = this.validateBottomTierCount(mode, tierCount);
                 }
                 break;
+        }
+        if (count !== tierCount && this.isZooming && this.parent.toolbarModule && (tier === 'bottomTier' || this.isSingleTier)) {
+            if (this.isZoomIn) {
+                this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin'], false);
+            } else {
+                this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomout'], false);
+            }
         }
         return tierCount;
     }
@@ -537,8 +873,9 @@ export class Timeline {
         let textClassName: string = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
 
         td += this.parent.timelineModule.isSingleTier ?
-            '<th class="' + cls.timelineSingleHeaderCell + ' ' : '<th class="' + cls.timelineTopHeaderCell + '';
+            '<th class="' + cls.timelineSingleHeaderCell + ' ' : '<th class="' + cls.timelineTopHeaderCell;
         td += isWeekendCell ? ' ' + cls.weekendHeaderCell : '';
+        td += '" tabindex="-1" aria-label= "' + this.parent.localeObj.getConstant('timelineCell') + ' ' + date;
         td += '" style="width:' + thWidth + 'px;';
         td += isWeekendCell && this.customTimelineSettings.weekendBackground ?
             'background-color:' + this.customTimelineSettings.weekendBackground + ';' : '';

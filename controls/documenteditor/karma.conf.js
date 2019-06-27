@@ -30,7 +30,13 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-lists/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false }
+      { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-charts/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-pdf-export/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-office-chart/**/*.js", included: false }
+
       // Add dependent package's script files here              
     ],
 

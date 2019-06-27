@@ -47,7 +47,7 @@ let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
 let diagram: Diagram = new Diagram({
     width: '900px', height: '550px',
     layout: { type: 'HierarchicalTree' },
-    dataSourceSettings: { id: 'id', parentId: 'parentId', dataManager: items },
+    dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: items },
     getNodeDefaults: (obj: Node) => {
         obj.shape = { type: 'Text', content: (obj.data as { Label: 'string' }).Label };
         obj.style = { fill: 'lightgrey', strokeColor: 'none', strokeWidth: 2 };

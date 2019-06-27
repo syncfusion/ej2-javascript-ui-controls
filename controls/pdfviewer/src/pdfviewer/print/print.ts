@@ -66,11 +66,11 @@ export class Print {
         };
         proxy.printRequestHandler = new AjaxHandler(proxy.pdfViewer);
         proxy.printRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.print;
-        proxy.printRequestHandler.responseType =  null;
+        proxy.printRequestHandler.responseType = null;
         proxy.printRequestHandler.mode = false;
         proxy.printRequestHandler.send(jsonObject);
         // tslint:disable-next-line
-        proxy.printRequestHandler.onSuccess = function(result: any) {
+        proxy.printRequestHandler.onSuccess = function (result: any) {
             // tslint:disable-next-line
             let printImage: any = result.data;
             if (typeof printImage !== 'object') {
@@ -78,9 +78,12 @@ export class Print {
             }
             let annotationSource: string = '';
             if (printImage.textMarkupAnnotation && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                // tslint:disable-next-line
+                let stampData: any = printImage['stampAnnotations'];
                 // tslint:disable-next-line:max-line-length
-                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printImage.textMarkupAnnotation, pageIndex);
+                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printImage.textMarkupAnnotation, pageIndex, stampData, printImage.shapeAnnotation);
             }
+            let currentPageNumber: number = printImage.pageNumber;
             // tslint:disable-next-line:max-line-length
             proxy.printCanvas = createElement('canvas', { id: proxy.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
             proxy.printCanvas.style.width = pageWidth + 'px';
@@ -109,20 +112,21 @@ export class Print {
                         context.drawImage(annotationImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
                     }
                 }
-                if (pageIndex === (proxy.pdfViewerBase.pageCount - 1)) {
+                if (currentPageNumber === (proxy.pdfViewerBase.pageCount - 1)) {
                     proxy.printWindowOpen();
                 }
+                proxy.pdfViewer.renderDrawing(null, pageIndex);
             };
             pageImage.src = printImage.image;
             annotationImage.src = annotationSource;
             proxy.printViewerContainer.appendChild(proxy.printCanvas);
         };
         // tslint:disable-next-line
-        this.printRequestHandler.onFailure = function(result: any) {
+        this.printRequestHandler.onFailure = function (result: any) {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
         };
         // tslint:disable-next-line
-        this.printRequestHandler.onError = function(result: any) {
+        this.printRequestHandler.onError = function (result: any) {
             proxy.pdfViewerBase.openNotificationPopup();
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
         };

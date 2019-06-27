@@ -1,21 +1,20 @@
 import { Dialog } from '@syncfusion/ej2-popups';
-import { select, isNullOrUndefined as isNOU, createElement, Internationalization } from '@syncfusion/ej2-base';
-import { IFileManager, ReadArgs, DialogOptions, FileDetails, ITreeView } from '../base/interface';
+import { select, isNullOrUndefined as isNOU, createElement, Internationalization, getValue, remove, selectAll } from '@syncfusion/ej2-base';
+import { IFileManager, ReadArgs, DialogOptions, FileDetails, FileDragEventArgs } from '../base/interface';
 import { createFolder } from '../common/operations';
 import * as CLS from '../base/classes';
+import * as events from '../base/constant';
 import { paste, rename } from '../common/operations';
-import { activeElement, getLocaleText } from '../common/utility';
+import { getLocaleText, getDuplicateData, getParentPath, objectToString } from '../common/utility';
 import { SelectedEventArgs, FileInfo, Input } from '@syncfusion/ej2-inputs';
+import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 
-/**
- * Function to create the dialog for new folder in File Manager.
- * @private
- */
 // tslint:disable-next-line
 export function createDialog(parent: IFileManager, text: string, e?: ReadArgs | SelectedEventArgs, details?: FileDetails, replaceItems?: string[]): void {
     let options: DialogOptions = getOptions(parent, text, e, details, replaceItems);
     if (isNOU(parent.dialogObj)) {
         parent.dialogObj = new Dialog({
+            beforeOpen: keydownAction.bind(this, parent),
             header: options.header,
             content: options.content,
             buttons: options.buttons,
@@ -27,12 +26,229 @@ export function createDialog(parent: IFileManager, text: string, e?: ReadArgs | 
             target: '#' + parent.element.id,
             width: '350px',
             open: options.open,
+            close: options.close,
             enableRtl: parent.enableRtl,
             locale: parent.locale
         });
         parent.dialogObj.appendTo('#' + parent.element.id + CLS.DIALOG_ID);
     } else {
         changeOptions(parent, options);
+    }
+}
+export function createExtDialog(parent: IFileManager, text: string, replaceItems?: string[], newPath?: string): void {
+    let extOptions: DialogOptions = getExtOptions(parent, text, replaceItems, newPath);
+    parent.isApplySame = false;
+    if (isNOU(parent.extDialogObj)) {
+        parent.extDialogObj = new Dialog({
+            content: extOptions.content,
+            header: extOptions.header,
+            closeOnEscape: true,
+            animationSettings: { effect: 'None' },
+            target: '#' + parent.element.id,
+            enableRtl: parent.enableRtl,
+            showCloseIcon: true,
+            isModal: true,
+            width: 350,
+            buttons: extOptions.buttons,
+            open: extOptions.open,
+            close: extOptions.close,
+            locale: parent.locale
+        });
+        parent.extDialogObj.appendTo('#' + parent.element.id + CLS.EXTN_DIALOG_ID);
+    } else {
+        parent.extDialogObj.header = extOptions.header;
+        parent.extDialogObj.close = extOptions.close;
+        parent.extDialogObj.open = extOptions.open;
+        parent.extDialogObj.close = extOptions.close;
+        parent.extDialogObj.content = extOptions.content;
+        parent.extDialogObj.buttons = extOptions.buttons;
+        parent.extDialogObj.enableRtl = parent.enableRtl;
+        parent.extDialogObj.locale = parent.locale;
+        parent.extDialogObj.dataBind();
+        parent.extDialogObj.show();
+    }
+}
+// tslint:disable-next-line:max-func-body-length
+function getExtOptions(parent: IFileManager, text: string, replaceItems?: string[], newPath?: string): DialogOptions {
+    let options: DialogOptions = { header: '', content: '', buttons: [], open: null, close: null };
+    switch (text) {
+        case 'Extension':
+            options.header = getLocaleText(parent, 'Header-Rename-Confirmation');
+            options.content = '<div>' + getLocaleText(parent, 'Content-Rename-Confirmation') + '</div>';
+            options.buttons = [{
+                buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Yes') },
+                click: () => {
+                    parent.extDialogObj.hide();
+                    rename(parent, newPath, parent.renameText);
+                }
+            },
+            {
+                buttonModel: { content: getLocaleText(parent, 'Button-No') },
+                click: () => {
+                    parent.extDialogObj.hide();
+                    parent.dialogObj.hide();
+                }
+            }];
+            break;
+        case 'DuplicateItems':
+            parent.replaceItems = replaceItems;
+            let item: string = parent.replaceItems[parent.fileLength];
+            let index: number = item.lastIndexOf('/');
+            item = index === -1 ? item : item.substring(index);
+            options.header = getLocaleText(parent, 'Header-Duplicate');
+            let duplicateContent: string = '<div>' + getLocaleText(parent, 'Content-Duplicate') + '</div>';
+            options.content = (duplicateContent).replace('{0}', item);
+            options.close = () => {
+                if (!parent.isDropEnd && parent.duplicateItems.length === 0) {
+                    let args: FileDragEventArgs = { fileDetails: parent.droppedObjects };
+                    parent.trigger('fileDropped', args);
+                    parent.isDropEnd = parent.isDragDrop = false;
+                }
+            };
+            options.buttons = [
+                {
+                    buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Yes') },
+                    click: () => {
+                        parent.duplicateItems.push(parent.replaceItems[parent.fileLength]);
+                        parent.duplicateRecords.push(getDuplicateData(parent, parent.replaceItems[parent.fileLength]));
+                        parent.fileLength++;
+                        if (replaceItems[parent.fileLength]) {
+                            let item: string = parent.replaceItems[parent.fileLength];
+                            let indexval: number = item.lastIndexOf('/');
+                            item = indexval === -1 ? item : item.substring(indexval);
+                            parent.extDialogObj.content = (duplicateContent).replace('{0}', item);
+                            parent.extDialogObj.show();
+                        } else {
+                            parent.extDialogObj.hide();
+                            let targetPath: string = parent.isDragDrop ? parent.dragPath : parent.targetPath;
+                            let path: string = parent.isDragDrop ? parent.dropPath : parent.path + parent.folderPath;
+                            let action: string = parent.isDragDrop ? 'move' : parent.fileAction;
+                            paste(
+                                parent, targetPath, parent.duplicateItems, path,
+                                action, parent.duplicateItems, parent.duplicateRecords);
+                        }
+                    }
+                },
+                {
+                    buttonModel: { content: getLocaleText(parent, 'Button-No') },
+                    click: () => {
+                        parent.fileLength++;
+                        if (replaceItems[parent.fileLength]) {
+                            let item: string = parent.replaceItems[parent.fileLength];
+                            let ind: number = item.lastIndexOf('/');
+                            item = ind === -1 ? item : item.substring(ind);
+                            parent.extDialogObj.content = (duplicateContent).replace('{0}', item);
+                            parent.extDialogObj.show();
+                        } else {
+                            parent.extDialogObj.hide();
+                            if (parent.duplicateItems.length !== 0) {
+                                let action: string = parent.isDragDrop ? 'move' : parent.fileAction;
+                                let targetPath: string = parent.isDragDrop ? parent.dragPath : parent.targetPath;
+                                let path: string = parent.isDragDrop ? parent.dropPath : parent.path + parent.folderPath;
+                                paste(
+                                    parent, targetPath, parent.duplicateItems, path,
+                                    action, parent.duplicateItems, parent.duplicateRecords);
+                            }
+                        }
+                    },
+                }
+            ];
+            break;
+        case 'UploadRetry':
+            options.header = getLocaleText(parent, 'Header-Retry');
+            options.content = parent.retryFiles[0].name + '<div class="e-fe-retrycontent">' +
+                (getLocaleText(parent, 'Content-Retry')) + '</div>';
+            options.open = onRetryOpen.bind(this, parent);
+            options.close = () => { parent.isRetryOpened = false; retryDlgClose(parent); };
+            options.buttons = [
+                {
+                    buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Keep-Both') },
+                    click: () => {
+                        retryDlgUpdate(parent, true);
+                    }
+                },
+                {
+                    buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Replace') },
+                    click: () => {
+                        retryDlgUpdate(parent, false);
+                    }
+                },
+                {
+                    buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Skip') },
+                    click: () => {
+                        if (parent.isApplySame) {
+                            parent.retryFiles = [];
+                            retryDlgClose(parent);
+                        } else {
+                            parent.retryFiles.splice(0, 1);
+                            (parent.retryFiles.length !== 0) ? createExtDialog(parent, 'UploadRetry') : retryDlgClose(parent);
+                        }
+                    }
+                }
+            ];
+            break;
+    }
+    return options;
+}
+function retryDlgUpdate(parent: IFileManager, isKeepBoth: boolean): void {
+    if (parent.isApplySame) {
+        isKeepBoth ? onKeepBothAll(parent) : onReplaceAll(parent);
+        retryDlgClose(parent);
+    } else {
+        parent.retryArgs.push({
+            action: isKeepBoth ? 'keepboth' : 'replace',
+            file: parent.retryFiles[0]
+        });
+        parent.uploadObj.retry(parent.retryFiles[0]);
+        parent.retryFiles.splice(0, 1);
+        (parent.retryFiles.length !== 0) ? createExtDialog(parent, 'UploadRetry') : retryDlgClose(parent);
+    }
+}
+
+function retryDlgClose(parent: IFileManager): void {
+    let flag: boolean = true;
+    if (parent.isRetryOpened) { parent.isRetryOpened = false; } else { flag = false; }
+    let ele: Element = select('.e-dlg-checkbox', parent.extDialogObj.element);
+    if (ele) { remove(ele); }
+    if (flag) { parent.extDialogObj.hide(); } else {
+        parent.retryFiles = [];
+    }
+}
+
+function onRetryOpen(parent: IFileManager, args: object): void {
+    parent.isRetryOpened = true;
+    let dialogEle: Element = getValue('element', args);
+    let container: Element = select('.e-dlg-content', dialogEle);
+    let checkContainer: Element = parent.createElement('div', {
+        className: 'e-dlg-checkbox'
+    });
+    let checkbox: Element = parent.createElement('input', {
+        id: parent.element.id + '_applyall'
+    });
+    checkContainer.appendChild(checkbox);
+    container.appendChild(checkContainer);
+    let checkBoxObj: CheckBox = new CheckBox({
+        label: getLocaleText(parent, 'ApplyAll-Label'),
+        change: (args: ChangeEventArgs) => {
+            parent.isApplySame = args.checked;
+        }
+    });
+    checkBoxObj.appendTo('#' + parent.element.id + '_applyall');
+}
+
+function onKeepBothAll(parent: IFileManager): void {
+    while (parent.retryFiles.length !== 0) {
+        parent.retryArgs.push({ action: 'KeepBoth', file: parent.retryFiles[0] });
+        parent.uploadObj.retry(parent.retryFiles[0]);
+        parent.retryFiles.splice(0, 1);
+    }
+}
+
+function onReplaceAll(parent: IFileManager): void {
+    while (parent.retryFiles.length !== 0) {
+        parent.retryArgs.push({ action: 'replace', file: parent.retryFiles[0] });
+        parent.uploadObj.retry(parent.retryFiles[0]);
+        parent.retryFiles.splice(0, 1);
     }
 }
 
@@ -132,7 +348,6 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
                 {
                     buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Yes') },
                     click: (e: KeyboardEvent) => {
-                        if (e.type === 'keydown') { return; }
                         onDeleteSubmit(parent);
                     },
                 },
@@ -158,60 +373,14 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             ];
             options.open = onRenameDialogOpen.bind(this, parent);
             break;
-        case 'DuplicateItems':
-            parent.replaceItems = replaceItems;
-            options.header = getLocaleText(parent, 'Header-Duplicate');
-            // tslint:disable-next-line
-            options.content = '<div>' + parent.replaceItems[parent.fileLength].substring(parent.replaceItems[parent.fileLength].lastIndexOf('/') + 1) + getLocaleText(parent, 'Content-Duplicate') + '</div>';
-            options.buttons = [
-                {
-                    buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Yes') },
-                    click: (e: KeyboardEvent) => {
-                        if (e.type === 'keydown') { return; }
-                        // tslint:disable-next-line
-                        let item: string = parent.replaceItems[parent.fileLength].substring(parent.replaceItems[parent.fileLength].lastIndexOf('/') + 1);
-                        parent.duplicateItems.push(item);
-                        parent.fileLength++;
-                        if (replaceItems[parent.fileLength]) {
-                            // tslint:disable-next-line
-                            parent.dialogObj.content = '<div>' + parent.replaceItems[parent.fileLength].substring(parent.replaceItems[parent.fileLength].lastIndexOf('/') + 1) + getLocaleText(parent, 'Content-Duplicate') + '</div>';
-                            parent.dialogObj.show();
-                        } else {
-                            parent.dialogObj.hide();
-                            paste(
-                                // tslint:disable-next-line
-                                parent as IFileManager, parent.targetPath, parent.selectedNodes,
-                                parent.path, parent.fileAction, parent.navigationpaneModule as ITreeView, parent.duplicateItems);
-                        }
-                    },
-                },
-                {
-                    buttonModel: { content: getLocaleText(parent, 'Button-No') },
-                    click: () => {
-                        parent.fileLength++;
-                        if (replaceItems[parent.fileLength]) {
-                            // tslint:disable-next-line
-                            let item: string = parent.replaceItems[parent.fileLength].substring(parent.replaceItems[parent.fileLength].lastIndexOf('/') + 1);
-                            // tslint:disable-next-line
-                            parent.dialogObj.content = '<div>' + item + ' already exists. Are you sure you want to replace it ?</div>';
-                            parent.dialogObj.show();
-                        } else {
-                            parent.dialogObj.hide();
-                            if (parent.duplicateItems.length !== 0) {
-                                paste(
-                                    // tslint:disable-next-line
-                                    parent as IFileManager, parent.targetPath, parent.duplicateItems,
-                                    parent.path, parent.fileAction, parent.navigationpaneModule as ITreeView, parent.duplicateItems);
-                            }
-                        }
-                    },
-                }
-            ];
-            break;
-        case 'GetDetails':
+        case 'details':
             let intl: Internationalization = new Internationalization();
-            let parseDate: Date = intl.parseDate(details.modified, { format: 'MM/dd/yyy hh:mm:ss' });
             let formattedString: string = intl.formatDate(new Date(details.modified), { format: 'MMMM dd, yyyy HH:mm:ss' });
+            let permission: string = '';
+            if (!isNOU(details.permission)) {
+                permission = '<tr><td>' + getLocaleText(parent, 'Permission') + '</td><td class="' + CLS.VALUE + '" >'
+                    + objectToString(details.permission) + '</td></tr>';
+            }
             options.header = details.name;
             options.content = '<table>' +
                 '<tr><td>' + getLocaleText(parent, 'Type') + '</td><td class="' + CLS.VALUE + '" title="' +
@@ -222,22 +391,27 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
                 details.location + '">' + details.location + '</td></tr>' +
                 '<tr><td>' + getLocaleText(parent, 'Modified') + '</td><td class="' + CLS.VALUE + '" >'
                 + formattedString + '</td></tr>'
-                + '</table>';
+                + permission + '</table>';
             options.buttons = [
                 {
                     buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Ok') },
                     click: (e: KeyboardEvent) => {
-                        if (e.type === 'keydown') { return; }
                         parent.dialogObj.hide();
                     },
                 }
             ];
             break;
         case 'MultipleFileDetails':
+            let strArr: string[] = details.name.split(', ').map((val: string) => {
+                let index: number = val.indexOf('.') + 1;
+                return (index === 0) ? 'Folder' : val.substr(index);
+            });
+            let fileType: string = strArr.every((val: string, i: number, arr: string[]) => val === arr[0]) ?
+                ((strArr[0] === 'Folder') ? 'Folder' : strArr[0].toLocaleUpperCase() + ' Type') : 'Multiple Types';
             let location: string = details.location;
             options.header = details.name;
             options.content = '<table><tr><td>' + getLocaleText(parent, 'Type')
-                + ':</td><td class="' + CLS.VALUE + '">Multiple Types</td></tr>' +
+                + ':</td><td class="' + CLS.VALUE + '">' + fileType + '</td></tr>' +
                 '<tr><td>' + getLocaleText(parent, 'Size') + ':</td><td>' +
                 details.size + '<span class="' + CLS.VALUE + '" title ="' + details.size
                 + '"></span></td></tr>' + '<tr><td>' + getLocaleText(parent, 'Location') +
@@ -255,8 +429,8 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             break;
         case 'Error':
             let event: ReadArgs = (<ReadArgs>e);
-            if (event.error.code === '523') {
-                options.header = 'Access Denied';
+            if (event.error.code === '401') {
+                options.header = getLocaleText(parent, 'Access-Denied');
             } else {
                 options.header = getLocaleText(parent, 'Error');
             }
@@ -265,7 +439,6 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
                 {
                     buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Ok') },
                     click: (e: KeyboardEvent) => {
-                        if (e.type === 'keydown') { return; }
                         parent.dialogObj.hide();
                     },
                 }
@@ -274,6 +447,25 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
     }
     return options;
 }
+
+function keydownAction(parent: IFileManager): void {
+    let btnElement: HTMLInputElement[] = (selectAll('.e-btn', parent.dialogObj.element) as HTMLInputElement[]);
+    for (let btnCount: number = 0; btnCount < btnElement.length; btnCount++) {
+        /* istanbul ignore next */
+        btnElement[btnCount].onkeydown = (e: KeyboardEvent) => {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+            }
+        };
+        /* istanbul ignore next */
+        btnElement[btnCount].onkeyup = (e: KeyboardEvent) => {
+            if (e.keyCode === 13) {
+                btnElement[btnCount].click();
+            }
+        };
+    }
+}
+
 /* istanbul ignore next */
 function getFilesName(data: SelectedEventArgs): HTMLElement {
     let parent: HTMLElement = createElement('div', { id: 'uploadDialog' });
@@ -296,6 +488,7 @@ function changeOptions(parent: IFileManager, options: DialogOptions): void {
     parent.dialogObj.buttons = options.buttons;
     parent.dialogObj.enableRtl = parent.enableRtl;
     parent.dialogObj.open = options.open;
+    parent.dialogObj.close = options.close;
     parent.dialogObj.dataBind();
     parent.dialogObj.show();
 }
@@ -321,57 +514,24 @@ function onReSubmit(parent: IFileManager): void {
         parent.dialogObj.hide();
         return;
     }
-    if (parent.selectedItems.length === 0) {
-        parent.parentPath = parent.path;
-        let treePath: string[] = parent.path.split('/');
-        let newPath: string = parent.path.replace(treePath[treePath.length - 2] + '/', '');
-        parent.setProperties({ path: newPath }, true);
-    }
+    let newPath: string = (parent.activeModule === 'navigationpane') ? getParentPath(parent) : parent.path;
     if (parent.isFile) {
         let oldExtension: string = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
         let newExtension: string = text.substr(text.lastIndexOf('.'));
         if (oldExtension !== newExtension) {
-            if (isNOU(parent.extDialogObj)) {
-                parent.extDialogObj = new Dialog({
-                    header: getLocaleText(parent, 'Header-Rename-Confirmation'),
-                    content: '<div>' + getLocaleText(parent, 'Content-Rename-Confirmation') + '</div>',
-                    animationSettings: { effect: 'None' },
-                    target: '#' + parent.element.id,
-                    showCloseIcon: true,
-                    closeOnEscape: true,
-                    isModal: true,
-                    width: 350,
-                    buttons: [{
-                        buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Yes') },
-                        click: () => {
-                            parent.extDialogObj.hide();
-                            rename(parent, parent.renameText);
-                        },
-                    },
-                    {
-                        buttonModel: { content: getLocaleText(parent, 'Button-No') },
-                        click: () => {
-                            parent.extDialogObj.hide();
-                            parent.dialogObj.hide();
-                        },
-                    }],
-                });
-                parent.extDialogObj.appendTo('#' + parent.element.id + CLS.EXTN_DIALOG_ID);
-            } else {
-                parent.extDialogObj.show();
-            }
+            createExtDialog(parent, 'Extension', null, newPath);
         } else {
-            rename(parent, text);
+            rename(parent, newPath, text);
         }
     } else {
-        rename(parent, text);
+        parent.renamedNodeId = getValue('_fm_id', parent.itemData[0]);
+        rename(parent, newPath, text);
     }
 }
 
 function onDeleteSubmit(parent: IFileManager): void {
     parent.dialogObj.hide();
-    let delItems: Object[] = activeElement('Delete', null, parent as IFileManager);
-    parent.deleteHandler(delItems);
+    parent.notify(events.deleteInit, {});
 }
 
 function onValidate(parent: IFileManager, ele: HTMLInputElement): void {
@@ -411,7 +571,7 @@ function getKeyCode(e: KeyboardEvent): number {
 
 export function createImageDialog(parent: IFileManager, header: string, imageUrl: string): void {
     let content: HTMLElement = createElement('div', { className: 'e-image-wrap' });
-    let image: HTMLElement = createElement('img', { className: 'e-image', attrs: { src: imageUrl } });
+    let image: HTMLElement = createElement('img', { className: 'e-image', attrs: { src: imageUrl, alt: header } });
     content.appendChild(image);
     if (isNOU(parent.viewerObj)) {
         parent.viewerObj = new Dialog({
@@ -458,7 +618,7 @@ function updateImage(parent: IFileManager): void {
     let content: HTMLElement = <HTMLElement>select('.e-dlg-content', parent.viewerObj.element);
     let imgWrap: HTMLElement = <HTMLElement>select('.e-image-wrap', parent.viewerObj.element);
     let cssObj: CSSStyleDeclaration = window.getComputedStyle(content, null);
-    let paddingWidth : number = cssObj ? (2 * parseFloat(cssObj.paddingRight)) : 36;
+    let paddingWidth: number = cssObj ? (2 * parseFloat(cssObj.paddingRight)) : 36;
     let paddingHeight: number = cssObj ? (2 * parseFloat(cssObj.paddingBottom)) : 20;
     imgWrap.style.width = (content.offsetWidth - paddingWidth) + 'px';
     imgWrap.style.height = (content.offsetHeight - paddingHeight) + 'px';

@@ -208,12 +208,14 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
     @Event()
     public beforePrint: EmitType<ISmithchartPrintEventArgs>;
     /**
      * Triggers after the animation completed.
      * @event
+     * @blazorProperty 'AnimationCompleted'
      */
     @Event()
     public animationComplete: EmitType<ISmithchartAnimationCompleteEventArgs>;
@@ -221,12 +223,15 @@ public theme: SmithchartTheme;
     /**
      * Triggers before smithchart rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ISmithchartLoadEventArgs>;
     /**
      * Triggers after smithchart rendered.
      * @event
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ISmithchartLoadedEventArgs>;
@@ -234,6 +239,8 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the legend is rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'LegendRendering'
      */
     @Event()
     public legendRender: EmitType<ISmithchartLegendRenderEventArgs>;
@@ -241,6 +248,8 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the title is rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'TitleRendering'
      */
     @Event()
     public titleRender: EmitType<ITitleRenderEventArgs>;
@@ -248,6 +257,8 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the sub-title is rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'SubtitleRendering'
      */
     @Event()
     public subtitleRender: EmitType<ISubTitleRenderEventArgs>;
@@ -255,12 +266,16 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the datalabel text is rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'TextRendering'
      */
     @Event()
     public textRender: EmitType<ISmithchartTextRenderEventArgs>;
     /**
      * Triggers before the axis label is rendered
      * @event
+     * @deprecated
+     * @blazorProperty 'AxisLabelRendering'
      */
     @Event()
     public axisLabelRender: EmitType<ISmithchartAxisLabelRenderEventArgs>;
@@ -268,6 +283,7 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the series is rendered.
      * @event
+     * @deprecated
      */
 
     @Event()

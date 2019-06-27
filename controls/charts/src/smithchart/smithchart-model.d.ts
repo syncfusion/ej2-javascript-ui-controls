@@ -100,60 +100,76 @@ export interface SmithchartModel extends ComponentModel{
     /**
      * Triggers before the prints gets started.
      * @event
+     * @blazorProperty 'OnPrint'
      */
     beforePrint?: EmitType<ISmithchartPrintEventArgs>;
 
     /**
      * Triggers after the animation completed.
      * @event
+     * @blazorProperty 'AnimationCompleted'
      */
     animationComplete?: EmitType<ISmithchartAnimationCompleteEventArgs>;
 
     /**
      * Triggers before smithchart rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ISmithchartLoadEventArgs>;
 
     /**
      * Triggers after smithchart rendered.
      * @event
+     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ISmithchartLoadedEventArgs>;
 
     /**
      * Triggers before the legend is rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'LegendRendering'
      */
     legendRender?: EmitType<ISmithchartLegendRenderEventArgs>;
 
     /**
      * Triggers before the title is rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'TitleRendering'
      */
     titleRender?: EmitType<ITitleRenderEventArgs>;
 
     /**
      * Triggers before the sub-title is rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'SubtitleRendering'
      */
     subtitleRender?: EmitType<ISubTitleRenderEventArgs>;
 
     /**
      * Triggers before the datalabel text is rendered.
      * @event
+     * @deprecated
+     * @blazorProperty 'TextRendering'
      */
     textRender?: EmitType<ISmithchartTextRenderEventArgs>;
 
     /**
      * Triggers before the axis label is rendered
      * @event
+     * @deprecated
+     * @blazorProperty 'AxisLabelRendering'
      */
     axisLabelRender?: EmitType<ISmithchartAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before the series is rendered.
      * @event
+     * @deprecated
      */
 
     seriesRender?: EmitType<ISmithchartSeriesRenderEventArgs>;

@@ -114,7 +114,7 @@ export class Month extends ViewBase implements IRenderer {
         for (let col: number = 0; col < count; col++) {
             let classList: string[] = [cls.HEADER_CELLS_CLASS];
             let currentDateIndex: number[] = renderDates.slice(0, count).map((date: Date) => date.getDay());
-            if (this.isCurrentMonth(this.parent.selectedDate) && currentDateIndex.indexOf(new Date().getDay()) === col) {
+            if (this.isCurrentMonth(this.parent.selectedDate) && currentDateIndex.indexOf(this.parent.getCurrentTime().getDay()) === col) {
                 classList.push(cls.CURRENT_DAY_CLASS);
             }
             dateSlots.push({ date: renderDates[col], type: 'monthDay', className: classList, colSpan: 1, workDays: workDays });
@@ -242,9 +242,10 @@ export class Month extends ViewBase implements IRenderer {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
                 let cellArgs: CellTemplateArgs = { date: td.date, type: td.type };
-                let ele: HTMLCollection = this.parent.getDateHeaderTemplate()(cellArgs);
-                if (ele && ele.length) {
-                    append([].slice.call(ele), tdEle);
+                let templateId: string = this.parent.element.id + 'dateHeaderTemplate';
+                let dateTemplate: NodeList = this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId);
+                if (dateTemplate && dateTemplate.length) {
+                    append([].slice.call(dateTemplate), tdEle);
                 }
             } else {
                 let ele: Element = createElement('span', { className: cls.NAVIGATE_CLASS });
@@ -383,7 +384,9 @@ export class Month extends ViewBase implements IRenderer {
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args: CellTemplateArgs = { date: data.date, type: type, groupIndex: data.groupIndex };
-            append([].slice.call(this.parent.getCellTemplate()(args)), ntd);
+            let templateId: string = this.parent.element.id + 'cellTemplate';
+            let cellTemplate: NodeList = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId);
+            append([].slice.call(cellTemplate), ntd);
         }
         let args: RenderCellEventArgs = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
         this.parent.trigger(event.renderCell, args);

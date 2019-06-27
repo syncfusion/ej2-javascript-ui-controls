@@ -215,8 +215,8 @@ export class Annotation extends ChildProperty<Annotation> {
     @Property()
     public addInfo: Object;
 
-    // tslint:disable-next-line:no-any
-    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+     // tslint:disable-next-line:no-any
+     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
         if (!(defaultValue as AnnotationModel).id) {
             if (parent.parentObj && parent.parentObj.propName && parent.parentObj.propName === 'phases') {
@@ -226,6 +226,7 @@ export class Annotation extends ChildProperty<Annotation> {
             }
         }
     }
+
 }
 
 /**

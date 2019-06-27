@@ -1,6 +1,6 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { Tooltip, AnimationModel, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
-import { TooltipRelativeMode } from '../enum/enum';
+import { TooltipRelativeMode, TooltipMode } from '../enum/enum';
 import { Diagram } from '../diagram';
 import { NodeModel } from './node-model';
 import { ConnectorModel } from './connector-model';
@@ -54,6 +54,13 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
      */
     @Property('auto')
     public height: number | string;
+
+    /**
+     * Sets how to open the Tooltip
+     * @default 'Auto'
+     */
+    @Property('Auto')
+    public openOn: TooltipMode;
 
     /**
      * Allows to set the same or different animation option for the Tooltip, when it is opened or closed.

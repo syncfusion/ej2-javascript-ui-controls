@@ -19,6 +19,7 @@ describe('Stock Chart', () => {
             return;
         }
     });
+// tslint:disable-next-line:align
 describe('default stock chart', () => {
     let chart: StockChart;
     let chartElement: Element = createElement('div', { id: 'stock' });

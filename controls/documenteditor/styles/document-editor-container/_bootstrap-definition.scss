@@ -15,6 +15,16 @@ $de-ctnr-margin-bottom-big: 16px !default;
 $de-group-btn-hgt: 34px !default;
 $de-group-btn-hgt-big: 38px !default;
 $de-ctnr-tlbr-width: calc(100% - 75px) !default;
+$de-spellcheck-tlbr-width: 91px !default;
+$de-spellcheck-tlbr-width-big: 111px !default;
+$de-spellcheck-tlbr-height: 34px !default;
+$de-spellcheck-tlbr-margin-left: 7.5px !default;
+$de-zoom-tlbr-margin-left: calc(100% - 292px) !default;
+$de-zoom-tlbr-margin-left-big: calc(100% - 325px) !default;
+$e-de-statusbar-seperator-color: #ccc;
+// Subtract toolbar height
+$de-ctnr-editor-height: calc(100% - 113px) !default;
+$de-ctnr-editor-height-big: calc(100% - 118px) !default;
 // Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 113px) !default;
 $de-tool-ctnr-editor-height-big: calc(100% - 118px) !default;
@@ -39,8 +49,9 @@ $de-toggle-bg-color: $grey-e6 !default;
 $de-toggle-btn-outline: #fafafa 0 solid !default;
 $de-toggle-btn-border: inset 0 3px 5px rgba(0, 0, 0, .125) !default;
 $de-panel-border: $grey-cc !default;
-$de-page-no-width: calc(100% - 75px) !default;
-$de-page-no-width-big: calc(100% - 90px) !default;
+$de-page-no-width: 100px !default;
+$de-page-no-width-spellout: calc(100% - 75px) !default;
+$de-page-no-width-spellout-big: calc(100% - 90px) !default;
 $de-font-color: $grey-light-font !default;
 $de-hover-clr:  1px solid #ff8c00 !default;
 $de-hover-bg: #d3d3d3 !default;

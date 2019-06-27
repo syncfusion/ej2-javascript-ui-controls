@@ -1,7 +1,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
@@ -298,36 +298,42 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * The event will be fired once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired before the data submitted to the server.
      * @event
+     * @blazorProperty 'OnActionBegin'
      */
     @Event()
     public actionBegin: EmitType<ActionBeginEventArgs>;
     /**
      * The event will be fired when data submitted successfully to the server.
      * @event
+     * @blazorProperty 'OnActionSuccess'
      */
     @Event()
     public actionSuccess: EmitType<ActionEventArgs>;
     /**
      * The event will be fired when data submission failed.
      * @event
+     * @blazorProperty 'OnActionFailure'
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
     /**
      * The event will be fired while validating current value.
      * @event
+     * @blazorProperty 'Validating'
      */
     @Event()
     public validating: EmitType<ValidateEventArgs>;
     /**
      * The event will be fired when the component gets destroyed.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Event>;
@@ -376,7 +382,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private appendValueElement(): void {
         this.valueWrap = this.createElement('div', { id: this.element.id + '_wrap', className: classes.VALUE_WRAPPER });
-        this.element.innerHTML = '';
+        let blazorContain: string[] = Object.keys(window) as string[];
+        if (blazorContain.indexOf('ejsIntrop') === -1) {
+            this.element.innerHTML = '';
+        }
         this.valueEle = this.createElement('span', { className: classes.VALUE });
         this.editIcon = this.createElement('span', {
             className: classes.OVERLAY_ICON + ' ' + classes.ICONS,
@@ -659,6 +668,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.isExtModule ? this.notify(events.setFocus, {}) : this.componentObj.element.focus();
     }
     private removeEditor(): void {
+        resetBlazorTemplate(this.element.id + 'template', 'Template');
         let tipEle: HTMLElement;
         if (this.tipObj && this.formEle) {
             tipEle = <HTMLElement>closest(this.formEle, '.' + classes.ROOT_TIP);
@@ -732,20 +742,23 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private sendValue(): void {
         let eventArgs: ActionBeginEventArgs = { data: { name: this.name, primaryKey: this.primaryKey, value: this.getSendValue() } };
-        this.trigger('actionBegin', eventArgs);
-        if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey as string)) {
-            this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
-            if (this.adaptor === 'UrlAdaptor') {
-            this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+        this.trigger('actionBegin', eventArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+            if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey as string)) {
+                this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
+                if (this.adaptor === 'UrlAdaptor') {
+                this.dataManager.executeQuery(
+                    this.getQuery(actionBeginArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this)
+                );
+                } else {
+                    let crud: Promise<Object> = this.dataManager.insert(actionBeginArgs.data) as Promise<Object>;
+                    crud.then((e: ReturnOption) => this.successHandler(e)).catch((e: ReturnOption) => this.failureHandler(e));
+                }
             } else {
-                let crud: Promise<Object> = this.dataManager.insert(eventArgs.data) as Promise<Object>;
-                crud.then((e: ReturnOption) => this.successHandler(e)).catch((e: ReturnOption) => this.failureHandler(e));
+                let eventArg: ActionEventArgs = { data: {}, value: actionBeginArgs.data.value as string };
+                this.triggerSuccess(eventArg);
             }
-        } else {
-            let eventArg: ActionEventArgs = { data: {}, value: eventArgs.data.value as string };
-            this.triggerSuccess(eventArg);
-        }
-        this.dataManager = undefined;
+            this.dataManager = undefined;
+        });
     }
     private isEmpty(value: string | string[]): boolean {
         return (!isNOU(value) && value.length !== 0) ? false : true;
@@ -760,12 +773,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         let compiler: Function = compile(tempStr);
         if (!isNOU(compiler)) {
-            tempEle = compiler({}, this, 'template');
+            tempEle = compiler({}, this, 'template', this.element.id + 'template');
         }
         if (!isNOU(compiler) && tempEle.length > 0) {
             [].slice.call(tempEle).forEach((el: HTMLElement): void => {
                 trgEle.appendChild(el);
             });
+            updateBlazorTemplate(this.element.id + 'template', 'Template');
         }
     }
     private appendTemplate(trgEle: HTMLElement, tempStr: string | HTMLElement): void {
@@ -803,13 +817,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                         errorMessage: e.message,
                         data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
                     };
-                    this.trigger('validating', args);
-                    if (e.status === 'failure') {
-                        e.errorElement.innerText = args.errorMessage;
-                        this.toggleErrorClass(true);
-                    } else {
-                        this.toggleErrorClass(false);
-                    }
+                    this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
+                        if (e.status === 'failure') {
+                            e.errorElement.innerText = validateArgs.errorMessage;
+                            this.toggleErrorClass(true);
+                        } else {
+                            this.toggleErrorClass(false);
+                        }
+                    });
                 },
                 customPlacement: (inputElement: HTMLElement, errorElement: HTMLElement) => {
                     select('.' + classes.EDITABLE_ERROR, this.formEle).appendChild(errorElement);
@@ -821,13 +836,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 errorMessage: '',
                 data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
             };
-            this.trigger('validating', args);
-            if (args.errorMessage) {
-                select('.' + classes.EDITABLE_ERROR, this.formEle).innerHTML = args.errorMessage;
-                this.toggleErrorClass(true);
-            } else {
-                this.toggleErrorClass(false);
-            }
+            this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
+                if (validateArgs.errorMessage) {
+                    select('.' + classes.EDITABLE_ERROR, this.formEle).innerHTML = validateArgs.errorMessage;
+                    this.toggleErrorClass(true);
+                } else {
+                    this.toggleErrorClass(false);
+                }
+            });
         }
     }
     private toggleErrorClass(value: boolean): void {
@@ -850,10 +866,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private triggerSuccess(args: ActionEventArgs): void {
         let val: string = args.value;
-        this.trigger('actionSuccess', args);
-        this.removeSpinner('submit');
-        this.renderValue(this.checkValue((args.value !== val) ? args.value : this.getRenderValue()));
-        this.removeEditor();
+        this.trigger('actionSuccess', args, (actionArgs: ActionEventArgs) => {
+            this.removeSpinner('submit');
+            this.renderValue(this.checkValue((actionArgs.value !== val) ? actionArgs.value : this.getRenderValue()));
+            this.removeEditor();
+        });
     }
     private wireEvents(): void {
         this.wireEditEvent(this.editableOn);

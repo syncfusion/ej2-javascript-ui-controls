@@ -256,6 +256,54 @@ describe('insert Link', () => {
             (<any>rteObj).linkModule.onIframeMouseDown();
         });
     });
+
+    describe('Insert link in HTML Tag IFRAME throws error', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({ value: '' });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('insert link, editlink, openlink in HTML Tag IFRAME', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            let event: any = { preventDefault: function () { } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let selectParent: any = new NodeSelection().getParentNodeCollection(range)
+            let selectNode: any = new NodeSelection().getNodeCollection(range);
+            let evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                selectParent: selectParent, selectNode: selectNode
+            };
+            (<any>rteObj).linkModule.linkDialog(evnArg);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://data';
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Provides <IFRAME> and <DIV> modes';
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').focus();
+            args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            event = { preventDefault: function () { } };
+            range = new NodeSelection().getRange(document);
+            save = new NodeSelection().save(range, document);
+            selectParent = new NodeSelection().getParentNodeCollection(range);
+            selectNode = new NodeSelection().getNodeCollection(range);
+            evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save, selectNode: selectNode,
+                selectParent: selectParent
+            };
+            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '_blank';
+            (<any>rteObj).linkModule.editLink(evnArg);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Provides <IFRAME> and <DIV> modes Value';        
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            expect((<any>rteObj).contentModule.getEditPanel().innerText === `Provides <IFRAME> and <DIV> modes Value\n`).toBe(true);
+        });
+    });
+
     describe('toobar click open', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -844,7 +892,7 @@ describe('insert Link', () => {
                 done();
             }, 200);
         });
-        it(" Android - 'leftClick' with quickpopup availability testing", (done: Function) => {
+        it(" Android - false with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -869,7 +917,7 @@ describe('insert Link', () => {
                 done();
             }, 400);
         });
-        it(" Android - 'rightClick' with quickpopup availability testing", (done: Function) => {
+        it(" Android - true with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -895,7 +943,7 @@ describe('insert Link', () => {
                 done();
             }, 400);
         });
-        it(" Android - 'rightClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+        it(" Android - true with onproperty change and quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -925,7 +973,7 @@ describe('insert Link', () => {
                 done();
             }, 400);
         });
-        it(" Android - 'leftClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+        it(" Android - false with onproperty change and quickpopup availability testing", (done: Function) => {
             Browser.userAgent = androidUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -956,7 +1004,7 @@ describe('insert Link', () => {
                 done();
             }, 400);
         });
-        it(" iPhone - 'leftClick' with quickpopup availability testing", (done: Function) => {
+        it(" iPhone - false with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -981,7 +1029,7 @@ describe('insert Link', () => {
                 done();
             }, 400);
         });
-        it(" iPhone - 'rightClick' with quickpopup availability testing", (done: Function) => {
+        it(" iPhone - true with quickpopup availability testing", (done: Function) => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -1007,7 +1055,7 @@ describe('insert Link', () => {
                 done();
             }, 400);
         });
-        it(" iPhone - 'rightClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+        it(" iPhone - true with onproperty change and quickpopup availability testing", (done: Function) => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {
@@ -1037,7 +1085,7 @@ describe('insert Link', () => {
                 done();
             }, 400);
         });
-        it(" iPhone - 'leftClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+        it(" iPhone - false with onproperty change and quickpopup availability testing", (done: Function) => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
                 quickToolbarSettings: {

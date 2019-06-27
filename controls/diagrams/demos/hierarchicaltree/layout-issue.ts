@@ -36,7 +36,7 @@ let diagram: Diagram = new Diagram({
     //layout: { type: 'HierarchicalTree' },
     dataSourceSettings: {
         // sets the fields to bind
-        dataManager: new DataManager(hierarchicalTree as JSON[]), // binds the data with the nodess
+        dataSource: new DataManager(hierarchicalTree as JSON[]), // binds the data with the nodess
         doBinding: (
           nodeModel: NodeModel,
           data: object,
@@ -70,6 +70,6 @@ changeShape.onclick = function () {
             '</g>'
         }
       ];
-    diagram.dataSourceSettings.dataManager =    new DataManager(hierarchicalTree as JSON[]);
+    diagram.dataSourceSettings.dataSource =    new DataManager(hierarchicalTree as JSON[]);
     diagram.dataBind();
 };

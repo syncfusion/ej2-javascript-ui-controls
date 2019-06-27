@@ -69,9 +69,6 @@ let defaultRTE: RichTextEditor = new RichTextEditor({
     ]
   },
   pasteCleanupSettings: {
-    allowedStyleProps: ['margin', 'color', 'width'],
-    deniedAttrs: ['class', 'title'],
-    deniedTags: ['a[!href]'],
     prompt: true
   },
   value: innerHTML

@@ -440,12 +440,15 @@ export function getPointer(targetId: string, gauge: CircularGauge): IVisiblePoin
 export function getElementSize(template: string, gauge: CircularGauge, parent: HTMLElement): Size {
     let elementSize: Size; let element: HTMLElement;
     let templateFn: Function = getTemplateFunction(template);
-    if (templateFn && templateFn(gauge).length) {
+    let tooltipData: Element[] = templateFn ? templateFn({}, null, null, gauge.element.id + 'Template') : [];
+    if (templateFn && tooltipData.length) {
         element = gauge.createElement('div', { id: gauge.element.id + '_Measure_Element' });
         gauge.element.appendChild(element);
-        let templateElement: HTMLCollection = templateFn(gauge);
-        while (templateElement.length > 0) {
+        let templateElement: HTMLCollection = templateFn({}, null, null, gauge.element.id + 'Template');
+        let templateLength: number = templateElement.length;
+        while (templateLength > 0) {
             element.appendChild(templateElement[0]);
+            templateLength--;
         }
         parent.appendChild(element);
         elementSize = new Size(parent.getBoundingClientRect().width, parent.getBoundingClientRect().height);
@@ -644,7 +647,6 @@ export class GaugeLocation {
      * To specify y value
      */
     public y: number;
-
 
     constructor(x: number, y: number) {
         this.x = x;

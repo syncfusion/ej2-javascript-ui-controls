@@ -1,9 +1,10 @@
-import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass, closest, Browser } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { parentsUntil } from '../base/utils';
-import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IDependencyEventArgs } from '../base/interface';
+import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IDependencyEventArgs, MousePoint, IPredecessor } from '../base/interface';
 import * as cls from '../base/css-constants';
 import { EditTooltip } from '../renderer/edit-tooltip';
+import { click } from '@syncfusion/ej2-grids';
 
 /**
  * File for handling taskbar editing operation in Gantt.
@@ -38,6 +39,10 @@ export class TaskbarEdit {
     public drawPredecessor: boolean;
     private highlightedSecondElement: Element;
     private editTooltip: EditTooltip;
+    private canDrag: boolean;
+    /** @private */
+    public tapPointOnFocus: boolean;
+    private editElement: Element = null;
 
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
@@ -51,6 +56,7 @@ export class TaskbarEdit {
         this.parent.on('chartMouseUp', this.mouseUpHandler, this);
         this.parent.on('chartMouseLeave', this.mouseLeaveHandler, this);
         this.parent.on('chartMouseMove', this.mouseMoveAction, this);
+        this.parent.on('chartMouseClick', this.mouseClickHandler, this);
     }
 
     /**
@@ -74,12 +80,130 @@ export class TaskbarEdit {
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
         this.previousItemProperty = ['left', 'progress', 'duration', 'startDate', 'endDate', 'width', 'progressWidth'];
+        this.tapPointOnFocus = false;
     }
 
     private mouseDownHandler(e: PointerEvent): void {
         if (this.parent.editSettings.allowTaskbarEditing) {
+            this.canDrag = false;
+            if (this.parent.isAdaptive && this.taskBarEditElement) {
+                let targetElement: Element = this.getElementByPosition(e);
+                let element: Element = parentsUntil(targetElement as Element, cls.taskBarMainContainer);
+                if (element && element.innerHTML === this.taskBarEditElement.innerHTML &&
+                    !(targetElement.classList.contains(cls.connectorPointLeft) ||
+                        targetElement.classList.contains(cls.connectorPointRight)) &&
+                    !this.tapPointOnFocus) {
+                    this.updateTaskBarEditElement(e);
+                    this.canDrag = true;
+                    e.preventDefault();
+                }
+            } else if (!this.parent.isAdaptive) {
+                this.updateTaskBarEditElement(e);
+            }
+        }
+    }
+
+    private mouseClickHandler(e: PointerEvent): void {
+        let targetElement: Element = this.getElementByPosition(e);
+        let element: Element = parentsUntil(targetElement as Element, cls.taskBarMainContainer);
+        if (this.parent.selectionModule.enableSelectMultiTouch) {
+            if (this.tapPointOnFocus) {
+                this.updateTaskBarEditElement(e);
+            }
+            return;
+        }
+        if (this.tapPointOnFocus && element && element.innerHTML !== this.taskBarEditElement.innerHTML) {
+            this.connectorSecondRecord = this.parent.ganttChartModule.getRecordByTaskBar(element);
+            this.connectorSecondAction = 'ConnectorPointLeftDrag';
+            this.connectorSecondElement = element;
+            this.fromPredecessorText = 'Finish';
+            if (this.validateConnectorPoint() && !this.taskBarEditingAction(e)) {
+                this.taskBarEditedAction(e);
+            }
+            this.showHideActivePredecessors(false);
+            this.initPublicProp();
+        } else if (targetElement.classList.contains(cls.connectorPointLeft) || targetElement.classList.contains(cls.connectorPointRight)) {
+            this.canDrag = false;
+            this.multipleSelectionEnabled();
+            this.showHideTaskBarEditingElements(targetElement, this.taskBarEditElement);
+            this.tapPointOnFocus = true;
+            this.taskBarEditAction = 'ConnectorPointRightDrag';
+            this.connectorSecondRecord = this.taskBarEditRecord;
+            if (this.taskBarEditingAction(e)) {
+                this.tapPointOnFocus = false;
+            }
+        } else {
+            if (this.tapPointOnFocus) {
+                this.showHideActivePredecessors(false);
+                this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
+            }
             this.updateTaskBarEditElement(e);
         }
+    }
+
+    private showHideActivePredecessors(show: boolean): void {
+        let ganttProp: ITaskData = this.taskBarEditRecord.ganttProperties;
+        let predecessors: IPredecessor[] = ganttProp.predecessor;
+        for (let i: number = 0; i < predecessors.length; i++) {
+            let predecessor: IPredecessor = predecessors[i];
+            if (ganttProp.taskId.toString() === predecessor.from) {
+                this.applyActiveColor(predecessor.from, predecessor.to, show);
+            } else if (ganttProp.taskId.toString() === predecessor.to) {
+                this.applyActiveColor(predecessor.from, predecessor.to, show);
+            }
+        }
+        let chartContent: Element = this.parent.ganttChartModule.chartBodyContainer;
+        if (show) {
+            addClass([this.taskBarEditElement], [cls.activeChildTask]);
+            addClass([chartContent], [cls.touchMode]);
+        } else {
+            removeClass([this.taskBarEditElement], [cls.activeChildTask]);
+            removeClass([chartContent], [cls.touchMode]);
+        }
+    }
+    private applyActiveColor(from: string, to: string, enable?: boolean): void {
+        let taskId: string = this.taskBarEditRecord.ganttProperties.taskId.toString();
+        let ganttRecord: IGanttData = (taskId === from) ? this.parent.getRecordByID(to) :
+            this.parent.getRecordByID(from);
+        let $tr: Element = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(ganttRecord)];
+        if (!isNullOrUndefined($tr)) {
+            let $taskbar: Element = $tr.querySelector('.' + cls.taskBarMainContainer);
+            let $connectorElement: Element = this.parent.element.querySelector('#ConnectorLineparent' + from + 'child' + to);
+            if (enable) {
+                addClass([$taskbar, $connectorElement], [cls.activeConnectedTask]);
+            } else {
+                removeClass([$taskbar, $connectorElement], [cls.activeConnectedTask]);
+            }
+        }
+    }
+
+    private validateConnectorPoint(): Boolean {
+        let parentRecord: ITaskData = this.taskBarEditRecord.ganttProperties;
+        let childRecord: ITaskData = this.connectorSecondRecord.ganttProperties;
+        let isValid: boolean = true;
+        if (this.connectorSecondRecord.hasChildRecords) {
+            isValid = false;
+        } else if (childRecord.predecessor) {
+            for (let i: number = 0; i < childRecord.predecessor.length; i++) {
+                let predecessor: IPredecessor = childRecord.predecessor[i];
+                if (predecessor.from === parentRecord.taskId.toString() &&
+                    predecessor.to === childRecord.taskId.toString()) {
+                    this.parent.predecessorModule.childRecord = this.connectorSecondRecord;
+                    this.parent.predecessorModule.predecessorIndex = i;
+                    this.parent.predecessorModule.renderPredecessorDeleteConfirmDialog();
+                    isValid = false;
+                    break;
+                } else if (predecessor.from === childRecord.taskId.toString() &&
+                    predecessor.to === parentRecord.taskId.toString()) {
+                    this.parent.predecessorModule.childRecord = this.taskBarEditRecord;
+                    this.parent.predecessorModule.predecessorIndex = i;
+                    this.parent.predecessorModule.renderPredecessorDeleteConfirmDialog();
+                    isValid = false;
+                    break;
+                }
+            }
+        }
+        return isValid;
     }
 
     private mouseLeaveHandler(e: PointerEvent): void {
@@ -92,22 +216,30 @@ export class TaskbarEdit {
      * @private
      */
     public updateTaskBarEditElement(e: PointerEvent): void {
-        let element: Element = parentsUntil(e.target as Element, cls.taskBarMainContainer);
-        if (this.parent.editSettings.allowTaskbarEditing) {
+        let target: Element = this.getElementByPosition(e);
+        let element: Element = parentsUntil(target, cls.taskBarMainContainer);
+        if (this.parent.editSettings.allowTaskbarEditing && element) {
             this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
-        }
-        this.taskBarEditElement = element;
-        this.taskBarEditRecord = isNullOrUndefined(this.taskBarEditElement) ?
-            null : this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
-        if (element && (e.type === 'mousedown' || e.type === 'pointerdown')) {
-            this.roundOffDuration = true;
-            this.taskBarEditAction = this.getTaskBarAction(e);
-            if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') &&
-                isNullOrUndefined(this.parent.taskFields.dependency)) {
-                this.taskBarEditAction = null;
-            } else {
+            this.editElement = element;
+            this.taskBarEditElement = element;
+            this.taskBarEditRecord = this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
+            if (e.type === Browser.touchStartEvent || e.type === click) {
+                this.roundOffDuration = true;
+                this.taskBarEditAction = this.getTaskBarAction(e);
+                if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') &&
+                    isNullOrUndefined(this.parent.taskFields.dependency)) {
+                    this.taskBarEditAction = null;
+                }
                 this.updateMouseDownProperties(e);
-                this.isMouseDragged = false;
+            }
+        } else {
+            if (this.parent.isAdaptive) {
+                if (this.taskBarEditElement) {
+                    this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
+                }
+                this.initPublicProp();
+            } else {
+                this.showHideTaskBarEditingElements(element, this.taskBarEditElement);
             }
         }
     }
@@ -118,15 +250,22 @@ export class TaskbarEdit {
      * @private
      */
     public showHideTaskBarEditingElements(element: Element, secondElement: Element, fadeConnectorLine?: boolean): void {
+        secondElement = secondElement ? secondElement : this.editElement;
         if (element) {
             if (element.querySelector('.' + cls.taskBarLeftResizer)) {
                 addClass([element.querySelector('.' + cls.taskBarLeftResizer)], [cls.leftResizeGripper]);
                 addClass([element.querySelector('.' + cls.taskBarRightResizer)], [cls.rightResizeGripper]);
                 addClass([element.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
+            } else if (this.parent.isAdaptive) {
+                let record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
+                if (record.hasChildRecords) {
+                    addClass([element], [cls.activeParentTask]);
+                }
             }
             addClass(
                 this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + cls.connectorLineContainer), [cls.connectorLineZIndex]);
-            if (!isNullOrUndefined(this.parent.taskFields.dependency) && element.querySelector('.' + cls.connectorPointLeft)) {
+            if (!isNullOrUndefined(this.parent.taskFields.dependency)
+                && element.querySelector('.' + cls.connectorPointLeft)) {
                 addClass(
                     [element.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointLeftHover]);
                 addClass(
@@ -144,12 +283,19 @@ export class TaskbarEdit {
                     removeClass([secondElement.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
                 }
             }
-            if (!isNullOrUndefined(this.parent.taskFields.dependency) && secondElement.querySelector('.' + cls.connectorPointLeft)) {
+            if (!isNullOrUndefined(this.parent.taskFields.dependency)
+                && secondElement.querySelector('.' + cls.connectorPointLeft)) {
                 removeClass(
                     [secondElement.querySelector('.' + cls.connectorPointLeft)], [cls.connectorPointLeftHover]);
                 removeClass(
                     [secondElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointRightHover]);
+            } else if (this.parent.isAdaptive) {
+                let record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(secondElement);
+                if (record.hasChildRecords) {
+                    removeClass([secondElement], [cls.activeParentTask]);
+                }
             }
+            this.editElement = null;
         }
     }
 
@@ -159,15 +305,24 @@ export class TaskbarEdit {
      * @private
      */
     private getTaskBarAction(e: PointerEvent): string {
-        let mouseDownElement: Element = e.target as Element;
-        return this.taskBarEditRecord.hasChildRecords ? 'ParentDrag' :
-            mouseDownElement.classList.contains(cls.taskBarLeftResizer) ? 'LeftResizing' :
-                mouseDownElement.classList.contains(cls.taskBarRightResizer) ? 'RightResizing' :
-                    mouseDownElement.classList.contains(cls.childProgressResizer) ? 'ProgressResizing' :
-                        closest(mouseDownElement, '.' + cls.childProgressResizer) ? 'ProgressResizing' :
-                            mouseDownElement.classList.contains(cls.connectorPointLeft) ? 'ConnectorPointLeftDrag' :
-                                mouseDownElement.classList.contains(cls.connectorPointRight) ? 'ConnectorPointRightDrag' :
-                                    this.taskBarEditRecord.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
+        let mouseDownElement: Element = this.getElementByPosition(e);
+        let data: IGanttData = this.taskBarEditRecord;
+        let action: string = '';
+        if (mouseDownElement.classList.contains(cls.taskBarLeftResizer)) {
+            action = 'LeftResizing';
+        } else if (mouseDownElement.classList.contains(cls.taskBarRightResizer)) {
+            action = 'RightResizing';
+        } else if (mouseDownElement.classList.contains(cls.childProgressResizer) ||
+            closest(mouseDownElement, '.' + cls.childProgressResizer)) {
+            action = 'ProgressResizing';
+        } else if (mouseDownElement.classList.contains(cls.connectorPointLeft)) {
+            action = 'ConnectorPointLeftDrag';
+        } else if (mouseDownElement.classList.contains(cls.connectorPointRight)) {
+            action = 'ConnectorPointRightDrag';
+        } else if (data) {
+            action = data.hasChildRecords ? 'ParentDrag' : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
+        }
+        return action;
     }
 
     /**
@@ -175,7 +330,8 @@ export class TaskbarEdit {
      * @return {void}
      * @private
      */
-    private updateMouseDownProperties(e: PointerEvent): void {
+    private updateMouseDownProperties(event: PointerEvent): void {
+        let e: MousePoint = this.getCoordinate(event);
         if (e.pageX || e.pageY) {
             let containerPosition: { top: number, left: number } =
                 this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
@@ -206,7 +362,7 @@ export class TaskbarEdit {
                 this.taskBarEditAction !== 'ConnectorPointRightDrag') {
                 this.editTooltip.showHideTaskbarEditTooltip(true);
             }
-
+            this.taskBarEditElement.setAttribute('aria-grabbed', 'true');
         }
     }
     /**
@@ -214,9 +370,17 @@ export class TaskbarEdit {
      * @param e 
      * @private
      */
-    public mouseMoveAction(e: PointerEvent): void {
+    public mouseMoveAction(event: PointerEvent): void {
+        if (this.parent.isAdaptive) {
+            if (!this.canDrag) {
+                return;
+            } else {
+                this.multipleSelectionEnabled();
+            }
+        }
         let containerPosition: { top: number, left: number } =
             this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
+        let e: MousePoint = this.getCoordinate(event);
         this.mouseMoveX = e.pageX - containerPosition.left +
             this.parent.ganttChartModule.scrollObject.previousScroll.left;
         this.mouseMoveY = e.pageY - containerPosition.top +
@@ -226,19 +390,19 @@ export class TaskbarEdit {
         if (this.isMouseDragged && this.taskBarEditAction) {
             if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
                 this.taskBarEditAction === 'ConnectorPointRightDrag') {
-                this.updateConnectorLineSecondProperties(e);
+                this.updateConnectorLineSecondProperties(event);
             }
-            this.taskBarEditingAction(e);
-        } else if (!this.taskBarEditAction) {
-            this.updateTaskBarEditElement(e);
+            this.taskBarEditingAction(event);
+        } else if (!this.parent.isAdaptive && !this.taskBarEditAction) {
+            this.updateTaskBarEditElement(event);
         }
     }
     /**
      * Method to update taskbar editing action on mous move.
-     * @return {void}
+     * @return {Boolean}
      * @private
      */
-    public taskBarEditingAction(e: PointerEvent): void {
+    public taskBarEditingAction(e: PointerEvent): Boolean {
         let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
         let recordIndex: number = this.parent.ganttChartModule.getIndexByTaskBar(this.taskBarEditElement);
         if (this.taskBarEditRecord !== null) {
@@ -264,7 +428,9 @@ export class TaskbarEdit {
             } else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
                 this.taskBarEditAction === 'ConnectorPointRightDrag') {
                 this.triggerDependencyEvent(e);
-                this.drawFalseLine();
+                if (!this.parent.isAdaptive) {
+                    this.drawFalseLine();
+                }
             }
             this.setItemPosition();
             this.updateEditedItem();
@@ -272,6 +438,7 @@ export class TaskbarEdit {
         } else {
             this.editTooltip.showHideTaskbarEditTooltip(false);
         }
+        return args.cancel;
     }
 
     /**
@@ -279,9 +446,10 @@ export class TaskbarEdit {
      * @return {void}
      * @private
      */
-    private updateMouseMoveProperties(e: PointerEvent): void {
+    private updateMouseMoveProperties(event: PointerEvent): void {
         let containerPosition: { top: number, left: number } =
             this.parent.getOffsetRect(this.parent.ganttChartModule.chartBodyContainer);
+        let e: MousePoint = this.getCoordinate(event);
         if (e.pageX || e.pageY) {
             this.mouseMoveX = e.pageX - containerPosition.left +
                 this.parent.ganttChartModule.scrollObject.previousScroll.left;
@@ -729,6 +897,7 @@ export class TaskbarEdit {
         let item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let width: number = this.taskBarEditAction === 'MilestoneDrag' ?
             this.parent.chartRowsModule.milestoneHeight : item.width;
+        let rightResizer: number = this.parent.isAdaptive ? (width - 2) : (width - 10);
         let taskBarMainContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
             .querySelector('.' + cls.taskBarMainContainer) as HTMLElement;
         let leftLabelContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
@@ -756,7 +925,7 @@ export class TaskbarEdit {
             leftLabelContainer.style.width = (item.left) + 'px';
             rightLabelContainer.style.left = (item.left + width) + 'px';
             if (traceConnectorPointRight) {
-                traceConnectorPointRight.style.left = (width) + 'px';
+                traceConnectorPointRight.style.left = (this.parent.isAdaptive ? (width + 10) : (width + 2)) + 'px';
             }
             if (this.taskBarEditAction === 'MilestoneDrag') {
                 taskBarMainContainer.style.left = (item.left - (width / 2)) + 'px';
@@ -771,7 +940,7 @@ export class TaskbarEdit {
             } else if (this.taskBarEditAction === 'RightResizing') {
                 traceChildTaskBar.style.width = (width) + 'px';
                 traceChildProgressBar.style.width = (item.progressWidth) + 'px';
-                taskBarRightResizer.style.left = (width - 10) + 'px';
+                taskBarRightResizer.style.left = rightResizer + 'px';
                 childProgressResizer.style.left = (item.progressWidth - 10) + 'px';
             } else if (this.taskBarEditAction === 'ParentDrag') {
                 traceParentTaskBar.style.width = (width) + 'px';
@@ -779,7 +948,7 @@ export class TaskbarEdit {
             } else {
                 traceChildTaskBar.style.width = (width) + 'px';
                 if (!isNullOrUndefined(traceChildProgressBar)) {
-                    taskBarRightResizer.style.left = (width - 10) + 'px';
+                    taskBarRightResizer.style.left = rightResizer + 'px';
                     traceChildProgressBar.style.width = (item.progressWidth) + 'px';
                     childProgressResizer.style.left = item.progressWidth - 10 + 'px';
                 }
@@ -793,15 +962,19 @@ export class TaskbarEdit {
      * @private
      */
     public mouseUpHandler(e: PointerEvent): void {
+        let mouseDragged: boolean = this.isMouseDragged;
         this.editTooltip.showHideTaskbarEditTooltip(false);
         if (this.taskBarEditAction && this.isMouseDragged) {
             if (!this.dragMouseLeave && this.taskBarEditedAction) {
                 this.taskBarEditedAction(e);
+                this.isMouseDragged = false;
             } else {
                 this.cancelTaskbarEditActionInMouseLeave();
             }
         }
-        this.initPublicProp();
+        if (!this.parent.isAdaptive || mouseDragged) {
+            this.initPublicProp();
+        }
         this.stopScrollTimer();
     }
     /**
@@ -809,7 +982,7 @@ export class TaskbarEdit {
      * @return {void}
      * @private
      */
-    public taskBarEditedAction(e: PointerEvent): void {
+    public taskBarEditedAction(event: PointerEvent): void {
         let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
         let x1: number = this.mouseDownX;
         let y1: number = this.mouseDownY;
@@ -819,6 +992,7 @@ export class TaskbarEdit {
         let x2: number;
         let y2: number;
         let resMouseY: number;
+        let e: MousePoint = this.getCoordinate(event);
         x2 = this.mouseMoveX;
         y2 = this.mouseMoveY;
         resMouseY = e.pageY - this.parent.ganttChartModule.chartBodyContainer.offsetTop;
@@ -950,12 +1124,13 @@ export class TaskbarEdit {
      * @private
      */
     public updateConnectorLineSecondProperties(e: PointerEvent): void {
-        let element: Element = parentsUntil(e.target as Element, cls.taskBarMainContainer);
+        let target: Element = this.getElementByPosition(e);
+        let element: Element = parentsUntil(target, cls.taskBarMainContainer);
         this.connectorSecondAction = null;
-        if (parentsUntil(e.target as Element, cls.connectorPointLeft)) {
+        if (parentsUntil(target as Element, cls.connectorPointLeft)) {
             this.connectorSecondAction = 'ConnectorPointLeftDrag';
             this.toPredecessorText = 'Start';
-        } else if (parentsUntil(e.target as Element, cls.connectorPointRight)) {
+        } else if (parentsUntil(target as Element, cls.connectorPointRight)) {
             this.connectorSecondAction = 'ConnectorPointRightDrag';
             this.toPredecessorText = 'Finish';
         } else {
@@ -981,7 +1156,8 @@ export class TaskbarEdit {
         let toItem: ITaskData = this.connectorSecondRecord ? this.connectorSecondRecord.ganttProperties : null;
         let predecessor: string;
         let currentTarget: string;
-        let element: HTMLElement = e.target as HTMLElement;
+        let target: Element = this.getElementByPosition(e);
+        let element: HTMLElement = target as HTMLElement;
 
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
             predecessor = fromItem.taskId + 'S';
@@ -1019,7 +1195,7 @@ export class TaskbarEdit {
         this.parent.trigger('actionBegin', args);
         args.isValidLink = !isValidLink && args.isValidLink ? false : args.isValidLink;
         if (args.isValidLink) {
-            if (!this.editTooltip.toolTipObj) {
+            if (!this.editTooltip.toolTipObj && !this.parent.isAdaptive) {
                 this.editTooltip.showHideTaskbarEditTooltip(true);
             }
             if (this.editTooltip.toolTipObj) {
@@ -1033,8 +1209,51 @@ export class TaskbarEdit {
             }
             this.drawPredecessor = true;
         } else {
-            addClass([element], [cls.connectorPointAllowBlock]);
+            if (this.parent.isAdaptive) {
+                if (target.classList.contains(cls.connectorPointLeft) ||
+                    target.classList.contains(cls.connectorPointRight)) {
+                    this.showHideActivePredecessors(true);
+                }
+            } else {
+                addClass([element], [cls.connectorPointAllowBlock]);
+            }
             this.drawPredecessor = false;
+        }
+    }
+
+    // Get XY coordinates for touch and non-touch device
+    private getCoordinate(event: TouchEvent | PointerEvent): MousePoint {
+        let coordinates: MousePoint = {};
+        if (Browser.isTouch && event && event.type !== click) {
+            let e: TouchEvent = event as TouchEvent;
+            if (e.type === 'touchmove' || e.type === 'touchstart' || e.type === 'touchend') {
+                coordinates.pageX = e.changedTouches[0].pageX;
+                coordinates.pageY = e.changedTouches[0].pageY;
+            }
+        } else if (event) {
+            let e: PointerEvent = event as PointerEvent;
+            coordinates.pageX = e.pageX;
+            coordinates.pageY = e.pageY;
+        }
+        return coordinates;
+    }
+
+    // Get current target element by mouse position
+    // window.pageXOffset && window.pageYOffset is used to find the accurate element position in IPad/IPhone
+    private getElementByPosition(event: TouchEvent | PointerEvent): Element {
+        if (!this.parent.isAdaptive) {
+            return event.target as Element;
+        } else {
+            let e: MousePoint = this.getCoordinate(event);
+            return document.elementFromPoint((e.pageX - window.pageXOffset), (e.pageY - window.pageYOffset));
+        }
+
+    }
+
+    private multipleSelectionEnabled(): void {
+        if (this.parent.selectionSettings.mode !== 'Cell'
+            && this.parent.selectionSettings.type === 'Multiple') {
+            this.parent.selectionModule.hidePopUp();
         }
     }
 
@@ -1046,6 +1265,7 @@ export class TaskbarEdit {
         this.parent.off('chartMouseUp', this.mouseUpHandler);
         this.parent.off('chartMouseLeave', this.mouseLeaveHandler);
         this.parent.off('chartMouseMove', this.mouseMoveAction);
+        this.parent.off('chartMouseClick', this.mouseClickHandler);
     }
     /**
      * @private

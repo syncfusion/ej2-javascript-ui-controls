@@ -1,3 +1,6 @@
+/**
+ * default sample
+ */
 import { LinearGauge, Annotations } from '../../../src/linear-gauge/index';
 LinearGauge.Inject(Annotations);
 

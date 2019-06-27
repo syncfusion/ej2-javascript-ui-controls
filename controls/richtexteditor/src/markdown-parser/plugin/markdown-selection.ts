@@ -99,17 +99,11 @@ export class MarkdownSelection {
         }
         return isClear;
     }
-    public getRegex(syntax: string): RegExp {
-        syntax = this.replaceSpecialChar(syntax);
-        let regex: string = '^(' + syntax + ')|^(' + syntax.trim() + ')';
-        return new RegExp(regex);
-    }
     public getSelectedInlinePoints(textarea: HTMLTextAreaElement): { [key: string]: string | number } {
         let start: number = textarea.selectionStart;
         let end: number = textarea.selectionEnd;
         let selection: string = this.getSelectedText(textarea);
         return { start: start, end: end, text: selection };
     }
-
 }
 

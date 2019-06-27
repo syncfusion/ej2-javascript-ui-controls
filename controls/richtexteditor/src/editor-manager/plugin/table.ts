@@ -1,4 +1,4 @@
-import { createElement, closest, detach } from '@syncfusion/ej2-base';
+import { createElement, closest, detach, Browser } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
@@ -158,6 +158,8 @@ export class TableCommand {
     private deleteColumn(e: IHtmlItem): void {
         let selectedCell: Node = e.item.selection.range.startContainer;
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
+        let selectedCellIndex: number = (selectedCell as HTMLTableDataCellElement).cellIndex;
+        let parentTable: HTMLTableElement = closest(selectedCell, 'table') as HTMLTableElement;
         let curRow: HTMLTableRowElement = closest(selectedCell as HTMLElement, 'tr') as HTMLTableRowElement;
         let allRows: HTMLCollectionOf<HTMLTableRowElement> = (closest(curRow, 'table') as HTMLTableElement).rows;
         if (curRow.querySelectorAll('th,td').length === 1) {
@@ -165,7 +167,12 @@ export class TableCommand {
             detach(closest(selectedCell.parentElement, 'table'));
         } else {
             for (let i: number = 0; i < allRows.length; i++) {
-                (allRows[i] as HTMLTableRowElement).deleteCell((selectedCell as HTMLTableDataCellElement).cellIndex);
+                (allRows[i] as HTMLTableRowElement).deleteCell(selectedCellIndex);
+                if (Browser.isIE) {
+                    e.item.selection.setSelectionText(
+                        this.parent.currentDocument, parentTable.querySelector('td'), parentTable.querySelector('td'), 0, 0);
+                    parentTable.querySelector('td, th').classList.add('e-cell-select');
+                }
             }
         }
         if (e.callBack) {
@@ -182,12 +189,13 @@ export class TableCommand {
     private deleteRow(e: IHtmlItem): void {
         let selectedCell: Node = e.item.selection.range.startContainer;
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
+        let selectedRowIndex: number = (selectedCell.parentNode as HTMLTableRowElement).rowIndex;
         let parentTable: HTMLTableElement = closest(selectedCell, 'table') as HTMLTableElement;
         if (parentTable.rows.length === 1) {
             e.item.selection.restore();
             detach(closest(selectedCell.parentElement, 'table'));
         } else {
-            parentTable.deleteRow((selectedCell.parentNode as HTMLTableRowElement).rowIndex);
+            parentTable.deleteRow(selectedRowIndex);
             e.item.selection.setSelectionText(
                 this.parent.currentDocument, parentTable.querySelector('td'), parentTable.querySelector('td'), 0, 0);
             parentTable.querySelector('td, th').classList.add('e-cell-select');

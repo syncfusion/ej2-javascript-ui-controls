@@ -3,6 +3,7 @@ import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty,
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';
 import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate  } from '@syncfusion/ej2-base';
 import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';
@@ -567,7 +568,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * get the ID of nodes that are currently checked in the TreeView component.
      * The `checkedNodes` property depends upon the value of `showCheckBox` property.
      * For more information on checkedNodes, refer to
-     * [checkedNodes](../treeview/check-box#checked-nodes).
+     * [checkedNodes](../../treeview/check-box#checked-nodes).
      * @default []
      */
     @Property()
@@ -691,6 +692,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView control is created successfully.
      * @event
+     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -698,6 +700,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when data source is populated in the TreeView.
      * @event
+     * @blazorProperty 'DataBound'
      */
     @Event()
     public dataBound: EmitType<DataBoundEventArgs>;
@@ -706,6 +709,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
      * @event
+     * @blazorProperty 'DataSourceChanged'
      */
     @Event()
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
@@ -713,6 +717,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
      * @event
+     * @blazorProperty 'OnDrawNode'
      */
     @Event()
     public drawNode: EmitType<DrawNodeEventArgs>;
@@ -720,6 +725,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView control is destroyed successfully.
      * @event
+     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -727,66 +733,85 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when key press is successful. It helps to customize the operations at key press.
      * @event
+     * @blazorProperty 'OnKeyPress'
      */
     @Event()
     public keyPress: EmitType<NodeKeyPressEventArgs>;
 
     /**
      * Triggers when the TreeView node is checked/unchecked successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeChecked'
      */
     @Event()
     public nodeChecked: EmitType<NodeCheckEventArgs>;
 
     /**
      * Triggers before the TreeView node is to be checked/unchecked.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeChecking'
      */
     @Event()
     public nodeChecking: EmitType<NodeCheckEventArgs>;
 
     /**
      * Triggers when the TreeView node is clicked successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeClicked'
      */
     @Event()
     public nodeClicked: EmitType<NodeClickEventArgs>;
 
     /**
      * Triggers when the TreeView node collapses successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeCollapsed'
      */
     @Event()
     public nodeCollapsed: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers before the TreeView node collapses.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeCollapsing'
      */
     @Event()
     public nodeCollapsing: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers when the TreeView node is dragged (moved) continuously.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeDragging'
      */
     @Event()
     public nodeDragging: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node drag (move) starts.
+     * @deprecated
      * @event
+     * @blazorProperty 'OnNodeDragStart'
      */
     @Event()
     public nodeDragStart: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node drag (move) is stopped.
+     * @deprecated
      * @event
+     * @blazorProperty 'OnNodeDragged'
      */
     @Event()
     public nodeDragStop: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node is dropped on target element successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeDropped'
      */
     @Event()
     public nodeDropped: EmitType<DragAndDropEventArgs>;
@@ -794,6 +819,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the TreeView node is renamed successfully.
      * @event
+     * @blazorProperty 'NodeEdited'
      */
     @Event()
     public nodeEdited: EmitType<NodeEditEventArgs>;
@@ -801,34 +827,43 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers before the TreeView node is renamed.
      * @event
+     * @blazorProperty 'NodeEditing'
      */
     @Event()
     public nodeEditing: EmitType<NodeEditEventArgs>;
 
     /**
      * Triggers when the TreeView node expands successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeExpanded'
      */
     @Event()
     public nodeExpanded: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers before the TreeView node is to be expanded.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeExpanding'
      */
     @Event()
     public nodeExpanding: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers when the TreeView node is selected/unselected successfully.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeSelected'
      */
     @Event()
     public nodeSelected: EmitType<NodeSelectEventArgs>;
 
     /**
      * Triggers before the TreeView node is selected/unselected.
+     * @deprecated
      * @event
+     * @blazorProperty 'NodeSelecting'
      */
     @Event()
     public nodeSelecting: EmitType<NodeSelectEventArgs>;
@@ -891,6 +926,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.beforeNodeCreate(e);
             },
         };
+        if (this.nodeTemplate) {
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
         this.treeList = [];
@@ -1326,7 +1364,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNOU(this.nodeTemplateFn)) {
             let textEle: Element = e.item.querySelector('.' + LISTTEXT);
             textEle.innerHTML = '';
-            let tempArr: Element[]  = this.nodeTemplateFn(e.curData);
+            let tempArr: Element[]  = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate');
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, textEle);
         }
@@ -2182,6 +2220,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderChildNodes(parentLi: Element, expandChild?: boolean, callback?: Function, loaded?: boolean): void {
+        if (this.loadOnDemand && this.nodeTemplate) {
+            setTimeout(() => { resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         let eicon: Element = select('div.' + ICON, parentLi);
         if (isNOU(eicon)) {
             return;
@@ -2587,68 +2629,68 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             event: e,
             node: focusedNode as HTMLLIElement,
         };
-        this.trigger('keyPress', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        switch (e.action) {
-            case 'space':
-            if (this.showCheckBox) {
-                this.checkNode(e);
-            }
-            break;
-            case 'moveRight':
-                this.openNode(this.enableRtl ? false : true, e);
-                break;
-            case 'moveLeft':
-                this.openNode(this.enableRtl ? true : false, e);
-                break;
-            case 'shiftDown':
-                this.shiftKeySelect(true, e);
-                break;
-            case 'moveDown':
-            case 'ctrlDown':
-            case 'csDown':
-                this.navigateNode(true);
-                break;
-            case 'shiftUp':
-                this.shiftKeySelect(false, e);
-                break;
-            case 'moveUp':
-            case 'ctrlUp':
-            case 'csUp':
-                this.navigateNode(false);
-                break;
-            case 'home':
-            case 'shiftHome':
-            case 'ctrlHome':
-            case 'csHome':
-                this.navigateRootNode(true);
-                break;
-            case 'end':
-            case 'shiftEnd':
-            case 'ctrlEnd':
-            case 'csEnd':
-                this.navigateRootNode(false);
-                break;
-            case 'enter':
-            case 'ctrlEnter':
-            case 'shiftEnter':
-            case 'csEnter':
-                this.toggleSelect(focusedNode, e);
-                break;
-            case 'f2':
-                if (this.allowEditing && !focusedNode.classList.contains('e-disable')) {
-                    this.createTextbox(focusedNode, e);
+        this.trigger('keyPress', eventArgs, (observedArgs: NodeEditEventArgs) => {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'space':
+                        if (this.showCheckBox) {
+                            this.checkNode(e);
+                        }
+                        break;
+                    case 'moveRight':
+                        this.openNode(this.enableRtl ? false : true, e);
+                        break;
+                    case 'moveLeft':
+                        this.openNode(this.enableRtl ? true : false, e);
+                        break;
+                    case 'shiftDown':
+                        this.shiftKeySelect(true, e);
+                        break;
+                    case 'moveDown':
+                    case 'ctrlDown':
+                    case 'csDown':
+                        this.navigateNode(true);
+                        break;
+                    case 'shiftUp':
+                        this.shiftKeySelect(false, e);
+                        break;
+                    case 'moveUp':
+                    case 'ctrlUp':
+                    case 'csUp':
+                        this.navigateNode(false);
+                        break;
+                    case 'home':
+                    case 'shiftHome':
+                    case 'ctrlHome':
+                    case 'csHome':
+                        this.navigateRootNode(true);
+                        break;
+                    case 'end':
+                    case 'shiftEnd':
+                    case 'ctrlEnd':
+                    case 'csEnd':
+                        this.navigateRootNode(false);
+                        break;
+                    case 'enter':
+                    case 'ctrlEnter':
+                    case 'shiftEnter':
+                    case 'csEnter':
+                        this.toggleSelect(focusedNode, e);
+                        break;
+                    case 'f2':
+                        if (this.allowEditing && !focusedNode.classList.contains('e-disable')) {
+                            this.createTextbox(focusedNode, e);
+                        }
+                        break;
+                    case 'ctrlA':
+                        if (this.allowMultiSelection) {
+                            let sNodes: HTMLElement[] = selectAll('.' + LISTITEM + ':not(.' + ACTIVE + ')', this.element);
+                            this.selectGivenNodes(sNodes);
+                        }
+                        break;
                 }
-                break;
-            case 'ctrlA':
-                if (this.allowMultiSelection) {
-                    let sNodes: HTMLElement[] = selectAll('.' + LISTITEM + ':not(.' + ACTIVE + ')', this.element);
-                    this.selectGivenNodes(sNodes);
-                }
-                break;
             }
+        });
     }
 
     private navigateToFocus(isUp: boolean): void {
@@ -3096,8 +3138,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return { cancel: false, isInteracted: isNOU(e) ? false : true, node: currLi as HTMLLIElement, nodeData: nodeData , event: e };
     }
 
+    private destroyTemplate(nodeTemplate : string) : void {
+        this.clearTemplate(['nodeTemplate']);
+     }
+
     private reRenderNodes(): void {
         this.element.innerHTML = '';
+        if (!isNOU(this.nodeTemplateFn)) {
+            this.destroyTemplate(this.nodeTemplate);
+        }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
         this.isLoaded = false;
@@ -3134,28 +3183,28 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.updateOldText(liEle);
         let innerEle: HTMLElement = this.createElement('input', { className: TREEINPUT, attrs: { value: this.oldText } });
         let eventArgs: NodeEditEventArgs = this.getEditEvent(liEle, null, innerEle.outerHTML);
-        this.trigger('nodeEditing', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        let inpWidth: Number = (<HTMLElement>textEle).offsetWidth + 5;
-        let style: string = 'width:' + inpWidth + 'px';
-        addClass([liEle], EDITING);
-        textEle.innerHTML = eventArgs.innerHtml;
-        let inpEle: HTMLElement = <HTMLElement>select('.' + TREEINPUT, textEle);
-        this.inputObj = Input.createInput(
-            {
-                element: inpEle as HTMLInputElement,
-                properties: {
-                    enableRtl: this.enableRtl,
-                }
-            },
-            this.createElement);
-        this.inputObj.container.setAttribute('style', style);
-        inpEle.focus();
-        let inputEle: HTMLInputElement = <HTMLInputElement>inpEle;
-        inputEle.setSelectionRange(0, inputEle.value.length);
-        this.wireInputEvents(inpEle);
+        this.trigger('nodeEditing', eventArgs, (observedArgs: NodeEditEventArgs) => {
+            if (!observedArgs.cancel) {
+                let inpWidth: Number = (<HTMLElement>textEle).offsetWidth + 5;
+                let style: string = 'width:' + inpWidth + 'px';
+                addClass([liEle], EDITING);
+                textEle.innerHTML = eventArgs.innerHtml;
+                let inpEle: HTMLElement = <HTMLElement>select('.' + TREEINPUT, textEle);
+                this.inputObj = Input.createInput(
+                    {
+                        element: inpEle as HTMLInputElement,
+                        properties: {
+                            enableRtl: this.enableRtl,
+                        }
+                    },
+                    this.createElement);
+                this.inputObj.container.setAttribute('style', style);
+                inpEle.focus();
+                let inputEle: HTMLInputElement = <HTMLInputElement>inpEle;
+                inputEle.setSelectionRange(0, inputEle.value.length);
+                this.wireInputEvents(inpEle);
+            }
+        });
     }
 
     private updateOldText(liEle: Element): void {
@@ -3185,7 +3234,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
         if (!isNOU(this.nodeTemplateFn)) {
             txtEle.innerHTML = '';
-            let tempArr: Element[]  = this.nodeTemplateFn(newData);
+            let tempArr: Element[]  = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate');
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, txtEle);
         } else {
@@ -3467,11 +3516,20 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (dragObj.allowMultiSelection && dragLi.classList.contains(ACTIVE)) {
             let sNodes: HTMLElement[] = selectAll('.' + ACTIVE, dragObj.element);
-            for (let i: number = 0; i < sNodes.length; i++) {
-                if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
-                    continue;
+            if (e.target.offsetHeight <= 33 && offsetY > e.target.offsetHeight - 10 && offsetY > 6 ) {
+                for (let i: number = sNodes.length - 1; i >= 0; i--) {
+                    if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
+                        continue;
+                    }
+                    this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
                 }
-                this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
+            } else {
+                for (let i: number = 0; i < sNodes.length; i++) {
+                    if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
+                        continue;
+                    }
+                    this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
+                }
             }
         } else {
             this.appendNode(dropTarget, dragLi, dropLi, e, dragObj, offsetY);
@@ -4201,6 +4259,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private triggerEvent(): void {
+        if (this.nodeTemplate) {
+            setTimeout(() => { resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         let eventArgs: DataSourceChangedEventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     }
@@ -4861,11 +4923,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let txtEle: Element = select('.' + LISTTEXT, liEle);
         this.updateOldText(liEle);
         let eventArgs: NodeEditEventArgs = this.getEditEvent(liEle, null, null);
-        this.trigger('nodeEditing', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.appendNewText(liEle, txtEle, newText, false);
+        this.trigger('nodeEditing', eventArgs, (observedArgs: NodeEditEventArgs) => {
+            if (!observedArgs.cancel) {
+                this.appendNewText(liEle, txtEle, newText, false);
+            }
+        });
     }
 
     /**

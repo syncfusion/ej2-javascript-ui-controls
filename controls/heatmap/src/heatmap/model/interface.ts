@@ -106,3 +106,7 @@ export interface IResizeEventArgs extends IHeatMapEventArgs  {
     /** Defines the current HeatMap instance */
     heatmap: HeatMap;
 }
+export interface ILegendRenderEventArgs extends IHeatMapEventArgs {
+    /** Defines the current legend text */
+    text: string;
+}

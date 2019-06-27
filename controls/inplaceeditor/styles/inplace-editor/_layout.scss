@@ -402,4 +402,15 @@
       }
     }
   }
+
+  .e-content-placeholder.e-inplaceeditor.e-placeholder-inplaceeditor {
+    background-size: 150px 60px;
+    min-height: 60px;
+  }
+
+  .e-bigger .e-content-placeholder.e-inplaceeditor.e-placeholder-inplaceeditor,
+  .e-bigger.e-content-placeholder.e-inplaceeditor.e-placeholder-inplaceeditor {
+    background-size: 150px 70px;
+    min-height: 70px;
+  }
 }

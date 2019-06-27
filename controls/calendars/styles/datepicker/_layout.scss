@@ -90,7 +90,19 @@
   }
 }
 
+.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
+  background-size: 250px 33px;
+  min-height: 33px;
+}
+
+.e-bigger .e-content-placeholder.e-datepicker.e-placeholder-datepicker,
+.e-bigger.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
+  background-size: 250px 40px;
+  min-height: 40px;
+}
+
 // sass-lint:enable-all
+
 
 @media screen and (orientation: landscape) and (max-device-height: 360px) {
 

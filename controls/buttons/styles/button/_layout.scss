@@ -196,6 +196,156 @@
     }
   }
 
+  .e-small #{&}.e-btn,
+  .e-small.e-btn,
+  .e-small .e-css.e-btn,
+  .e-small.e-css.e-btn {
+    font-size: $btn-small-font-size;
+    line-height: $btn-small-text-line-height;
+    padding: $btn-small-padding;
+
+    & .e-btn-icon {
+      font-size: $btn-small-icon-font-size;
+      width: $btn-icon-small-width;
+
+      &.e-icon-left {
+        margin-left: $btn-small-icon-margin;
+        width: $btn-small-icon-width;
+        @if $skin-name == 'bootstrap4' {
+          padding: 0 $btn-bigger-icon-top-bottom-padding;
+        }
+      }
+
+      &.e-icon-right {
+        margin-right: $btn-small-icon-margin;
+        width: $btn-small-icon-width;
+        @if $skin-name == 'bootstrap4' {
+          padding: 0 $btn-bigger-icon-top-bottom-padding;
+        }
+      }
+
+      &.e-icon-top {
+        padding-bottom: $btn-small-icon-top-bottom-padding;
+        width: auto;
+      }
+
+      &.e-icon-bottom {
+        padding-top: $btn-small-icon-top-bottom-padding;
+        width: auto;
+      }
+    }
+
+    &.e-icon-btn {
+      padding: $btn-small-icon-padding;
+    }
+
+    &.e-top-icon-btn,
+    &.e-bottom-icon-btn {
+      line-height: 1;
+      padding: $btn-top-icon-padding;
+    }
+
+    &.e-round {
+      height: $btn-round-small-height;
+      line-height: 1;
+      padding: 0;
+      width: $btn-round-small-width;
+
+      & .e-btn-icon {
+        font-size: $btn-small-round-font-size;
+        line-height: $btn-small-round-icon-line-height;
+        width: auto;
+      }
+    }
+
+    &.e-rtl {
+      & .e-icon-right {
+        margin-left: $btn-small-icon-margin;
+        margin-right: 0;
+      }
+
+      & .e-icon-left {
+        margin-left: 0;
+        margin-right: btn-small-icon-margin;
+      }
+    }
+}
+
+  .e-bigger.e-small #{&}.e-btn,
+  .e-bigger.e-small#{&}.e-btn,
+  .e-bigger.e-small .e-css.e-btn,
+  .e-bigger.e-small.e-css.e-btn {
+    font-size: $btn-bigger-small-font-size;
+    line-height: $btn-bigger-small-text-line-height;
+    padding: $btn-bigger-small-padding;
+
+    & .e-btn-icon {
+      font-size: $btn-bigger-small-icon-font-size;
+      width: $btn-icon-bigger-small-width;
+
+      &.e-icon-left {
+        margin-left: $btn-bigger-small-icon-margin;
+        width: $btn-bigger-small-icon-width;
+        @if $skin-name == 'bootstrap4' {
+          padding: 0 $btn-bigger-icon-top-bottom-padding;
+        }
+      }
+
+      &.e-icon-right {
+        margin-right: $btn-bigger-small-icon-margin;
+        width: $btn-bigger-small-icon-width;
+        @if $skin-name == 'bootstrap4' {
+          padding: 0 $btn-bigger-icon-top-bottom-padding;
+        }
+      }
+
+      &.e-icon-top {
+        padding-bottom: $btn-small-icon-top-bottom-padding;
+        width: auto;
+      }
+
+      &.e-icon-bottom {
+        padding-top: $btn-small-icon-top-bottom-padding;
+        width: auto;
+      }
+    }
+
+    &.e-icon-btn {
+      padding: $btn-bigger-small-icon-padding;
+    }
+
+    &.e-top-icon-btn,
+    &.e-bottom-icon-btn {
+      line-height: 1;
+      padding: $btn-top-icon-bigger-padding;
+    }
+
+    &.e-round {
+      height: $btn-round-bigger-small-height;
+      line-height: 1;
+      padding: 0;
+      width: $btn-round-bigger-small-width;
+
+      & .e-btn-icon {
+        font-size: $btn-bigger-small-round-font-size;
+        line-height: $btn-bigger-small-round-icon-line-height;
+        width: auto;
+      }
+    }
+
+    &.e-rtl {
+      & .e-icon-right {
+        margin-left: $btn-bigger-small-icon-margin;
+        margin-right: 0;
+      }
+
+      & .e-icon-left {
+        margin-left: 0;
+        margin-right: $btn-bigger-small-icon-margin;
+      }
+    }
+}
+
   .e-bigger #{&}.e-btn,
   .e-bigger#{&}.e-btn,
   .e-bigger .e-css.e-btn,

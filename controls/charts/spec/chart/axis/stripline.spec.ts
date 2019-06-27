@@ -16,7 +16,6 @@ import { LineSeries } from '../../../src/chart/series/line-series';
 import { AreaSeries } from '../../../src/chart/series/area-series';
 import { Legend } from '../../../src/chart/legend/legend';
 import { unbindResizeEvents } from '../base/data.spec';
-import { sizeType } from '../../../src/chart/utils/enum';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, AreaSeries, Legend, StripLine, DateTime, Category, Logarithmic, DateTimeCategory);
@@ -166,7 +165,7 @@ describe('Chart control checking', () => {
                 let y: number = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 157 || y == 160).toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '1');
-                expect(parseInt(stripLineElement.getAttribute('height'), 10)).toEqual(21);
+                expect(parseInt(stripLineElement.getAttribute('height'), 10)).toEqual(21 || 25);
                 y = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(y == 117 || y == 115).toBe(true);
                 done();
@@ -251,7 +250,7 @@ describe('Chart control checking', () => {
                 expect(temp === 63 || temp === 59).toBe(true);
                 temp = parseInt(stripLineElement.getAttribute('y'), 10);
                 expect(temp === 115 || temp === 117).toBe(true);
-                expect(parseInt(stripLineElement.getAttribute('height'), 10)).toBe(42);
+                expect(parseInt(stripLineElement.getAttribute('height'), 10)).toBe(42 || 50);
                 temp = parseInt(stripLineElement.getAttribute('width'), 10);
                 expect(temp === 526 || temp === 530).toBe(true);
                 done();

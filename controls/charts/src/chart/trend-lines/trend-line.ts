@@ -61,7 +61,9 @@ export class Trendlines {
         trendline.trendLineElement = element;
         trendline.targetSeries.clipRectElement = clipRectElement;
         trendline.targetSeries.seriesElement = element;
-        chart.trendLineElements.appendChild(trendline.trendLineElement);
+        if (chart.trendLineElements) {
+            chart.trendLineElements.appendChild(trendline.trendLineElement);
+        }
     }
 
     /**
@@ -615,8 +617,9 @@ export class Trendlines {
 
         //defines the clip rect element
 
-
-        element.appendChild(clipRectElement);
+        if (element) {
+            element.appendChild(clipRectElement);
+        }
 
         for (let trendline of series.trendlines) {
 

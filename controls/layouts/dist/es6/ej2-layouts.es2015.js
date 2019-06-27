@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, resetBlazorTemplate, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -633,6 +633,10 @@ let Splitter = class Splitter extends Component {
     }
     clickHandler(e) {
         if (!e.target.classList.contains(NAVIGATE_ARROW)) {
+            let hoverBars = selectAll('.' + ROOT + ' > .' + SPLIT_BAR + '.' + SPLIT_BAR_HOVER);
+            if (hoverBars.length > 0) {
+                removeClass(hoverBars, SPLIT_BAR_HOVER);
+            }
             e.target.classList.add(SPLIT_BAR_HOVER);
         }
         let icon = e.target;
@@ -647,29 +651,29 @@ let Splitter = class Splitter extends Component {
         this.splitterDetails(e);
         let collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
         let eventArgs = this.beforeAction(e);
-        this.trigger('beforeExpand', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.previousPane.style.flexGrow = '1';
-        this.nextPane.style.flexGrow = '0';
-        if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
-            removeClass([this.nextPane], EXPAND_PANE);
-            removeClass([this.previousPane], collapseClass);
-            addClass([this.previousPane], EXPAND_PANE);
-            addClass([this.nextPane], collapseClass);
-        }
-        else {
-            (this.currentBarIndex !== 0) ?
-                this.previousPane.previousElementSibling.style.flexGrow = '' : this.nextPane.style.flexGrow = '';
-            removeClass([this.previousPane], collapseClass);
-            removeClass([this.nextPane], EXPAND_PANE);
-        }
-        this.updateIconsOnExpand(e);
-        this.previousPane.setAttribute('aria-expanded', 'true');
-        this.nextPane.setAttribute('aria-expanded', 'false');
-        let expandEventArgs = this.afterAction(e);
-        this.trigger('expanded', expandEventArgs);
+        this.trigger('beforeExpand', eventArgs, (beforeExpandArgs) => {
+            if (!beforeExpandArgs.cancel) {
+                this.previousPane.style.flexGrow = '1';
+                this.nextPane.style.flexGrow = '0';
+                if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+                    removeClass([this.nextPane], EXPAND_PANE);
+                    removeClass([this.previousPane], collapseClass);
+                    addClass([this.previousPane], EXPAND_PANE);
+                    addClass([this.nextPane], collapseClass);
+                }
+                else {
+                    (this.currentBarIndex !== 0) ?
+                        this.previousPane.previousElementSibling.style.flexGrow = '' : this.nextPane.style.flexGrow = '';
+                    removeClass([this.previousPane], collapseClass);
+                    removeClass([this.nextPane], EXPAND_PANE);
+                }
+                this.updateIconsOnExpand(e);
+                this.previousPane.setAttribute('aria-expanded', 'true');
+                this.nextPane.setAttribute('aria-expanded', 'false');
+                let expandEventArgs = this.afterAction(e);
+                this.trigger('expanded', expandEventArgs);
+            }
+        });
     }
     hideTargetBarIcon(targetBar, targetArrow) {
         addClass([select('.' + targetArrow, targetBar)], HIDE_ICON);
@@ -717,25 +721,25 @@ let Splitter = class Splitter extends Component {
         this.previousPane.style.flexGrow = '0';
         this.nextPane.style.flexGrow = '1';
         let eventArgs = this.beforeAction(e);
-        this.trigger('beforeCollapse', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
-            removeClass([this.previousPane], EXPAND_PANE);
-            removeClass([this.nextPane], collapseClass);
-        }
-        else {
-            removeClass([this.previousPane], EXPAND_PANE);
-            removeClass([this.nextPane], collapseClass);
-            addClass([this.nextPane], EXPAND_PANE);
-            addClass([this.previousPane], collapseClass);
-        }
-        this.updateIconsOnCollapse(e);
-        this.previousPane.setAttribute('aria-expanded', 'false');
-        this.nextPane.setAttribute('aria-expanded', 'true');
-        let collapseEventArgs = this.afterAction(e);
-        this.trigger('collapsed', collapseEventArgs);
+        this.trigger('beforeCollapse', eventArgs, (beforeCollapseArgs) => {
+            if (!beforeCollapseArgs.cancel) {
+                if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                    removeClass([this.previousPane], EXPAND_PANE);
+                    removeClass([this.nextPane], collapseClass);
+                }
+                else {
+                    removeClass([this.previousPane], EXPAND_PANE);
+                    removeClass([this.nextPane], collapseClass);
+                    addClass([this.nextPane], EXPAND_PANE);
+                    addClass([this.previousPane], collapseClass);
+                }
+                this.updateIconsOnCollapse(e);
+                this.previousPane.setAttribute('aria-expanded', 'false');
+                this.nextPane.setAttribute('aria-expanded', 'true');
+                let collapseEventArgs = this.afterAction(e);
+                this.trigger('collapsed', collapseEventArgs);
+            }
+        });
     }
     beforeAction(e) {
         let eventArgs = {
@@ -868,21 +872,21 @@ let Splitter = class Splitter extends Component {
             separator: this.currentSeparator,
             cancel: false
         };
-        this.trigger('resizeStart', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.wireResizeEvents();
-        if (this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0) {
-            let previousFlexBasis = this.updatePaneFlexBasis(this.previousPane);
-            let nextFlexBasis = this.updatePaneFlexBasis(this.nextPane);
-            this.totalPercent = previousFlexBasis + nextFlexBasis;
-            this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
-        }
-        else {
-            this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
-                this.previousPane.offsetHeight + this.nextPane.offsetHeight;
-        }
+        this.trigger('resizeStart', eventArgs, (resizeStartArgs) => {
+            if (!resizeStartArgs.cancel) {
+                this.wireResizeEvents();
+                if (this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0) {
+                    let previousFlexBasis = this.updatePaneFlexBasis(this.previousPane);
+                    let nextFlexBasis = this.updatePaneFlexBasis(this.nextPane);
+                    this.totalPercent = previousFlexBasis + nextFlexBasis;
+                    this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
+                }
+                else {
+                    this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
+                        this.previousPane.offsetHeight + this.nextPane.offsetHeight;
+                }
+            }
+        });
     }
     updatePaneFlexBasis(pane) {
         let previous;
@@ -1830,10 +1834,10 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
         return undefined;
     }
-    renderTemplate(content, appendElement) {
+    renderTemplate(content, appendElement, type) {
         let templateFn = this.templateParser(content);
         let templateElements = [];
-        for (let item of templateFn({})) {
+        for (let item of templateFn({}, null, null, this.element.id + type)) {
             templateElements.push(item);
         }
         append([].slice.call(templateElements), appendElement);
@@ -1852,8 +1856,9 @@ let DashboardLayout = class DashboardLayout extends Component {
                 cellElement.querySelector('.e-panel-header') : this.createSubElement('', cellElement.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             if (!cellElement.querySelector('.e-panel-header')) {
-                this.renderTemplate(panelModel.header, headerTemplateElement);
+                this.renderTemplate(panelModel.header, headerTemplateElement, 'header');
                 this.panelContent.appendChild(headerTemplateElement);
+                setTimeout(() => { updateBlazorTemplate(this.element.id + 'header', 'Header'); }, 0);
             }
         }
         if (panelModel.content) {
@@ -1864,8 +1869,9 @@ let DashboardLayout = class DashboardLayout extends Component {
             let contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
             setStyleAttribute(this.panelBody, { height: contentHeightValue });
             if (!cellElement.querySelector('.e-panel-content')) {
-                this.renderTemplate(panelModel.content, this.panelBody);
+                this.renderTemplate(panelModel.content, this.panelBody, 'content');
                 this.panelContent.appendChild(this.panelBody);
+                setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'content'); }, 0);
             }
         }
         return cellElement;
@@ -1904,7 +1910,11 @@ let DashboardLayout = class DashboardLayout extends Component {
     resizeEvents() {
         if (this.allowResizing) {
             for (let i = 0; i < document.querySelectorAll('.e-resize').length; i++) {
-                EventHandler.add(document.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+                let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
+                EventHandler.add(document.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
+                if (Browser.info.name !== 'mise') {
+                    EventHandler.add(document.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
+                }
             }
         }
     }
@@ -1913,6 +1923,19 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.resizeEvents();
     }
     downResizeHandler(e) {
+        this.downHandler(e);
+        this.lastMouseX = e.pageX;
+        this.lastMouseY = e.pageY;
+        let moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
+        let upEventName = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
+        EventHandler.add(document, moveEventName, this.moveResizeHandler, this);
+        if (!this.isMouseUpBound) {
+            EventHandler.add(document, upEventName, this.upResizeHandler, this);
+            this.isMouseUpBound = true;
+        }
+    }
+    ;
+    downHandler(e) {
         this.resizeCalled = false;
         let el = closest((e.currentTarget), '.e-panel');
         let args = { event: e, element: el };
@@ -1922,118 +1945,145 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.shadowEle.classList.add('e-holder');
         addClass([this.element], [preventSelect]);
         this.element.appendChild(this.shadowEle);
-        this.lastMouseX = e.pageX;
-        this.lastMouseY = e.pageY;
         this.elementX = parseInt(el.style.left, 10);
         this.elementY = parseInt(el.style.top, 10);
         this.elementWidth = el.offsetWidth;
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
         this.originalHeight = this.getCellInstance(el.id).sizeY;
-        EventHandler.add(document, 'mousemove', this.moveResizeHandler, this);
+    }
+    touchDownResizeHandler(e) {
+        this.downHandler(e);
+        this.lastMouseX = e.changedTouches[0].pageX;
+        this.lastMouseY = e.changedTouches[0].pageY;
+        EventHandler.add(document, 'touchmove', this.touchMoveResizeHandler, this);
         if (!this.isMouseUpBound) {
-            EventHandler.add(document, 'mouseup', this.upResizeHandler, this);
+            EventHandler.add(document, 'touchend', this.upResizeHandler, this);
             this.isMouseUpBound = true;
         }
     }
-    ;
     getCellSize() {
         return [parseInt((this.cellSize[0]), 10), parseInt(this.cellSize[1], 10)];
     }
-    /* istanbul ignore next */
-    // tslint:disable-next-line:max-func-body-length
-    moveResizeHandler(e) {
+    updateMaxTopLeft(e) {
         this.moveTarget = this.downTarget;
         let el = closest((this.moveTarget), '.e-panel');
         let args = { event: e, element: el };
         this.trigger('resize', args);
-        if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
-            return;
-        }
+    }
+    updateResizeElement(el) {
         this.maxLeft = this.element.offsetWidth - 1;
         this.maxTop = this.cellSize[1] * this.maxRows - 1;
         removeClass([el], 'e-panel-transition');
         addClass([el], [dragging]);
-        let oldSizeX = this.getCellInstance(el.id).sizeX;
-        let oldSizeY = this.getCellInstance(el.id).sizeY;
         let handleArray = [east, west, north, south, southEast, northEast, northWest, southWest];
-        let oldProp = [this.elementWidth, this.elementHeight];
         for (let i = 0; i < this.moveTarget.classList.length; i++) {
             if (handleArray.indexOf(this.moveTarget.classList[i]) !== -1) {
                 this.handleClass = (this.moveTarget.classList[i]);
             }
         }
+    }
+    moveResizeHandler(e) {
+        this.updateMaxTopLeft(e);
+        let el = closest((this.moveTarget), '.e-panel');
+        if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
+            return;
+        }
+        this.updateResizeElement(el);
         let panelModel = this.getCellInstance(el.getAttribute('id'));
         this.mouseX = e.pageX;
         this.mouseY = e.pageY;
+        let diffY = this.mouseY - this.lastMouseY + this.mOffY;
+        let diffX = this.mouseX - this.lastMouseX + this.mOffX;
+        this.mOffX = this.mOffY = 0;
+        this.lastMouseY = this.mouseY;
+        this.lastMouseX = this.mouseX;
+        this.resizingPanel(el, panelModel, diffX, diffY);
+    }
+    touchMoveResizeHandler(e) {
+        this.updateMaxTopLeft(e);
+        let el = closest((this.moveTarget), '.e-panel');
+        if (this.lastMouseX === e.changedTouches[0].pageX || this.lastMouseY === e.changedTouches[0].pageY) {
+            return;
+        }
+        this.updateResizeElement(el);
+        let panelModel = this.getCellInstance(el.getAttribute('id'));
+        this.mouseX = e.changedTouches[0].pageX;
+        this.mouseY = e.changedTouches[0].pageY;
         let diffX = this.mouseX - this.lastMouseX + this.mOffX;
         let diffY = this.mouseY - this.lastMouseY + this.mOffY;
         this.mOffX = this.mOffY = 0;
         this.lastMouseX = this.mouseX;
         this.lastMouseY = this.mouseY;
-        let dY = diffY;
-        let dX = diffX;
+        this.resizingPanel(el, panelModel, diffX, diffY);
+    }
+    /* istanbul ignore next */
+    resizingPanel(el, panelModel, currentX, currentY) {
+        let oldSizeX = this.getCellInstance(el.id).sizeX;
+        let oldSizeY = this.getCellInstance(el.id).sizeY;
+        let dY = currentY;
+        let dX = currentX;
         if (this.handleClass.indexOf('north') >= 0) {
             if (this.elementHeight - dY < this.getMinHeight(panelModel)) {
-                diffY = this.elementHeight - this.getMinHeight(panelModel);
-                this.mOffY = dY - diffY;
+                currentY = this.elementHeight - this.getMinHeight(panelModel);
+                this.mOffY = dY - currentY;
             }
             else if (panelModel.maxSizeY && this.elementHeight - dY > this.getMaxHeight(panelModel)) {
-                diffY = this.elementHeight - this.getMaxHeight(panelModel);
-                this.mOffY = dY - diffY;
+                currentY = this.elementHeight - this.getMaxHeight(panelModel);
+                this.mOffY = dY - currentY;
             }
             else if (this.elementY + dY < this.minTop) {
-                diffY = this.minTop - this.elementY;
-                this.mOffY = dY - diffY;
+                currentY = this.minTop - this.elementY;
+                this.mOffY = dY - currentY;
             }
-            this.elementY += diffY;
-            this.elementHeight -= diffY;
+            this.elementY += currentY;
+            this.elementHeight -= currentY;
         }
         if (this.handleClass.indexOf('south') >= 0) {
             if (this.elementHeight + dY < this.getMinHeight(panelModel)) {
-                diffY = this.getMinHeight(panelModel) - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.getMinHeight(panelModel) - this.elementHeight;
+                this.mOffY = dY - currentY;
             }
             else if (panelModel.maxSizeY && this.elementHeight + dY > this.getMaxHeight(panelModel)) {
-                diffY = this.getMaxHeight(panelModel) - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.getMaxHeight(panelModel) - this.elementHeight;
+                this.mOffY = dY - currentY;
             }
             else if (this.elementY + this.elementHeight + dY > this.maxTop) {
-                diffY = this.maxTop - this.elementY - this.elementHeight;
-                this.mOffY = dY - diffY;
+                currentY = this.maxTop - this.elementY - this.elementHeight;
+                this.mOffY = dY - currentY;
             }
-            this.elementHeight += diffY;
+            this.elementHeight += currentY;
         }
         if (this.handleClass.indexOf('west') >= 0) {
             if (this.elementWidth - dX < this.getMinWidth(panelModel)) {
-                diffX = this.elementWidth - this.getMinWidth(panelModel);
-                this.mOffX = dX - diffX;
+                currentX = this.elementWidth - this.getMinWidth(panelModel);
+                this.mOffX = dX - currentX;
             }
             else if (panelModel.maxSizeX && this.elementWidth - dX > this.getMaxWidth(panelModel)) {
-                diffX = this.elementWidth - this.getMaxWidth(panelModel);
-                this.mOffX = dX - diffX;
+                currentX = this.elementWidth - this.getMaxWidth(panelModel);
+                this.mOffX = dX - currentX;
             }
             else if (this.elementX + dX < this.minLeft) {
-                diffX = this.minLeft - this.elementX;
-                this.mOffX = dX - diffX;
+                currentX = this.minLeft - this.elementX;
+                this.mOffX = dX - currentX;
             }
-            this.elementX += diffX;
-            this.elementWidth -= diffX;
+            this.elementX += currentX;
+            this.elementWidth -= currentX;
         }
         if (this.handleClass.indexOf('east') >= 0) {
             if (this.elementWidth + dX < this.getMinWidth(panelModel)) {
-                diffX = this.getMinWidth(panelModel) - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.getMinWidth(panelModel) - this.elementWidth;
+                this.mOffX = dX - currentX;
             }
             else if (panelModel.maxSizeX && this.elementWidth + dX > this.getMaxWidth(panelModel)) {
-                diffX = this.getMaxWidth(panelModel) - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.getMaxWidth(panelModel) - this.elementWidth;
+                this.mOffX = dX - currentX;
             }
             else if (this.elementX + this.elementWidth + dX > this.maxLeft) {
-                diffX = this.maxLeft - this.elementX - this.elementWidth;
-                this.mOffX = dX - diffX;
+                currentX = this.maxLeft - this.elementX - this.elementWidth;
+                this.mOffX = dX - currentX;
             }
-            this.elementWidth += diffX;
+            this.elementWidth += currentX;
         }
         el.style.top = this.elementY + 'px';
         el.style.left = this.elementX + 'px';
@@ -2076,8 +2126,14 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
-            EventHandler.remove(document, 'mousemove', this.moveResizeHandler);
-            EventHandler.remove(document, 'mouseup', this.upResizeHandler);
+            let moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
+            let upEventName = (Browser.info.name === 'msie') ? 'mouseup pointerup' : 'mouseup';
+            EventHandler.remove(document, moveEventName, this.moveResizeHandler);
+            EventHandler.remove(document, upEventName, this.upResizeHandler);
+            if (Browser.info.name !== 'mise') {
+                EventHandler.remove(document, 'touchmove', this.touchMoveResizeHandler);
+                EventHandler.remove(document, 'touchend', this.upResizeHandler);
+            }
             this.isMouseUpBound = false;
             if (this.shadowEle) {
                 detach(this.shadowEle);
@@ -2247,9 +2303,6 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.sortedPanel();
     }
     ;
-    /**
-     * Refresh the panels of DashboardLayout component.
-     */
     refresh() {
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -3124,7 +3177,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                     if (this.mainElement && collisionModels.indexOf(this.mainElement) !== -1) {
                         collisionModels.splice(collisionModels.indexOf(this.mainElement), 1);
                     }
-                    this.updatePanel(collisionModels, eleCol, eleRow, ele);
+                    this.collisionPanel(collisionModels, eleCol, eleRow, ele);
                 }
                 this.isSubValue = false;
             }
@@ -3146,11 +3199,11 @@ let DashboardLayout = class DashboardLayout extends Component {
                 this.oldRowCol[(this.overlapElementClone[i].id)] = { row: updatedRow, col: colValue };
                 let panelModel = this.getCellInstance(this.overlapElementClone[i].id);
                 this.panelPropertyChange(panelModel, { col: colValue, row: updatedRow });
-                this.updatePanel(collisionModels, colValue, updatedRow, this.overlapElementClone[i]);
+                this.collisionPanel(collisionModels, colValue, updatedRow, this.overlapElementClone[i]);
             }
         }
     }
-    updatePanel(collisionModels, colValue, updatedRow, clone) {
+    collisionPanel(collisionModels, colValue, updatedRow, clone) {
         let panelModel = this.getCellInstance(clone.id);
         this.panelPropertyChange(panelModel, { row: updatedRow, col: colValue });
         if (collisionModels.length > 0) {
@@ -3236,14 +3289,14 @@ let DashboardLayout = class DashboardLayout extends Component {
     setXYAttributes(element, panelModel) {
         let value = {
             value: {
-                sizeX: !isNullOrUndefined(panelModel.sizeX) ? panelModel.sizeX.toString() : undefined,
-                sizeY: !isNullOrUndefined(panelModel.sizeY) ? panelModel.sizeY.toString() : undefined,
-                minSizeX: !isNullOrUndefined(panelModel.minSizeX) ? panelModel.minSizeX.toString() : 1,
-                minSizeY: !isNullOrUndefined(panelModel.minSizeY) ? panelModel.minSizeY.toString() : 1,
+                sizeX: panelModel.sizeX.toString(),
+                sizeY: panelModel.sizeY.toString(),
+                minSizeX: panelModel.minSizeX.toString(),
+                minSizeY: panelModel.minSizeY.toString(),
                 maxSizeX: !isNullOrUndefined(panelModel.maxSizeX) ? panelModel.maxSizeX.toString() : undefined,
                 maxSizeY: !isNullOrUndefined(panelModel.maxSizeY) ? panelModel.maxSizeY.toString() : undefined,
-                row: !isNullOrUndefined(panelModel.row) ? panelModel.row.toString() : undefined,
-                col: !isNullOrUndefined(panelModel.col) ? panelModel.col.toString() : undefined,
+                row: panelModel.row.toString(),
+                col: panelModel.col.toString(),
             }
         };
         this.setAttributes(value, element);
@@ -3593,9 +3646,78 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.updateCloneArrayObject();
         if (this.allowResizing) {
             for (let i = 0; i < cell.querySelectorAll('.e-resize').length; i++) {
-                EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+                let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
+                EventHandler.add(cell.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
+                if (Browser.info.name !== 'mise') {
+                    EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'touchstart', this.touchDownResizeHandler, this);
+                }
             }
         }
+    }
+    /**
+     * Allows to update a panel in the DashboardLayout.
+     */
+    updatePanel(panel) {
+        if (!panel.id) {
+            return;
+        }
+        let panelInstance = this.getCellInstance(panel.id);
+        if (!panelInstance) {
+            return;
+        }
+        this.maxCol();
+        panel.col = (panel.col < 1) ? 0 : ((panel.col > this.columns)) ? this.columns - 1 : panel.col;
+        if (isNullOrUndefined(panel.col)) {
+            panel.col = panelInstance.col;
+        }
+        this.panelPropertyChange(panelInstance, panel);
+        this.setMinMaxValues(panelInstance);
+        let cell = document.getElementById(panel.id);
+        this.mainElement = cell;
+        this.panelContent = cell.querySelector('.e-panel-container') ?
+            cell.querySelector('.e-panel-container') :
+            this.createSubElement(panelInstance.cssClass, cell.id + '_content', panelContainer);
+        cell.appendChild(this.panelContent);
+        if (panelInstance.header) {
+            let headerTemplateElement = cell.querySelector('.e-panel-header') ?
+                cell.querySelector('.e-panel-header') : this.createSubElement('', cell.id + 'template', '');
+            addClass([headerTemplateElement], [header]);
+            headerTemplateElement.innerHTML = '';
+            this.renderTemplate(panelInstance.header, headerTemplateElement, 'header');
+            this.panelContent.appendChild(headerTemplateElement);
+            resetBlazorTemplate(this.element.id + 'header', 'Header');
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'header', 'Header'); }, 0);
+        }
+        else {
+            if (cell.querySelector('.e-panel-header')) {
+                detach(cell.querySelector('.e-panel-header'));
+            }
+        }
+        if (panelInstance.content) {
+            this.panelBody = cell.querySelector('.e-panel-content') ? cell.querySelector('.e-panel-content') :
+                this.createSubElement(panelInstance.cssClass, cell.id + '_body', panelContent);
+            this.panelBody.innerHTML = '';
+            let headerHeight = this.panelContent.querySelector('.e-panel-header') ?
+                window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
+            let contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
+            setStyleAttribute(this.panelBody, { height: contentHeightValue });
+            this.renderTemplate(panelInstance.content, this.panelBody, 'content');
+            this.panelContent.appendChild(this.panelBody);
+            resetBlazorTemplate(this.element.id + 'content', 'Content');
+            setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'Content'); }, 0);
+        }
+        else {
+            if (cell.querySelector('.e-panel-content')) {
+                detach(cell.querySelector('.e-panel-content'));
+            }
+        }
+        this.setXYAttributes(cell, panelInstance);
+        this.setHeightAndWidth(cell, panelInstance);
+        this.setPanelPosition(cell, panelInstance.row, panelInstance.col);
+        this.updatePanelLayout(cell, panelInstance);
+        this.mainElement = null;
+        this.updatePanels();
+        this.updateCloneArrayObject();
     }
     updateCloneArrayObject() {
         this.cloneArray = this.sortedArray;
@@ -3805,8 +3927,12 @@ let DashboardLayout = class DashboardLayout extends Component {
                     }
                     else {
                         for (let i = 0; i < document.querySelectorAll('.e-resize').length; i++) {
+                            let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                             let element = document.querySelectorAll('.e-resize')[i];
-                            EventHandler.remove(element, 'mousedown', this.downResizeHandler);
+                            EventHandler.remove(element, eventName, this.downResizeHandler);
+                            if (Browser.info.name !== 'mise') {
+                                EventHandler.remove(element, 'touchstart', this.touchDownResizeHandler);
+                            }
                         }
                         this.removeResizeClasses(this.panelCollection);
                     }

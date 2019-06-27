@@ -93,9 +93,15 @@ export class Tooltip extends BaseTooltip {
      */
     public tooltip(): void {
         if ((this.chart.stockChart && this.chart.stockChart.onPanning)) { this.removeTooltip(1000); return null; }
-        let svgElement: HTMLElement = this.getElement(this.element.id + '_tooltip_svg');
+        let svgElement: HTMLElement ;
+        let elementId: string = this.chart.enableCanvas ? this.element.id + '_tooltip_group' : this.element.id + '_tooltip_svg';
+        svgElement = this.getElement(elementId);
         let isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         let tooltipDiv: HTMLDivElement = this.getTooltipElement(isTooltip);
+        if (this.chart.enableCanvas && tooltipDiv) {
+            document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+            tooltipDiv.appendChild(document.getElementById(this.chart.element.id + '_tooltip_svg'));
+        }
         if (!this.chart.tooltip.shared) {
             this.renderSeriesTooltip(this.chart, !isTooltip, tooltipDiv);
         } else {
@@ -176,7 +182,7 @@ export class Tooltip extends BaseTooltip {
 
     private findData(data : PointData, previous : PointData) : boolean {
         return data.point && ((!previous || (previous.point !== data.point)) ||
-        (previous && previous.lierIndex > 3 && previous.lierIndex !== this.lierIndex));
+        (previous && previous.lierIndex > 3 && previous.lierIndex !== this.lierIndex) || (previous.point === data.point));
     }
 
     private getSymbolLocation(data : PointData) : ChartLocation {
@@ -270,7 +276,9 @@ export class Tooltip extends BaseTooltip {
         let headerContent : string = '';
         if (isFirst) {
             if (!chart.stockChart) {
-                document.getElementById(this.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                if (tooltipDiv) {
+                    document.getElementById(this.element.id + '_Secondary_Element').appendChild(tooltipDiv);
+                }
             } else {
                 document.getElementById(chart.stockChart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
             }
@@ -408,8 +416,8 @@ export class Tooltip extends BaseTooltip {
                 if (series.category === 'Indicator') {
                     this.getIndicatorTooltipFormat(series, chart, chart.tooltip.format);
                 }
-                return format + ' : ' + ((series.type === 'Bubble') ? '<b>${point.y}</b>  Size : <b>${point.size}</b>'
-                    : '<b>${point.y}</b>');
+                return format + ' : ' + ((series.type === 'Bubble') ? '<b>${point.y}</b>  Size : <b>${point.size}</b>' :
+                 '<b>${point.y}</b>');
             case 'HighLow':
                 return format + ('<br/>High : <b>${point.high}</b><br/>Low : <b>${point.low}</b>');
             case 'HighLowOpenClose':

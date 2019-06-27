@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -967,6 +967,7 @@ var HIDE = 'e-menu-hide';
 var ICONS = 'e-icons';
 var RTL = 'e-rtl';
 var POPUP = 'e-menu-popup';
+var TEMPLATE_PROPERTY = 'Template';
 /**
  * Configures the field options of the Menu.
  */
@@ -1115,6 +1116,13 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     MenuBase.prototype.render = function () {
         this.initialize();
         this.renderItems();
+        if (this.isMenu && this.template) {
+            var menuTemplateId_1 = this.element.id + TEMPLATE_PROPERTY;
+            resetBlazorTemplate(menuTemplateId_1, TEMPLATE_PROPERTY);
+            setTimeout(function () {
+                updateBlazorTemplate(menuTemplateId_1, TEMPLATE_PROPERTY);
+            }, 500);
+        }
         this.wireEvents();
     };
     MenuBase.prototype.initialize = function () {
@@ -1340,25 +1348,12 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         if (fli) {
             var fliIdx = this.getIdx(cul, fli);
             var navIdx = this.navIdx.concat(fliIdx);
-            var index = void 0;
             var item = this.getItem(navIdx);
             if (item.items.length) {
                 this.navIdx.push(fliIdx);
+                this.keyType = 'right';
+                this.action = e.action;
                 this.openMenu(fli, item, null, null, e);
-                fli.classList.remove(FOCUSED);
-                if (this.isMenu && this.navIdx.length === 1) {
-                    this.removeLIStateByClass([SELECTED], [this.getWrapper()]);
-                }
-                fli.classList.add(SELECTED);
-                if (e.action === ENTER) {
-                    eventArgs = { element: fli, item: item, event: e };
-                    this.trigger('select', eventArgs);
-                }
-                fli.focus();
-                cul = this.getUlByNavIdx();
-                index = this.isValidLI(cul.children[0], 0, e.action);
-                cul.children[index].classList.add(FOCUSED);
-                cul.children[index].focus();
             }
             else {
                 if (e.action === ENTER) {
@@ -1378,15 +1373,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     };
     MenuBase.prototype.leftEscKeyHandler = function (e) {
         if (this.navIdx.length) {
+            this.keyType = 'left';
             this.closeMenu(this.navIdx.length, e);
-            var cul = this.getUlByNavIdx();
-            var sli = this.getLIByClass(cul, SELECTED);
-            if (sli) {
-                sli.setAttribute('aria-expanded', 'false');
-                sli.classList.remove(SELECTED);
-                sli.classList.add(FOCUSED);
-                sli.focus();
-            }
         }
         else {
             if (e.action === ESCAPE) {
@@ -1414,53 +1402,84 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MenuBase.prototype.closeMenu = function (ulIndex, e) {
+        var _this = this;
         if (ulIndex === void 0) { ulIndex = 0; }
         if (e === void 0) { e = null; }
         if (this.isMenuVisible()) {
-            var ul = void 0;
             var sli = void 0;
-            var item = void 0;
-            var items = void 0;
-            var closeArgs = void 0;
+            var ul_1;
+            var item_1;
+            var items_1;
             var beforeCloseArgs = void 0;
-            var popupEle = void 0;
-            var popupObj = void 0;
             var wrapper = this.getWrapper();
             var popups = this.getPopups();
-            for (var cnt = this.isMenu ? popups.length + 1 : wrapper.childElementCount; cnt > ulIndex; cnt--) {
-                ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2])
-                    : selectAll('.e-menu-parent', wrapper)[cnt - 1];
-                if (this.isMenu && ul.classList.contains('e-menu')) {
-                    sli = this.getLIByClass(ul, SELECTED);
-                    if (sli) {
-                        sli.classList.remove(SELECTED);
-                    }
-                    break;
+            var isClose = false;
+            var cnt = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
+            ul_1 = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2])
+                : selectAll('.e-menu-parent', wrapper)[cnt - 1];
+            if (this.isMenu && ul_1.classList.contains('e-menu')) {
+                sli = this.getLIByClass(ul_1, SELECTED);
+                if (sli) {
+                    sli.classList.remove(SELECTED);
                 }
-                item = this.navIdx.length ? this.getItem(this.navIdx) : null;
-                items = item ? item.items : this.items;
-                beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
-                this.trigger('beforeClose', beforeCloseArgs);
-                if (!beforeCloseArgs.cancel) {
-                    if (this.isMenu) {
-                        popupEle = closest(ul, '.' + POPUP);
-                        if (this.hamburgerMode) {
-                            popupEle.parentElement.style.minHeight = '';
+                isClose = true;
+            }
+            if (!isClose) {
+                item_1 = this.navIdx.length ? this.getItem(this.navIdx) : null;
+                items_1 = item_1 ? item_1.items : this.items;
+                beforeCloseArgs = { element: ul_1, parentItem: item_1, items: items_1, event: e, cancel: false };
+                this.trigger('beforeClose', beforeCloseArgs, function (observedCloseArgs) {
+                    var popupEle;
+                    var closeArgs;
+                    var popupObj;
+                    if (!observedCloseArgs.cancel) {
+                        if (_this.isMenu) {
+                            popupEle = closest(ul_1, '.' + POPUP);
+                            if (_this.hamburgerMode) {
+                                popupEle.parentElement.style.minHeight = '';
+                            }
+                            _this.unWireKeyboardEvent(popupEle);
+                            _this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
+                            popupObj = getInstance(popupEle, Popup);
+                            popupObj.hide();
+                            popupObj.destroy();
+                            detach(popupEle);
                         }
-                        this.unWireKeyboardEvent(popupEle);
-                        this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
-                        popupObj = getInstance(popupEle, Popup);
-                        popupObj.hide();
-                        popupObj.destroy();
-                        detach(popupEle);
+                        else {
+                            _this.toggleAnimation(ul_1, false);
+                        }
+                        closeArgs = { element: ul_1, parentItem: item_1, items: items_1 };
+                        _this.trigger('onClose', closeArgs);
+                    }
+                    _this.navIdx.pop();
+                    if (!ulIndex && _this.navIdx.length) {
+                        _this.closeMenu(null, e);
+                    }
+                    else if (!_this.isMenu && !ulIndex && _this.navIdx.length === 0 && !_this.isMenusClosed) {
+                        _this.isMenusClosed = true;
+                        _this.closeMenu(0, e);
+                    }
+                    else if (_this.isMenu && e && e.target &&
+                        _this.navIdx.length !== 0 && closest(e.target, '.e-menu-parent.e-control')) {
+                        _this.closeMenu(0, e);
                     }
                     else {
-                        this.toggleAnimation(ul, false);
+                        if (_this.keyType === 'right') {
+                            _this.afterCloseMenu(e);
+                        }
+                        else {
+                            var cul = _this.getUlByNavIdx();
+                            var sli_1 = _this.getLIByClass(cul, SELECTED);
+                            if (sli_1) {
+                                sli_1.setAttribute('aria-expanded', 'false');
+                                sli_1.classList.remove(SELECTED);
+                                sli_1.classList.add(FOCUSED);
+                                sli_1.focus();
+                            }
+                        }
                     }
-                    this.navIdx.length = ulIndex ? ulIndex - 1 : ulIndex;
-                    closeArgs = { element: ul, parentItem: item, items: items };
-                    this.trigger('onClose', closeArgs);
-                }
+                    _this.removeStateWrapper();
+                });
             }
         }
     };
@@ -1503,127 +1522,56 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         if (left === void 0) { left = 0; }
         if (e === void 0) { e = null; }
         if (target === void 0) { target = this.targetElement; }
-        var ul;
-        var popupObj;
-        var popupWrapper;
-        var eventArgs;
         var wrapper = this.getWrapper();
+        this.lItem = li;
+        var elemId = this.element.id !== '' ? this.element.id : 'menu';
+        this.isMenusClosed = false;
         if (li) {
-            ul = this.createItems(item[this.getField('children', this.navIdx.length - 1)]);
+            this.uList = this.createItems(item[this.getField('children', this.navIdx.length - 1)]);
             if (!this.isMenu && Browser.isDevice) {
                 wrapper.lastChild.style.display = 'none';
                 var data = {
                     text: item[this.getField('text')].toString(), iconCss: ICONS + ' e-previous'
                 };
-                var hdata = new MenuItem(this.items[0], null, data, true);
+                var hdata = new MenuItem(this.items[0], 'items', data, true);
                 var hli = this.createItems([hdata]).children[0];
                 hli.classList.add(HEADER);
-                ul.insertBefore(hli, ul.children[0]);
+                this.uList.insertBefore(hli, this.uList.children[0]);
             }
             if (this.isMenu) {
-                popupWrapper = this.createElement('div', {
-                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-menu-popup'
+                this.popupWrapper = this.createElement('div', {
+                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-' + elemId + '-popup'
                 });
                 if (this.hamburgerMode) {
                     top = li.offsetHeight;
-                    li.appendChild(popupWrapper);
+                    li.appendChild(this.popupWrapper);
                 }
                 else {
-                    document.body.appendChild(popupWrapper);
+                    document.body.appendChild(this.popupWrapper);
                 }
-                var isNestedOrVerticalMenu = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
-                popupObj = this.generatePopup(popupWrapper, ul, li, isNestedOrVerticalMenu);
+                this.isNestedOrVertical = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
+                this.popupObj = this.generatePopup(this.popupWrapper, this.uList, li, this.isNestedOrVertical);
                 if (this.hamburgerMode) {
-                    this.calculateIndentSize(ul, li);
+                    this.calculateIndentSize(this.uList, li);
                 }
                 else {
                     if (this.cssClass) {
-                        addClass([popupWrapper], this.cssClass.split(' '));
+                        addClass([this.popupWrapper], this.cssClass.split(' '));
                     }
-                    popupObj.hide();
+                    this.popupObj.hide();
                 }
-                eventArgs = this.triggerBeforeOpen(li, ul, item, e, 0, 0);
-                if (!this.hamburgerMode) {
-                    top = eventArgs.top;
-                    left = eventArgs.left;
-                }
-                popupWrapper.style.display = 'block';
-                if (!this.hamburgerMode) {
-                    popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
-                    this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
-                    this.checkScrollOffset(e);
-                }
-                var collide = void 0;
-                if (!this.hamburgerMode && !left && !top) {
-                    popupObj.refreshPosition(li, true);
-                    left = parseInt(popupWrapper.style.left, 10);
-                    top = parseInt(popupWrapper.style.top, 10);
-                    if (this.enableRtl) {
-                        left = isNestedOrVerticalMenu ? left - popupWrapper.offsetWidth - li.parentElement.offsetWidth
-                            : left - popupWrapper.offsetWidth + li.offsetWidth;
-                    }
-                    collide = isCollide(popupWrapper, null, left, top);
-                    if ((isNestedOrVerticalMenu || this.enableRtl) && (collide.indexOf('right') > -1 || collide.indexOf('left') > -1)) {
-                        popupObj.collision.X = 'none';
-                        left = this.enableRtl ? calculatePosition(li, isNestedOrVerticalMenu ? 'right' : 'left', 'top').left : left -
-                            popupWrapper.offsetWidth - closest(li, '.e-' + this.getModuleName() + '-wrapper').offsetWidth;
-                    }
-                    collide = isCollide(popupWrapper, null, left, top);
-                    if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
-                        left = this.callFit(popupWrapper, true, false, top, left).left;
-                    }
-                    popupWrapper.style.left = left + 'px';
-                }
-                else {
-                    popupObj.collision = { X: 'none', Y: 'none' };
-                }
-                popupWrapper.style.display = '';
+                this.triggerBeforeOpen(li, this.uList, item, e, 0, 0, 'menu');
             }
             else {
-                ul.style.zIndex = this.element.style.zIndex;
-                wrapper.appendChild(ul);
-                eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
-                top = eventArgs.top;
-                left = eventArgs.left;
+                this.uList.style.zIndex = this.element.style.zIndex;
+                wrapper.appendChild(this.uList);
+                this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
             }
         }
         else {
-            ul = this.element;
-            ul.style.zIndex = getZindexPartial(target ? target : this.element).toString();
-            eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
-            top = eventArgs.top;
-            left = eventArgs.left;
-        }
-        if (eventArgs.cancel) {
-            if (this.isMenu) {
-                popupObj.destroy();
-                detach(popupWrapper);
-            }
-            this.navIdx.pop();
-        }
-        else {
-            if (this.isMenu) {
-                if (this.hamburgerMode) {
-                    popupWrapper.style.top = top + 'px';
-                    popupWrapper.style.left = 0 + 'px';
-                    this.toggleAnimation(popupWrapper);
-                }
-                else {
-                    this.wireKeyboardEvent(popupWrapper);
-                    rippleEffect(popupWrapper, { selector: '.' + ITEM });
-                    popupWrapper.style.left = left + 'px';
-                    popupWrapper.style.top = top + 'px';
-                    var animationOptions = this.animationSettings.effect !== 'None' ? {
-                        name: this.animationSettings.effect, duration: this.animationSettings.duration,
-                        timingFunction: this.animationSettings.easing
-                    } : null;
-                    popupObj.show(animationOptions, li);
-                }
-            }
-            else {
-                this.setPosition(li, ul, top, left);
-                this.toggleAnimation(ul);
-            }
+            this.uList = this.element;
+            this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
+            this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
         }
     };
     MenuBase.prototype.calculateIndentSize = function (ul, li) {
@@ -1644,14 +1592,14 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             blankIconElem.forEach(function (element) { return element.style.textIndent = blankIconIndent_1 + 'px'; });
         }
     };
-    MenuBase.prototype.generatePopup = function (popupWrapper, ul, li, isNestedOrVerticalMenu) {
+    MenuBase.prototype.generatePopup = function (popupWrapper, ul, li, isNestedOrVertical) {
         var _this = this;
         var popupObj = new Popup(popupWrapper, {
             actionOnScroll: this.hamburgerMode ? 'none' : 'reposition',
             relateTo: li,
-            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVerticalMenu ||
+            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVertical ||
                     this.enableRtl ? 'none' : 'flip', Y: 'fit' },
-            position: (isNestedOrVerticalMenu && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
+            position: (isNestedOrVertical && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
             targetType: 'relative',
             enableRtl: this.enableRtl,
             content: ul,
@@ -1684,37 +1632,139 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     };
     MenuBase.prototype.openHamburgerMenu = function (e) {
         if (this.hamburgerMode) {
-            var eventArgs = void 0;
-            eventArgs = this.triggerBeforeOpen(null, this.element, null, e, 0, 0);
-            if (!eventArgs.cancel) {
-                this.element.classList.remove('e-hide-menu');
-                this.triggerOpen(this.element);
-            }
+            this.triggerBeforeOpen(null, this.element, null, e, 0, 0, 'hamburger');
         }
     };
     MenuBase.prototype.closeHamburgerMenu = function (e) {
+        var _this = this;
         if (this.hamburgerMode) {
             var beforeCloseArgs = void 0;
             beforeCloseArgs = { element: this.element, parentItem: null, event: e, items: this.items, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs);
-            if (!beforeCloseArgs.cancel) {
-                this.closeMenu(null, e);
-                this.element.classList.add('e-hide-menu');
-                this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
-            }
+            this.trigger('beforeClose', beforeCloseArgs, function (observedHamburgerCloseArgs) {
+                if (!observedHamburgerCloseArgs.cancel) {
+                    _this.closeMenu(null, e);
+                    _this.element.classList.add('e-hide-menu');
+                    _this.trigger('onClose', { element: _this.element, parentItem: null, items: _this.items });
+                }
+            });
         }
     };
     MenuBase.prototype.callFit = function (element, x, y, top, left) {
         return fit(element, null, { X: x, Y: y }, { top: top, left: left });
     };
-    MenuBase.prototype.triggerBeforeOpen = function (li, ul, item, e, top, left) {
+    MenuBase.prototype.triggerBeforeOpen = function (li, ul, item, e, top, left, type) {
+        var _this = this;
         var navIdx = this.getIndex(li ? li.id : null, true);
         var items = li ? item[this.getField('children', this.navIdx.length - 1)] : this.items;
         var eventArgs = {
             element: ul, items: items, parentItem: item, event: e, cancel: false, top: top, left: left
         };
-        this.trigger('beforeOpen', eventArgs);
-        return eventArgs;
+        var menuType = type;
+        this.trigger('beforeOpen', eventArgs, function (observedOpenArgs) {
+            switch (menuType) {
+                case 'menu':
+                    if (!_this.hamburgerMode) {
+                        _this.top = observedOpenArgs.top;
+                        _this.left = observedOpenArgs.left;
+                    }
+                    _this.popupWrapper.style.display = 'block';
+                    if (!_this.hamburgerMode) {
+                        _this.popupWrapper.style.maxHeight = _this.popupWrapper.getBoundingClientRect().height + 'px';
+                        _this.addScrolling(_this.popupWrapper, _this.uList, 'vscroll', _this.popupWrapper.offsetHeight, _this.uList.offsetHeight);
+                        _this.checkScrollOffset(e);
+                    }
+                    var collide = void 0;
+                    if (!_this.hamburgerMode && !_this.left && !_this.top) {
+                        _this.popupObj.refreshPosition(_this.lItem, true);
+                        _this.left = parseInt(_this.popupWrapper.style.left, 10);
+                        _this.top = parseInt(_this.popupWrapper.style.top, 10);
+                        if (_this.enableRtl) {
+                            _this.left =
+                                _this.isNestedOrVertical ? _this.left - _this.popupWrapper.offsetWidth - _this.lItem.parentElement.offsetWidth
+                                    : _this.left - _this.popupWrapper.offsetWidth + _this.lItem.offsetWidth;
+                        }
+                        collide = isCollide(_this.popupWrapper, null, _this.left, _this.top);
+                        if ((_this.isNestedOrVertical || _this.enableRtl) && (collide.indexOf('right') > -1
+                            || collide.indexOf('left') > -1)) {
+                            _this.popupObj.collision.X = 'none';
+                            var offWidth = closest(_this.lItem, '.e-' + _this.getModuleName() + '-wrapper').offsetWidth;
+                            _this.left =
+                                _this.enableRtl ? calculatePosition(_this.lItem, _this.isNestedOrVertical ? 'right' : 'left', 'top').left
+                                    : _this.left - _this.popupWrapper.offsetWidth - offWidth;
+                        }
+                        collide = isCollide(_this.popupWrapper, null, _this.left, _this.top);
+                        if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
+                            _this.left = _this.callFit(_this.popupWrapper, true, false, _this.top, _this.left).left;
+                        }
+                        _this.popupWrapper.style.left = _this.left + 'px';
+                    }
+                    else {
+                        _this.popupObj.collision = { X: 'none', Y: 'none' };
+                    }
+                    _this.popupWrapper.style.display = '';
+                    break;
+                case 'none':
+                    _this.top = observedOpenArgs.top;
+                    _this.left = observedOpenArgs.left;
+                    break;
+                case 'hamburger':
+                    if (!observedOpenArgs.cancel) {
+                        _this.element.classList.remove('e-hide-menu');
+                        _this.triggerOpen(_this.element);
+                    }
+                    break;
+            }
+            if (menuType !== 'hamburger') {
+                if (observedOpenArgs.cancel) {
+                    if (_this.isMenu) {
+                        _this.popupObj.destroy();
+                        detach(_this.popupWrapper);
+                    }
+                    _this.navIdx.pop();
+                }
+                else {
+                    if (_this.isMenu) {
+                        if (_this.hamburgerMode) {
+                            _this.popupWrapper.style.top = _this.top + 'px';
+                            _this.popupWrapper.style.left = 0 + 'px';
+                            _this.toggleAnimation(_this.popupWrapper);
+                        }
+                        else {
+                            _this.wireKeyboardEvent(_this.popupWrapper);
+                            rippleEffect(_this.popupWrapper, { selector: '.' + ITEM });
+                            _this.popupWrapper.style.left = _this.left + 'px';
+                            _this.popupWrapper.style.top = _this.top + 'px';
+                            var animationOptions = _this.animationSettings.effect !== 'None' ? {
+                                name: _this.animationSettings.effect, duration: _this.animationSettings.duration,
+                                timingFunction: _this.animationSettings.easing
+                            } : null;
+                            _this.popupObj.show(animationOptions, _this.lItem);
+                        }
+                    }
+                    else {
+                        _this.setPosition(_this.lItem, _this.uList, _this.top, _this.left);
+                        _this.toggleAnimation(_this.uList);
+                    }
+                }
+            }
+            if (_this.keyType === 'right') {
+                var cul = _this.getUlByNavIdx();
+                li.classList.remove(FOCUSED);
+                if (_this.isMenu && _this.navIdx.length === 1) {
+                    _this.removeLIStateByClass([SELECTED], [_this.getWrapper()]);
+                }
+                li.classList.add(SELECTED);
+                if (_this.action === ENTER) {
+                    var eventArgs_1 = { element: li, item: item, event: e };
+                    _this.trigger('select', eventArgs_1);
+                }
+                li.focus();
+                cul = _this.getUlByNavIdx();
+                var index = _this.isValidLI(cul.children[0], 0, _this.action);
+                cul.children[index].classList.add(FOCUSED);
+                cul.children[index].focus();
+            }
+        });
     };
     MenuBase.prototype.checkScrollOffset = function (e) {
         var wrapper = this.getWrapper();
@@ -1858,6 +1908,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
         };
         this.setProperties({ 'items': this.items }, true);
+        if (this.isMenu) {
+            listBaseOptions.templateID = this.element.id + TEMPLATE_PROPERTY;
+        }
         var ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template);
         ul.setAttribute('tabindex', '0');
         if (this.isMenu) {
@@ -1866,11 +1919,34 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         return ul;
     };
     MenuBase.prototype.moverHandler = function (e) {
-        var wrapper = this.getWrapper();
         var trgt = e.target;
+        this.liTrgt = trgt;
         var cli = this.getLI(trgt);
-        if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper')) {
+        var wrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
+        var hdrWrapper = this.getWrapper();
+        var regex = new RegExp('-(.*)-popup');
+        var ulId;
+        var isDifferentElem = false;
+        if (!wrapper) {
+            return;
+        }
+        if (wrapper.id !== '') {
+            ulId = regex.exec(wrapper.id)[1];
+        }
+        else {
+            ulId = wrapper.querySelector('ul').id;
+        }
+        if (ulId !== this.element.id) {
+            if (this.navIdx.length) {
+                isDifferentElem = true;
+            }
+            else {
+                return;
+            }
+        }
+        if (cli && closest(cli, '.e-' + this.getModuleName() + '-wrapper') && !isDifferentElem) {
             this.removeLIStateByClass([FOCUSED], this.isMenu ? [wrapper].concat(this.getPopups()) : [wrapper]);
+            this.removeLIStateByClass([FOCUSED], this.isMenu ? [hdrWrapper].concat(this.getPopups()) : [hdrWrapper]);
             cli.classList.add(FOCUSED);
             if (!this.showItemOnClick) {
                 this.clickHandler(e);
@@ -1881,11 +1957,27 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
+                    this.isClosed = true;
                     this.closeMenu(null, e);
                 }
             }
-            wrapper = closest(trgt, '.e-menu-vscroll');
-            if (trgt.tagName === 'DIV' && wrapper) {
+            else if (isDifferentElem) {
+                if (this.navIdx.length) {
+                    this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
+                    this.isClosed = true;
+                    this.closeMenu(null, e);
+                }
+            }
+            if (!this.isClosed) {
+                this.removeStateWrapper();
+            }
+            this.isClosed = false;
+        }
+    };
+    MenuBase.prototype.removeStateWrapper = function () {
+        if (this.liTrgt) {
+            var wrapper = closest(this.liTrgt, '.e-menu-vscroll');
+            if (this.liTrgt.tagName === 'DIV' && wrapper) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
             }
         }
@@ -1940,7 +2032,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         else {
             var wrapper = this.getWrapper();
             var trgt = e.target;
-            var cli = this.getLI(trgt);
+            var cli = this.cli = this.getLI(trgt);
             var cliWrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
             var isInstLI = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
@@ -1965,41 +2057,29 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     if (!cli.classList.contains(SEPARATOR)) {
-                        var showSubMenu = true;
+                        this.showSubMenu = true;
                         var cul = cli.parentNode;
-                        var cliIdx = this.getIdx(cul, cli);
+                        this.cliIdx = this.getIdx(cul, cli);
                         if (this.isMenu || !Browser.isDevice) {
                             var culIdx = this.isMenu ? Array.prototype.indexOf.call([wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
                                 : this.getIdx(wrapper, cul);
-                            if (this.navIdx[culIdx] === cliIdx) {
-                                showSubMenu = false;
+                            if (this.navIdx[culIdx] === this.cliIdx) {
+                                this.showSubMenu = false;
                             }
-                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || showSubMenu)) {
+                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || this.showSubMenu)) {
                                 var sli = this.getLIByClass(cul, SELECTED);
                                 if (sli) {
                                     sli.classList.remove(SELECTED);
                                 }
+                                this.isClosed = true;
+                                this.keyType = 'right';
                                 this.closeMenu(culIdx + 1, e);
                             }
                         }
-                        if (showSubMenu) {
-                            var idx = this.navIdx.concat(cliIdx);
-                            var item = this.getItem(idx);
-                            if (item[this.getField('children', idx.length - 1)] &&
-                                item[this.getField('children', idx.length - 1)].length) {
-                                if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
-                                    this.setLISelected(cli);
-                                }
-                                cli.setAttribute('aria-expanded', 'true');
-                                this.navIdx.push(cliIdx);
-                                this.openMenu(cli, item, null, null, e);
-                            }
-                            else {
-                                if (e.type !== 'mouseover') {
-                                    this.closeMenu(null, e);
-                                }
-                            }
+                        if (!this.isClosed) {
+                            this.afterCloseMenu(e);
                         }
+                        this.isClosed = false;
                     }
                 }
             }
@@ -2025,6 +2105,27 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+    };
+    MenuBase.prototype.afterCloseMenu = function (e) {
+        if (this.showSubMenu) {
+            var idx = this.navIdx.concat(this.cliIdx);
+            var item = this.getItem(idx);
+            if (item[this.getField('children', idx.length - 1)] &&
+                item[this.getField('children', idx.length - 1)].length) {
+                if (e.type === 'mouseover' || (Browser.isDevice && this.isMenu)) {
+                    this.setLISelected(this.cli);
+                }
+                this.cli.setAttribute('aria-expanded', 'true');
+                this.navIdx.push(this.cliIdx);
+                this.openMenu(this.cli, item, null, null, e);
+            }
+            else {
+                if (e.type !== 'mouseover') {
+                    this.closeMenu(null, e);
+                }
+            }
+        }
+        this.keyType = '';
     };
     MenuBase.prototype.setLISelected = function (li) {
         var sli = this.getLIByClass(li.parentElement, SELECTED);
@@ -2101,24 +2202,24 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'enableScrolling':
                     if (newProp.enableScrolling) {
-                        var ul_1;
+                        var ul_2;
                         this_1.element.classList.contains('e-vertical') ?
                             this_1.addScrolling(wrapper, this_1.element, 'vscroll', wrapper.offsetHeight, this_1.element.offsetHeight)
                             : this_1.addScrolling(wrapper, this_1.element, 'hscroll', wrapper.offsetWidth, this_1.element.offsetWidth);
                         this_1.getPopups().forEach(function (wrapper) {
-                            ul_1 = select('.e-ul', wrapper);
-                            _this.addScrolling(wrapper, ul_1, 'vscroll', wrapper.offsetHeight, ul_1.offsetHeight);
+                            ul_2 = select('.e-ul', wrapper);
+                            _this.addScrolling(wrapper, ul_2, 'vscroll', wrapper.offsetHeight, ul_2.offsetHeight);
                         });
                     }
                     else {
-                        var ul_2 = wrapper.children[0];
-                        this_1.element.classList.contains('e-vertical') ? this_1.destroyScrollObj(getInstance(ul_2, VScroll), ul_2)
-                            : this_1.destroyScrollObj(getInstance(ul_2, HScroll), ul_2);
+                        var ul_3 = wrapper.children[0];
+                        this_1.element.classList.contains('e-vertical') ? this_1.destroyScrollObj(getInstance(ul_3, VScroll), ul_3)
+                            : this_1.destroyScrollObj(getInstance(ul_3, HScroll), ul_3);
                         wrapper.style.overflow = '';
                         wrapper.appendChild(this_1.element);
                         this_1.getPopups().forEach(function (wrapper) {
-                            ul_2 = wrapper.children[0];
-                            _this.destroyScrollObj(getInstance(ul_2, VScroll), ul_2);
+                            ul_3 = wrapper.children[0];
+                            _this.destroyScrollObj(getInstance(ul_3, VScroll), ul_3);
                             wrapper.style.overflow = '';
                         });
                     }
@@ -2128,11 +2229,11 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     var navIdx = void 0;
                     var item = void 0;
                     if (!Object.keys(oldProp.items).length) {
-                        var ul_3 = this_1.element;
-                        ul_3.innerHTML = '';
+                        var ul_4 = this_1.element;
+                        ul_4.innerHTML = '';
                         var lis = [].slice.call(this_1.createItems(this_1.items).children);
                         lis.forEach(function (li) {
-                            ul_3.appendChild(li);
+                            ul_4.appendChild(li);
                         });
                         for (var i = 1, count = wrapper.childElementCount; i < count; i++) {
                             detach(wrapper.lastElementChild);
@@ -2672,6 +2773,7 @@ var CLS_RTL$2 = 'e-rtl';
 var CLS_SEPARATOR = 'e-separator';
 var CLS_POPUPICON = 'e-popup-up-icon';
 var CLS_POPUPDOWN = 'e-popup-down-icon';
+var CLS_POPUPOPEN = 'e-popup-open';
 var CLS_TEMPLATE = 'e-template';
 var CLS_DISABLE$2 = 'e-overlay';
 var CLS_POPUPTEXT = 'e-toolbar-text';
@@ -2837,6 +2939,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.tempId = [];
         this.tbarItemsCol = this.items;
         this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
+        this.isExtendedOpen = false;
         this.popupPriCount = 0;
         if (this.enableRtl) {
             this.add(this.element, CLS_RTL$2);
@@ -2944,7 +3047,8 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             clst = this.popObj.element.querySelector('.' + CLS_ITEM);
         }
         else if (this.element === trgt || tbrNavChk) {
-            clst = this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE$2 + ' ):not(.' + CLS_SEPARATOR + ' )');
+            // tslint:disable-next-line:max-line-length
+            clst = this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE$2 + ' ):not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_HIDDEN + ' )');
         }
         else {
             clst = closest(trgt, '.' + CLS_ITEM);
@@ -3104,15 +3208,15 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             rootEle.querySelector('#' + rootEle.id + '_nav').setAttribute('tabindex', !value ? '0' : '-1');
         }
     };
+    Toolbar.prototype.eleContains = function (el) {
+        // tslint:disable-next-line:max-line-length
+        return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
+        // tslint:enable-next-line:max-line-length
+    };
     Toolbar.prototype.eleFocus = function (closest$$1, pos) {
         var sib = Object(closest$$1)[pos + 'ElementSibling'];
-        var contains = function (el) {
-            // tslint:disable-next-line:max-line-length
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
-            // tslint:enable-next-line:max-line-length
-        };
         if (sib) {
-            var skipEle = contains(sib);
+            var skipEle = this.eleContains(sib);
             if (skipEle) {
                 this.eleFocus(sib, pos);
                 return;
@@ -3127,7 +3231,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(elem) && elem.children.length > 0) {
                 if (pos === 'next') {
                     var el = elem.querySelector('.' + CLS_ITEM);
-                    if (contains(el)) {
+                    if (this.eleContains(el)) {
                         this.eleFocus(el, pos);
                     }
                     else {
@@ -3137,7 +3241,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     var el = elem.lastElementChild;
-                    if (contains(el)) {
+                    if (this.eleContains(el)) {
                         this.eleFocus(el, pos);
                     }
                     else {
@@ -3148,6 +3252,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Toolbar.prototype.clickHandler = function (e) {
+        var _this = this;
         var trgt = e.target;
         var clsList = trgt.classList;
         var ele = this.element;
@@ -3176,10 +3281,11 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             this.trigger('items[' + this.tbarEle.indexOf(clst) + '].click', eventArgs);
         }
         if (!eventArgs.cancel) {
-            this.trigger('clicked', eventArgs);
-        }
-        if (!isNullOrUndefined(this.popObj) && isPopupElement && !eventArgs.cancel && this.overflowMode === 'Popup') {
-            this.popObj.hide({ name: 'FadeOut', duration: 100 });
+            this.trigger('clicked', eventArgs, function (clickedArgs) {
+                if (!isNullOrUndefined(_this.popObj) && isPopupElement && !clickedArgs.cancel && _this.overflowMode === 'Popup') {
+                    _this.popObj.hide({ name: 'FadeOut', duration: 100 });
+                }
+            });
         }
     };
     
@@ -3216,6 +3322,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.renderControl();
         this.separator();
+        this.refreshTemplate();
         this.wireEvents();
     };
     Toolbar.prototype.initialize = function () {
@@ -3546,7 +3653,15 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             if (this.isVertical) {
                 popup.element.style.visibility = 'hidden';
             }
-            popup.hide();
+            if (this.isExtendedOpen) {
+                var popupNav = this.element.querySelector('.' + CLS_TBARNAV);
+                popupNav.classList.add(CLS_TBARNAVACT);
+                classList(popupNav.firstElementChild, [CLS_POPUPICON], [CLS_POPUPDOWN]);
+                this.element.querySelector('.' + CLS_EXTENDABLECLASS).classList.add(CLS_POPUPOPEN);
+            }
+            else {
+                popup.hide();
+            }
             this.popObj = popup;
             this.element.setAttribute('aria-haspopup', 'true');
         }
@@ -4115,6 +4230,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
      */
     Toolbar.prototype.addItems = function (items, index) {
         var innerItems;
+        this.extendedOpen();
         var itemsDiv = this.element.querySelector('.' + CLS_ITEMS);
         if (isNullOrUndefined(itemsDiv)) {
             this.itemsRerender(items);
@@ -4248,7 +4364,8 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             }
             var tempArray = void 0;
             if (!isNullOrUndefined(templateFn)) {
-                tempArray = templateFn({}, this, 'template');
+                var toolbarTemplateID = this.element.id + 'template';
+                tempArray = templateFn({}, this, 'template', toolbarTemplateID);
             }
             if (!isNullOrUndefined(tempArray) && tempArray.length > 0) {
                 [].slice.call(tempArray).forEach(function (ele) {
@@ -4363,6 +4480,16 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         return innerEle;
     };
+    Toolbar.prototype.refreshTemplate = function () {
+        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            if (item.template && typeof item.template === 'string' &&
+                item.template.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'template', 'Template');
+                updateBlazorTemplate(this.element.id + 'template', 'Template');
+            }
+        }
+    };
     Toolbar.prototype.itemClick = function (e) {
         this.activeEleSwitch(e.currentTarget);
     };
@@ -4445,6 +4572,12 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.tbResize = false;
         this.separator();
     };
+    Toolbar.prototype.extendedOpen = function () {
+        var sib = this.element.querySelector('.' + CLS_EXTENDABLECLASS);
+        if (this.overflowMode === 'Extended' && sib) {
+            this.isExtendedOpen = sib.classList.contains(CLS_POPUPOPEN);
+        }
+    };
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
      * @param  {ToolbarModel} newProp
@@ -4454,6 +4587,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
      */
     Toolbar.prototype.onPropertyChanged = function (newProp, oldProp) {
         var tEle = this.element;
+        this.extendedOpen();
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -4535,16 +4669,64 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.hideItem = function (index, value) {
         var isElement = (typeof (index) === 'object') ? true : false;
         var eleIndex = index;
+        var initIndex;
         var ele;
+        var innerItems = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
         if (isElement) {
             ele = index;
         }
         else if (this.tbarEle[eleIndex]) {
-            var innerItems = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
-            ele = innerItems[eleIndex];
+            var innerItems_1 = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
+            ele = innerItems_1[eleIndex];
         }
         if (ele) {
             value ? ele.classList.add(CLS_HIDDEN) : ele.classList.remove(CLS_HIDDEN);
+            if (value && isNullOrUndefined(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
+                if (isNullOrUndefined(ele.firstElementChild.getAttribute('tabindex'))) {
+                    ele.firstElementChild.setAttribute('tabindex', '-1');
+                    var innerItems_2 = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
+                    if (isElement) {
+                        eleIndex = innerItems_2.indexOf(ele);
+                    }
+                    var nextEle = innerItems_2[++eleIndex];
+                    while (nextEle) {
+                        var skipEle = this.eleContains(nextEle);
+                        if (!skipEle) {
+                            nextEle.firstElementChild.removeAttribute('tabindex');
+                            break;
+                        }
+                        nextEle = innerItems_2[++eleIndex];
+                    }
+                }
+            }
+            else if (isNullOrUndefined(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
+                initIndex = 0;
+                var setFlag = false;
+                var removeFlag = false;
+                var initELe = innerItems[initIndex];
+                while (initELe) {
+                    if (!initELe.classList.contains(CLS_SEPARATOR)) {
+                        if (isNullOrUndefined(initELe.firstElementChild.getAttribute('tabindex'))) {
+                            initELe.firstElementChild.setAttribute('tabindex', '-1');
+                            setFlag = true;
+                        }
+                        else {
+                            if (setFlag && removeFlag) {
+                                break;
+                            }
+                            var skipEle = this.eleContains(initELe);
+                            if (!skipEle) {
+                                initELe.firstElementChild.removeAttribute('tabindex');
+                                removeFlag = true;
+                            }
+                            initELe = innerItems[++initIndex];
+                        }
+                    }
+                    else {
+                        initELe = innerItems[++initIndex];
+                    }
+                }
+            }
             this.refreshOverflow();
         }
     };
@@ -4770,6 +4952,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.render = function () {
         this.initialize();
         this.renderControl();
+        this.refreshTemplate();
         this.wireEvents();
     };
     Accordion.prototype.initialize = function () {
@@ -5097,6 +5280,21 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
         return innerEle;
     };
+    Accordion.prototype.refreshTemplate = function () {
+        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            if (item.header && typeof item.header === 'string' &&
+                item.header.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'header', 'Header');
+                updateBlazorTemplate(this.element.id + 'header', 'Header');
+            }
+            if (item.content && typeof item.content === 'string' &&
+                item.content.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'content', 'Content');
+                updateBlazorTemplate(this.element.id + 'content', 'Content');
+            }
+        }
+    };
     Accordion.prototype.angularnativeCondiCheck = function (item, prop) {
         var property = prop === 'content' ? item.content : item.header;
         var content = property;
@@ -5133,7 +5331,14 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
         var tempArray;
         if (!isNullOrUndefined(templateFn)) {
-            tempArray = templateFn();
+            var templateProps = void 0;
+            if (ele.classList.contains(CLS_HEADERCTN)) {
+                templateProps = this.element.id + 'header';
+            }
+            else if (ele.classList.contains(CLS_CTENT)) {
+                templateProps = this.element.id + 'content';
+            }
+            tempArray = templateFn({}, null, null, templateProps);
         }
         if (!isNullOrUndefined(tempArray) && tempArray.length > 0 && !(isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
             [].slice.call(tempArray).forEach(function (el) {
@@ -5168,6 +5373,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         return itemcnt;
     };
     Accordion.prototype.expand = function (trgt) {
+        var _this = this;
         var eventArgs;
         var trgtItemEle = closest(trgt, '.' + CLS_ITEM$1);
         if (isNullOrUndefined(trgt) || (isVisible(trgt) && trgt.getAttribute('e-animate') !== 'true') || trgtItemEle.classList.contains(CLS_DISABLE$3)) {
@@ -5187,22 +5393,23 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: true };
         var eff = animation.name;
-        this.trigger('expanding', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        icon.classList.add(CLS_TOGANIMATE);
-        this.expandedItemsPush(trgtItemEle);
-        if (!isNullOrUndefined(expandState)) {
-            expandState.classList.remove(CLS_EXPANDSTATE);
-        }
-        trgtItemEle.classList.add(CLS_EXPANDSTATE);
-        if ((animation.name === 'None')) {
-            this.expandProgress('begin', icon, trgt, trgtItemEle, eventArgs);
-            this.expandProgress('end', icon, trgt, trgtItemEle, eventArgs);
-            return;
-        }
-        this.expandAnimation(eff, icon, trgt, trgtItemEle, animation, eventArgs);
+        this.trigger('expanding', eventArgs, function (expandArgs) {
+            if (!expandArgs.cancel) {
+                icon.classList.add(CLS_TOGANIMATE);
+                _this.expandedItemsPush(trgtItemEle);
+                if (!isNullOrUndefined(expandState)) {
+                    expandState.classList.remove(CLS_EXPANDSTATE);
+                }
+                trgtItemEle.classList.add(CLS_EXPANDSTATE);
+                if ((animation.name === 'None')) {
+                    _this.expandProgress('begin', icon, trgt, trgtItemEle, expandArgs);
+                    _this.expandProgress('end', icon, trgt, trgtItemEle, expandArgs);
+                }
+                else {
+                    _this.expandAnimation(eff, icon, trgt, trgtItemEle, animation, expandArgs);
+                }
+            }
+        });
     };
     Accordion.prototype.expandAnimation = function (ef, icn, trgt, trgtItemEle, animate, args) {
         var _this = this;
@@ -5263,6 +5470,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         this.expandedItems.splice(this.expandedItems.indexOf(index), 1);
     };
     Accordion.prototype.collapse = function (trgt) {
+        var _this = this;
         var eventArgs;
         var trgtItemEle = closest(trgt, '.' + CLS_ITEM$1);
         if (isNullOrUndefined(trgt) || !isVisible(trgt) || trgtItemEle.classList.contains(CLS_DISABLE$3)) {
@@ -5280,19 +5488,20 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: false };
         var eff = animation.name;
-        this.trigger('expanding', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.expandedItemsPop(trgtItemEle);
-        trgtItemEle.classList.add(CLS_EXPANDSTATE);
-        icon.classList.add(CLS_TOGANIMATE);
-        if ((animation.name === 'None')) {
-            this.collapseProgress('begin', icon, trgt, trgtItemEle, eventArgs);
-            this.collapseProgress('end', icon, trgt, trgtItemEle, eventArgs);
-            return;
-        }
-        this.collapseAnimation(eff, trgt, trgtItemEle, icon, animation, eventArgs);
+        this.trigger('expanding', eventArgs, function (expandArgs) {
+            if (!expandArgs.cancel) {
+                _this.expandedItemsPop(trgtItemEle);
+                trgtItemEle.classList.add(CLS_EXPANDSTATE);
+                icon.classList.add(CLS_TOGANIMATE);
+                if ((animation.name === 'None')) {
+                    _this.collapseProgress('begin', icon, trgt, trgtItemEle, expandArgs);
+                    _this.collapseProgress('end', icon, trgt, trgtItemEle, expandArgs);
+                }
+                else {
+                    _this.collapseAnimation(eff, trgt, trgtItemEle, icon, animation, expandArgs);
+                }
+            }
+        });
     };
     Accordion.prototype.collapseAnimation = function (ef, trgt, trgtItEl, icn, animate, args) {
         var _this = this;
@@ -5718,6 +5927,7 @@ var ContextMenu = /** @__PURE__ @class */ (function (_super) {
      */
     ContextMenu.prototype.preRender = function () {
         this.isMenu = false;
+        this.element.id = this.element.id || getUniqueID('ej2-contextmenu');
         _super.prototype.preRender.call(this);
     };
     ContextMenu.prototype.initialize = function () {
@@ -5852,6 +6062,7 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
      */
     Menu.prototype.preRender = function () {
         this.isMenu = true;
+        this.element.id = this.element.id || getUniqueID('ej2-menu');
         if (this.template) {
             try {
                 if (document.querySelectorAll(this.template).length) {
@@ -6288,6 +6499,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.render = function () {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title } });
         this.renderContainer();
+        this.refreshTemplate();
         this.wireEvents();
         this.initRender = false;
     };
@@ -6479,6 +6691,21 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
+    };
+    Tab.prototype.refreshTemplate = function () {
+        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            if (item.header.text && typeof item.header.text === 'string' &&
+                item.header.text.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'text', 'Text');
+                updateBlazorTemplate(this.element.id + 'text', 'Text');
+            }
+            if (item.content && typeof item.content === 'string' &&
+                item.content.indexOf('BlazorTemplate')) {
+                resetBlazorTemplate(this.element.id + 'content', 'Content');
+                updateBlazorTemplate(this.element.id + 'content', 'Content');
+            }
+        }
     };
     Tab.prototype.removeActiveClass = function (id) {
         var hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element)[0];
@@ -6695,7 +6922,14 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var templateFn = compile(val);
         var templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            templateFUN = templateFn({}, this, prop);
+            var templateProps = void 0;
+            if (ele.classList.contains(CLS_TEXT)) {
+                templateProps = this.element.id + 'text';
+            }
+            else if (ele.classList.contains(CLS_CONTENT$1)) {
+                templateProps = this.element.id + 'content';
+            }
+            templateFUN = templateFn({}, this, prop, templateProps);
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach(function (el) {
@@ -7307,67 +7541,75 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      */
     Tab.prototype.addTab = function (items, index) {
         var _this = this;
-        var lastEleIndex = 0;
         var addArgs = { addedItems: items, cancel: false };
         if (!this.isReplace) {
-            this.trigger('adding', addArgs);
+            this.trigger('adding', addArgs, function (tabAddingArgs) {
+                if (!tabAddingArgs.cancel) {
+                    _this.addingTabContent(items, index);
+                }
+            });
         }
-        if (addArgs.cancel) {
-            return;
+        else {
+            this.addingTabContent(items, index);
         }
+    };
+    Tab.prototype.addingTabContent = function (items, index) {
+        var _this = this;
+        var lastEleIndex = 0;
         this.hdrEle = select('.' + CLS_HEADER$1, this.element);
         if (isNullOrUndefined(this.hdrEle)) {
             this.items = items;
             this.reRenderItems();
-            return;
-        }
-        var itemsCount = selectAll('.' + CLS_TB_ITEM, this.element).length;
-        if (itemsCount !== 0) {
-            lastEleIndex = this.lastIndex + 1;
-        }
-        if (isNullOrUndefined(index)) {
-            index = itemsCount - 1;
-        }
-        if (itemsCount < index || index < 0 || isNaN(index)) {
-            return;
-        }
-        if (itemsCount === 0 && !isNullOrUndefined(this.hdrEle)) {
-            this.hdrEle.style.display = '';
-        }
-        if (!isNullOrUndefined(this.bdrLine)) {
-            this.bdrLine.classList.add(CLS_HIDDEN$1);
-        }
-        this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
-        this.isAdd = true;
-        var tabItems = this.parseObject(items, index);
-        this.isAdd = false;
-        var i = 0;
-        var textValue;
-        items.forEach(function (item, place) {
-            textValue = item.header.text;
-            if (!((isNullOrUndefined(item.header) || isNullOrUndefined(textValue) || (textValue.length === 0) && isNullOrUndefined(item.header.iconCss)))) {
-                _this.items.splice((index + i), 0, item);
-                i++;
-            }
-            if (_this.isTemplate && !isNullOrUndefined(item.header) && !isNullOrUndefined(item.header.text)) {
-                var no = lastEleIndex + place;
-                var ele = _this.createElement('div', {
-                    id: CLS_CONTENT$1 + '_' + no, className: CLS_ITEM$2, attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + no }
-                });
-                _this.cntEle.insertBefore(ele, _this.cntEle.children[(index + place)]);
-                var eleTrg = _this.getTrgContent(_this.cntEle, no.toString());
-                _this.getContent(eleTrg, item.content, 'render');
-            }
-        });
-        this.tbObj.addItems(tabItems, index);
-        if (!this.isReplace) {
-            this.trigger('added', { addedItems: items });
-        }
-        if (this.selectedItem === index) {
-            this.select(index);
         }
         else {
-            this.setActiveBorder();
+            var itemsCount = selectAll('.' + CLS_TB_ITEM, this.element).length;
+            if (itemsCount !== 0) {
+                lastEleIndex = this.lastIndex + 1;
+            }
+            if (isNullOrUndefined(index)) {
+                index = itemsCount - 1;
+            }
+            if (itemsCount < index || index < 0 || isNaN(index)) {
+                return;
+            }
+            if (itemsCount === 0 && !isNullOrUndefined(this.hdrEle)) {
+                this.hdrEle.style.display = '';
+            }
+            if (!isNullOrUndefined(this.bdrLine)) {
+                this.bdrLine.classList.add(CLS_HIDDEN$1);
+            }
+            this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
+            this.isAdd = true;
+            var tabItems = this.parseObject(items, index);
+            this.isAdd = false;
+            var i_1 = 0;
+            var textValue_1;
+            items.forEach(function (item, place) {
+                textValue_1 = item.header.text;
+                if (!((isNullOrUndefined(item.header) || isNullOrUndefined(textValue_1) || (textValue_1.length === 0) && isNullOrUndefined(item.header.iconCss)))) {
+                    _this.items.splice((index + i_1), 0, item);
+                    i_1++;
+                }
+                if (_this.isTemplate && !isNullOrUndefined(item.header) && !isNullOrUndefined(item.header.text)) {
+                    var no = lastEleIndex + place;
+                    var ele = _this.createElement('div', {
+                        id: CLS_CONTENT$1 + '_' + no, className: CLS_ITEM$2, attrs: { role: 'tabpanel', 'aria-labelledby': CLS_ITEM$2 + '_' + no }
+                    });
+                    _this.cntEle.insertBefore(ele, _this.cntEle.children[(index + place)]);
+                    var eleTrg = _this.getTrgContent(_this.cntEle, no.toString());
+                    _this.getContent(eleTrg, item.content, 'render');
+                }
+            });
+            this.tbObj.addItems(tabItems, index);
+            if (!this.isReplace) {
+                this.trigger('added', { addedItems: items });
+            }
+            if (this.selectedItem === index) {
+                this.select(index);
+            }
+            else {
+                this.setActiveBorder();
+            }
         }
     };
     /**
@@ -7376,31 +7618,36 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Tab.prototype.removeTab = function (index) {
+        var _this = this;
         var trg = selectAll('.' + CLS_TB_ITEM, this.element)[index];
-        var removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
-        this.trigger('removing', removeArgs);
-        if (removeArgs.cancel || isNullOrUndefined(trg)) {
+        if (isNullOrUndefined(trg)) {
             return;
         }
-        this.tbObj.removeItems(index);
-        this.items.splice(index, 1);
-        this.itemIndexArray.splice(index, 1);
-        this.refreshActiveBorder();
-        var cntTrg = select('#' + CLS_CONTENT$1 + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT$1, this.element));
-        if (!isNullOrUndefined(cntTrg)) {
-            detach(cntTrg);
-        }
-        this.trigger('removed', removeArgs);
-        if (trg.classList.contains(CLS_ACTIVE$1)) {
-            index = (index > selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', this.element).length - 1) ? index - 1 : index;
-            this.enableAnimation = false;
-            this.selectedItem = index;
-            this.select(index);
-        }
-        if (selectAll('.' + CLS_TB_ITEM, this.element).length === 0) {
-            this.hdrEle.style.display = 'none';
-        }
-        this.enableAnimation = true;
+        var removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
+        this.trigger('removing', removeArgs, function (tabRemovingArgs) {
+            if (!tabRemovingArgs.cancel) {
+                _this.tbObj.removeItems(index);
+                _this.items.splice(index, 1);
+                _this.itemIndexArray.splice(index, 1);
+                _this.refreshActiveBorder();
+                var cntTrg = select('#' + CLS_CONTENT$1 + '_' + _this.extIndex(trg.id), select('.' + CLS_CONTENT$1, _this.element));
+                if (!isNullOrUndefined(cntTrg)) {
+                    detach(cntTrg);
+                }
+                _this.trigger('removed', tabRemovingArgs);
+                if (trg.classList.contains(CLS_ACTIVE$1)) {
+                    // tslint:disable-next-line:max-line-length
+                    index = (index > selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_TB_POPUP + ')', _this.element).length - 1) ? index - 1 : index;
+                    _this.enableAnimation = false;
+                    _this.selectedItem = index;
+                    _this.select(index);
+                }
+                if (selectAll('.' + CLS_TB_ITEM, _this.element).length === 0) {
+                    _this.hdrEle.style.display = 'none';
+                }
+                _this.enableAnimation = true;
+            }
+        });
     };
     /**
      * Shows or hides the Tab that is in the specified index.
@@ -7468,6 +7715,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Tab.prototype.select = function (args) {
+        var _this = this;
         this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
         this.tbItem = selectAll('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM, this.element);
         this.content = select('.' + CLS_CONTENT$1, this.element);
@@ -7501,11 +7749,17 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             cancel: false
         };
         if (!this.initRender || this.selectedItem !== 0) {
-            this.trigger('selecting', eventArg);
+            this.trigger('selecting', eventArg, function (selectArgs) {
+                if (!selectArgs.cancel) {
+                    _this.selectingContent(args);
+                }
+            });
         }
-        if (eventArg.cancel) {
-            return;
+        else {
+            this.selectingContent(args);
         }
+    };
+    Tab.prototype.selectingContent = function (args) {
         if (typeof args === 'number') {
             if (!isNullOrUndefined(this.tbItem[args]) && this.tbItem[args].classList.contains(CLS_DISABLE$4)) {
                 for (var i = args + 1; i < this.items.length; i++) {
@@ -7917,6 +8171,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 _this.beforeNodeCreate(e);
             },
         };
+        if (this.nodeTemplate) {
+            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
         this.treeList = [];
@@ -8355,7 +8612,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             var textEle = e.item.querySelector('.' + LISTTEXT);
             textEle.innerHTML = '';
-            var tempArr = this.nodeTemplateFn(e.curData);
+            var tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate');
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, textEle);
         }
@@ -9227,6 +9484,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.renderChildNodes = function (parentLi, expandChild, callback, loaded) {
         var _this = this;
+        if (this.loadOnDemand && this.nodeTemplate) {
+            setTimeout(function () { resetBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         var eicon = select('div.' + ICON, parentLi);
         if (isNullOrUndefined(eicon)) {
             return;
@@ -9605,6 +9866,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.keyActionHandler = function (e) {
+        var _this = this;
         var target = e.target;
         var focusedNode = this.getFocusedNode();
         if (target && target.classList.contains(INPUT)) {
@@ -9628,68 +9890,68 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             event: e,
             node: focusedNode,
         };
-        this.trigger('keyPress', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        switch (e.action) {
-            case 'space':
-                if (this.showCheckBox) {
-                    this.checkNode(e);
+        this.trigger('keyPress', eventArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'space':
+                        if (_this.showCheckBox) {
+                            _this.checkNode(e);
+                        }
+                        break;
+                    case 'moveRight':
+                        _this.openNode(_this.enableRtl ? false : true, e);
+                        break;
+                    case 'moveLeft':
+                        _this.openNode(_this.enableRtl ? true : false, e);
+                        break;
+                    case 'shiftDown':
+                        _this.shiftKeySelect(true, e);
+                        break;
+                    case 'moveDown':
+                    case 'ctrlDown':
+                    case 'csDown':
+                        _this.navigateNode(true);
+                        break;
+                    case 'shiftUp':
+                        _this.shiftKeySelect(false, e);
+                        break;
+                    case 'moveUp':
+                    case 'ctrlUp':
+                    case 'csUp':
+                        _this.navigateNode(false);
+                        break;
+                    case 'home':
+                    case 'shiftHome':
+                    case 'ctrlHome':
+                    case 'csHome':
+                        _this.navigateRootNode(true);
+                        break;
+                    case 'end':
+                    case 'shiftEnd':
+                    case 'ctrlEnd':
+                    case 'csEnd':
+                        _this.navigateRootNode(false);
+                        break;
+                    case 'enter':
+                    case 'ctrlEnter':
+                    case 'shiftEnter':
+                    case 'csEnter':
+                        _this.toggleSelect(focusedNode, e);
+                        break;
+                    case 'f2':
+                        if (_this.allowEditing && !focusedNode.classList.contains('e-disable')) {
+                            _this.createTextbox(focusedNode, e);
+                        }
+                        break;
+                    case 'ctrlA':
+                        if (_this.allowMultiSelection) {
+                            var sNodes = selectAll('.' + LISTITEM + ':not(.' + ACTIVE + ')', _this.element);
+                            _this.selectGivenNodes(sNodes);
+                        }
+                        break;
                 }
-                break;
-            case 'moveRight':
-                this.openNode(this.enableRtl ? false : true, e);
-                break;
-            case 'moveLeft':
-                this.openNode(this.enableRtl ? true : false, e);
-                break;
-            case 'shiftDown':
-                this.shiftKeySelect(true, e);
-                break;
-            case 'moveDown':
-            case 'ctrlDown':
-            case 'csDown':
-                this.navigateNode(true);
-                break;
-            case 'shiftUp':
-                this.shiftKeySelect(false, e);
-                break;
-            case 'moveUp':
-            case 'ctrlUp':
-            case 'csUp':
-                this.navigateNode(false);
-                break;
-            case 'home':
-            case 'shiftHome':
-            case 'ctrlHome':
-            case 'csHome':
-                this.navigateRootNode(true);
-                break;
-            case 'end':
-            case 'shiftEnd':
-            case 'ctrlEnd':
-            case 'csEnd':
-                this.navigateRootNode(false);
-                break;
-            case 'enter':
-            case 'ctrlEnter':
-            case 'shiftEnter':
-            case 'csEnter':
-                this.toggleSelect(focusedNode, e);
-                break;
-            case 'f2':
-                if (this.allowEditing && !focusedNode.classList.contains('e-disable')) {
-                    this.createTextbox(focusedNode, e);
-                }
-                break;
-            case 'ctrlA':
-                if (this.allowMultiSelection) {
-                    var sNodes = selectAll('.' + LISTITEM + ':not(.' + ACTIVE + ')', this.element);
-                    this.selectGivenNodes(sNodes);
-                }
-                break;
-        }
+            }
+        });
     };
     TreeView.prototype.navigateToFocus = function (isUp) {
         var focusNode = this.getFocusedNode().querySelector('.' + TEXTWRAP);
@@ -10124,8 +10386,14 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var nodeData = this.getNodeData(currLi);
         return { cancel: false, isInteracted: isNullOrUndefined(e) ? false : true, node: currLi, nodeData: nodeData, event: e };
     };
+    TreeView.prototype.destroyTemplate = function (nodeTemplate) {
+        this.clearTemplate(['nodeTemplate']);
+    };
     TreeView.prototype.reRenderNodes = function () {
         this.element.innerHTML = '';
+        if (!isNullOrUndefined(this.nodeTemplateFn)) {
+            this.destroyTemplate(this.nodeTemplate);
+        }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
         this.isLoaded = false;
@@ -10152,6 +10420,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.createTextbox = function (liEle, e) {
+        var _this = this;
         var oldInpEle = select('.' + TREEINPUT, this.element);
         if (oldInpEle) {
             oldInpEle.blur();
@@ -10160,26 +10429,26 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.updateOldText(liEle);
         var innerEle = this.createElement('input', { className: TREEINPUT, attrs: { value: this.oldText } });
         var eventArgs = this.getEditEvent(liEle, null, innerEle.outerHTML);
-        this.trigger('nodeEditing', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        var inpWidth = textEle.offsetWidth + 5;
-        var style = 'width:' + inpWidth + 'px';
-        addClass([liEle], EDITING);
-        textEle.innerHTML = eventArgs.innerHtml;
-        var inpEle = select('.' + TREEINPUT, textEle);
-        this.inputObj = Input.createInput({
-            element: inpEle,
-            properties: {
-                enableRtl: this.enableRtl,
+        this.trigger('nodeEditing', eventArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                var inpWidth = textEle.offsetWidth + 5;
+                var style = 'width:' + inpWidth + 'px';
+                addClass([liEle], EDITING);
+                textEle.innerHTML = eventArgs.innerHtml;
+                var inpEle = select('.' + TREEINPUT, textEle);
+                _this.inputObj = Input.createInput({
+                    element: inpEle,
+                    properties: {
+                        enableRtl: _this.enableRtl,
+                    }
+                }, _this.createElement);
+                _this.inputObj.container.setAttribute('style', style);
+                inpEle.focus();
+                var inputEle = inpEle;
+                inputEle.setSelectionRange(0, inputEle.value.length);
+                _this.wireInputEvents(inpEle);
             }
-        }, this.createElement);
-        this.inputObj.container.setAttribute('style', style);
-        inpEle.focus();
-        var inputEle = inpEle;
-        inputEle.setSelectionRange(0, inputEle.value.length);
-        this.wireInputEvents(inpEle);
+        });
     };
     TreeView.prototype.updateOldText = function (liEle) {
         var id = liEle.getAttribute('data-uid');
@@ -10206,7 +10475,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var newData = setValue(this.editFields.text, newText, this.editData);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             txtEle.innerHTML = '';
-            var tempArr = this.nodeTemplateFn(newData);
+            var tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate');
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, txtEle);
         }
@@ -10505,11 +10774,21 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
             if (dragObj.allowMultiSelection && dragLi.classList.contains(ACTIVE)) {
                 var sNodes = selectAll('.' + ACTIVE, dragObj.element);
-                for (var i = 0; i < sNodes.length; i++) {
-                    if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
-                        continue;
+                if (e.target.offsetHeight <= 33 && offsetY > e.target.offsetHeight - 10 && offsetY > 6) {
+                    for (var i = sNodes.length - 1; i >= 0; i--) {
+                        if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
+                            continue;
+                        }
+                        this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
                     }
-                    this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
+                }
+                else {
+                    for (var i = 0; i < sNodes.length; i++) {
+                        if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
+                            continue;
+                        }
+                        this.appendNode(dropTarget, sNodes[i], dropLi, e, dragObj, offsetY);
+                    }
                 }
             }
             else {
@@ -11223,6 +11502,11 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         return removedData;
     };
     TreeView.prototype.triggerEvent = function () {
+        var _this = this;
+        if (this.nodeTemplate) {
+            setTimeout(function () { resetBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        }
         var eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
     };
@@ -11856,6 +12140,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      * @param  {string} newText - Specifies the new text of TreeView node.
      */
     TreeView.prototype.updateNode = function (target, newText) {
+        var _this = this;
         if (isNullOrUndefined(target) || isNullOrUndefined(newText) || !this.allowEditing) {
             return;
         }
@@ -11866,11 +12151,11 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var txtEle = select('.' + LISTTEXT, liEle);
         this.updateOldText(liEle);
         var eventArgs = this.getEditEvent(liEle, null, null);
-        this.trigger('nodeEditing', eventArgs);
-        if (eventArgs.cancel) {
-            return;
-        }
-        this.appendNewText(liEle, txtEle, newText, false);
+        this.trigger('nodeEditing', eventArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                _this.appendNewText(liEle, txtEle, newText, false);
+            }
+        });
     };
     /**
      * Unchecks all the checked nodes. You can also uncheck the specific nodes by passing array of checked nodes
@@ -12156,6 +12441,9 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         else if (!this.isOpen) {
             addClass([this.element], CLOSE);
         }
+        if (this.enableDock) {
+            addClass([this.element], DOCKER);
+        }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.setAttribute('tabindex', this.tabIndex);
     };
@@ -12168,6 +12456,13 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
                 this.hide();
             }
         }
+    };
+    Sidebar.prototype.transitionEnd = function (e) {
+        this.setDock();
+        if (!isNullOrUndefined(e) && e.target === this.element) {
+            this.triggerChange();
+        }
+        EventHandler.remove(this.element, 'transitionend', this.transitionEnd);
     };
     Sidebar.prototype.destroyBackDrop = function () {
         var sibling = document.querySelector('.e-main-content') ||
@@ -12186,6 +12481,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Sidebar.prototype.hide = function (e) {
+        var _this = this;
         var closeArguments = {
             model: this,
             element: this.element,
@@ -12193,45 +12489,69 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        if (this.isOpen) {
-            this.trigger('close', closeArguments);
+        this.trigger('close', closeArguments, function (observedcloseArgs) {
+            if (!observedcloseArgs.cancel) {
+                if (_this.element.classList.contains(CLOSE)) {
+                    return;
+                }
+                if (_this.element.classList.contains(OPEN) && !_this.animate) {
+                    _this.triggerChange();
+                }
+                addClass([_this.element], CLOSE);
+                removeClass([_this.element], OPEN);
+                _this.enableDock ? setStyleAttribute(_this.element, { 'width': formatUnit(_this.dockSize) }) :
+                    setStyleAttribute(_this.element, { 'width': formatUnit(_this.width) });
+                _this.setType(_this.type);
+                var sibling = document.querySelector('.e-main-content') ||
+                    _this.element.nextElementSibling;
+                if (!_this.enableDock && sibling) {
+                    sibling.style.transform = 'translateX(' + 0 + 'px)';
+                    _this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
+                }
+                _this.destroyBackDrop();
+                _this.setAnimation();
+                if (_this.type === 'Slide') {
+                    document.body.classList.remove('e-sidebar-overflow');
+                }
+                _this.setProperties({ isOpen: false }, true);
+                if (_this.enableDock) {
+                    setTimeout(function () { return _this.setTimeOut(); }, 50);
+                }
+                EventHandler.add(_this.element, 'transitionend', _this.transitionEnd, _this);
+            }
+        });
+    };
+    Sidebar.prototype.setTimeOut = function () {
+        var sibling = document.querySelector('.e-main-content') ||
+            this.element.nextElementSibling;
+        if (this.element.classList.contains(OPEN) && sibling) {
+            if (this.position === 'Left') {
+                this.width === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginLeft = this.setDimension(this.width);
+            }
+            else {
+                this.width === 'auto' ? sibling.style.marginRight = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginRight = this.setDimension(this.width);
+            }
         }
-        else {
-            return;
-        }
-        if (!closeArguments.cancel) {
-            if (this.element.classList.contains(CLOSE)) {
-                return;
+        else if (this.element.classList.contains(CLOSE) && sibling) {
+            if (this.position === 'Left') {
+                this.dockSize === 'auto' ? sibling.style.marginLeft = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginLeft = this.setDimension(this.dockSize);
             }
-            if (this.element.classList.contains(OPEN)) {
-                var changeArguments = { name: 'change', element: this.element };
-                this.trigger('change', changeArguments);
+            else {
+                this.dockSize === 'auto' ? sibling.style.marginRight = this.setDimension(this.element.getBoundingClientRect().width)
+                    : sibling.style.marginRight = this.setDimension(this.dockSize);
             }
-            addClass([this.element], CLOSE);
-            removeClass([this.element], OPEN);
-            this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
-                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            this.setDock();
-            this.setType(this.type);
-            var sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
-            if (!this.enableDock && sibling) {
-                sibling.style.transform = 'translateX(' + 0 + 'px)';
-                this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
-            }
-            this.destroyBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.remove('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: false }, true);
         }
     };
+    
     /**
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
      */
     Sidebar.prototype.show = function (e) {
+        var _this = this;
         var openArguments = {
             model: this,
             element: this.element,
@@ -12239,29 +12559,29 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        this.trigger('open', openArguments);
-        if (!openArguments.cancel) {
-            removeClass([this.element], VISIBILITY);
-            if (this.element.classList.contains(OPEN)) {
-                return;
+        this.trigger('open', openArguments, function (observedopenArgs) {
+            if (!observedopenArgs.cancel) {
+                removeClass([_this.element], VISIBILITY);
+                if (_this.element.classList.contains(OPEN)) {
+                    return;
+                }
+                if (_this.element.classList.contains(CLOSE) && !_this.animate) {
+                    _this.triggerChange();
+                }
+                addClass([_this.element], [OPEN, TRASITION]);
+                setStyleAttribute(_this.element, { 'transform': '' });
+                removeClass([_this.element], CLOSE);
+                setStyleAttribute(_this.element, { 'width': formatUnit(_this.width) });
+                _this.setType(_this.type);
+                _this.createBackDrop();
+                _this.setAnimation();
+                if (_this.type === 'Slide') {
+                    document.body.classList.add('e-sidebar-overflow');
+                }
+                _this.setProperties({ isOpen: true }, true);
+                EventHandler.add(_this.element, 'transitionend', _this.transitionEnd, _this);
             }
-            if (this.element.classList.contains(CLOSE)) {
-                var changeArguments = { name: 'change', element: this.element };
-                this.trigger('change', changeArguments);
-            }
-            addClass([this.element], [OPEN, TRASITION]);
-            setStyleAttribute(this.element, { 'transform': '' });
-            removeClass([this.element], CLOSE);
-            setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            var elementWidth = this.element.getBoundingClientRect().width;
-            this.setType(this.type);
-            this.createBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.add('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: true }, true);
-        }
+        });
     };
     Sidebar.prototype.setAnimation = function () {
         if (this.animate) {
@@ -12270,6 +12590,10 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         else {
             addClass([this.element], DISABLEANIMATION);
         }
+    };
+    Sidebar.prototype.triggerChange = function () {
+        var changeArguments = { name: 'change', element: this.element };
+        this.trigger('change', changeArguments);
     };
     Sidebar.prototype.setDock = function () {
         if (this.enableDock && this.position === 'Left' && !this.getState()) {
@@ -12485,9 +12809,6 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
     Sidebar.prototype.setType = function (type) {
         var elementWidth = this.element.getBoundingClientRect().width;
         this.setZindex();
-        if (this.enableDock) {
-            addClass([this.element], DOCKER);
-        }
         var sibling = document.querySelector('.e-main-content') ||
             this.element.nextElementSibling;
         if (sibling) {
@@ -12586,6 +12907,9 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
     __decorate$9([
         Property(false)
     ], Sidebar.prototype, "isOpen", void 0);
+    __decorate$9([
+        Property(false)
+    ], Sidebar.prototype, "enableRtl", void 0);
     __decorate$9([
         Property(true)
     ], Sidebar.prototype, "animate", void 0);

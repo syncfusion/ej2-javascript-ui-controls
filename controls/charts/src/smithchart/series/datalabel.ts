@@ -1,7 +1,7 @@
 /**
  * 
  */
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Smithchart} from '../../smithchart';
 import { SmithchartMarginModel, SmithchartFontModel} from '../../smithchart/utils/utils-model';
 import { measureText } from '../../smithchart/utils/helper';
@@ -262,6 +262,8 @@ public drawConnectorLines(smithchart: Smithchart, seriesIndex: number, index: nu
             labelElement.style.left = pointsRegion[i].point.x - labelElement.offsetWidth / 2 + 'px';
             labelElement.style.top =  pointsRegion[i].point.y - labelElement.offsetHeight -
                                           smithchart.series[seriesindex].marker.height / 2 + 'px';
+            let blazorId: string = '_seriesIndex' + seriesindex + '_pointIndex' + i + smithchart.element.id;
+            updateBlazorTemplate(blazorId + 'Template', 'Template');
             let left: number = parseInt(labelElement.style.left, 10);
             let top: number = parseInt(labelElement.style.top, 10);
             let width: number = labelElement.offsetWidth;

@@ -1,13 +1,14 @@
-import { Browser, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, classList, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, classList, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Save, StreamWriter, XmlWriter } from '@syncfusion/ej2-file-utils';
-import { ContextMenu, Tab, Toolbar } from '@syncfusion/ej2-navigations';
-import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
+import { ListView } from '@syncfusion/ej2-lists';
+import { Dialog, DialogUtility, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import { ContextMenu, Tab, Toolbar } from '@syncfusion/ej2-navigations';
+import { ChartComponent } from '@syncfusion/ej2-office-chart';
+import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ColorPicker, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { ListView } from '@syncfusion/ej2-lists';
-import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { Query } from '@syncfusion/ej2-data';
 
 /**
@@ -486,6 +487,9 @@ var WUniqueFormat = /** @__PURE__ @class */ (function () {
         if (property === 'bidi') {
             return 10;
         }
+        if (property === 'contextualSpacing') {
+            return 11;
+        }
         return 0;
     };
     WUniqueFormat.getSectionFormatType = function (property) {
@@ -631,6 +635,9 @@ var WUniqueFormat = /** @__PURE__ @class */ (function () {
             return false;
         }
         if (this.isNotEqual('bidi', source, modifiedProperty, modifiedValue, 3)) {
+            return false;
+        }
+        if (this.isNotEqual('contextualSpacing', source, modifiedProperty, modifiedValue, 3)) {
             return false;
         }
         return true;
@@ -981,1600 +988,104 @@ var WUniqueFormats = /** @__PURE__ @class */ (function () {
     return WUniqueFormats;
 }());
 
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
 /**
- * The Document editor component is used to draft, save or print rich text contents as page by page.
+ * @private
  */
-var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
-    __extends(DocumentEditor, _super);
-    /**
-     * Initialize the constructor of DocumentEditor
-     */
-    function DocumentEditor(options, element) {
-        var _this = _super.call(this, options, element) || this;
-        //Internal Variable
-        _this.enableHeaderFooterIn = false;
+var XmlHttpRequestHandler = /** @__PURE__ @class */ (function () {
+    function XmlHttpRequestHandler() {
         /**
-         * @private
+         * A boolean value indicating whether the request should be sent asynchronous or not.
+         * @default true
          */
-        _this.isShiftingEnabled = false;
-        /**
-         * @private
-         */
-        _this.isLayoutEnabled = true;
-        /**
-         * @private
-         */
-        _this.isPastingContent = false;
-        /**
-         * @private
-         */
-        _this.parser = undefined;
-        _this.disableHistoryIn = false;
-        /**
-         * @private
-         */
-        _this.findResultsList = undefined;
-        /**
-         * Gets or sets the name of the document.
-         */
-        _this.documentName = '';
-        /**
-         * @private
-         */
-        _this.tablePropertiesDialogModule = undefined;
-        /**
-         * @private
-         */
-        _this.bordersAndShadingDialogModule = undefined;
-        /**
-         * @private
-         */
-        _this.cellOptionsDialogModule = undefined;
-        /**
-         * @private
-         */
-        _this.tableOptionsDialogModule = undefined;
-        /**
-         * @private
-         */
-        _this.paragraphDialogModule = undefined;
-        /**
-         * @private
-         */
-        _this.imageResizerModule = undefined;
-        /**
-         * Gets or Sets a value indicating whether holding Ctrl key is required to follow hyperlink on click. The default value is true.
-         */
-        _this.useCtrlClickToFollowHyperlink = true;
-        /**
-         * Gets or sets the page outline color.
-         */
-        _this.pageOutline = '#000000';
-        /**
-         * Gets or sets a value indicating whether to enable cursor in document editor on read only state or not. The default value is false.
-         */
-        _this.enableCursorOnReadOnly = false;
-        /**
-         * Gets or sets a value indicating whether local paste needs to be enabled or not.
-         */
-        _this.enableLocalPaste = false;
-        /**
-         * @private
-         */
-        _this.defaultLocale = {
-            'Table': 'Table',
-            'Row': 'Row',
-            'Cell': 'Cell',
-            'Ok': 'Ok',
-            'Cancel': 'Cancel',
-            'Size': 'Size',
-            'Preferred Width': 'Preferred width',
-            'Points': 'Points',
-            'Percent': 'Percent',
-            'Measure in': 'Measure in',
-            'Alignment': 'Alignment',
-            'Left': 'Left',
-            'Center': 'Center',
-            'Right': 'Right',
-            'Justify': 'Justify',
-            'Indent from left': 'Indent from left',
-            'Borders and Shading': 'Borders and Shading',
-            'Options': 'Options',
-            'Specify height': 'Specify height',
-            'At least': 'At least',
-            'Exactly': 'Exactly',
-            'Row height is': 'Row height is',
-            'Allow row to break across pages': 'Allow row to break across pages',
-            'Repeat as header row at the top of each page': 'Repeat as header row at the top of each page',
-            'Vertical alignment': 'Vertical alignment',
-            'Top': 'Top',
-            'Bottom': 'Bottom',
-            'Default cell margins': 'Default cell margins',
-            'Default cell spacing': 'Default cell spacing',
-            'Allow spacing between cells': 'Allow spacing between cells',
-            'Cell margins': 'Cell margins',
-            'Same as the whole table': 'Same as the whole table',
-            'Borders': 'Borders',
-            'None': 'None',
-            'Style': 'Style',
-            'Width': 'Width',
-            'Height': 'Height',
-            'Letter': 'Letter',
-            'Tabloid': 'Tabloid',
-            'Legal': 'Legal',
-            'Statement': 'Statement',
-            'Executive': 'Executive',
-            'A3': 'A3',
-            'A4': 'A4',
-            'A5': 'A5',
-            'B4': 'B4',
-            'B5': 'B5',
-            'Custom Size': 'Custom size',
-            'Different odd and even': 'Different odd and even',
-            'Different first page': 'Different first page',
-            'From edge': 'From edge',
-            'Header': 'Header',
-            'Footer': 'Footer',
-            'Margin': 'Margins',
-            'Paper': 'Paper',
-            'Layout': 'Layout',
-            'Orientation': 'Orientation',
-            'Landscape': 'Landscape',
-            'Portrait': 'Portrait',
-            'Table Of Contents': 'Table Of Contents',
-            'Show page numbers': 'Show page numbers',
-            'Right align page numbers': 'Right align page numbers',
-            'Nothing': 'Nothing',
-            'Tab leader': 'Tab leader',
-            'Show levels': 'Show levels',
-            'Use hyperlinks instead of page numbers': 'Use hyperlinks instead of page numbers',
-            'Build table of contents from': 'Build table of contents from',
-            'Styles': 'Styles',
-            'Available styles': 'Available styles',
-            'TOC level': 'TOC level',
-            'Heading': 'Heading',
-            'Heading 1': 'Heading 1',
-            'Heading 2': 'Heading 2',
-            'Heading 3': 'Heading 3',
-            'Heading 4': 'Heading 4',
-            'Heading 5': 'Heading 5',
-            'Heading 6': 'Heading 6',
-            'List Paragraph': 'List Paragraph',
-            'Normal': 'Normal',
-            'Outline levels': 'Outline levels',
-            'Table entry fields': 'Table entry fields',
-            'Modify': 'Modify',
-            'Color': 'Color',
-            'Setting': 'Setting',
-            'Box': 'Box',
-            'All': 'All',
-            'Custom': 'Custom',
-            'Preview': 'Preview',
-            'Shading': 'Shading',
-            'Fill': 'Fill',
-            'Apply To': 'Apply to',
-            'Table Properties': 'Table Properties',
-            'Cell Options': 'Cell Options',
-            'Table Options': 'Table Options',
-            'Insert Table': 'Insert Table',
-            'Number of columns': 'Number of columns',
-            'Number of rows': 'Number of rows',
-            'Text to display': 'Text to display',
-            'Address': 'Address',
-            'Insert Hyperlink': 'Insert Hyperlink',
-            'Edit Hyperlink': 'Edit Hyperlink',
-            'Insert': 'Insert',
-            'General': 'General',
-            'Indentation': 'Indentation',
-            'Before text': 'Before text',
-            'Special': 'Special',
-            'First line': 'First line',
-            'Hanging': 'Hanging',
-            'After text': 'After text',
-            'By': 'By',
-            'Before': 'Before',
-            'Line Spacing': 'Line spacing',
-            'After': 'After',
-            'At': 'At',
-            'Multiple': 'Multiple',
-            'Spacing': 'Spacing',
-            'Define new Multilevel list': 'Define new Multilevel list',
-            'List level': 'List level',
-            'Choose level to modify': 'Choose level to modify',
-            'Level': 'Level',
-            'Number format': 'Number format',
-            'Number style for this level': 'Number style for this level',
-            'Enter formatting for number': 'Enter formatting for number',
-            'Start at': 'Start at',
-            'Restart list after': 'Restart list after',
-            'Position': 'Position',
-            'Text indent at': 'Text indent at',
-            'Aligned at': 'Aligned at',
-            'Follow number with': 'Follow number with',
-            'Tab character': 'Tab character',
-            'Space': 'Space',
-            'Arabic': 'Arabic',
-            'UpRoman': 'UpRoman',
-            'LowRoman': 'LowRoman',
-            'UpLetter': 'UpLetter',
-            'LowLetter': 'LowLetter',
-            'Number': 'Number',
-            'Leading zero': 'Leading zero',
-            'Bullet': 'Bullet',
-            'Ordinal': 'Ordinal',
-            'Ordinal Text': 'Ordinal Text',
-            'For East': 'For East',
-            'No Restart': 'No Restart',
-            'Font': 'Font',
-            'Font style': 'Font style',
-            'Underline style': 'Underline style',
-            'Font color': 'Font color',
-            'Effects': 'Effects',
-            'Strikethrough': 'Strikethrough',
-            'Superscript': 'Superscript',
-            'Subscript': 'Subscript',
-            'Double strikethrough': 'Double strikethrough',
-            'Regular': 'Regular',
-            'Bold': 'Bold',
-            'Italic': 'Italic',
-            'Cut': 'Cut',
-            'Copy': 'Copy',
-            'Paste': 'Paste',
-            'Hyperlink': 'Hyperlink',
-            'Open Hyperlink': 'Open Hyperlink',
-            'Copy Hyperlink': 'Copy Hyperlink',
-            'Remove Hyperlink': 'Remove Hyperlink',
-            'Paragraph': 'Paragraph',
-            'Linked(Paragraph and Character)': 'Linked(Paragraph and Character)',
-            'Character': 'Character',
-            'Merge Cells': 'Merge Cells',
-            'Insert Above': 'Insert Above',
-            'Insert Below': 'Insert Below',
-            'Insert Left': 'Insert Left',
-            'Insert Right': 'Insert Right',
-            'Delete': 'Delete',
-            'Delete Table': 'Delete Table',
-            'Delete Row': 'Delete Row',
-            'Delete Column': 'Delete Column',
-            'File Name': 'File Name',
-            'Format Type': 'Format Type',
-            'Save': 'Save',
-            'Navigation': 'Navigation',
-            'Results': 'Results',
-            'Replace': 'Replace',
-            'Replace All': 'Replace All',
-            'We replaced all': 'We replaced all',
-            'Find': 'Find',
-            'No matches': 'No matches',
-            'All Done': 'All Done',
-            'Result': 'Result',
-            'of': 'of',
-            'instances': 'instances',
-            'with': 'with',
-            'Click to follow link': 'Click to follow link',
-            'Continue Numbering': 'Continue Numbering',
-            'Bookmark name': 'Bookmark name',
-            'Close': 'Close',
-            'Restart At': 'Restart At',
-            'Properties': 'Properties',
-            'Name': 'Name',
-            'Style type': 'Style type',
-            'Style based on': 'Style based on',
-            'Style for following paragraph': 'Style for following paragraph',
-            'Formatting': 'Formatting',
-            'Numbering and Bullets': 'Numbering and Bullets',
-            'Numbering': 'Numbering',
-            'Update Field': 'Update Field',
-            'Edit Field': 'Edit Field',
-            'Bookmark': 'Bookmark',
-            'Page Setup': 'Page Setup',
-            'No bookmarks found': 'No bookmarks found',
-            'Number format tooltip information': 'Single-level number format: </br>[PREFIX]%[LEVELNUMBER][SUFFIX]</br>'
-                + 'For example, "Chapter %1." will display numbering like</br>Chapter 1. Item</br>Chapter 2. Item</br>…'
-                + '</br>Chapter N. Item</br>'
-                + '</br>Multilevel number format:</br>[PREFIX]%[LEVELNUMBER][SUFFIX]+[PREFIX]%[LEVELNUMBER][SUFFIX]'
-                + '</br>For example, "%1.%2." will display numbering like</br>1.1. Item</br>1.2. Item</br>…</br>1.N. Item',
-            'Format': 'Format',
-            'Create New Style': 'Create New Style',
-            'Modify Style': 'Modify Style',
-            'New': 'New',
-            'Bullets': 'Bullets',
-            'Use bookmarks': 'Use bookmarks',
-            'Table of Contents': 'Table of Contents',
-            'AutoFit': 'AutoFit',
-            'AutoFit to Contents': 'AutoFit to Contents',
-            'AutoFit to Window': 'AutoFit to Window',
-            'Fixed Column Width': 'Fixed Column Width',
-            'Reset': 'Reset',
-            'Match case': 'Match case',
-            'Whole words': 'Whole words',
-            'Add': 'Add',
-            'Go To': 'Go To',
-            'Search for': 'Search for',
-            'Replace with': 'Replace with',
-            'TOC 1': 'TOC 1',
-            'TOC 2': 'TOC 2',
-            'TOC 3': 'TOC 3',
-            'TOC 4': 'TOC 4',
-            'TOC 5': 'TOC 5',
-            'TOC 6': 'TOC 6',
-            'TOC 7': 'TOC 7',
-            'TOC 8': 'TOC 8',
-            'TOC 9': 'TOC 9',
-            'Right-to-left': 'Right-to-left',
-            'Left-to-right': 'Left-to-right',
-            'Direction': 'Direction',
-            'Table direction': 'Table direction',
-            'Indent from right': 'Indent from right'
-        };
-        _this.viewer = new PageLayoutViewer(_this);
-        _this.parser = new SfdtReader(_this.viewer);
-        return _this;
+        this.mode = true;
     }
-    DocumentEditor_1 = DocumentEditor;
-    Object.defineProperty(DocumentEditor.prototype, "enableHeaderAndFooter", {
-        /**
-         * @private
-         */
-        get: function () {
-            return this.enableHeaderFooterIn;
-        },
-        set: function (value) {
-            this.enableHeaderFooterIn = value;
-            this.viewer.updateScrollBars();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "pageCount", {
-        /**
-         * Gets the total number of pages.
-         */
-        get: function () {
-            if (!this.isDocumentLoaded || isNullOrUndefined(this.viewer)) {
-                return 1;
-            }
-            return this.viewer.pages.length;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "selection", {
-        /**
-         *  Gets the selection object of the document editor.
-         * @returns Selection
-         * @default undefined
-         */
-        get: function () {
-            return this.selectionModule;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "editor", {
-        /**
-         *  Gets the editor object of the document editor.
-         * @returns Editor
-         * @default undefined
-         */
-        get: function () {
-            return this.editorModule;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "editorHistory", {
-        /**
-         * Gets the editor history object of the document editor.
-         * @returns EditorHistory
-         */
-        get: function () {
-            return this.editorHistoryModule;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "search", {
-        /**
-         * Gets the search object of the document editor.
-         * @returns { Search }
-         */
-        get: function () {
-            return this.searchModule;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "contextMenu", {
-        /**
-         * Gets the context menu object of the document editor.
-         * @returns ContextMenu
-         */
-        get: function () {
-            return this.contextMenuModule;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "containerId", {
-        /**
-         * @private
-         */
-        get: function () {
-            return this.element.id;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "isDocumentLoaded", {
-        /**
-         * @private
-         */
-        get: function () {
-            return this.isDocumentLoadedIn;
-        },
-        set: function (value) {
-            this.isDocumentLoadedIn = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "enableHistoryMode", {
-        /**
-         * Determines whether history needs to be enabled or not.
-         * @default - false
-         * @private
-         */
-        get: function () {
-            return this.enableEditorHistory && !isNullOrUndefined(this.editorHistoryModule);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "documentStart", {
-        /**
-         * Gets the start text position in the document.
-         * @default undefined
-         * @private
-         */
-        get: function () {
-            if (!isNullOrUndefined(this.selectionModule)) {
-                return this.selection.getDocumentStart();
-            }
-            return undefined;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "documentEnd", {
-        /**
-         * Gets the end text position in the document.
-         * @default undefined
-         * @private
-         */
-        get: function () {
-            if (!isNullOrUndefined(this.selectionModule)) {
-                return this.selection.getDocumentEnd();
-            }
-            return undefined;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "isReadOnlyMode", {
-        /**
-         * @private
-         */
-        get: function () {
-            return this.isReadOnly || isNullOrUndefined(this.editorModule) || isNullOrUndefined(this.selectionModule);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(DocumentEditor.prototype, "enableImageResizerMode", {
-        /**
-         * Specifies to enable image resizer option
-         * default - false
-         * @private
-         */
-        get: function () {
-            return this.enableImageResizer && !isNullOrUndefined(this.imageResizerModule);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    DocumentEditor.prototype.preRender = function () {
-        this.findResultsList = [];
-        //pre render section
-    };
-    DocumentEditor.prototype.render = function () {
-        this.viewer.initializeComponents();
-        this.openBlank();
-        if (!isNullOrUndefined(this.element)) {
-            var container = this.element;
-            container.style.minHeight = '200px';
-            container.style.minWidth = '200px';
-        }
-    };
     /**
-     * Get component name
-     * @private
+     * Send the request to server
+     * @param  {object} jsonObject - To send to service
      */
-    DocumentEditor.prototype.getModuleName = function () {
-        return 'DocumentEditor';
-    };
-    /**
-     * Called internally if any of the property value changed.
-     * @private
-     */
-    DocumentEditor.prototype.onPropertyChanged = function (model, oldProp) {
-        for (var _i = 0, _a = Object.keys(model); _i < _a.length; _i++) {
-            var prop = _a[_i];
-            switch (prop) {
-                case 'zoomFactor':
-                    if (this.viewer) {
-                        this.viewer.zoomFactor = model.zoomFactor;
-                    }
-                    break;
-                case 'locale':
-                    this.localizeDialogs();
-                    break;
-                case 'isReadOnly':
-                    if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
-                        this.optionsPaneModule.showHideOptionsPane(false);
-                    }
-                    break;
-            }
-        }
-    };
-    DocumentEditor.prototype.localizeDialogs = function () {
-        if (this.locale !== '') {
-            var l10n = new L10n('documenteditor', this.defaultLocale);
-            l10n.setLocale(this.locale);
-            if (this.optionsPaneModule) {
-                this.optionsPaneModule.initOptionsPane(l10n);
-            }
-            if (this.paragraphDialogModule) {
-                this.paragraphDialogModule.initParagraphDialog(l10n);
-            }
-            if (this.pageSetupDialogModule) {
-                this.pageSetupDialogModule.initPageSetupDialog(l10n);
-            }
-            if (this.fontDialogModule) {
-                this.fontDialogModule.initFontDialog(l10n);
-            }
-            if (this.hyperlinkDialogModule) {
-                this.hyperlinkDialogModule.initHyperlinkDialog(l10n);
-            }
-            if (this.contextMenuModule) {
-                this.contextMenuModule.initContextMenu(l10n);
-            }
-            if (this.listDialogModule) {
-                this.listDialogModule.initListDialog(l10n);
-            }
-            if (this.tablePropertiesDialogModule) {
-                this.tablePropertiesDialogModule.initTablePropertyDialog(l10n);
-            }
-            if (this.bordersAndShadingDialogModule) {
-                this.bordersAndShadingDialogModule.initBordersAndShadingsDialog(l10n);
-            }
-            if (this.cellOptionsDialogModule) {
-                this.cellOptionsDialogModule.initCellMarginsDialog(l10n);
-            }
-            if (this.tableOptionsDialogModule) {
-                this.tableOptionsDialogModule.initTableOptionsDialog(l10n);
-            }
-            if (this.tableDialogModule) {
-                this.tableDialogModule.initTableDialog(l10n);
-            }
-            if (this.styleDialogModule) {
-                this.styleDialogModule.initStyleDialog(l10n);
-            }
-            if (this.tableOfContentsDialogModule) {
-                this.tableOfContentsDialogModule.initTableOfContentDialog(l10n);
-            }
-        }
-    };
-    /**
-     * Set the default character format for document editor
-     * @param characterFormat
-     */
-    DocumentEditor.prototype.setDefaultCharacterFormat = function (characterFormat) {
-        this.characterFormat = characterFormat;
-    };
-    /**
-     * Set the default paragraph format for document editor
-     * @param paragraphFormat
-     */
-    DocumentEditor.prototype.setDefaultParagraphFormat = function (paragraphFormat) {
-        this.paragraphFormat = paragraphFormat;
-    };
-    /**
-     * Get the properties to be maintained in the persisted state.
-     * @private
-     */
-    DocumentEditor.prototype.getPersistData = function () {
-        return 'documenteditor';
-    };
-    DocumentEditor.prototype.clearPreservedCollectionsInViewer = function () {
-        if (this.viewer instanceof LayoutViewer) {
-            this.viewer.clearDocumentItems();
-        }
-    };
-    /**
-     * @private
-     */
-    DocumentEditor.prototype.getDocumentEditorElement = function () {
-        return this.element;
-    };
-    /**
-     * @private
-     */
-    DocumentEditor.prototype.fireContentChange = function () {
-        var eventArgs = { source: this };
-        this.trigger('contentChange', eventArgs);
-    };
-    /**
-     * @private
-     */
-    DocumentEditor.prototype.fireDocumentChange = function () {
-        var eventArgs = { source: this };
-        this.trigger('documentChange', eventArgs);
-    };
-    /**
-     * @private
-     */
-    DocumentEditor.prototype.fireSelectionChange = function () {
-        if (!this.viewer.isCompositionStart && Browser.isDevice && this.editorModule) {
-            this.editorModule.predictText();
-        }
-        var eventArgs = { source: this };
-        this.trigger('selectionChange', eventArgs);
-    };
-    /**
-     * @private
-     */
-    DocumentEditor.prototype.fireZoomFactorChange = function () {
-        var eventArgs = { source: this };
-        this.trigger('zoomFactorChange', eventArgs);
-    };
-    /**
-     * @private
-     */
-    DocumentEditor.prototype.fireViewChange = function () {
-        if (this.viewer && this.viewer.pages.length > 0) {
-            if (this.viewer.visiblePages.length > 0) {
-                var pages = this.viewer.visiblePages;
-                var eventArgs = {
-                    startPage: pages[0].index + 1,
-                    endPage: pages[pages.length - 1].index + 1,
-                    source: this
-                };
-                this.trigger('viewChange', eventArgs);
-            }
-        }
-    };
-    /**
-     * @private
-     */
-    DocumentEditor.prototype.fireCustomContextMenuSelect = function (item) {
-        var eventArgs = { id: item };
-        this.trigger('customContextMenuSelect', eventArgs);
-    };
-    /**
-     * @private
-     */
-    DocumentEditor.prototype.fireCustomContextMenuBeforeOpen = function (item) {
-        var eventArgs = { ids: item };
-        this.trigger('customContextMenuBeforeOpen', eventArgs);
-    };
-    /**
-     * Shows the Paragraph dialog
-     * @private
-     */
-    DocumentEditor.prototype.showParagraphDialog = function (paragraphFormat) {
-        if (this.paragraphDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.paragraphDialogModule.show(paragraphFormat);
-        }
-    };
-    /**
-     * Shows the margin dialog
-     * @private
-     */
-    DocumentEditor.prototype.showPageSetupDialog = function () {
-        if (this.pageSetupDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.pageSetupDialogModule.show();
-        }
-    };
-    /**
-     * Shows the font dialog
-     * @private
-     */
-    DocumentEditor.prototype.showFontDialog = function (characterFormat) {
-        if (this.fontDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.fontDialogModule.showFontDialog(characterFormat);
-        }
-    };
-    /**
-     * Shows the cell option dialog
-     * @private
-     */
-    DocumentEditor.prototype.showCellOptionsDialog = function () {
-        if (this.cellOptionsDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.cellOptionsDialogModule.show();
-        }
-    };
-    /**
-     * Shows the table options dialog.
-     * @private
-     */
-    DocumentEditor.prototype.showTableOptionsDialog = function () {
-        if (this.tableOptionsDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.tableOptionsDialogModule.show();
-        }
-    };
-    /**
-     * Shows insert table dialog
-     * @private
-     */
-    DocumentEditor.prototype.showTableDialog = function () {
-        if (this.tableDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.tableDialogModule.show();
-        }
-    };
-    /**
-     * Shows the table of content dialog
-     * @private
-     */
-    DocumentEditor.prototype.showTableOfContentsDialog = function () {
-        if (this.tableOfContentsDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.tableOfContentsDialogModule.show();
-        }
-    };
-    /* tslint:enable:no-any */
-    /**
-     * Shows the style dialog
-     * @private
-     */
-    DocumentEditor.prototype.showStyleDialog = function () {
-        if (this.styleDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.styleDialogModule.show();
-        }
-    };
-    /**
-     * Shows the hyperlink dialog
-     * @private
-     */
-    DocumentEditor.prototype.showHyperlinkDialog = function () {
-        if (this.hyperlinkDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.hyperlinkDialogModule.show();
-        }
-    };
-    /**
-     * Shows the bookmark dialog.
-     * @private
-     */
-    DocumentEditor.prototype.showBookmarkDialog = function () {
-        if (this.bookmarkDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.bookmarkDialogModule.show();
-        }
-    };
-    /**
-     * Shows the styles dialog.
-     * @private
-     */
-    DocumentEditor.prototype.showStylesDialog = function () {
-        if (this.stylesDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.stylesDialogModule.show();
-        }
-    };
-    /**
-     * Shows the List dialog
-     * @private
-     */
-    DocumentEditor.prototype.showListDialog = function () {
-        if (this.listDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.listDialogModule.showListDialog();
-        }
-    };
-    /**
-     * Shows the table properties dialog
-     * @private
-     */
-    DocumentEditor.prototype.showTablePropertiesDialog = function () {
-        if (this.tablePropertiesDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.tablePropertiesDialogModule.show();
-        }
-    };
-    /**
-     * Shows the borders and shading dialog
-     * @private
-     */
-    DocumentEditor.prototype.showBordersAndShadingDialog = function () {
-        if (this.bordersAndShadingDialogModule && !this.isReadOnlyMode && this.viewer) {
-            this.bordersAndShadingDialogModule.show();
-        }
-    };
-    //tslint:disable: max-func-body-length
-    DocumentEditor.prototype.requiredModules = function () {
-        var modules = [];
-        if (this.enablePrint) {
-            modules.push({
-                member: 'Print', args: []
-            });
-        }
-        if (this.enableSfdtExport || this.enableWordExport || this.enableTextExport || this.enableSelection || this.enableEditor) {
-            modules.push({
-                member: 'SfdtExport', args: [this.viewer]
-            });
-        }
-        if (this.enableWordExport) {
-            modules.push({
-                member: 'WordExport', args: []
-            });
-        }
-        if (this.enableTextExport) {
-            modules.push({
-                member: 'TextExport', args: []
-            });
-        }
-        if (this.enableSelection || this.enableSearch || this.enableEditor) {
-            modules.push({
-                member: 'Selection', args: [this]
-            });
-            if (this.enableContextMenu) {
-                modules.push({
-                    member: 'ContextMenu', args: [this.viewer]
-                });
-            }
-        }
-        if (this.enableSearch) {
-            modules.push({
-                member: 'Search', args: [this]
-            });
-            if (this.enableOptionsPane) {
-                modules.push({
-                    member: 'OptionsPane', args: [this.viewer]
-                });
-            }
-        }
-        if (this.enableEditor) {
-            modules.push({
-                member: 'Editor', args: [this.viewer]
-            });
-            if (this.enableImageResizer) {
-                modules.push({
-                    member: 'ImageResizer', args: [this, this.viewer]
-                });
-            }
-            if (this.enableEditorHistory) {
-                modules.push({
-                    member: 'EditorHistory', args: [this]
-                });
-            }
-            if (this.enableHyperlinkDialog) {
-                modules.push({
-                    member: 'HyperlinkDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableTableDialog) {
-                modules.push({
-                    member: 'TableDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableBookmarkDialog) {
-                modules.push({
-                    member: 'BookmarkDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableTableOfContentsDialog) {
-                modules.push({
-                    member: 'TableOfContentsDialog', args: [this.viewer]
-                });
-            }
-            if (this.enablePageSetupDialog) {
-                modules.push({
-                    member: 'PageSetupDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableStyleDialog) {
-                modules.push({
-                    member: 'StylesDialog', args: [this.viewer]
-                });
-                modules.push({
-                    member: 'StyleDialog', args: [this.viewer]
-                });
-                modules.push({
-                    member: 'BulletsAndNumberingDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableListDialog) {
-                modules.push({
-                    member: 'ListDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableParagraphDialog) {
-                modules.push({
-                    member: 'ParagraphDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableFontDialog) {
-                modules.push({
-                    member: 'FontDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableTablePropertiesDialog) {
-                modules.push({
-                    member: 'TablePropertiesDialog', args: [this.viewer]
-                });
-                modules.push({
-                    member: 'CellOptionsDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableBordersAndShadingDialog) {
-                modules.push({
-                    member: 'BordersAndShadingDialog', args: [this.viewer]
-                });
-            }
-            if (this.enableTableOptionsDialog) {
-                modules.push({
-                    member: 'TableOptionsDialog', args: [this.viewer]
-                });
-            }
-        }
-        return modules;
-    };
-    // Public Implementation Starts
-    /**
-     * Opens the given Sfdt text.
-     * @param {string} sfdtText.
-     */
-    DocumentEditor.prototype.open = function (sfdtText) {
-        if (!isNullOrUndefined(this.viewer)) {
-            this.clearPreservedCollectionsInViewer();
-            this.viewer.lists = [];
-            this.viewer.abstractLists = [];
-            this.viewer.styles = new WStyles();
-            if (!isNullOrUndefined(sfdtText) && this.viewer) {
-                this.viewer.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
-                if (this.editorModule) {
-                    this.editorModule.intializeDefaultStyles();
-                }
-            }
-        }
-    };
-    /**
-     * Scrolls view to start of the given page number if exists.
-     * @param  {number} pageNumber.
-     * @returns void
-     */
-    DocumentEditor.prototype.scrollToPage = function (pageNumber) {
-        if (isNullOrUndefined(this.viewer) || pageNumber < 1 || pageNumber > this.viewer.pages.length) {
-            return false;
-        }
-        this.viewer.scrollToPage(pageNumber - 1);
-        return true;
-    };
-    /**
-     * Enables all the modules.
-     * @returns void
-     */
-    DocumentEditor.prototype.enableAllModules = function () {
-        this.enablePrint = this.enableSfdtExport = this.enableWordExport = this.enableTextExport
-            = this.enableSelection = this.enableContextMenu = this.enableSearch = this.enableOptionsPane
-                = this.enableEditor = this.enableImageResizer = this.enableEditorHistory
-                    = this.enableHyperlinkDialog = this.enableTableDialog = this.enableBookmarkDialog
-                        = this.enableTableOfContentsDialog = this.enablePageSetupDialog = this.enableStyleDialog
-                            = this.enableListDialog = this.enableParagraphDialog = this.enableFontDialog
-                                = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
-                                    = this.enableTableOptionsDialog = true;
-        // tslint:disable-next-line:max-line-length
-        DocumentEditor_1.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu$1, OptionsPane, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog);
-    };
-    /**
-     * Resizes the component and its sub elements based on given size or container size.
-     * @param width
-     * @param height
-     */
-    DocumentEditor.prototype.resize = function (width, height) {
-        if (this.element) {
-            if (!isNullOrUndefined(width) && width > 200) {
-                this.element.style.width = width + 'px';
-            }
-            if (!isNullOrUndefined(height) && height > 200) {
-                this.element.style.height = height + 'px';
-            }
-            if (this.viewer) {
-                this.viewer.updateViewerSize();
-            }
-        }
-    };
-    /**
-     * Shifts the focus to the document.
-     */
-    DocumentEditor.prototype.focusIn = function () {
-        if (this.viewer) {
-            this.viewer.updateFocus();
-        }
-    };
-    /**
-     * Fits the page based on given fit type.
-     * @param  {PageFitType} pageFitType? - Default value of ‘pageFitType’ parameter is 'None'
-     * @returns void
-     */
-    DocumentEditor.prototype.fitPage = function (pageFitType) {
-        if (isNullOrUndefined(pageFitType)) {
-            pageFitType = 'None';
-        }
-        if (this.viewer) {
-            this.viewer.pageFitType = pageFitType;
-        }
-    };
-    /**
-     * Prints the document.
-     * @param  {Window} printWindow? - Default value of 'printWindow' parameter is undefined.
-     */
-    DocumentEditor.prototype.print = function (printWindow) {
-        if (isNullOrUndefined(this.viewer)) {
-            throw new Error('Invalid operation.');
-        }
-        if (this.printModule) {
-            this.printModule.print(this.viewer, printWindow);
-        }
-        else {
-            throw new Error('Invalid operation. Print is not enabled.');
-        }
-    };
-    /**
-     * Serialize the data to JSON string.
-     */
-    DocumentEditor.prototype.serialize = function () {
-        var json = '';
-        if (this.enableSfdtExport && this.sfdtExportModule instanceof SfdtExport) {
-            json = this.sfdtExportModule.serialize();
-        }
-        else {
-            throw new Error('Invalid operation. Sfdt export is not enabled.');
-        }
-        return json;
-    };
-    /**
-     * Saves the document.
-     * @param {string} fileName
-     * @param {FormatType} formatType
-     */
-    DocumentEditor.prototype.save = function (fileName, formatType) {
-        fileName = fileName || 'Untitled';
-        if (isNullOrUndefined(this.viewer)) {
-            throw new Error('Invalid operation.');
-        }
-        if (formatType === 'Docx' && this.wordExportModule) {
-            if (this.wordExportModule) {
-                this.wordExportModule.save(this.viewer, fileName);
-            }
-        }
-        else if (formatType === 'Txt' && this.textExportModule) {
-            this.textExportModule.save(this.viewer, fileName);
-        }
-        else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {
-            var jsonString = this.serialize();
-            var blob = new Blob([jsonString], {
-                type: 'application/json'
-            });
-            Save.save(fileName + '.sfdt', blob);
-        }
-        else {
-            throw new Error('Invalid operation. Specified export is not enabled.');
-        }
-    };
-    /**
-     * Saves the document as blob.
-     * @param {FormatType} formatType
-     */
-    DocumentEditor.prototype.saveAsBlob = function (formatType) {
+    XmlHttpRequestHandler.prototype.send = function (jsonObject) {
         var _this = this;
-        if (isNullOrUndefined(this.viewer)) {
-            throw new Error('Invalid operation');
-        }
-        return new Promise(function (resolve, reject) {
-            if (formatType === 'Docx' && _this.wordExportModule) {
-                resolve(_this.wordExportModule.saveAsBlob(_this.viewer));
-            }
-            else if (formatType === 'Txt' && _this.textExportModule) {
-                resolve(_this.textExportModule.saveAsBlob(_this.viewer));
-            }
-            else if (formatType === 'Sfdt' && _this.enableSfdtExport && _this.sfdtExportModule) {
-                resolve(_this.sfdtExportModule.saveAsBlob(_this.viewer));
-            }
-        });
-    };
-    /**
-     * Opens a blank document.
-     */
-    DocumentEditor.prototype.openBlank = function () {
-        var section = new BodyWidget();
-        section.index = 0;
-        section.sectionFormat = new WSectionFormat(section);
-        var paragraph = new ParagraphWidget();
-        paragraph.index = 0;
-        paragraph.paragraphFormat = new WParagraphFormat(paragraph);
-        paragraph.characterFormat = new WCharacterFormat(paragraph);
-        section.childWidgets.push(paragraph);
-        paragraph.containerWidget = section;
-        var sections = [];
-        sections.push(section);
-        // tslint:disable-next-line:max-line-length
-        var hfs = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
-        if (this.viewer) {
-            this.clearPreservedCollectionsInViewer();
-            this.viewer.setDefaultDocumentFormat();
-            this.viewer.headersFooters.push(hfs);
-            this.viewer.onDocumentChanged(sections);
-            if (this.editorModule) {
-                this.editorModule.intializeDefaultStyles();
-                var style = this.viewer.styles.findByName('Normal');
-                paragraph.paragraphFormat.baseStyle = style;
-                paragraph.paragraphFormat.listFormat.baseStyle = style;
-            }
-        }
-    };
-    /**
-     * Gets the style names based on given style type.
-     * @param styleType
-     */
-    DocumentEditor.prototype.getStyleNames = function (styleType) {
-        if (this.viewer) {
-            return this.viewer.styles.getStyleNames(styleType);
-        }
-        return [];
-    };
-    /**
-     * Gets the style objects on given style type.
-     * @param styleType
-     */
-    DocumentEditor.prototype.getStyles = function (styleType) {
-        if (this.viewer) {
-            return this.viewer.styles.getStyles(styleType);
-        }
-        return [];
-    };
-    /**
-     * Gets the bookmarks.
-     */
-    DocumentEditor.prototype.getBookmarks = function () {
-        var bookmarks = [];
-        if (this.viewer) {
-            bookmarks = this.viewer.getBookmarks(true);
-        }
-        return bookmarks;
-    };
-    /**
-     * Shows the dialog.
-     * @param {DialogType} dialogType
-     * @returns void
-     */
-    DocumentEditor.prototype.showDialog = function (dialogType) {
-        switch (dialogType) {
-            case 'Hyperlink':
-                this.showHyperlinkDialog();
-                break;
-            case 'Table':
-                this.showTableDialog();
-                break;
-            case 'Bookmark':
-                this.showBookmarkDialog();
-                break;
-            case 'TableOfContents':
-                this.showTableOfContentsDialog();
-                break;
-            case 'PageSetup':
-                this.showPageSetupDialog();
-                break;
-            case 'List':
-                this.showListDialog();
-                break;
-            case 'Styles':
-                this.showStylesDialog();
-                break;
-            case 'Style':
-                this.showStyleDialog();
-                break;
-            case 'Paragraph':
-                this.showParagraphDialog();
-                break;
-            case 'Font':
-                this.showFontDialog();
-                break;
-            case 'TableProperties':
-                this.showTablePropertiesDialog();
-                break;
-            case 'BordersAndShading':
-                this.showBordersAndShadingDialog();
-                break;
-            case 'TableOptions':
-                this.showTableOptionsDialog();
-                break;
-        }
-    };
-    /**
-     * Shows the options pane.
-     */
-    DocumentEditor.prototype.showOptionsPane = function () {
-        if (!isNullOrUndefined(this.optionsPaneModule) && !isNullOrUndefined(this.viewer)) {
-            this.optionsPaneModule.showHideOptionsPane(true);
-        }
-    };
-    /**
-     * Destroys all managed resources used by this object.
-     */
-    DocumentEditor.prototype.destroy = function () {
-        _super.prototype.destroy.call(this);
-        this.destroyDependentModules();
-        if (!isNullOrUndefined(this.viewer)) {
-            this.viewer.destroy();
-        }
-        this.viewer = undefined;
-        if (!isNullOrUndefined(this.element)) {
-            this.element.classList.remove('e-documenteditor');
-            this.element.innerHTML = '';
-        }
-        this.element = undefined;
-        this.findResultsList = [];
-        this.findResultsList = undefined;
-    };
-    DocumentEditor.prototype.destroyDependentModules = function () {
-        if (this.printModule) {
-            this.printModule.destroy();
-            this.printModule = undefined;
-        }
-        if (this.sfdtExportModule) {
-            this.sfdtExportModule.destroy();
-            this.sfdtExportModule = undefined;
-        }
-        if (this.optionsPaneModule) {
-            this.optionsPaneModule.destroy();
-            this.optionsPaneModule = undefined;
-        }
-        if (!isNullOrUndefined(this.hyperlinkDialogModule)) {
-            this.hyperlinkDialogModule.destroy();
-            this.hyperlinkDialogModule = undefined;
-        }
-        if (this.searchModule) {
-            this.searchModule.destroy();
-            this.searchModule = undefined;
-        }
-        if (this.contextMenuModule) {
-            this.contextMenuModule.destroy();
-            this.contextMenuModule = undefined;
-        }
-        if (this.editorModule) {
-            this.editorModule.destroy();
-            this.editorModule = undefined;
-        }
-        if (this.selectionModule) {
-            this.selectionModule.destroy();
-            this.selectionModule = undefined;
-        }
-        if (this.editorHistoryModule) {
-            this.editorHistoryModule.destroy();
-            this.editorHistoryModule = undefined;
-        }
-        if (!isNullOrUndefined(this.paragraphDialogModule)) {
-            this.paragraphDialogModule.destroy();
-            this.paragraphDialogModule = undefined;
-        }
-        if (this.pageSetupDialogModule) {
-            this.pageSetupDialogModule.destroy();
-            this.pageSetupDialogModule = undefined;
-        }
-        if (this.fontDialogModule) {
-            this.fontDialogModule.destroy();
-            this.fontDialogModule = undefined;
-        }
-        if (this.listDialogModule) {
-            this.listDialogModule.destroy();
-            this.listDialogModule = undefined;
-        }
-        if (this.imageResizerModule) {
-            this.imageResizerModule.destroy();
-            this.imageResizerModule = undefined;
-        }
-        if (this.tablePropertiesDialogModule) {
-            this.tablePropertiesDialogModule.destroy();
-            this.tablePropertiesDialogModule = undefined;
-        }
-        if (this.bordersAndShadingDialogModule) {
-            this.bordersAndShadingDialogModule.destroy();
-            this.bordersAndShadingDialogModule = undefined;
-        }
-        if (this.cellOptionsDialogModule) {
-            this.cellOptionsDialogModule.destroy();
-            this.cellOptionsDialogModule = undefined;
-        }
-        if (this.tableOptionsDialogModule) {
-            this.tableOptionsDialogModule.destroy();
-            this.tableOptionsDialogModule = undefined;
-        }
-        if (this.tableDialogModule) {
-            this.tableDialogModule.destroy();
-            this.tableDialogModule = undefined;
-        }
-        if (this.styleDialogModule) {
-            this.styleDialogModule = undefined;
-        }
-        if (this.bookmarkDialogModule) {
-            this.bookmarkDialogModule.destroy();
-            this.bookmarkDialogModule = undefined;
-        }
-        if (this.styleDialogModule) {
-            this.styleDialogModule.destroy();
-            this.styleDialogModule = undefined;
-        }
-        if (this.textExportModule) {
-            this.textExportModule.destroy();
-            this.textExportModule = undefined;
-        }
-        if (this.wordExportModule) {
-            this.wordExportModule.destroy();
-            this.wordExportModule = undefined;
-        }
-        if (this.tableOfContentsDialogModule) {
-            this.tableOfContentsDialogModule.destroy();
-            this.tableOfContentsDialogModule = undefined;
-        }
-    };
-    var DocumentEditor_1;
-    __decorate([
-        Property(1)
-    ], DocumentEditor.prototype, "zoomFactor", void 0);
-    __decorate([
-        Property(true)
-    ], DocumentEditor.prototype, "isReadOnly", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enablePrint", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableSelection", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableEditor", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableEditorHistory", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableSfdtExport", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableWordExport", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableTextExport", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableOptionsPane", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableContextMenu", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableHyperlinkDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableBookmarkDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableTableOfContentsDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableSearch", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableParagraphDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableListDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableTablePropertiesDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableBordersAndShadingDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enablePageSetupDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableStyleDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableFontDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableTableOptionsDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableTableDialog", void 0);
-    __decorate([
-        Property(false)
-    ], DocumentEditor.prototype, "enableImageResizer", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "documentChange", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "viewChange", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "zoomFactorChange", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "selectionChange", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "requestNavigate", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "contentChange", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "keyDown", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "searchResultsChange", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "created", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "destroyed", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "customContextMenuSelect", void 0);
-    __decorate([
-        Event()
-    ], DocumentEditor.prototype, "customContextMenuBeforeOpen", void 0);
-    DocumentEditor = DocumentEditor_1 = __decorate([
-        NotifyPropertyChanges
-    ], DocumentEditor);
-    return DocumentEditor;
-}(Component));
-
-/**
- * Print class
- */
-var Print = /** @__PURE__ @class */ (function () {
-    function Print() {
-    }
-    /**
-     * Gets module name.
-     */
-    Print.prototype.getModuleName = function () {
-        return 'Print';
-    };
-    /**
-     * Prints the current viewer
-     * @param viewer
-     * @param printWindow
-     * @private
-     */
-    Print.prototype.print = function (viewer, printWindow) {
-        this.printWindow(viewer, navigator.userAgent, printWindow);
-    };
-    /**
-     * Opens print window and displays current page to print.
-     * @private
-     */
-    Print.prototype.printWindow = function (viewer, browserUserAgent, printWindow) {
-        var height = this.getPageHeight(viewer.pages);
-        var width = this.getPageWidth(viewer.pages);
-        var printElement = document.createElement('div');
-        printElement.style.width = '100%';
-        printElement.style.height = '100%';
-        printElement.style.overflow = 'scroll';
-        // Rendering canvas to print
-        this.generatePrintContent(viewer, printElement);
-        if (isNullOrUndefined(printWindow)) {
-            printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
-        }
-        if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Firefox')) !== -1) {
-            // Chrome and Firefox
-            printWindow.document.write('<!DOCTYPE html>');
-            // tslint:disable-next-line:max-line-length
-            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100 %; } img { height: 100 %; width: 100 %; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + width.toString() + 'px ' + height.toString() + 'px; }@media print{ body { margin: 0cm; }</style></head> <body><center>');
+        this.xmlHttpRequest = new XMLHttpRequest();
+        this.xmlHttpRequest.onreadystatechange = function () { _this.stateChange(_this); };
+        this.xmlHttpRequest.onerror = function () { _this.error(_this); };
+        if (!this.mode) {
+            setTimeout(function () { _this.sendRequest(jsonObject); });
         }
         else {
-            // Internet Explorer and Edge
-            // tslint:disable-next-line:max-line-length
-            printWindow.document.write('<html><head><style>@page{margin:0;size:' + width.toString() + 'px ' + height.toString() + 'px;}</style></head><body><center>');
+            this.sendRequest(jsonObject);
         }
-        // tslint:disable-next-line:max-line-length
-        printWindow.document.write(printElement.innerHTML + '</center><script> (function() { window.ready = true; })(); </script></body></html>');
-        printElement = undefined;
-        printWindow.document.close();
-        printWindow.focus();
-        var interval = setInterval(function () {
-            if (printWindow.ready) {
-                printWindow.print();
-                printWindow.close();
-                clearInterval(interval);
+    };
+    XmlHttpRequestHandler.prototype.sendRequest = function (jsonObj) {
+        this.xmlHttpRequest.open('POST', this.url, true);
+        if (this.contentType) {
+            this.xmlHttpRequest.setRequestHeader('Content-Type', this.contentType);
+        }
+        if (this.responseType) {
+            this.xmlHttpRequest.responseType = this.responseType;
+        }
+        var data = jsonObj instanceof FormData ? jsonObj : JSON.stringify(jsonObj);
+        this.xmlHttpRequest.send(data); // jshint ignore:line
+    };
+    XmlHttpRequestHandler.prototype.stateChange = function (proxyReq) {
+        if (proxyReq.xmlHttpRequest.readyState === 4 && proxyReq.xmlHttpRequest.status === 200) {
+            // tslint:disable-next-line
+            var data = void 0;
+            if (this.responseType) {
+                data = proxyReq.xmlHttpRequest.response;
             }
-        }, 500);
-    };
-    /**
-     * Generates print content.
-     * @private
-     */
-    Print.prototype.generatePrintContent = function (viewer, element) {
-        // Rendering canvas to print
-        var htmlString = '';
-        for (var i = 0; i < viewer.pages.length; i++) {
-            var page = viewer.pages[i];
-            var pageHeight = page.boundingRectangle.height;
-            var pageWidth = page.boundingRectangle.width;
-            viewer.render.isPrinting = true;
-            viewer.render.renderWidgets(page, 0, 0, 0, 0);
-            var canvasURL = viewer.render.pageCanvas.toDataURL();
-            viewer.render.isPrinting = false;
-            // tslint:disable-next-line:max-line-length
-            htmlString += '<div><img src=' + canvasURL + ' style="margin:0px;display:block;width: ' + pageWidth.toString() + 'px; height:' + pageHeight.toString() + 'px; "/></div><br/>';
-        }
-        element.innerHTML = htmlString;
-    };
-    /**
-     * Gets page width.
-     * @param pages
-     * @private
-     */
-    Print.prototype.getPageWidth = function (pages) {
-        var width = 0;
-        for (var i = 0; i < pages.length; i++) {
-            if (width < pages[i].boundingRectangle.width) {
-                width = pages[i].boundingRectangle.width;
+            else {
+                data = proxyReq.xmlHttpRequest.responseText;
             }
+            // tslint:disable-next-line
+            var result = {
+                name: 'onSuccess',
+                data: data,
+                readyState: proxyReq.xmlHttpRequest.readyState,
+                status: proxyReq.xmlHttpRequest.status
+            };
+            proxyReq.successHandler(result);
         }
-        return width;
-    };
-    /**
-     *  Gets page height.
-     * @private
-     */
-    Print.prototype.getPageHeight = function (pages) {
-        var height = 0;
-        for (var i = 0; i < pages.length; i++) {
-            if (height < pages[i].boundingRectangle.height) {
-                height = pages[i].boundingRectangle.height;
-            }
+        else if (proxyReq.xmlHttpRequest.readyState === 4 && proxyReq.xmlHttpRequest.status === 400) { // jshint ignore:line)
+            // tslint:disable-next-line
+            var result = {
+                name: 'onFailure',
+                status: proxyReq.xmlHttpRequest.status,
+                statusText: proxyReq.xmlHttpRequest.statusText
+            };
+            proxyReq.failureHandler(result);
         }
-        return height;
     };
-    /**
-     * @private
-     */
-    Print.prototype.destroy = function () {
-        return;
+    XmlHttpRequestHandler.prototype.error = function (proxyReq) {
+        // tslint:disable-next-line
+        var result = {
+            name: 'onError',
+            status: this.xmlHttpRequest.status,
+            statusText: this.xmlHttpRequest.statusText
+        };
+        proxyReq.errorHandler(result);
     };
-    return Print;
+    // tslint:disable-next-line
+    XmlHttpRequestHandler.prototype.successHandler = function (response) {
+        if (this.onSuccess) {
+            this.onSuccess(response);
+        }
+        return response;
+    };
+    // tslint:disable-next-line
+    XmlHttpRequestHandler.prototype.failureHandler = function (response) {
+        if (this.onFailure) {
+            this.onFailure(response);
+        }
+        return response;
+    };
+    // tslint:disable-next-line
+    XmlHttpRequestHandler.prototype.errorHandler = function (response) {
+        if (this.onError) {
+            this.onError(response);
+        }
+        return response;
+    };
+    return XmlHttpRequestHandler;
 }());
 
 /**
@@ -3325,6 +1836,16 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(WParagraphFormat.prototype, "contextualSpacing", {
+        get: function () {
+            return this.getPropertyValue('contextualSpacing');
+        },
+        set: function (value) {
+            this.setPropertyValue('contextualSpacing', value);
+        },
+        enumerable: true,
+        configurable: true
+    });
     WParagraphFormat.prototype.getListFormatParagraphFormat = function (property) {
         if (this.listFormat.listId > -1 && this.listFormat.listLevelNumber > -1) {
             var level = this.listFormat.listLevel;
@@ -3426,6 +1947,7 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
         this.addUniqueParaFormat('lineSpacingType', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('outlineLevel', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('bidi', property, propValue, uniqueParaFormatTemp);
+        this.addUniqueParaFormat('contextualSpacing', property, propValue, uniqueParaFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueParagraphFormat = WParagraphFormat.uniqueParagraphFormats.addUniqueFormat(uniqueParaFormatTemp, WParagraphFormat.uniqueFormatType);
     };
@@ -3471,6 +1993,9 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
                 value = 'BodyText';
                 break;
             case 'bidi':
+                value = false;
+                break;
+            case 'contextualSpacing':
                 value = false;
                 break;
         }
@@ -3602,6 +2127,9 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
         }
         if (!isStyle && isNullOrUndefined(this.getValue('bidi'))) {
             this.bidi = format.getValue('bidi');
+        }
+        if (isNullOrUndefined(this.getValue('contextualSpacing'))) {
+            this.contextualSpacing = format.getValue('contextualSpacing');
         }
         if (isNullOrUndefined(this.listFormat)) {
             this.listFormat.mergeFormat(format.listFormat);
@@ -4512,6 +3040,118 @@ var Point = /** @__PURE__ @class */ (function () {
         this.yIn = undefined;
     };
     return Point;
+}());
+/**
+ * @private
+ */
+var Base64 = /** @__PURE__ @class */ (function () {
+    function Base64() {
+        this.keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    }
+    // public method for encoding
+    Base64.prototype.encodeString = function (input) {
+        var output = '';
+        var chr1;
+        var chr2;
+        var chr3;
+        var enc1;
+        var enc2;
+        var enc3;
+        var enc4;
+        var i = 0;
+        input = this.unicodeEncode(input);
+        while (i < input.length) {
+            chr1 = input.charCodeAt(i++);
+            chr2 = input.charCodeAt(i++);
+            chr3 = input.charCodeAt(i++);
+            enc1 = chr1 >> 2;
+            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+            enc4 = chr3 & 63;
+            if (isNaN(chr2)) {
+                enc3 = enc4 = 64;
+            }
+            else if (isNaN(chr3)) {
+                enc4 = 64;
+            }
+            output = output +
+                this.keyStr.charAt(enc1) + this.keyStr.charAt(enc2) +
+                this.keyStr.charAt(enc3) + this.keyStr.charAt(enc4);
+        }
+        return output;
+    };
+    // private method for UTF-8 encoding
+    Base64.prototype.unicodeEncode = function (input) {
+        var tempInput = input.replace(/\r\n/g, '\n');
+        var utftext = '';
+        for (var n = 0; n < tempInput.length; n++) {
+            var c = tempInput.charCodeAt(n);
+            if (c < 128) {
+                utftext += String.fromCharCode(c);
+            }
+            else if ((c > 127) && (c < 2048)) {
+                utftext += String.fromCharCode((c >> 6) | 192);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+            else {
+                utftext += String.fromCharCode((c >> 12) | 224);
+                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+        }
+        return utftext;
+    };
+    /**
+     * @private
+     */
+    Base64.prototype.decodeString = function (input) {
+        var chr1;
+        var chr2;
+        var chr3;
+        var enc1;
+        var enc2;
+        var enc3;
+        var enc4;
+        var i = 0;
+        var resultIndex = 0;
+        /*let dataUrlPrefix: string = 'data:';*/
+        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
+        var totalLength = input.length * 3 / 4;
+        if (input.charAt(input.length - 1) === this.keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (input.charAt(input.length - 2) === this.keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (totalLength % 1 !== 0) {
+            // totalLength is not an integer, the length does not match a valid
+            // base64 content. That can happen if:
+            // - the input is not a base64 content
+            // - the input is *almost* a base64 content, with a extra chars at the
+            // beginning or at the end
+            // - the input uses a base64 variant (base64url for example)
+            throw new Error('Invalid base64 input, bad content length.');
+        }
+        var output = new Uint8Array(totalLength | 0);
+        while (i < input.length) {
+            enc1 = this.keyStr.indexOf(input.charAt(i++));
+            enc2 = this.keyStr.indexOf(input.charAt(i++));
+            enc3 = this.keyStr.indexOf(input.charAt(i++));
+            enc4 = this.keyStr.indexOf(input.charAt(i++));
+            chr1 = (enc1 << 2) | (enc2 >> 4);
+            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+            chr3 = ((enc3 & 3) << 6) | enc4;
+            output[resultIndex++] = chr1;
+            if (enc3 !== 64) {
+                output[resultIndex++] = chr2;
+            }
+            if (enc4 !== 64) {
+                output[resultIndex++] = chr3;
+            }
+        }
+        return output;
+    };
+    return Base64;
 }());
 
 var __extends$2 = (undefined && undefined.__extends) || (function () {
@@ -7260,6 +5900,10 @@ var ParagraphWidget = /** @__PURE__ @class */ (function (_super) {
      */
     function ParagraphWidget() {
         var _this = _super.call(this) || this;
+        /**
+         * @private
+         */
+        _this.isChangeDetected = false;
         _this.paragraphFormat = new WParagraphFormat(_this);
         _this.characterFormat = new WCharacterFormat(_this);
         return _this;
@@ -7298,6 +5942,8 @@ var ParagraphWidget = /** @__PURE__ @class */ (function (_super) {
                     continue;
                 }
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
+                    || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
+                    || inline instanceof ChartElementBox
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
                     return false;
                 }
@@ -7324,7 +5970,8 @@ var ParagraphWidget = /** @__PURE__ @class */ (function (_super) {
                     }
                     if (!isStarted && (inline instanceof TextElementBox || inline instanceof ImageElementBox
                         || inline instanceof BookmarkElementBox || inline instanceof FieldElementBox
-                        && HelperMethods.isLinkedFieldCharacter(inline))) {
+                        && HelperMethods.isLinkedFieldCharacter(inline))
+                        || inline instanceof ChartElementBox) {
                         isStarted = true;
                     }
                     if (isStarted && offset <= count + inline.length) {
@@ -8309,11 +6956,10 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     TableWidget.prototype.insertTableRowsInternal = function (tableRows, startIndex) {
-        for (var i = 0; i < tableRows.length; i++) {
+        for (var i = tableRows.length - 1; i >= 0; i--) {
             var row = tableRows.splice(i, 1)[0];
             row.containerWidget = this;
             this.childWidgets.splice(startIndex, 0, row);
-            i--;
         }
         this.updateRowIndex(startIndex);
         this.isGridUpdated = false;
@@ -9850,7 +8496,8 @@ var LineWidget = /** @__PURE__ @class */ (function () {
             if (inlineElement instanceof ListTextElementBox) {
                 continue;
             }
-            if (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
+            if (inlineElement instanceof TextElementBox || inlineElement instanceof EditRangeStartElementBox
+                || inlineElement instanceof ImageElementBox || inlineElement instanceof EditRangeEndElementBox
                 || inlineElement instanceof BookmarkElementBox || (inlineElement instanceof FieldElementBox
                 && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
                 startOffset = count + inlineElement.length;
@@ -9862,7 +8509,7 @@ var LineWidget = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    LineWidget.prototype.getInline = function (offset, indexInInline, bidi) {
+    LineWidget.prototype.getInline = function (offset, indexInInline, bidi, isInsert) {
         bidi = isNullOrUndefined(bidi) ? this.paragraph.bidi : bidi;
         var inlineElement = undefined;
         var count = 0;
@@ -9883,12 +8530,27 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                 continue;
             }
             if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                || inlineElement instanceof BookmarkElementBox
+                || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
+                || inlineElement instanceof EditRangeStartElementBox
                 || inlineElement instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inlineElement))) {
                 isStarted = true;
             }
             if (isStarted && offset <= count + inlineElement.length) {
-                indexInInline = (offset - count);
+                // if (inlineElement instanceof BookmarkElementBox) {
+                //     offset += inlineElement.length;
+                //     count += inlineElement.length;
+                //     continue;
+                // }
+                // tslint:disable-next-line:max-line-length
+                if (inlineElement instanceof TextElementBox && (inlineElement.text === ' ' && isInsert)) {
+                    var currentElement = this.getNextTextElement(this, i + 1);
+                    inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
+                    indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
+                    return { 'element': inlineElement, 'index': indexInInline };
+                }
+                else {
+                    indexInInline = (offset - count);
+                }
                 return { 'element': inlineElement, 'index': indexInInline };
             }
             count += inlineElement.length;
@@ -9897,6 +8559,17 @@ var LineWidget = /** @__PURE__ @class */ (function () {
             indexInInline = isNullOrUndefined(inlineElement) ? offset : inlineElement.length;
         }
         return { 'element': inlineElement, 'index': indexInInline };
+    };
+    /**
+     * Method to retrieve next element
+     * @param line
+     * @param index
+     */
+    LineWidget.prototype.getNextTextElement = function (line, index) {
+        if (index < line.children.length - 1 && line.children[index]) {
+            return line.children[index];
+        }
+        return null;
     };
     /**
      * @private
@@ -9982,6 +8655,22 @@ var ElementBox = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.isRightToLeft = false;
+        /**
+         * @private
+         */
+        this.canTrigger = false;
+        /**
+         * @private
+         */
+        this.ischangeDetected = false;
+        /**
+         * @private
+         */
+        this.isVisible = false;
+        /**
+         * @private
+         */
+        this.isSpellChecked = false;
         this.characterFormat = new WCharacterFormat(this);
         this.margin = new Margin(0, 0, 0, 0);
     }
@@ -10299,6 +8988,10 @@ var FieldElementBox = /** @__PURE__ @class */ (function (_super) {
         /**
          * @private
          */
+        _this.fieldCodeType = '';
+        /**
+         * @private
+         */
         _this.hasFieldEnd = false;
         _this.fieldBeginInternal = undefined;
         _this.fieldSeparatorInternal = undefined;
@@ -10353,6 +9046,7 @@ var FieldElementBox = /** @__PURE__ @class */ (function (_super) {
         }
         field.width = this.width;
         field.height = this.height;
+        field.fieldCodeType = this.fieldCodeType;
         return field;
     };
     /**
@@ -10383,6 +9077,15 @@ var TextElementBox = /** @__PURE__ @class */ (function (_super) {
          * @private
          */
         _this.text = '';
+        /**
+         * @private
+         */
+        _this.ignoreOnceItems = [];
+        /**
+         * @private
+         */
+        _this.istextCombined = false;
+        _this.errorCollection = [];
         return _this;
     }
     /**
@@ -10401,6 +9104,7 @@ var TextElementBox = /** @__PURE__ @class */ (function (_super) {
         if (this.margin) {
             span.margin = this.margin.clone();
         }
+        span.baselineOffset = this.baselineOffset;
         span.width = this.width;
         span.height = this.height;
         return span;
@@ -10414,6 +9118,43 @@ var TextElementBox = /** @__PURE__ @class */ (function (_super) {
     };
     return TextElementBox;
 }(ElementBox));
+/**
+ * @private
+ */
+var ErrorTextElementBox = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(ErrorTextElementBox, _super);
+    function ErrorTextElementBox() {
+        var _this = _super.call(this) || this;
+        _this.startIn = undefined;
+        _this.endIn = undefined;
+        return _this;
+    }
+    Object.defineProperty(ErrorTextElementBox.prototype, "start", {
+        get: function () {
+            return this.startIn;
+        },
+        set: function (value) {
+            this.startIn = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ErrorTextElementBox.prototype, "end", {
+        get: function () {
+            return this.endIn;
+        },
+        set: function (value) {
+            this.endIn = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ErrorTextElementBox.prototype.destroy = function () {
+        this.start = undefined;
+        this.end = undefined;
+    };
+    return ErrorTextElementBox;
+}(TextElementBox));
 /**
  * @private
  */
@@ -10731,6 +9472,1671 @@ var ListTextElementBox = /** @__PURE__ @class */ (function (_super) {
     };
     return ListTextElementBox;
 }(ElementBox));
+/**
+ * @private
+ */
+var EditRangeEndElementBox = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(EditRangeEndElementBox, _super);
+    function EditRangeEndElementBox() {
+        var _this = _super.call(this) || this;
+        /**
+         * @private
+         */
+        _this.editRangeStart = undefined;
+        _this.editRangeId = -1;
+        return _this;
+    }
+    /**
+     * @private
+     */
+    EditRangeEndElementBox.prototype.getLength = function () {
+        return 1;
+    };
+    /**
+     * @private
+     */
+    EditRangeEndElementBox.prototype.destroy = function () {
+        this.editRangeStart = undefined;
+    };
+    /**
+     * @private
+     */
+    EditRangeEndElementBox.prototype.clone = function () {
+        var end = new EditRangeEndElementBox();
+        end.editRangeStart = this.editRangeStart;
+        end.editRangeId = this.editRangeId;
+        return end;
+    };
+    return EditRangeEndElementBox;
+}(ElementBox));
+/**
+ * @private
+ */
+var EditRangeStartElementBox = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(EditRangeStartElementBox, _super);
+    function EditRangeStartElementBox() {
+        var _this = _super.call(this) || this;
+        /**
+         * @private
+         */
+        _this.columnFirst = -1;
+        /**
+         * @private
+         */
+        _this.columnLast = -1;
+        /**
+         * @private
+         */
+        _this.user = '';
+        /**
+         * @private
+         */
+        _this.group = '';
+        _this.editRangeId = -1;
+        return _this;
+    }
+    /**
+     * @private
+     */
+    EditRangeStartElementBox.prototype.getLength = function () {
+        return 1;
+    };
+    /**
+     * @private
+     */
+    EditRangeStartElementBox.prototype.destroy = function () {
+        this.user = undefined;
+        this.columnFirst = undefined;
+        this.columnLast = undefined;
+    };
+    /**
+     * @private
+     */
+    EditRangeStartElementBox.prototype.clone = function () {
+        var start = new EditRangeStartElementBox();
+        start.columnFirst = this.columnFirst;
+        start.columnLast = this.columnLast;
+        start.user = this.user;
+        start.group = this.group;
+        start.editRangeEnd = this.editRangeEnd;
+        start.editRangeId = this.editRangeId;
+        return start;
+    };
+    return EditRangeStartElementBox;
+}(ElementBox));
+/**
+ * @private
+ */
+var ChartElementBox = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(ChartElementBox, _super);
+    /**
+     * @private
+     */
+    function ChartElementBox() {
+        var _this = _super.call(this) || this;
+        /**
+         * @private
+         */
+        _this.chartTitle = '';
+        /**
+         * @private
+         */
+        _this.chartType = '';
+        /**
+         * @private
+         */
+        _this.chartElement = undefined;
+        /**
+         * @private
+         */
+        _this.chartCategory = [];
+        /**
+         * @private
+         */
+        _this.chartSeries = [];
+        _this.chartArea = new ChartArea();
+        _this.chartPlotArea = new ChartArea();
+        _this.chartTitleArea = new ChartTitleArea();
+        _this.chartLegend = new ChartLegend();
+        _this.chartPrimaryCategoryAxis = new ChartCategoryAxis();
+        _this.chartPrimaryValueAxis = new ChartCategoryAxis();
+        _this.chartDataTable = new ChartDataTable();
+        return _this;
+    }
+    /**
+     * @private
+     */
+    ChartElementBox.prototype.getLength = function () {
+        return 1;
+    };
+    Object.defineProperty(ChartElementBox.prototype, "title", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.chartTitle;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.chartTitle = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartElementBox.prototype, "type", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.chartType;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.chartType = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartElementBox.prototype, "chartGapWidth", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.gapWidth;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.gapWidth = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartElementBox.prototype, "chartOverlap", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.overlap;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.overlap = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartElementBox.prototype, "targetElement", {
+        /**
+         * @private
+         */
+        get: function () {
+            if (isNullOrUndefined(this.div)) {
+                this.div = createElement('div');
+            }
+            return this.div;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartElementBox.prototype, "officeChart", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.officeChartInternal;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            if (value) {
+                this.officeChartInternal = value;
+                this.officeChartInternal.chart.loaded = this.onChartLoaded.bind(this);
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ChartElementBox.prototype.onChartLoaded = function () {
+        var _this = this;
+        this.officeChart.convertChartToImage(this.officeChart.chart, this.width, this.height).then(function (dataURL) {
+            _this.imageString = dataURL;
+        });
+    };
+    /**
+     * @private
+     */
+    ChartElementBox.prototype.clone = function () {
+        var chart = new ChartElementBox();
+        chart.chartTitle = this.chartTitle;
+        chart.chartType = this.chartType;
+        chart.height = this.height;
+        chart.width = this.width;
+        chart.gapWidth = this.gapWidth;
+        chart.overlap = this.overlap;
+        for (var i = 0; i < this.chartCategory.length; i++) {
+            var chartCategory = this.chartCategory[i].clone();
+            chart.chartCategory.push(chartCategory);
+        }
+        for (var i = 0; i < this.chartSeries.length; i++) {
+            var series = this.chartSeries[i].clone();
+            chart.chartSeries.push(series);
+        }
+        chart.chartArea = this.chartArea.clone();
+        chart.chartPlotArea = this.chartPlotArea.clone();
+        chart.chartLegend = this.chartLegend.clone();
+        chart.chartTitleArea = this.chartTitleArea.clone();
+        chart.chartPrimaryCategoryAxis = this.chartPrimaryCategoryAxis.clone();
+        chart.chartPrimaryValueAxis = this.chartPrimaryValueAxis.clone();
+        chart.chartDataTable = this.chartDataTable.clone();
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartElementBox.prototype.destroy = function () {
+        _super.prototype.destroy.call(this);
+        if (this.officeChartInternal) {
+            this.officeChartInternal.chart.loaded = undefined;
+            this.officeChartInternal.destroy();
+            this.officeChartInternal = undefined;
+        }
+        if (this.div) {
+            this.div = undefined;
+        }
+        this.chartTitle = undefined;
+        this.chartType = undefined;
+        this.chartArea = undefined;
+        this.chartPlotArea = undefined;
+        this.chartCategory = [];
+        this.chartSeries = [];
+        this.chartTitleArea = undefined;
+        this.chartLegend = undefined;
+        this.chartPrimaryCategoryAxis = undefined;
+        this.chartPrimaryValueAxis = undefined;
+        this.chartDataTable = undefined;
+        this.chartElement = undefined;
+    };
+    return ChartElementBox;
+}(ImageElementBox));
+/**
+ * @private
+ */
+var ChartArea = /** @__PURE__ @class */ (function () {
+    function ChartArea() {
+    }
+    Object.defineProperty(ChartArea.prototype, "chartForeColor", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.foreColor;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.foreColor = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartArea.prototype.clone = function () {
+        var chart = new ChartArea();
+        chart.foreColor = this.foreColor;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartArea.prototype.destroy = function () {
+        this.foreColor = undefined;
+    };
+    return ChartArea;
+}());
+/**
+ * @private
+ */
+var ChartCategory = /** @__PURE__ @class */ (function () {
+    function ChartCategory() {
+        /**
+         * @private
+         */
+        this.categoryXName = '';
+        /**
+         * @private
+         */
+        this.chartData = [];
+    }
+    Object.defineProperty(ChartCategory.prototype, "xName", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.categoryXName;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.categoryXName = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartCategory.prototype.clone = function () {
+        var chart = new ChartCategory();
+        chart.categoryXName = this.categoryXName;
+        for (var i = 0; i < this.chartData.length; i++) {
+            var chartData = this.chartData[i].clone();
+            chart.chartData.push(chartData);
+        }
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartCategory.prototype.destroy = function () {
+        this.categoryXName = undefined;
+        this.chartData = [];
+    };
+    return ChartCategory;
+}());
+/**
+ * @private
+ */
+var ChartData = /** @__PURE__ @class */ (function () {
+    function ChartData() {
+    }
+    Object.defineProperty(ChartData.prototype, "yAxisValue", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.yValue;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.yValue = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartData.prototype, "xAxisValue", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.xValue;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.xValue = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartData.prototype, "bubbleSize", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.size;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.size = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartData.prototype.clone = function () {
+        var chart = new ChartData();
+        chart.yValue = this.yValue;
+        chart.xValue = this.xValue;
+        chart.size = this.size;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartData.prototype.destroy = function () {
+        this.xValue = undefined;
+        this.yValue = undefined;
+        this.size = undefined;
+    };
+    return ChartData;
+}());
+/**
+ * @private
+ */
+var ChartLegend = /** @__PURE__ @class */ (function () {
+    /**
+     * @private
+     */
+    function ChartLegend() {
+        this.chartTitleArea = new ChartTitleArea();
+    }
+    Object.defineProperty(ChartLegend.prototype, "chartLegendPostion", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.legendPostion;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.legendPostion = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartLegend.prototype.clone = function () {
+        var chart = new ChartLegend();
+        chart.legendPostion = this.legendPostion;
+        chart.chartTitleArea = this.chartTitleArea.clone();
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartLegend.prototype.destroy = function () {
+        this.legendPostion = undefined;
+        this.chartTitleArea = undefined;
+    };
+    return ChartLegend;
+}());
+/**
+ * @private
+ */
+var ChartSeries = /** @__PURE__ @class */ (function () {
+    function ChartSeries() {
+        /**
+         * @private
+         */
+        this.chartDataFormat = [];
+        /**
+         * @private
+         */
+        this.trendLines = [];
+        this.errorBar = new ChartErrorBar();
+        this.dataLabels = new ChartDataLabels();
+        this.seriesFormat = new ChartSeriesFormat();
+    }
+    Object.defineProperty(ChartSeries.prototype, "seriesName", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.name;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.name = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartSeries.prototype, "firstSliceAngle", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.sliceAngle;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.sliceAngle = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartSeries.prototype, "doughnutHoleSize", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.holeSize;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.holeSize = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartSeries.prototype.clone = function () {
+        var chart = new ChartSeries();
+        chart.name = this.name;
+        chart.sliceAngle = this.sliceAngle;
+        chart.holeSize = this.holeSize;
+        chart.errorBar = this.errorBar.clone();
+        chart.dataLabels = this.dataLabels.clone();
+        chart.seriesFormat = this.seriesFormat.clone();
+        for (var i = 0; i < this.chartDataFormat.length; i++) {
+            var format = (this.chartDataFormat[i].clone());
+            chart.chartDataFormat.push(format);
+        }
+        for (var i = 0; i < this.trendLines.length; i++) {
+            var trendLine = (this.trendLines[i].clone());
+            chart.trendLines.push(trendLine);
+        }
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartSeries.prototype.destroy = function () {
+        this.name = undefined;
+        this.errorBar = undefined;
+        this.trendLines = undefined;
+        this.chartDataFormat = [];
+    };
+    return ChartSeries;
+}());
+/**
+ * @private
+ */
+var ChartErrorBar = /** @__PURE__ @class */ (function () {
+    function ChartErrorBar() {
+    }
+    Object.defineProperty(ChartErrorBar.prototype, "errorType", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.type;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.type = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartErrorBar.prototype, "errorDirection", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.direction;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.direction = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartErrorBar.prototype, "errorEndStyle", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.endStyle;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.endStyle = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartErrorBar.prototype, "numberValue", {
+        get: function () {
+            return this.errorValue;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.errorValue = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartErrorBar.prototype.clone = function () {
+        var chart = new ChartErrorBar();
+        chart.type = this.type;
+        chart.errorDirection = this.errorDirection;
+        chart.endStyle = this.endStyle;
+        chart.errorValue = this.errorValue;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartErrorBar.prototype.destroy = function () {
+        this.type = undefined;
+        this.errorDirection = undefined;
+        this.endStyle = undefined;
+    };
+    return ChartErrorBar;
+}());
+/**
+ * @private
+ */
+var ChartSeriesFormat = /** @__PURE__ @class */ (function () {
+    function ChartSeriesFormat() {
+    }
+    Object.defineProperty(ChartSeriesFormat.prototype, "markerStyle", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.style;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.style = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartSeriesFormat.prototype, "markerColor", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.color;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.color = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartSeriesFormat.prototype, "numberValue", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.size;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.size = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartSeriesFormat.prototype.clone = function () {
+        var chart = new ChartSeriesFormat();
+        chart.style = this.style;
+        chart.color = this.color;
+        chart.size = this.size;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartSeriesFormat.prototype.destroy = function () {
+        this.style = undefined;
+        this.color = undefined;
+        this.size = undefined;
+    };
+    return ChartSeriesFormat;
+}());
+/**
+ * @private
+ */
+var ChartDataLabels = /** @__PURE__ @class */ (function () {
+    function ChartDataLabels() {
+    }
+    Object.defineProperty(ChartDataLabels.prototype, "labelPosition", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.position;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.position = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "fontName", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.name;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.name = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "fontColor", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.color;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.color = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "fontSize", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.size;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.size = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "isLegendKey", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isLegend;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isLegend = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "isBubbleSize", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isBubble;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isBubble = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "isCategoryName", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isCategory;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isCategory = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "isSeriesName", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isSeries;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isSeries = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "isValue", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isValueEnabled;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isValueEnabled = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "isPercentage", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isPercentageEnabled;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isPercentageEnabled = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataLabels.prototype, "isLeaderLines", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.showLeaderLines;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.showLeaderLines = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartDataLabels.prototype.clone = function () {
+        var chart = new ChartDataLabels();
+        chart.position = this.position;
+        chart.name = this.name;
+        chart.color = this.color;
+        chart.size = this.size;
+        chart.isBubble = this.isBubble;
+        chart.isLegend = this.isLegend;
+        chart.isCategory = this.isCategory;
+        chart.isSeries = this.isSeries;
+        chart.isValueEnabled = this.isValueEnabled;
+        chart.isPercentageEnabled = this.isPercentageEnabled;
+        chart.showLeaderLines = this.showLeaderLines;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartDataLabels.prototype.destroy = function () {
+        this.position = undefined;
+    };
+    return ChartDataLabels;
+}());
+/**
+ * @private
+ */
+var ChartTrendLines = /** @__PURE__ @class */ (function () {
+    function ChartTrendLines() {
+    }
+    Object.defineProperty(ChartTrendLines.prototype, "trendLineType", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.type;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.type = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartTrendLines.prototype, "trendLineName", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.name;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.name = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartTrendLines.prototype, "interceptValue", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.intercept;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.intercept = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartTrendLines.prototype, "forwardValue", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.forward;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.forward = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartTrendLines.prototype, "backwardValue", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.backward;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.backward = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartTrendLines.prototype, "isDisplayRSquared", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.displayRSquared;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.displayRSquared = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartTrendLines.prototype, "isDisplayEquation", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.displayEquation;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.displayEquation = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartTrendLines.prototype.clone = function () {
+        var chart = new ChartTrendLines();
+        chart.type = this.type;
+        chart.name = this.name;
+        chart.forward = this.forward;
+        chart.backward = this.backward;
+        chart.intercept = this.intercept;
+        chart.displayEquation = this.displayEquation;
+        chart.displayRSquared = this.displayRSquared;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartTrendLines.prototype.destroy = function () {
+        this.type = undefined;
+        this.name = undefined;
+        this.forward = undefined;
+        this.backward = undefined;
+    };
+    return ChartTrendLines;
+}());
+/**
+ * @private
+ */
+var ChartTitleArea = /** @__PURE__ @class */ (function () {
+    /**
+     * @private
+     */
+    function ChartTitleArea() {
+        this.dataFormat = new ChartDataFormat();
+        this.layout = new ChartLayout();
+    }
+    Object.defineProperty(ChartTitleArea.prototype, "chartfontName", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.fontName;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.fontName = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartTitleArea.prototype, "chartFontSize", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.fontSize;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.fontSize = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartTitleArea.prototype.clone = function () {
+        var chart = new ChartTitleArea();
+        chart.fontName = this.fontName;
+        chart.fontSize = this.fontSize;
+        chart.dataFormat = this.dataFormat.clone();
+        chart.layout = this.layout.clone();
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartTitleArea.prototype.destroy = function () {
+        this.fontName = undefined;
+        this.fontSize = undefined;
+        this.dataFormat = undefined;
+        this.layout = undefined;
+    };
+    return ChartTitleArea;
+}());
+/**
+ * @private
+ */
+var ChartDataFormat = /** @__PURE__ @class */ (function () {
+    /**
+     * @private
+     */
+    function ChartDataFormat() {
+        this.fill = new ChartFill();
+        this.line = new ChartFill();
+    }
+    /**
+     * @private
+     */
+    ChartDataFormat.prototype.clone = function () {
+        var chart = new ChartDataFormat();
+        chart.fill = this.fill.clone();
+        chart.line = this.line.clone();
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartDataFormat.prototype.destroy = function () {
+        this.fill = undefined;
+        this.line = undefined;
+    };
+    return ChartDataFormat;
+}());
+/**
+ * @private
+ */
+var ChartFill = /** @__PURE__ @class */ (function () {
+    function ChartFill() {
+    }
+    Object.defineProperty(ChartFill.prototype, "color", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.fillColor;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.fillColor = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartFill.prototype, "rgb", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.fillRGB;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.fillRGB = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartFill.prototype.clone = function () {
+        var chart = new ChartFill();
+        chart.fillColor = this.fillColor;
+        chart.fillRGB = this.fillRGB;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartFill.prototype.destroy = function () {
+        this.fillColor = undefined;
+        this.fillRGB = undefined;
+    };
+    return ChartFill;
+}());
+/**
+ * @private
+ */
+var ChartLayout = /** @__PURE__ @class */ (function () {
+    function ChartLayout() {
+    }
+    Object.defineProperty(ChartLayout.prototype, "chartLayoutLeft", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.layoutX;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.layoutX = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartLayout.prototype, "chartLayoutTop", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.layoutY;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.layoutY = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartLayout.prototype.clone = function () {
+        var chart = new ChartLayout();
+        chart.layoutX = this.layoutX;
+        chart.layoutY = this.layoutY;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartLayout.prototype.destroy = function () {
+        this.layoutX = undefined;
+        this.layoutY = undefined;
+    };
+    return ChartLayout;
+}());
+/**
+ * @private
+ */
+var ChartCategoryAxis = /** @__PURE__ @class */ (function () {
+    function ChartCategoryAxis() {
+        this.chartTitleArea = new ChartTitleArea();
+    }
+    Object.defineProperty(ChartCategoryAxis.prototype, "majorTick", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.majorTickMark;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.majorTickMark = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "minorTick", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.minorTickMark;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.minorTickMark = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "tickPosition", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.tickLabelPostion;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.tickLabelPostion = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "minorGridLines", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.hasMinorGridLines;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.hasMinorGridLines = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "majorGridLines", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.hasMajorGridLines;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.hasMajorGridLines = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "interval", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.majorUnit;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.majorUnit = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "max", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.maximumValue;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.maximumValue = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "min", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.minimumValue;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.minimumValue = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "categoryAxisTitle", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.title;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.title = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "categoryAxisType", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.categoryType;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.categoryType = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "categoryNumberFormat", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.numberFormat;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.numberFormat = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "axisFontSize", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.fontSize;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.fontSize = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartCategoryAxis.prototype, "axisFontName", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.fontName;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.fontName = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartCategoryAxis.prototype.clone = function () {
+        var chart = new ChartCategoryAxis();
+        chart.title = this.title;
+        chart.categoryType = this.categoryType;
+        chart.numberFormat = this.numberFormat;
+        chart.fontSize = this.fontSize;
+        chart.fontName = this.fontName;
+        chart.hasMajorGridLines = this.hasMajorGridLines;
+        chart.hasMinorGridLines = this.hasMinorGridLines;
+        chart.minimumValue = this.minimumValue;
+        chart.maximumValue = this.maximumValue;
+        chart.majorUnit = this.majorUnit;
+        chart.majorTickMark = this.majorTickMark;
+        chart.minorTickMark = this.minorTickMark;
+        chart.tickLabelPostion = this.tickLabelPostion;
+        chart.chartTitleArea = this.chartTitleArea.clone();
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartCategoryAxis.prototype.destroy = function () {
+        this.title = undefined;
+        this.categoryType = undefined;
+        this.numberFormat = undefined;
+        this.chartTitleArea = undefined;
+        this.minimumValue = undefined;
+        this.maximumValue = undefined;
+        this.fontSize = undefined;
+        this.fontName = undefined;
+        this.majorUnit = undefined;
+        this.majorTickMark = undefined;
+        this.minorTickMark = undefined;
+        this.tickLabelPostion = undefined;
+    };
+    return ChartCategoryAxis;
+}());
+/**
+ * @private
+ */
+var ChartDataTable = /** @__PURE__ @class */ (function () {
+    function ChartDataTable() {
+    }
+    Object.defineProperty(ChartDataTable.prototype, "showSeriesKeys", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isSeriesKeys;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isSeriesKeys = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataTable.prototype, "hasHorzBorder", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isHorzBorder;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isHorzBorder = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataTable.prototype, "hasVertBorder", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isVertBorder;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isVertBorder = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ChartDataTable.prototype, "hasBorders", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isBorders;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isBorders = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    ChartDataTable.prototype.clone = function () {
+        var chart = new ChartDataTable();
+        chart.isSeriesKeys = this.isSeriesKeys;
+        chart.isHorzBorder = this.isHorzBorder;
+        chart.isVertBorder = this.isVertBorder;
+        chart.isBorders = this.isBorders;
+        return chart;
+    };
+    /**
+     * @private
+     */
+    ChartDataTable.prototype.destroy = function () {
+        this.isSeriesKeys = undefined;
+        this.isHorzBorder = undefined;
+        this.isVertBorder = undefined;
+        this.isBorders = undefined;
+    };
+    return ChartDataTable;
+}());
 /**
  * @private
  */
@@ -11215,6 +11621,2922 @@ var ColumnSizeInfo = /** @__PURE__ @class */ (function () {
     return ColumnSizeInfo;
 }());
 
+/**
+ * The spell checker module
+ */
+var SpellChecker = /** @__PURE__ @class */ (function () {
+    /**
+     *
+     */
+    function SpellChecker(viewer) {
+        this.viewer = viewer;
+        this.errorWordCollection = new Dictionary();
+        this.errorSuggestions = new Dictionary();
+        this.ignoreAllItems = [];
+        this.removeUnderline = false;
+    }
+    /**
+     * Gets module name.
+     */
+    SpellChecker.prototype.getModuleName = function () {
+        return 'SpellChecker';
+    };
+    /**
+     * Method to manage replace logic
+     * @private
+     */
+    SpellChecker.prototype.manageReplace = function (content, dialogElement) {
+        this.viewer.triggerSpellCheck = true;
+        var exactText = '';
+        if (!isNullOrUndefined(dialogElement) && dialogElement instanceof ErrorTextElementBox) {
+            var exactText_1 = dialogElement.text;
+            this.viewer.selection.start = dialogElement.start;
+            this.viewer.selection.end = dialogElement.end;
+            if (content !== 'Ignore Once') {
+                content = this.manageSpecialCharacters(exactText_1, content);
+                this.viewer.owner.editor.insertTextInternal(content, true);
+                this.viewer.selection.start = this.viewer.selection.end;
+                this.viewer.clearSelectionHighlight();
+                return;
+            }
+            else {
+                this.currentContextInfo = { 'text': exactText_1, 'element': dialogElement };
+            }
+        }
+        if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element && content !== 'Ignore Once') {
+            var elementBox = this.currentContextInfo.element;
+            exactText = this.currentContextInfo.element.text;
+            this.viewer.selection.start = elementBox.start;
+            this.viewer.selection.end = elementBox.end;
+        }
+        else {
+            this.handleReplace(content);
+        }
+        if (content !== 'Ignore Once') {
+            this.viewer.owner.editor.insertTextInternal(content, true);
+            if (!isNullOrUndefined(this.currentContextInfo)) {
+                this.removeErrorsFromCollection(this.currentContextInfo);
+            }
+            this.viewer.selection.start = this.viewer.selection.end;
+            this.viewer.clearSelectionHighlight();
+        }
+        //this.viewer.owner.errorWordCollection.remove(content);
+        this.viewer.triggerSpellCheck = false;
+    };
+    /**
+     * Method to handle replace logic
+     * @param {string} content
+     * @private
+     */
+    SpellChecker.prototype.handleReplace = function (content) {
+        var startPosition = this.viewer.selection.start;
+        var offset = startPosition.offset;
+        var startIndex = 0;
+        var startInlineObj = startPosition.currentWidget.getInline(offset, startIndex, false, true);
+        var startOffset = startInlineObj.element.line.getOffset(startInlineObj.element, 0) + startInlineObj.element.length;
+        if (startOffset === offset) {
+            this.retrieveExactElementInfo(startInlineObj);
+        }
+        var exactText = startInlineObj.element.text;
+        // tslint:disable-next-line:max-line-length
+        var startPattern = new RegExp('^[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\`\\s]+', 'g');
+        var matches = [];
+        var matchInfo;
+        //tslint:disable no-conditional-assignment
+        while (!isNullOrUndefined(matchInfo = startPattern.exec(exactText))) {
+            matches.push(matchInfo);
+        }
+        if (content === 'Ignore Once') {
+            this.handleIgnoreOnce(startInlineObj);
+            return;
+        }
+        startPosition.offset = offset - startInlineObj.index;
+        if (!isNullOrUndefined(matches) && matches.length > 0) {
+            startPosition.offset += matches[0].toString().length;
+        }
+        // tslint:disable-next-line:max-line-length
+        startPosition.location = this.viewer.owner.selection.getPhysicalPositionInternal(startPosition.currentWidget, startPosition.offset, true);
+        // tslint:disable-next-line:max-line-length
+        startPosition = this.viewer.owner.searchModule.textSearch.getTextPosition(startPosition.currentWidget, startPosition.offset.toString());
+        //startPosition.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
+        startPosition.setPositionParagraph(startPosition.currentWidget, startPosition.offset);
+        var index = (startPosition.offset + startInlineObj.element.length) - startPosition.offset;
+        var endOffset = startPosition.currentWidget.getOffset(startInlineObj.element, index);
+        var lineWidget = startPosition.currentWidget;
+        // tslint:disable-next-line:max-line-length
+        var endPattern = new RegExp('[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\s\\`]+$', 'g');
+        matches = [];
+        //tslint:disable no-conditional-assignment
+        while (!isNullOrUndefined(matchInfo = endPattern.exec(exactText))) {
+            matches.push(matchInfo);
+        }
+        if (!isNullOrUndefined(matches) && matches.length > 0) {
+            endOffset -= matches[0].toString().length;
+        }
+        // tslint:disable-next-line:max-line-length
+        this.viewer.selection.end = this.viewer.owner.searchModule.textSearch.getTextPosition(lineWidget, endOffset.toString());
+        // tslint:disable-next-line:max-line-length
+        this.viewer.selection.end.location = this.viewer.owner.selection.getPhysicalPositionInternal(startPosition.currentWidget, endOffset, true);
+        this.viewer.selection.end.setPositionParagraph(lineWidget, endOffset);
+        this.currentContextInfo = { 'element': startInlineObj.element, 'text': startInlineObj.element.text };
+    };
+    /**
+     * Method to retrieve exact element info
+     * @param {ElementInfo} startInlineObj
+     * @private
+     */
+    SpellChecker.prototype.retrieveExactElementInfo = function (startInlineObj) {
+        var nextElement = startInlineObj.element.nextElement;
+        // tslint:disable-next-line:max-line-length
+        startInlineObj.element = (!isNullOrUndefined(nextElement) && nextElement instanceof TextElementBox) ? startInlineObj.element.nextElement : startInlineObj.element;
+    };
+    /**
+     * Method to handle to ignore error Once
+     * @param {ElementInfo} startInlineObj
+     * @private
+     */
+    SpellChecker.prototype.handleIgnoreOnce = function (startInlineObj) {
+        var textElement = startInlineObj.element;
+        var exactText = '';
+        if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element) {
+            exactText = this.currentContextInfo.element.text;
+        }
+        else {
+            exactText = textElement.text;
+        }
+        exactText = this.manageSpecialCharacters(exactText, undefined, true);
+        if (textElement.ignoreOnceItems.indexOf(exactText) === -1) {
+            textElement.ignoreOnceItems.push(exactText);
+        }
+        this.viewer.owner.editor.reLayout(this.viewer.selection);
+    };
+    /**
+     * Method to handle ignore all items
+     */
+    SpellChecker.prototype.handleIgnoreAllItems = function (contextElement) {
+        var contextItem = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
+        var retrievedText = this.manageSpecialCharacters(contextItem.text, undefined, true);
+        if (this.ignoreAllItems.indexOf(retrievedText) === -1) {
+            this.ignoreAllItems.push(retrievedText);
+            this.removeErrorsFromCollection(contextItem);
+            this.viewer.triggerSpellCheck = true;
+            this.viewer.owner.editor.reLayout(this.viewer.selection);
+            this.viewer.triggerSpellCheck = false;
+            this.viewer.clearSelectionHighlight();
+        }
+    };
+    /**
+     * Method to handle dictionary
+     */
+    SpellChecker.prototype.handleAddToDictionary = function (contextElement) {
+        var _this = this;
+        var contextItem = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
+        var retrievedText = this.manageSpecialCharacters(contextItem.text, undefined, true);
+        // tslint:disable-next-line:max-line-length
+        /* tslint:disable:no-any */
+        this.CallSpellChecker(this.languageID, retrievedText, false, false, true).then(function (data) {
+            _this.viewer.triggerSpellCheck = true;
+            _this.removeErrorsFromCollection(contextItem);
+            _this.ignoreAllItems.push(retrievedText);
+            _this.viewer.owner.editor.reLayout(_this.viewer.selection, true);
+            _this.viewer.triggerSpellCheck = false;
+        });
+    };
+    /**
+     * Method to append/remove special characters
+     * @param {string} exactText
+     * @param {boolean} isRemove
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    SpellChecker.prototype.manageSpecialCharacters = function (exactText, replaceText, isRemove) {
+        if (!isNullOrUndefined(exactText)) {
+            if (isNullOrUndefined(replaceText)) {
+                replaceText = exactText;
+            }
+            // tslint:disable-next-line:max-line-length
+            var pattern = new RegExp('^[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\`\\s]+', 'g');
+            var matches = [];
+            var matchInfo = void 0;
+            //tslint:disable no-conditional-assignment
+            while (!isNullOrUndefined(matchInfo = pattern.exec(exactText))) {
+                matches.push(matchInfo);
+            }
+            if (matches.length > 0) {
+                for (var i = 0; i < matches.length; i++) {
+                    /* tslint:disable:no-any */
+                    var match = matches[i];
+                    replaceText = (!isRemove) ? match[0] + replaceText : replaceText.replace(match[0], '');
+                }
+            }
+            // tslint:disable-next-line:max-line-length
+            var endPattern = new RegExp('[#\\@\\!\\~\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\'\\,\\<\\.\\>\\/\\?\\s\\`]+$', 'g');
+            matches = [];
+            //tslint:disable no-conditional-assignment
+            while (!isNullOrUndefined(matchInfo = endPattern.exec(exactText))) {
+                matches.push(matchInfo);
+            }
+            if (matches.length > 0) {
+                for (var i = 0; i < matches.length; i++) {
+                    /* tslint:disable:no-any */
+                    var match = matches[i];
+                    replaceText = (!isRemove) ? replaceText + match[0] : replaceText.replace(match[0], '');
+                }
+            }
+        }
+        return replaceText;
+    };
+    /**
+     * Method to remove errors
+     * @param {ContextElementInfo} contextItem
+     * @private
+     */
+    SpellChecker.prototype.removeErrorsFromCollection = function (contextItem) {
+        if (this.errorWordCollection.containsKey(contextItem.text)) {
+            var textElement = this.errorWordCollection.get(contextItem.text);
+            if (textElement.indexOf(contextItem.element) >= 0) {
+                textElement.splice(0, 1);
+            }
+            if (textElement.length === 0) {
+                this.errorWordCollection.remove(contextItem.text);
+            }
+        }
+    };
+    /**
+     * Method to retrieve exact text
+     * @private
+     */
+    SpellChecker.prototype.retriveText = function () {
+        var exactText;
+        var currentElement;
+        if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element) {
+            currentElement = this.currentContextInfo.element;
+            exactText = this.currentContextInfo.element.text;
+            this.viewer.selection.start = currentElement.start;
+            this.viewer.selection.end = currentElement.end;
+        }
+        else {
+            var startPosition = this.viewer.selection.start;
+            var offset = startPosition.offset;
+            var startIndex = 0;
+            var startInlineObj = startPosition.currentWidget.getInline(offset, startIndex);
+            currentElement = startInlineObj.element;
+            exactText = startInlineObj.element.text;
+        }
+        return { 'text': exactText, 'element': currentElement };
+    };
+    /**
+     * Method to handle suggestions
+     * @param {any} jsonObject
+     * @param {PointerEvent} event
+     * @private
+     */
+    /* tslint:disable:no-any */
+    SpellChecker.prototype.handleSuggestions = function (allsuggestions, event) {
+        this.spellCheckSuggestion = [];
+        if (allsuggestions.length === 0) {
+            this.spellCheckSuggestion.push('Add To Dictionary');
+        }
+        else {
+            // tslint:disable-next-line:max-line-length
+            allsuggestions = (allsuggestions.length === 5) ? this.constructInlineMenu(allsuggestions) : allsuggestions;
+            this.spellCheckSuggestion.push('Add To Dictionary');
+        }
+        /* tslint:disable:no-any */
+        var spellSuggestion = [];
+        if (this.spellCheckSuggestion.length > 0) {
+            for (var _i = 0, _a = this.spellCheckSuggestion; _i < _a.length; _i++) {
+                var str = _a[_i];
+                spellSuggestion.push({
+                    text: str,
+                    id: this.viewer.owner.element.id + '_contextmenu_otherSuggestions_spellcheck_' + str,
+                    iconCss: ''
+                });
+            }
+        }
+        return spellSuggestion;
+    };
+    /**
+     * Method to check whether text element has errors
+     * @param {string} text
+     * @param {any} element
+     * @param {number} left
+     * @private
+     */
+    SpellChecker.prototype.checktextElementHasErrors = function (text, element, left) {
+        var hasError = false;
+        var erroElements = [];
+        text = text.replace(/[\s]+/g, '');
+        if (!isNullOrUndefined(element.errorCollection) && element.errorCollection.length > 0) {
+            // tslint:disable-next-line:max-line-length
+            if (!this.viewer.isScrollHandler && (element.ischangeDetected || element.paragraph.isChangeDetected)) {
+                this.updateStatusForGlobalErrors(element.errorCollection, element);
+                element.errorCollection = [];
+                element.ischangeDetected = true;
+                return { 'errorFound': hasError, 'elements': erroElements };
+            }
+            for (var i = 0; i < element.errorCollection.length; i++) {
+                if (this.handleErrorCollection(element.errorCollection[i])) {
+                    hasError = true;
+                    erroElements.push(element.errorCollection[i]);
+                }
+            }
+        }
+        else if (!this.viewer.isScrollHandler && element.paragraph.isChangeDetected) {
+            element.ischangeDetected = true;
+        }
+        else if (!element.ischangeDetected && this.handleErrorCollection(element)) {
+            hasError = true;
+            erroElements.push(element);
+        }
+        return { 'errorFound': hasError, 'elements': erroElements };
+    };
+    /**
+     * Method to update status for error elements
+     * @param {ErrorTextElementBox[]} erroElements
+     */
+    SpellChecker.prototype.updateStatusForGlobalErrors = function (erroElements, parentElement) {
+        if (erroElements.length > 0) {
+            for (var i = 0; i < erroElements.length; i++) {
+                var exactText = this.manageSpecialCharacters(erroElements[i].text, undefined, true);
+                if (this.errorWordCollection.containsKey(exactText)) {
+                    var elements = this.errorWordCollection.get(exactText);
+                    for (var j = 0; j < elements.length; j++) {
+                        if (elements[j] instanceof ErrorTextElementBox && elements[j] === erroElements[i]) {
+                            elements[j].ischangeDetected = true;
+                            // tslint:disable-next-line:max-line-length
+                            elements[j].start.offset = parentElement.line.getOffset(parentElement.istextCombined ? this.getCombinedElement(parentElement) : parentElement, 0);
+                            elements[j].line = parentElement.line;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * Method to handle document error collection.
+     * @param {string} errorInElement
+     * @private
+     */
+    SpellChecker.prototype.handleErrorCollection = function (errorInElement) {
+        var errors = this.errorWordCollection;
+        var exactText = this.manageSpecialCharacters(errorInElement.text, undefined, true);
+        if (errors.containsKey(exactText) && errorInElement.length > 1) {
+            var ignoreAllIndex = this.ignoreAllItems.indexOf(exactText);
+            if (ignoreAllIndex > -1) {
+                if (errors.containsKey(exactText)) {
+                    errors.remove(exactText);
+                }
+                return false;
+            }
+            return true;
+        }
+        return false;
+    };
+    /**
+     * Method to construct inline menu
+     */
+    /* tslint:disable:no-any */
+    SpellChecker.prototype.constructInlineMenu = function (inlineSuggestion) {
+        /* tslint:disable:no-any */
+        for (var i = inlineSuggestion.length - 1; i > 0; i--) {
+            if (inlineSuggestion.length > 3) {
+                this.spellCheckSuggestion.push(inlineSuggestion[i]);
+                inlineSuggestion.pop();
+            }
+        }
+        return inlineSuggestion;
+    };
+    /**
+     * Method to retrieve error element text
+     * @private
+     */
+    SpellChecker.prototype.findCurretText = function () {
+        var insertPosition = this.viewer.selection.start;
+        /* tslint:disable:no-any */
+        var element;
+        /* tslint:disable:no-any */
+        var inlineObj = insertPosition.currentWidget.getInline(this.viewer.selection.start.offset, 0);
+        var text;
+        if (!isNullOrUndefined(inlineObj.element)) {
+            if (!isNullOrUndefined(inlineObj.element.errorCollection) && inlineObj.element.errorCollection.length > 0) {
+                for (var i = 0; i < inlineObj.element.errorCollection.length; i++) {
+                    var errorElement = inlineObj.element.errorCollection[i];
+                    // tslint:disable-next-line:max-line-length
+                    if (errorElement.start.location.x <= insertPosition.location.x && errorElement.end.location.x >= insertPosition.location.x) {
+                        text = errorElement.text;
+                        element = errorElement;
+                        break;
+                    }
+                }
+            }
+            else {
+                text = inlineObj.element.text;
+            }
+            if (text === ' ') {
+                inlineObj = insertPosition.currentWidget.getInline(this.viewer.selection.start.offset + 1, 0);
+                text = inlineObj.element.text;
+            }
+        }
+        return { 'text': text, 'element': element };
+    };
+    /**
+     * Method to add error word in document error collection
+     * @param text
+     * @param element
+     */
+    SpellChecker.prototype.addErrorCollection = function (text, elementToCompare, suggestions) {
+        text = this.manageSpecialCharacters(text, undefined, true);
+        if (this.errorWordCollection.containsKey(text)) {
+            var errorElements = this.errorWordCollection.get(text);
+            if (elementToCompare instanceof ErrorTextElementBox) {
+                if (!this.compareErrorTextElement(elementToCompare, errorElements)) {
+                    errorElements.push(elementToCompare);
+                }
+            }
+            else if (elementToCompare instanceof TextElementBox) {
+                if (!this.compareTextElement(elementToCompare, errorElements)) {
+                    errorElements.push(elementToCompare);
+                }
+            }
+        }
+        else {
+            if (!isNullOrUndefined(suggestions) && suggestions.length > 0) {
+                this.errorSuggestions.add(text, suggestions);
+            }
+            this.errorWordCollection.add(text, [elementToCompare]);
+        }
+    };
+    /**
+     * Method to compare error text elements
+     * @param {ErrorTextElementBox} errorElement
+     * @param {ElementBox[]} errorCollection
+     */
+    SpellChecker.prototype.compareErrorTextElement = function (errorElement, errorCollection) {
+        var copyElement = [];
+        var isChanged = false;
+        for (var i = 0; i < errorCollection.length; i++) {
+            copyElement.push(errorCollection[i]);
+        }
+        var length = errorCollection.length;
+        for (var i = 0; i < length; i++) {
+            if (copyElement[i] instanceof ErrorTextElementBox) {
+                if (copyElement[i].ischangeDetected) {
+                    var exactText = this.manageSpecialCharacters(copyElement[i].text, undefined, true);
+                    isChanged = true;
+                    // tslint:disable-next-line:max-line-length
+                    this.removeErrorsFromCollection({ 'element': copyElement[i], 'text': exactText });
+                }
+                else {
+                    var currentElement = copyElement[i];
+                    // tslint:disable-next-line:max-line-length
+                    if (errorElement.start.offset === currentElement.start.offset && errorElement.end.offset === currentElement.end.offset) {
+                        return true;
+                    }
+                }
+            }
+        }
+        if (isChanged) {
+            // tslint:disable-next-line:max-line-length
+            this.errorWordCollection.add(this.manageSpecialCharacters(errorElement.text, undefined, true), [errorElement]);
+        }
+        return false;
+    };
+    /**
+     * Method to compare text elements
+     * @param {TextElementBox} errorElement
+     * @param {ElementBox[]} errorCollection
+     * @private
+     */
+    SpellChecker.prototype.compareTextElement = function (errorElement, errorCollection) {
+        for (var i = 0; i < errorCollection.length; i++) {
+            if (errorCollection[i] instanceof TextElementBox) {
+                var currentElement = errorCollection[i];
+                if (currentElement === errorElement) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    /**
+     * Method to handle Word by word spell check
+     * @param {any} jsonObject
+     *  @param {TextElementBox} elementBox
+     * @param {number} left
+     * @param {number} top
+     * @param {number} underlineY
+     * @param {BaselineAlignment} baselineAlignment
+     * @param {boolean} isSamePage
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    SpellChecker.prototype.handleWordByWordSpellCheck = function (jsonObject, elementBox, left, top, underlineY, baselineAlignment, isSamePage) {
+        if (jsonObject.HasSpellingError && isSamePage) {
+            this.addErrorCollection(elementBox.text, elementBox, jsonObject.Suggestions);
+            this.viewer.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment);
+            elementBox.isSpellChecked = true;
+        }
+        else {
+            elementBox.isSpellChecked = true;
+        }
+    };
+    /**
+     * Method to check errors for combined elements
+     * @param {TextElementBox} elementBox
+     * @param {number} underlineY
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    SpellChecker.prototype.checkElementCanBeCombined = function (elementBox, underlineY, beforeIndex, callSpellChecker) {
+        var currentText = '';
+        var isCombined = false;
+        var combinedElements = [];
+        var line = this.viewer.selection.getLineWidget(elementBox, 0);
+        var index = line.children.indexOf(elementBox);
+        var prevText = elementBox.text;
+        combinedElements.push(elementBox);
+        for (var i = index - 1; i >= 0; i--) {
+            if (line.children[i] instanceof TextElementBox) {
+                var textElement = line.children[i];
+                if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1) {
+                    currentText = textElement.text + currentText;
+                    prevText = textElement.text;
+                    combinedElements.push(textElement);
+                    isCombined = true;
+                }
+                else if (!isNullOrUndefined(textElement)) {
+                    break;
+                }
+            }
+        }
+        currentText += elementBox.text;
+        var nextText = elementBox.text;
+        for (var i = index + 1; i < line.children.length; i++) {
+            if (line.children[i] instanceof TextElementBox) {
+                var element = line.children[i];
+                if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0) {
+                    currentText += element.text;
+                    nextText = element.text;
+                    combinedElements.push(element);
+                    isCombined = true;
+                }
+                else if (!isNullOrUndefined(element)) {
+                    break;
+                }
+            }
+        }
+        if (isCombined && callSpellChecker && !this.checkCombinedElementsBeIgnored(combinedElements, currentText)) {
+            this.handleCombinedElements(elementBox, currentText, underlineY, beforeIndex);
+        }
+        return isCombined;
+    };
+    /**
+     * Method to handle combined elements
+     * @param {TextElementBox} elementBox
+     * @param {string} currentText
+     * @param {number} underlineY
+     * @param {number} beforeIndex
+     * @private
+     */
+    SpellChecker.prototype.handleCombinedElements = function (elementBox, currentText, underlineY, beforeIndex) {
+        elementBox.istextCombined = true;
+        var splittedText = currentText.split(/[\s]+/);
+        if (this.ignoreAllItems.indexOf(currentText) === -1 && elementBox.ignoreOnceItems.indexOf(currentText) === -1) {
+            if (splittedText.length > 1) {
+                for (var i = 0; i < splittedText.length; i++) {
+                    var currentText_1 = splittedText[i];
+                    // tslint:disable-next-line:max-line-length
+                    this.viewer.render.handleUnorderdElements(currentText_1, elementBox, underlineY, i, 0, i === splittedText.length - 1, beforeIndex);
+                }
+            }
+            else {
+                this.viewer.render.handleUnorderdElements(currentText, elementBox, underlineY, 0, 0, true, beforeIndex);
+            }
+        }
+    };
+    /**
+     * Method to check error element collection has unique element
+     * @param {ErrorTextElementBox[]} errorCollection
+     * @param {ErrorTextElementBox} elementToCheck
+     * @private
+     */
+    SpellChecker.prototype.CheckArrayHasSameElement = function (errorCollection, elementToCheck) {
+        for (var i = 0; i < errorCollection.length; i++) {
+            var errorText = errorCollection[i];
+            // tslint:disable-next-line:max-line-length
+            if ((errorText.start.location.x === elementToCheck.start.location.x) && (errorText.start.location.y === elementToCheck.start.location.y)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    /**
+     * Method to handle splitted and combined words for spell check.
+     * @param {any} jsonObject M
+     * @param {string} currentText
+     * @param {ElementBox} elementBox
+     * @param {boolean} isSamePage
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    SpellChecker.prototype.handleSplitWordSpellCheck = function (jsonObject, currentText, elementBox, isSamePage, underlineY, iteration, markIndex, isLastItem) {
+        if (jsonObject.HasSpellingError && elementBox.text !== ' ' && isSamePage) {
+            var matchResults = this.getMatchedResultsFromElement(elementBox, currentText);
+            // tslint:disable-next-line:max-line-length
+            markIndex = (elementBox.istextCombined) ? elementBox.line.getOffset(this.getCombinedElement(elementBox), 0) : markIndex;
+            // tslint:disable-next-line:max-line-length
+            this.viewer.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);
+            this.handleMatchedResults(matchResults.textResults, elementBox, underlineY, iteration, jsonObject.Suggestions, isLastItem);
+        }
+        else if (isLastItem) {
+            elementBox.isSpellChecked = true;
+        }
+    };
+    /**
+     * Method to include matched results in element box and to render it
+     * @param {TextSearchResults} results
+     * @param {TextElementBox} elementBox
+     * @param {number} wavyLineY
+     * @param {number} index
+     */
+    // tslint:disable-next-line:max-line-length
+    SpellChecker.prototype.handleMatchedResults = function (results, elementBox, wavyLineY, index, suggestions, isLastItem) {
+        if (results.length === 0 && isLastItem) {
+            elementBox.isSpellChecked = true;
+            return;
+        }
+        for (var i = 0; i < results.length; i++) {
+            var span = this.createErrorElementWithInfo(results.innerList[i], elementBox);
+            var color = '#FF0000';
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(elementBox.errorCollection) && !this.CheckArrayHasSameElement(elementBox.errorCollection, span)) {
+                elementBox.errorCollection.splice(index, 0, span);
+            }
+            this.addErrorCollection(span.text, span, suggestions);
+            // tslint:disable-next-line:max-line-length
+            this.viewer.render.renderWavyline(span, span.start.location.x, span.start.location.y, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment);
+            if (isLastItem) {
+                elementBox.isSpellChecked = true;
+            }
+        }
+    };
+    /**
+     * Calls the spell checker service
+     * @param {number} languageID
+     * @param {string} word
+     * @param {boolean} checkSpellingAndSuggestion
+     * @param {boolean} addWord
+     * @private
+     */
+    /* tslint:disable:no-any */
+    // tslint:disable-next-line:max-line-length
+    SpellChecker.prototype.CallSpellChecker = function (languageID, word, checkSpelling, checkSuggestion, addWord) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            if (!isNullOrUndefined(_this)) {
+                var httpRequest_1 = new XMLHttpRequest();
+                // tslint:disable-next-line:max-line-length
+                httpRequest_1.open('POST', _this.viewer.owner.serviceUrl + _this.viewer.owner.serverActionSettings.spellCheck, true);
+                httpRequest_1.setRequestHeader('Content-Type', 'application/json');
+                httpRequest_1.onreadystatechange = function () {
+                    if (httpRequest_1.readyState === 4) {
+                        if (httpRequest_1.status === 200 || httpRequest_1.status === 304) {
+                            resolve(httpRequest_1.response);
+                        }
+                        else {
+                            reject(httpRequest_1.response);
+                        }
+                    }
+                };
+                // tslint:disable-next-line:max-line-length
+                /* tslint:disable:no-any */
+                var spellCheckData = { LanguageID: languageID, TexttoCheck: word, CheckSpelling: checkSpelling, CheckSuggestion: checkSuggestion, AddWord: addWord };
+                httpRequest_1.send(JSON.stringify(spellCheckData));
+            }
+        });
+    };
+    /**
+     * Method to check for next error
+     * @private
+     */
+    SpellChecker.prototype.checkForNextError = function () {
+        if (!isNullOrUndefined(this.viewer)) {
+            var errorWords = this.errorWordCollection;
+            if (errorWords.length > 0) {
+                for (var i = 0; i < errorWords.length; i++) {
+                    var errorElements = errorWords.get(errorWords.keys[i]);
+                    for (var j = 0; j < errorElements.length; j++) {
+                        if (errorElements[j] instanceof ErrorTextElementBox && !errorElements[j].ischangeDetected) {
+                            this.updateErrorElementTextBox(errorWords.keys[i], errorElements[j]);
+                        }
+                        else if (errorElements[j] instanceof TextElementBox) {
+                            var matchResults = this.getMatchedResultsFromElement(errorElements[j]);
+                            var results = matchResults.textResults;
+                            // tslint:disable-next-line:max-line-length
+                            var markIndex = (errorElements[j].ischangeDetected) ? errorElements[j].start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
+                            // tslint:disable-next-line:max-line-length
+                            this.viewer.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
+                            for (var i_1 = 0; i_1 < results.length; i_1++) {
+                                var element = this.createErrorElementWithInfo(results.innerList[i_1], errorElements[j]);
+                                this.updateErrorElementTextBox(element.text, element);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    break;
+                }
+            }
+            else {
+                this.viewer.clearSelectionHighlight();
+            }
+        }
+    };
+    /**
+     * Method to create error element with matched results
+     * @param {TextSearchResult} result
+     * @param {ElementBox} errorElement
+     */
+    SpellChecker.prototype.createErrorElementWithInfo = function (result, errorElement) {
+        var element = new ErrorTextElementBox();
+        element.text = result.text;
+        element.start = result.start;
+        element.end = result.end;
+        element.height = errorElement.height;
+        element.canTrigger = errorElement.canTrigger;
+        element.characterFormat.copyFormat(errorElement.characterFormat);
+        element.width = this.viewer.textHelper.getWidth(element.text, errorElement.characterFormat);
+        return element;
+    };
+    /**
+     * Method to get matched results from element box
+     * @param {ElementBox} errorElement
+     * @private
+     */
+    SpellChecker.prototype.getMatchedResultsFromElement = function (errorElement, currentText) {
+        var line = errorElement.line;
+        // tslint:disable-next-line:max-line-length
+        var pattern = this.viewer.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? errorElement.text : currentText, 'CaseSensitive');
+        this.viewer.owner.searchModule.textSearchResults.clearResults();
+        // tslint:disable-next-line:max-line-length
+        var results = this.viewer.owner.searchModule.textSearchResults;
+        var textLineInfo = this.viewer.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false);
+        var text = textLineInfo.fullText;
+        var matches = [];
+        var spans = textLineInfo.elementsWithOffset;
+        var matchObject;
+        //tslint:disable no-conditional-assignment
+        while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
+            matches.push(matchObject);
+        }
+        return { 'matches': matches, 'elementInfo': spans, 'textResults': results };
+    };
+    /**
+     * Method to update error element information
+     * @param {string} error
+     * @param {ErrorTextElementBox} errorElement
+     * @private
+     */
+    SpellChecker.prototype.updateErrorElementTextBox = function (error, errorElement) {
+        var element = errorElement;
+        this.viewer.clearSelectionHighlight();
+        this.viewer.selection.start = element.start;
+        this.viewer.selection.end = element.end;
+        this.viewer.selection.highlight(errorElement.start.paragraph, errorElement.start, errorElement.end);
+        this.viewer.owner.spellCheckDialog.updateSuggestionDialog(error, element);
+    };
+    /**
+     * Method to retrieve space information in a text
+     * @param {string} text
+     * @param {WCharacterFormat} characterFormat
+     * @private
+     */
+    SpellChecker.prototype.getWhiteSpaceCharacterInfo = function (text, characterFormat) {
+        /* tslint:disable:no-any */
+        var matchedText = [];
+        var width = 0;
+        var length = 0;
+        matchedText = text.match(/[\s]+/);
+        if (!isNullOrUndefined(matchedText) && matchedText.length > 0) {
+            for (var i = 0; i < matchedText.length; i++) {
+                width += this.viewer.textHelper.getWidth(matchedText[i], characterFormat);
+                length += matchedText[i].length;
+            }
+        }
+        return { 'width': width, 'wordLength': length, 'isBeginning': (!isNullOrUndefined(matchedText) && matchedText.index === 0) };
+    };
+    /**
+     * Retrieve Special character info
+     * @param {string} text
+     * @param {WCharacterFormat} characterFormat
+     * @private
+     */
+    SpellChecker.prototype.getSpecialCharactersInfo = function (text, characterFormat) {
+        /* tslint:disable:no-any */
+        var matchedText = [];
+        var beginingwidth = 0;
+        var endWidth = 0;
+        var length = 0;
+        matchedText = text.match(/^[\#\@\!\~\$\%\^\&\*\(\)\-\_\+\=\{\}\[\]\:\;\"\'\,\<\.\>\/\?\`]*/);
+        for (var i = 0; i < matchedText.length; i++) {
+            if (!isNullOrUndefined(matchedText[i]) && matchedText[i].length > 0) {
+                beginingwidth = this.viewer.textHelper.getWidth(matchedText[i], characterFormat);
+            }
+            length = matchedText.length;
+        }
+        matchedText = text.match(/[\#\@\!\~\$\%\^\&\*\(\)\-\_\+\=\{\}\[\]\:\;\"\'\,\<\.\>\/\?\`]*$/);
+        for (var i = 0; i < matchedText.length; i++) {
+            if (!isNullOrUndefined(matchedText[i]) && matchedText[i].length > 0) {
+                endWidth = this.viewer.textHelper.getWidth(matchedText[i], characterFormat);
+            }
+            length = matchedText.length;
+        }
+        return { 'beginningWidth': beginingwidth, 'endWidth': endWidth, 'wordLength': length };
+    };
+    /**
+     * Method to retrieve next available combined element
+     * @param {ElementBox} element
+     */
+    SpellChecker.prototype.getCombinedElement = function (element) {
+        var prevElement = element;
+        while (!isNullOrUndefined(element) && element instanceof TextElementBox && element.istextCombined) {
+            prevElement = element;
+            element = element.previousElement;
+        }
+        return prevElement;
+    };
+    /**
+     * Method to retrieve next available combined element
+     * @param {ElementBox} element
+     */
+    SpellChecker.prototype.checkCombinedElementsBeIgnored = function (elements, exactText) {
+        exactText = this.manageSpecialCharacters(exactText, undefined, true);
+        for (var i = 0; i < elements.length; i++) {
+            if (elements[i].ignoreOnceItems.indexOf(exactText) !== -1) {
+                return true;
+            }
+        }
+        return false;
+    };
+    /**
+     * Method to update error collection
+     * @param {TextElementBox} currentElement
+     * @param {TextElementBox} splittedElement
+     */
+    SpellChecker.prototype.updateSplittedElementError = function (currentElement, splittedElement) {
+        var errorCount = currentElement.errorCollection.length;
+        if (errorCount > 0) {
+            var errorCollection = [];
+            for (var i = 0; i < errorCount; i++) {
+                errorCollection.push(currentElement.errorCollection[i]);
+            }
+            for (var i = 0; i < errorCount; i++) {
+                if (currentElement.text.indexOf(errorCollection[i].text) === -1) {
+                    splittedElement.ischangeDetected = true;
+                    currentElement.errorCollection.splice(0, 1);
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    SpellChecker.prototype.destroy = function () {
+        this.errorWordCollection = undefined;
+        this.ignoreAllItems = undefined;
+        this.errorSuggestions = undefined;
+    };
+    return SpellChecker;
+}());
+
+/**
+ * Spell check dialog
+ */
+var SpellCheckDialog = /** @__PURE__ @class */ (function () {
+    function SpellCheckDialog(viewer) {
+        var _this = this;
+        /* tslint:disable:no-any */
+        this.selectHandler = function (args) {
+            _this.selectedText = args.text;
+        };
+        /**
+         * @private
+         */
+        this.onCancelButtonClick = function () {
+            _this.owner.clearSelectionHighlight();
+            _this.owner.dialog.hide();
+        };
+        /**
+         * @private
+         */
+        this.onIgnoreClicked = function () {
+            if (!isNullOrUndefined(_this.elementBox)) {
+                showSpinner(_this.owner.dialog.element);
+                _this.parent.spellChecker.manageReplace('Ignore Once', _this.elementBox);
+                _this.removeErrors();
+                _this.parent.spellChecker.checkForNextError();
+            }
+        };
+        /**
+         * @private
+         */
+        this.onIgnoreAllClicked = function () {
+            if (!isNullOrUndefined(_this.elementBox)) {
+                showSpinner(_this.owner.dialog.element);
+                var text = _this.elementBox.text;
+                _this.parent.spellChecker.handleIgnoreAllItems({ element: _this.elementBox, text: text });
+                _this.parent.spellChecker.checkForNextError();
+            }
+        };
+        /**
+         * @private
+         */
+        this.addToDictClicked = function () {
+            if (!isNullOrUndefined(_this.elementBox)) {
+                showSpinner(_this.owner.dialog.element);
+                // tslint:disable-next-line:max-line-length
+                _this.parent.spellChecker.handleAddToDictionary({ element: _this.elementBox, text: _this.elementBox.text });
+                if (_this.parent.spellChecker.errorWordCollection.containsKey(_this.errorText)) {
+                    _this.parent.spellChecker.errorWordCollection.remove(_this.errorText);
+                }
+                _this.parent.spellChecker.checkForNextError();
+            }
+        };
+        /**
+         * @private
+         */
+        this.changeButtonClicked = function () {
+            if (!isNullOrUndefined(_this.selectedText)) {
+                _this.isSpellChecking = true;
+                showSpinner(_this.owner.dialog.element);
+                _this.parent.spellChecker.manageReplace(_this.selectedText, _this.elementBox);
+                _this.removeErrors();
+                _this.parent.spellChecker.checkForNextError();
+                _this.owner.dialog.content = '';
+            }
+        };
+        /**
+         * @private
+         */
+        this.changeAllButtonClicked = function () {
+            if (!isNullOrUndefined(_this.selectedText)) {
+                _this.isSpellChecking = true;
+                showSpinner(_this.owner.dialog.element);
+                var elements = _this.parent.spellChecker.errorWordCollection.get(_this.errorText);
+                for (var i = 0; i < elements.length; i++) {
+                    if (elements[i] instanceof ErrorTextElementBox && !elements[i].ischangeDetected) {
+                        _this.parent.spellChecker.manageReplace(_this.selectedText, elements[i]);
+                    }
+                    else if (elements[i] instanceof TextElementBox) {
+                        var matchResults = _this.parent.spellChecker.getMatchedResultsFromElement(elements[i]);
+                        var results = matchResults.textResults;
+                        // tslint:disable-next-line:max-line-length
+                        var markIndex = (elements[i].ischangeDetected) ? elements[i].start.offset : elements[i].line.getOffset(elements[i], 0);
+                        // tslint:disable-next-line:max-line-length
+                        _this.parent.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, elements[i], false, null, markIndex);
+                        for (var j = 0; j < results.length; j++) {
+                            var element = _this.parent.spellChecker.createErrorElementWithInfo(results.innerList[j], elements[i]);
+                            _this.parent.spellChecker.manageReplace(_this.selectedText, element);
+                        }
+                    }
+                }
+                if (_this.parent.spellChecker.errorWordCollection.containsKey(_this.errorText)) {
+                    _this.parent.spellChecker.errorWordCollection.remove(_this.errorText);
+                }
+                _this.parent.spellChecker.checkForNextError();
+                _this.owner.dialog.content = '';
+            }
+        };
+        this.owner = viewer;
+        createSpinner({ target: this.owner.dialog.element, cssClass: 'e-spin-overlay' });
+    }
+    Object.defineProperty(SpellCheckDialog.prototype, "parent", {
+        /**
+         * Gets the spell checker
+         * @private
+         */
+        get: function () {
+            return this.owner.owner;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    SpellCheckDialog.prototype.getModuleName = function () {
+        return 'SpellCheckDialog';
+    };
+    /**
+     * Method to remove errors
+     */
+    SpellCheckDialog.prototype.removeErrors = function () {
+        if (!isNullOrUndefined(this.errorText) && this.parent.spellChecker.errorWordCollection.containsKey(this.errorText)) {
+            var textElement = this.parent.spellChecker.errorWordCollection.get(this.errorText);
+            textElement.splice(0, 1);
+            if (textElement.length === 0) {
+                this.parent.spellChecker.errorWordCollection.remove(this.errorText);
+            }
+        }
+        if (this.parent.spellChecker.errorWordCollection.length === 0) {
+            this.owner.dialog.hide();
+        }
+    };
+    /**
+     * @private
+     */
+    SpellCheckDialog.prototype.show = function (error, elementbox, callSpellChecker) {
+        this.target = undefined;
+        this.localValue = new L10n('documenteditor', this.owner.owner.defaultLocale);
+        this.localValue.setLocale(this.owner.owner.locale);
+        if (!this.target) {
+            this.updateSuggestionDialog(error, elementbox, callSpellChecker);
+        }
+    };
+    /**
+     * @private
+     */
+    SpellCheckDialog.prototype.updateSuggestionDialog = function (error, elementBox, callSpellChecker) {
+        var _this = this;
+        this.elementBox = elementBox;
+        var suggestions;
+        if (this.isSpellChecking) {
+            // tslint:disable-next-line:max-line-length
+            /* tslint:disable:no-any */
+            this.parent.spellChecker.CallSpellChecker(this.parent.spellChecker.languageID, error, false, true).then(function (data) {
+                /* tslint:disable:no-any */
+                var jsonObject = JSON.parse(data);
+                suggestions = jsonObject.Suggestions;
+                _this.isSpellChecking = false;
+                _this.handleRetrievedSuggestion(error, suggestions);
+            });
+        }
+        else {
+            error = this.parent.spellChecker.manageSpecialCharacters(error, undefined, true);
+            // tslint:disable-next-line:max-line-length
+            suggestions = this.parent.spellChecker.errorSuggestions.containsKey(error) ? this.parent.spellChecker.errorSuggestions.get(error) : [];
+            this.handleRetrievedSuggestion(error, suggestions);
+        }
+    };
+    /**
+     * Method to handle retrieved suggestions from server side
+     * @param {string} error
+     * @param {any} jsonObject
+     */
+    /* tslint:disable:no-any */
+    SpellCheckDialog.prototype.handleRetrievedSuggestion = function (error, suggestions) {
+        error = this.parent.spellChecker.manageSpecialCharacters(error, undefined, true);
+        this.initSpellCheckDialog(this.localValue, error, suggestions);
+        if (this.owner.selection.caret.style.display !== 'none') {
+            this.owner.selection.caret.style.display = 'none';
+        }
+        this.owner.dialog.header = 'Spelling Editor';
+        this.owner.dialog.height = 'auto';
+        this.owner.dialog.width = 'auto';
+        this.owner.dialog.content = this.target;
+        this.owner.dialog.beforeOpen = this.owner.updateFocus;
+        this.owner.dialog.buttons = [{
+                click: this.onCancelButtonClick,
+                buttonModel: { content: this.localValue.getConstant('Cancel'), cssClass: 'e-control e-flat', isPrimary: true }
+            }];
+        this.owner.dialog.dataBind();
+        this.owner.dialog.show();
+        hideSpinner(this.owner.dialog.element);
+    };
+    /**
+     * @private
+     */
+    SpellCheckDialog.prototype.initSpellCheckDialog = function (localValue, error, suggestion) {
+        var id = this.owner.owner.containerId + '_add_SpellCheck';
+        this.target = createElement('div', { id: id, className: 'e-de-insert-spellchecker' });
+        this.errorText = error;
+        var textContainer = createElement('div', {
+            className: 'e-de-dlg-spellchecker-subheader', innerHTML: localValue.getConstant('Spelling')
+        });
+        this.target.appendChild(textContainer);
+        var spellContainer = createElement('div', { className: 'e-de-spellcheck-error-container' });
+        var listviewDiv = createElement('div', { className: 'e-de-dlg-spellcheck-listview', id: 'styles_listview' });
+        spellContainer.appendChild(listviewDiv);
+        this.spellingListView = new ListView({
+            dataSource: [error],
+            cssClass: 'e-dlg-spellcheck-listitem',
+        });
+        this.spellingListView.appendTo(listviewDiv);
+        var buttonDiv = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
+        spellContainer.appendChild(buttonDiv);
+        var ignoreButtonElement = createElement('button', { innerHTML: localValue.getConstant('Ignore'), id: 'ignore' });
+        buttonDiv.appendChild(ignoreButtonElement);
+        var ignorebutton = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        ignorebutton.appendTo(ignoreButtonElement);
+        ignoreButtonElement.addEventListener('click', this.onIgnoreClicked);
+        var ignoreAllButtonElement = createElement('button', { innerHTML: localValue.getConstant('Ignore all'), id: 'new' });
+        buttonDiv.appendChild(ignoreAllButtonElement);
+        var ignoreAllbutton = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        ignoreAllbutton.appendTo(ignoreAllButtonElement);
+        ignoreAllButtonElement.addEventListener('click', this.onIgnoreAllClicked);
+        // tslint:disable-next-line:max-line-length
+        var addDictButtonElement = createElement('button', { innerHTML: localValue.getConstant('Add to Dictionary'), id: 'new' });
+        buttonDiv.appendChild(addDictButtonElement);
+        var addDictButton = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        addDictButton.appendTo(addDictButtonElement);
+        addDictButtonElement.addEventListener('click', this.addToDictClicked);
+        this.target.appendChild(spellContainer);
+        var suggestionDiv = createElement('div', {
+            className: 'e-de-dlg-spellchecker-subheaderbtm', innerHTML: localValue.getConstant('Suggestions')
+        });
+        this.target.appendChild(suggestionDiv);
+        var suggestionContainer = createElement('div', { className: 'e-de-spellcheck-suggestion-container' });
+        this.target.appendChild(suggestionContainer);
+        var suggestListDiv = createElement('div', { className: 'e-de-dlg-spellcheck-listview' });
+        suggestionContainer.appendChild(suggestListDiv);
+        this.suggestionListView = new ListView({
+            dataSource: suggestion,
+            cssClass: 'e-dlg-spellcheck-listitem',
+        });
+        this.suggestionListView.appendTo(suggestListDiv);
+        this.suggestionListView.addEventListener('select', this.selectHandler);
+        var suggestBtnContainder = createElement('div', { className: 'e-de-spellcheck-btncontainer' });
+        suggestionContainer.appendChild(suggestBtnContainder);
+        var changeButtonElement = createElement('button', { innerHTML: localValue.getConstant('Change'), id: 'Change' });
+        suggestBtnContainder.appendChild(changeButtonElement);
+        var changeButton = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        changeButton.appendTo(changeButtonElement);
+        changeButtonElement.addEventListener('click', this.changeButtonClicked);
+        // tslint:disable-next-line:max-line-length
+        var changeAllButtonElement = createElement('button', { innerHTML: localValue.getConstant('Change All'), id: 'Change All' });
+        suggestBtnContainder.appendChild(changeAllButtonElement);
+        var changeAllbutton = new Button({ cssClass: 'e-de-spellcheck-btn' });
+        changeAllbutton.appendTo(changeAllButtonElement);
+        changeAllButtonElement.addEventListener('click', this.changeAllButtonClicked);
+        if (isNullOrUndefined(suggestion) || suggestion.length === 0) {
+            changeButton.disabled = true;
+            changeAllbutton.disabled = true;
+        }
+    };
+    /**
+     * @private
+     */
+    SpellCheckDialog.prototype.destroy = function () {
+        if (this.target) {
+            this.target.remove();
+            this.target = undefined;
+        }
+        if (this.spellingListView) {
+            this.spellingListView.destroy();
+            this.spellingListView = undefined;
+        }
+        if (this.suggestionListView) {
+            this.suggestionListView.destroy();
+            this.suggestionListView = undefined;
+        }
+    };
+    return SpellCheckDialog;
+}());
+
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+// tslint:disable-next-line:max-line-length
+/**
+ * The Document editor component is used to draft, save or print rich text contents as page by page.
+ */
+var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
+    __extends(DocumentEditor, _super);
+    /**
+     * Initialize the constructor of DocumentEditor
+     */
+    function DocumentEditor(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        //Internal Variable
+        _this.enableHeaderFooterIn = false;
+        /**
+         * @private
+         */
+        _this.isShiftingEnabled = false;
+        /**
+         * @private
+         */
+        _this.isLayoutEnabled = true;
+        /**
+         * @private
+         */
+        _this.isPastingContent = false;
+        /**
+         * @private
+         */
+        _this.parser = undefined;
+        _this.disableHistoryIn = false;
+        /**
+         * @private
+         */
+        _this.findResultsList = undefined;
+        /**
+         * @private
+         */
+        _this.tablePropertiesDialogModule = undefined;
+        /**
+         * @private
+         */
+        _this.bordersAndShadingDialogModule = undefined;
+        /**
+         * @private
+         */
+        _this.cellOptionsDialogModule = undefined;
+        /**
+         * @private
+         */
+        _this.tableOptionsDialogModule = undefined;
+        /**
+         * @private
+         */
+        _this.paragraphDialogModule = undefined;
+        /**
+         * @private
+         */
+        _this.imageResizerModule = undefined;
+        /**
+         * @private
+         */
+        _this.defaultLocale = {
+            'Table': 'Table',
+            'Row': 'Row',
+            'Cell': 'Cell',
+            'Ok': 'Ok',
+            'Cancel': 'Cancel',
+            'Size': 'Size',
+            'Preferred Width': 'Preferred width',
+            'Points': 'Points',
+            'Percent': 'Percent',
+            'Measure in': 'Measure in',
+            'Alignment': 'Alignment',
+            'Left': 'Left',
+            'Center': 'Center',
+            'Right': 'Right',
+            'Justify': 'Justify',
+            'Indent from left': 'Indent from left',
+            'Borders and Shading': 'Borders and Shading',
+            'Options': 'Options',
+            'Specify height': 'Specify height',
+            'At least': 'At least',
+            'Exactly': 'Exactly',
+            'Row height is': 'Row height is',
+            'Allow row to break across pages': 'Allow row to break across pages',
+            'Repeat as header row at the top of each page': 'Repeat as header row at the top of each page',
+            'Vertical alignment': 'Vertical alignment',
+            'Top': 'Top',
+            'Bottom': 'Bottom',
+            'Default cell margins': 'Default cell margins',
+            'Default cell spacing': 'Default cell spacing',
+            'Allow spacing between cells': 'Allow spacing between cells',
+            'Cell margins': 'Cell margins',
+            'Same as the whole table': 'Same as the whole table',
+            'Borders': 'Borders',
+            'None': 'None',
+            'Style': 'Style',
+            'Width': 'Width',
+            'Height': 'Height',
+            'Letter': 'Letter',
+            'Tabloid': 'Tabloid',
+            'Legal': 'Legal',
+            'Statement': 'Statement',
+            'Executive': 'Executive',
+            'A3': 'A3',
+            'A4': 'A4',
+            'A5': 'A5',
+            'B4': 'B4',
+            'B5': 'B5',
+            'Custom Size': 'Custom size',
+            'Different odd and even': 'Different odd and even',
+            'Different first page': 'Different first page',
+            'From edge': 'From edge',
+            'Header': 'Header',
+            'Footer': 'Footer',
+            'Margin': 'Margins',
+            'Paper': 'Paper',
+            'Layout': 'Layout',
+            'Orientation': 'Orientation',
+            'Landscape': 'Landscape',
+            'Portrait': 'Portrait',
+            'Table Of Contents': 'Table Of Contents',
+            'Show page numbers': 'Show page numbers',
+            'Right align page numbers': 'Right align page numbers',
+            'Nothing': 'Nothing',
+            'Tab leader': 'Tab leader',
+            'Show levels': 'Show levels',
+            'Use hyperlinks instead of page numbers': 'Use hyperlinks instead of page numbers',
+            'Build table of contents from': 'Build table of contents from',
+            'Styles': 'Styles',
+            'Available styles': 'Available styles',
+            'TOC level': 'TOC level',
+            'Heading': 'Heading',
+            'Heading 1': 'Heading 1',
+            'Heading 2': 'Heading 2',
+            'Heading 3': 'Heading 3',
+            'Heading 4': 'Heading 4',
+            'Heading 5': 'Heading 5',
+            'Heading 6': 'Heading 6',
+            'List Paragraph': 'List Paragraph',
+            'Normal': 'Normal',
+            'Outline levels': 'Outline levels',
+            'Table entry fields': 'Table entry fields',
+            'Modify': 'Modify',
+            'Color': 'Color',
+            'Setting': 'Setting',
+            'Box': 'Box',
+            'All': 'All',
+            'Custom': 'Custom',
+            'Preview': 'Preview',
+            'Shading': 'Shading',
+            'Fill': 'Fill',
+            'Apply To': 'Apply to',
+            'Table Properties': 'Table Properties',
+            'Cell Options': 'Cell Options',
+            'Table Options': 'Table Options',
+            'Insert Table': 'Insert Table',
+            'Number of columns': 'Number of columns',
+            'Number of rows': 'Number of rows',
+            'Text to display': 'Text to display',
+            'Address': 'Address',
+            'Insert Hyperlink': 'Insert Hyperlink',
+            'Edit Hyperlink': 'Edit Hyperlink',
+            'Insert': 'Insert',
+            'General': 'General',
+            'Indentation': 'Indentation',
+            'Before text': 'Before text',
+            'Special': 'Special',
+            'First line': 'First line',
+            'Hanging': 'Hanging',
+            'After text': 'After text',
+            'By': 'By',
+            'Before': 'Before',
+            'Line Spacing': 'Line spacing',
+            'After': 'After',
+            'At': 'At',
+            'Multiple': 'Multiple',
+            'Spacing': 'Spacing',
+            'Define new Multilevel list': 'Define new Multilevel list',
+            'List level': 'List level',
+            'Choose level to modify': 'Choose level to modify',
+            'Level': 'Level',
+            'Number format': 'Number format',
+            'Number style for this level': 'Number style for this level',
+            'Enter formatting for number': 'Enter formatting for number',
+            'Start at': 'Start at',
+            'Restart list after': 'Restart list after',
+            'Position': 'Position',
+            'Text indent at': 'Text indent at',
+            'Aligned at': 'Aligned at',
+            'Follow number with': 'Follow number with',
+            'Tab character': 'Tab character',
+            'Space': 'Space',
+            'Arabic': 'Arabic',
+            'UpRoman': 'UpRoman',
+            'LowRoman': 'LowRoman',
+            'UpLetter': 'UpLetter',
+            'LowLetter': 'LowLetter',
+            'Number': 'Number',
+            'Leading zero': 'Leading zero',
+            'Bullet': 'Bullet',
+            'Ordinal': 'Ordinal',
+            'Ordinal Text': 'Ordinal Text',
+            'For East': 'For East',
+            'No Restart': 'No Restart',
+            'Font': 'Font',
+            'Font style': 'Font style',
+            'Underline style': 'Underline style',
+            'Font color': 'Font color',
+            'Effects': 'Effects',
+            'Strikethrough': 'Strikethrough',
+            'Superscript': 'Superscript',
+            'Subscript': 'Subscript',
+            'Double strikethrough': 'Double strikethrough',
+            'Regular': 'Regular',
+            'Bold': 'Bold',
+            'Italic': 'Italic',
+            'Cut': 'Cut',
+            'Copy': 'Copy',
+            'Paste': 'Paste',
+            'Hyperlink': 'Hyperlink',
+            'Open Hyperlink': 'Open Hyperlink',
+            'Copy Hyperlink': 'Copy Hyperlink',
+            'Remove Hyperlink': 'Remove Hyperlink',
+            'Paragraph': 'Paragraph',
+            'Linked(Paragraph and Character)': 'Linked(Paragraph and Character)',
+            'Character': 'Character',
+            'Merge Cells': 'Merge Cells',
+            'Insert Above': 'Insert Above',
+            'Insert Below': 'Insert Below',
+            'Insert Left': 'Insert Left',
+            'Insert Right': 'Insert Right',
+            'Delete': 'Delete',
+            'Delete Table': 'Delete Table',
+            'Delete Row': 'Delete Row',
+            'Delete Column': 'Delete Column',
+            'File Name': 'File Name',
+            'Format Type': 'Format Type',
+            'Save': 'Save',
+            'Navigation': 'Navigation',
+            'Results': 'Results',
+            'Replace': 'Replace',
+            'Replace All': 'Replace All',
+            'We replaced all': 'We replaced all',
+            'Find': 'Find',
+            'No matches': 'No matches',
+            'All Done': 'All Done',
+            'Result': 'Result',
+            'of': 'of',
+            'instances': 'instances',
+            'with': 'with',
+            'Click to follow link': 'Click to follow link',
+            'Continue Numbering': 'Continue Numbering',
+            'Bookmark name': 'Bookmark name',
+            'Close': 'Close',
+            'Restart At': 'Restart At',
+            'Properties': 'Properties',
+            'Name': 'Name',
+            'Style type': 'Style type',
+            'Style based on': 'Style based on',
+            'Style for following paragraph': 'Style for following paragraph',
+            'Formatting': 'Formatting',
+            'Numbering and Bullets': 'Numbering and Bullets',
+            'Numbering': 'Numbering',
+            'Update Field': 'Update Field',
+            'Edit Field': 'Edit Field',
+            'Bookmark': 'Bookmark',
+            'Page Setup': 'Page Setup',
+            'No bookmarks found': 'No bookmarks found',
+            'Number format tooltip information': 'Single-level number format: </br>[PREFIX]%[LEVELNUMBER][SUFFIX]</br>'
+                + 'For example, "Chapter %1." will display numbering like</br>Chapter 1. Item</br>Chapter 2. Item</br>…'
+                + '</br>Chapter N. Item</br>'
+                + '</br>Multilevel number format:</br>[PREFIX]%[LEVELNUMBER][SUFFIX]+[PREFIX]%[LEVELNUMBER][SUFFIX]'
+                + '</br>For example, "%1.%2." will display numbering like</br>1.1. Item</br>1.2. Item</br>…</br>1.N. Item',
+            'Format': 'Format',
+            'Create New Style': 'Create New Style',
+            'Modify Style': 'Modify Style',
+            'New': 'New',
+            'Bullets': 'Bullets',
+            'Use bookmarks': 'Use bookmarks',
+            'Table of Contents': 'Table of Contents',
+            'AutoFit': 'AutoFit',
+            'AutoFit to Contents': 'AutoFit to Contents',
+            'AutoFit to Window': 'AutoFit to Window',
+            'Fixed Column Width': 'Fixed Column Width',
+            'Reset': 'Reset',
+            'Match case': 'Match case',
+            'Whole words': 'Whole words',
+            'Add': 'Add',
+            'Go To': 'Go To',
+            'Search for': 'Search for',
+            'Replace with': 'Replace with',
+            'TOC 1': 'TOC 1',
+            'TOC 2': 'TOC 2',
+            'TOC 3': 'TOC 3',
+            'TOC 4': 'TOC 4',
+            'TOC 5': 'TOC 5',
+            'TOC 6': 'TOC 6',
+            'TOC 7': 'TOC 7',
+            'TOC 8': 'TOC 8',
+            'TOC 9': 'TOC 9',
+            'Right-to-left': 'Right-to-left',
+            'Left-to-right': 'Left-to-right',
+            'Direction': 'Direction',
+            'Table direction': 'Table direction',
+            'Indent from right': 'Indent from right',
+            /* tslint:disable */
+            "Don't add space between the paragraphs of the same styles": "Don't add space between the paragraphs of the same styles",
+            "The password don't match": "The password don't match",
+            /* tslint:enable */
+            'Restrict Editing': 'Restrict Editing',
+            'Formatting restrictions': 'Formatting restrictions',
+            'Allow formatting': 'Allow formatting',
+            'Editing restrictions': 'Editing restrictions',
+            'Read only': 'Read only',
+            'Exceptions (optional)': 'Exceptions (optional)',
+            // tslint:disable-next-line:max-line-length
+            'Select parts of the document and choose users who are allowed to freely edit them.': 'Select parts of the document and choose users who are allowed to freely edit them.',
+            'Everyone': 'Everyone',
+            'More users': 'More users',
+            'Add Users': 'Add Users',
+            'Yes, Start Enforcing Protection': 'Yes, Start Enforcing Protection',
+            'Start Enforcing Protection': 'Start Enforcing Protection',
+            'Enter User': 'Enter User',
+            'Users': 'Users',
+            'Enter new password': 'Enter new password',
+            'Reenter new password to confirm': 'Reenter new password to confirm',
+            'Your permissions': 'Your permissions',
+            // tslint:disable-next-line:max-line-length
+            'This document is protected from unintentional editing.You may edit in this region.': 'This document is protected from unintentional editing.You may edit in this region.',
+            'You may format text only with certain styles.': 'You may format text only with certain styles.',
+            'Stop Protection': 'Stop Protection',
+            'Password': 'Password',
+            'Spelling Editor': 'Spelling Editor',
+            'Spelling': 'Spelling',
+            'Spell Check': 'Spell Check',
+            'Underline errors': 'Underline errors',
+            'Ignore': 'Ignore',
+            'Ignore all': 'Ignore All',
+            'Add to Dictionary': 'Add to Dictionary',
+            'Change': 'Change',
+            'Change All': 'Change All',
+            'Suggestions': 'Suggestions',
+            'The password is incorrect': 'The password is incorrect',
+            'Error in establishing connection with web server': 'Error in establishing connection with web server',
+            'Highlight the regions I can edit': 'Highlight the regions I can edit',
+            'Show All Regions I Can Edit': 'Show All Regions I Can Edit',
+            'Find Next Region I Can Edit': 'Find Next Region I Can Edit'
+        };
+        _this.viewer = new PageLayoutViewer(_this);
+        _this.parser = new SfdtReader(_this.viewer);
+        return _this;
+    }
+    DocumentEditor_1 = DocumentEditor;
+    Object.defineProperty(DocumentEditor.prototype, "enableHeaderAndFooter", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.enableHeaderFooterIn;
+        },
+        set: function (value) {
+            this.enableHeaderFooterIn = value;
+            this.viewer.updateScrollBars();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "pageCount", {
+        /**
+         * Gets the total number of pages.
+         * @returns {number}
+         */
+        get: function () {
+            if (!this.isDocumentLoaded || isNullOrUndefined(this.viewer)) {
+                return 1;
+            }
+            return this.viewer.pages.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "selection", {
+        /**
+         *  Gets the selection object of the document editor.
+         * @asptype Selection
+         * @returns {Selection}
+         * @default undefined
+         */
+        get: function () {
+            return this.selectionModule;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "editor", {
+        /**
+         *  Gets the editor object of the document editor.
+         * @asptype Editor
+         * @returns {Editor}
+         * @default undefined
+         */
+        get: function () {
+            return this.editorModule;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "editorHistory", {
+        /**
+         * Gets the editor history object of the document editor.
+         * @asptype EditorHistory
+         * @returns {EditorHistory}
+         */
+        get: function () {
+            return this.editorHistoryModule;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "search", {
+        /**
+         * Gets the search object of the document editor.
+         * @asptype Search
+         * @returns { Search }
+         */
+        get: function () {
+            return this.searchModule;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "contextMenu", {
+        /**
+         * Gets the context menu object of the document editor.
+         * @asptype ContextMenu
+         * @returns {ContextMenu}
+         */
+        get: function () {
+            return this.contextMenuModule;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "spellCheckDialog", {
+        /**
+         * Gets the spell check dialog object of the document editor.
+         * @returns SpellCheckDialog
+         */
+        get: function () {
+            return this.spellCheckDialogModule;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "spellChecker", {
+        /**
+         * Gets the spell check object of the document editor.
+         * @returns SpellChecker
+         */
+        get: function () {
+            return this.spellCheckerModule;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "containerId", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.element.id;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "isDocumentLoaded", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isDocumentLoadedIn;
+        },
+        set: function (value) {
+            this.isDocumentLoadedIn = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "enableHistoryMode", {
+        /**
+         * Determines whether history needs to be enabled or not.
+         * @default - false
+         * @private
+         */
+        get: function () {
+            return this.enableEditorHistory && !isNullOrUndefined(this.editorHistoryModule);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "documentStart", {
+        /**
+         * Gets the start text position in the document.
+         * @default undefined
+         * @private
+         */
+        get: function () {
+            if (!isNullOrUndefined(this.selectionModule)) {
+                return this.selection.getDocumentStart();
+            }
+            return undefined;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "documentEnd", {
+        /**
+         * Gets the end text position in the document.
+         * @default undefined
+         * @private
+         */
+        get: function () {
+            if (!isNullOrUndefined(this.selectionModule)) {
+                return this.selection.getDocumentEnd();
+            }
+            return undefined;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "isReadOnlyMode", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isReadOnly || isNullOrUndefined(this.editorModule)
+                || isNullOrUndefined(this.selectionModule) || !isNullOrUndefined(this.editor) && this.editor.restrictEditing;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentEditor.prototype, "enableImageResizerMode", {
+        /**
+         * Specifies to enable image resizer option
+         * default - false
+         * @private
+         */
+        get: function () {
+            return this.enableImageResizer && !isNullOrUndefined(this.imageResizerModule);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DocumentEditor.prototype.preRender = function () {
+        this.findResultsList = [];
+        //pre render section
+    };
+    DocumentEditor.prototype.render = function () {
+        this.viewer.initializeComponents();
+        this.openBlank();
+        if (!isNullOrUndefined(this.element)) {
+            var container = this.element;
+            container.style.minHeight = '200px';
+            container.style.minWidth = '200px';
+        }
+    };
+    /**
+     * Get component name
+     * @private
+     */
+    DocumentEditor.prototype.getModuleName = function () {
+        return 'DocumentEditor';
+    };
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
+    DocumentEditor.prototype.onPropertyChanged = function (model, oldProp) {
+        for (var _i = 0, _a = Object.keys(model); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'zoomFactor':
+                    if (this.viewer) {
+                        this.viewer.zoomFactor = model.zoomFactor;
+                    }
+                    break;
+                case 'locale':
+                    this.localizeDialogs();
+                    break;
+                case 'isReadOnly':
+                    if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
+                        this.optionsPaneModule.showHideOptionsPane(false);
+                    }
+                    break;
+                case 'currentUser':
+                case 'userColor':
+                    if (this.selection && this.viewer.isDocumentProtected) {
+                        this.selection.highlightEditRegion();
+                    }
+                    break;
+                case 'pageGap':
+                case 'pageOutline':
+                    this.viewer.updateScrollBars();
+                    break;
+            }
+        }
+    };
+    DocumentEditor.prototype.localizeDialogs = function () {
+        if (this.locale !== '') {
+            var l10n = new L10n('documenteditor', this.defaultLocale);
+            l10n.setLocale(this.locale);
+            if (this.optionsPaneModule) {
+                this.optionsPaneModule.initOptionsPane(l10n);
+            }
+            if (this.paragraphDialogModule) {
+                this.paragraphDialogModule.initParagraphDialog(l10n);
+            }
+            if (this.pageSetupDialogModule) {
+                this.pageSetupDialogModule.initPageSetupDialog(l10n);
+            }
+            if (this.fontDialogModule) {
+                this.fontDialogModule.initFontDialog(l10n);
+            }
+            if (this.hyperlinkDialogModule) {
+                this.hyperlinkDialogModule.initHyperlinkDialog(l10n);
+            }
+            if (this.contextMenuModule) {
+                this.contextMenuModule.initContextMenu(l10n);
+            }
+            if (this.listDialogModule) {
+                this.listDialogModule.initListDialog(l10n);
+            }
+            if (this.tablePropertiesDialogModule) {
+                this.tablePropertiesDialogModule.initTablePropertyDialog(l10n);
+            }
+            if (this.bordersAndShadingDialogModule) {
+                this.bordersAndShadingDialogModule.initBordersAndShadingsDialog(l10n);
+            }
+            if (this.cellOptionsDialogModule) {
+                this.cellOptionsDialogModule.initCellMarginsDialog(l10n);
+            }
+            if (this.tableOptionsDialogModule) {
+                this.tableOptionsDialogModule.initTableOptionsDialog(l10n);
+            }
+            if (this.tableDialogModule) {
+                this.tableDialogModule.initTableDialog(l10n);
+            }
+            if (this.styleDialogModule) {
+                this.styleDialogModule.initStyleDialog(l10n);
+            }
+            if (this.tableOfContentsDialogModule) {
+                this.tableOfContentsDialogModule.initTableOfContentDialog(l10n);
+            }
+        }
+    };
+    /**
+     * Set the default character format for document editor
+     * @param characterFormat
+     */
+    DocumentEditor.prototype.setDefaultCharacterFormat = function (characterFormat) {
+        this.characterFormat = characterFormat;
+    };
+    /**
+     * Set the default paragraph format for document editor
+     * @param paragraphFormat
+     */
+    DocumentEditor.prototype.setDefaultParagraphFormat = function (paragraphFormat) {
+        this.paragraphFormat = paragraphFormat;
+    };
+    /**
+     * Get the properties to be maintained in the persisted state.
+     * @private
+     */
+    DocumentEditor.prototype.getPersistData = function () {
+        return 'documenteditor';
+    };
+    DocumentEditor.prototype.clearPreservedCollectionsInViewer = function () {
+        if (this.viewer instanceof LayoutViewer) {
+            this.viewer.clearDocumentItems();
+        }
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.getDocumentEditorElement = function () {
+        return this.element;
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireContentChange = function () {
+        var eventArgs = { source: this };
+        this.trigger('contentChange', eventArgs);
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireDocumentChange = function () {
+        var eventArgs = { source: this };
+        this.trigger('documentChange', eventArgs);
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireSelectionChange = function () {
+        if (!this.viewer.isCompositionStart && Browser.isDevice && this.editorModule) {
+            this.editorModule.predictText();
+        }
+        var eventArgs = { source: this };
+        this.trigger('selectionChange', eventArgs);
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireZoomFactorChange = function () {
+        var eventArgs = { source: this };
+        this.trigger('zoomFactorChange', eventArgs);
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireViewChange = function () {
+        if (this.viewer && this.viewer.pages.length > 0) {
+            if (this.viewer.visiblePages.length > 0) {
+                var pages = this.viewer.visiblePages;
+                var eventArgs = {
+                    startPage: pages[0].index + 1,
+                    endPage: pages[pages.length - 1].index + 1,
+                    source: this
+                };
+                this.trigger('viewChange', eventArgs);
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireCustomContextMenuSelect = function (item) {
+        var eventArgs = { id: item };
+        this.trigger('customContextMenuSelect', eventArgs);
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireCustomContextMenuBeforeOpen = function (item) {
+        var eventArgs = { ids: item };
+        this.trigger('customContextMenuBeforeOpen', eventArgs);
+    };
+    /**
+     * Shows the Paragraph dialog
+     * @private
+     */
+    DocumentEditor.prototype.showParagraphDialog = function (paragraphFormat) {
+        if (this.paragraphDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.paragraphDialogModule.show(paragraphFormat);
+        }
+    };
+    /**
+     * Shows the margin dialog
+     * @private
+     */
+    DocumentEditor.prototype.showPageSetupDialog = function () {
+        if (this.pageSetupDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.pageSetupDialogModule.show();
+        }
+    };
+    /**
+     * Shows the font dialog
+     * @private
+     */
+    DocumentEditor.prototype.showFontDialog = function (characterFormat) {
+        if (this.fontDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.fontDialogModule.showFontDialog(characterFormat);
+        }
+    };
+    /**
+     * Shows the cell option dialog
+     * @private
+     */
+    DocumentEditor.prototype.showCellOptionsDialog = function () {
+        if (this.cellOptionsDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.cellOptionsDialogModule.show();
+        }
+    };
+    /**
+     * Shows the table options dialog.
+     * @private
+     */
+    DocumentEditor.prototype.showTableOptionsDialog = function () {
+        if (this.tableOptionsDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.tableOptionsDialogModule.show();
+        }
+    };
+    /**
+     * Shows insert table dialog
+     * @private
+     */
+    DocumentEditor.prototype.showTableDialog = function () {
+        if (this.tableDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.tableDialogModule.show();
+        }
+    };
+    /**
+     * Shows the table of content dialog
+     * @private
+     */
+    DocumentEditor.prototype.showTableOfContentsDialog = function () {
+        if (this.tableOfContentsDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.tableOfContentsDialogModule.show();
+        }
+    };
+    /* tslint:enable:no-any */
+    /**
+     * Shows the style dialog
+     * @private
+     */
+    DocumentEditor.prototype.showStyleDialog = function () {
+        if (this.styleDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.styleDialogModule.show();
+        }
+    };
+    /**
+     * Shows the hyperlink dialog
+     * @private
+     */
+    DocumentEditor.prototype.showHyperlinkDialog = function () {
+        if (this.hyperlinkDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.hyperlinkDialogModule.show();
+        }
+    };
+    /**
+     * Shows the bookmark dialog.
+     * @private
+     */
+    DocumentEditor.prototype.showBookmarkDialog = function () {
+        if (this.bookmarkDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.bookmarkDialogModule.show();
+        }
+    };
+    /**
+     * Shows the styles dialog.
+     * @private
+     */
+    DocumentEditor.prototype.showStylesDialog = function () {
+        if (this.stylesDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.stylesDialogModule.show();
+        }
+    };
+    /**
+     * Shows the List dialog
+     * @private
+     */
+    DocumentEditor.prototype.showListDialog = function () {
+        if (this.listDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.listDialogModule.showListDialog();
+        }
+    };
+    /**
+     * Shows the table properties dialog
+     * @private
+     */
+    DocumentEditor.prototype.showTablePropertiesDialog = function () {
+        if (this.tablePropertiesDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.tablePropertiesDialogModule.show();
+        }
+    };
+    /**
+     * Shows the borders and shading dialog
+     * @private
+     */
+    DocumentEditor.prototype.showBordersAndShadingDialog = function () {
+        if (this.bordersAndShadingDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.bordersAndShadingDialogModule.show();
+        }
+    };
+    //tslint:disable: max-func-body-length
+    DocumentEditor.prototype.requiredModules = function () {
+        var modules = [];
+        if (this.enablePrint) {
+            modules.push({
+                member: 'Print', args: []
+            });
+        }
+        if (this.enableSfdtExport || this.enableWordExport || this.enableTextExport || this.enableSelection || this.enableEditor) {
+            modules.push({
+                member: 'SfdtExport', args: [this.viewer]
+            });
+        }
+        if (this.enableWordExport) {
+            modules.push({
+                member: 'WordExport', args: []
+            });
+        }
+        if (this.enableTextExport) {
+            modules.push({
+                member: 'TextExport', args: []
+            });
+        }
+        if (this.enableSelection || this.enableSearch || this.enableEditor) {
+            modules.push({
+                member: 'Selection', args: [this]
+            });
+            if (this.enableContextMenu) {
+                modules.push({
+                    member: 'ContextMenu', args: [this.viewer]
+                });
+            }
+        }
+        if (this.enableSearch) {
+            modules.push({
+                member: 'Search', args: [this]
+            });
+            if (this.enableOptionsPane) {
+                modules.push({
+                    member: 'OptionsPane', args: [this.viewer]
+                });
+            }
+        }
+        if (this.enableEditor) {
+            modules.push({
+                member: 'Editor', args: [this.viewer]
+            });
+            if (this.enableImageResizer) {
+                modules.push({
+                    member: 'ImageResizer', args: [this, this.viewer]
+                });
+            }
+            if (this.enableEditorHistory) {
+                modules.push({
+                    member: 'EditorHistory', args: [this]
+                });
+            }
+            if (this.enableHyperlinkDialog) {
+                modules.push({
+                    member: 'HyperlinkDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableTableDialog) {
+                modules.push({
+                    member: 'TableDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableBookmarkDialog) {
+                modules.push({
+                    member: 'BookmarkDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableTableOfContentsDialog) {
+                modules.push({
+                    member: 'TableOfContentsDialog', args: [this.viewer]
+                });
+            }
+            if (this.enablePageSetupDialog) {
+                modules.push({
+                    member: 'PageSetupDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableStyleDialog) {
+                modules.push({
+                    member: 'StylesDialog', args: [this.viewer]
+                });
+                modules.push({
+                    member: 'StyleDialog', args: [this.viewer]
+                });
+                modules.push({
+                    member: 'BulletsAndNumberingDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableListDialog) {
+                modules.push({
+                    member: 'ListDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableParagraphDialog) {
+                modules.push({
+                    member: 'ParagraphDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableFontDialog) {
+                modules.push({
+                    member: 'FontDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableTablePropertiesDialog) {
+                modules.push({
+                    member: 'TablePropertiesDialog', args: [this.viewer]
+                });
+                modules.push({
+                    member: 'CellOptionsDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableBordersAndShadingDialog) {
+                modules.push({
+                    member: 'BordersAndShadingDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableTableOptionsDialog) {
+                modules.push({
+                    member: 'TableOptionsDialog', args: [this.viewer]
+                });
+            }
+            if (this.enableSpellCheck) {
+                modules.push({
+                    member: 'SpellChecker', args: [this.viewer]
+                });
+                modules.push({
+                    member: 'SpellCheckDialog', args: [this.viewer]
+                });
+            }
+        }
+        return modules;
+    };
+    // Public Implementation Starts
+    /**
+     * Opens the given Sfdt text.
+     * @param {string} sfdtText.
+     */
+    DocumentEditor.prototype.open = function (sfdtText) {
+        if (!isNullOrUndefined(this.viewer)) {
+            this.clearPreservedCollectionsInViewer();
+            this.viewer.userCollection.push('Everyone');
+            this.viewer.lists = [];
+            this.viewer.abstractLists = [];
+            this.viewer.styles = new WStyles();
+            this.viewer.triggerElementsOnLoading = true;
+            this.viewer.triggerSpellCheck = true;
+            if (!isNullOrUndefined(sfdtText) && this.viewer) {
+                this.viewer.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
+                if (this.editorModule) {
+                    this.editorModule.intializeDefaultStyles();
+                }
+            }
+            this.viewer.triggerElementsOnLoading = false;
+            this.viewer.triggerSpellCheck = false;
+        }
+    };
+    /**
+     * Scrolls view to start of the given page number if exists.
+     * @param  {number} pageNumber.
+     * @returns void
+     */
+    DocumentEditor.prototype.scrollToPage = function (pageNumber) {
+        if (isNullOrUndefined(this.viewer) || pageNumber < 1 || pageNumber > this.viewer.pages.length) {
+            return false;
+        }
+        this.viewer.scrollToPage(pageNumber - 1);
+        return true;
+    };
+    /**
+     * Enables all the modules.
+     * @returns void
+     */
+    DocumentEditor.prototype.enableAllModules = function () {
+        this.enablePrint = this.enableSfdtExport = this.enableWordExport = this.enableTextExport
+            = this.enableSelection = this.enableContextMenu = this.enableSearch = this.enableOptionsPane
+                = this.enableEditor = this.enableImageResizer = this.enableEditorHistory
+                    = this.enableHyperlinkDialog = this.enableTableDialog = this.enableBookmarkDialog
+                        = this.enableTableOfContentsDialog = this.enablePageSetupDialog = this.enableStyleDialog
+                            = this.enableListDialog = this.enableParagraphDialog = this.enableFontDialog
+                                = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
+                                    = this.enableTableOptionsDialog = this.enableSpellCheck = true;
+        // tslint:disable-next-line:max-line-length
+        DocumentEditor_1.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu$1, OptionsPane, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog);
+    };
+    /**
+     * Resizes the component and its sub elements based on given size or container size.
+     * @param width
+     * @param height
+     */
+    DocumentEditor.prototype.resize = function (width, height) {
+        if (this.element) {
+            if (!isNullOrUndefined(width) && width > 200) {
+                this.element.style.width = width + 'px';
+            }
+            if (!isNullOrUndefined(height) && height > 200) {
+                this.element.style.height = height + 'px';
+            }
+            if (this.viewer) {
+                this.viewer.updateViewerSize();
+            }
+        }
+    };
+    /**
+     * Shifts the focus to the document.
+     */
+    DocumentEditor.prototype.focusIn = function () {
+        if (this.viewer) {
+            this.viewer.updateFocus();
+        }
+    };
+    /**
+     * Fits the page based on given fit type.
+     * @param  {PageFitType} pageFitType? - Default value of ‘pageFitType’ parameter is 'None'
+     * @returns void
+     */
+    DocumentEditor.prototype.fitPage = function (pageFitType) {
+        if (isNullOrUndefined(pageFitType)) {
+            pageFitType = 'None';
+        }
+        if (this.viewer) {
+            this.viewer.pageFitType = pageFitType;
+        }
+    };
+    /**
+     * Prints the document.
+     * @param  {Window} printWindow? - Default value of 'printWindow' parameter is undefined.
+     */
+    DocumentEditor.prototype.print = function (printWindow) {
+        if (isNullOrUndefined(this.viewer)) {
+            throw new Error('Invalid operation.');
+        }
+        if (this.printModule) {
+            this.printModule.print(this.viewer, printWindow);
+        }
+        else {
+            throw new Error('Invalid operation. Print is not enabled.');
+        }
+    };
+    /**
+     * Serialize the data to JSON string.
+     */
+    DocumentEditor.prototype.serialize = function () {
+        var json = '';
+        if (this.enableSfdtExport && this.sfdtExportModule instanceof SfdtExport) {
+            json = this.sfdtExportModule.serialize();
+        }
+        else {
+            throw new Error('Invalid operation. Sfdt export is not enabled.');
+        }
+        return json;
+    };
+    /**
+     * Saves the document.
+     * @param {string} fileName
+     * @param {FormatType} formatType
+     */
+    DocumentEditor.prototype.save = function (fileName, formatType) {
+        fileName = fileName || 'Untitled';
+        if (isNullOrUndefined(this.viewer)) {
+            throw new Error('Invalid operation.');
+        }
+        if (formatType === 'Docx' && this.wordExportModule) {
+            if (this.wordExportModule) {
+                this.wordExportModule.save(this.viewer, fileName);
+            }
+        }
+        else if (formatType === 'Txt' && this.textExportModule) {
+            this.textExportModule.save(this.viewer, fileName);
+        }
+        else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {
+            var jsonString = this.serialize();
+            var blob = new Blob([jsonString], {
+                type: 'application/json'
+            });
+            Save.save(fileName + '.sfdt', blob);
+        }
+        else {
+            throw new Error('Invalid operation. Specified export is not enabled.');
+        }
+    };
+    /**
+     * Saves the document as blob.
+     * @param {FormatType} formatType
+     */
+    DocumentEditor.prototype.saveAsBlob = function (formatType) {
+        var _this = this;
+        if (isNullOrUndefined(this.viewer)) {
+            throw new Error('Invalid operation');
+        }
+        return new Promise(function (resolve, reject) {
+            if (formatType === 'Docx' && _this.wordExportModule) {
+                resolve(_this.wordExportModule.saveAsBlob(_this.viewer));
+            }
+            else if (formatType === 'Txt' && _this.textExportModule) {
+                resolve(_this.textExportModule.saveAsBlob(_this.viewer));
+            }
+            else if (formatType === 'Sfdt' && _this.enableSfdtExport && _this.sfdtExportModule) {
+                resolve(_this.sfdtExportModule.saveAsBlob(_this.viewer));
+            }
+        });
+    };
+    /**
+     * Opens a blank document.
+     */
+    DocumentEditor.prototype.openBlank = function () {
+        var section = new BodyWidget();
+        section.index = 0;
+        section.sectionFormat = new WSectionFormat(section);
+        var paragraph = new ParagraphWidget();
+        paragraph.index = 0;
+        paragraph.paragraphFormat = new WParagraphFormat(paragraph);
+        paragraph.characterFormat = new WCharacterFormat(paragraph);
+        section.childWidgets.push(paragraph);
+        paragraph.containerWidget = section;
+        var sections = [];
+        sections.push(section);
+        // tslint:disable-next-line:max-line-length
+        var hfs = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
+        if (this.viewer) {
+            this.clearPreservedCollectionsInViewer();
+            this.viewer.userCollection.push('Everyone');
+            this.viewer.setDefaultDocumentFormat();
+            this.viewer.headersFooters.push(hfs);
+            this.viewer.onDocumentChanged(sections);
+            if (this.editorModule) {
+                this.editorModule.intializeDefaultStyles();
+                var style = this.viewer.styles.findByName('Normal');
+                paragraph.paragraphFormat.baseStyle = style;
+                paragraph.paragraphFormat.listFormat.baseStyle = style;
+            }
+        }
+    };
+    /**
+     * Gets the style names based on given style type.
+     * @param styleType
+     */
+    DocumentEditor.prototype.getStyleNames = function (styleType) {
+        if (this.viewer) {
+            return this.viewer.styles.getStyleNames(styleType);
+        }
+        return [];
+    };
+    /**
+     * Gets the style objects on given style type.
+     * @param styleType
+     */
+    DocumentEditor.prototype.getStyles = function (styleType) {
+        if (this.viewer) {
+            return this.viewer.styles.getStyles(styleType);
+        }
+        return [];
+    };
+    /**
+     * Gets the bookmarks.
+     */
+    DocumentEditor.prototype.getBookmarks = function () {
+        var bookmarks = [];
+        if (this.viewer) {
+            bookmarks = this.viewer.getBookmarks(true);
+        }
+        return bookmarks;
+    };
+    /**
+     * Shows the dialog.
+     * @param {DialogType} dialogType
+     * @returns void
+     */
+    DocumentEditor.prototype.showDialog = function (dialogType) {
+        switch (dialogType) {
+            case 'Hyperlink':
+                this.showHyperlinkDialog();
+                break;
+            case 'Table':
+                this.showTableDialog();
+                break;
+            case 'Bookmark':
+                this.showBookmarkDialog();
+                break;
+            case 'TableOfContents':
+                this.showTableOfContentsDialog();
+                break;
+            case 'PageSetup':
+                this.showPageSetupDialog();
+                break;
+            case 'List':
+                this.showListDialog();
+                break;
+            case 'Styles':
+                this.showStylesDialog();
+                break;
+            case 'Style':
+                this.showStyleDialog();
+                break;
+            case 'Paragraph':
+                this.showParagraphDialog();
+                break;
+            case 'Font':
+                this.showFontDialog();
+                break;
+            case 'TableProperties':
+                this.showTablePropertiesDialog();
+                break;
+            case 'BordersAndShading':
+                this.showBordersAndShadingDialog();
+                break;
+            case 'TableOptions':
+                this.showTableOptionsDialog();
+                break;
+        }
+    };
+    /**
+     * Shows the options pane.
+     */
+    DocumentEditor.prototype.showOptionsPane = function () {
+        if (!isNullOrUndefined(this.optionsPaneModule) && !isNullOrUndefined(this.viewer)) {
+            this.optionsPaneModule.showHideOptionsPane(true);
+        }
+    };
+    /**
+     * Destroys all managed resources used by this object.
+     */
+    DocumentEditor.prototype.destroy = function () {
+        _super.prototype.destroy.call(this);
+        this.destroyDependentModules();
+        if (!isNullOrUndefined(this.viewer)) {
+            this.viewer.destroy();
+        }
+        this.viewer = undefined;
+        if (!isNullOrUndefined(this.element)) {
+            this.element.classList.remove('e-documenteditor');
+            this.element.innerHTML = '';
+        }
+        this.element = undefined;
+        this.findResultsList = [];
+        this.findResultsList = undefined;
+    };
+    /* tslint:disable */
+    DocumentEditor.prototype.destroyDependentModules = function () {
+        if (this.printModule) {
+            this.printModule.destroy();
+            this.printModule = undefined;
+        }
+        if (this.sfdtExportModule) {
+            this.sfdtExportModule.destroy();
+            this.sfdtExportModule = undefined;
+        }
+        if (this.optionsPaneModule) {
+            this.optionsPaneModule.destroy();
+            this.optionsPaneModule = undefined;
+        }
+        if (!isNullOrUndefined(this.hyperlinkDialogModule)) {
+            this.hyperlinkDialogModule.destroy();
+            this.hyperlinkDialogModule = undefined;
+        }
+        if (this.searchModule) {
+            this.searchModule.destroy();
+            this.searchModule = undefined;
+        }
+        if (this.contextMenuModule) {
+            this.contextMenuModule.destroy();
+            this.contextMenuModule = undefined;
+        }
+        if (this.editorModule) {
+            this.editorModule.destroy();
+            this.editorModule = undefined;
+        }
+        if (this.selectionModule) {
+            this.selectionModule.destroy();
+            this.selectionModule = undefined;
+        }
+        if (this.editorHistoryModule) {
+            this.editorHistoryModule.destroy();
+            this.editorHistoryModule = undefined;
+        }
+        if (!isNullOrUndefined(this.paragraphDialogModule)) {
+            this.paragraphDialogModule.destroy();
+            this.paragraphDialogModule = undefined;
+        }
+        if (this.pageSetupDialogModule) {
+            this.pageSetupDialogModule.destroy();
+            this.pageSetupDialogModule = undefined;
+        }
+        if (this.fontDialogModule) {
+            this.fontDialogModule.destroy();
+            this.fontDialogModule = undefined;
+        }
+        if (this.listDialogModule) {
+            this.listDialogModule.destroy();
+            this.listDialogModule = undefined;
+        }
+        if (this.imageResizerModule) {
+            this.imageResizerModule.destroy();
+            this.imageResizerModule = undefined;
+        }
+        if (this.tablePropertiesDialogModule) {
+            this.tablePropertiesDialogModule.destroy();
+            this.tablePropertiesDialogModule = undefined;
+        }
+        if (this.bordersAndShadingDialogModule) {
+            this.bordersAndShadingDialogModule.destroy();
+            this.bordersAndShadingDialogModule = undefined;
+        }
+        if (this.cellOptionsDialogModule) {
+            this.cellOptionsDialogModule.destroy();
+            this.cellOptionsDialogModule = undefined;
+        }
+        if (this.tableOptionsDialogModule) {
+            this.tableOptionsDialogModule.destroy();
+            this.tableOptionsDialogModule = undefined;
+        }
+        if (this.tableDialogModule) {
+            this.tableDialogModule.destroy();
+            this.tableDialogModule = undefined;
+        }
+        if (this.styleDialogModule) {
+            this.styleDialogModule = undefined;
+        }
+        if (this.bookmarkDialogModule) {
+            this.bookmarkDialogModule.destroy();
+            this.bookmarkDialogModule = undefined;
+        }
+        if (this.styleDialogModule) {
+            this.styleDialogModule.destroy();
+            this.styleDialogModule = undefined;
+        }
+        if (this.textExportModule) {
+            this.textExportModule.destroy();
+            this.textExportModule = undefined;
+        }
+        if (this.wordExportModule) {
+            this.wordExportModule.destroy();
+            this.wordExportModule = undefined;
+        }
+        if (this.tableOfContentsDialogModule) {
+            this.tableOfContentsDialogModule.destroy();
+            this.tableOfContentsDialogModule = undefined;
+        }
+        if (this.spellCheckerModule) {
+            this.spellCheckerModule.destroy();
+            this.spellCheckerModule = undefined;
+        }
+    };
+    var DocumentEditor_1;
+    __decorate([
+        Property('')
+    ], DocumentEditor.prototype, "currentUser", void 0);
+    __decorate([
+        Property('#FFFF00')
+    ], DocumentEditor.prototype, "userColor", void 0);
+    __decorate([
+        Property(20)
+    ], DocumentEditor.prototype, "pageGap", void 0);
+    __decorate([
+        Property('')
+    ], DocumentEditor.prototype, "documentName", void 0);
+    __decorate([
+        Property()
+    ], DocumentEditor.prototype, "serviceUrl", void 0);
+    __decorate([
+        Property(1)
+    ], DocumentEditor.prototype, "zoomFactor", void 0);
+    __decorate([
+        Property(true)
+    ], DocumentEditor.prototype, "isReadOnly", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enablePrint", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableSelection", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableEditor", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableEditorHistory", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableSfdtExport", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableWordExport", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableTextExport", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableOptionsPane", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableContextMenu", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableHyperlinkDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableBookmarkDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableTableOfContentsDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableSearch", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableParagraphDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableListDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableTablePropertiesDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableBordersAndShadingDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enablePageSetupDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableStyleDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableFontDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableTableOptionsDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableTableDialog", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableImageResizer", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableSpellCheck", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "acceptTab", void 0);
+    __decorate([
+        Property(true)
+    ], DocumentEditor.prototype, "useCtrlClickToFollowHyperlink", void 0);
+    __decorate([
+        Property('#000000')
+    ], DocumentEditor.prototype, "pageOutline", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableCursorOnReadOnly", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableLocalPaste", void 0);
+    __decorate([
+        Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
+    ], DocumentEditor.prototype, "serverActionSettings", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "documentChange", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "viewChange", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "zoomFactorChange", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "selectionChange", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "requestNavigate", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "contentChange", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "keyDown", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "searchResultsChange", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "created", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "destroyed", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "customContextMenuSelect", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "customContextMenuBeforeOpen", void 0);
+    DocumentEditor = DocumentEditor_1 = __decorate([
+        NotifyPropertyChanges
+    ], DocumentEditor);
+    return DocumentEditor;
+}(Component));
+/**
+ * The `ServerActionSettings` module is used to provide the server action methods of Document Editor.
+ */
+var ServerActionSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends(ServerActionSettings, _super);
+    function ServerActionSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate([
+        Property('SystemClipboard')
+    ], ServerActionSettings.prototype, "systemClipboard", void 0);
+    __decorate([
+        Property('SpellCheck')
+    ], ServerActionSettings.prototype, "spellCheck", void 0);
+    __decorate([
+        Property('RestrictEditing')
+    ], ServerActionSettings.prototype, "restrictEditing", void 0);
+    return ServerActionSettings;
+}(ChildProperty));
+/**
+ * The `ServerActionSettings` module is used to provide the server action methods of Document Editor Container.
+ */
+var ContainerServerActionSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends(ContainerServerActionSettings, _super);
+    function ContainerServerActionSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate([
+        Property('Import')
+    ], ContainerServerActionSettings.prototype, "import", void 0);
+    return ContainerServerActionSettings;
+}(ServerActionSettings));
+
+/**
+ * Print class
+ */
+var Print = /** @__PURE__ @class */ (function () {
+    function Print() {
+    }
+    /**
+     * Gets module name.
+     */
+    Print.prototype.getModuleName = function () {
+        return 'Print';
+    };
+    /**
+     * Prints the current viewer
+     * @param viewer
+     * @param printWindow
+     * @private
+     */
+    Print.prototype.print = function (viewer, printWindow) {
+        this.printWindow(viewer, navigator.userAgent, printWindow);
+    };
+    /**
+     * Opens print window and displays current page to print.
+     * @private
+     */
+    Print.prototype.printWindow = function (viewer, browserUserAgent, printWindow) {
+        var height = this.getPageHeight(viewer.pages);
+        var width = this.getPageWidth(viewer.pages);
+        var printElement = document.createElement('div');
+        printElement.style.width = '100%';
+        printElement.style.height = '100%';
+        printElement.style.overflow = 'scroll';
+        // Rendering canvas to print
+        this.generatePrintContent(viewer, printElement);
+        if (isNullOrUndefined(printWindow)) {
+            printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
+        }
+        if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Firefox')) !== -1) {
+            // Chrome and Firefox
+            printWindow.document.write('<!DOCTYPE html>');
+            // tslint:disable-next-line:max-line-length
+            printWindow.document.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100 %; } img { height: 100 %; width: 100 %; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + width.toString() + 'px ' + height.toString() + 'px; }@media print{ body { margin: 0cm; }</style></head> <body><center>');
+        }
+        else {
+            // Internet Explorer and Edge
+            // tslint:disable-next-line:max-line-length
+            printWindow.document.write('<html><head><style>@page{margin:0;size:' + width.toString() + 'px ' + height.toString() + 'px;}</style></head><body><center>');
+        }
+        // tslint:disable-next-line:max-line-length
+        printWindow.document.write(printElement.innerHTML + '</center><script> (function() { window.ready = true; })(); </script></body></html>');
+        printElement = undefined;
+        printWindow.document.close();
+        printWindow.focus();
+        var interval = setInterval(function () {
+            if (printWindow.ready) {
+                printWindow.print();
+                printWindow.close();
+                clearInterval(interval);
+            }
+        }, 500);
+    };
+    /**
+     * Generates print content.
+     * @private
+     */
+    Print.prototype.generatePrintContent = function (viewer, element) {
+        // Rendering canvas to print
+        var htmlString = '';
+        for (var i = 0; i < viewer.pages.length; i++) {
+            var page = viewer.pages[i];
+            var pageHeight = page.boundingRectangle.height;
+            var pageWidth = page.boundingRectangle.width;
+            viewer.render.isPrinting = true;
+            viewer.render.renderWidgets(page, 0, 0, 0, 0);
+            var canvasURL = viewer.render.pageCanvas.toDataURL();
+            viewer.render.isPrinting = false;
+            // tslint:disable-next-line:max-line-length
+            htmlString += '<div><img src=' + canvasURL + ' style="margin:0px;display:block;width: ' + pageWidth.toString() + 'px; height:' + pageHeight.toString() + 'px; "/></div><br/>';
+        }
+        element.innerHTML = htmlString;
+    };
+    /**
+     * Gets page width.
+     * @param pages
+     * @private
+     */
+    Print.prototype.getPageWidth = function (pages) {
+        var width = 0;
+        for (var i = 0; i < pages.length; i++) {
+            if (width < pages[i].boundingRectangle.width) {
+                width = pages[i].boundingRectangle.width;
+            }
+        }
+        return width;
+    };
+    /**
+     *  Gets page height.
+     * @private
+     */
+    Print.prototype.getPageHeight = function (pages) {
+        var height = 0;
+        for (var i = 0; i < pages.length; i++) {
+            if (height < pages[i].boundingRectangle.height) {
+                height = pages[i].boundingRectangle.height;
+            }
+        }
+        return height;
+    };
+    /**
+     * @private
+     */
+    Print.prototype.destroy = function () {
+        return;
+    };
+    return Print;
+}());
+
 var CONTEXTMENU_COPY = '_contextmenu_copy';
 var CONTEXTMENU_CUT = '_contextmenu_cut';
 var CONTEXTMENU_PASTE = '_contextmenu_paste';
@@ -11244,6 +14566,9 @@ var CONTEXTMENU_AUTO_FIT_TO_WINDOW = '_contextmenu_auto_fit_window';
 var CONTEXTMENU_FIXED_COLUMN_WIDTH = '_contextmenu_fixed_column_width';
 var CONTEXTMENU_CONTINUE_NUMBERING = '_contextmenu_continue_numbering';
 var CONTEXTMENU_RESTART_AT = '_contextmenu_restart_at';
+var CONTEXTMENU_SPELLING_DIALOG = '_contextmenu_spelling_dialog';
+var CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS = '_contextmenu_otherSuggestions_spellcheck_';
+var CONTEXTMENU_NO_SUGGESTION = '_contextmenu_no_suggestion';
 /**
  * Context Menu class
  */
@@ -11275,9 +14600,40 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.onContextMenuInternal = function (event) {
-            if (_this.showHideElements(_this.viewer.selection)) {
-                _this.contextMenuInstance.open(event.y, event.x);
+            if (_this.viewer.owner.enableSpellCheck && _this.spellChecker.allowSpellCheckAndSuggestion) {
                 event.preventDefault();
+                _this.currentContextInfo = _this.spellChecker.findCurretText();
+                var splittedSuggestion = void 0;
+                /* tslint:disable:no-any */
+                var allSuggestions = void 0;
+                var exactData = _this.spellChecker.manageSpecialCharacters(_this.currentContextInfo.text, undefined, true);
+                if (!isNullOrUndefined(exactData) && _this.spellChecker.errorWordCollection.containsKey(exactData)) {
+                    _this.spellChecker.currentContextInfo = _this.currentContextInfo;
+                    if (_this.spellChecker.errorSuggestions.containsKey(exactData)) {
+                        allSuggestions = _this.spellChecker.errorSuggestions.get(exactData).slice();
+                        splittedSuggestion = _this.spellChecker.handleSuggestions(allSuggestions, event);
+                        _this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                    }
+                    else {
+                        _this.processSuggestions(allSuggestions, splittedSuggestion, event);
+                    }
+                }
+                else {
+                    _this.destroy();
+                    _this.initContextMenu(_this.locale);
+                    if (_this.showHideElements(_this.viewer.selection)) {
+                        _this.contextMenuInstance.open(event.y, event.x);
+                        event.preventDefault();
+                    }
+                }
+            }
+            else {
+                _this.destroy();
+                _this.initContextMenu(_this.locale);
+                if (_this.showHideElements(_this.viewer.selection)) {
+                    _this.contextMenuInstance.open(event.y, event.x);
+                    event.preventDefault();
+                }
             }
         };
         this.viewer = viewer;
@@ -11285,6 +14641,17 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         this.locale.setLocale(this.viewer.owner.locale);
         this.initContextMenu(this.locale, this.viewer.owner.enableRtl);
     }
+    Object.defineProperty(ContextMenu$$1.prototype, "spellChecker", {
+        /**
+         * Gets the spell checker
+         * @private
+         */
+        get: function () {
+            return this.viewer.owner.spellChecker;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Gets module name.
      */
@@ -11308,7 +14675,6 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         ul.id = this.viewer.owner.containerId + 'e-de-contextmenu-list';
         ul.style.listStyle = 'none';
         ul.style.margin = '0px';
-        ul.style.padding = '0px';
         ul.style.maxHeight = 'auto';
         ul.oncontextmenu = this.disableBrowserContextmenu;
         this.contextMenu.appendChild(ul);
@@ -11621,10 +14987,38 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             case id + CONTEXTMENU_FIXED_COLUMN_WIDTH:
                 this.viewer.owner.editor.autoFitTable('FixedColumnWidth');
                 break;
-            default:
-                // fires customContextMenuSelect while selecting the added custom menu item
-                this.viewer.owner.fireCustomContextMenuSelect(item);
+            case id + CONTEXTMENU_SPELLING_DIALOG:
+                var contextInfo = this.spellChecker.retriveText();
+                this.currentContextInfo = null;
+                this.viewer.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
                 break;
+            default:
+                var expectedData = this.viewer.owner.element.id + CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS;
+                if (item.substring(0, expectedData.length) === expectedData) {
+                    var content = item.substring(item.lastIndexOf('_') + 1);
+                    this.callSelectedOption(content);
+                    break;
+                }
+                else {
+                    // fires customContextMenuSelect while selecting the added custom menu item
+                    this.viewer.owner.fireCustomContextMenuSelect(item);
+                    break;
+                }
+        }
+    };
+    /**
+     * Method to call the selected item
+     * @param {string} content
+     */
+    ContextMenu$$1.prototype.callSelectedOption = function (content) {
+        if (content === 'Add To Dictionary') {
+            this.spellChecker.handleAddToDictionary();
+        }
+        else if (content === 'Ignore All') {
+            this.spellChecker.handleIgnoreAllItems();
+        }
+        else {
+            this.spellChecker.manageReplace(content);
         }
     };
     /**
@@ -11656,6 +15050,60 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         else {
             return this.customMenuItems.concat(menuItems);
         }
+    };
+    /**
+     * Method to process suggestions to add in context menu
+     * @param {any} allSuggestions
+     * @param {string[]} splittedSuggestion
+     * @param {PointerEvent} event
+     * @private
+     */
+    /* tslint:disable:no-any */
+    ContextMenu$$1.prototype.processSuggestions = function (allSuggestions, splittedSuggestion, event) {
+        this.addCustomMenu(this.constructContextmenu(allSuggestions, splittedSuggestion));
+        this.noSuggestion = document.getElementById(this.viewer.owner.element.id + CONTEXTMENU_NO_SUGGESTION);
+        if (!isNullOrUndefined(this.noSuggestion)) {
+            this.noSuggestion.style.display = 'block';
+            classList(this.noSuggestion, ['e-disabled'], ['e-focused']);
+        }
+        if (!isNullOrUndefined(event) && this.showHideElements(this.viewer.selection)) {
+            this.contextMenuInstance.open(event.y, event.x);
+            event.preventDefault();
+        }
+    };
+    /**
+     * Method to add inline menu
+     * @private
+     */
+    /* tslint:disable:no-any */
+    ContextMenu$$1.prototype.constructContextmenu = function (allSuggestion, splittedSuggestion) {
+        var contextMenuItems = [];
+        // classList(this.noSuggestion,['e-disabled'],[]);
+        if (isNullOrUndefined(allSuggestion) || allSuggestion.length === 0) {
+            contextMenuItems.push({ text: 'no suggestions', id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
+        }
+        else {
+            for (var i = 0; i < allSuggestion.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
+            }
+        }
+        contextMenuItems.push({ separator: true });
+        if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
+            contextMenuItems.push({ text: 'More Suggestion', items: splittedSuggestion });
+            contextMenuItems.push({ separator: true });
+        }
+        else {
+            // tslint:disable-next-line:max-line-length
+            contextMenuItems.push({ text: 'Add To Dictionary ', id: '_contextmenu_otherSuggestions_spellcheck_Add To Dictionary', iconCss: '' });
+        }
+        contextMenuItems.push({ text: 'Ignore Once', id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
+        contextMenuItems.push({ text: 'Ignore All', id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
+        contextMenuItems.push({ separator: true });
+        // tslint:disable-next-line:max-line-length
+        contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
+        contextMenuItems.push({ separator: true });
+        return contextMenuItems;
     };
     ContextMenu$$1.prototype.showHideElements = function (selection) {
         if (isNullOrUndefined(selection)) {
@@ -12036,6 +15484,26 @@ var Layout = /** @__PURE__ @class */ (function () {
         this.isBidiReLayout = false;
         this.viewer = viewer;
     }
+    Layout.prototype.isSameStyle = function (currentParagraph, isAfterSpacing) {
+        var nextOrPrevSibling = undefined;
+        if (isAfterSpacing) {
+            if (currentParagraph.nextWidget instanceof ParagraphWidget) {
+                nextOrPrevSibling = currentParagraph.nextWidget;
+            }
+        }
+        else {
+            if (currentParagraph.previousWidget instanceof ParagraphWidget) {
+                nextOrPrevSibling = currentParagraph.previousWidget;
+            }
+        }
+        if (isNullOrUndefined(nextOrPrevSibling)) {
+            return false;
+        }
+        if (currentParagraph.paragraphFormat.baseStyle === nextOrPrevSibling.paragraphFormat.baseStyle) {
+            return currentParagraph.paragraphFormat.contextualSpacing;
+        }
+        return false;
+    };
     /**
      * @private
      */
@@ -12087,12 +15555,15 @@ var Layout = /** @__PURE__ @class */ (function () {
             this.layoutSection(section, 0, this.viewer);
         }
         this.updateFieldElements();
+        /* tslint:disable:align */
         setTimeout(function () {
             if (_this.viewer) {
+                _this.viewer.isScrollHandler = true;
                 _this.viewer.updateScrollBars();
+                _this.viewer.isScrollHandler = false;
                 _this.isInitialLoad = false;
             }
-        });
+        }, 50);
     };
     /**
      * Layouts the items
@@ -12418,6 +15889,12 @@ var Layout = /** @__PURE__ @class */ (function () {
         while (element instanceof ElementBox) {
             this.layoutElement(element, paragraph);
             line = element.line;
+            if (element instanceof TextElementBox) {
+                var textElement = element;
+                if (!isNullOrUndefined(textElement.errorCollection) && textElement.errorCollection.length > 0) {
+                    textElement.ischangeDetected = true;
+                }
+            }
             if (!this.isRTLLayout) {
                 element = element.nextElement;
             }
@@ -12456,7 +15933,8 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             return;
         }
-        if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox) {
+        if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
+            element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox) {
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
                 this.moveElementFromNextLine(line);
             }
@@ -12581,7 +16059,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                         return false;
                     }
                 }
-                if (elementBox instanceof TextElementBox) {
+                if (elementBox instanceof TextElementBox || elementBox instanceof ImageElementBox) {
                     return true;
                 }
                 elementBox = elementBox.nextNode;
@@ -12741,7 +16219,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             topMargin += lineSpacing - (topMargin + height + bottomMargin);
         }
         topMargin += beforeSpacing;
-        bottomMargin += HelperMethods.convertPointToPixel(paragraph.paragraphFormat.afterSpacing);
+        bottomMargin += HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
         for (var i = 0; i < lineWidget.children.length; i++) {
             var element = lineWidget.children[i];
             if (element instanceof ListTextElementBox) {
@@ -12967,11 +16445,41 @@ var Layout = /** @__PURE__ @class */ (function () {
             elementBox.width -= splittedElementBox.width;
             splittedElementBox.height = elementBox.height;
             splittedElementBox.baselineOffset = elementBox.baselineOffset;
+            this.splitErrorCollection(elementBox, splittedElementBox);
             this.addSplittedLineWidget(lineWidget, indexOf, splittedElementBox);
             this.addElementToLine(paragraph, elementBox);
             if (elementBox.width === 0) {
                 lineWidget.children.splice(indexOf, 1);
             }
+        }
+    };
+    /**
+     * Method to include error collection on splitted element
+     * @private
+     * @param {ElementBox} elementBox
+     * @param {ElementBox} splittedBox
+     */
+    Layout.prototype.splitErrorCollection = function (elementBox, splittedBox) {
+        if (elementBox.errorCollection.length > 0) {
+            var errorCollection = [];
+            var ignoreItems = elementBox.ignoreOnceItems;
+            for (var i = 0; i < elementBox.errorCollection.length; i++) {
+                errorCollection.push(elementBox.errorCollection[i]);
+            }
+            for (var j = 0; j < elementBox.errorCollection.length; j++) {
+                var index = elementBox.text.indexOf(elementBox.errorCollection[j].text);
+                var textElement = elementBox.errorCollection[j];
+                if (index < 0) {
+                    errorCollection.splice(0, 1);
+                    splittedBox.errorCollection.push(textElement);
+                }
+                else if (splittedBox.text.indexOf(textElement.text) > 0) {
+                    splittedBox.errorCollection.push(textElement);
+                }
+            }
+            splittedBox.ignoreOnceItems = ignoreItems;
+            elementBox.ignoreOnceItems = [];
+            elementBox.errorCollection = errorCollection;
         }
     };
     /**
@@ -13000,6 +16508,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             var lineIndex = paragraph.childWidgets.indexOf(lineWidget);
             var splittedElement = new TextElementBox();
             splittedElement.text = text;
+            splittedElement.errorCollection = textElement.errorCollection;
             textElement.text = textElement.text.substr(0, index);
             splittedElement.characterFormat.copyFormat(textElement.characterFormat);
             splittedElement.width = this.viewer.textHelper.getWidth(splittedElement.text, characterFormat);
@@ -13171,7 +16680,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         }
         //Updates after spacing at the bottom of Paragraph last line.
         if (isParagraphEnd) {
-            afterSpacing = HelperMethods.convertPointToPixel(paraFormat.afterSpacing);
+            afterSpacing = HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
         }
         if (!this.isBidiReLayout && (paraFormat.bidi || this.isContainsRtl(line))) {
             this.reArrangeElementsForRtl(line, paraFormat.bidi);
@@ -13822,7 +17331,14 @@ var Layout = /** @__PURE__ @class */ (function () {
         var isCustomTab = false;
         var tabs = paragraph.paragraphFormat.getUpdatedTabs();
         //  Calculate hanging width
-        if (viewer.clientActiveArea.x < viewer.clientArea.x) {
+        var clientWidth = 0;
+        if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
+            clientWidth = this.viewer.clientArea.x + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+        }
+        else {
+            clientWidth = this.viewer.clientArea.x;
+        }
+        if (viewer.clientActiveArea.x < clientWidth) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
@@ -14036,15 +17552,30 @@ var Layout = /** @__PURE__ @class */ (function () {
     Layout.prototype.getBeforeSpacing = function (paragraph) {
         var beforeSpacing = 0;
         if (paragraph.previousWidget instanceof ParagraphWidget) {
-            if (paragraph.previousWidget.paragraphFormat.afterSpacing < paragraph.paragraphFormat.beforeSpacing) {
+            var afterSpacing = this.getAfterSpacing(paragraph.previousWidget);
+            if (afterSpacing < paragraph.paragraphFormat.beforeSpacing) {
                 // tslint:disable-next-line:max-line-length
-                beforeSpacing = paragraph.paragraphFormat.beforeSpacing - paragraph.previousWidget.paragraphFormat.afterSpacing;
+                beforeSpacing = paragraph.paragraphFormat.beforeSpacing - afterSpacing;
             }
         }
         else {
             beforeSpacing = paragraph.paragraphFormat.beforeSpacing;
         }
-        return beforeSpacing;
+        if (this.isSameStyle(paragraph, false)) {
+            return 0;
+        }
+        else {
+            return beforeSpacing;
+        }
+    };
+    Layout.prototype.getAfterSpacing = function (paragraph) {
+        var afterSpacing = paragraph.paragraphFormat.afterSpacing;
+        if (this.isSameStyle(paragraph, true)) {
+            return 0;
+        }
+        else {
+            return afterSpacing;
+        }
     };
     /**
      * Gets line spacing.
@@ -16968,6 +20499,7 @@ var Layout = /** @__PURE__ @class */ (function () {
     return Layout;
 }());
 
+// tslint:disable-next-line:max-line-length
 /**
  * @private
  */
@@ -16976,7 +20508,9 @@ var Renderer = /** @__PURE__ @class */ (function () {
         this.isPrinting = false;
         this.pageLeft = 0;
         this.pageTop = 0;
+        this.pageIndex = -1;
         this.isFieldCode = false;
+        this.isspellCheckHandled = false;
         this.viewer = viewer;
     }
     Object.defineProperty(Renderer.prototype, "pageCanvas", {
@@ -16993,6 +20527,17 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 return this.pageCanvasIn;
             }
             return isNullOrUndefined(this.viewer) ? undefined : this.viewer.containerCanvas;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Renderer.prototype, "spellChecker", {
+        /**
+         * Gets the spell checker
+         * @private
+         */
+        get: function () {
+            return this.viewer.owner.spellChecker;
         },
         enumerable: true,
         configurable: true
@@ -17062,6 +20607,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         this.pageContext.strokeRect(left, top, width, height);
         this.pageLeft = left;
         this.pageTop = top;
+        this.pageIndex = page.index;
         if (this.isPrinting) {
             this.setPageSize(page);
         }
@@ -17083,8 +20629,10 @@ var Renderer = /** @__PURE__ @class */ (function () {
         if (this.viewer.owner.enableHeaderAndFooter && !this.isPrinting) {
             this.renderHeaderSeparator(page, this.pageLeft, this.pageTop, page.headerWidget);
         }
-        this.pageLeft = 0;
-        this.pageTop = 0;
+        if (!this.isspellCheckHandled) {
+            this.pageLeft = 0;
+            this.pageTop = 0;
+        }
         this.pageContext.restore();
     };
     /**
@@ -17262,12 +20810,15 @@ var Renderer = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(header)) {
             return;
         }
+        //Updated client area for current page
+        page.viewer.updateClientArea(page.bodyWidgets[0].sectionFormat, page);
         var top = page.viewer.clientArea.y;
+        var parentTable = header.ownerTable.getSplitWidgets()[0];
         for (var i = 0; i <= header.rowIndex; i++) {
-            if (header.ownerTable.getSplitWidgets()[0].childWidgets.length === 0) {
+            if (parentTable.childWidgets.length === 0) {
                 return;
             }
-            var row = header.ownerTable.getSplitWidgets()[0].childWidgets[0];
+            var row = parentTable.childWidgets[i];
             var headerWidget = row.clone();
             headerWidget.containerWidget = row.containerWidget;
             // tslint:disable-next-line:max-line-length
@@ -17375,6 +20926,16 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        // EditRegion highlight 
+        if (page.viewer.selection && !isNullOrUndefined(page.viewer.selection.editRegionHighlighters)
+            && page.viewer.selection.editRegionHighlighters.containsKey(lineWidget)) {
+            var widgetInfo = page.viewer.selection.editRegionHighlighters.get(lineWidget);
+            for (var i = 0; i < widgetInfo.length; i++) {
+                this.pageContext.fillStyle = widgetInfo[i].color !== '' ? widgetInfo[i].color : '#add8e6';
+                // tslint:disable-next-line:max-line-length
+                this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
+            }
+        }
         for (var i = 0; i < lineWidget.children.length; i++) {
             var elementBox = lineWidget.children[i];
             if (elementBox instanceof FieldElementBox || this.isFieldCode ||
@@ -17391,6 +20952,13 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 if (this.getScaledValue(top + elementBox.margin.top, 2) + elementBox.height * this.viewer.zoomFactor < 0 ||
                     this.getScaledValue(top + elementBox.margin.top, 2) > this.viewer.visibleBounds.height) {
                     left += elementBox.width + elementBox.margin.left;
+                    if (elementBox instanceof TextElementBox) {
+                        elementBox.canTrigger = true;
+                        elementBox.isVisible = false;
+                        if (!elementBox.isSpellChecked) {
+                            elementBox.ischangeDetected = true;
+                        }
+                    }
                     continue;
                 }
             }
@@ -17401,6 +20969,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 this.renderImageElementBox(elementBox, left, top, underlineY);
             }
             else {
+                elementBox.isVisible = true;
                 this.renderTextElementBox(elementBox, left, top, underlineY);
             }
             left += elementBox.width + elementBox.margin.left;
@@ -17560,6 +21129,27 @@ var Renderer = /** @__PURE__ @class */ (function () {
         text = this.viewer.textHelper.setText(text, isRTL, format.bdo, true);
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), scaledWidth);
+        // tslint:disable-next-line:max-line-length
+        if ((this.viewer.owner.enableSpellCheck && !this.spellChecker.removeUnderline) && (this.viewer.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.viewer.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))) {
+            elementBox.canTrigger = true;
+            this.isspellCheckHandled = true;
+            var errorDetails = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
+            if (errorDetails.errorFound) {
+                color = '#FF0000';
+                for (var i = 0; i < errorDetails.elements.length; i++) {
+                    var currentElement = errorDetails.elements[i];
+                    // tslint:disable-next-line:max-line-length
+                    if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
+                        // tslint:disable-next-line:max-line-length
+                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y, underlineY, color, 'Single', format.baselineAlignment);
+                    }
+                }
+            }
+            else if (elementBox.ischangeDetected || this.viewer.triggerElementsOnLoading) {
+                elementBox.ischangeDetected = false;
+                this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
+            }
+        }
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
             // tslint:disable-next-line:max-line-length
             this.renderUnderline(elementBox, left, top, underlineY, color, format.underline, format.baselineAlignment);
@@ -17570,6 +21160,165 @@ var Renderer = /** @__PURE__ @class */ (function () {
         if (isHeightType) {
             this.pageContext.restore();
         }
+    };
+    /**
+     * Method to handle spell check for modified or newly added elements
+     * @param {TextElementBox} elementBox
+     * @param {number} underlineY
+     * @param {number} left
+     * @param {number} top
+     * @param {number} baselineAlignment
+     */
+    // tslint:disable-next-line:max-line-length
+    Renderer.prototype.handleChangeDetectedElements = function (elementBox, underlineY, left, top, baselineAlignment) {
+        var _this = this;
+        var checkText = elementBox.text.trim();
+        var beforeIndex = this.pageIndex;
+        if (!this.spellChecker.checkElementCanBeCombined(elementBox, underlineY, beforeIndex, true)) {
+            /* tslint:disable:no-any */
+            var splittedText = checkText.split(/[\s]+/);
+            var markindex = elementBox.line.getOffset(elementBox, 0);
+            var spaceValue = 1;
+            if (splittedText.length > 1) {
+                for (var i = 0; i < splittedText.length; i++) {
+                    var currentText = splittedText[i];
+                    var retrievedText = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);
+                    // tslint:disable-next-line:max-line-length
+                    if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
+                        this.handleUnorderdElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1, beforeIndex);
+                        markindex += currentText.length + spaceValue;
+                    }
+                }
+            }
+            else {
+                var retrievedText = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
+                // tslint:disable-next-line:max-line-length
+                if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
+                    var indexInLine_1 = elementBox.indexInOwner;
+                    var indexinParagraph_1 = elementBox.line.paragraph.indexInOwner;
+                    /* tslint:disable:no-any */
+                    // tslint:disable-next-line:max-line-length
+                    this.spellChecker.CallSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then(function (data) {
+                        /* tslint:disable:no-any */
+                        var jsonObject = JSON.parse(data);
+                        // tslint:disable-next-line:max-line-length
+                        var canUpdate = (beforeIndex === _this.pageIndex || elementBox.isVisible) && (indexInLine_1 === elementBox.indexInOwner) && (indexinParagraph_1 === elementBox.line.paragraph.indexInOwner);
+                        // tslint:disable-next-line:max-line-length
+                        _this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, canUpdate);
+                    });
+                }
+            }
+        }
+    };
+    /**
+     * Method to handle spell check combine and splitted text elements
+     * @param {string} currentText
+     * @param {TextElementBox} elementBox
+     * @param {number} underlineY
+     * @param {number} iteration
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    Renderer.prototype.handleUnorderdElements = function (currentText, elementBox, underlineY, iteration, markindex, isLastItem, beforeIndex) {
+        var _this = this;
+        var indexInLine = elementBox.indexInOwner;
+        var indexinParagraph = elementBox.line.paragraph.indexInOwner;
+        /* tslint:disable:no-any */
+        // tslint:disable-next-line:max-line-length
+        this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then(function (data) {
+            /* tslint:disable:no-any */
+            var jsonObject = JSON.parse(data);
+            // tslint:disable-next-line:max-line-length
+            var canUpdate = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
+            // tslint:disable-next-line:max-line-length
+            _this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markindex, isLastItem);
+        });
+    };
+    /**
+     * Render Wavy Line
+     * @param {ElementBox} elementBox
+     * @param {number} left
+     * @param {number} top
+     * @param {number} underlineY
+     * @param {string} color
+     * @param {Underline} underline
+     * @param {BaselineAlignment} baselineAlignment
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    Renderer.prototype.renderWavyline = function (elementBox, left, top, underlineY, color, underline, baselineAlignment) {
+        if (elementBox.text.length > 1) {
+            var renderedHeight = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
+            var topMargin = elementBox.margin.top;
+            var underlineHeight = renderedHeight / 20;
+            var frequencyRange = 0.5;
+            var amplitudeRange = 1.0;
+            var stepToCover = .7;
+            var y = 0;
+            if (baselineAlignment === 'Subscript' || elementBox instanceof ListTextElementBox) {
+                y = (renderedHeight - 2 * underlineHeight) + top;
+                topMargin += elementBox.height - renderedHeight;
+                y += topMargin > 0 ? topMargin : 0;
+            }
+            else {
+                y = underlineY + top;
+            }
+            // tslint:disable-next-line:max-line-length
+            var specialCharacter = this.spellChecker.getSpecialCharactersInfo(elementBox.text, elementBox.characterFormat);
+            // tslint:disable-next-line:max-line-length
+            var whiteSpaceData = this.spellChecker.getWhiteSpaceCharacterInfo(elementBox.text, elementBox.characterFormat);
+            // tslint:disable-next-line:max-line-length
+            var x1 = this.getScaledValue(left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left, 1);
+            var y1 = this.getScaledValue(y, 2);
+            // tslint:disable-next-line:max-line-length
+            var x2 = x1 + this.getScaledValue(elementBox.width - (specialCharacter.beginningWidth + specialCharacter.endWidth) - whiteSpaceData.width);
+            var startingPoint = new Point(x1, y1);
+            var endingPoint = new Point(x2, y1);
+            this.drawWavy(startingPoint, endingPoint, (x2 - x1) * frequencyRange, amplitudeRange, stepToCover, color, elementBox.height);
+        }
+    };
+    /**
+     * Draw wavy line
+     * @param {Point} from
+     * @param {Point} to
+     * @param {Number} frequency
+     * @param {Number} amplitude
+     * @param {Number} step
+     * @param {string} color
+     * @param {Number} negative
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    Renderer.prototype.drawWavy = function (from, to, frequency, amplitude, step, color, height, negative) {
+        this.pageContext.save();
+        this.pageContext.fillStyle = '#ffffff';
+        this.pageContext.fillRect(from.x, from.y - amplitude, (to.x - from.x), amplitude * 3);
+        this.pageContext.restore();
+        this.pageContext.lineWidth = 1;
+        this.pageContext.lineCap = 'round';
+        this.pageContext.strokeStyle = color;
+        this.pageContext.beginPath();
+        //this.pageContext.save();
+        var cx = 0;
+        var cy = 0;
+        var fx = from.x;
+        var fy = from.y;
+        var tx = to.x;
+        var ty = to.y;
+        var i = 0;
+        var waveOffsetLength = 0;
+        var ang = Math.atan2(ty - fy, tx - fx);
+        var distance = Math.sqrt((fx - tx) * (fx - tx) + (fy - ty) * (fy - ty));
+        var a = amplitude * 1;
+        var f = Math.PI * frequency;
+        for (i; i <= distance; i += step) {
+            waveOffsetLength = Math.sin((i / distance) * f) * a;
+            cx = from.x + Math.cos(ang) * i + Math.cos(ang - Math.PI / 2) * waveOffsetLength;
+            cy = from.y + Math.sin(ang) * i + Math.sin(ang - Math.PI / 2) * waveOffsetLength;
+            i > 0 ? this.pageContext.lineTo(cx, cy) : this.pageContext.moveTo(cx, cy);
+        }
+        this.pageContext.stroke();
+        this.pageContext.restore();
     };
     /**
      * Returns tab leader
@@ -18313,6 +22062,700 @@ var Zoom = /** @__PURE__ @class */ (function () {
     return Zoom;
 }());
 
+/**
+ * @private
+ */
+var AddUserDialog = /** @__PURE__ @class */ (function () {
+    function AddUserDialog(viewer, owner) {
+        var _this = this;
+        /**
+         * @private
+         */
+        this.show = function () {
+            var localObj = new L10n('documenteditor', _this.viewer.owner.defaultLocale);
+            localObj.setLocale(_this.viewer.owner.locale);
+            if (!_this.target) {
+                _this.initUserDialog(localObj, _this.viewer.owner.enableRtl);
+            }
+            _this.viewer.dialog.header = localObj.getConstant('Add Users');
+            _this.viewer.dialog.height = 'auto';
+            _this.viewer.dialog.width = 'auto';
+            _this.viewer.dialog.content = _this.target;
+            _this.viewer.dialog.beforeOpen = _this.loadUserDetails;
+            _this.viewer.dialog.close = _this.viewer.updateFocus;
+            _this.viewer.dialog.buttons = [
+                {
+                    click: _this.okButtonClick,
+                    buttonModel: {
+                        content: localObj.getConstant('Ok'), cssClass: 'e-flat', isPrimary: true
+                    }
+                },
+                {
+                    click: _this.hideDialog,
+                    buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat' }
+                }, {
+                    click: _this.deleteButtonClick,
+                    buttonModel: { content: localObj.getConstant('Delete'), cssClass: 'e-flat e-user-delete' }
+                }
+            ];
+            _this.viewer.dialog.dataBind();
+            _this.viewer.dialog.show();
+        };
+        this.loadUserDetails = function () {
+            _this.viewer.restrictEditingPane.addedUser.dataSource = _this.viewer.userCollection;
+            _this.viewer.restrictEditingPane.addedUser.refresh();
+        };
+        /**
+         * @private
+         */
+        this.okButtonClick = function () {
+            _this.viewer.restrictEditingPane.showStopProtectionPane(false);
+            _this.viewer.restrictEditingPane.loadPaneValue();
+            _this.viewer.dialog.hide();
+        };
+        /**
+         * @private
+         */
+        this.hideDialog = function () {
+            _this.textBoxInput.value = '';
+            _this.viewer.dialog.hide();
+        };
+        /**
+         * @private
+         */
+        this.onKeyUpOnDisplayBox = function () {
+            _this.addButton.disabled = _this.textBoxInput.value === '';
+        };
+        this.addButtonClick = function () {
+            if (_this.validateUserName(_this.textBoxInput.value)) {
+                if (_this.viewer.userCollection.indexOf(_this.textBoxInput.value) === -1) {
+                    _this.viewer.userCollection.push(_this.textBoxInput.value);
+                }
+                _this.userList.dataSource = _this.viewer.userCollection;
+                _this.userList.refresh();
+                _this.textBoxInput.value = '';
+            }
+            else {
+                DialogUtility.alert('Invalid user name');
+            }
+        };
+        this.deleteButtonClick = function () {
+            var index = _this.viewer.userCollection.indexOf(_this.userList.getSelectedItems().text);
+            if (index > -1) {
+                _this.viewer.userCollection.splice(index, 1);
+                _this.userList.dataSource = _this.viewer.userCollection;
+                _this.userList.refresh();
+            }
+        };
+        this.viewer = viewer;
+        this.owner = owner;
+    }
+    /**
+     * @private
+     */
+    AddUserDialog.prototype.initUserDialog = function (localValue, isRtl) {
+        var instance = this;
+        var id = this.viewer.owner.containerId + '_addUser';
+        this.target = createElement('div', { id: id, className: 'e-de-user-dlg' });
+        var headerValue = localValue.getConstant('Enter User');
+        var dlgFields = createElement('div', { innerHTML: headerValue, className: 'e-bookmark-dlgfields' });
+        this.target.appendChild(dlgFields);
+        var commonDiv = createElement('div', { className: 'e-de-user-dlg-common' });
+        this.target.appendChild(commonDiv);
+        var adduserDiv = createElement('div', { className: 'e-de-user-dlg-list', styles: 'display:inline-flex' });
+        commonDiv.appendChild(adduserDiv);
+        if (isRtl) {
+            adduserDiv.classList.add('e-de-rtl');
+        }
+        var textBoxDiv = createElement('div', { className: 'e-de-user-dlg-textboxdiv' });
+        adduserDiv.appendChild(textBoxDiv);
+        // tslint:disable-next-line:max-line-length
+        this.textBoxInput = createElement('input', { className: 'e-input e-de-user-dlg-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } });
+        this.textBoxInput.setAttribute('type', 'text');
+        textBoxDiv.appendChild(this.textBoxInput);
+        this.textBoxInput.addEventListener('keyup', instance.onKeyUpOnDisplayBox);
+        var addButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Add'), id: 'add',
+            attrs: { type: 'button' }
+        });
+        adduserDiv.appendChild(addButtonElement);
+        addButtonElement.addEventListener('click', this.addButtonClick);
+        this.addButton = new Button({ cssClass: 'e-de-user-add-btn' });
+        this.addButton.disabled = true;
+        this.addButton.appendTo(addButtonElement);
+        this.addButton.addEventListener('click', this.addButtonClick);
+        var userCollectionDiv = createElement('div');
+        commonDiv.appendChild(userCollectionDiv);
+        var userDiv = createElement('div', { innerHTML: localValue.getConstant('Users'), className: 'e-de-user-dlg-user' });
+        userCollectionDiv.appendChild(userDiv);
+        var listviewDiv = createElement('div', { id: 'user_listView' });
+        userCollectionDiv.appendChild(listviewDiv);
+        this.userList = new ListView({
+            cssClass: 'e-de-user-listview'
+        });
+        this.userList.appendTo(listviewDiv);
+    };
+    AddUserDialog.prototype.validateUserName = function (value) {
+        if (value.indexOf('@') === -1) {
+            return false;
+        }
+        else {
+            var parts = value.split('@');
+            var domain = parts[1];
+            if (domain.indexOf('.') === -1) {
+                return false;
+            }
+            else {
+                var domainParts = domain.split('.');
+                var ext = domainParts[1];
+                if (domainParts.length > 2) {
+                    return false;
+                }
+                if (ext.length > 4 || ext.length < 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+    return AddUserDialog;
+}());
+
+/**
+ * @private
+ */
+var EnforceProtectionDialog = /** @__PURE__ @class */ (function () {
+    function EnforceProtectionDialog(viewer, owner) {
+        var _this = this;
+        /**
+         * @private
+         */
+        this.show = function () {
+            _this.localeValue = new L10n('documenteditor', _this.viewer.owner.defaultLocale);
+            _this.localeValue.setLocale(_this.viewer.owner.locale);
+            if (!_this.target) {
+                _this.initDialog(_this.localeValue, _this.viewer.owner.enableRtl);
+            }
+            _this.viewer.dialog.header = _this.localeValue.getConstant('Start Enforcing Protection');
+            _this.viewer.dialog.height = 'auto';
+            _this.viewer.dialog.content = _this.target;
+            _this.viewer.dialog.width = 'auto';
+            _this.viewer.dialog.buttons = [{
+                    click: _this.okButtonClick,
+                    buttonModel: { content: _this.localeValue.getConstant('Ok'), cssClass: 'e-flat', isPrimary: true }
+                },
+                {
+                    click: _this.hideDialog,
+                    buttonModel: { content: _this.localeValue.getConstant('Cancel'), cssClass: 'e-flat' }
+                }];
+            _this.passwordTextBox.value = '';
+            _this.confirmPasswordTextBox.value = '';
+            _this.viewer.dialog.show();
+        };
+        this.hideDialog = function () {
+            _this.passwordTextBox.value = '';
+            _this.confirmPasswordTextBox.value = '';
+            _this.viewer.dialog.hide();
+        };
+        /**
+         * @private
+         */
+        this.okButtonClick = function () {
+            if (_this.passwordTextBox.value !== _this.confirmPasswordTextBox.value) {
+                /* tslint:disable */
+                DialogUtility.alert("The password don't match");
+                /* tslint:enable */
+            }
+            else {
+                _this.password = _this.passwordTextBox.value;
+                var passwordBase64 = _this.owner.base64.encodeString(_this.password);
+                /* tslint:disable:no-any */
+                var formObject = {
+                    passwordBase64: passwordBase64,
+                    saltBase64: '',
+                    spinCount: 100000
+                };
+                /* tslint:enable:no-any */
+                var url = _this.viewer.owner.serviceUrl + _this.viewer.owner.serverActionSettings.restrictEditing;
+                _this.enforceProtectionHandler.url = url;
+                _this.enforceProtectionHandler.contentType = 'application/json;charset=UTF-8';
+                _this.enforceProtectionHandler.onSuccess = _this.enforceProtection.bind(_this);
+                _this.enforceProtectionHandler.onFailure = _this.failureHandler.bind(_this);
+                _this.enforceProtectionHandler.onError = _this.failureHandler.bind(_this);
+                _this.enforceProtectionHandler.send(formObject);
+            }
+        };
+        this.viewer = viewer;
+        this.owner = owner;
+        this.enforceProtectionHandler = new XmlHttpRequestHandler();
+    }
+    /**
+     * @private
+     */
+    EnforceProtectionDialog.prototype.initDialog = function (localValue, isRtl) {
+        var id = this.viewer.owner.containerId + '_enforce_protection';
+        this.target = createElement('div', { id: id, className: 'e-de-enforce' });
+        var container = createElement('div');
+        // tslint:disable-next-line:max-line-length
+        var newPassWord = createElement('div', { className: 'e-de-enforce-dlg-title', innerHTML: localValue.getConstant('Enter new password') });
+        // tslint:disable-next-line:max-line-length
+        this.passwordTextBox = createElement('input', { attrs: { type: 'password', autofocus: 'true' }, id: this.viewer.owner.containerId + '_display_text', className: 'e-input e-de-enforce-dlg-input' });
+        // this.passwordTextBox.addEventListener('keyup', instance.onKeyUpOnDisplayBox);
+        container.appendChild(newPassWord);
+        container.appendChild(this.passwordTextBox);
+        // tslint:disable-next-line:max-line-length
+        var confirmPassword = createElement('div', { className: 'e-de-enforce-dlg-title', innerHTML: localValue.getConstant('Reenter new password to confirm') });
+        // tslint:disable-next-line:max-line-length
+        this.confirmPasswordTextBox = createElement('input', { attrs: { type: 'password' }, id: this.viewer.owner.containerId + '_url_text', className: 'e-input e-de-enforce-dlg-input' });
+        container.appendChild(confirmPassword);
+        container.appendChild(this.confirmPasswordTextBox);
+        this.target.appendChild(container);
+    };
+    /* tslint:disable:no-any */
+    EnforceProtectionDialog.prototype.failureHandler = function (result) {
+        if (result.name === 'onError') {
+            DialogUtility.alert(this.localeValue.getConstant('Error in establishing connection with web server'));
+        }
+        else {
+            console.error(result.statusText);
+        }
+    };
+    EnforceProtectionDialog.prototype.enforceProtection = function (result) {
+        var data = JSON.parse(result.data);
+        this.viewer.saltValue = data[0];
+        this.viewer.hashValue = data[1];
+        this.protectDocument();
+    };
+    /* tslint:enable:no-any */
+    EnforceProtectionDialog.prototype.protectDocument = function () {
+        this.viewer.owner.editor.protect(this.owner.protectionType);
+        this.viewer.restrictFormatting = this.owner.restrictFormatting;
+        this.viewer.restrictEditingPane.showStopProtectionPane(true);
+        this.viewer.restrictEditingPane.loadPaneValue();
+        this.viewer.dialog.hide();
+    };
+    return EnforceProtectionDialog;
+}());
+/**
+ * @private
+ */
+var UnProtectDocumentDialog = /** @__PURE__ @class */ (function () {
+    function UnProtectDocumentDialog(viewer, owner) {
+        var _this = this;
+        /**
+         * @private
+         */
+        this.show = function () {
+            _this.localObj = new L10n('documenteditor', _this.viewer.owner.defaultLocale);
+            _this.localObj.setLocale(_this.viewer.owner.locale);
+            if (!_this.target) {
+                _this.initDialog(_this.localObj, _this.viewer.owner.enableRtl);
+            }
+            _this.viewer.dialog.header = 'Unprotect Document';
+            _this.viewer.dialog.height = 'auto';
+            _this.viewer.dialog.width = 'auto';
+            _this.viewer.dialog.content = _this.target;
+            _this.viewer.dialog.buttons = [{
+                    click: _this.okButtonClick,
+                    buttonModel: { content: _this.localObj.getConstant('Ok'), cssClass: 'e-flat', isPrimary: true }
+                },
+                {
+                    click: _this.hideDialog,
+                    buttonModel: { content: _this.localObj.getConstant('Cancel'), cssClass: 'e-flat' }
+                }];
+            _this.viewer.dialog.dataBind();
+            _this.passwordTextBox.value = '';
+            _this.viewer.dialog.show();
+        };
+        /**
+         * @private
+         */
+        /* tslint:disable:no-any */
+        this.okButtonClick = function () {
+            if (_this.passwordTextBox.value === '') {
+                return;
+            }
+            var password = _this.passwordTextBox.value;
+            var passwordBase64 = _this.owner.base64.encodeString(password);
+            var formObject = {
+                passwordBase64: passwordBase64,
+                saltBase64: _this.viewer.saltValue,
+                spinCount: 100000
+            };
+            _this.unProtectDocumentHandler.url = _this.viewer.owner.serviceUrl + _this.viewer.owner.serverActionSettings.restrictEditing;
+            _this.unProtectDocumentHandler.contentType = 'application/json;charset=UTF-8';
+            _this.unProtectDocumentHandler.onSuccess = _this.onUnProtectionSuccess.bind(_this);
+            _this.unProtectDocumentHandler.onFailure = _this.failureHandler.bind(_this);
+            _this.unProtectDocumentHandler.onError = _this.failureHandler.bind(_this);
+            _this.unProtectDocumentHandler.send(formObject);
+        };
+        /**
+         * @private
+         */
+        this.hideDialog = function () {
+            _this.passwordTextBox.value = '';
+            _this.viewer.dialog.hide();
+        };
+        this.viewer = viewer;
+        this.owner = owner;
+        this.unProtectDocumentHandler = new XmlHttpRequestHandler;
+    }
+    /**
+     * @private
+     */
+    UnProtectDocumentDialog.prototype.initDialog = function (localValue, isRtl) {
+        var id = this.viewer.owner.containerId + '_enforce_protection';
+        this.target = createElement('div', { id: id, className: 'e-de-enforce' });
+        var container = createElement('div');
+        var newPassWord = createElement('div', {
+            className: 'e-de-unprotect-dlg-title',
+            innerHTML: localValue.getConstant('Password')
+        });
+        this.passwordTextBox = createElement('input', {
+            attrs: { type: 'password' },
+            id: this.viewer.owner.containerId + '_display_text', className: 'e-input e-de-enforce-dlg-input'
+        });
+        // this.passwordTextBox.addEventListener('keyup', instance.onKeyUpOnDisplayBox);
+        container.appendChild(newPassWord);
+        container.appendChild(this.passwordTextBox);
+        this.target.appendChild(container);
+    };
+    UnProtectDocumentDialog.prototype.onUnProtectionSuccess = function (result) {
+        var encodeString = JSON.parse(result.data);
+        this.currentHashValue = encodeString[1];
+        this.currentSaltValue = encodeString[0];
+        this.validateHashValue();
+    };
+    UnProtectDocumentDialog.prototype.failureHandler = function (result) {
+        if (result.name === 'onError') {
+            DialogUtility.alert(this.localObj.getConstant('Error in establishing connection with web server'));
+        }
+        else {
+            console.error(result.statusText);
+        }
+    };
+    /* tslint:enable:no-any */
+    UnProtectDocumentDialog.prototype.validateHashValue = function () {
+        var decodeUserHashValue = this.owner.base64.decodeString(this.currentHashValue);
+        var documentHashValue = this.viewer.hashValue;
+        var defaultHashValue = this.owner.base64.decodeString(documentHashValue);
+        var stopProtection = true;
+        if (decodeUserHashValue.length === defaultHashValue.length) {
+            for (var i = 0; i < decodeUserHashValue.length; i++) {
+                if (decodeUserHashValue[i] !== defaultHashValue[i]) {
+                    stopProtection = false;
+                    break;
+                }
+            }
+        }
+        else {
+            stopProtection = false;
+        }
+        if (stopProtection) {
+            this.viewer.restrictEditingPane.showStopProtectionPane(false);
+            this.viewer.isDocumentProtected = false;
+            this.viewer.restrictFormatting = false;
+            this.viewer.selection.highlightEditRegion();
+            this.viewer.dialog.hide();
+        }
+        else {
+            DialogUtility.alert(this.localObj.getConstant('The password is incorrect'));
+        }
+    };
+    return UnProtectDocumentDialog;
+}());
+
+/**
+ * @private
+ */
+var RestrictEditing = /** @__PURE__ @class */ (function () {
+    function RestrictEditing(viewer) {
+        var _this = this;
+        this.addRemove = true;
+        this.protectionType = 'NoProtection';
+        this.restrictFormatting = false;
+        this.isShowRestrictPane = false;
+        this.usersCollection = ['Everyone'];
+        this.closePane = function () {
+            _this.restrictPane.style.display = 'none';
+            _this.viewer.updateViewerSize();
+        };
+        /* tslint:disable:no-any */
+        this.enableFormatting = function (args) {
+            _this.restrictFormatting = !args.checked;
+        };
+        this.readOnlyChanges = function (args) {
+            if (args.checked) {
+                _this.protectionType = 'ReadOnly';
+            }
+            else {
+                _this.protectionType = 'NoProtection';
+                _this.addedUser.uncheckAllItems();
+                _this.viewer.owner.editor.removeAllEditRestrictions();
+            }
+        };
+        this.selectHandler = function (args) {
+            if (args.isChecked) {
+                _this.viewer.owner.editor.insertEditRangeElement(args.text);
+                args.event.target.classList.add('e-check');
+            }
+            else {
+                _this.viewer.owner.editor.removeUserRestrictions(args.text);
+            }
+        };
+        this.highlightClicked = function (args) {
+            _this.viewer.selection.isHighlightEditRegion = args.checked;
+        };
+        /* tslint:enable:no-any */
+        this.protectDocument = function () {
+            _this.enforceProtectionDialog.show();
+        };
+        this.navigateNextRegion = function () {
+            _this.viewer.selection.navigateNextEditRegion();
+        };
+        this.showAllRegion = function () {
+            _this.viewer.selection.SelectAllEditRegion();
+        };
+        this.viewer = viewer;
+        this.addUserDialog = new AddUserDialog(viewer, this);
+        this.enforceProtectionDialog = new EnforceProtectionDialog(viewer, this);
+        this.unProtectDialog = new UnProtectDocumentDialog(viewer, this);
+        this.base64 = new Base64();
+    }
+    RestrictEditing.prototype.showHideRestrictPane = function (isShow) {
+        if (isShow) {
+            this.localObj = new L10n('documenteditor', this.viewer.owner.defaultLocale);
+            this.localObj.setLocale(this.viewer.owner.locale);
+            if (!this.restrictPane) {
+                this.initPane(this.localObj, true);
+            }
+            this.restrictPane.style.display = 'block';
+            this.isShowRestrictPane = true;
+            this.viewer.selection.isHighlightEditRegion = true;
+            this.wireEvents();
+            this.viewer.updateViewerSize();
+            this.loadPaneValue();
+        }
+        else {
+            this.closePane();
+            this.viewer.updateFocus();
+        }
+    };
+    RestrictEditing.prototype.initPane = function (localValue, initial) {
+        this.restrictPane = createElement('div', { className: 'e-de-restrict-pane', styles: 'display:none' });
+        var headerWholeDiv = createElement('div', { className: 'e-de-rp-whole-header' });
+        var headerDiv1 = createElement('div', {
+            styles: 'width:75%',
+            innerHTML: localValue.getConstant('Restrict Editing'), className: 'e-de-rp-header'
+        });
+        this.closeButton = createElement('button', {
+            className: 'e-de-rp-close-icon e-btn e-flat e-icon-btn', id: 'close',
+            attrs: { type: 'button' }
+        });
+        headerWholeDiv.appendChild(this.closeButton);
+        headerWholeDiv.appendChild(headerDiv1);
+        var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
+        this.closeButton.appendChild(closeSpan);
+        this.restrictPane.appendChild(headerWholeDiv);
+        this.initRestrictEditingPane(localValue);
+        this.viewer.optionsPaneContainer.setAttribute('style', 'display:inline-flex;');
+        this.viewer.optionsPaneContainer.insertBefore(this.restrictPane, this.viewer.viewerContainer);
+    };
+    // tslint:disable:max-func-body-length
+    RestrictEditing.prototype.initRestrictEditingPane = function (localObj) {
+        this.restrictPaneWholeDiv = createElement('div');
+        var formatWholeDiv = createElement('div', { className: 'e-de-rp-sub-div' });
+        var formatDiv = createElement('div', {
+            innerHTML: localObj.getConstant('Formatting restrictions'),
+            className: 'e-de-rp-format'
+        });
+        formatWholeDiv.appendChild(formatDiv);
+        var allowFormatting = createElement('input', {
+            attrs: { type: 'checkbox' },
+            id: this.viewer.owner.containerId + '_allowFormat',
+        });
+        formatWholeDiv.appendChild(allowFormatting);
+        this.allowFormat = this.createCheckBox(localObj.getConstant('Allow formatting'), allowFormatting);
+        this.restrictPaneWholeDiv.appendChild(formatWholeDiv);
+        // Editing restrictions
+        var editRestrictWholeDiv = createElement('div', { className: 'e-de-rp-sub-div' });
+        var editRestrict = createElement('div', {
+            innerHTML: localObj.getConstant('Editing restrictions'),
+            className: 'e-de-rp-format'
+        });
+        editRestrictWholeDiv.appendChild(editRestrict);
+        var readOnly = createElement('input', {
+            attrs: { type: 'checkbox' },
+            id: this.viewer.owner.containerId + '_readOnly'
+        });
+        editRestrictWholeDiv.appendChild(readOnly);
+        this.readonly = this.createCheckBox('Read only', readOnly);
+        // let allowPrint: HTMLInputElement = createElement('input', {
+        //     attrs: { type: 'checkbox' },
+        //     id: this.viewer.owner.containerId + '_allowPrint'
+        // }) as HTMLInputElement;
+        // editRestrictWholeDiv.appendChild(allowPrint);
+        // this.allowPrint = this.createCheckBox('Allow Printing', allowPrint);
+        // let allowCopy: HTMLInputElement = createElement('input', {
+        //     attrs: { type: 'checkbox' },
+        //     id: this.viewer.owner.containerId + '_allowCopy'
+        // }) as HTMLInputElement;
+        // editRestrictWholeDiv.appendChild(allowCopy);
+        // this.allowCopy = this.createCheckBox('Allow Copy', allowCopy);
+        this.restrictPaneWholeDiv.appendChild(editRestrictWholeDiv);
+        // User Permissions
+        var userWholeDiv = createElement('div', { className: 'e-de-rp-sub-div' });
+        var userDiv = createElement('div', {
+            innerHTML: localObj.getConstant('Exceptions (optional)'),
+            className: 'e-de-rp-format'
+        });
+        userWholeDiv.appendChild(userDiv);
+        var subContentDiv = createElement('div', {
+            innerHTML: localObj.getConstant('Select parts of the document and choose users who are allowed to freely edit them.'),
+            styles: 'margin-bottom:8px;'
+        });
+        userWholeDiv.appendChild(subContentDiv);
+        var emptyuserDiv = createElement('div', { className: 'e-de-rp-user' });
+        userWholeDiv.appendChild(emptyuserDiv);
+        this.addedUser = new ListView({
+            cssClass: 'e-de-user-listView',
+            dataSource: [{ text: 'Everyone' }],
+            showCheckBox: true,
+            select: this.selectHandler
+        });
+        this.addedUser.appendTo(emptyuserDiv);
+        this.addUser = createElement('button', {
+            id: this.viewer.owner.containerId + '_addUser',
+            className: 'e-btn e-primary e-flat',
+            innerHTML: localObj.getConstant('More users')
+        });
+        userWholeDiv.appendChild(this.addUser);
+        this.restrictPaneWholeDiv.appendChild(userWholeDiv);
+        var lastDiv = createElement('div', { className: 'e-de-rp-enforce' });
+        this.restrictPaneWholeDiv.appendChild(lastDiv);
+        this.enforceProtection = createElement('button', {
+            id: this.viewer.owner.containerId + '_addUser',
+            innerHTML: localObj.getConstant('Yes, Start Enforcing Protection'),
+            className: 'e-btn e-de-rp-btn-enforce'
+        });
+        lastDiv.appendChild(this.enforceProtection);
+        this.restrictPane.appendChild(this.restrictPaneWholeDiv);
+        this.stopProtectionDiv = createElement('div', { styles: 'display:none' });
+        // tslint:disable-next-line:max-line-length
+        var headerDiv = createElement('div', { innerHTML: localObj.getConstant('Your permissions'), className: 'e-de-rp-stop-div1' });
+        this.stopProtectionDiv.appendChild(headerDiv);
+        // tslint:disable-next-line:max-line-length
+        var content = localObj.getConstant('This document is protected from unintentional editing.You may edit in this region.');
+        var contentDiv1 = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
+        this.stopProtectionDiv.appendChild(contentDiv1);
+        // tslint:disable-next-line:max-line-length
+        var contentDiv2 = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles.'), className: 'e-de-rp-stop-div3' });
+        this.stopProtectionDiv.appendChild(contentDiv2);
+        this.stopReadOnlyOptions = createElement('div');
+        this.stopProtectionDiv.appendChild(this.stopReadOnlyOptions);
+        var navigateNext = createElement('div', { className: 'e-de-rp-enforce-nav' });
+        // tslint:disable-next-line:max-line-length
+        var navigateNextButton = createElement('button', { innerHTML: localObj.getConstant('Find Next Region I Can Edit'), className: 'e-btn e-de-rp-nav-btn' });
+        navigateNext.appendChild(navigateNextButton);
+        navigateNextButton.addEventListener('click', this.navigateNextRegion);
+        this.stopReadOnlyOptions.appendChild(navigateNext);
+        var showAllRegion = createElement('div', { className: 'e-de-rp-enforce-nav' });
+        // tslint:disable-next-line:max-line-length
+        var showAllRegionButton = createElement('button', { innerHTML: localObj.getConstant('Show All Regions I Can Edit'), className: 'e-btn e-de-rp-nav-btn' });
+        showAllRegion.appendChild(showAllRegionButton);
+        showAllRegionButton.addEventListener('click', this.showAllRegion);
+        this.stopReadOnlyOptions.appendChild(showAllRegion);
+        var highlightRegion = createElement('div', { className: 'e-de-rp-enforce-nav e-de-rp-nav-lbl' });
+        // tslint:disable-next-line:max-line-length
+        var highlightRegionInput = createElement('input', { attrs: { type: 'checkbox' }, className: 'e-btn e-de-rp-nav-btn' });
+        highlightRegion.appendChild(highlightRegionInput);
+        this.stopReadOnlyOptions.appendChild(highlightRegion);
+        this.highlightCheckBox = new CheckBox({ label: localObj.getConstant('Highlight the regions I can edit') }, highlightRegionInput);
+        var lastButtonDiv = createElement('div', { className: 'e-de-rp-enforce' });
+        this.stopProtection = createElement('button', {
+            innerHTML: localObj.getConstant('Stop Protection'),
+            className: 'e-btn e-de-rp-btn-stop-enforce'
+        });
+        lastButtonDiv.appendChild(this.stopProtection);
+        this.stopProtectionDiv.appendChild(lastButtonDiv);
+        this.restrictPane.appendChild(this.stopProtectionDiv);
+    };
+    RestrictEditing.prototype.showStopProtectionPane = function (show) {
+        if (show) {
+            this.stopProtectionDiv.style.display = 'block';
+            this.restrictPaneWholeDiv.style.display = 'none';
+        }
+        else {
+            this.stopProtectionDiv.style.display = 'none';
+            this.restrictPaneWholeDiv.style.display = 'block';
+        }
+        if (this.viewer.protectionType === 'ReadOnly') {
+            this.stopReadOnlyOptions.style.display = 'block';
+        }
+        else {
+            this.stopReadOnlyOptions.style.display = 'none';
+        }
+    };
+    RestrictEditing.prototype.wireEvents = function () {
+        this.addUser.addEventListener('click', this.addUserDialog.show);
+        this.enforceProtection.addEventListener('click', this.protectDocument);
+        this.stopProtection.addEventListener('click', this.unProtectDialog.show);
+        this.closeButton.addEventListener('click', this.closePane);
+        this.allowFormat.addEventListener('change', this.enableFormatting);
+        this.readonly.addEventListener('change', this.readOnlyChanges);
+        this.highlightCheckBox.addEventListener('change', this.highlightClicked);
+    };
+    RestrictEditing.prototype.createCheckBox = function (label, element) {
+        var checkBox = new CheckBox({ label: label });
+        checkBox.appendTo(element);
+        return checkBox;
+    };
+    RestrictEditing.prototype.loadPaneValue = function () {
+        this.protectionType = this.viewer.protectionType;
+        this.allowFormat.checked = !this.viewer.restrictFormatting;
+        this.readonly.checked = this.viewer.protectionType === 'ReadOnly';
+        this.highlightCheckBox.checked = true;
+        this.addedUser.enablePersistence = true;
+        this.addedUser.dataSource = this.viewer.userCollection;
+        this.addedUser.refresh();
+        this.showStopProtectionPane(this.viewer.isDocumentProtected);
+    };
+    RestrictEditing.prototype.addUserCollection = function () {
+        if (this.viewer.selection && this.viewer.selection.editRangeCollection.length > 0) {
+            for (var i = 0; i < this.viewer.selection.editRangeCollection.length; i++) {
+                var editStart = this.viewer.selection.editRangeCollection[i];
+                if (editStart.user !== '' && this.usersCollection.indexOf(editStart.user) === -1) {
+                    this.usersCollection.push(editStart.user);
+                }
+                if (editStart.group !== '' && this.usersCollection.indexOf(editStart.group) === -1) {
+                    this.usersCollection.push(editStart.group);
+                }
+            }
+        }
+        this.addedUser.dataSource = this.usersCollection;
+        this.addedUser.refresh();
+    };
+    RestrictEditing.prototype.updateUserInformation = function () {
+        this.addedUser.uncheckAllItems();
+        if (this.viewer.selection.checkSelectionIsAtEditRegion) {
+            var editRange = this.viewer.selection.getEditRangeStartElement();
+            if (editRange) {
+                var index = this.addedUser.dataSource.indexOf(editRange.user);
+                if (index > -1) {
+                    var listElement = this.addedUser.element.querySelectorAll('li')[index];
+                    listElement.querySelector('.e-icons').classList.add('e-check');
+                }
+                index = this.addedUser.dataSource.indexOf(editRange.group);
+                if (index > -1) {
+                    var listElement = this.addedUser.element.querySelectorAll('li')[index];
+                    listElement.querySelector('.e-icons').classList.add('e-check');
+                }
+            }
+        }
+    };
+    return RestrictEditing;
+}());
+
 var __extends$3 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -18507,6 +22950,47 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         /**
          * @private
          */
+        this.isScrollHandler = false;
+        /**
+         * @private
+         */
+        this.triggerElementsOnLoading = false;
+        /**
+         * @private
+         */
+        this.triggerSpellCheck = false;
+        //Document Protection Properties Starts
+        /**
+         * preserve the format
+         * @private
+         */
+        this.restrictFormatting = false;
+        /**
+         * preserve the document protection type either readonly or no protection
+         * @private
+         */
+        this.protectionType = 'NoProtection';
+        /**
+         * Preserve the password protection is enforced or not
+         * @private
+         */
+        this.isDocumentProtected = false;
+        /**
+         * preserve the hash value of password
+         * @private
+         */
+        this.hashValue = '';
+        /**
+         * @private
+         */
+        this.saltValue = '';
+        /**
+         * @private
+         */
+        this.userCollection = [];
+        /**
+         * @private
+         */
         this.onTextInput = function (event) {
             if (!_this.isComposingIME) {
                 event.preventDefault();
@@ -18596,11 +23080,13 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                     char = event.key;
                 }
                 // tslint:disable-next-line:max-line-length
-                if (char !== 'Spacebar' && char !== '\r' && char !== '\b' && char !== '\u001B' && !_this.owner.isReadOnlyMode && event.ctrlKey === false) {
+                if (char !== ' ' && char !== '\r' && char !== '\b' && char !== '\u001B' && !_this.owner.isReadOnlyMode && event.ctrlKey === false) {
                     _this.owner.editorModule.handleTextInput(char);
                 }
-                else if (char === 'Spacebar') {
+                else if (char === ' ') {
+                    _this.triggerSpellCheck = true;
                     _this.owner.editorModule.handleTextInput(' ');
+                    _this.triggerSpellCheck = false;
                 }
                 event.preventDefault();
             }
@@ -18652,7 +23138,11 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
          * Fires on scrolling.
          */
         this.scrollHandler = function () {
+            if (_this.scrollTimer) {
+                clearTimeout(_this.scrollTimer);
+            }
             _this.clearContent();
+            _this.isScrollHandler = true;
             if (!Browser.isDevice && !_this.isComposingIME) {
                 _this.iframe.style.top = _this.containerTop + 'px';
                 _this.iframe.style.left = _this.containerLeft + 'px';
@@ -18666,6 +23156,12 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             if (viewer instanceof PageLayoutViewer && !isNullOrUndefined(_this.owner)) {
                 _this.owner.fireViewChange();
             }
+            _this.isScrollHandler = false;
+            _this.scrollTimer = setTimeout(function () {
+                if (!_this.isScrollHandler) {
+                    _this.updateScrollBars();
+                }
+            }, 200);
         };
         /**
          * Fires when the window gets resized.
@@ -19172,8 +23668,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.preDefinedStyles = new Dictionary();
         this.initalizeStyles();
         this.bookmarks = new Dictionary();
+        this.editRanges = new Dictionary();
     }
     Object.defineProperty(LayoutViewer.prototype, "containerCanvas", {
+        //Document Protection Properties Ends
         //#region Properties
         /**
          * Gets container canvas.
@@ -19413,6 +23911,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
      * @private
      */
     LayoutViewer.prototype.clearDocumentItems = function () {
+        this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];
         this.bookmarks.clear();
@@ -19422,6 +23921,12 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.setDefaultCharacterValue(this.characterFormat);
         this.setDefaultParagraphValue(this.paragraphFormat);
         this.defaultTabWidth = 36;
+        this.isDocumentProtected = false;
+        this.protectionType = 'NoProtection';
+        this.restrictFormatting = false;
+        this.hashValue = '';
+        this.saltValue = '';
+        this.userCollection = [];
     };
     /**
      * @private
@@ -19555,6 +24060,8 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.zoomModule = new Zoom(this);
         this.initTouchEllipse();
         this.wireEvent();
+        this.restrictEditingPane = new RestrictEditing(this);
+        createSpinner({ target: this.owner.element, cssClass: 'e-spin-overlay' });
     };
     /**
      * @private
@@ -19734,10 +24241,17 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.layout.isInitialLoad = true;
         this.layout.layoutItems(sections);
         if (this.owner.selection) {
+            this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
+            if (this.isDocumentProtected) {
+                this.restrictEditingPane.showHideRestrictPane(true);
+            }
         }
         if (this.owner.optionsPaneModule) {
             this.owner.optionsPaneModule.showHideOptionsPane(false);
+        }
+        if (this.restrictEditingPane.restrictPane && !this.isDocumentProtected) {
+            this.restrictEditingPane.showHideRestrictPane(false);
         }
         this.owner.fireDocumentChange();
     };
@@ -19966,9 +24480,14 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             var width = 0;
             var height = 0;
             height = rect.height > 0 ? rect.height : 200;
-            if (this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow) {
-                var optionsRect = this.owner.optionsPaneModule.optionsPane.getBoundingClientRect();
-                width = (rect.width - optionsRect.width) > 0 ? (rect.width - optionsRect.width) : 200;
+            var restrictPaneRect = this.restrictEditingPane && this.restrictEditingPane.isShowRestrictPane ?
+                this.restrictEditingPane.restrictPane.getBoundingClientRect() : undefined;
+            var optionsRect = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
+                this.owner.optionsPaneModule.optionsPane.getBoundingClientRect() : undefined;
+            if (restrictPaneRect || optionsRect) {
+                var paneWidth = restrictPaneRect ? restrictPaneRect.width : 0;
+                paneWidth += optionsRect ? optionsRect.width : 0;
+                width = (rect.width - paneWidth) > 0 ? (rect.width - paneWidth) : 200;
             }
             else {
                 width = rect.width > 0 ? rect.width : 200;
@@ -20640,16 +25159,22 @@ var PageLayoutViewer = /** @__PURE__ @class */ (function (_super) {
         /**
          * @private
          */
-        _this.pageGap = 20;
-        /**
-         * @private
-         */
         _this.visiblePages = [];
         if (isNullOrUndefined(owner) || isNullOrUndefined(owner.element)) {
             return _this;
         }
         return _this;
     }
+    Object.defineProperty(PageLayoutViewer.prototype, "pageGap", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.owner.pageGap;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Creates new page.
      * @private
@@ -21195,6 +25720,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         this.viewer = undefined;
         this.isPageBreakInsideTable = false;
         this.viewer = viewer;
+        this.editableRanges = new Dictionary();
     }
     Object.defineProperty(SfdtReader.prototype, "isPasting", {
         get: function () {
@@ -21216,6 +25742,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         var paragraphFormat = isNullOrUndefined(jsonObject.paragraphFormat) ?
             this.viewer.owner.paragraphFormat : jsonObject.paragraphFormat;
         this.parseParagraphFormat(paragraphFormat, this.viewer.paragraphFormat);
+        this.parseDocumentProtection(jsonObject);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.viewer.defaultTabWidth = jsonObject.defaultTabWidth;
         }
@@ -21235,6 +25762,23 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             this.parseSections(jsonObject.sections, sections);
         }
         return sections;
+    };
+    SfdtReader.prototype.parseDocumentProtection = function (data) {
+        if (!isNullOrUndefined(data.formatting)) {
+            this.viewer.restrictFormatting = data.formatting;
+        }
+        if (!isNullOrUndefined(data.enforcement)) {
+            this.viewer.isDocumentProtected = data.enforcement;
+        }
+        if (!isNullOrUndefined(data.protectionType)) {
+            this.viewer.protectionType = data.protectionType;
+        }
+        if (!isNullOrUndefined(data.hashValue)) {
+            this.viewer.hashValue = data.hashValue;
+        }
+        if (!isNullOrUndefined(data.saltValue)) {
+            this.viewer.saltValue = data.saltValue;
+        }
     };
     SfdtReader.prototype.parseStyles = function (data, styles) {
         for (var i = 0; i < data.styles.length; i++) {
@@ -21604,6 +26148,32 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
             }
+            else if (inline.hasOwnProperty('chartType')) {
+                // chartPreservation
+                var chartElement = new ChartElementBox();
+                chartElement.title = inline.chartTitle;
+                chartElement.type = inline.chartType;
+                chartElement.chartGapWidth = inline.gapWidth;
+                chartElement.chartOverlap = inline.overlap;
+                this.parseChartTitleArea(inline.chartTitleArea, chartElement.chartTitleArea);
+                this.parseChartArea(inline.chartArea, chartElement.chartArea);
+                this.parseChartArea(inline.plotArea, chartElement.chartPlotArea);
+                this.parseChartLegend(inline.chartLegend, chartElement.chartLegend);
+                this.parseChartData(inline, chartElement);
+                this.parseChartCategoryAxis(inline.chartPrimaryCategoryAxis, chartElement.chartPrimaryCategoryAxis);
+                this.parseChartCategoryAxis(inline.chartPrimaryValueAxis, chartElement.chartPrimaryValueAxis);
+                if (inline.chartDataTable != null) {
+                    this.parseChartDataTable(inline.chartDataTable, chartElement.chartDataTable);
+                }
+                chartElement.line = lineWidget;
+                lineWidget.children.push(chartElement);
+                chartElement.height = HelperMethods.convertPointToPixel(inline.height);
+                chartElement.width = HelperMethods.convertPointToPixel(inline.width);
+                var officeChart = new ChartComponent();
+                officeChart.chartRender(inline);
+                chartElement.officeChart = officeChart;
+                officeChart.chart.appendTo(chartElement.targetElement);
+            }
             else if (inline.hasOwnProperty('imageString')) {
                 var image = new ImageElementBox(data[i].isInlineImage);
                 image.isMetaFile = data[i].isMetaFile;
@@ -21625,6 +26195,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             }
             else if (inline.hasOwnProperty('hasFieldEnd') || (inline.hasOwnProperty('fieldType') && inline.fieldType === 0)) {
                 var fieldBegin = new FieldElementBox(0);
+                fieldBegin.fieldCodeType = inline.fieldCodeType;
                 fieldBegin.hasFieldEnd = inline.hasFieldEnd;
                 this.viewer.fieldStacks.push(fieldBegin);
                 fieldBegin.line = lineWidget;
@@ -21688,8 +26259,210 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
+            else if (inline.hasOwnProperty('editRangeId')) {
+                if (inline.hasOwnProperty('editableRangeStart')) {
+                    var permEnd = new EditRangeEndElementBox();
+                    if (this.editableRanges.containsKey(inline.editRangeId)) {
+                        var start = this.editableRanges.get(inline.editRangeId);
+                        permEnd.editRangeStart = start;
+                        start.editRangeEnd = permEnd;
+                        this.editableRanges.remove(inline.editRangeId);
+                    }
+                    lineWidget.children.push(permEnd);
+                    permEnd.line = lineWidget;
+                }
+                else {
+                    var permStart = this.parseEditableRangeStart(inline);
+                    lineWidget.children.push(permStart);
+                    permStart.line = lineWidget;
+                    if (!this.editableRanges.containsKey(inline.editRangeId)) {
+                        this.editableRanges.add(inline.editRangeId, permStart);
+                    }
+                }
+            }
         }
         paragraph.childWidgets.push(lineWidget);
+    };
+    SfdtReader.prototype.parseEditableRangeStart = function (data) {
+        var permStart = new EditRangeStartElementBox();
+        if (!isNullOrUndefined(data.columnFirst)) {
+            permStart.columnFirst = data.columnFirst;
+        }
+        if (!isNullOrUndefined(data.columnLast)) {
+            permStart.columnLast = data.columnLast;
+        }
+        if (!isNullOrUndefined(data.user)) {
+            permStart.user = data.user;
+            if (this.viewer.userCollection.indexOf(permStart.user) === -1) {
+                this.viewer.userCollection.push(permStart.user);
+            }
+            this.addEditRangeCollection(permStart.user, permStart);
+        }
+        if (!isNullOrUndefined(data.group)) {
+            permStart.group = data.group;
+            permStart.group = permStart.group === 'everyone' ? 'Everyone' : permStart.group;
+            if (this.viewer.userCollection.indexOf(permStart.group) === -1) {
+                this.viewer.userCollection.push(permStart.group);
+            }
+            this.addEditRangeCollection(permStart.group, permStart);
+        }
+        return permStart;
+    };
+    SfdtReader.prototype.addEditRangeCollection = function (name, permStart) {
+        if (this.viewer.editRanges.containsKey(name)) {
+            var editStartCollection = this.viewer.editRanges.get(name);
+            editStartCollection.push(permStart);
+        }
+        else {
+            var newEditStartCollection = [];
+            newEditStartCollection.push(permStart);
+            this.viewer.editRanges.add(name, newEditStartCollection);
+        }
+    };
+    SfdtReader.prototype.parseChartTitleArea = function (titleArea, chartTitleArea) {
+        chartTitleArea.chartfontName = titleArea.fontName;
+        chartTitleArea.chartFontSize = titleArea.fontSize;
+        this.parseChartDataFormat(titleArea.dataFormat, chartTitleArea.dataFormat);
+        this.parseChartLayout(titleArea.layout, chartTitleArea.layout);
+    };
+    SfdtReader.prototype.parseChartDataFormat = function (format, dataFormat) {
+        dataFormat.fill.color = format.fill.foreColor;
+        dataFormat.fill.rgb = format.fill.rgb;
+        dataFormat.line.color = format.line.color;
+        dataFormat.line.rgb = format.line.rgb;
+    };
+    SfdtReader.prototype.parseChartLayout = function (layout, chartLayout) {
+        chartLayout.chartLayoutLeft = layout.layoutX;
+        chartLayout.chartLayoutTop = layout.layoutY;
+    };
+    SfdtReader.prototype.parseChartLegend = function (legend, chartLegend) {
+        chartLegend.chartLegendPostion = legend.position;
+        this.parseChartTitleArea(legend.chartTitleArea, chartLegend.chartTitleArea);
+    };
+    SfdtReader.prototype.parseChartCategoryAxis = function (categoryAxis, primaryAxis) {
+        primaryAxis.categoryAxisType = categoryAxis.categoryType;
+        primaryAxis.categoryNumberFormat = categoryAxis.numberFormat;
+        primaryAxis.interval = categoryAxis.majorUnit;
+        primaryAxis.axisFontSize = categoryAxis.fontSize;
+        primaryAxis.axisFontName = categoryAxis.fontName;
+        primaryAxis.max = categoryAxis.maximumValue;
+        primaryAxis.min = categoryAxis.minimumValue;
+        primaryAxis.majorGridLines = categoryAxis.hasMajorGridLines;
+        primaryAxis.minorGridLines = categoryAxis.hasMinorGridLines;
+        primaryAxis.majorTick = categoryAxis.majorTickMark;
+        primaryAxis.minorTick = categoryAxis.minorTickMark;
+        primaryAxis.tickPosition = categoryAxis.tickLabelPosition;
+        primaryAxis.categoryAxisTitle = categoryAxis.chartTitle;
+        if (categoryAxis.chartTitle != null) {
+            this.parseChartTitleArea(categoryAxis.chartTitleArea, primaryAxis.chartTitleArea);
+        }
+    };
+    SfdtReader.prototype.parseChartDataTable = function (dataTable, chartDataTable) {
+        chartDataTable.showSeriesKeys = dataTable.showSeriesKeys;
+        chartDataTable.hasHorzBorder = dataTable.hasHorzBorder;
+        chartDataTable.hasVertBorder = dataTable.hasVertBorder;
+        chartDataTable.hasBorders = dataTable.hasBorders;
+    };
+    SfdtReader.prototype.parseChartArea = function (area, chartArea) {
+        chartArea.chartForeColor = area.foreColor;
+    };
+    SfdtReader.prototype.parseChartData = function (inline, chart) {
+        for (var i = 0; i < inline.chartCategory.length; i++) {
+            var chartCategory = new ChartCategory();
+            var xData = inline.chartCategory[i];
+            if (xData.hasOwnProperty('categoryXName')) {
+                chartCategory.xName = xData.categoryXName;
+            }
+            for (var j = 0; j < xData.chartData.length; j++) {
+                var chartData = new ChartData();
+                var yData = xData.chartData[j];
+                chartData.yAxisValue = yData.yValue;
+                if (inline.chartType === 'Bubble') {
+                    chartData.bubbleSize = yData.size;
+                }
+                chartCategory.chartData.push(chartData);
+            }
+            chart.chartCategory.push(chartCategory);
+        }
+        this.parseChartSeries(inline, chart);
+    };
+    SfdtReader.prototype.parseChartSeries = function (inline, chart) {
+        var chartType = inline.chartType;
+        var isPieType = (chartType === 'Pie' || chartType === 'Doughnut');
+        for (var i = 0; i < inline.chartSeries.length; i++) {
+            var chartSeries = new ChartSeries();
+            var xData = inline.chartSeries[i];
+            if (xData.hasOwnProperty('seriesName')) {
+                chartSeries.seriesName = xData.seriesName;
+                if (isPieType) {
+                    if (xData.hasOwnProperty('firstSliceAngle')) {
+                        chartSeries.firstSliceAngle = xData.firstSliceAngle;
+                    }
+                    if (chartType === 'Doughnut') {
+                        chartSeries.doughnutHoleSize = xData.holeSize;
+                    }
+                }
+                if (xData.hasOwnProperty('dataLabel')) {
+                    this.parseChartDataLabels(xData.dataLabel, chartSeries);
+                }
+                if (xData.hasOwnProperty('seriesFormat')) {
+                    var seriesFormat = new ChartSeriesFormat();
+                    var format = xData.seriesFormat;
+                    seriesFormat.markerStyle = format.markerStyle;
+                    seriesFormat.markerColor = format.markerColor;
+                    seriesFormat.numberValue = format.markerSize;
+                    chartSeries.seriesFormat = seriesFormat;
+                }
+                if (xData.hasOwnProperty('errorBar')) {
+                    var errorBar = chartSeries.errorBar;
+                    errorBar.errorType = xData.errorBar.type;
+                    errorBar.errorDirection = xData.errorBar.direction;
+                    errorBar.errorEndStyle = xData.errorBar.endStyle;
+                    errorBar.numberValue = xData.errorBar.numberValue;
+                }
+                if (xData.hasOwnProperty('trendLines')) {
+                    this.parseChartTrendLines(xData.trendLines, chartSeries);
+                }
+                this.parseChartSeriesDataPoints(xData.dataPoints, chartSeries);
+            }
+            chart.chartSeries.push(chartSeries);
+        }
+    };
+    SfdtReader.prototype.parseChartDataLabels = function (dataLabels, series) {
+        var dataLabel = new ChartDataLabels();
+        dataLabel.labelPosition = dataLabels.position;
+        dataLabel.fontName = dataLabels.fontName;
+        dataLabel.fontColor = dataLabels.fontColor;
+        dataLabel.fontSize = dataLabels.fontSize;
+        dataLabel.isLegendKey = dataLabels.isLegendKey;
+        dataLabel.isBubbleSize = dataLabels.isBubbleSize;
+        dataLabel.isCategoryName = dataLabels.isCategoryName;
+        dataLabel.isSeriesName = dataLabels.isSeriesName;
+        dataLabel.isValue = dataLabels.isValue;
+        dataLabel.isPercentage = dataLabels.isPercentage;
+        dataLabel.isLeaderLines = dataLabels.isLeaderLines;
+        series.dataLabels = dataLabel;
+    };
+    SfdtReader.prototype.parseChartSeriesDataPoints = function (dataPoints, series) {
+        for (var i = 0; i < dataPoints.length; i++) {
+            var chartFormat = new ChartDataFormat();
+            this.parseChartDataFormat(dataPoints[i], chartFormat);
+            series.chartDataFormat.push(chartFormat);
+        }
+    };
+    SfdtReader.prototype.parseChartTrendLines = function (trendLines, series) {
+        for (var i = 0; i < trendLines.length; i++) {
+            var data = trendLines[i];
+            var trendLine = new ChartTrendLines();
+            trendLine.trendLineName = data.name;
+            trendLine.trendLineType = data.type;
+            trendLine.forwardValue = data.forward;
+            trendLine.backwardValue = data.backward;
+            trendLine.interceptValue = data.intercept;
+            trendLine.isDisplayEquation = data.isDisplayEquation;
+            trendLine.isDisplayRSquared = data.isDisplayRSquared;
+            series.trendLines.push(trendLine);
+        }
     };
     SfdtReader.prototype.parseTableFormat = function (sourceFormat, tableFormat) {
         this.parseBorders(sourceFormat.borders, tableFormat.borders);
@@ -21851,6 +26624,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 characterFormat.fontSize = sourceFormat.fontSize;
             }
             if (!isNullOrUndefined(sourceFormat.fontFamily)) {
+                if (sourceFormat.fontFamily.indexOf('"') !== -1) {
+                    sourceFormat.fontFamily = sourceFormat.fontFamily.replace('"', '');
+                }
                 characterFormat.fontFamily = sourceFormat.fontFamily;
             }
             if (!isNullOrUndefined(sourceFormat.bold)) {
@@ -21923,6 +26699,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             }
             if (!isNullOrUndefined(sourceFormat.outlineLevel)) {
                 paragraphFormat.outlineLevel = sourceFormat.outlineLevel;
+            }
+            if (!isNullOrUndefined(sourceFormat.contextualSpacing)) {
+                paragraphFormat.contextualSpacing = sourceFormat.contextualSpacing;
             }
             paragraphFormat.listFormat = new WListFormat();
             if (sourceFormat.hasOwnProperty('listFormat')) {
@@ -22057,11 +26836,16 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     }
     Object.defineProperty(SelectionCharacterFormat.prototype, "fontSize", {
         /**
-         * Gets or sets the font size of selected contents.
+         * Gets the font size of selected contents.
+         * @asptype int
          */
         get: function () {
             return this.fontSizeIn;
         },
+        /**
+         * Sets the font size of selected contents.
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.fontSizeIn) {
                 return;
@@ -22075,10 +26859,15 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "fontFamily", {
         /**
          * Gets or sets the font family of selected contents.
+         * @asptype string
          */
         get: function () {
             return this.fontFamilyIn;
         },
+        /**
+         * Sets the font family of selected contents.
+         * @asptype string
+         */
         set: function (value) {
             if (value === this.fontFamilyIn) {
                 return;
@@ -22092,10 +26881,15 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "fontColor", {
         /**
          * Gets or sets the font color of selected contents.
+         * @asptype string
          */
         get: function () {
             return this.fontColorIn;
         },
+        /**
+         * Sets the font color of selected contents.
+         * @asptype string
+         */
         set: function (value) {
             if (value === this.fontColorIn) {
                 return;
@@ -22109,10 +26903,15 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "bold", {
         /**
          * Gets or sets the bold formatting of selected contents.
+         * @asptype bool
          */
         get: function () {
             return this.boldIn;
         },
+        /**
+         * Sets the bold formatting of selected contents.
+         * @asptype bool
+         */
         set: function (value) {
             if (value === this.boldIn) {
                 return;
@@ -22126,10 +26925,15 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionCharacterFormat.prototype, "italic", {
         /**
          * Gets or sets the italic formatting of selected contents.
+         * @asptype bool
          */
         get: function () {
             return this.italicIn;
         },
+        /**
+         * Sets the italic formatting of selected contents.
+         * @asptype bool
+         */
         set: function (value) {
             if (value === this.italic) {
                 return;
@@ -22147,6 +26951,9 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.strikeThroughIn;
         },
+        /**
+         * Sets the strikethrough property of selected contents.
+         */
         set: function (value) {
             if (value === this.strikeThroughIn) {
                 return;
@@ -22164,6 +26971,9 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.baselineAlignmentIn;
         },
+        /**
+         * Sets the baseline alignment property of selected contents.
+         */
         set: function (value) {
             if (value === this.baselineAlignmentIn) {
                 return;
@@ -22181,6 +26991,9 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.underlineIn;
         },
+        /**
+         * Sets the underline style of selected contents.
+         */
         set: function (value) {
             if (value === this.underlineIn) {
                 return;
@@ -22198,6 +27011,9 @@ var SelectionCharacterFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.highlightColorIn;
         },
+        /**
+         * Sets the highlight color of selected contents.
+         */
         set: function (value) {
             if (value === this.highlightColorIn) {
                 return;
@@ -22435,6 +27251,7 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         this.lineSpacingIn = 1;
         this.lineSpacingTypeIn = undefined;
         this.bidiIn = undefined;
+        this.contextualSpacingIn = undefined;
         this.listLevelNumberIn = -1;
         this.selection = selection;
         this.viewer = viewer;
@@ -22443,10 +27260,16 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the left indent for selected paragraphs.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.leftIndentIn;
         },
+        /**
+         * Sets the left indent for selected paragraphs.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.leftIndentIn) {
                 return;
@@ -22461,10 +27284,16 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the right indent for selected paragraphs.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.rightIndentIn;
         },
+        /**
+         * Sets the right indent for selected paragraphs.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.rightIndentIn) {
                 return;
@@ -22479,10 +27308,16 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the first line indent for selected paragraphs.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.firstLineIndentIn;
         },
+        /**
+         * Sets the first line indent for selected paragraphs.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.firstLineIndentIn) {
                 return;
@@ -22501,6 +27336,10 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.textAlignmentIn;
         },
+        /**
+         * Sets the text alignment for selected paragraphs.
+         * @default undefined
+         */
         set: function (value) {
             if (value === this.textAlignmentIn) {
                 return;
@@ -22513,12 +27352,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     });
     Object.defineProperty(SelectionParagraphFormat.prototype, "afterSpacing", {
         /**
-         * Gets or Sets the after spacing for selected paragraphs.
+         * Sets the after spacing for selected paragraphs.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.afterSpacingIn;
         },
+        /**
+         * Gets or Sets the after spacing for selected paragraphs.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.afterSpacingIn) {
                 return;
@@ -22533,10 +27378,16 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the before spacing for selected paragraphs.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.beforeSpacingIn;
         },
+        /**
+         * Sets the before spacing for selected paragraphs.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.beforeSpacingIn) {
                 return;
@@ -22551,10 +27402,16 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the line spacing for selected paragraphs.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.lineSpacingIn;
         },
+        /**
+         * Sets the line spacing for selected paragraphs.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.lineSpacingIn) {
                 return;
@@ -22573,6 +27430,10 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.lineSpacingTypeIn;
         },
+        /**
+         * Gets or Sets the line spacing type for selected paragraphs.
+         * @default undefined
+         */
         set: function (value) {
             if (value === this.lineSpacingTypeIn) {
                 return;
@@ -22585,12 +27446,18 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     });
     Object.defineProperty(SelectionParagraphFormat.prototype, "listLevelNumber", {
         /**
-         * Gets or Sets the list level number for selected paragraphs.
+         * Sets the list level number for selected paragraphs.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.listLevelNumberIn;
         },
+        /**
+         * Gets or Sets the list level number for selected paragraphs.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.listLevelNumberIn) {
                 return;
@@ -22604,10 +27471,15 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionParagraphFormat.prototype, "bidi", {
         /**
          * Gets or Sets the bidirectional property for selected paragraphs
+         * @asptype bool
          */
         get: function () {
             return this.bidiIn;
         },
+        /**
+         * Sets the bidirectional property for selected paragraphs
+         * @asptype bool
+         */
         set: function (value) {
             this.bidiIn = value;
             this.notifyPropertyChanged('bidi');
@@ -22615,9 +27487,29 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(SelectionParagraphFormat.prototype, "contextualSpacing", {
+        /**
+         * Gets or sets a value indicating whether to add space between the paragraphs of same style.
+         * @asptype bool
+         */
+        get: function () {
+            return this.contextualSpacingIn;
+        },
+        /**
+         * Sets a value indicating whether to add space between the paragraphs of same style.
+         * @asptype bool
+         */
+        set: function (value) {
+            this.contextualSpacingIn = value;
+            this.notifyPropertyChanged('contextualSpacing');
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(SelectionParagraphFormat.prototype, "listText", {
         /**
          * Gets the list text for selected paragraphs.
+         * @asptype string
          */
         get: function () {
             var listFormat = undefined;
@@ -22667,6 +27559,8 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
                 return this.lineSpacingType;
             case 'bidi':
                 return this.bidi;
+            case 'contextualSpacing':
+                return this.contextualSpacing;
             default:
                 return undefined;
         }
@@ -22713,6 +27607,7 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         this.lineSpacingType = format.lineSpacingType;
         this.textAlignment = format.textAlignment;
         this.bidi = format.bidi;
+        this.contextualSpacing = format.contextualSpacing;
         if (!isNullOrUndefined(format.listFormat) && !isNullOrUndefined(format.listFormat.listId)) {
             this.listId = format.listFormat.listId;
             this.listLevelNumber = format.listFormat.listLevelNumber;
@@ -22758,6 +27653,9 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.bidi)) {
             format.bidi = this.bidi;
         }
+        if (!isNullOrUndefined(this.contextualSpacing)) {
+            format.contextualSpacing = this.contextualSpacing;
+        }
     };
     /**
      * Combines the format.
@@ -22800,6 +27698,9 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.bidi) && this.bidi !== format.bidi) {
             this.bidi = undefined;
         }
+        if (!isNullOrUndefined(this.contextualSpacing) && this.contextualSpacing !== format.contextualSpacing) {
+            this.contextualSpacing = undefined;
+        }
     };
     /**
      * Clears the format.
@@ -22819,6 +27720,7 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         this.listLevelNumber = -1;
         this.styleName = undefined;
         this.bidi = undefined;
+        this.contextualSpacing = undefined;
     };
     /**
      * Gets the clone of list at current selection.
@@ -22929,6 +27831,7 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
         this.selection = undefined;
         this.styleName = undefined;
         this.bidi = undefined;
+        this.contextualSpacing = undefined;
     };
     return SelectionParagraphFormat;
 }());
@@ -22951,10 +27854,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "pageHeight", {
         /**
          * Gets or sets the page height.
+         * @asptype int
          */
         get: function () {
             return this.pageHeightIn;
         },
+        /**
+         * Gets or sets the page height.
+         * @asptype int
+         */
         set: function (value) {
             this.pageHeightIn = value;
             this.notifyPropertyChanged('pageHeight');
@@ -22965,10 +27873,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "pageWidth", {
         /**
          * Gets or sets the page width.
+         * @asptype int
          */
         get: function () {
             return this.pageWidthIn;
         },
+        /**
+         * Gets or sets the page width.
+         * @asptype int
+         */
         set: function (value) {
             this.pageWidthIn = value;
             this.notifyPropertyChanged('pageWidth');
@@ -22979,10 +27892,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "leftMargin", {
         /**
          * Gets or sets the page left margin.
+         * @asptype int
          */
         get: function () {
             return this.leftMarginIn;
         },
+        /**
+         * Gets or sets the page left margin.
+         * @asptype int
+         */
         set: function (value) {
             this.leftMarginIn = value;
             this.notifyPropertyChanged('leftMargin');
@@ -22993,10 +27911,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "bottomMargin", {
         /**
          * Gets or sets the page bottom margin.
+         * @asptype int
          */
         get: function () {
             return this.bottomMarginIn;
         },
+        /**
+         * Gets or sets the page bottom margin.
+         * @asptype int
+         */
         set: function (value) {
             this.bottomMarginIn = value;
             this.notifyPropertyChanged('bottomMargin');
@@ -23007,10 +27930,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "topMargin", {
         /**
          * Gets or sets the page top margin.
+         * @asptype int
          */
         get: function () {
             return this.topMarginIn;
         },
+        /**
+         * Gets or sets the page top margin.
+         * @asptype int
+         */
         set: function (value) {
             this.topMarginIn = value;
             this.notifyPropertyChanged('topMargin');
@@ -23021,10 +27949,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "rightMargin", {
         /**
          * Gets or sets the page right margin.
+         * @asptype int
          */
         get: function () {
             return this.rightMarginIn;
         },
+        /**
+         * Gets or sets the page right margin.
+         * @asptype int
+         */
         set: function (value) {
             this.rightMarginIn = value;
             this.notifyPropertyChanged('rightMargin');
@@ -23035,10 +27968,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "headerDistance", {
         /**
          * Gets or sets the header distance.
+         * @asptype int
          */
         get: function () {
             return this.headerDistanceIn;
         },
+        /**
+         * Gets or sets the header distance.
+         * @asptype int
+         */
         set: function (value) {
             this.headerDistanceIn = value;
             this.notifyPropertyChanged('headerDistance');
@@ -23049,10 +27987,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "footerDistance", {
         /**
          * Gets or sets the footer distance.
+         * @asptype int
          */
         get: function () {
             return this.footerDistanceIn;
         },
+        /**
+         * Gets or sets the footer distance.
+         * @asptype int
+         */
         set: function (value) {
             this.footerDistanceIn = value;
             this.notifyPropertyChanged('footerDistance');
@@ -23063,10 +28006,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "differentFirstPage", {
         /**
          * Gets or sets a value indicating whether the section has different first page.
+         * @asptype bool
          */
         get: function () {
             return this.differentFirstPageIn;
         },
+        /**
+         * Gets or sets a value indicating whether the section has different first page.
+         * @asptype bool
+         */
         set: function (value) {
             this.differentFirstPageIn = value;
             this.notifyPropertyChanged('differentFirstPage');
@@ -23077,10 +28025,15 @@ var SelectionSectionFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionSectionFormat.prototype, "differentOddAndEvenPages", {
         /**
          * Gets or sets a value indicating whether the section has different odd and even page.
+         * @asptype bool
          */
         get: function () {
             return this.differentOddAndEvenPagesIn;
         },
+        /**
+         * Gets or sets a value indicating whether the section has different odd and even page.
+         * @asptype bool
+         */
         set: function (value) {
             this.differentOddAndEvenPagesIn = value;
             this.notifyPropertyChanged('differentOddAndEvenPages');
@@ -23287,11 +28240,15 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "leftIndent", {
         /**
          * Gets or Sets the left indent for selected table.
-         * @private
+         * @asptype int
          */
         get: function () {
             return this.leftIndentIn;
         },
+        /**
+         * Gets or Sets the left indent for selected table.
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.leftIndentIn) {
                 return;
@@ -23306,10 +28263,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the default top margin of cell for selected table.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.topMarginIn;
         },
+        /**
+         * Gets or Sets the default top margin of cell for selected table.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.topMarginIn) {
                 return;
@@ -23324,10 +28287,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the background for selected table.
          * @default undefined
+         * @asptype string
          */
         get: function () {
             return this.backgroundIn;
         },
+        /**
+         * Gets or Sets the background for selected table.
+         * @default undefined
+         * @asptype string
+         */
         set: function (value) {
             if (value === this.backgroundIn) {
                 return;
@@ -23346,6 +28315,10 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.tableAlignmentIn;
         },
+        /**
+         * Gets or Sets the table alignment for selected table.
+         * @default undefined
+         */
         set: function (value) {
             if (value === this.tableAlignmentIn) {
                 return;
@@ -23360,10 +28333,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the default left margin of cell for selected table.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.leftMarginIn;
         },
+        /**
+         * Gets or Sets the default left margin of cell for selected table.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.leftMarginIn) {
                 return;
@@ -23378,10 +28357,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the default bottom margin of cell for selected table.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.bottomMarginIn;
         },
+        /**
+         * Gets or Sets the default bottom margin of cell for selected table.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.bottomMarginIn) {
                 return;
@@ -23396,10 +28381,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the cell spacing for selected table.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.cellSpacingIn;
         },
+        /**
+         * Gets or Sets the cell spacing for selected table.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.cellSpacingIn) {
                 return;
@@ -23414,10 +28405,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the default right margin of cell for selected table.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.rightMarginIn;
         },
+        /**
+         * Gets or Sets the default right margin of cell for selected table.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.rightMarginIn) {
                 return;
@@ -23432,10 +28429,16 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the preferred width for selected table.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.preferredWidthIn;
         },
+        /**
+         * Gets or Sets the preferred width for selected table.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.preferredWidthIn) {
                 return;
@@ -23454,6 +28457,10 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.preferredWidthTypeIn;
         },
+        /**
+         * Gets or Sets the preferred width type for selected table.
+         * @default undefined
+         */
         set: function (value) {
             if (value === this.preferredWidthTypeIn) {
                 return;
@@ -23467,10 +28474,15 @@ var SelectionTableFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionTableFormat.prototype, "bidi", {
         /**
          * Gets or sets the bidi property
+         * @asptype bool
          */
         get: function () {
             return this.bidiIn;
         },
+        /**
+         * Gets or sets the bidi property
+         * @asptype bool
+         */
         set: function (value) {
             this.bidiIn = value;
             this.notifyPropertyChanged('bidi');
@@ -23607,6 +28619,10 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.verticalAlignmentIn;
         },
+        /**
+         * Gets or sets the vertical alignment of the selected cells.
+         * @default undefined
+         */
         set: function (value) {
             if (value === this.verticalAlignmentIn) {
                 return;
@@ -23621,11 +28637,17 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the left margin for selected cells.
          * @default undefined
+         * @asptype int
          */
         /* tslint:disable */
         get: function () {
             return this.leftMarginIn;
         },
+        /**
+         * Gets or Sets the left margin for selected cells.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.leftMarginIn) {
                 return;
@@ -23640,10 +28662,16 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the right margin for selected cells.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.rightMarginIn;
         },
+        /**
+         * Gets or Sets the right margin for selected cells.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.rightMarginIn) {
                 return;
@@ -23658,10 +28686,16 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the top margin for selected cells.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.topMarginIn;
         },
+        /**
+         * Gets or Sets the top margin for selected cells.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.topMarginIn) {
                 return;
@@ -23676,10 +28710,16 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the bottom margin for selected cells.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.bottomMarginIn;
         },
+        /**
+         * Gets or Sets the bottom margin for selected cells.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.bottomMarginIn) {
                 return;
@@ -23694,10 +28734,16 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the background for selected cells.
          * @default undefined
+         * @asptype string
          */
         get: function () {
             return this.backgroundIn;
         },
+        /**
+         * Gets or Sets the background for selected cells.
+         * @default undefined
+         * @asptype string
+         */
         /* tslint:enable */
         set: function (value) {
             if (value === this.backgroundIn) {
@@ -23718,6 +28764,10 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.preferredWidthTypeIn;
         },
+        /**
+         * Gets or Sets the preferred width type for selected cells.
+         * @default undefined
+         */
         set: function (value) {
             if (value === this.preferredWidthTypeIn) {
                 return;
@@ -23732,10 +28782,16 @@ var SelectionCellFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the preferred width  for selected cells.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.preferredWidthIn;
         },
+        /**
+         * Gets or Sets the preferred width  for selected cells.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.preferredWidthIn) {
                 return;
@@ -23896,10 +28952,16 @@ var SelectionRowFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets the height for selected rows.
          * @default undefined
+         * @asptype int
          */
         get: function () {
             return this.heightIn;
         },
+        /**
+         * Gets or Sets the height for selected rows.
+         * @default undefined
+         * @asptype int
+         */
         set: function (value) {
             if (value === this.heightIn) {
                 return;
@@ -23918,6 +28980,10 @@ var SelectionRowFormat = /** @__PURE__ @class */ (function () {
         get: function () {
             return this.heightTypeIn;
         },
+        /**
+         * Gets or Sets the height type for selected rows.
+         * @default undefined
+         */
         set: function (value) {
             if (value === this.heightTypeIn) {
                 return;
@@ -23932,10 +28998,16 @@ var SelectionRowFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets a value indicating whether the selected rows are header rows or not.
          * @default undefined
+         * @asptype bool
          */
         get: function () {
             return this.isHeaderIn;
         },
+        /**
+         * Gets or Sets a value indicating whether the selected rows are header rows or not.
+         * @default undefined
+         * @asptype bool
+         */
         set: function (value) {
             if (value === this.isHeaderIn) {
                 return;
@@ -23950,10 +29022,16 @@ var SelectionRowFormat = /** @__PURE__ @class */ (function () {
         /**
          * Gets or Sets a value indicating whether to allow break across pages for selected rows.
          * @default undefined
+         * @asptype bool
          */
         get: function () {
             return this.allowRowBreakAcrossPagesIn;
         },
+        /**
+         * Gets or Sets a value indicating whether to allow break across pages for selected rows.
+         * @default undefined
+         * @asptype bool
+         */
         set: function (value) {
             if (value === this.allowRowBreakAcrossPagesIn) {
                 return;
@@ -24071,6 +29149,7 @@ var SelectionImageFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionImageFormat.prototype, "width", {
         /**
          * Gets the width of the image.
+         * @asptype int
          */
         get: function () {
             if (this.image) {
@@ -24084,6 +29163,7 @@ var SelectionImageFormat = /** @__PURE__ @class */ (function () {
     Object.defineProperty(SelectionImageFormat.prototype, "height", {
         /**
          * Gets the height of the image.
+         * @asptype int
          */
         get: function () {
             if (this.image) {
@@ -25105,7 +30185,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
         var endParagraph = textPosition.currentWidget.paragraph;
         if (startParagraph.containerWidget instanceof BodyWidget && endParagraph.containerWidget instanceof BodyWidget &&
             startParagraph.containerWidget.index === endParagraph.containerWidget.index) {
-            if (startParagraph.isInsideTable) {
+            if (startParagraph.isInsideTable && endParagraph.isInsideTable) {
                 return startParagraph.associatedCell.childWidgets.indexOf(startParagraph) >
                     endParagraph.associatedCell.childWidgets.indexOf(endParagraph);
                 // } else if ((this.currentParagraph).owner instanceof WHeaderFooter) {
@@ -26866,6 +31946,7 @@ var SelectionWidgetInfo = /** @__PURE__ @class */ (function () {
     function SelectionWidgetInfo(left, width) {
         this.leftIn = 0;
         this.widthIn = 0;
+        this.color = '';
         this.leftIn = left;
         this.widthIn = width;
     }
@@ -27106,13 +32187,53 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * @private
          */
+        this.isViewPasteOptions = false;
+        /**
+         * @private
+         */
+        this.skipEditRangeRetrieval = false;
+        /**
+         * @private
+         */
         this.selectedWidgets = undefined;
+        /**
+         * @private
+         */
+        this.isHighlightEditRegionIn = false;
+        /**
+         * @private
+         */
+        this.isHightlightEditRegionInternal = false;
+        /**
+         * @private
+         */
+        this.isCurrentUser = false;
+        /**
+         * @private
+         */
+        this.editRegionHighlighters = undefined;
+        /**
+         * @private
+         */
+        this.pasteOptions = function (event) {
+            if (event.item.text === 'Keep source formatting') {
+                _this.owner.editor.applyPasteOptions('KeepSourceFormatting');
+            }
+            else if (event.item.text === 'Match destination formatting') {
+                _this.owner.editor.applyPasteOptions('MergeWithExistingFormatting');
+            }
+            else {
+                _this.owner.editor.applyPasteOptions('KeepTextOnly');
+            }
+        };
         /**
          * Hides caret.
          * @private
          */
         this.hideCaret = function () {
-            _this.caret.style.display = 'none';
+            if (!isNullOrUndefined(_this.caret)) {
+                _this.caret.style.display = 'none';
+            }
         };
         this.owner = documentEditor;
         this.viewer = this.owner.viewer;
@@ -27126,7 +32247,26 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.cellFormatIn = new SelectionCellFormat(this);
         this.tableFormatIn = new SelectionTableFormat(this);
         this.imageFormatInternal = new SelectionImageFormat(this);
+        this.editRangeCollection = [];
+        this.editRegionHighlighters = new Dictionary();
     }
+    Object.defineProperty(Selection.prototype, "isHighlightEditRegion", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isHighlightEditRegionIn;
+        },
+        /**
+         * @private
+         */
+        set: function (value) {
+            this.isHighlightEditRegionIn = value;
+            this.onHighlight();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Selection.prototype, "htmlWriter", {
         /**
          * @private
@@ -27169,6 +32309,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * Gets the instance of selection character format.
          * @default undefined
+         * @asptype SelectionCharacterFormat
          * @return {SelectionCharacterFormat}
          */
         get: function () {
@@ -27181,6 +32322,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * Gets the instance of selection paragraph format.
          * @default undefined
+         * @asptype SelectionParagraphFormat
          * @return {SelectionParagraphFormat}
          */
         get: function () {
@@ -27193,6 +32335,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * Gets the instance of selection section format.
          * @default undefined
+         * @asptype SelectionSectionFormat
          * @return {SelectionSectionFormat}
          */
         get: function () {
@@ -27205,6 +32348,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * Gets the instance of selection table format.
          * @default undefined
+         * @asptype SelectionTableFormat
          * @return {SelectionTableFormat}
          */
         get: function () {
@@ -27217,6 +32361,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * Gets the instance of selection cell format.
          * @default undefined
+         * @asptype SelectionCellFormat
          * @return {SelectionCellFormat}
          */
         get: function () {
@@ -27229,7 +32374,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * Gets the instance of selection row format.
          * @default undefined
-         * @returns SelectionRowFormat
+         * @asptype SelectionRowFormat
+         * @returns {SelectionRowFormat}
          */
         get: function () {
             return this.rowFormatIn;
@@ -27241,7 +32387,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * Gets the instance of selection image format.
          * @default undefined
-         * @returns SelectionImageFormat
+         * @asptype SelectionImageFormat
+         * @returns {SelectionImageFormat}
          */
         get: function () {
             return this.imageFormatInternal;
@@ -27270,7 +32417,6 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "startPage", {
         /**
          * Gets the page number where the selection ends.
-         * @private
          */
         get: function () {
             if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer)
@@ -27285,7 +32431,6 @@ var Selection = /** @__PURE__ @class */ (function () {
     Object.defineProperty(Selection.prototype, "endPage", {
         /**
          * Gets the page number where the selection ends.
-         * @private
          */
         get: function () {
             if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer)
@@ -27330,6 +32475,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * Gets the text within selection.
          * @default ''
+         * @asptype string
          * @returns {string}
          */
         get: function () {
@@ -27606,36 +32752,43 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         var page = this.getPage(lineWidget.paragraph);
         var height = lineWidget.height;
+        var widgets = this.selectedWidgets;
         var selectionWidget = undefined;
         var selectionWidgetCollection = undefined;
-        if (this.selectedWidgets.containsKey(lineWidget)) {
-            if (this.selectedWidgets.get(lineWidget) instanceof SelectionWidgetInfo) {
-                selectionWidget = this.selectedWidgets.get(lineWidget);
-                // if the line element has already added with SelectionWidgetInfo
-                // now its need to be added as ElementBox highlighting them remove it from dictionary and add it collection.
-                if (isElementBoxHighlight) {
-                    this.selectedWidgets.remove(lineWidget);
-                    selectionWidgetCollection = [];
-                    this.selectedWidgets.add(lineWidget, selectionWidgetCollection);
+        if (this.isHightlightEditRegionInternal) {
+            this.addEditRegionHighlight(lineWidget, left, width);
+            return;
+        }
+        else {
+            if (widgets.containsKey(lineWidget)) {
+                if (widgets.get(lineWidget) instanceof SelectionWidgetInfo) {
+                    selectionWidget = widgets.get(lineWidget);
+                    // if the line element has already added with SelectionWidgetInfo
+                    // now its need to be added as ElementBox highlighting them remove it from dictionary and add it collection.
+                    if (isElementBoxHighlight) {
+                        widgets.remove(lineWidget);
+                        selectionWidgetCollection = [];
+                        widgets.add(lineWidget, selectionWidgetCollection);
+                    }
+                }
+                else {
+                    selectionWidgetCollection = widgets.get(lineWidget);
                 }
             }
             else {
-                selectionWidgetCollection = this.selectedWidgets.get(lineWidget);
+                if (isElementBoxHighlight) {
+                    selectionWidgetCollection = [];
+                    widgets.add(lineWidget, selectionWidgetCollection);
+                }
+                else {
+                    selectionWidget = new SelectionWidgetInfo(left, width);
+                    widgets.add(lineWidget, selectionWidget);
+                }
             }
-        }
-        else {
-            if (isElementBoxHighlight) {
-                selectionWidgetCollection = [];
-                this.selectedWidgets.add(lineWidget, selectionWidgetCollection);
-            }
-            else {
+            if (selectionWidget === undefined) {
                 selectionWidget = new SelectionWidgetInfo(left, width);
-                this.selectedWidgets.add(lineWidget, selectionWidget);
+                widgets.add(lineWidget, selectionWidget);
             }
-        }
-        if (selectionWidget === undefined) {
-            selectionWidget = new SelectionWidgetInfo(left, width);
-            this.selectedWidgets.add(lineWidget, selectionWidget);
         }
         var viewer = this.viewer;
         var pageTop = this.getPageTop(page);
@@ -27649,7 +32802,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.renderDashLine(viewer.selectionContext, page, lineWidget, (pageLeft + (left * zoomFactor)) - viewer.containerLeft, top, width * zoomFactor, height);
             }
             else {
-                viewer.selectionContext.fillStyle = 'gray';
+                this.viewer.selectionContext.fillStyle = 'gray';
                 viewer.selectionContext.globalAlpha = 0.4;
                 // tslint:disable-next-line:max-line-length
                 viewer.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - viewer.containerLeft, (pageTop + (top * zoomFactor)) - viewer.containerTop, width * zoomFactor, height * zoomFactor);
@@ -27659,6 +32812,26 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (isElementBoxHighlight) {
             selectionWidgetCollection.push(selectionWidget);
         }
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.addEditRegionHighlight = function (lineWidget, left, width) {
+        var highlighters = undefined;
+        var collection = this.editRegionHighlighters;
+        if (collection.containsKey(lineWidget)) {
+            highlighters = collection.get(lineWidget);
+        }
+        else {
+            highlighters = [];
+            collection.add(lineWidget, highlighters);
+        }
+        var editRegionHighlight = new SelectionWidgetInfo(left, width);
+        if (this.isCurrentUser) {
+            editRegionHighlight.color = this.owner.userColor !== '' ? this.owner.userColor : '#FFFF00';
+        }
+        highlighters.push(editRegionHighlight);
+        return editRegionHighlight;
     };
     /**
      * Create selection highlight inside table
@@ -27676,19 +32849,22 @@ var Selection = /** @__PURE__ @class */ (function () {
         var pageLeft = page.boundingRectangle.x;
         var isVisiblePage = this.viewer.containerTop <= pageTop
             || pageTop < this.viewer.containerTop + this.viewer.selectionCanvas.height;
-        if (this.selectedWidgets.containsKey(cellWidget) && this.selectedWidgets.get(cellWidget) instanceof SelectionWidgetInfo) {
-            selectionWidget = this.selectedWidgets.get(cellWidget);
-            if (isVisiblePage) {
-                // tslint:disable-next-line:max-line-length
-                this.viewer.selectionContext.clearRect((pageLeft + (selectionWidget.left * this.viewer.zoomFactor) - this.viewer.containerLeft), (pageTop + (top * this.viewer.zoomFactor)) - this.viewer.containerTop, selectionWidget.width * this.viewer.zoomFactor, height * this.viewer.zoomFactor);
+        var widgets = this.selectedWidgets;
+        if (!this.isHightlightEditRegionInternal) {
+            if (widgets.containsKey(cellWidget) && widgets.get(cellWidget) instanceof SelectionWidgetInfo) {
+                selectionWidget = widgets.get(cellWidget);
+                if (isVisiblePage) {
+                    // tslint:disable-next-line:max-line-length
+                    this.viewer.selectionContext.clearRect((pageLeft + (selectionWidget.left * this.viewer.zoomFactor) - this.viewer.containerLeft), (pageTop + (top * this.viewer.zoomFactor)) - this.viewer.containerTop, selectionWidget.width * this.viewer.zoomFactor, height * this.viewer.zoomFactor);
+                }
             }
-        }
-        else {
-            selectionWidget = new SelectionWidgetInfo(left, width);
-            if (this.selectedWidgets.containsKey(cellWidget)) {
-                this.selectedWidgets.remove(this.selectedWidgets.get(cellWidget));
+            else {
+                selectionWidget = new SelectionWidgetInfo(left, width);
+                if (widgets.containsKey(cellWidget)) {
+                    widgets.remove(widgets.get(cellWidget));
+                }
+                widgets.add(cellWidget, selectionWidget);
             }
-            this.selectedWidgets.add(cellWidget, selectionWidget);
         }
         if (isVisiblePage) {
             this.viewer.selectionContext.fillStyle = 'gray';
@@ -29746,6 +34922,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 continue;
             }
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
+                || inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox
                 || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
                 return startOffset;
             }
@@ -30114,7 +35291,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 topMargin += lineSpacing - (topMargin + size.Height + bottomMargin);
             }
             topMargin += beforeSpacing;
-            bottomMargin += paragraph.paragraphFormat.afterSpacing;
+            bottomMargin += this.viewer.layout.getAfterSpacing(paragraph);
         }
         return { 'width': size.Width, 'height': size.Height, 'topMargin': topMargin, 'bottomMargin': bottomMargin };
     };
@@ -31187,7 +36364,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 maxLineHeight = sizeInfo.height;
                 isItalic = paragarph.characterFormat.italic;
                 if (!isEmptySelection) {
-                    maxLineHeight += paragarph.paragraphFormat.afterSpacing;
+                    maxLineHeight += this.viewer.layout.getAfterSpacing(paragarph);
                 }
             }
             else if (isNullOrUndefined(previousInline)) {
@@ -32399,6 +37576,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.owner.isLayoutEnabled && !this.owner.isShiftingEnabled) {
             this.highlightSelection(true);
         }
+        if (this.viewer.restrictEditingPane.isShowRestrictPane && !this.skipEditRangeRetrieval) {
+            this.viewer.restrictEditingPane.updateUserInformation();
+        }
         if (isSelectionChanged) {
             if (this.start.paragraph.isInHeaderFooter && !this.owner.enableHeaderAndFooter) {
                 this.owner.enableHeaderAndFooter = true;
@@ -33406,6 +38586,39 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
+     * @private
+     */
+    Selection.prototype.createPasteElement = function (top, left) {
+        var items = [
+            {
+                text: 'Keep source formatting',
+                iconCss: 'e-icons e-de-paste-source'
+            },
+            {
+                text: 'Match destination formatting',
+                iconCss: 'e-icons e-de-paste-merge'
+            },
+            {
+                text: 'Text only',
+                iconCss: 'e-icons e-de-paste-text'
+            }
+        ];
+        if (!this.pasteElement) {
+            this.pasteElement = createElement('div', { className: 'e-de-tooltip' });
+            this.viewer.viewerContainer.appendChild(this.pasteElement);
+            var splitButtonEle = createElement('button', { id: 'iconsplitbtn' });
+            this.pasteElement.appendChild(splitButtonEle);
+            var splitButton = new DropDownButton({
+                items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
+            });
+            splitButton.appendTo('#iconsplitbtn');
+        }
+        this.pasteElement.style.display = 'block';
+        this.pasteElement.style.position = 'absolute';
+        this.pasteElement.style.left = left;
+        this.pasteElement.style.top = top;
+    };
+    /**
      * Show hyperlink tooltip
      * @private
      */
@@ -33940,7 +39153,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.updateCaretPosition = function () {
         var caretPosition = this.end.location;
         var page = this.getSelectionPage(this.end);
-        if (page) {
+        if (page && !isNullOrUndefined(this.caret)) {
             this.caret.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.viewer.zoomFactor) + 'px';
             var caretInfo = this.updateCaretSize(this.owner.selection.end);
             var topMargin = caretInfo.topMargin;
@@ -33960,6 +39173,21 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.viewer.touchEnd.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * this.viewer.zoomFactor - 14) + 'px';
                 this.viewer.touchEnd.style.top = pageTop + ((caretPosition.y + caretInfo.height) * this.viewer.zoomFactor) + 'px';
             }
+        }
+        this.showHidePasteOptions(this.caret.style.top, this.caret.style.left);
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.showHidePasteOptions = function (top, left) {
+        if (this.isViewPasteOptions) {
+            if (this.pasteElement && this.pasteElement.style.display === 'block') {
+                return;
+            }
+            this.createPasteElement(top, left);
+        }
+        else if (this.pasteElement) {
+            this.pasteElement.style.display = 'none';
         }
     };
     /**
@@ -34095,7 +39323,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             isItalic = caretHeightInfo.isItalic;
             bottom += caretHeightInfo.height;
             if (isEmptySelection) {
-                bottom -= HelperMethods.convertPointToPixel(textPosition.paragraph.paragraphFormat.afterSpacing);
+                bottom -= HelperMethods.convertPointToPixel(this.viewer.layout.getAfterSpacing(textPosition.paragraph));
             }
         }
         return bottom;
@@ -34361,6 +39589,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.shiftBlockOnHeaderFooterEnableDisable();
         return true;
     };
+    /**
+     * @private
+     */
     Selection.prototype.shiftBlockOnHeaderFooterEnableDisable = function () {
         for (var i = 0; i < this.viewer.headersFooters.length; i++) {
             var headerFooter = this.viewer.headersFooters[i];
@@ -34524,6 +39755,199 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         return elements;
     };
+    /**
+     * @private
+     */
+    Selection.prototype.updateEditRangeCollection = function () {
+        if (this.editRangeCollection.length > 0) {
+            this.editRangeCollection = [];
+        }
+        var editRangeStart;
+        var everyOneArea;
+        if (!this.viewer.isDocumentProtected) {
+            for (var i = 0; i < this.viewer.editRanges.length; i++) {
+                var user = this.viewer.editRanges.keys[i];
+                editRangeStart = this.viewer.editRanges.get(user);
+                for (var j = 0; j < editRangeStart.length; j++) {
+                    this.editRangeCollection.push(editRangeStart[j]);
+                }
+            }
+        }
+        else {
+            if (this.viewer.editRanges.containsKey(this.owner.currentUser)) {
+                editRangeStart = this.viewer.editRanges.get(this.owner.currentUser);
+                for (var j = 0; j < editRangeStart.length; j++) {
+                    this.editRangeCollection.push(editRangeStart[j]);
+                }
+            }
+            if (this.viewer.editRanges.containsKey('Everyone')) {
+                var user = 'Everyone';
+                everyOneArea = this.viewer.editRanges.get(user);
+                for (var j = 0; j < everyOneArea.length; j++) {
+                    this.editRangeCollection.push(everyOneArea[j]);
+                }
+            }
+        }
+    };
+    //Restrict editing implementation starts
+    /**
+     * @private
+     */
+    Selection.prototype.onHighlight = function () {
+        if (this.isHighlightEditRegion) {
+            this.highlightEditRegion();
+        }
+        else {
+            this.unHighlightEditRegion();
+        }
+        this.viewer.renderVisiblePages();
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.highlightEditRegion = function () {
+        this.updateEditRangeCollection();
+        if (!this.isHighlightEditRegion) {
+            this.unHighlightEditRegion();
+            return;
+        }
+        this.isHightlightEditRegionInternal = true;
+        if (isNullOrUndefined(this.editRegionHighlighters)) {
+            this.editRegionHighlighters = new Dictionary();
+        }
+        this.editRegionHighlighters.clear();
+        for (var j = 0; j < this.editRangeCollection.length; j++) {
+            this.highlightEditRegionInternal(this.editRangeCollection[j]);
+        }
+        this.isHightlightEditRegionInternal = false;
+        this.viewer.updateScrollBars();
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.unHighlightEditRegion = function () {
+        if (!isNullOrUndefined(this.editRegionHighlighters)) {
+            this.editRegionHighlighters.clear();
+            this.editRegionHighlighters = undefined;
+        }
+        this.isHightlightEditRegionInternal = false;
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.highlightEditRegionInternal = function (editRangeStart) {
+        var positionInfo = this.getPosition(editRangeStart);
+        var startPosition = positionInfo.startPosition;
+        var endPosition = positionInfo.endPosition;
+        // if (editRangeStart.user === this.owner.currentUser && editRangeStart.group === '') {
+        this.isCurrentUser = true;
+        // }
+        this.highlightEditRegions(editRangeStart, startPosition, endPosition);
+        this.isCurrentUser = false;
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.SelectAllEditRegion = function () {
+        if (this.editRangeCollection.length === 0) {
+            this.updateEditRangeCollection();
+        }
+        this.viewer.clearSelectionHighlight();
+        for (var j = 0; j < this.editRangeCollection.length; j++) {
+            var editRangeStart = this.editRangeCollection[j];
+            var positionInfo = this.getPosition(editRangeStart);
+            var startPosition = positionInfo.startPosition;
+            var endPosition = positionInfo.endPosition;
+            this.highlightEditRegions(editRangeStart, startPosition, endPosition);
+        }
+    };
+    Selection.prototype.highlightEditRegions = function (editRangeStart, startPosition, endPosition) {
+        if (!editRangeStart.line.paragraph.isInsideTable) {
+            this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
+        }
+        else {
+            var row = editRangeStart.line.paragraph.associatedCell.ownerRow;
+            var cell = row.childWidgets[editRangeStart.columnFirst];
+            for (var i = 0; i < cell.childWidgets.length; i++) {
+                if (cell.childWidgets[i] instanceof ParagraphWidget) {
+                    this.highlight(cell.childWidgets[i], startPosition, endPosition);
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.navigateNextEditRegion = function () {
+        var editRange = this.getEditRangeStartElement();
+        //Sort based on position
+        for (var i = this.editRangeCollection.length - 1; i >= 0; i--) {
+            for (var j = 1; j <= i; j++) {
+                var nextPosition = this.getPosition(this.editRangeCollection[j - 1]).startPosition;
+                var firstPosition = this.getPosition(this.editRangeCollection[j]).startPosition;
+                if (nextPosition.isExistAfter(firstPosition)) {
+                    var temp = this.editRangeCollection[j - 1];
+                    this.editRangeCollection[j - 1] = this.editRangeCollection[j];
+                    this.editRangeCollection[j] = temp;
+                }
+            }
+        }
+        var index = this.editRangeCollection.indexOf(editRange);
+        var editRangeStart = index < this.editRangeCollection.length - 1 ?
+            this.editRangeCollection[index + 1] : this.editRangeCollection[0];
+        var positionInfo = this.getPosition(editRangeStart);
+        var startPosition = positionInfo.startPosition;
+        var endPosition = positionInfo.endPosition;
+        this.selectRange(startPosition, endPosition);
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.getEditRangeStartElement = function () {
+        for (var i = 0; i < this.editRangeCollection.length; i++) {
+            var editStart = this.editRangeCollection[i];
+            var position = this.getPosition(editStart);
+            var start = position.startPosition;
+            var end = position.endPosition;
+            if ((this.start.isExistAfter(start) || this.start.isAtSamePosition(start))
+                && (this.end.isExistBefore(end) || this.end.isAtSamePosition(end))) {
+                return editStart;
+            }
+        }
+        return undefined;
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.isSelectionIsAtEditRegion = function (update) {
+        if (!this.viewer.isDocumentProtected) {
+            return false;
+        }
+        return this.checkSelectionIsAtEditRegion();
+    };
+    Selection.prototype.checkSelectionIsAtEditRegion = function () {
+        for (var i = 0; i < this.editRangeCollection.length; i++) {
+            var editRangeStart = this.editRangeCollection[i];
+            var positionInfo = this.getPosition(editRangeStart);
+            var startPosition = positionInfo.startPosition;
+            var endPosition = positionInfo.endPosition;
+            if ((this.start.isExistAfter(startPosition) || this.start.isAtSamePosition(startPosition))
+                && (this.end.isExistBefore(endPosition) || this.end.isAtSamePosition(endPosition))) {
+                return true;
+            }
+        }
+        return false;
+    };
+    Selection.prototype.getPosition = function (element) {
+        var offset = element.line.getOffset(element, 1);
+        var startPosition = new TextPosition(this.viewer.owner);
+        startPosition.setPositionParagraph(element.line, offset);
+        var endElement = element.editRangeEnd;
+        offset = endElement.line.getOffset(endElement, 1);
+        var endPosition = new TextPosition(this.viewer.owner);
+        endPosition.setPositionParagraph(endElement.line, offset);
+        return { 'startPosition': startPosition, 'endPosition': endPosition };
+    };
     return Selection;
 }());
 
@@ -34569,8 +39993,19 @@ var TextSearch = /** @__PURE__ @class */ (function () {
         if (textToFind.indexOf('\\') > -1) {
             textToFind = textToFind.split('\\').join('\\\\');
         }
-        if (textToFind.indexOf('.') > -1) {
-            textToFind = '\\' + textToFind;
+        // tslint:disable-next-line:max-line-length
+        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1) {
+            var text = '';
+            for (var i = 0; i < textToFind.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']') {
+                    text += '\\' + textToFind[i];
+                }
+                else {
+                    text += textToFind[i];
+                }
+            }
+            textToFind = text;
         }
         if (option === 'WholeWord' || option === 'CaseSensitiveWholeWord') {
             textToFind = this.wordBefore + textToFind + this.wordAfter;
@@ -34602,6 +40037,129 @@ var TextSearch = /** @__PURE__ @class */ (function () {
             return results;
         }
         return undefined;
+    };
+    /**
+     * Method to retrieve text from a line widget
+     * @param  {ElementBox} inlineElement
+     * @param {number} indexInInline
+     * @param {boolean} includeNextLine
+     * @private
+     */
+    TextSearch.prototype.getElementInfo = function (inlineElement, indexInInline, includeNextLine) {
+        var inlines = inlineElement;
+        var stringBuilder = '';
+        var spans = new Dictionary();
+        //tslint:disable no-constant-condition
+        do {
+            // tslint:disable-next-line:max-line-length 
+            if (inlineElement instanceof TextElementBox && (!isNullOrUndefined(inlineElement.text) && inlineElement.text !== '')) {
+                spans.add(inlineElement, stringBuilder.length);
+                // IndexInInline Handled specifically for simple find operation to start from starting point
+                if (inlineElement === inlines) {
+                    stringBuilder = stringBuilder + (inlineElement.text.substring(indexInInline));
+                }
+                else {
+                    stringBuilder = stringBuilder + (inlineElement.text);
+                }
+            }
+            else if (inlineElement instanceof FieldElementBox) {
+                var fieldBegin = inlineElement;
+                if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
+                    // tslint:disable-next-line:max-line-length 
+                    inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd : fieldBegin.fieldSeparator;
+                }
+            }
+            if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
+                break;
+            }
+            if (!isNullOrUndefined(inlineElement)) {
+                if ((!isNullOrUndefined(includeNextLine) && !includeNextLine)) {
+                    var elementBoxes = inlineElement.line.children;
+                    var length_1 = inlineElement.line.children.length;
+                    if (elementBoxes.indexOf(inlineElement) < length_1 - 1) {
+                        inlineElement = inlineElement.nextNode;
+                    }
+                    else {
+                        inlineElement = undefined;
+                        break;
+                    }
+                }
+                else {
+                    inlineElement = inlineElement.nextNode;
+                }
+            }
+        } while (true);
+        var text = stringBuilder.toString();
+        return { elementsWithOffset: spans, fullText: text };
+    };
+    /**
+     * Method to update location for matched text
+     * @param {RegExpExecArray} matches
+     * @param {TextSearchResults} results
+     * @param {Dictionary<TextElementBox, number>} textInfo
+     * @param {number}indexInInline
+     * @param {boolean} isInline
+     * @param {boolean}isFirstMatch
+     * @param {TextPosition}selectionEnd
+     */
+    // tslint:disable-next-line:max-line-length
+    TextSearch.prototype.updateMatchedTextLocation = function (matches, results, textInfo, indexInInline, inlines, isFirstMatch, selectionEnd, startPosition) {
+        for (var i = 0; i < matches.length; i++) {
+            var match = matches[i];
+            var isMatched = void 0;
+            if (!(isNullOrUndefined(startPosition)) && match.index < startPosition) {
+                continue;
+            }
+            var result = results.addResult();
+            var spanKeys = textInfo.keys;
+            for (var i_1 = 0; i_1 < spanKeys.length; i_1++) {
+                var span = spanKeys[i_1];
+                var startIndex = textInfo.get(span);
+                var spanLength = span.length;
+                // IndexInInline Handled specifically for simple find operation to start from starting point
+                if (span === inlines) {
+                    spanLength -= indexInInline;
+                }
+                if (isNullOrUndefined(result.start) && match.index < startIndex + spanLength) {
+                    var index = match.index - startIndex;
+                    // IndexInInline Handled specifically for simple find operation to start from starting point
+                    if (span === inlines) {
+                        index += indexInInline;
+                    }
+                    var offset = (span.line).getOffset(span, index);
+                    result.start = this.getTextPosition(span.line, offset.toString());
+                    result.start.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
+                    result.start.setPositionParagraph(span.line, offset);
+                }
+                if (match.index + match[0].length <= startIndex + spanLength) {
+                    var index = (match.index + match[0].length) - startIndex;
+                    // IndexInInline Handled specifically for simple find operation to start from starting point
+                    if (span === inlines) {
+                        index += indexInInline;
+                    }
+                    var offset = (span.line).getOffset(span, index);
+                    result.end = this.getTextPosition(span.line, offset.toString());
+                    result.end.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
+                    result.end.setPositionParagraph(span.line, offset);
+                    isMatched = true;
+                    break;
+                }
+            }
+            result.isHeader = this.isHeader;
+            result.isFooter = this.isFooter;
+            if (isFirstMatch) {
+                results.currentIndex = 0;
+                break;
+                // tslint:disable-next-line:max-line-length   
+            }
+            else if (results.currentIndex < 0 && !isNullOrUndefined(selectionEnd) && (selectionEnd.isExistBefore(result.start) ||
+                selectionEnd.isAtSamePosition(result.start))) {
+                results.currentIndex = results.indexOf(result);
+            }
+            if (!isNullOrUndefined(startPosition) && isMatched) {
+                break;
+            }
+        }
     };
     // tslint:disable-next-line:max-line-length     
     TextSearch.prototype.findDocument = function (results, pattern, isFirstMatch, findOption, hierachicalPosition) {
@@ -34713,93 +40271,29 @@ var TextSearch = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line:max-line-length     
     TextSearch.prototype.findInline = function (inlineElement, pattern, option, indexInInline, isFirstMatch, results, selectionEnd) {
         var inlines = inlineElement;
-        var stringBuilder = '';
-        var spans = new Dictionary();
-        //tslint:disable no-constant-condition
-        do {
-            // tslint:disable-next-line:max-line-length 
-            if (inlineElement instanceof TextElementBox && (!isNullOrUndefined(inlineElement.text) && inlineElement.text !== '')) {
-                spans.add(inlineElement, stringBuilder.length);
-                // IndexInInline Handled specifically for simple find operation to start from starting point
-                if (inlineElement === inlines) {
-                    stringBuilder = stringBuilder + (inlineElement.text.substring(indexInInline));
-                }
-                else {
-                    stringBuilder = stringBuilder + (inlineElement.text);
-                }
-            }
-            else if (inlineElement instanceof FieldElementBox) {
-                var fieldBegin = inlineElement;
-                if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
-                    // tslint:disable-next-line:max-line-length 
-                    inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd : fieldBegin.fieldSeparator;
-                }
-            }
-            if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
-                break;
-            }
-            if (!isNullOrUndefined(inlineElement)) {
-                inlineElement = inlineElement.nextNode;
-            }
-        } while (true);
-        var text = stringBuilder.toString();
+        var textInfo = this.getElementInfo(inlineElement, indexInInline);
+        var text = textInfo.fullText;
         var matches = [];
+        var spans = textInfo.elementsWithOffset;
         var matchObject;
         //tslint:disable no-conditional-assignment
         while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
             matches.push(matchObject);
         }
-        for (var i = 0; i < matches.length; i++) {
-            var match = matches[i];
-            var result = results.addResult();
-            var spanKeys = spans.keys;
-            for (var i_1 = 0; i_1 < spanKeys.length; i_1++) {
-                var span = spanKeys[i_1];
-                var startIndex = spans.get(span);
-                var spanLength = span.length;
-                // IndexInInline Handled specifically for simple find operation to start from starting point
-                if (span === inlines) {
-                    spanLength -= indexInInline;
-                }
-                if (isNullOrUndefined(result.start) && match.index < startIndex + spanLength) {
-                    var index = match.index - startIndex;
-                    // IndexInInline Handled specifically for simple find operation to start from starting point
-                    if (span === inlines) {
-                        index += indexInInline;
-                    }
-                    var offset = (span.line).getOffset(span, index);
-                    result.start = this.getTextPosition(span.line, offset.toString());
-                    result.start.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
-                    result.start.setPositionParagraph(span.line, offset);
-                }
-                if (match.index + match[0].length <= startIndex + spanLength) {
-                    var index = (match.index + match[0].length) - startIndex;
-                    // IndexInInline Handled specifically for simple find operation to start from starting point
-                    if (span === inlines) {
-                        index += indexInInline;
-                    }
-                    var offset = (span.line).getOffset(span, index);
-                    result.end = this.getTextPosition(span.line, offset.toString());
-                    result.end.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
-                    result.end.setPositionParagraph(span.line, offset);
-                    break;
-                }
-            }
-            result.isHeader = this.isHeader;
-            result.isFooter = this.isFooter;
-            if (isFirstMatch) {
-                results.currentIndex = 0;
-                return undefined;
-            }
-            else if (results.currentIndex < 0 && (selectionEnd.isExistBefore(result.start) ||
-                selectionEnd.isAtSamePosition(result.start))) {
-                results.currentIndex = results.indexOf(result);
-            }
+        this.updateMatchedTextLocation(matches, results, spans, indexInInline, inlines, isFirstMatch, selectionEnd);
+        if (isFirstMatch) {
+            return undefined;
         }
         // tslint:disable-next-line:max-line-length
         var paragraphWidget = this.owner.selection.getNextParagraphBlock(inlineElement.line.paragraph);
         return paragraphWidget;
     };
+    /**
+     * Method to get text position
+     * @param {LineWidget} lineWidget
+     * @param {string} hierarchicalIndex
+     * @private
+     */
     TextSearch.prototype.getTextPosition = function (lineWidget, hierarchicalIndex) {
         var textPosition = new TextPosition(this.owner);
         var index = textPosition.getHierarchicalIndex(lineWidget, hierarchicalIndex);
@@ -35405,12 +40899,13 @@ var Search = /** @__PURE__ @class */ (function () {
      */
     Search.prototype.addSearchHighlightBorder = function (lineWidget) {
         var highlighters = undefined;
-        if (this.searchHighlighters.containsKey(lineWidget)) {
-            highlighters = this.searchHighlighters.get(lineWidget);
+        var collection = this.searchHighlighters;
+        if (collection.containsKey(lineWidget)) {
+            highlighters = collection.get(lineWidget);
         }
         else {
             highlighters = [];
-            this.searchHighlighters.add(lineWidget, highlighters);
+            collection.add(lineWidget, highlighters);
         }
         var searchHighlight = new SearchWidgetInfo(0, 0);
         highlighters.push(searchHighlight);
@@ -37843,6 +43338,15 @@ var Editor = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.isInsertingTOC = false;
+        this.editStartRangeCollection = [];
+        /* tslint:disable:no-any */
+        this.copiedContent = '';
+        /* tslint:enable:no-any */
+        this.copiedTextContent = '';
+        this.currentPasteOptions = 'KeepSourceFormatting';
+        this.pasteTextPosition = undefined;
+        this.isSkipHistory = false;
+        this.isPaste = false;
         /**
          * @private
          */
@@ -37975,6 +43479,28 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.viewer = viewer;
         this.tableResize = new TableResizer(this.viewer.owner);
     }
+    Object.defineProperty(Editor.prototype, "restrictFormatting", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.viewer.isDocumentProtected && (this.viewer.restrictFormatting
+                || (!this.viewer.restrictFormatting && !this.selection.isSelectionIsAtEditRegion(false)));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Editor.prototype, "restrictEditing", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.viewer.isDocumentProtected && this.viewer.protectionType === 'ReadOnly'
+                && !this.selection.isSelectionIsAtEditRegion(false);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Editor.prototype, "editorHistory", {
         get: function () {
             return this.viewer.owner.editorHistory;
@@ -38079,6 +43605,15 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.fireContentChange = function () {
+        if (this.selection.isHighlightEditRegion) {
+            this.selection.onHighlight();
+        }
+        if (!this.isPaste) {
+            this.copiedContent = undefined;
+            this.copiedTextContent = '';
+            this.selection.isViewPasteOptions = false;
+            this.selection.showHidePasteOptions(undefined, undefined);
+        }
         if (this.viewer.owner.isLayoutEnabled && !this.viewer.owner.isShiftingEnabled) {
             this.viewer.owner.fireContentChange();
         }
@@ -38454,7 +43989,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                     break;
                 case 13:
                     event.preventDefault();
+                    this.viewer.triggerSpellCheck = true;
                     this.handleEnterKey();
+                    this.viewer.triggerSpellCheck = false;
                     break;
                 case 46:
                     this.handleDelete();
@@ -38629,9 +44166,20 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             else {
                 var indexInInline = 0;
-                var inlineObj = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi);
+                // tslint:disable-next-line:max-line-length
+                var inlineObj = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi, (isReplace) ? false : true);
                 var inline = inlineObj.element;
                 indexInInline = inlineObj.index;
+                inline.ischangeDetected = true;
+                if (inline instanceof TextElementBox && text !== ' ' && this.viewer.owner.enableSpellCheck) {
+                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': inline.text });
+                    if (!isReplace) {
+                        inline.ignoreOnceItems = [];
+                    }
+                }
+                if (inline.canTrigger && inline.text.length <= 1) {
+                    inline.canTrigger = false;
+                }
                 // Todo: compare selection format
                 var insertFormat = this.copyInsertFormat(inline.characterFormat, true);
                 var isBidi = this.viewer.textHelper.getRtlLanguage(text).isRtl;
@@ -38642,8 +44190,11 @@ var Editor = /** @__PURE__ @class */ (function () {
                     inlineLangId = this.viewer.textHelper.getRtlLanguage(inline.text).id;
                     isRtl = this.viewer.textHelper.getRtlLanguage(inline.text).isRtl;
                 }
-                insertFormat.bidi = isBidi;
-                if (insertFormat.isSameFormat(inline.characterFormat) && (!isBidi || (isBidi && insertLangId === inlineLangId))
+                if (isBidi || !this.viewer.owner.enableSpellCheck) {
+                    insertFormat.bidi = isBidi;
+                }
+                // tslint:disable-next-line:max-line-length
+                if ((!this.viewer.owner.enableSpellCheck || (text !== ' ' && inline.text !== ' ')) && insertFormat.isSameFormat(inline.characterFormat) && (!isBidi || (isBidi && insertLangId === inlineLangId))
                     || (text.trim() === '' && !isBidi && inline.characterFormat.bidi)) {
                     this.insertTextInline(inline, selection, text, indexInInline);
                 }
@@ -38679,6 +44230,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                             else {
                                 splittedSpan.text = inline.text.substring(indexInInline);
                                 inline.text = inline.text.slice(0, indexInInline);
+                            }
+                            if (this.owner.enableSpellCheck) {
+                                this.owner.spellChecker.updateSplittedElementError(inline, splittedSpan);
                             }
                             inline.line.children.splice(insertIndex + 1, 0, splittedSpan);
                         }
@@ -39747,23 +45301,71 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     /* tslint:disable:no-any */
     Editor.prototype.pasteInternal = function (event, pasteWindow) {
+        this.currentPasteOptions = 'KeepSourceFormatting';
         if (this.viewer.owner.enableLocalPaste) {
             this.pasteLocal();
         }
         else {
+            this.selection.isViewPasteOptions = true;
             if (isNullOrUndefined(pasteWindow)) {
                 pasteWindow = window;
             }
             /* tslint:enable:no-any */
             var textContent = '';
+            var htmlContent = '';
+            var rtfContent = '';
             var clipbordData = pasteWindow.clipboardData ? pasteWindow.clipboardData : event.clipboardData;
-            textContent = clipbordData.getData('Text');
-            if (textContent !== '') {
+            rtfContent = clipbordData.getData('Text/Rtf');
+            htmlContent = clipbordData.getData('Text/Html');
+            this.copiedTextContent = textContent = clipbordData.getData('Text');
+            if (rtfContent !== '') {
+                this.pasteAjax(rtfContent, '.rtf');
+            }
+            else if (htmlContent !== '') {
+                var doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+                var result = new XMLSerializer().serializeToString(doc);
+                result = result.replace(/<!--StartFragment-->/gi, '');
+                result = result.replace(/<!--EndFragment-->/gi, '');
+                this.pasteAjax(result, '.html');
+            }
+            else if (textContent !== '') {
                 this.pasteContents(textContent);
                 this.viewer.editableDiv.innerHTML = '';
             }
+            // if (textContent !== '') {
+            //     this.pasteContents(textContent);
+            //     this.viewer.editableDiv.innerHTML = '';
+            // }
         }
         this.viewer.updateFocus();
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.pasteAjax = function (content, type) {
+        var proxy = this;
+        /* tslint:disable:no-any */
+        var formObject = {
+            content: content,
+            type: type
+        };
+        this.pasteRequestHandler = new XmlHttpRequestHandler();
+        this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
+        this.pasteRequestHandler.responseType = 'json';
+        this.pasteRequestHandler.contentType = 'application/json;charset=UTF-8';
+        this.pasteRequestHandler.send(formObject);
+        showSpinner(this.owner.element);
+        this.pasteRequestHandler.onSuccess = this.pasteFormattedContent.bind(this);
+        this.pasteRequestHandler.onFailure = this.onPasteFailure.bind(this);
+        this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
+    };
+    Editor.prototype.pasteFormattedContent = function (result) {
+        this.pasteContents(result.data);
+        hideSpinner(this.owner.element);
+    };
+    Editor.prototype.onPasteFailure = function (result) {
+        console.error(result.status, result.statusText);
+        hideSpinner(this.owner.element);
     };
     /**
      * Pastes the data present in local clipboard if any.
@@ -39787,7 +45389,10 @@ var Editor = /** @__PURE__ @class */ (function () {
             txt = txt.replace(/\r\n/g, '\r');
             arr = txt.split('\r');
             for (var i = 0; i < arr.length; i++) {
-                var insertFormat = this.copyInsertFormat(startParagraph.characterFormat, false);
+                var currentInline = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
+                var element = this.selection.getPreviousValidElement(currentInline.element);
+                var insertFormat = element ? element.characterFormat :
+                    this.copyInsertFormat(startParagraph.characterFormat, false);
                 var insertParaFormat = this.viewer.selection.copySelectionParagraphFormat();
                 var paragraph = new ParagraphWidget();
                 paragraph.paragraphFormat.copyFormat(insertParaFormat);
@@ -39808,28 +45413,118 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.viewer.owner.parser.parseBody(pasteContent.sections[i].blocks, widgets);
             }
         }
+        if (this.currentPasteOptions === 'MergeWithExistingFormatting') {
+            this.applyMergeFormat(widgets);
+        }
         return widgets;
     };
-    Editor.prototype.pasteContents = function (content) {
-        this.pasteContentsInternal(this.getBlocks(content));
+    Editor.prototype.applyMergeFormat = function (widgets) {
+        var startParagraph = this.selection.start.paragraph;
+        var currentInline = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
+        var element = this.selection.getPreviousValidElement(currentInline.element);
+        var insertFormat = element ? element.characterFormat :
+            this.copyInsertFormat(startParagraph.characterFormat, false);
+        var insertParaFormat = this.viewer.selection.copySelectionParagraphFormat();
+        for (var i = 0; i < widgets.length; i++) {
+            var widget = widgets[i];
+            if (widget instanceof ParagraphWidget) {
+                widget.paragraphFormat.copyFormat(insertParaFormat);
+                this.applyFormatInternal(widget, insertFormat);
+            }
+            else {
+                for (var j = 0; j < widget.childWidgets.length; j++) {
+                    var row = widget.childWidgets[j];
+                    for (var k = 0; k < row.childWidgets.length; k++) {
+                        var cell = row.childWidgets[k];
+                        for (var l = 0; l < cell.childWidgets.length; l++) {
+                            this.applyFormatInternal(cell.childWidgets[l], insertFormat);
+                        }
+                    }
+                }
+            }
+        }
     };
-    Editor.prototype.pasteContentsInternal = function (widgets) {
+    Editor.prototype.applyFormatInternal = function (widget, insertFormat) {
+        if (widget instanceof ParagraphWidget) {
+            for (var j = 0; j < widget.childWidgets.length; j++) {
+                var lineWidget = widget.childWidgets[j];
+                for (var k = 0; k < lineWidget.children.length; k++) {
+                    var inlineCharacterFormat = lineWidget.children[k].characterFormat;
+                    var characterFormat = inlineCharacterFormat.cloneFormat();
+                    inlineCharacterFormat.copyFormat(insertFormat);
+                    if (characterFormat.bold) {
+                        inlineCharacterFormat.bold = characterFormat.bold;
+                    }
+                    if (characterFormat.italic) {
+                        inlineCharacterFormat.italic = characterFormat.italic;
+                    }
+                }
+            }
+        }
+        else {
+            for (var j = 0; j < widget.childWidgets.length; j++) {
+                var rowWidget = widget.childWidgets[j];
+                for (var k = 0; k < rowWidget.childWidgets.length; k++) {
+                    var cellWidget = rowWidget.childWidgets[k];
+                    for (var l = 0; l < cellWidget.childWidgets.length; l++) {
+                        this.applyFormatInternal(cellWidget.childWidgets[l], insertFormat);
+                    }
+                }
+            }
+        }
+    };
+    Editor.prototype.applyPasteOptions = function (options) {
+        if (isNullOrUndefined(this.copiedContent) || this.copiedTextContent === ''
+            || this.currentPasteOptions === options) {
+            return;
+        }
+        this.isSkipHistory = true;
+        this.currentPasteOptions = options;
+        this.selection.start.setPositionInternal(this.pasteTextPosition.startPosition);
+        this.selection.end.setPositionInternal(this.pasteTextPosition.endPosition);
+        switch (options) {
+            case 'KeepSourceFormatting':
+                this.pasteContents(this.copiedContent);
+                break;
+            case 'MergeWithExistingFormatting':
+                var start = this.selection.isForward ? this.selection.start : this.selection.end;
+                var currentFormat = start.paragraph.paragraphFormat;
+                this.pasteContents(this.copiedContent, currentFormat);
+                break;
+            case 'KeepTextOnly':
+                this.pasteContents(this.copiedTextContent);
+                break;
+        }
+        this.isSkipHistory = false;
+    };
+    Editor.prototype.pasteContents = function (content, currentFormat) {
+        if (typeof (content) !== 'string') {
+            this.copiedContent = content;
+        }
+        this.pasteContentsInternal(this.getBlocks(content), currentFormat);
+    };
+    Editor.prototype.pasteContentsInternal = function (widgets, currentFormat) {
+        this.isPaste = true;
         /* tslint:enable:no-any */
         var selection = this.viewer.selection;
         var isRemoved = true;
-        this.initComplexHistory('Paste');
+        if (!this.isSkipHistory) {
+            this.initComplexHistory('Paste');
+        }
         if (this.viewer.isListTextSelected) {
             var paragraph = selection.start.paragraph;
             if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1) {
                 this.onApplyList(undefined);
             }
         }
-        this.initHistory('Paste');
+        if (!this.isSkipHistory) {
+            this.initHistory('Paste');
+        }
         if (!selection.isEmpty || this.viewer.isListTextSelected) {
             isRemoved = this.removeSelectedContentInternal(selection, selection.start, selection.end);
         }
         if (isRemoved) {
-            this.pasteContent(widgets);
+            this.pasteContent(widgets, currentFormat);
         }
         else if (this.editorHistory) {
             this.editorHistory.currentBaseHistoryInfo = undefined;
@@ -39841,24 +45536,55 @@ var Editor = /** @__PURE__ @class */ (function () {
         else {
             this.reLayout(selection, selection.isEmpty);
         }
+        this.isPaste = false;
     };
     /* tslint:disable:no-any */
-    Editor.prototype.pasteContent = function (widgets) {
+    Editor.prototype.pasteContent = function (widgets, currentFormat) {
         /* tslint:enable:no-any */
         this.viewer.owner.isShiftingEnabled = true;
+        var insertPosition = '';
         this.updateInsertPosition();
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            insertPosition = this.editorHistory.currentBaseHistoryInfo.insertPosition;
+        }
+        else {
+            var position = this.selection.start;
+            if (!this.selection.isForward) {
+                position = this.selection.end;
+            }
+            var blockInfo = this.getParagraphInfo(position);
+            insertPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        }
         this.viewer.owner.isLayoutEnabled = true;
         this.viewer.owner.isPastingContent = true;
-        this.pasteCopiedData(widgets);
+        this.pasteCopiedData(widgets, currentFormat);
+        var endPosition = '';
         this.updateEndPosition();
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            endPosition = this.editorHistory.currentBaseHistoryInfo.endPosition;
+        }
+        else {
+            var blockInfo = this.getParagraphInfo(this.selection.start);
+            endPosition = this.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        }
+        var startPosition = new TextPosition(this.viewer.owner);
+        this.setPositionForCurrentIndex(startPosition, insertPosition);
+        var end = new TextPosition(this.viewer.owner);
+        this.setPositionForCurrentIndex(end, endPosition);
+        this.pasteTextPosition = { startPosition: startPosition, endPosition: end };
         this.viewer.owner.isPastingContent = false;
         this.viewer.selection.fireSelectionChanged(true);
     };
-    Editor.prototype.pasteCopiedData = function (widgets) {
+    Editor.prototype.pasteCopiedData = function (widgets, currentFormat) {
         for (var j = 0; j < widgets.length; j++) {
             var widget = widgets[j];
             if (widget instanceof ParagraphWidget && widget.childWidgets.length === 0) {
                 widget.childWidgets[0] = new LineWidget(widget);
+            }
+            if (widget instanceof ParagraphWidget && !isNullOrUndefined(currentFormat)) {
+                widget.paragraphFormat.copyFormat(currentFormat);
+                var insertFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, false);
+                widget.characterFormat.mergeFormat(insertFormat);
             }
             if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
                 var newParagraph = widget;
@@ -40067,6 +45793,10 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         for (var i = 0; i < element.length; i++) {
             length += element[i].length;
+            if (element[i] instanceof TextElementBox && element[i].text.indexOf(' ') >= 0) {
+                this.viewer.triggerSpellCheck = true;
+            }
+            element[i].ischangeDetected = true;
             lineWidget.children.splice(insertIndex, 0, element[i]);
             element[i].line = lineWidget;
             element[i].linkFieldCharacter(this.viewer);
@@ -41167,10 +46897,13 @@ var Editor = /** @__PURE__ @class */ (function () {
                 var span = new TextElementBox();
                 span.characterFormat.copyFormat(inline.characterFormat);
                 span.text = inline.text.substr(startIndex, endIndex - startIndex);
+                inline.ischangeDetected = true;
+                span.ischangeDetected = true;
                 paragraph.firstChild.children.splice(insertIndex, 0, span);
                 span.line = paragraph.firstChild;
                 insertIndex++;
                 inline.text = inline.text.slice(0, startIndex) + inline.text.slice(endIndex);
+                inline.ischangeDetected = true;
             }
             if (endOffset <= count + endIndex - startIndex) {
                 break;
@@ -41485,6 +47218,9 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.onApplyCharacterFormat = function (property, value, update) {
+        if (this.restrictFormatting) {
+            return;
+        }
         this.viewer.layout.isBidiReLayout = true;
         var selection = this.viewer.selection;
         if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
@@ -42498,6 +48234,9 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.onApplyParagraphFormat = function (property, value, update, isSelectionChanged) {
+        if (this.restrictFormatting) {
+            return;
+        }
         var action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1));
         this.viewer.owner.isShiftingEnabled = true;
         var selection = this.viewer.selection;
@@ -42668,6 +48407,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.updateParagraphFormat('bidi', value, false);
                 this.viewer.layout.isBidiReLayout = false;
                 break;
+            case 'contextualSpacing':
+                this.updateParagraphFormat('contextualSpacing', value, false);
+                break;
         }
     };
     /**
@@ -42796,6 +48538,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         else if (property === 'bidi') {
             format.bidi = value;
+        }
+        else if (property === 'contextualSpacing') {
+            format.contextualSpacing = value;
         }
     };
     Editor.prototype.copyParagraphFormat = function (sourceFormat, destFormat) {
@@ -43213,6 +48958,9 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.onApplySectionFormat = function (property, value) {
+        if (this.restrictFormatting) {
+            return;
+        }
         if (!isNullOrUndefined(property)) {
             var action = (property[0].toUpperCase() + property.slice(1));
             this.initHistory(action);
@@ -43286,6 +49034,9 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.onApplyTableFormat = function (property, value) {
+        if (this.restrictFormatting) {
+            return;
+        }
         var action = this.getTableFormatAction(property);
         this.viewer.owner.isShiftingEnabled = true;
         var selection = this.viewer.selection;
@@ -43337,6 +49088,9 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.onApplyTableRowFormat = function (property, value) {
+        if (this.restrictFormatting) {
+            return;
+        }
         var action = this.getRowAction(property);
         this.viewer.owner.isShiftingEnabled = true;
         var selection = this.viewer.selection;
@@ -43369,6 +49123,9 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.onApplyTableCellFormat = function (property, value) {
+        if (this.restrictFormatting) {
+            return;
+        }
         var action = this.getTableCellAction(property);
         this.viewer.owner.isShiftingEnabled = true;
         var selection = this.viewer.selection;
@@ -45128,6 +50885,18 @@ var Editor = /** @__PURE__ @class */ (function () {
             //     this.updateComplexHistory();
             // } else {
             this.reLayout(selection);
+            // tslint:disable-next-line:max-line-length
+            var currentPara = this.selection.start.paragraph.containerWidget.firstChild;
+            if (!isNullOrUndefined(currentPara)) {
+                currentPara.isChangeDetected = false;
+                var nextPara = currentPara.nextRenderedWidget;
+                // tslint:disable-next-line:max-line-length
+                while (this.owner.enableSpellCheck && !isNullOrUndefined(nextPara)) {
+                    currentPara = nextPara;
+                    currentPara.isChangeDetected = false;
+                    nextPara = currentPara.nextRenderedWidget;
+                }
+            }
             // }
             var paragraph = selection.start.paragraph.previousWidget;
             if (!isNullOrUndefined(paragraph) && !paragraph.isEmpty() &&
@@ -45140,6 +50909,12 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.splitParagraphInternal = function (selection, paragraphAdv, currentLine, offset) {
         var insertIndex = 0;
         var blockIndex = paragraphAdv.index;
+        var currentPara = paragraphAdv;
+        currentPara.isChangeDetected = (offset === 0) ? true : false;
+        while (this.owner.enableSpellCheck && !isNullOrUndefined(currentPara.nextRenderedWidget)) {
+            currentPara = currentPara.nextRenderedWidget;
+            currentPara.isChangeDetected = true;
+        }
         var paragraph = new ParagraphWidget();
         var lineWidget = new LineWidget(paragraph);
         paragraph.childWidgets.push(lineWidget);
@@ -45262,6 +51037,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.onBackSpace = function () {
         var selection = this.viewer.selection;
+        this.viewer.triggerSpellCheck = true;
         if (selection.isEmpty) {
             this.singleBackspace(selection, false);
         }
@@ -45279,6 +51055,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                     this.reLayout(selection);
                 }
             }
+            this.viewer.triggerSpellCheck = false;
         }
     };
     /**
@@ -45360,6 +51137,12 @@ var Editor = /** @__PURE__ @class */ (function () {
         var inlineObj = currentLineWidget.getInline(offset, indexInInline);
         var inline = inlineObj.element;
         indexInInline = inlineObj.index;
+        if (inline instanceof TextElementBox) {
+            inline.ignoreOnceItems = [];
+        }
+        if (inline instanceof TextElementBox) {
+            inline.ignoreOnceItems = [];
+        }
         if (inline instanceof FieldElementBox && inline.fieldType === 2) {
             if (HelperMethods.isLinkedFieldCharacter(inline)) {
                 var begin = inline.fieldBegin;
@@ -45511,6 +51294,13 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             if (offset < count + inline.length) {
                 var indexInInline = offset - count;
+                inline.ischangeDetected = true;
+                if (this.owner.enableSpellCheck) {
+                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': inline.text });
+                }
+                if (!inline.canTrigger) {
+                    this.viewer.triggerSpellCheck = false;
+                }
                 if (offset === count && inline.length === 1) {
                     this.unLinkFieldCharacter(inline);
                     lineWidget.children.splice(i, 1);
@@ -46476,6 +52266,10 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         var startElementInfo = start.currentWidget.getInline(start.offset, 0);
         var endElementInfo = end.currentWidget.getInline(end.offset, 0);
+        if (!(end.offset === this.selection.getLineLength(end.currentWidget) + 1
+            && this.selection.isParagraphLastLine(end.currentWidget))) {
+            end.offset += 1;
+        }
         // tslint:disable-next-line:max-line-length
         return { 'start': start.clone(), 'end': end.clone(), 'startElementInfo': startElementInfo, 'endElementInfo': endElementInfo, 'isEmpty': isEmpty };
     };
@@ -47215,11 +53009,23 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @param  {WTableFormat} format
      * @private
      */
-    Editor.prototype.onTableFormat = function (format) {
+    Editor.prototype.onTableFormat = function (format, isShading) {
         if (!isNullOrUndefined(this.selection.tableFormat)) {
+            if (isNullOrUndefined(isShading)) {
+                isShading = false;
+            }
             this.viewer.owner.isShiftingEnabled = true;
             this.editorHistory.initializeHistory('TableFormat');
             var table = this.selection.start.paragraph.associatedCell.ownerTable.combineWidget(this.viewer);
+            if (isShading) {
+                for (var i = 0; i < table.childWidgets.length; i++) {
+                    var rowWidget = table.childWidgets[i];
+                    for (var j = 0; j < rowWidget.childWidgets.length; j++) {
+                        var cellWidget = rowWidget.childWidgets[j];
+                        cellWidget.cellFormat.shading.copyFormat(format.shading);
+                    }
+                }
+            }
             this.applyTableFormat(table, undefined, format);
             this.reLayout(this.selection, false);
         }
@@ -48146,6 +53952,272 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    //Restrict editing implementation starts
+    /**
+     * @private
+     */
+    Editor.prototype.insertEditRangeElement = function (user) {
+        if (this.viewer.isDocumentProtected || this.viewer.selection.isEmpty) {
+            return;
+        }
+        this.initComplexHistory('RestrictEditing');
+        this.selection.skipEditRangeRetrieval = true;
+        var selection = this.viewer.selection;
+        var startPos = this.selection.start;
+        var endPos = this.selection.end;
+        if (!this.selection.isForward) {
+            startPos = this.selection.end;
+            endPos = this.selection.start;
+        }
+        if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable
+            && selection.start.paragraph.associatedCell.ownerTable.contains(selection.end.paragraph.associatedCell)) {
+            var startCell = this.getOwnerCell(this.selection.isForward);
+            var endCell = this.getOwnerCell(!this.selection.isForward);
+            if (startCell.rowIndex === endCell.rowIndex) {
+                var startIndex = startCell.ownerRow.childWidgets.indexOf(startCell);
+                var endIndex = startCell.ownerRow.childWidgets.indexOf(endCell);
+                var startElement = [];
+                var endElement = [];
+                for (var i = startIndex; i <= endIndex; i++) {
+                    var editStart = this.addEditElement(user);
+                    editStart.columnFirst = i;
+                    editStart.columnLast = i;
+                    editStart.line = selection.start.currentWidget;
+                    var editEnd = editStart.editRangeEnd;
+                    editEnd.line = selection.end.currentWidget;
+                    startElement.push(editStart);
+                    endElement.push(editEnd);
+                }
+                this.insertElements(endElement, startElement);
+                var offset = startElement[0].line.getOffset(startElement[0], 1);
+                this.selection.start.setPositionParagraph(startElement[0].line, offset);
+                offset = endElement[0].line.getOffset(endElement[0], 1);
+                this.selection.end.setPositionParagraph(endElement[0].line, offset);
+                this.selection.fireSelectionChanged(true);
+                this.fireContentChange();
+            }
+            else {
+                this.insertEditRangeInsideTable(startCell, endCell, user);
+                var startLine = this.selection.getFirstParagraphInCell(startCell).childWidgets[0];
+                var endLine = this.selection.getLastParagraph(endCell).childWidgets[0];
+                var offset = startLine.getOffset(startLine.children[0], 1);
+                this.selection.start.setPositionParagraph(startLine, offset);
+                offset = endLine.getOffset(endLine.children[0], 1);
+                this.selection.end.setPositionParagraph(endLine, offset);
+                this.selection.fireSelectionChanged(true);
+                this.fireContentChange();
+            }
+        }
+        else {
+            this.addRestrictEditingForSelectedArea(user);
+        }
+        this.selection.skipEditRangeRetrieval = false;
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.insertEditRangeInsideTable = function (startCell, endCell, user) {
+        var table = startCell.ownerTable;
+        var count = table.childWidgets.indexOf(endCell.ownerRow);
+        var rowStartIndex = table.childWidgets.indexOf(startCell.ownerRow);
+        var startLeft = this.selection.getCellLeft(startCell.ownerRow, startCell);
+        var endLeft = startLeft + startCell.cellFormat.cellWidth;
+        var endCellLeft = this.selection.getCellLeft(endCell.ownerRow, endCell);
+        var endCellRight = endCellLeft + endCell.cellFormat.cellWidth;
+        var cellInfo = this.updateSelectedCellsInTable(startLeft, endLeft, endCellLeft, endCellRight);
+        startLeft = cellInfo.start;
+        endLeft = cellInfo.end;
+        var endElement = [];
+        for (var i = rowStartIndex; i <= count; i++) {
+            var row = table.childWidgets[i];
+            var cellSelectionStartIndex = -1;
+            var cellSelectionEndIndex = -1;
+            for (var j = 0; j < row.childWidgets.length; j++) {
+                var cell = row.childWidgets[j];
+                var cellStart = this.selection.getCellLeft(row, cell);
+                if (this.checkCellWithInSelection(startLeft, endLeft, cellStart)) {
+                    if (cellSelectionStartIndex === -1) {
+                        cellSelectionStartIndex = j;
+                    }
+                    cellSelectionEndIndex = j;
+                }
+            }
+            var newEndElement = [];
+            for (var z = cellSelectionStartIndex; z <= cellSelectionEndIndex; z++) {
+                var index = 0;
+                var startCell_1 = void 0;
+                var startParagraph = void 0;
+                if (z === cellSelectionStartIndex) {
+                    startCell_1 = row.childWidgets[cellSelectionStartIndex];
+                    startParagraph = this.selection.getFirstParagraphInCell(startCell_1).childWidgets[0];
+                }
+                var editStart = this.addEditElement(user);
+                editStart.columnFirst = z;
+                editStart.columnLast = z;
+                editStart.line = startParagraph;
+                editStart.line.children.splice(index, 0, editStart);
+                index++;
+                var editEnd = editStart.editRangeEnd;
+                newEndElement.push(editEnd);
+                if (endElement.length > 0 && z === cellSelectionEndIndex) {
+                    for (var l = 0; l < endElement.length; l++) {
+                        endElement[l].line = editStart.line;
+                        editStart.line.children.splice(index, 0, endElement[l]);
+                        index++;
+                    }
+                    endElement = [];
+                }
+            }
+            endElement = newEndElement;
+            if (i === count && endElement.length > 0) {
+                var cellWidget = row.childWidgets[cellSelectionEndIndex];
+                var lastLine = this.selection.getLastParagraph(cellWidget).lastChild;
+                var index = lastLine.children.length - 1;
+                for (var l = 0; l < endElement.length; l++) {
+                    endElement[l].line = lastLine;
+                    lastLine.children.splice(index, 0, endElement[l]);
+                    index++;
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.addRestrictEditingForSelectedArea = function (user) {
+        var editStart = this.addEditElement(user);
+        var editEnd = editStart.editRangeEnd;
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+            this.editorHistory.currentHistoryInfo.editRangeStart = editStart;
+        }
+        this.insertElements([editEnd], [editStart]);
+        if (this.editorHistory) {
+            this.editorHistory.updateComplexHistoryInternal();
+        }
+        var offset = editStart.line.getOffset(editStart, 1);
+        this.selection.start.setPositionParagraph(editStart.line, offset);
+        offset = editEnd.line.getOffset(editEnd, 1);
+        this.selection.end.setPositionParagraph(editEnd.line, offset);
+        this.selection.fireSelectionChanged(true);
+        this.fireContentChange();
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.addEditElement = function (user) {
+        var editStart = new EditRangeStartElementBox();
+        if (user.toLocaleLowerCase() === 'everyone') {
+            editStart.group = user;
+        }
+        else {
+            editStart.user = user;
+        }
+        var editEnd = new EditRangeEndElementBox();
+        editEnd.editRangeStart = editStart;
+        editStart.editRangeEnd = editEnd;
+        this.editStartRangeCollection.push(editStart);
+        this.addEditCollectionToDocument();
+        this.editStartRangeCollection = [];
+        return editStart;
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.protect = function (protectionType) {
+        this.viewer.isDocumentProtected = true;
+        this.viewer.protectionType = protectionType;
+        this.selection.highlightEditRegion();
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.addEditCollectionToDocument = function () {
+        for (var i = 0; i < this.editStartRangeCollection.length; i++) {
+            var editStart = this.editStartRangeCollection[i];
+            var user = editStart.user === '' ? editStart.group : editStart.user;
+            if (this.viewer.editRanges.length > 0 && this.viewer.editRanges.containsKey(user)) {
+                this.viewer.editRanges.get(user).push(editStart);
+            }
+            else {
+                var collection = [];
+                collection.push(editStart);
+                this.viewer.editRanges.add(user, collection);
+            }
+        }
+        this.selection.updateEditRangeCollection();
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.updateRangeCollection = function (editStart, user) {
+        if (this.viewer.editRanges.length > 0 && this.viewer.editRanges.containsKey(user)) {
+            this.viewer.editRanges.get(user).push(editStart);
+        }
+        else {
+            var collection = [];
+            collection.push(editStart);
+            this.viewer.editRanges.add(user, collection);
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.removeUserRestrictions = function (user) {
+        if (!this.selection.checkSelectionIsAtEditRegion()) {
+            return;
+        }
+        this.selection.skipEditRangeRetrieval = true;
+        var editStart = this.selection.getEditRangeStartElement();
+        this.initHistory('RemoveEditRange');
+        if (this.editorHistory) {
+            this.editorHistory.currentBaseHistoryInfo.setEditRangeInfo(editStart);
+            this.editorHistory.updateHistory();
+        }
+        if (editStart.user === user || editStart.group === user) {
+            this.removeUserRestrictionsInternal(editStart, user);
+        }
+        this.selection.updateEditRangeCollection();
+        this.fireContentChange();
+        this.selection.skipEditRangeRetrieval = false;
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.removeUserRestrictionsInternal = function (editStart, currentUser) {
+        var user = currentUser;
+        if (isNullOrUndefined(currentUser)) {
+            user = editStart.user === '' ? editStart.group : editStart.user;
+        }
+        var index = this.viewer.editRanges.get(user).indexOf(editStart);
+        this.viewer.editRanges.get(user).splice(index, 1);
+        editStart.editRangeEnd.line.children.splice(editStart.editRangeEnd.indexInOwner, 1);
+        editStart.line.children.splice(editStart.indexInOwner, 1);
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.removeAllEditRestrictions = function () {
+        this.selection.skipEditRangeRetrieval = true;
+        var startPosition = this.selection.start;
+        var endPosition = this.selection.end;
+        var editStart = [];
+        var keys = this.viewer.editRanges.keys;
+        for (var j = 0; j < keys.length; j++) {
+            editStart = this.viewer.editRanges.get(keys[j]);
+            for (var i = 0; i < editStart.length; i++) {
+                editStart[i].editRangeEnd.line.children.splice(editStart[i].editRangeEnd.indexInOwner, 1);
+                editStart[i].line.children.splice(editStart[i].indexInOwner, 1);
+            }
+        }
+        this.viewer.editRanges.clear();
+        this.selection.updateEditRangeCollection();
+        this.selection.start.setPositionInternal(startPosition);
+        this.selection.end.setPositionInternal(endPosition);
+        this.selection.editRegionHighlighters.clear();
+        this.viewer.updateScrollBars();
+        this.selection.fireSelectionChanged(false);
+        this.selection.skipEditRangeRetrieval = false;
+    };
     return Editor;
 }());
 
@@ -48489,6 +54561,10 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
     BaseHistoryInfo.prototype.setBookmarkInfo = function (bookmark) {
         this.removedNodes.push({ 'bookmark': bookmark, 'startIndex': bookmark.indexInOwner, 'endIndex': bookmark.reference.indexInOwner });
     };
+    BaseHistoryInfo.prototype.setEditRangeInfo = function (editStart) {
+        // tslint:disable-next-line:max-line-length
+        this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
+    };
     BaseHistoryInfo.prototype.revertBookmark = function () {
         var bookmarkInfo = this.removedNodes[0];
         var bookmark = bookmarkInfo.bookmark;
@@ -48503,6 +54579,22 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
             this.editorHistory.undoStack.push(this);
         }
     };
+    BaseHistoryInfo.prototype.revertEditRangeRegion = function () {
+        var editRangeInfo = this.removedNodes[0];
+        var editStart = editRangeInfo.editStart;
+        if (this.editorHistory.isUndoing) {
+            var user = editStart.user === '' ? editStart.group : editStart.user;
+            this.owner.editor.updateRangeCollection(editStart, user);
+            editStart.line.children.splice(editRangeInfo.startIndex, 0, editStart);
+            editStart.editRangeEnd.line.children.splice(editRangeInfo.endIndex, 0, editStart.editRangeEnd);
+            this.editorHistory.recordChanges(this);
+        }
+        else {
+            this.owner.editorModule.removeUserRestrictionsInternal(editStart);
+            this.editorHistory.undoStack.push(this);
+        }
+        this.owner.editor.fireContentChange();
+    };
     /**
      * Reverts this instance
      * @private
@@ -48511,6 +54603,10 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
     BaseHistoryInfo.prototype.revert = function () {
         if (this.action === 'DeleteBookmark') {
             this.revertBookmark();
+            return;
+        }
+        if (this.action === 'RemoveEditRange') {
+            this.revertEditRangeRegion();
             return;
         }
         this.owner.isShiftingEnabled = true;
@@ -49395,6 +55491,8 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
             case 'ParagraphBidi':
             case 'TableBidi':
                 return 'bidi';
+            case 'ContextualSpacing':
+                return 'contextualSpacing';
         }
         return undefined;
     };
@@ -50832,6 +56930,7 @@ var HistoryInfo = /** @__PURE__ @class */ (function (_super) {
     function HistoryInfo(node, isChild) {
         var _this = _super.call(this, node) || this;
         _this.isChildHistoryInfo = false;
+        _this.editRangeStart = undefined;
         _this.isChildHistoryInfo = isChild;
         return _this;
     }
@@ -50885,6 +56984,19 @@ var HistoryInfo = /** @__PURE__ @class */ (function (_super) {
                     i = i + 1;
                 }
             }
+        }
+        if (this.action === 'RestrictEditing') {
+            var user = this.editRangeStart.user !== '' ? this.editRangeStart.user : this.editRangeStart.group;
+            if (this.editorHistory.isUndoing) {
+                var index = this.owner.viewer.editRanges.get(user).indexOf(this.editRangeStart);
+                if (index !== -1) {
+                    this.owner.viewer.editRanges.get(user).splice(index, 1);
+                }
+            }
+            else {
+                this.owner.editor.updateRangeCollection(this.editRangeStart, user);
+            }
+            this.owner.selection.updateEditRangeCollection();
         }
         if (!this.isChildHistoryInfo) {
             this.editorHistory.updateComplexHistory();
@@ -50993,10 +57105,15 @@ var EditorHistory = /** @__PURE__ @class */ (function () {
     Object.defineProperty(EditorHistory.prototype, "redoLimit", {
         /**
          * Gets or Sets the limit of redo operations can be done.
+         * @asptype int
          */
         get: function () {
             return isNullOrUndefined(this.redoLimitIn) ? 0 : this.redoLimitIn;
         },
+        /**
+         * Gets or Sets the limit of redo operations can be done.
+         * @asptype int
+         */
         set: function (value) {
             if (value < 0) {
                 throw new Error('The limit should be greater than or equal to zero.');
@@ -51232,8 +57349,10 @@ var EditorHistory = /** @__PURE__ @class */ (function () {
             selection.end.updatePhysicalPosition(true);
         }
         selection.upDownSelectionLength = selection.end.location.x;
+        this.viewer.isScrollHandler = true;
         this.viewer.updateScrollBars();
         selection.fireSelectionChanged(true);
+        this.viewer.isScrollHandler = false;
         this.viewer.updateFocus();
         this.updateComplexHistoryInternal();
         this.owner.editorModule.fireContentChange();
@@ -51443,6 +57562,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         //Part path
         this.documentPath = 'word/document.xml';
         this.stylePath = 'word/styles.xml';
+        this.chartPath = 'word/charts';
         this.numberingPath = 'word/numbering.xml';
         this.settingsPath = 'word/settings.xml';
         this.headerPath = 'word/header';
@@ -51457,7 +57577,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         // private FontTablePath: string = 'word/fontTable.xml';
         this.contentTypesPath = '[Content_Types].xml';
         // private ChartsPath: string = 'word/charts/';
-        // private DefaultEmbeddingPath: string = 'word/embeddings/';
+        this.defaultEmbeddingPath = 'word/embeddings/';
         // private EmbeddingPath:string = 'word\embeddings\';
         // private DrawingPath:string = 'word\drawings\';
         // private ThemePath: string = 'word/theme/theme1.xml';
@@ -51472,6 +57592,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         //Relationship path
         this.generalRelationPath = '_rels/.rels';
         this.wordRelationPath = 'word/_rels/document.xml.rels';
+        this.excelRelationPath = 'xl/_rels/workbook.xml.rels';
         // private FontRelationPath: string = 'word/_rels/fontTable.xml.rels';
         // private CommentsRelationPath: string = 'word/_rels/comments.xml.rels';
         // private FootnotesRelationPath: string = 'word/_rels/footnotes.xml.rels';
@@ -51506,14 +57627,14 @@ var WordExport = /** @__PURE__ @class */ (function () {
         // private DiagramData: string = 'application/vnd.openxmlformats-officedocument.drawingml.diagramData+xml';
         // private DiagramLayout: string = 'application/vnd.openxmlformats-officedocument.drawingml.diagramLayout+xml';
         // private DiagramStyle: string = 'application/vnd.openxmlformats-officedocument.drawingml.diagramStyle+xml';
-        // private ChartsContentType: string = 'application/vnd.openxmlformats-officedocument.drawingml.chart+xml';
+        this.chartsContentType = 'application/vnd.openxmlformats-officedocument.drawingml.chart+xml';
         // private ThemeContentType: string = 'application/vnd.openxmlformats-officedocument.theme+xml';
         // private ChartDrawingContentType: string = 'application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml';
         // private ActiveXContentType: string = 'application/vnd.ms-office.activeX+xml';
         // private ActiveXBinContentType: string = 'application/vnd.ms-office.activeX';
         this.tableStyleContentType = 'application/vnd.openxmlformats-officedocument.presentationml.tableStyles+xml';
         // private ChartStyleContentType: string = 'application/vnd.ms-office.chartstyle+xml';
-        // private ChartColorStyleContentType: string = 'application/vnd.ms-office.chartcolorstyle+xml';
+        this.chartColorStyleContentType = 'application/vnd.ms-office.chartcolorstyle+xml';
         // private VbaProjectContentType: string = 'application/vnd.ms-office.vbaProject';
         // private VbaDataContentType: string = 'application/vnd.ms-word.vbaData+xml';
         // private MacroDocumentContentType: string = 'application/vnd.ms-word.document.macroEnabled.main+xml';
@@ -51532,7 +57653,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.numberingRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering';
         this.stylesRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles';
         // private OleObjectRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject';
-        // private ChartRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart';
+        this.chartRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart';
         // private ThemeRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme';
         this.fontRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/font';
         this.tableStyleRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/tableStyles';
@@ -51548,7 +57669,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.customXmlRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml';
         this.customUIRelType = 'http://schemas.microsoft.com/office/2006/relationships/ui/extensibility';
         this.attachedTemplateRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate';
-        // private ChartColorStyleRelType: string = 'http://schemas.microsoft.com/office/2011/relationships/chartColorStyle';
+        this.chartColorStyleRelType = 'http://schemas.microsoft.com/office/2011/relationships/chartColorStyle';
         // private ChartStyleRelType: string = 'http://schemas.microsoft.com/office/2011/relationships/chartStyle';
         // private ChartUserShapesRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/chartUserShapes';
         // private ChartContentType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/package';
@@ -51597,6 +57718,13 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.eNamespace = 'http://schemas.microsoft.com/office/2006/encryption';
         this.pNamespace = 'http://schemas.microsoft.com/office/2006/keyEncryptor/password';
         this.certNamespace = 'http://schemas.microsoft.com/office/2006/keyEncryptor/certificate';
+        // chart
+        this.c15Namespace = 'http://schemas.microsoft.com/office/drawing/2015/06/chart';
+        this.c7Namespace = 'http://schemas.microsoft.com/office/drawing/2007/8/2/chart';
+        this.csNamespace = 'http://schemas.microsoft.com/office/drawing/2012/chartStyle';
+        // worksheet
+        this.spreadSheetNamespace = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+        this.spreadSheet9 = 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/main';
         // Dls xml tags
         this.cRelationshipsTag = 'Relationships';
         this.cRelationshipTag = 'Relationship';
@@ -51665,7 +57793,12 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.wordMLDiagramContentType = 'application/vnd.ms-office.drawingml.diagramDrawing+xml';
         this.lastSection = false;
         this.mRelationShipID = 0;
+        this.cRelationShipId = 0;
+        this.eRelationShipId = 0;
         this.mDocPrID = 0;
+        this.chartCount = 0;
+        this.seriesCount = 0;
+        this.chartStringCount = 0;
         this.mDifferentFirstPage = false;
         this.mBookmarks = undefined;
         /* tslint:enable:no-any */
@@ -51717,6 +57850,17 @@ var WordExport = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(WordExport.prototype, "documentCharts", {
+        // Gets the collection of charts present in the document body
+        get: function () {
+            if (this.mDocumentCharts === undefined) {
+                this.mDocumentCharts = new Dictionary();
+            }
+            return this.mDocumentCharts;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(WordExport.prototype, "headersFooters", {
         /// Gets the HeaderFooter Collection
         get: function () {
@@ -51732,6 +57876,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
      * @private
      */
     WordExport.prototype.save = function (viewer, fileName) {
+        this.fileName = fileName;
         this.serialize(viewer);
         this.mArchive.save(fileName + '.docx').then(function (mArchive) {
             mArchive.destroy();
@@ -51755,14 +57900,40 @@ var WordExport = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
+    WordExport.prototype.saveExcel = function () {
+        var _this = this;
+        var xlsxPath = this.defaultEmbeddingPath + 'Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
+        var promise;
+        var blobData;
+        return promise = new Promise(function (resolve, reject) {
+            _this.mArchiveExcel.saveAsBlob().then(function (blob) {
+                blobData = blob;
+                var zipArchiveItem = new ZipArchiveItem(blob, xlsxPath);
+                _this.mArchive.addItem(zipArchiveItem);
+                _this.mArchive.save(_this.fileName + '.docx').then(function (mArchive) {
+                    mArchive.destroy();
+                });
+            });
+            resolve(blobData);
+            _this.mArchiveExcel = undefined;
+        });
+    };
+    /**
+     * @private
+     */
     WordExport.prototype.destroy = function () {
         this.clearDocument();
         this.mRelationShipID = undefined;
         this.mDocPrID = undefined;
         this.mDifferentFirstPage = undefined;
+        this.fileName = undefined;
         if (this.mArchive) {
             this.mArchive.destroy();
             this.mArchive = undefined;
+        }
+        if (this.mArchiveExcel) {
+            this.mArchiveExcel.destroy();
+            this.mArchiveExcel = undefined;
         }
     };
     // Saves the word document in the stream
@@ -51832,6 +58003,11 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.defParagraphFormat = document.paragraphFormat;
         this.defaultTabWidthValue = document.defaultTabWidth;
         this.mStyles = document.styles;
+        this.formatting = document.formatting;
+        this.enforcement = document.enforcement;
+        this.hashValue = document.hashValue;
+        this.saltValue = document.saltValue;
+        this.protectionType = document.protectionType;
     };
     // Clears the document
     WordExport.prototype.clearDocument = function () {
@@ -51851,7 +58027,10 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.defParagraphFormat = undefined;
         this.defaultTabWidthValue = undefined;
         this.mRelationShipID = 0;
+        this.eRelationShipId = 0;
+        this.cRelationShipId = 0;
         this.mDocPrID = 0;
+        this.chartCount = 0;
         this.mDifferentFirstPage = false;
         if (this.mHeaderFooterColl) {
             this.mHeaderFooterColl.destroy();
@@ -51876,6 +58055,10 @@ var WordExport = /** @__PURE__ @class */ (function () {
         if (this.mHeaderFooterImages) {
             this.mHeaderFooterImages.destroy();
             this.mHeaderFooterImages = undefined;
+        }
+        if (this.mDocumentCharts) {
+            this.mDocumentCharts.destroy();
+            this.mDocumentCharts = undefined;
         }
     };
     // Serializes the document elements (document.xml)
@@ -52238,6 +58421,15 @@ var WordExport = /** @__PURE__ @class */ (function () {
             else if (item.hasOwnProperty('bookmarkType')) {
                 this.serializeBookMark(writer, item);
             }
+            else if (item.hasOwnProperty('editRangeId')) {
+                this.serializeEditRange(writer, item);
+            }
+            else if (item.hasOwnProperty('chartType')) {
+                this.chart = item;
+                this.serializeChart(writer, item);
+                // chart.xml
+                this.serializeChartStructure();
+            }
             else {
                 this.serializeTextRange(writer, item, previousNode);
             }
@@ -52250,6 +58442,30 @@ var WordExport = /** @__PURE__ @class */ (function () {
     WordExport.prototype.serializeBiDirectionalOverride = function (writer, characterFormat) {
         writer.writeStartElement(undefined, 'bdo', this.wNamespace);
         writer.writeAttributeString(undefined, 'val', this.wNamespace, characterFormat.bdo.toLowerCase());
+    };
+    // Serialize Document Protection
+    //<w:permStart w:id="627587516" w:edGrp="everyone" />
+    WordExport.prototype.serializeEditRange = function (writer, editElement) {
+        if (editElement.hasOwnProperty('editRangeStart')) {
+            writer.writeStartElement('w', 'permEnd', this.wNamespace);
+        }
+        else {
+            writer.writeStartElement('w', 'permStart', this.wNamespace);
+            if (editElement.user && editElement.user !== '') {
+                writer.writeAttributeString('w', 'ed', this.wNamespace, editElement.user);
+            }
+            if (editElement.group && editElement.group !== '') {
+                writer.writeAttributeString('w', 'edGrp', this.wNamespace, editElement.group.toLowerCase());
+            }
+            if (editElement.columnFirst && editElement.columnFirst !== -1) {
+                writer.writeAttributeString('w', 'colFirst', this.wNamespace, editElement.columnFirst.toString());
+            }
+            if (editElement.columnLast && editElement.columnLast !== -1) {
+                writer.writeAttributeString('w', 'colLast', this.wNamespace, editElement.columnLast.toString());
+            }
+        }
+        writer.writeAttributeString('w', 'id', this.wNamespace, editElement.editRangeId);
+        writer.writeEndElement();
     };
     // Serialize the book mark
     WordExport.prototype.serializeBookMark = function (writer, bookmark) {
@@ -52283,9 +58499,14 @@ var WordExport = /** @__PURE__ @class */ (function () {
         }
     };
     // Serialize the drawing element.
-    WordExport.prototype.serializeDrawing = function (writer, image) {
+    WordExport.prototype.serializeDrawing = function (writer, draw) {
         writer.writeStartElement(undefined, 'drawing', this.wNamespace);
-        this.serializeInlinePicture(writer, image);
+        if (draw.hasOwnProperty('chartType')) {
+            this.serializeInlineCharts(writer, draw);
+        }
+        else {
+            this.serializeInlinePicture(writer, draw);
+        }
         writer.writeEndElement();
     };
     // Serialize the inline picture.
@@ -52311,6 +58532,1457 @@ var WordExport = /** @__PURE__ @class */ (function () {
         //this.serializePicProperties(writer, image);
         this.serializeDrawingGraphics(writer, image);
         writer.writeEndElement();
+    };
+    // serialize inline chart
+    WordExport.prototype.serializeInlineCharts = function (writer, item) {
+        writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'distT', undefined, '0');
+        writer.writeAttributeString(undefined, 'distB', undefined, '0');
+        writer.writeAttributeString(undefined, 'distL', undefined, '0');
+        writer.writeAttributeString(undefined, 'distR', undefined, '0');
+        writer.writeStartElement(undefined, 'extent', this.wpNamespace);
+        var cx = Math.round(item.width * this.emusPerPoint);
+        writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
+        var cy = Math.round(item.height * this.emusPerPoint);
+        writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
+        writer.writeEndElement(); // end of wp:extend
+        writer.writeStartElement(undefined, 'effectExtent', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'l', undefined, '0');
+        writer.writeAttributeString(undefined, 't', undefined, '0');
+        writer.writeAttributeString(undefined, 'r', undefined, '0');
+        writer.writeAttributeString(undefined, 'b', undefined, '0');
+        writer.writeEndElement(); // end of wp: effectExtent
+        this.serializeDrawingGraphicsChart(writer, item);
+        writer.writeEndElement(); // end of inline
+    };
+    // Serialize the graphics element for chart.
+    WordExport.prototype.serializeDrawingGraphicsChart = function (writer, chart) {
+        var id = '';
+        id = this.updatechartId(chart);
+        // Processing chart
+        writer.writeStartElement('wp', 'docPr', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
+        writer.writeAttributeString(undefined, 'name', undefined, this.getNextChartName());
+        writer.writeEndElement(); // end of wp docPr
+        writer.writeStartElement('wp', 'cNvGraphicFramePr', this.wpNamespace);
+        writer.writeEndElement(); // end of cNvGraphicFramePr
+        writer.writeStartElement('a', 'graphic', this.aNamespace);
+        writer.writeStartElement('a', 'graphicData', this.aNamespace);
+        writer.writeAttributeString(undefined, 'uri', undefined, this.chartNamespace);
+        writer.writeStartElement('c', 'chart', this.chartNamespace);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('r', 'id', undefined, id);
+        writer.writeEndElement(); // end of chart
+        writer.writeEndElement(); // end of graphic data
+        writer.writeEndElement(); // end of graphic
+    };
+    WordExport.prototype.getNextChartName = function () {
+        return 'Chart' + (++this.chartCount);
+    };
+    // serialize chart
+    WordExport.prototype.serializeChart = function (writer, chart) {
+        writer.writeStartElement('w', 'r', this.wNamespace);
+        this.serializeCharacterFormat(writer, chart.characterFormat);
+        this.serializeDrawing(writer, chart);
+        writer.writeEndElement();
+    };
+    WordExport.prototype.serializeChartStructure = function () {
+        this.serializeChartXML();
+        this.serializeChartColors();
+        this.serializeChartExcelData();
+        this.serializeChartRelations();
+        this.chart = undefined;
+        this.saveExcel();
+    };
+    // serialize Chart.xml
+    WordExport.prototype.serializeChartXML = function () {
+        var chartPath = '';
+        var writer = new XmlWriter();
+        writer.writeStartElement('c', 'chartSpace', this.chartNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('xmlns', 'c16r2', undefined, this.c15Namespace);
+        this.serializeChartData(writer, this.chart);
+        writer.writeStartElement('c', 'externalData', this.chartNamespace);
+        writer.writeAttributeString('r', 'id', undefined, 'rId1');
+        writer.writeStartElement('c', 'autoUpdate', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of autoUpdate
+        writer.writeEndElement(); // end of externalData
+        writer.writeEndElement(); // end of chartSpace
+        chartPath = this.chartPath + '/chart' + this.chartCount + '.xml';
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, chartPath);
+        this.mArchive.addItem(zipArchiveItem);
+    };
+    // serialize chart colors.xml
+    WordExport.prototype.serializeChartColors = function () {
+        var writer = new XmlWriter();
+        var colorPath = '';
+        writer.writeStartElement('cs', 'colorStyle', this.csNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeAttributeString(undefined, 'meth', undefined, 'cycle');
+        writer.writeAttributeString(undefined, 'id', undefined, '10');
+        this.serializeChartColor(writer, this.chart);
+        colorPath = this.chartPath + '/colors' + this.chartCount + '.xml';
+        writer.writeEndElement(); // end of cs:colorStyle chart color
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, colorPath);
+        this.mArchive.addItem(zipArchiveItem);
+        colorPath = '';
+    };
+    WordExport.prototype.serializeChartColor = function (writer, chart) {
+        for (var i = 1; i <= 6; i++) {
+            writer.writeStartElement('a', 'schemeClr', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'accent' + i);
+            writer.writeEndElement(); // end of a:schemeClr
+        }
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '60000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '80000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeStartElement('a', 'lumOff', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '20000');
+        writer.writeEndElement(); // end of lumoff
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '80000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '60000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeStartElement('a', 'lumOff', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '40000');
+        writer.writeEndElement(); // end of lumoff
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '50000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '70000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeStartElement('a', 'lumOff', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '30000');
+        writer.writeEndElement(); // end of lumoff
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '70000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeEndElement(); // end of cs:variation
+        writer.writeStartElement('cs', 'variation', this.csNamespace);
+        writer.writeStartElement('a', 'lumMod', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '50000');
+        writer.writeEndElement(); // end of lumMod
+        writer.writeStartElement('a', 'lumOff', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '50000');
+        writer.writeEndElement(); // end of lumoff
+        writer.writeEndElement(); // end of cs:variation
+    };
+    // serialize chart Excel Data
+    WordExport.prototype.serializeChartExcelData = function () {
+        this.mArchiveExcel = new ZipArchive();
+        this.mArchiveExcel.compressionLevel = 'Normal';
+        var type = this.chart.chartType;
+        var isScatterType = (type === 'Scatter_Markers' || type === 'Bubble');
+        this.serializeWorkBook();
+        this.serializeSharedString(isScatterType);
+        this.serializeExcelContentTypes();
+        this.serializeExcelData(isScatterType);
+        this.serializeExcelStyles();
+        this.serializeExcelRelation();
+        this.serializeExcelGeneralRelations();
+        this.chartStringCount = 0;
+    };
+    WordExport.prototype.serializeWorkBook = function () {
+        var writer = new XmlWriter();
+        var workbookPath = 'xl/workbook.xml';
+        this.resetExcelRelationShipId();
+        writer.writeStartElement(undefined, 'workbook', undefined);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
+        writer.writeStartElement(undefined, 'sheets', undefined);
+        writer.writeStartElement(undefined, 'sheet', undefined);
+        writer.writeAttributeString(undefined, 'name', undefined, 'Sheet1');
+        writer.writeAttributeString(undefined, 'sheetId', undefined, '1');
+        writer.writeAttributeString('r', 'id', undefined, this.getNextExcelRelationShipID());
+        writer.writeEndElement(); // end of sheet
+        writer.writeEndElement(); // end of sheets
+        writer.writeEndElement(); // end of workbook
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, workbookPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    };
+    WordExport.prototype.serializeExcelStyles = function () {
+        var writer = new XmlWriter();
+        var stylePath = 'xl/styles.xml';
+        writer.writeStartElement(undefined, 'styleSheet', undefined);
+        writer.writeAttributeString('xmlns', 'mc', undefined, this.veNamespace);
+        writer.writeAttributeString('mc', 'Ignorable', undefined, 'x14ac');
+        writer.writeAttributeString('xmlns', 'x14ac', undefined, 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac');
+        writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
+        writer.writeEndElement(); // end of styleSheet
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, stylePath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    };
+    WordExport.prototype.serializeExcelData = function (isScatterType) {
+        // excel data
+        var sheetPath = '';
+        var writer = new XmlWriter();
+        writer.writeStartElement(undefined, 'worksheet', undefined);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('xmlns', 'x14', undefined, this.spreadSheet9);
+        writer.writeAttributeString('xmlns', 'mc', undefined, this.veNamespace);
+        writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
+        this.serializeExcelSheet(writer, isScatterType);
+        writer.writeEndElement(); // end of worksheet
+        sheetPath = 'xl/worksheets' + '/sheet1.xml';
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, sheetPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    };
+    WordExport.prototype.serializeSharedString = function (isScatterType) {
+        var chart = this.chart;
+        var writer = new XmlWriter();
+        var sharedStringPath = '';
+        var chartSharedString = [];
+        var type = this.chart.chartType;
+        var seriesLength = chart.chartSeries.length;
+        for (var column = 0; column < seriesLength; column++) {
+            var series = chart.chartSeries[column];
+            var seriesName = series.seriesName;
+            var isString = seriesName.match(/[a-z]/i);
+            if (isScatterType && column === 0) {
+                chartSharedString.push('X-Values');
+            }
+            if (isString) {
+                chartSharedString.push(series.seriesName);
+                this.chartStringCount++;
+            }
+        }
+        if (type === 'Bubble') {
+            chartSharedString.push('Size');
+        }
+        for (var row = 0; row < chart.chartCategory.length; row++) {
+            var category = chart.chartCategory[row];
+            var format = chart.chartPrimaryCategoryAxis.numberFormat;
+            var categoryName = category.categoryXName;
+            var isString = categoryName.match(/[a-z]/i);
+            if (isString || format === 'm/d/yyyy') {
+                chartSharedString.push(category.categoryXName);
+                this.chartStringCount++;
+            }
+        }
+        var uniqueCount = this.chartStringCount + 1;
+        writer.writeStartElement(undefined, 'sst', undefined);
+        writer.writeAttributeString('xmlns', undefined, undefined, this.spreadSheetNamespace);
+        writer.writeAttributeString(undefined, 'count', undefined, uniqueCount.toString());
+        writer.writeAttributeString(undefined, 'uniqueCount', undefined, uniqueCount.toString());
+        for (var i = 0; i <= chartSharedString.length; i++) {
+            writer.writeStartElement(undefined, 'si', undefined);
+            writer.writeStartElement(undefined, 't', undefined);
+            if (i !== chartSharedString.length) {
+                writer.writeString(chartSharedString[i]);
+            }
+            else if (!isScatterType) {
+                writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
+                writer.writeString(' ');
+            }
+            writer.writeEndElement(); // end of t
+            writer.writeEndElement(); // end of si
+        }
+        writer.writeEndElement(); // end of sst
+        sharedStringPath = 'xl/sharedStrings' + '.xml';
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, sharedStringPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    };
+    // excel sheet data
+    WordExport.prototype.serializeExcelSheet = function (writer, isScatterType) {
+        var chart = this.chart;
+        var type = 's';
+        var isBubbleType = (chart.chartType === 'Bubble');
+        var bubbleLength;
+        var categoryLength = chart.chartCategory.length + 1;
+        var format = chart.chartPrimaryCategoryAxis.numberFormat;
+        var seriesLength = chart.chartSeries.length + 1;
+        if (isBubbleType) {
+            bubbleLength = seriesLength;
+            seriesLength = seriesLength + 1;
+        }
+        var category = undefined;
+        var series = undefined;
+        var count = 0;
+        writer.writeStartElement(undefined, 'sheetData', undefined);
+        for (var row = 0; row < categoryLength; row++) {
+            writer.writeStartElement(undefined, 'row', undefined);
+            writer.writeAttributeString(undefined, 'r', undefined, (row + 1).toString());
+            for (var column = 0; column < seriesLength; column++) {
+                var alphaNumeric = String.fromCharCode('A'.charCodeAt(0) + column) + (row + 1).toString();
+                writer.writeStartElement(undefined, 'c', undefined);
+                writer.writeAttributeString(undefined, 'r', undefined, alphaNumeric);
+                if (row !== 0 && column === 0) {
+                    category = chart.chartCategory[row - 1];
+                    var categoryName = category.categoryXName;
+                    var isString = categoryName.match(/[a-z]/i);
+                    if (isNullOrUndefined(isString) && format === 'm/d/yyyy') {
+                        type = 's';
+                    }
+                    else if ((!isString && !isNullOrUndefined(isString)) || isScatterType) {
+                        type = 'n';
+                    }
+                    else {
+                        type = 's';
+                    }
+                }
+                else if (row === 0 && column !== 0 && column !== (bubbleLength)) {
+                    series = chart.chartSeries[column - 1];
+                    var seriesName = series.seriesName;
+                    var isString = seriesName.match(/[a-z]/i);
+                    if (!isString) {
+                        type = 'n';
+                    }
+                    else {
+                        type = 's';
+                    }
+                }
+                else if (row === 0 && isBubbleType && column === (bubbleLength)) {
+                    type = 's';
+                }
+                else if (row === 0 && column === 0) {
+                    type = 's';
+                }
+                else {
+                    type = 'n';
+                }
+                writer.writeAttributeString(undefined, 't', undefined, type);
+                writer.writeStartElement(undefined, 'v', undefined);
+                if (row === 0 && column === 0 && !isScatterType) {
+                    writer.writeString(this.chartStringCount.toString());
+                }
+                else if (type === 's') {
+                    writer.writeString(count.toString());
+                    count++;
+                }
+                else if (row !== 0 && type !== 's' && column === 0 && column !== (bubbleLength)) {
+                    writer.writeString(category.categoryXName);
+                }
+                else if (column !== 0 && type !== 's' && row === 0 && column !== (bubbleLength)) {
+                    writer.writeString(series.seriesName);
+                }
+                else if (column !== 0 && column !== (bubbleLength)) {
+                    var data = category.chartData[column - 1];
+                    var yValue = data.yValue;
+                    writer.writeString(yValue.toString());
+                }
+                else if (isBubbleType && column === (bubbleLength)) {
+                    var data = category.chartData[column - 2];
+                    var size = data.size;
+                    writer.writeString(size.toString());
+                }
+                writer.writeEndElement(); // end of v[value]
+                writer.writeEndElement(); // end of c[column]
+                type = '';
+            }
+            writer.writeEndElement(); // end of row
+        }
+        writer.writeEndElement(); // end of sheetData
+    };
+    // excel content types
+    WordExport.prototype.serializeExcelContentTypes = function () {
+        var writer = new XmlWriter();
+        writer.writeStartElement(undefined, 'Types', 'http://schemas.openxmlformats.org/package/2006/content-types');
+        this.serializeDefaultContentType(writer, 'xml', this.xmlContentType);
+        this.serializeDefaultContentType(writer, 'rels', this.relationContentType);
+        // tslint:disable-next-line:max-line-length
+        this.serializeOverrideContentType(writer, 'xl/styles.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml');
+        this.serializeOverrideContentType(writer, 'xl/workbook.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml');
+        // tslint:disable-next-line:max-line-length
+        // this.serializeOverrideContentType(writer, '/docProps/app.xml', 'application/vnd.openxmlformats-officedocument.extended-properties+xml');
+        // this.serializeOverrideContentType(writer, '/docProps/core.xml', 'application/vnd.openxmlformats-package.core-properties+xml');
+        // tslint:disable-next-line:max-line-length
+        this.serializeOverrideContentType(writer, 'xl/sharedStrings.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml');
+        this.serializeOverrideContentType(writer, 'xl/worksheets/sheet1.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml');
+        writer.writeEndElement(); // end of types tag
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, this.contentTypesPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    };
+    WordExport.prototype.serializeExcelRelation = function () {
+        var writer = new XmlWriter();
+        this.resetExcelRelationShipId();
+        var worksheetType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet';
+        var sharedStringType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings';
+        writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
+        this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), worksheetType, 'worksheets/sheet1.xml');
+        this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), this.stylesRelType, 'styles.xml');
+        this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), sharedStringType, 'sharedStrings.xml');
+        writer.writeEndElement(); // end of relationships
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, this.excelRelationPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    };
+    WordExport.prototype.serializeExcelGeneralRelations = function () {
+        var writer = new XmlWriter();
+        this.resetExcelRelationShipId();
+        writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
+        this.serializeRelationShip(writer, this.getNextExcelRelationShipID(), this.documentRelType, 'xl/workbook.xml');
+        writer.writeEndElement(); // end of relationships
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, this.generalRelationPath);
+        this.mArchiveExcel.addItem(zipArchiveItem);
+    };
+    // get the next Excel relationship ID
+    WordExport.prototype.getNextExcelRelationShipID = function () {
+        return 'rId' + (++this.eRelationShipId);
+    };
+    // get the next Chart relationship ID
+    WordExport.prototype.getNextChartRelationShipID = function () {
+        return 'rId' + (++this.cRelationShipId);
+    };
+    //  chart data
+    WordExport.prototype.serializeChartData = function (writer, chart) {
+        writer.writeStartElement('c', 'date1904', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement();
+        writer.writeStartElement('c', 'lang', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'en-US');
+        writer.writeEndElement();
+        writer.writeStartElement('c', 'roundedCorners', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement();
+        writer.writeStartElement('mc', 'AlternateContent', this.veNamespace);
+        writer.writeStartElement('mc', 'Choice', this.veNamespace);
+        writer.writeAttributeString('xmlns', 'c14', undefined, this.c7Namespace);
+        writer.writeAttributeString(undefined, 'Requires', undefined, 'c14');
+        writer.writeStartElement('c14', 'style', undefined);
+        writer.writeAttributeString(undefined, 'val', undefined, '102');
+        writer.writeEndElement(); // c14 style end
+        writer.writeEndElement(); // mc:choice ened
+        writer.writeStartElement('mc', 'Fallback', this.veNamespace);
+        writer.writeStartElement('c', 'style', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '2');
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement(); // end tag of mc alternate content
+        writer.writeStartElement('c', 'chart', this.chartNamespace);
+        if (!isNullOrUndefined(this.chart.chartTitle)) {
+            writer.writeStartElement('c', 'title', this.chartNamespace);
+            this.serializeTextProperties(writer, this.chart.chartTitleArea, this.chart.chartTitle);
+            writer.writeEndElement(); // end tag of title
+        }
+        // serialize plot area
+        this.serializeChartPlotArea(writer, chart);
+        writer.writeEndElement(); // end tag of chart
+        this.serializeShapeProperties(writer, 'D9D9D9', true);
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeAttributeString('xmlns', 'c', undefined, this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeEndElement(); // end tag of bodyPr
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeEndElement(); // end of a:lstStyle
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        writer.writeAttributeString('xmlns', 'a', undefined, this.aNamespace);
+        writer.writeStartElement('a', 'pPr', this.aNamespace);
+        writer.writeStartElement('a', 'defRPr', this.aNamespace);
+        writer.writeEndElement(); // end tag of defRPr
+        writer.writeEndElement(); // end tag of pPr
+        writer.writeStartElement('a', 'endParaRPr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
+        writer.writeEndElement(); // end of a:endParaRPr
+        writer.writeEndElement(); // end tag of p
+        writer.writeEndElement(); // end tag of txPr
+    };
+    //  chart plot area
+    // tslint:disable:max-func-body-length
+    WordExport.prototype.serializeChartPlotArea = function (writer, chart) {
+        writer.writeStartElement('c', 'autoTitleDeleted', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of autoTitleDeleted
+        writer.writeStartElement('c', 'plotArea', this.chartNamespace);
+        writer.writeStartElement('c', 'layout', this.chartNamespace);
+        writer.writeEndElement();
+        // chart Type
+        var serializationChartType = this.chartType(chart);
+        var isPieTypeSerialization = (serializationChartType === 'pieChart' || serializationChartType === 'doughnutChart');
+        var isScatterType = (serializationChartType === 'scatterChart' || serializationChartType === 'bubbleChart');
+        writer.writeStartElement('c', serializationChartType, this.chartNamespace);
+        if (serializationChartType === 'barChart') {
+            var barDiv = '';
+            if (chart.chartType === 'Column_Clustered' || chart.chartType === 'Column_Stacked'
+                || chart.chartType === 'Column_Stacked_100') {
+                barDiv = 'col';
+            }
+            else {
+                barDiv = 'bar';
+            }
+            writer.writeStartElement('c', 'barDir', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, barDiv);
+            writer.writeEndElement(); // end of barDir
+        }
+        if (!isPieTypeSerialization && !isScatterType) {
+            var grouping = this.chartGrouping(chart.chartType);
+            writer.writeStartElement('c', 'grouping', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, grouping);
+            writer.writeEndElement(); // end of grouping
+        }
+        if (serializationChartType === 'scatterChart') {
+            writer.writeStartElement('c', 'scatterStyle', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'marker');
+            writer.writeEndElement(); // end of scatterStyle
+        }
+        writer.writeStartElement('c', 'varyColors', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c:varyColors
+        var valueSheet = '';
+        for (var i = 0; i < chart.chartSeries.length; i++) {
+            var series = chart.chartSeries[i];
+            this.seriesCount = i;
+            writer.writeStartElement('c', 'ser', this.chartNamespace);
+            writer.writeStartElement('c', 'idx', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, i.toString());
+            writer.writeEndElement(); // end of c:idx
+            writer.writeStartElement('c', 'order', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, i.toString());
+            writer.writeEndElement(); // end of c:order
+            writer.writeStartElement('c', 'tx', this.chartNamespace);
+            writer.writeStartElement('c', 'strRef', this.chartNamespace);
+            writer.writeStartElement('c', 'f', this.chartNamespace);
+            var alphaNumeric = String.fromCharCode('B'.charCodeAt(0) + i);
+            valueSheet = 'Sheet1!$' + alphaNumeric;
+            writer.writeString(valueSheet + '$1');
+            valueSheet = valueSheet + '$2:$' + alphaNumeric + '$';
+            writer.writeEndElement(); // end of c:f
+            writer.writeStartElement('c', 'strCache', this.chartNamespace);
+            writer.writeStartElement('c', 'ptCount', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '1');
+            writer.writeEndElement(); // end of ptCount
+            writer.writeStartElement('c', 'pt', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'idx', undefined, '0');
+            writer.writeStartElement('c', 'v', this.chartNamespace);
+            writer.writeString(series.seriesName);
+            writer.writeEndElement(); // end of c:v
+            writer.writeEndElement(); // end of pt
+            writer.writeEndElement(); // end of strCache
+            writer.writeEndElement(); // end of strRef
+            writer.writeEndElement(); // end of tx
+            if (chart.chartType === 'Pie' || chart.chartType === 'Doughnut') {
+                this.parseChartDataPoint(writer, series);
+                writer.writeStartElement('c', 'explosion', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, '0');
+                writer.writeEndElement(); // end of explosion
+            }
+            else if (!isScatterType) {
+                this.parseChartSeriesColor(writer, series.dataPoints, serializationChartType);
+            }
+            if (serializationChartType === 'scatterChart') {
+                var fillColor = series.dataPoints[0].fill.foreColor;
+                writer.writeStartElement('c', 'marker', this.chartNamespace);
+                writer.writeStartElement('c', 'symbol', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, 'circle');
+                writer.writeEndElement(); // end of a: symbol
+                writer.writeStartElement('c', 'size', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, '5');
+                writer.writeEndElement(); // end of a: size
+                this.serializeShapeProperties(writer, fillColor, false);
+                writer.writeEndElement(); // end of a: marker
+            }
+            if (series.dataLabel) {
+                this.parseChartDataLabels(writer, series.dataLabel);
+            }
+            if (series.trendLines) {
+                this.parseChartTrendLines(writer, series);
+            }
+            if (series.errorBar) {
+                this.serializeChartErrorBar(writer, series);
+            }
+            if (serializationChartType === 'scatterChart') {
+                this.serializeDefaultShapeProperties(writer);
+            }
+            else if (serializationChartType === 'bubbleChart') {
+                this.serializeShapeProperties(writer, series.dataPoints[i].fill.foreColor, false);
+            }
+            var categoryType = 'cat';
+            var categoryRef = 'strRef';
+            var cacheType = 'strCache';
+            if (isScatterType) {
+                categoryType = 'xVal';
+                categoryRef = 'numRef';
+                cacheType = 'numCache';
+            }
+            writer.writeStartElement('c', categoryType, this.chartNamespace);
+            writer.writeStartElement('c', categoryRef, this.chartNamespace);
+            this.serializeChartCategory(writer, chart, cacheType); // serialize chart yvalue
+            writer.writeEndElement(); // end of categoryRef
+            writer.writeEndElement(); // end of cat
+            this.serializeChartValue(writer, valueSheet, serializationChartType);
+            writer.writeEndElement(); // end of c:ser
+        }
+        writer.writeStartElement('c', 'dLbls', this.chartNamespace);
+        if (isPieTypeSerialization) {
+            writer.writeStartElement('c', 'dLblPos', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'bestFit');
+            writer.writeEndElement(); // end of dLblPos
+        }
+        writer.writeStartElement('c', 'showLegendKey', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showLegendKey
+        writer.writeStartElement('c', 'showVal', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showVal
+        writer.writeStartElement('c', 'showCatName', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showCatName
+        writer.writeStartElement('c', 'showSerName', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showSerName
+        writer.writeStartElement('c', 'showPercent', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showPercent
+        writer.writeStartElement('c', 'showBubbleSize', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: showBubbleSize
+        writer.writeStartElement('c', 'showLeaderLines', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '1');
+        writer.writeEndElement(); // end of c: showLeaderLines
+        writer.writeEndElement(); // end of c: dLbls
+        if (isPieTypeSerialization) {
+            var series = this.chart.chartSeries[0];
+            var sliceAngle = 0;
+            var holeSize = 0;
+            if (series.hasOwnProperty('firstSliceAngle')) {
+                sliceAngle = series.firstSliceAngle;
+            }
+            writer.writeStartElement('c', 'firstSliceAng', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, sliceAngle.toString());
+            writer.writeEndElement(); // end of c: firstSliceAng
+            if (chart.chartType === 'Doughnut') {
+                holeSize = series.holeSize;
+                writer.writeStartElement('c', 'holeSize', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, holeSize.toString());
+                writer.writeEndElement(); // end of c: holeSize
+            }
+        }
+        if (serializationChartType !== 'lineChart' && !isScatterType) {
+            writer.writeStartElement('c', 'gapWidth', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, this.chart.gapWidth.toString());
+            writer.writeEndElement(); // end of gapWidth
+            writer.writeStartElement('c', 'overlap', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, this.chart.overlap.toString());
+            writer.writeEndElement(); // end of overlap
+        }
+        else if (serializationChartType !== 'bubbleChart') {
+            writer.writeStartElement('c', 'smooth', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '0');
+            writer.writeEndElement(); // end of smooth
+        }
+        if (serializationChartType === 'bubbleChart') {
+            writer.writeStartElement('c', 'sizeRepresents', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'area');
+            writer.writeEndElement(); // end of smooth
+        }
+        var type = this.chart.chartType;
+        if (!isPieTypeSerialization) {
+            writer.writeStartElement('c', 'axId', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '335265000');
+            writer.writeEndElement(); // end of axId
+            writer.writeStartElement('c', 'axId', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '335263360');
+            writer.writeEndElement(); // end of axId
+        }
+        writer.writeEndElement(); // end of chart type
+        var isStackedPercentage = (type === 'Column_Stacked_100' || type === 'Area_Stacked_100' ||
+            type === 'Bar_Stacked_100' || type === 'Line_Stacked_100' || type === 'Line_Markers_Stacked_100');
+        var format = this.chart.chartPrimaryCategoryAxis.categoryType;
+        if (!isPieTypeSerialization) {
+            this.serializeCategoryAxis(writer, format, isStackedPercentage);
+            this.serializeValueAxis(writer, format, isStackedPercentage);
+        }
+        if (this.chart.hasOwnProperty('chartDataTable')) {
+            var dataTable = this.chart.chartDataTable;
+            var showHorzBorder = 0;
+            var showVertBorder = 0;
+            var showOutline = 0;
+            var showKeys = 0;
+            if (dataTable.showSeriesKeys) {
+                showKeys = 1;
+            }
+            if (dataTable.hasHorzBorder) {
+                showHorzBorder = 1;
+            }
+            if (dataTable.hasVertBorder) {
+                showVertBorder = 1;
+            }
+            if (dataTable.hasBorders) {
+                showOutline = 1;
+            }
+            writer.writeStartElement('c', 'dTable', this.chartNamespace);
+            writer.writeStartElement('c', 'showHorzBorder', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, showHorzBorder.toString());
+            writer.writeEndElement(); // end of showHorzBorder
+            writer.writeStartElement('c', 'showVertBorder', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, showVertBorder.toString());
+            writer.writeEndElement(); // end of showVertBorder
+            writer.writeStartElement('c', 'showOutline', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, showOutline.toString());
+            writer.writeEndElement(); // end of showOutline
+            writer.writeStartElement('c', 'showKeys', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, showKeys.toString());
+            writer.writeEndElement(); // end of showKeys
+            writer.writeEndElement(); // end of dTable
+        }
+        this.serializeDefaultShapeProperties(writer);
+        writer.writeEndElement(); // end of plot area
+        // legend
+        if (!isNullOrUndefined(this.chart.chartLegend.position)) {
+            this.serializeChartLegend(writer);
+        }
+        writer.writeStartElement('c', 'plotVisOnly', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '1');
+        writer.writeEndElement(); // end of c: plotVisOnly
+        writer.writeStartElement('c', 'dispBlanksAs', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'gap');
+        writer.writeEndElement(); // end of c: dispBlanksAs
+    };
+    WordExport.prototype.serializeChartLegend = function (writer) {
+        var legendPosition = this.chartLegendPosition(this.chart.chartLegend);
+        var title = this.chart.chartLegend.chartTitleArea;
+        var fill = title.dataFormat.fill.foreColor;
+        writer.writeStartElement('c', 'legend', this.chartNamespace);
+        writer.writeStartElement('c', 'legendPos', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, legendPosition);
+        writer.writeEndElement();
+        writer.writeStartElement('c', 'overlay', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement();
+        this.serializeDefaultShapeProperties(writer);
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+    };
+    WordExport.prototype.serializeChartErrorBar = function (writer, series) {
+        var errorBar = series.errorBar;
+        var errorBarValueType = this.errorBarValueType(errorBar.type);
+        var endStyle = 0;
+        if (errorBar.endStyle !== 'Cap') {
+            endStyle = 1;
+        }
+        writer.writeStartElement('c', 'errBars', this.chartNamespace);
+        writer.writeStartElement('c', 'errBarType', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, errorBar.direction.toLowerCase());
+        writer.writeEndElement(); // end of c: errBarType
+        writer.writeStartElement('c', 'errValType', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, errorBarValueType);
+        writer.writeEndElement(); // end of c: errValType
+        writer.writeStartElement('c', 'noEndCap', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, endStyle.toString());
+        writer.writeEndElement(); // end of c: noEndCap
+        writer.writeStartElement('c', 'val', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, errorBar.numberValue.toString());
+        writer.writeEndElement(); // end of c: val
+        this.serializeShapeProperties(writer, '595959', true);
+        writer.writeEndElement(); // end of c: errBars
+    };
+    WordExport.prototype.errorBarValueType = function (type) {
+        var valueType = '';
+        switch (type) {
+            case 'StandardError':
+                valueType = 'stdErr';
+                break;
+            case 'StandardDeviation':
+                valueType = 'stdDev';
+                break;
+            case 'Percentage':
+                valueType = 'percentage';
+                break;
+            case 'Fixed':
+                valueType = 'fixedVal';
+                break;
+            default:
+                valueType = 'stdErr';
+                break;
+        }
+        return valueType;
+    };
+    WordExport.prototype.serializeCategoryAxis = function (writer, format, isStackedPercentage) {
+        // serialize category axis
+        var axisType = 'catAx';
+        var formatCode = this.chart.chartPrimaryCategoryAxis.numberFormat;
+        var type = this.chart.chartType;
+        var isScatterType = (type === 'Scatter_Markers' || type === 'Bubble');
+        if (format === 'Time') {
+            axisType = 'dateAx';
+        }
+        if (isScatterType) {
+            axisType = 'valAx';
+        }
+        writer.writeStartElement('c', axisType, this.chartNamespace);
+        writer.writeStartElement('c', 'axId', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '335265000');
+        writer.writeEndElement(); // end of axId
+        this.serializeAxis(writer, '335263360', this.chart.chartPrimaryCategoryAxis, formatCode, isStackedPercentage);
+        if (!isScatterType) {
+            writer.writeStartElement('c', 'auto', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '1');
+            writer.writeEndElement(); // end of auto
+            writer.writeStartElement('c', 'lblAlgn', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'ctr');
+            writer.writeEndElement(); // end of lblAlgn
+            writer.writeStartElement('c', 'lblOffset', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '100');
+            writer.writeEndElement(); // end of lblOffset
+        }
+        if (format === 'Time') {
+            writer.writeStartElement('c', 'baseTimeUnit', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'days');
+            writer.writeEndElement(); // end of baseTimeUnit
+        }
+        else if (this.chart.chartType !== 'Bubble') {
+            writer.writeStartElement('c', 'noMultiLvlLbl', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '0');
+            writer.writeEndElement(); // end of noMultiLvlLbl
+        }
+        writer.writeEndElement(); // end of catAx
+    };
+    WordExport.prototype.serializeValueAxis = function (writer, format, isStackedPercentage) {
+        // serialize category axis
+        var valueAxis = this.chart.chartPrimaryValueAxis;
+        var crossBetween = 'between';
+        if (format === 'Time') {
+            crossBetween = 'midCat';
+        }
+        writer.writeStartElement('c', 'valAx', this.chartNamespace);
+        writer.writeStartElement('c', 'axId', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '335263360');
+        writer.writeEndElement(); // end of axId
+        this.serializeAxis(writer, '335265000', valueAxis, 'General', isStackedPercentage);
+        writer.writeStartElement('c', 'crossBetween', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, crossBetween);
+        writer.writeEndElement(); // end of crossBetween
+        if (valueAxis.majorUnit !== 0 && !isStackedPercentage) {
+            writer.writeStartElement('c', 'majorUnit', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, valueAxis.majorUnit.toString());
+            writer.writeEndElement(); // end of majorUnit
+        }
+        writer.writeEndElement(); // end of valAx
+    };
+    WordExport.prototype.serializeAxis = function (writer, axisID, axis, formatCode, isStackedPercentage) {
+        var majorTickMark = 'none';
+        var minorTickMark = 'none';
+        var tickLabelPosition = 'nextTo';
+        writer.writeStartElement('c', 'scaling', this.chartNamespace);
+        writer.writeStartElement('c', 'orientation', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'minMax');
+        writer.writeEndElement(); // end of orientation
+        if (axis.maximumValue !== 0 && !isStackedPercentage) {
+            writer.writeStartElement('c', 'max', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, axis.maximumValue.toString());
+            writer.writeEndElement(); // end of max
+            writer.writeStartElement('c', 'min', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, axis.minimumValue.toString());
+            writer.writeEndElement(); // end of min
+        }
+        writer.writeEndElement(); // end of scaling
+        writer.writeStartElement('c', 'delete', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of delete
+        writer.writeStartElement('c', 'axPos', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'l');
+        writer.writeEndElement(); // end of axPos
+        if (axis.hasMajorGridLines) {
+            writer.writeStartElement('c', 'majorGridlines', this.chartNamespace);
+            this.serializeShapeProperties(writer, 'D9D9D9', true);
+            writer.writeEndElement(); // end of majorGridlines
+        }
+        if (axis.hasMinorGridLines) {
+            writer.writeStartElement('c', 'minorGridlines', this.chartNamespace);
+            this.serializeShapeProperties(writer, 'F2F2F2', true);
+            writer.writeEndElement(); // end of minorGridlines
+        }
+        if (axis.chartTitle) {
+            writer.writeStartElement('c', 'title', this.chartNamespace);
+            this.serializeTextProperties(writer, axis.chartTitleArea, axis.chartTitle);
+            writer.writeEndElement(); // end tag of title
+        }
+        writer.writeStartElement('c', 'numFmt', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'formatCode', undefined, formatCode);
+        writer.writeAttributeString(undefined, 'sourceLinked', undefined, '1');
+        writer.writeEndElement(); // end of numFmt
+        writer.writeStartElement('c', 'majorTickMark', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, majorTickMark);
+        writer.writeEndElement(); // end of majorTickMark
+        writer.writeStartElement('c', 'minorTickMark', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, minorTickMark);
+        writer.writeEndElement(); // end of minorTickMark
+        writer.writeStartElement('c', 'tickLblPos', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, tickLabelPosition);
+        writer.writeEndElement(); // end of tickLblPos
+        if (this.chart.chartType === 'Bubble') {
+            this.serializeShapeProperties(writer, 'BFBFBF', true);
+        }
+        else {
+            this.serializeDefaultShapeProperties(writer);
+        }
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeEndElement(); // end of bodyPr
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        this.serializeChartTitleFont(writer, axis.fontSize, '595959', axis.fontName);
+        writer.writeEndElement(); // end of a: p
+        writer.writeEndElement(); // end of c: txPr
+        writer.writeStartElement('c', 'crossAx', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, axisID);
+        writer.writeEndElement(); // end of crossAx
+        writer.writeStartElement('c', 'crosses', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, 'autoZero');
+        writer.writeEndElement(); // end of crosses
+    };
+    WordExport.prototype.parseChartTrendLines = function (writer, series) {
+        for (var i = 0; i < series.trendLines.length; i++) {
+            var data = series.trendLines[i];
+            var type = this.chartTrendLineType(data.type);
+            var dispRSqr = 0;
+            var dispEq = 0;
+            if (data.isDisplayEquation) {
+                dispEq = 1;
+            }
+            else if (data.isDisplayRSquared) {
+                dispRSqr = 1;
+            }
+            var solidFill = series.dataPoints[i];
+            writer.writeStartElement('c', 'trendline', this.chartNamespace);
+            writer.writeStartElement('c', 'spPr', this.chartNamespace);
+            writer.writeStartElement('a', 'ln', this.aNamespace);
+            writer.writeAttributeString(undefined, 'w', undefined, '19050');
+            this.serializeChartSolidFill(writer, solidFill.fill.foreColor, false);
+            writer.writeStartElement('a', 'prstDash', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'sysDot');
+            writer.writeEndElement(); // end of a: prstDash
+            writer.writeStartElement('a', 'round', this.aNamespace);
+            writer.writeEndElement(); // end of a: round
+            writer.writeEndElement(); // end of a: ln
+            writer.writeEndElement(); // end of c: spPr
+            writer.writeStartElement('c', 'trendlineType', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, type);
+            writer.writeEndElement(); // end of c: trendlineType
+            writer.writeStartElement('c', 'forward', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, data.forward.toString());
+            writer.writeEndElement(); // end of c: forward
+            writer.writeStartElement('c', 'backward', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, data.backward.toString());
+            writer.writeEndElement(); // end of c: backward
+            if (data.intercept !== 'NaN') {
+                writer.writeStartElement('c', 'intercept', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, data.intercept.toString());
+                writer.writeEndElement(); // end of c: intercept
+            }
+            writer.writeStartElement('c', 'dispRSqr', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, dispRSqr.toString());
+            writer.writeEndElement(); // end of c: dispRSqr
+            writer.writeStartElement('c', 'dispEq', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, dispEq.toString());
+            writer.writeEndElement(); // end of c: dispEq
+            writer.writeEndElement(); // end of c: trendline
+        }
+    };
+    WordExport.prototype.chartTrendLineType = function (type) {
+        var trendlineType = '';
+        switch (type) {
+            case 'Linear':
+                trendlineType = 'linear';
+                break;
+            case 'Exponential':
+                trendlineType = 'exp';
+                break;
+        }
+        return trendlineType;
+    };
+    WordExport.prototype.parseChartDataLabels = function (writer, dataLabels) {
+        var position = '';
+        var dataLabelPosition = dataLabels.position;
+        var isLegendKey = 0;
+        var isBubbleSize = 0;
+        var isCategoryName = 0;
+        var isSeriesName = 0;
+        var isValue = 0;
+        var isPercentage = 0;
+        var isLeaderLines = 0;
+        switch (dataLabelPosition) {
+            case 'Center':
+                position = 'ctr';
+                break;
+            case 'Left':
+                position = 'l';
+                break;
+            case 'Right':
+                position = 'r';
+                break;
+            case 'Outside':
+                position = 'outEnd';
+                break;
+            case 'BestFit':
+                position = 'bestFit';
+                break;
+            case 'Bottom':
+            case 'OutsideBase':
+                position = 'inBase';
+                break;
+            case 'Inside':
+                position = 'inEnd';
+                break;
+            case 'Above':
+                position = 't';
+                break;
+            case 'Below':
+                position = 'b';
+                break;
+            default:
+                position = 'Automatic';
+                break;
+        }
+        writer.writeStartElement('c', 'dLbls', this.chartNamespace);
+        this.serializeDefaultShapeProperties(writer);
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeEndElement(); //end of a:bodyPr.
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeEndElement(); //end of a:lstStyle.
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        this.serializeChartTitleFont(writer, dataLabels.fontSize, dataLabels.fontColor, dataLabels.fontName);
+        writer.writeEndElement(); //end of a:p.
+        writer.writeEndElement(); //end of c:txPr.
+        if (dataLabels.isLegendKey) {
+            isLegendKey = 1;
+        }
+        else if (dataLabels.isBubbleSize) {
+            isBubbleSize = 1;
+        }
+        else if (dataLabels.isCategoryName) {
+            isCategoryName = 1;
+        }
+        else if (dataLabels.isSeriesName) {
+            isSeriesName = 1;
+        }
+        else if (dataLabels.isValue) {
+            isValue = 1;
+        }
+        else if (dataLabels.isPercentage) {
+            isPercentage = 1;
+        }
+        else if (dataLabels.isLeaderLines) {
+            isLeaderLines = 1;
+        }
+        if (position !== 'Automatic') {
+            writer.writeStartElement('c', 'dLblPos', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, position);
+            writer.writeEndElement(); // end of dLblPos
+        }
+        writer.writeStartElement('c', 'showLegendKey', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isLegendKey.toString());
+        writer.writeEndElement(); // end of showLegendKey
+        writer.writeStartElement('c', 'showVal', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isValue.toString());
+        writer.writeEndElement(); // end of showVal
+        writer.writeStartElement('c', 'showCatName', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isCategoryName.toString());
+        writer.writeEndElement(); // end of showCatName
+        writer.writeStartElement('c', 'showSerName', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isSeriesName.toString());
+        writer.writeEndElement(); // end of showSerName
+        writer.writeStartElement('c', 'showPercent', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isPercentage.toString());
+        writer.writeEndElement(); // end of showPercent
+        writer.writeStartElement('c', 'showBubbleSize', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isBubbleSize.toString());
+        writer.writeEndElement(); // end of showBubbleSize
+        writer.writeStartElement('c', 'showLeaderLines', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, isLeaderLines.toString());
+        writer.writeEndElement(); // end of showBubbleSize
+        writer.writeEndElement(); // end of dLbls
+    };
+    WordExport.prototype.serializeShapeProperties = function (writer, color, isLine) {
+        var chartType = this.chart.chartType;
+        var isScatterType = (chartType === 'Scatter_Markers' || chartType === 'Bubble');
+        // serialize shape
+        writer.writeStartElement('c', 'spPr', this.chartNamespace);
+        if (!isScatterType || isLine) {
+            writer.writeStartElement('a', 'ln', this.aNamespace);
+            writer.writeAttributeString(undefined, 'w', undefined, '9525');
+            this.serializeChartSolidFill(writer, color, false);
+            writer.writeStartElement('a', 'prstDash', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, 'solid');
+            writer.writeEndElement(); // end of prstDash
+            writer.writeStartElement('a', 'round', this.aNamespace);
+            writer.writeEndElement(); // end tag of round
+            writer.writeEndElement(); // end tag of ln
+        }
+        else if (chartType === 'Scatter_Markers') {
+            this.serializeChartSolidFill(writer, color, false);
+            this.serializeDefaultLineProperties(writer);
+        }
+        else if (chartType === 'Bubble') {
+            this.serializeChartSolidFill(writer, color, true);
+            this.serializeDefaultLineProperties(writer);
+        }
+        writer.writeStartElement('a', 'effectLst', this.aNamespace);
+        writer.writeEndElement(); // end of a: effectLst
+        writer.writeEndElement(); // end tag of spPr
+    };
+    WordExport.prototype.serializeDefaultShapeProperties = function (writer) {
+        writer.writeStartElement('c', 'spPr', this.chartNamespace);
+        writer.writeStartElement('a', 'noFill', this.aNamespace);
+        writer.writeEndElement(); // end of a: noFill
+        this.serializeDefaultLineProperties(writer);
+        writer.writeStartElement('a', 'effectLst', this.aNamespace);
+        writer.writeEndElement(); // end of a: effectLst
+        writer.writeEndElement(); // end of c: spPr
+    };
+    WordExport.prototype.serializeDefaultLineProperties = function (writer) {
+        writer.writeStartElement('a', 'ln', this.aNamespace);
+        writer.writeStartElement('a', 'noFill', this.aNamespace);
+        writer.writeEndElement(); // end of a: noFill
+        writer.writeStartElement('a', 'round', this.aNamespace);
+        writer.writeEndElement(); // end of a: round
+        writer.writeEndElement(); // end of a: ln
+    };
+    WordExport.prototype.serializeTextProperties = function (writer, title, chartTitleName) {
+        var fill = title.dataFormat.fill.foreColor;
+        var fontSize = title.fontSize * 100;
+        writer.writeStartElement('c', 'tx', this.chartNamespace);
+        writer.writeStartElement('c', 'rich', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'rot', undefined, '0');
+        writer.writeAttributeString(undefined, 'vert', undefined, 'horz');
+        writer.writeEndElement(); // end of a: bodyPr
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeEndElement(); // end of a:lstStyle
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        writer.writeStartElement('a', 'r', this.aNamespace);
+        writer.writeStartElement('a', 'rPr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
+        writer.writeAttributeString(undefined, 'b', undefined, '0');
+        writer.writeAttributeString(undefined, 'sz', undefined, fontSize.toString());
+        writer.writeAttributeString(undefined, 'baseline', undefined, '0');
+        this.serializeChartSolidFill(writer, fill, false);
+        this.serializeFont(writer, title.fontName);
+        writer.writeEndElement(); // end of a: rPr
+        writer.writeStartElement('a', 't', this.aNamespace);
+        writer.writeString(chartTitleName);
+        writer.writeEndElement(); // end of a:t
+        writer.writeEndElement(); // end of a: r
+        writer.writeEndElement(); // end of a: p
+        writer.writeEndElement(); // end of c: rich
+        writer.writeEndElement(); // end of c: tx
+        writer.writeStartElement('c', 'layout', this.chartNamespace);
+        // writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: layout
+        writer.writeStartElement('c', 'overlay', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '0');
+        writer.writeEndElement(); // end of c: overlay
+        this.serializeDefaultShapeProperties(writer);
+        writer.writeStartElement('c', 'txPr', this.chartNamespace);
+        writer.writeStartElement('a', 'bodyPr', this.aNamespace);
+        writer.writeEndElement(); // end of a: bodyPr
+        writer.writeStartElement('a', 'lstStyle', this.aNamespace);
+        writer.writeEndElement(); // end of a: lstStyle
+        writer.writeStartElement('a', 'p', this.aNamespace);
+        writer.writeEndElement(); // end of a: p
+        this.serializeChartTitleFont(writer, title.fontSize, fill, title.fontName);
+        writer.writeEndElement(); // end of c: txPr
+    };
+    WordExport.prototype.serializeChartTitleFont = function (writer, fontSize, fill, fontName) {
+        var fontSizeCalc = fontSize * 100;
+        writer.writeStartElement('a', 'pPr', this.aNamespace);
+        writer.writeStartElement('a', 'defRPr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'lang', undefined, 'en-US');
+        writer.writeAttributeString(undefined, 'b', undefined, '0');
+        writer.writeAttributeString(undefined, 'sz', undefined, fontSizeCalc.toString());
+        writer.writeAttributeString(undefined, 'baseline', undefined, '0');
+        this.serializeChartSolidFill(writer, fill, false);
+        this.serializeFont(writer, fontName);
+        writer.writeEndElement(); // end of defRPr
+        writer.writeEndElement(); // end of a: pPr
+    };
+    WordExport.prototype.serializeChartSolidFill = function (writer, fill, isSeriesFill) {
+        writer.writeStartElement('a', 'solidFill', this.aNamespace);
+        writer.writeStartElement('a', 'srgbClr', this.aNamespace);
+        if (fill !== '000000') {
+            writer.writeAttributeString(undefined, 'val', undefined, fill);
+        }
+        else {
+            writer.writeAttributeString(undefined, 'val', undefined, '595959');
+        }
+        if (this.chart.chartType === 'Bubble' && isSeriesFill) {
+            writer.writeStartElement('a', 'alpha', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '75000');
+            writer.writeEndElement(); // end of alpha
+        }
+        writer.writeEndElement(); // end of srgbClr
+        writer.writeEndElement(); // end of solidFill
+    };
+    WordExport.prototype.serializeFont = function (writer, fontName) {
+        writer.writeStartElement('a', 'latin', this.aNamespace);
+        writer.writeAttributeString(undefined, 'typeface', undefined, fontName);
+        writer.writeEndElement(); // end of a:latin
+        writer.writeStartElement('a', 'ea', this.aNamespace);
+        writer.writeAttributeString(undefined, 'typeface', undefined, fontName);
+        writer.writeEndElement(); // end of a:ea
+        writer.writeStartElement('a', 'cs', this.aNamespace);
+        writer.writeAttributeString(undefined, 'typeface', undefined, fontName);
+        writer.writeEndElement(); // end of a:cs
+    };
+    WordExport.prototype.parseChartSeriesColor = function (writer, dataPoints, chartType) {
+        for (var i = 0; i < dataPoints.length; i++) {
+            var data = dataPoints[i];
+            writer.writeStartElement('c', 'spPr', this.chartNamespace);
+            if (chartType === 'lineChart') {
+                writer.writeStartElement('a', 'ln', this.aNamespace);
+                writer.writeAttributeString(undefined, 'w', undefined, '28575');
+                writer.writeAttributeString(undefined, 'cap', undefined, 'rnd');
+            }
+            if (chartType !== 'lineChart') {
+                this.serializeChartSolidFill(writer, data.fill.foreColor, true);
+            }
+            else {
+                this.serializeChartSolidFill(writer, data.line.color, true);
+            }
+            if (chartType !== 'lineChart') {
+                writer.writeStartElement('a', 'ln', this.aNamespace);
+                writer.writeStartElement('a', 'noFill', this.aNamespace);
+                writer.writeEndElement(); // end of a: noFill
+            }
+            writer.writeStartElement('a', 'round', this.aNamespace);
+            writer.writeEndElement(); // end of a: round
+            writer.writeEndElement(); // end of a: ln
+            writer.writeStartElement('a', 'effectLst', this.aNamespace);
+            writer.writeEndElement(); // end of a: effectLst
+            writer.writeEndElement(); // end of c: spPr
+            if (chartType === 'lineChart') {
+                var symbolType = 'none';
+                var size = 0;
+                if (this.chart.chartSeries[i].hasOwnProperty('seriesFormat')) {
+                    symbolType = this.chart.chartSeries[i].seriesFormat.markerStyle;
+                    size = this.chart.chartSeries[i].seriesFormat.markerSize;
+                }
+                writer.writeStartElement('c', 'marker', this.chartNamespace);
+                writer.writeStartElement('c', 'symbol', this.chartNamespace);
+                writer.writeAttributeString(undefined, 'val', undefined, symbolType.toLowerCase());
+                writer.writeEndElement(); // end of a: symbol
+                if (this.chart.chartSeries[i].hasOwnProperty('seriesFormat')) {
+                    writer.writeStartElement('c', 'size', this.chartNamespace);
+                    writer.writeAttributeString(undefined, 'val', undefined, size.toString());
+                    writer.writeEndElement(); // end of a: size
+                }
+                writer.writeEndElement(); // end of a: marker
+            }
+        }
+    };
+    WordExport.prototype.parseChartDataPoint = function (writer, series) {
+        // data point
+        var dataPoints = series.dataPoints;
+        var points = [];
+        for (var j = 0; j < dataPoints.length; j++) {
+            points.push(dataPoints[j]);
+            writer.writeStartElement('c', 'dPt', this.chartNamespace);
+            writer.writeStartElement('c', 'idx', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, j.toString());
+            writer.writeEndElement(); // end of c:idx
+            writer.writeStartElement('c', 'bubble3D', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '0');
+            writer.writeEndElement(); // end of c:bubble3D
+            this.parseChartSeriesColor(writer, points, this.chart.chartType);
+            writer.writeEndElement(); // end of c:dPt
+            points = [];
+        }
+    };
+    // chart data value
+    WordExport.prototype.serializeChartCategory = function (writer, chart, cacheType) {
+        var chartCategory = chart.chartCategory;
+        var chartCategoryCount = chartCategory.length;
+        writer.writeStartElement('c', 'f', this.chartNamespace);
+        writer.writeString('Sheet1!$A$2:$A$' + (chartCategoryCount + 1).toString());
+        writer.writeEndElement(); // end of f
+        writer.writeStartElement('c', cacheType, this.chartNamespace);
+        if (cacheType === 'numCache') {
+            writer.writeStartElement('c', 'formatCode', this.chartNamespace);
+            writer.writeString('General');
+            writer.writeEndElement(); // end of formatCode
+        }
+        writer.writeStartElement('c', 'ptCount', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, chartCategoryCount.toString());
+        writer.writeEndElement(); // end of ptCount
+        for (var i = 0; i < chartCategory.length; i++) {
+            var category = chartCategory[i];
+            writer.writeStartElement('c', 'pt', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'idx', undefined, i.toString());
+            writer.writeStartElement('c', 'v', this.chartNamespace);
+            if (category.categoryXName !== '') {
+                writer.writeString(category.categoryXName);
+            }
+            writer.writeEndElement(); // end of v
+            writer.writeEndElement(); // end of pt
+        }
+        writer.writeEndElement(); // end of cacheType
+    };
+    // chart value
+    WordExport.prototype.serializeChartValue = function (writer, valueSheet, chartType) {
+        var isScatterType = (chartType === 'scatterChart' || chartType === 'bubbleChart');
+        var valueType = 'val';
+        if (isScatterType) {
+            valueType = 'yVal';
+        }
+        this.serializeChartYValue(writer, valueType, valueSheet);
+        if (chartType === 'bubbleChart') {
+            valueType = 'bubbleSize';
+            valueSheet = 'Sheet1!$C$2:$C$';
+            this.serializeChartYValue(writer, valueType, valueSheet);
+        }
+        if (chartType === 'lineChart' || chartType === 'scatterChart') {
+            writer.writeStartElement('c', 'smooth', this.chartNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, '0');
+            writer.writeEndElement(); // end of smooth
+        }
+    };
+    WordExport.prototype.serializeChartYValue = function (writer, valueType, valueSheet) {
+        var chart = this.chart;
+        var chartCategory = chart.chartCategory;
+        var chartCategoryCount = chartCategory.length;
+        writer.writeStartElement('c', valueType, this.chartNamespace);
+        writer.writeStartElement('c', 'numRef', this.chartNamespace);
+        writer.writeStartElement('c', 'f', this.chartNamespace);
+        writer.writeString(valueSheet + (chartCategoryCount + 1).toString());
+        writer.writeEndElement(); // end of f
+        writer.writeStartElement('c', 'numCache', this.chartNamespace);
+        writer.writeStartElement('c', 'formatCode', this.chartNamespace);
+        writer.writeString('General');
+        writer.writeEndElement(); // end of formatCode
+        writer.writeStartElement('c', 'ptCount', this.chartNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, chartCategoryCount.toString());
+        writer.writeEndElement(); // end of ptCount
+        for (var j = 0; j < chartCategoryCount; j++) {
+            var category = chartCategory[j];
+            for (var k = 0; k < category.chartData.length; k++) {
+                if (k === this.seriesCount) {
+                    var chartData = category.chartData[this.seriesCount];
+                    writer.writeStartElement('c', 'pt', this.chartNamespace);
+                    writer.writeAttributeString(undefined, 'idx', undefined, j.toString());
+                    writer.writeStartElement('c', 'v', this.chartNamespace);
+                    if (valueType !== 'bubbleSize') {
+                        writer.writeString(chartData.yValue.toString());
+                    }
+                    else {
+                        writer.writeString(chartData.size.toString());
+                    }
+                    writer.writeEndElement(); // end of v
+                    writer.writeEndElement(); // end of pt
+                }
+            }
+        }
+        writer.writeEndElement(); // end of numCache
+        writer.writeEndElement(); // end of numRef
+        writer.writeEndElement(); // end of val
+    };
+    // chart type
+    WordExport.prototype.chartType = function (chart) {
+        var chartType = chart.chartType;
+        switch (chartType) {
+            case 'Pie':
+                chartType = 'pieChart';
+                break;
+            case 'Doughnut':
+                chartType = 'doughnutChart';
+                break;
+            case 'Scatter_Markers':
+                chartType = 'scatterChart';
+                break;
+            case 'Bubble':
+                chartType = 'bubbleChart';
+                break;
+        }
+        if (chartType === 'Area' || chartType === 'Area_Stacked' || chartType === 'Area_Stacked_100') {
+            chartType = 'areaChart';
+        }
+        if (chartType === 'Bar_Stacked_100' || chartType === 'Bar_Stacked' || chartType === 'Bar_Clustered' ||
+            chartType === 'Column_Clustered' || chartType === 'Column_Stacked' || chartType === 'Column_Stacked_100') {
+            chartType = 'barChart';
+        }
+        if (chartType === 'Line' || chartType === 'Line_Markers' || chartType === 'Line_Markers_Stacked' || chartType === 'Line_Stacked'
+            || chartType === 'Line_Markers_Stacked_100' || chartType === 'Line_Stacked_100') {
+            chartType = 'lineChart';
+        }
+        return chartType;
+    };
+    // chart group
+    WordExport.prototype.chartGrouping = function (type) {
+        var grouping = 'standard';
+        if (type === 'Bar_Stacked' || type === 'Column_Stacked' || type === 'Area_Stacked'
+            || type === 'Line_Stacked' || type === 'Line_Markers_Stacked') {
+            grouping = 'stacked';
+        }
+        else if (type === 'Bar_Stacked_100' || type === 'Column_Stacked_100' ||
+            type === 'Area_Stacked_100' || type === 'Line_Stacked_100' ||
+            type === 'Line_Markers_Stacked_100') {
+            grouping = 'percentStacked';
+        }
+        else if (type === 'Bar_Clustered' || type === 'Column_Clustered') {
+            grouping = 'clustered';
+        }
+        return grouping;
+    };
+    // chart legend position
+    WordExport.prototype.chartLegendPosition = function (chart) {
+        var legendPosition = chart.position;
+        switch (legendPosition) {
+            case 'Top':
+                legendPosition = 't';
+                break;
+            case 'Bottom':
+                legendPosition = 'b';
+                break;
+            case 'Left':
+                legendPosition = 'l';
+                break;
+            case 'Right':
+                legendPosition = 'r';
+                break;
+            case 'Corner':
+                legendPosition = 'tr';
+                break;
+            default:
+                legendPosition = 'b';
+                break;
+        }
+        return legendPosition;
+    };
+    // update the chard id
+    WordExport.prototype.updatechartId = function (chart) {
+        var id = '';
+        if (id === '') {
+            id = this.addChartRelation(this.documentCharts, chart);
+        }
+        return id;
+    };
+    // adds the chart relation.
+    WordExport.prototype.addChartRelation = function (chartCollection, chart) {
+        var relationId = '';
+        relationId = this.getNextRelationShipID();
+        chartCollection.add(relationId, chart);
+        return relationId;
     };
     WordExport.prototype.startsWith = function (sourceString, startString) {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
@@ -53250,6 +60922,14 @@ var WordExport = /** @__PURE__ @class */ (function () {
         writer.writeAttributeString(undefined, 'fldCharType', this.wNamespace, type);
         writer.writeEndElement();
         writer.writeEndElement();
+        if (field.fieldType === 0 && field.fieldCodeType === 'FieldFormTextInput') {
+            writer.writeStartElement('w', 'r', this.wNamespace);
+            writer.writeStartElement(undefined, 'instrText', this.wNamespace);
+            writer.writeAttributeString('xml', 'space', this.xmlNamespace, 'preserve');
+            writer.writeString('FORMTEXT');
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
     };
     // Serialize the text range.
     WordExport.prototype.serializeTextRange = function (writer, span, previousNode) {
@@ -53291,6 +60971,10 @@ var WordExport = /** @__PURE__ @class */ (function () {
         }
         if (paragraphFormat.bidi) {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
+            writer.writeEndElement();
+        }
+        if (paragraphFormat.contextualSpacing) {
+            writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
             writer.writeEndElement();
         }
         this.serializeParagraphSpacing(writer, paragraphFormat);
@@ -54029,6 +61713,30 @@ var WordExport = /** @__PURE__ @class */ (function () {
         writer.writeAttributeString(undefined, 'val', this.wNamespace, fc);
         writer.writeEndElement();
     };
+    WordExport.prototype.serializeDocumentProtectionSettings = function (writer) {
+        writer.writeStartElement('w', 'documentProtection', this.wNamespace);
+        if (this.formatting) {
+            writer.writeAttributeString('w', 'formatting', this.wNamespace, '1');
+        }
+        if (this.protectionType && this.protectionType === 'ReadOnly') {
+            writer.writeAttributeString('w', 'edit', this.wNamespace, 'readOnly');
+        }
+        writer.writeAttributeString('w', 'cryptProviderType', this.wNamespace, 'rsaAES');
+        writer.writeAttributeString('w', 'cryptAlgorithmClass', this.wNamespace, 'hash');
+        writer.writeAttributeString('w', 'cryptAlgorithmType', this.wNamespace, 'typeAny');
+        writer.writeAttributeString('w', 'cryptAlgorithmSid', this.wNamespace, '14');
+        writer.writeAttributeString('w', 'cryptSpinCount', this.wNamespace, '100000');
+        if (this.enforcement) {
+            writer.writeAttributeString('w', 'enforcement', this.wNamespace, '1');
+        }
+        if (this.hashValue) {
+            writer.writeAttributeString('w', 'hash', this.wNamespace, this.hashValue);
+        }
+        if (this.saltValue) {
+            writer.writeAttributeString('w', 'salt', this.wNamespace, this.saltValue);
+        }
+        writer.writeEndElement();
+    };
     WordExport.prototype.serializeSettings = function () {
         var writer = new XmlWriter();
         writer.writeStartElement('w', 'settings', this.wNamespace);
@@ -54044,12 +61752,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
         writer.writeAttributeString('xmlns', 'sl', undefined, this.slNamespace);
         writer.writeAttributeString('mc', 'Ignorable', undefined, 'w14 w15');
         // //w:writeProtection - Write Protection
-        // if (m_document.WriteProtected)
-        // {
-        //     writer.writeStartElement('w', 'writeProtection', this.wNamespace);
-        //     writer.writeAttributeString('recommended', this.wNamespace, '1');
-        //     writer.writeEndElement();
-        // }
+        this.serializeDocumentProtectionSettings(writer);
         //w:view - Document View Setting
         // if (this.mDocument.ViewSetup.DocumentViewType !== DocumentViewType.PrintLayout &&
         //   m_document.ViewSetup.DocumentViewType !== DocumentViewType.NormalLayout)
@@ -54255,6 +61958,8 @@ var WordExport = /** @__PURE__ @class */ (function () {
         // SerializeIncludePictureUrlRelations(docRelstream, InclPicFieldUrl);
         // //// Creating relationships for every hyperlink and image containing in the document
         this.serializeImagesRelations(this.documentImages, writer);
+        // serialize chart relations
+        this.serializeChartDocumentRelations(this.documentCharts, writer);
         // SerializeSvgImageRelation();
         //this.serializeExternalLinkImages(writer);
         // if (HasHyperlink && HyperlinkTargets.length > 0) {
@@ -54267,6 +61972,29 @@ var WordExport = /** @__PURE__ @class */ (function () {
         var zipArchiveItem = new ZipArchiveItem(writer.buffer, this.wordRelationPath);
         this.mArchive.addItem(zipArchiveItem);
         this.headerFooter = undefined;
+    };
+    // serialize chart relations
+    WordExport.prototype.serializeChartDocumentRelations = function (charts, writer) {
+        if (charts.length > 0) {
+            var keys = charts.keys;
+            for (var i = 1; i <= keys.length; i++) {
+                this.serializeRelationShip(writer, keys[i - 1], this.chartRelType, 'charts/chart' + i + '.xml');
+            }
+        }
+    };
+    WordExport.prototype.serializeChartRelations = function () {
+        var writer = new XmlWriter();
+        this.resetChartRelationShipId();
+        writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
+        var chartColorPath = 'colors' + this.chartCount + '.xml';
+        var chartRelationPath = this.chartPath + '/_rels/chart' + this.chartCount + '.xml.rels';
+        var chartExcelPath = '../embeddings/Microsoft_Excel_Worksheet' + this.chartCount + '.xlsx';
+        // tslint:disable-next-line:max-line-length
+        this.serializeRelationShip(writer, this.getNextChartRelationShipID(), this.packageRelType, chartExcelPath);
+        this.serializeRelationShip(writer, this.getNextChartRelationShipID(), this.chartColorStyleRelType, chartColorPath);
+        writer.writeEndElement(); // end of relationships
+        var zipArchiveItem = new ZipArchiveItem(writer.buffer, chartRelationPath);
+        this.mArchive.addItem(zipArchiveItem);
     };
     // Serializes the image relations
     WordExport.prototype.serializeImagesRelations = function (images, writer) {
@@ -54309,11 +62037,11 @@ var WordExport = /** @__PURE__ @class */ (function () {
         var chr1;
         var chr2;
         var chr3;
-        var enc1;
-        var enc2;
-        var enc3;
-        var enc4;
-        var i = 0;
+        var encode1;
+        var encode2;
+        var encode3;
+        var encode4;
+        var count = 0;
         var resultIndex = 0;
         /*let dataUrlPrefix: string = 'data:';*/
         input = input.replace(/[^A-Za-z0-9\+\/\=]/g, '');
@@ -54334,19 +62062,19 @@ var WordExport = /** @__PURE__ @class */ (function () {
             throw new Error('Invalid base64 input, bad content length.');
         }
         var output = new Uint8Array(totalLength | 0);
-        while (i < input.length) {
-            enc1 = keyStr.indexOf(input.charAt(i++));
-            enc2 = keyStr.indexOf(input.charAt(i++));
-            enc3 = keyStr.indexOf(input.charAt(i++));
-            enc4 = keyStr.indexOf(input.charAt(i++));
-            chr1 = (enc1 << 2) | (enc2 >> 4);
-            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-            chr3 = ((enc3 & 3) << 6) | enc4;
+        while (count < input.length) {
+            encode1 = keyStr.indexOf(input.charAt(count++));
+            encode2 = keyStr.indexOf(input.charAt(count++));
+            encode3 = keyStr.indexOf(input.charAt(count++));
+            encode4 = keyStr.indexOf(input.charAt(count++));
+            chr1 = (encode1 << 2) | (encode2 >> 4);
+            chr2 = ((encode2 & 15) << 4) | (encode3 >> 2);
+            chr3 = ((encode3 & 3) << 6) | encode4;
             output[resultIndex++] = chr1;
-            if (enc3 !== 64) {
+            if (encode3 !== 64) {
                 output[resultIndex++] = chr2;
             }
-            if (enc4 !== 64) {
+            if (encode4 !== 64) {
                 output[resultIndex++] = chr3;
             }
         }
@@ -54488,6 +62216,16 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.serializeOverrideContentType(writer, this.stylePath, this.stylesContentType);
         //settings.xml
         this.serializeOverrideContentType(writer, this.settingsPath, this.settingsContentType);
+        //charts.xml
+        if (this.chartCount > 0) {
+            var count = 1;
+            this.serializeDefaultContentType(writer, 'xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            while (count <= this.chartCount) {
+                this.serializeOverrideContentType(writer, 'word/charts/chart' + count + '.xml', this.chartsContentType);
+                this.serializeOverrideContentType(writer, 'word/charts/colors' + count + '.xml', this.chartColorStyleContentType);
+                count++;
+            }
+        }
         //             //core.xml
         //             SerializeOverrideContentType(contentStream, this.corePath, this.CoreContentType);
         //             //app.xml
@@ -54554,6 +62292,12 @@ var WordExport = /** @__PURE__ @class */ (function () {
     // Reset the relationship id counter
     WordExport.prototype.resetRelationShipID = function () {
         this.mRelationShipID = 0;
+    };
+    WordExport.prototype.resetExcelRelationShipId = function () {
+        this.eRelationShipId = 0;
+    };
+    WordExport.prototype.resetChartRelationShipId = function () {
+        this.cRelationShipId = 0;
     };
     WordExport.prototype.close = function () {
         //Implement
@@ -54745,6 +62489,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.viewer = undefined;
         this.document = undefined;
         this.writeInlineStyles = undefined;
+        this.editRangeId = -1;
         this.viewer = owner;
     }
     SfdtExport.prototype.getModuleName = function () {
@@ -54776,6 +62521,20 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             resolve(blob);
         });
     };
+    SfdtExport.prototype.updateEditRangeId = function () {
+        var index = -1;
+        for (var i = 0; i < this.viewer.editRanges.keys.length; i++) {
+            var keys = this.viewer.editRanges.keys;
+            for (var j = 0; j < keys[i].length; j++) {
+                var editRangeStart = this.viewer.editRanges.get(keys[i]);
+                for (var z = 0; z < editRangeStart.length; z++) {
+                    index++;
+                    editRangeStart[z].editRangeId = index;
+                    editRangeStart[z].editRangeEnd.editRangeId = index;
+                }
+            }
+        }
+    };
     // tslint:disable-next-line:max-line-length
     /**
      * @private
@@ -54790,6 +62549,12 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
         this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
         this.document.defaultTabWidth = this.viewer.defaultTabWidth;
+        this.document.enforcement = this.viewer.isDocumentProtected;
+        this.document.hashValue = this.viewer.hashValue;
+        this.document.saltValue = this.viewer.saltValue;
+        this.document.formatting = this.viewer.restrictFormatting;
+        this.document.protectionType = this.viewer.protectionType;
+        this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             // For selection
             var startPara = line.paragraph;
@@ -54994,6 +62759,12 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
         if (element instanceof FieldElementBox) {
             inline.fieldType = element.fieldType;
+            if (element.fieldCodeType && element.fieldCodeType !== '') {
+                inline.fieldCodeType = element.fieldCodeType;
+            }
+        }
+        else if (element instanceof ChartElementBox) {
+            this.writeChart(element, inline);
         }
         else if (element instanceof ImageElementBox) {
             inline.imageString = element.imageString;
@@ -55005,12 +62776,231 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             inline.name = element.name;
         }
         else if (element instanceof TextElementBox) {
-            inline.text = element.text;
+            // replacing the no break hyphen character by '-'
+            if (element.text.indexOf('\u001e') !== -1) {
+                inline.text = element.text.replace('\u001e', '-');
+            }
+            else if (element.text.indexOf('\u001f') !== -1) {
+                inline.text = element.text.replace('\u001f', '');
+            }
+            else {
+                inline.text = element.text;
+            }
+        }
+        else if (element instanceof EditRangeStartElementBox) {
+            inline.user = element.user;
+            inline.group = element.group;
+            inline.columnFirst = element.columnFirst;
+            inline.columnLast = element.columnLast;
+            inline.editRangeId = element.editRangeId.toString();
+        }
+        else if (element instanceof EditRangeEndElementBox) {
+            inline.editRangeStart = {
+                'user': element.editRangeStart.user,
+                'group': element.editRangeStart.group,
+                'columnFirst': element.editRangeStart.columnFirst,
+                'columnLast': element.editRangeStart.columnLast
+            };
+            inline.editRangeId = element.editRangeId.toString();
         }
         else {
             inline = undefined;
         }
         return inline;
+    };
+    SfdtExport.prototype.writeChart = function (element, inline) {
+        inline.chartLegend = {};
+        inline.chartTitleArea = {};
+        inline.chartArea = {};
+        inline.plotArea = {};
+        inline.chartCategory = [];
+        inline.chartSeries = [];
+        inline.chartPrimaryCategoryAxis = {};
+        inline.chartPrimaryValueAxis = {};
+        this.writeChartTitleArea(element.chartTitleArea, inline.chartTitleArea);
+        this.writeChartArea(element.chartArea, inline.chartArea);
+        this.writeChartArea(element.chartPlotArea, inline.plotArea);
+        this.writeChartCategory(element, inline.chartCategory);
+        this.createChartSeries(element, inline.chartSeries);
+        this.writeChartLegend(element.chartLegend, inline.chartLegend);
+        this.writeChartCategoryAxis(element.chartPrimaryCategoryAxis, inline.chartPrimaryCategoryAxis);
+        this.writeChartCategoryAxis(element.chartPrimaryValueAxis, inline.chartPrimaryValueAxis);
+        if (element.chartDataTable.showSeriesKeys !== undefined) {
+            inline.chartDataTable = {};
+            this.writeChartDataTable(element.chartDataTable, inline.chartDataTable);
+        }
+        inline.chartTitle = element.title;
+        inline.chartType = element.type;
+        inline.gapWidth = element.chartGapWidth;
+        inline.overlap = element.chartOverlap;
+        inline.height = HelperMethods.convertPixelToPoint(element.height);
+        inline.width = HelperMethods.convertPixelToPoint(element.width);
+    };
+    SfdtExport.prototype.writeChartTitleArea = function (titleArea, chartTitleArea) {
+        chartTitleArea.fontName = titleArea.chartfontName;
+        chartTitleArea.fontSize = titleArea.chartFontSize;
+        chartTitleArea.layout = {};
+        chartTitleArea.dataFormat = this.writeChartDataFormat(titleArea.dataFormat);
+        this.writeChartLayout(titleArea.layout, chartTitleArea.layout);
+    };
+    SfdtExport.prototype.writeChartDataFormat = function (format) {
+        var chartDataFormat = {};
+        chartDataFormat.fill = {};
+        chartDataFormat.line = {};
+        chartDataFormat.fill.foreColor = format.fill.color;
+        chartDataFormat.fill.rgb = format.fill.rgb;
+        chartDataFormat.line.color = format.line.color;
+        chartDataFormat.line.rgb = format.line.rgb;
+        return chartDataFormat;
+    };
+    SfdtExport.prototype.writeChartLayout = function (layout, chartLayout) {
+        chartLayout.layoutX = layout.chartLayoutLeft;
+        chartLayout.layoutY = layout.chartLayoutTop;
+    };
+    SfdtExport.prototype.writeChartArea = function (area, chartArea) {
+        chartArea.foreColor = area.chartForeColor;
+    };
+    SfdtExport.prototype.writeChartLegend = function (legend, chartLegend) {
+        chartLegend.position = legend.chartLegendPostion;
+        chartLegend.chartTitleArea = {};
+        this.writeChartTitleArea(legend.chartTitleArea, chartLegend.chartTitleArea);
+    };
+    SfdtExport.prototype.writeChartCategoryAxis = function (categoryAxis, primaryCategoryAxis) {
+        primaryCategoryAxis.chartTitle = categoryAxis.categoryAxisTitle;
+        primaryCategoryAxis.chartTitleArea = {};
+        this.writeChartTitleArea(categoryAxis.chartTitleArea, primaryCategoryAxis.chartTitleArea);
+        primaryCategoryAxis.categoryType = categoryAxis.categoryAxisType;
+        primaryCategoryAxis.fontSize = categoryAxis.axisFontSize;
+        primaryCategoryAxis.fontName = categoryAxis.axisFontName;
+        primaryCategoryAxis.numberFormat = categoryAxis.categoryNumberFormat;
+        primaryCategoryAxis.maximumValue = categoryAxis.max;
+        primaryCategoryAxis.minimumValue = categoryAxis.min;
+        primaryCategoryAxis.majorUnit = categoryAxis.interval;
+        primaryCategoryAxis.hasMajorGridLines = categoryAxis.majorGridLines;
+        primaryCategoryAxis.hasMinorGridLines = categoryAxis.minorGridLines;
+        primaryCategoryAxis.majorTickMark = categoryAxis.majorTick;
+        primaryCategoryAxis.minorTickMark = categoryAxis.minorTick;
+        primaryCategoryAxis.tickLabelPosition = categoryAxis.tickPosition;
+    };
+    SfdtExport.prototype.writeChartDataTable = function (chartDataTable, dataTable) {
+        dataTable.showSeriesKeys = chartDataTable.showSeriesKeys;
+        dataTable.hasHorzBorder = chartDataTable.hasHorzBorder;
+        dataTable.hasVertBorder = chartDataTable.hasVertBorder;
+        dataTable.hasBorders = chartDataTable.hasBorders;
+    };
+    SfdtExport.prototype.writeChartCategory = function (element, chartCategory) {
+        var data = element.chartCategory;
+        chartCategory.chartData = [];
+        for (var i = 0; i < data.length; i++) {
+            var xData = data[i];
+            var categories = this.createChartCategory(xData, element.chartType);
+            chartCategory.push(categories);
+        }
+    };
+    SfdtExport.prototype.createChartCategory = function (data, type) {
+        var chartCategory = {};
+        chartCategory.chartData = [];
+        this.writeChartData(data, chartCategory.chartData, type);
+        chartCategory.categoryXName = data.categoryXName;
+        return chartCategory;
+    };
+    SfdtExport.prototype.writeChartData = function (element, chartData, type) {
+        var data = element.chartData;
+        for (var i = 0; i < data.length; i++) {
+            var yData = data[i];
+            var yCategory = this.createChartData(yData, type);
+            chartData.push(yCategory);
+        }
+    };
+    SfdtExport.prototype.createChartData = function (data, type) {
+        var chartData = {};
+        chartData.yValue = data.yValue;
+        if (type === 'Bubble') {
+            chartData.size = data.size;
+        }
+        return chartData;
+    };
+    SfdtExport.prototype.createChartSeries = function (element, chartSeries) {
+        var data = element.chartSeries;
+        var type = element.chartType;
+        for (var i = 0; i < data.length; i++) {
+            var yData = data[i];
+            var series = this.writeChartSeries(yData, type);
+            chartSeries.push(series);
+        }
+    };
+    SfdtExport.prototype.writeChartSeries = function (series, type) {
+        var isPieType = (type === 'Pie' || type === 'Doughnut');
+        var chartSeries = {};
+        var errorBar = {};
+        var errorBarData = series.errorBar;
+        chartSeries.dataPoints = [];
+        chartSeries.seriesName = series.seriesName;
+        if (isPieType) {
+            if (!isNullOrUndefined(series.firstSliceAngle)) {
+                chartSeries.firstSliceAngle = series.firstSliceAngle;
+            }
+            if (type === 'Doughnut') {
+                chartSeries.holeSize = series.doughnutHoleSize;
+            }
+        }
+        if (!isNullOrUndefined(series.dataLabels.labelPosition)) {
+            var dataLabel = this.writeChartDataLabels(series.dataLabels);
+            chartSeries.dataLabel = dataLabel;
+        }
+        if (!isNullOrUndefined(series.seriesFormat.markerStyle)) {
+            var seriesFormat = {};
+            var format = series.seriesFormat;
+            seriesFormat.markerStyle = format.markerStyle;
+            seriesFormat.markerSize = format.numberValue;
+            seriesFormat.markerColor = format.markerColor;
+            chartSeries.seriesFormat = seriesFormat;
+        }
+        if (!isNullOrUndefined(errorBarData.type)) {
+            errorBar.type = errorBarData.type;
+            errorBar.direction = errorBarData.direction;
+            errorBar.endStyle = errorBarData.endStyle;
+            errorBar.numberValue = errorBarData.numberValue;
+            chartSeries.errorBar = errorBarData;
+        }
+        if (series.trendLines.length > 0) {
+            chartSeries.trendLines = [];
+            for (var i = 0; i < series.trendLines.length; i++) {
+                var trendLine = this.writeChartTrendLines(series.trendLines[i]);
+                chartSeries.trendLines.push(trendLine);
+            }
+        }
+        for (var i = 0; i < series.chartDataFormat.length; i++) {
+            var format = this.writeChartDataFormat(series.chartDataFormat[i]);
+            chartSeries.dataPoints.push(format);
+        }
+        return chartSeries;
+    };
+    SfdtExport.prototype.writeChartDataLabels = function (dataLabels) {
+        var dataLabel = {};
+        dataLabel.position = dataLabels.position;
+        dataLabel.fontName = dataLabels.fontName;
+        dataLabel.fontColor = dataLabels.fontColor;
+        dataLabel.fontSize = dataLabels.fontSize;
+        dataLabel.isLegendKey = dataLabels.isLegendKey;
+        dataLabel.isBubbleSize = dataLabels.isBubbleSize;
+        dataLabel.isCategoryName = dataLabels.isCategoryName;
+        dataLabel.isSeriesName = dataLabels.isSeriesName;
+        dataLabel.isValue = dataLabels.isValue;
+        dataLabel.isPercentage = dataLabels.isPercentage;
+        dataLabel.isLeaderLines = dataLabels.isLeaderLines;
+        return dataLabel;
+    };
+    SfdtExport.prototype.writeChartTrendLines = function (trendLines) {
+        var trendLine = {};
+        trendLine.name = trendLines.trendLineName;
+        trendLine.type = trendLines.trendLineType;
+        trendLine.forward = trendLines.forwardValue;
+        trendLine.backward = trendLines.backwardValue;
+        trendLine.intercept = trendLines.interceptValue;
+        trendLine.isDisplayEquation = trendLines.isDisplayEquation;
+        trendLine.isDisplayRSquared = trendLines.isDisplayRSquared;
+        return trendLine;
     };
     SfdtExport.prototype.writeLines = function (paragraph, lineIndex, offset, inlines) {
         var startIndex = lineIndex;
@@ -55093,6 +63083,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         paragraphFormat.listFormat = this.writeListFormat(format.listFormat, isInline);
         paragraphFormat.tabs = this.writeTabs(format.tabs);
         paragraphFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
+        paragraphFormat.contextualSpacing = isInline ? format.contextualSpacing : format.getValue('contextualSpacing');
         if (this.writeInlineStyles && !isInline) {
             paragraphFormat.inlineFormat = this.writeParagraphFormat(format, true);
         }
@@ -57437,6 +65428,7 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
         this.lineSpacingType = undefined;
         this.paragraphFormat = undefined;
         this.bidi = undefined;
+        this.contextualSpacing = undefined;
         this.isStyleDialog = false;
         this.directionDiv = undefined;
         /**
@@ -57478,6 +65470,9 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
                 _this.bidi = true;
             }
             _this.changeAlignmentByBidi();
+        };
+        this.changeContextualSpacing = function (args) {
+            _this.contextualSpacing = args.checked;
         };
         /**
          * @private
@@ -57578,6 +65573,7 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
                 _this.ltrButton.checked = true;
                 _this.rtlButton.checked = false;
             }
+            _this.contextSpacing.checked = selectionFormat.contextualSpacing;
         };
         /**
          * @private
@@ -57619,6 +65615,9 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
             }
             if (!isNullOrUndefined(_this.textAlignment)) {
                 paraFormat.textAlignment = _this.textAlignment;
+            }
+            if (!isNullOrUndefined(_this.contextualSpacing)) {
+                paraFormat.contextualSpacing = _this.contextualSpacing;
             }
             if (isApply) {
                 _this.onParagraphFormat(paraFormat);
@@ -57714,12 +65713,19 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
         var rightIndentionDiv = createElement('div', { className: 'e-de-para-dlg-right-sub-container', styles: 'float:right;position:relative;' });
         indentionDiv.appendChild(rightIndentionDiv);
         // tslint:disable-next-line:max-line-length
-        var spacingDiv = createElement('div', { id: 'spacing_div', styles: 'width: 400px;height: 150px;float:left;', className: 'e-de-para-dlg-sub-container' });
+        var spacingDiv = createElement('div', { id: 'spacing_div' });
         var leftSpacingDiv = createElement('div', { id: 'left_spacing', styles: 'float:left;position:relative;' });
         spacingDiv.appendChild(leftSpacingDiv);
+        var contextSpacingDiv = createElement('div', { id: 'context_spacing', styles: 'float:left;position:relative;' });
+        spacingDiv.appendChild(contextSpacingDiv);
         // tslint:disable-next-line:max-line-length
-        var rightSpacingDiv = createElement('div', { className: 'e-de-para-dlg-right-sub-container', styles: 'float:right;position:relative;' });
+        var rightSpacingDiv = createElement('div', { styles: 'display:inline-flex;' });
         spacingDiv.appendChild(rightSpacingDiv);
+        var contextInputEle = createElement('input', {
+            attrs: { type: 'checkbox' },
+            id: ownerId + '_contextSpacing'
+        });
+        contextSpacingDiv.appendChild(contextInputEle);
         // tslint:disable-next-line:max-line-length
         var indentLabel = createElement('div', {
             id: ownerId + '_indentLabel', className: 'e-de-para-dlg-heading', innerHTML: locale.getConstant('Indentation')
@@ -57754,9 +65760,26 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
         rightIndentionDiv.appendChild(by);
         // tslint:disable-next-line:max-line-length
         var spaceLabel = createElement('div', { innerHTML: locale.getConstant('Spacing'), className: 'e-de-para-dlg-heading', id: ownerId + '_spaceLabel' });
+        var spacingWholeDiv = createElement('div', { id: ownerId + '_spacingWholeDiv', styles: 'display:inline-flex;' });
+        var beforeSpacingWholeDiv = createElement('div', { id: ownerId + '_beforeSpacingWholeDiv' });
+        // tslint:disable-next-line:max-line-length
         var beforeLabel = createElement('div', { className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Before'), id: ownerId + '_beforeLabel' });
         // tslint:disable-next-line:max-line-length
         var beforeSpacing = createElement('input', { id: ownerId + '_beforeSpacing', attrs: { 'type': 'text' } });
+        var afterSpacingWholeDiv = createElement('div', { id: ownerId + '_afterSpacingWholeDiv', className: 'e-de-para-dlg-spacing-div' });
+        // tslint:disable-next-line:max-line-length
+        var afterLabel = createElement('div', { innerHTML: locale.getConstant('After'), className: 'e-de-dlg-sub-header', id: ownerId + '_afterLabel' });
+        var afterSpacing = createElement('input', { id: ownerId + '_afterSpacing', attrs: { 'type': 'text' } });
+        leftSpacingDiv.appendChild(spaceLabel);
+        leftSpacingDiv.appendChild(spacingWholeDiv);
+        beforeSpacingWholeDiv.appendChild(beforeLabel);
+        beforeSpacingWholeDiv.appendChild(beforeSpacing);
+        spacingWholeDiv.appendChild(beforeSpacingWholeDiv);
+        afterSpacingWholeDiv.appendChild(afterLabel);
+        afterSpacingWholeDiv.appendChild(afterSpacing);
+        spacingWholeDiv.appendChild(afterSpacingWholeDiv);
+        var lineSpacingDiv = createElement('div', { id: ownerId + '_lineSpacingWholeDiv' });
+        // tslint:disable-next-line:max-line-length
         var lineSpaceLabel = createElement('div', { id: ownerId + '_lineSpaceLabel', className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Line Spacing') });
         // tslint:disable-next-line:max-line-length
         var lineSpacing = createElement('select', {
@@ -57765,21 +65788,17 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
                 '</option><option value="Exactly">' + locale.getConstant('Exactly') +
                 '</option><option value="Multiple">' + locale.getConstant('Multiple') + '</option>'
         });
-        leftSpacingDiv.appendChild(spaceLabel);
-        leftSpacingDiv.appendChild(beforeLabel);
-        leftSpacingDiv.appendChild(beforeSpacing);
-        leftSpacingDiv.appendChild(lineSpaceLabel);
-        leftSpacingDiv.appendChild(lineSpacing);
         // tslint:disable-next-line:max-line-length
-        var afterLabel = createElement('div', { innerHTML: locale.getConstant('After'), className: 'e-de-dlg-sub-header', id: ownerId + '_afterLabel' });
-        var afterSpacing = createElement('input', { id: ownerId + '_afterSpacing', attrs: { 'type': 'text' } });
+        var lineTypeDiv = createElement('div', { id: ownerId + '_lineTypeWholeDiv', className: 'e-de-para-dlg-spacing-div' });
         // tslint:disable-next-line:max-line-length
         var atLabel = createElement('div', { innerHTML: locale.getConstant('At'), id: ownerId + '_atLabel', className: 'e-de-dlg-sub-header' });
         var lineSpacingAt = createElement('input', { id: ownerId + '_lineSpacingAt', attrs: { 'type': 'text' } });
-        rightSpacingDiv.appendChild(afterLabel);
-        rightSpacingDiv.appendChild(afterSpacing);
-        rightSpacingDiv.appendChild(atLabel);
-        rightSpacingDiv.appendChild(lineSpacingAt);
+        lineSpacingDiv.appendChild(lineSpaceLabel);
+        lineSpacingDiv.appendChild(lineSpacing);
+        rightSpacingDiv.appendChild(lineSpacingDiv);
+        lineTypeDiv.appendChild(atLabel);
+        lineTypeDiv.appendChild(lineSpacingAt);
+        rightSpacingDiv.appendChild(lineTypeDiv);
         div.appendChild(generalDiv);
         div.appendChild(indentionDiv);
         div.appendChild(spacingDiv);
@@ -57816,6 +65835,13 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
         this.alignment = new DropDownList({ width: 180, change: this.changeByTextAlignment, enableRtl: isRtl });
         this.alignment.appendTo(alignment);
         this.atIn.appendTo(lineSpacingAt);
+        this.contextSpacing = new CheckBox({
+            change: this.changeContextualSpacing,
+            label: locale.getConstant("Don't add space between the paragraphs of the same styles"),
+            enableRtl: isRtl,
+            cssClass: 'e-de-para-dlg-cs-check-box'
+        });
+        this.contextSpacing.appendTo(contextInputEle);
         this.target.addEventListener('keyup', instance.keyUpParagraphSettings);
     };
     ParagraphDialog.prototype.changeAlignmentByBidi = function () {
@@ -59843,13 +67869,13 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
             this.listFormat.destroy();
             this.listFormat = undefined;
         }
-        if (this.abstractList) {
-            this.abstractList.destroy();
-            this.abstractList = undefined;
-        }
         if (this.tabObj) {
             this.tabObj.destroy();
             this.tabObj = undefined;
+        }
+        if (this.abstractList) {
+            this.abstractList.destroy();
+            this.abstractList = undefined;
         }
         if (this.target && this.target.parentElement) {
             this.target.parentElement.removeChild(this.target);
@@ -61767,6 +69793,7 @@ var BordersAndShadingDialog = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.cellFormat = new WCellFormat();
         this.tableFormat = new WTableFormat();
+        this.isShadingChanged = false;
         this.applyBordersShadingsProperties = function () {
             var tablePropertiesDialog = _this.owner.owner.tablePropertiesDialogModule;
             var selectedCell = _this.owner.selection.start.paragraph.associatedCell;
@@ -61845,6 +69872,7 @@ var BordersAndShadingDialog = /** @__PURE__ @class */ (function () {
                     shading.textureStyle = currentTableFormat.shading.textureStyle;
                 }
                 _this.tableFormat.shading = new WShading();
+                _this.isShadingChanged = currentTableFormat.shading.backgroundColor !== shading.backgroundColor;
                 editorModule.applyShading(_this.tableFormat.shading, shading);
             }
             _this.applyFormat();
@@ -62457,7 +70485,7 @@ var BordersAndShadingDialog = /** @__PURE__ @class */ (function () {
             editorModule.onCellFormat(this.cellFormat);
         }
         else {
-            editorModule.onTableFormat(this.tableFormat);
+            editorModule.onTableFormat(this.tableFormat, this.isShadingChanged);
         }
         if (!isNullOrUndefined(this.owner.owner.editorHistory.currentHistoryInfo)) {
             this.owner.owner.editorHistory.updateComplexHistory();
@@ -63645,6 +71673,14 @@ var StylesDialog = /** @__PURE__ @class */ (function () {
  */
 
 /**
+ * Spell checker export
+ */
+
+/**
+ * Restrict editing
+ */
+
+/**
  * Document Editor implementation
  */
 
@@ -63674,6 +71710,8 @@ var CLIPBOARD_ID = '_use_local_clipboard';
 var RESTRICT_EDITING_ID = '_restrict_edit';
 var PAGE_BREAK = '_page_break';
 var SECTION_BREAK = '_section_break';
+var READ_ONLY = '_read_only';
+var PROTECTIONS = '_protections';
 /**
  * Toolbar Module
  */
@@ -63683,6 +71721,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      */
     function Toolbar$$1(container) {
         this.container = container;
+        this.importHandler = new XmlHttpRequestHandler();
     }
     Object.defineProperty(Toolbar$$1.prototype, "documentEditor", {
         /**
@@ -63766,6 +71805,16 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         });
         this.toggleButton(id + CLIPBOARD_ID, this.container.enableLocalPaste);
         this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
+        var restrictEditing = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild;
+        var lockItems = {
+            items: [
+                { text: locale.getConstant('Read only'), id: id + READ_ONLY },
+                { text: locale.getConstant('Protections'), id: id + PROTECTIONS }
+            ],
+            cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+            select: this.onDropDownButtonSelect.bind(this)
+        };
+        var restrictDropDown = new DropDownButton(lockItems, restrictEditing);
     };
     Toolbar$$1.prototype.showHidePropertiesPane = function () {
         if (this.container.previousContext === 'TableOfContents' && this.container.showPropertiesPaneInternal) {
@@ -63898,7 +71947,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 },
                 {
                     prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing.'), id: id + RESTRICT_EDITING_ID,
-                    text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: 'e-de-toolbar-btn-end'
+                    text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: 'e-de-toolbar-btn-end e-de-lock-dropdownbutton'
                 }
             ]
         });
@@ -63949,9 +71998,6 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             case id + CLIPBOARD_ID:
                 this.toggleLocalPaste(args.item.id);
                 break;
-            case id + RESTRICT_EDITING_ID:
-                this.toggleEditing(args.item.id);
-                break;
         }
         if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
             this.container.documentEditor.focusIn();
@@ -63964,7 +72010,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     Toolbar$$1.prototype.toggleEditing = function (id) {
         this.container.restrictEditing = !this.container.restrictEditing;
         this.container.showPropertiesPane = !this.container.restrictEditing;
-        this.toggleButton(id, this.container.restrictEditing);
+        // this.toggleButton(id, this.container.restrictEditing);
     };
     Toolbar$$1.prototype.toggleButton = function (id, toggle) {
         var element = document.getElementById(id);
@@ -63995,6 +72041,13 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         else if (id === parentId + INSERT_IMAGE_ONLINE_ID) {
             // Need to implement image dialog;
         }
+        else if (id === parentId + READ_ONLY) {
+            this.container.restrictEditing = !this.container.restrictEditing;
+            this.container.showPropertiesPane = !this.container.restrictEditing;
+        }
+        else if (id === parentId + PROTECTIONS) {
+            this.documentEditor.viewer.restrictEditingPane.showHideRestrictPane(true);
+        }
         setTimeout(function () { _this.documentEditor.focusIn(); }, 30);
     };
     Toolbar$$1.prototype.onFileChange = function () {
@@ -64015,25 +72068,31 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.convertToSfdt = function (file) {
-        var _this = this;
-        var httpRequest = new XMLHttpRequest();
-        httpRequest.open('POST', this.container.serviceUrl, true);
-        httpRequest.onreadystatechange = function () {
-            if (httpRequest.readyState === 4) {
-                if (httpRequest.status === 200 || httpRequest.status === 304) {
-                    _this.container.documentEditor.open(httpRequest.responseText);
-                }
-                else {
-                    alert('Failed to load the file');
-                }
-                hideSpinner(_this.container.containerTarget);
-            }
-        };
+        showSpinner(this.container.containerTarget);
+        this.importHandler.url = this.container.serviceUrl + this.container.serverActionSettings.import;
+        this.importHandler.onSuccess = this.successHandler.bind(this);
+        this.importHandler.onFailure = this.failureHandler.bind(this);
+        this.importHandler.onError = this.failureHandler.bind(this);
         var formData = new FormData();
         formData.append('files', file);
-        httpRequest.send(formData);
-        showSpinner(this.container.containerTarget);
+        this.importHandler.send(formData);
     };
+    /* tslint:disable:no-any */
+    Toolbar$$1.prototype.failureHandler = function (args) {
+        if (args.name === 'onError') {
+            // tslint:disable-next-line:max-line-length
+            DialogUtility.alert({ content: this.container.localObj.getConstant('Error in establishing connection with web server'), closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' } });
+        }
+        else {
+            alert('Failed to load the file');
+        }
+        hideSpinner(this.container.containerTarget);
+    };
+    Toolbar$$1.prototype.successHandler = function (result) {
+        this.container.documentEditor.open(result.data);
+        hideSpinner(this.container.containerTarget);
+    };
+    /* tslint:enable:no-any */
     Toolbar$$1.prototype.onImageChange = function () {
         var _this = this;
         var file = this.imagePicker.files[0];
@@ -64054,7 +72113,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Toolbar$$1.prototype.enableDisableToolBarItem = function (enable) {
+    Toolbar$$1.prototype.enableDisableToolBarItem = function (enable, isProtectedContent) {
         var id = this.container.element.id + TOOLBAR_ID;
         for (var _i = 0, _a = this.toolbar.items; _i < _a.length; _i++) {
             var item = _a[_i];
@@ -64065,7 +72124,12 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 this.toolbar.enableItems(element.parentElement, enable);
             }
         }
-        classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
+        if (!isProtectedContent) {
+            classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
+        }
+        if (enable) {
+            this.enableDisableUndoRedo();
+        }
     };
     /**
      * @private
@@ -65518,6 +73582,14 @@ var TextProperties = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    TextProperties.prototype.enableDisableElements = function (enable) {
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        }
+        else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    };
     TextProperties.prototype.updateStyles = function () {
         this.paragraph.updateStyleNames();
     };
@@ -65673,6 +73745,17 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * @private
+     */
+    HeaderFooterProperties.prototype.enableDisableElements = function (enable) {
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        }
+        else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    };
     HeaderFooterProperties.prototype.initHeaderFooterPane = function () {
         this.initializeHeaderFooter();
         this.element.style.display = 'none';
@@ -65994,6 +74077,17 @@ var ImageProperties = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * @private
+     */
+    ImageProperties.prototype.enableDisableElements = function (enable) {
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        }
+        else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    };
     ImageProperties.prototype.showImageProperties = function (isShow) {
         if (this.element.style.display === 'block') {
             this.updateImageProperties();
@@ -66293,6 +74387,17 @@ var TocProperties = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * @private
+     */
+    TocProperties.prototype.enableDisableElements = function (enable) {
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        }
+        else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    };
     /* tslint:disable */
     TocProperties.prototype.createDropdownOption = function (ulTag, text) {
         var liTag = createElement('li', {
@@ -66901,6 +75006,18 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * @private
+     */
+    TableProperties.prototype.enableDisableElements = function (enable) {
+        this.textProperties.enableDisableElements(enable);
+        if (enable) {
+            classList(this.element, [], ['e-de-overlay']);
+        }
+        else {
+            classList(this.element, ['e-de-overlay'], []);
+        }
+    };
     // tslint:disable-next-line:max-line-length
     TableProperties.prototype.createButtonTemplate = function (id, iconcss, div, buttonClass, styles, toolTipText, content, iconPos) {
         var buttonElement = createElement('Button', { id: id, styles: styles, attrs: { type: 'button' } });
@@ -66965,11 +75082,14 @@ var StatusBar = /** @__PURE__ @class */ (function () {
         this.startPage = 1;
         this.initializeStatusBar = function () {
             var isRtl = _this.container.enableRtl;
+            _this.documentEditor.enableSpellCheck = (_this.container.enableSpellCheck) ? true : false;
+            // tslint:disable-next-line:max-line-length
             _this.localObj = new L10n('documenteditorcontainer', _this.container.defaultLocale, _this.container.locale);
             // tslint:disable-next-line:max-line-length
             var styles = 'padding-top:8px;';
             styles += isRtl ? 'padding-right:16px' : 'padding-left:16px';
-            var div = createElement('div', { className: 'e-de-ctnr-pg-no', styles: styles });
+            // tslint:disable-next-line:max-line-length
+            var div = createElement('div', { className: (_this.container.enableSpellCheck) ? 'e-de-ctnr-pg-no' : 'e-de-ctnr-pg-no-spellout', styles: styles });
             _this.statusBarDiv.appendChild(div);
             var label = createElement('label');
             label.textContent = _this.localObj.getConstant('Page') + ' ';
@@ -66996,8 +75116,15 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             _this.pageCount = createElement('label');
             div.appendChild(_this.pageCount);
             _this.updatePageCount();
+            if (_this.documentEditor.enableSpellCheck) {
+                var verticalLine = createElement('div', { className: 'e-de-statusbar-seperator' });
+                _this.statusBarDiv.appendChild(verticalLine);
+                var spellCheckBtn = _this.addSpellCheckElement();
+                _this.spellCheckButton.appendTo(spellCheckBtn);
+            }
             var zoomBtn = createElement('button', {
-                className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
+                // tslint:disable-next-line:max-line-length
+                className: (_this.container.enableSpellCheck) ? 'e-de-statusbar-zoom-spell' : 'e-de-statusbar-zoom', attrs: { type: 'button' }
             });
             _this.statusBarDiv.appendChild(zoomBtn);
             zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
@@ -67043,8 +75170,38 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             _this.setZoomValue(args.item.text);
             _this.updateZoomContent();
         };
+        this.onSpellCheck = function (args) {
+            _this.setSpellCheckValue(args.item.text, args.element);
+        };
         this.updateZoomContent = function () {
             _this.zoom.content = Math.round(_this.documentEditor.zoomFactor * 100) + '%';
+        };
+        this.setSpellCheckValue = function (text, element) {
+            _this.spellCheckButton.content = 'Spelling';
+            if (text.match(_this.localObj.getConstant('Spell Check'))) {
+                _this.documentEditor.enableSpellCheck = (_this.documentEditor.enableSpellCheck) ? false : true;
+                setTimeout(function () {
+                    if (_this.documentEditor.enableSpellCheck) {
+                        _this.documentEditor.spellChecker.languageID = _this.currentLanguage;
+                        _this.documentEditor.spellChecker.allowSpellCheckAndSuggestion = _this.allowSuggestion;
+                        _this.documentEditor.viewer.triggerElementsOnLoading = true;
+                        _this.documentEditor.viewer.triggerSpellCheck = true;
+                    }
+                    _this.documentEditor.editor.reLayout(_this.documentEditor.viewer.selection);
+                    /* tslint:disable */
+                }, 50);
+                /* tslint:enable */
+                _this.documentEditor.viewer.triggerSpellCheck = false;
+                _this.documentEditor.viewer.triggerElementsOnLoading = false;
+                // tslint:disable-next-line:max-line-length
+            }
+            else if (text.match(_this.localObj.getConstant('Underline errors'))) {
+                if (_this.documentEditor.enableSpellCheck) {
+                    // tslint:disable-next-line:max-line-length
+                    _this.documentEditor.spellChecker.removeUnderline = (_this.documentEditor.spellChecker.removeUnderline) ? false : true;
+                    _this.documentEditor.editor.reLayout(_this.documentEditor.viewer.selection);
+                }
+            }
         };
         this.setZoomValue = function (text) {
             if (text.match(_this.localObj.getConstant('Fit one page'))) {
@@ -67142,6 +75299,51 @@ var StatusBar = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    StatusBar.prototype.addSpellCheckElement = function () {
+        var _this = this;
+        var spellCheckBtn = createElement('button', {
+            className: 'e-de-statusbar-spellcheck'
+        });
+        this.statusBarDiv.appendChild(spellCheckBtn);
+        spellCheckBtn.setAttribute('title', 'Spell Checker options');
+        var spellCheckItems = [
+            {
+                text: 'Spell Check',
+            },
+            {
+                text: 'Underline errors',
+            },
+        ];
+        // tslint:disable-next-line:max-line-length
+        this.spellCheckButton = new DropDownButton({
+            content: 'Spelling', items: spellCheckItems, enableRtl: this.container.enableRtl, select: this.onSpellCheck,
+            beforeItemRender: function (args) {
+                args.element.innerHTML = '<span></span>' + args.item.text;
+                if (isNullOrUndefined(_this.currentLanguage)) {
+                    _this.currentLanguage = _this.documentEditor.spellChecker.languageID;
+                }
+                if (isNullOrUndefined(_this.allowSuggestion)) {
+                    _this.allowSuggestion = _this.documentEditor.spellChecker.allowSpellCheckAndSuggestion;
+                }
+                var span = args.element.children[0];
+                if (args.item.text === 'Spell Check' && _this.documentEditor.enableSpellCheck) {
+                    span.style.marginRight = '10px';
+                    span.setAttribute('class', 'e-de-selected-spellcheck-item');
+                    // tslint:disable-next-line:max-line-length
+                }
+                else if (args.item.text === 'Underline errors' && _this.documentEditor.enableSpellCheck && !_this.documentEditor.spellChecker.removeUnderline) {
+                    span.style.marginRight = '10px';
+                    span.setAttribute('class', 'e-de-selected-underline-item');
+                }
+                else {
+                    span.style.marginRight = '25px';
+                    args.element.children[0].classList.remove('e-de-selected-spellcheck-item');
+                    args.element.children[0].classList.remove('e-de-selected-underline-item');
+                }
+            }
+        });
+        return spellCheckBtn;
+    };
     StatusBar.prototype.destroy = function () {
         this.container = undefined;
         if (this.zoom) {
@@ -67307,6 +75509,8 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             'Page': 'Page',
             'of': 'of',
             'Fit one page': 'Fit one page',
+            'Spell Check': 'Spell Check',
+            'Underline errors': 'Underline errors',
             'Fit page width': 'Fit page width',
             'Update': 'Update',
             'Cancel': 'Cancel',
@@ -67334,10 +75538,24 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                 ' 2. You can use the keyboard shortcuts (Ctrl+X, Ctrl+C and Ctrl+V) to cut, copy and paste with system clipboard.',
             'Restrict editing.': 'Restrict editing.',
             // tslint:disable-next-line:max-line-length
-            'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.'
+            'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.',
+            'Read only': 'Read only',
+            'Protections': 'Protections',
+            'Error in establishing connection with web server': 'Error in establishing connection with web server'
         };
         return _this;
     }
+    Object.defineProperty(DocumentEditorContainer.prototype, "documentEditor", {
+        /**
+         * Gets DocumentEditor instance.
+         * @asptype DocumentEditor
+         */
+        get: function () {
+            return this.documentEditorInternal;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * @private
      */
@@ -67353,7 +75571,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'restrictEditing':
                     if (this.toolbarModule) {
-                        this.toolbarModule.enableDisableToolBarItem(!newModel.restrictEditing);
+                        this.toolbarModule.enableDisableToolBarItem(!newModel.restrictEditing, false);
                     }
                     this.documentEditor.isReadOnly = newModel.restrictEditing;
                     break;
@@ -67364,6 +75582,17 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                     if (this.documentEditor) {
                         this.documentEditor.enableLocalPaste = newModel.enableLocalPaste;
                     }
+                    break;
+                case 'serviceUrl':
+                    if (this.documentEditor) {
+                        this.documentEditor.serviceUrl = newModel.serviceUrl;
+                    }
+                    break;
+                case 'serverActionSettings':
+                    if (this.documentEditor) {
+                        this.setserverActionSettings();
+                    }
+                    break;
             }
         }
     };
@@ -67391,6 +75620,21 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         this.statusBar = new StatusBar(this.statusBarElement, this);
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
+        this.setserverActionSettings();
+    };
+    DocumentEditorContainer.prototype.setserverActionSettings = function () {
+        if (this.serviceUrl) {
+            this.documentEditor.serviceUrl = this.serviceUrl;
+        }
+        if (this.serverActionSettings.spellCheck) {
+            this.documentEditor.serverActionSettings.spellCheck = this.serverActionSettings.spellCheck;
+        }
+        if (this.serverActionSettings.restrictEditing) {
+            this.documentEditor.serverActionSettings.restrictEditing = this.serverActionSettings.restrictEditing;
+        }
+        if (this.serverActionSettings.systemClipboard) {
+            this.documentEditor.serverActionSettings.systemClipboard = this.serverActionSettings.systemClipboard;
+        }
     };
     /**
      * @private
@@ -67441,7 +75685,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     DocumentEditorContainer.prototype.initializeDocumentEditor = function () {
         var id = this.element.id + '_editor';
         var documentEditorTarget = this.createElement('div', { id: id, styles: 'width:100%;height:100%' });
-        this.documentEditor = new DocumentEditor({
+        this.documentEditorInternal = new DocumentEditor({
             isReadOnly: false, enableRtl: this.enableRtl,
             selectionChange: this.onSelectionChange.bind(this),
             contentChange: this.onContentChange.bind(this),
@@ -67449,12 +75693,12 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             zoomFactorChange: this.onZoomFactorChange.bind(this),
             requestNavigate: this.onRequestNavigate.bind(this),
             viewChange: this.onViewChange.bind(this),
-            locale: this.locale
+            locale: this.locale,
+            acceptTab: true,
+            enableLocalPaste: this.enableLocalPaste,
+            pageOutline: '#E0E0E0'
         });
-        this.documentEditor.acceptTab = true;
-        this.documentEditor.enableLocalPaste = this.enableLocalPaste;
         this.documentEditor.enableAllModules();
-        this.documentEditor.pageOutline = '#E0E0E0';
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
@@ -67496,6 +75740,8 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
+        var eventArgs = { source: this };
+        this.trigger('documentChange', eventArgs);
     };
     /**
      * @private
@@ -67543,6 +75789,30 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     DocumentEditorContainer.prototype.showPropertiesPaneOnSelection = function () {
         if (this.restrictEditing) {
             return;
+        }
+        var isProtectedDocument = this.documentEditor.viewer.protectionType === 'ReadOnly';
+        var allowFormatting = isProtectedDocument && this.documentEditor.viewer.restrictFormatting;
+        var isSelectionInProtectecRegion = this.documentEditor.editor.restrictEditing;
+        if (isProtectedDocument) {
+            if (this.toolbarModule) {
+                this.toolbarModule.enableDisableToolBarItem(!isSelectionInProtectecRegion, true);
+            }
+            this.textProperties.enableDisableElements(!allowFormatting && !isSelectionInProtectecRegion);
+            this.tableProperties.enableDisableElements(!allowFormatting && !isSelectionInProtectecRegion);
+            this.tocProperties.enableDisableElements(!isSelectionInProtectecRegion);
+            this.headerFooterProperties.enableDisableElements(!isSelectionInProtectecRegion);
+            this.imageProperties.enableDisableElements(!isSelectionInProtectecRegion);
+        }
+        else {
+            var isReadOnly = !this.documentEditor.isReadOnly;
+            if (this.toolbarModule) {
+                this.toolbarModule.enableDisableToolBarItem(isReadOnly, true);
+            }
+            this.textProperties.enableDisableElements(isReadOnly);
+            this.tableProperties.enableDisableElements(true);
+            this.tocProperties.enableDisableElements(true);
+            this.headerFooterProperties.enableDisableElements(true);
+            this.imageProperties.enableDisableElements(true);
         }
         var currentContext = this.documentEditor.selection.contextType;
         var isInHeaderFooter = currentContext.indexOf('Header') >= 0
@@ -67610,10 +75880,10 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             this.toolbarContainer.parentElement.removeChild(this.toolbarContainer);
         }
         this.toolbarContainer = undefined;
-        if (this.documentEditor) {
-            this.documentEditor.destroy();
+        if (this.documentEditorInternal) {
+            this.documentEditorInternal.destroy();
         }
-        this.documentEditor = undefined;
+        this.documentEditorInternal = undefined;
         if (this.textProperties) {
             this.textProperties.destroy();
         }
@@ -67665,6 +75935,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DocumentEditorContainer.prototype, "restrictEditing", void 0);
     __decorate$1([
+        Property(false)
+    ], DocumentEditorContainer.prototype, "enableSpellCheck", void 0);
+    __decorate$1([
         Property(true)
     ], DocumentEditorContainer.prototype, "enableLocalPaste", void 0);
     __decorate$1([
@@ -67682,6 +75955,12 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], DocumentEditorContainer.prototype, "selectionChange", void 0);
+    __decorate$1([
+        Event()
+    ], DocumentEditorContainer.prototype, "documentChange", void 0);
+    __decorate$1([
+        Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
+    ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
     DocumentEditorContainer = __decorate$1([
         NotifyPropertyChanges
     ], DocumentEditorContainer);
@@ -67696,5 +75975,5 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
  * export document editor modules
  */
 
-export { Dictionary, WUniqueFormat, WUniqueFormats, DocumentEditor, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, LayoutViewer, PageLayoutViewer, Layout, Rect, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, TextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ImageElementBox, ListTextElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, Toolbar$1 as Toolbar, DocumentEditorContainer };
+export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, DocumentEditor, ServerActionSettings, ContainerServerActionSettings, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, LayoutViewer, PageLayoutViewer, Layout, Rect, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, Page, WTableHolder, WColumn, ColumnSizeInfo, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, Toolbar$1 as Toolbar, DocumentEditorContainer };
 //# sourceMappingURL=ej2-documenteditor.es5.js.map

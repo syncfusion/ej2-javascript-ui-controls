@@ -113,6 +113,7 @@ export class Command extends ChildProperty<Command> {
      * Check the command is executable at the moment or not
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public canExecute: Function | string;
@@ -120,6 +121,7 @@ export class Command extends ChildProperty<Command> {
      * Defines what to be executed when the key combination is recognized
      * @aspDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     @Property()
     public execute: Function | string;

@@ -51,44 +51,50 @@ export class Formatter {
                     itemCollection: value
                 };
                 extend(args, args, items, true);
-                self.trigger(CONSTANT.actionBegin, args);
-                if (args.cancel) {
-                    if (action === 'paste' || action === 'cut' || action === 'copy') {
-                        event.preventDefault();
+                self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
+                    if (actionBeginArgs.cancel) {
+                        if (action === 'paste' || action === 'cut' || action === 'copy') {
+                            event.preventDefault();
+                        }
                     }
-                    return;
-                }
+                });
             }
-            this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
-                event: event,
-                callBack: this.onSuccess.bind(this, self),
-                value: value
-            });
+            if ((event.which === 9 && self.tableModule ? self.tableModule.ensureInsideTableList : false) || event.which !== 9) {
+                this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
+                    event: event,
+                    callBack: this.onSuccess.bind(this, self),
+                    value: value
+                });
+            }
         } else if (!isNullOrUndefined(args) && args.item.command && args.item.subCommand && ((args.item.command !== args.item.subCommand
             && args.item.command !== 'Font')
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
                 && args.name === 'colorPickerChanged'))) {
             extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value }, true);
-            self.trigger(CONSTANT.actionBegin, args);
-            if (args.cancel) { return; }
-            if (this.getUndoRedoStack().length === 0 && args.item.command !== 'Links' && args.item.command !== 'Images') {
-                this.saveData();
-            }
-            self.isBlur = false;
-            (self.contentModule.getEditPanel() as HTMLElement).focus();
-            let command: string = args.item.subCommand.toLocaleLowerCase();
-            if (command === 'paste' || command === 'cut' || command === 'copy') {
-                self.clipboardAction(command, event);
-            } else {
-                this.editorManager.observer.notify(CONSTANT.checkUndo, { subCommand: args.item.subCommand });
-                this.editorManager.execCommand(
-                    args.item.command,
-                    args.item.subCommand,
-                    event, this.onSuccess.bind(this, self),
-                    (args.item as IDropDownItemModel).value,
-                    value, ('#' + self.getID() + ' iframe'));
-            }
+            self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
+                if (!actionBeginArgs.cancel) {
+                    if (this.getUndoRedoStack().length === 0 && actionBeginArgs.item.command !== 'Links'
+                        && actionBeginArgs.item.command !== 'Images') {
+                        this.saveData();
+                    }
+                    self.isBlur = false;
+                    (self.contentModule.getEditPanel() as HTMLElement).focus();
+                    let command: string = actionBeginArgs.item.subCommand.toLocaleLowerCase();
+                    if (command === 'paste' || command === 'cut' || command === 'copy') {
+                        self.clipboardAction(command, event);
+                    } else {
+                        this.editorManager.observer.notify(CONSTANT.checkUndo, { subCommand: actionBeginArgs.item.subCommand });
+                        this.editorManager.execCommand(
+                            actionBeginArgs.item.command,
+                            actionBeginArgs.item.subCommand,
+                            event, this.onSuccess.bind(this, self),
+                            (actionBeginArgs.item as IDropDownItemModel).value,
+                            value, ('#' + self.getID() + ' iframe')
+                        );
+                    }
+                }
+            });
         }
         if (isNullOrUndefined(event) || event && (event as KeyboardEventArgs).action !== 'copy') {
             this.enableUndo(self);
@@ -110,20 +116,21 @@ export class Formatter {
             this.enableUndo(self);
             self.notify(CONSTANT.execCommandCallBack, events);
         }
-        self.trigger(CONSTANT.actionComplete, events);
-        if (events.requestType === 'Images' || events.requestType === 'Links' && self.editorMode === 'HTML') {
-            let args: IHtmlFormatterCallBack = events as IHtmlFormatterCallBack;
-            if (events.requestType === 'Links' && events.event &&
-                (events.event as KeyboardEvent).type === 'keydown' &&
-                (events.event as KeyboardEvent).keyCode === 32) {
-                return;
+        self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
+            if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && self.editorMode === 'HTML') {
+                let args: IHtmlFormatterCallBack = callbackArgs as IHtmlFormatterCallBack;
+                if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
+                    (callbackArgs.event as KeyboardEvent).type === 'keydown' &&
+                    (callbackArgs.event as KeyboardEvent).keyCode === 32) {
+                    return;
+                }
+                self.notify(CONSTANT.insertCompleted, {
+                    args: args.event, type: callbackArgs.requestType, isNotify: true,
+                    elements: args.elements
+                } as IShowPopupArgs);
             }
-            self.notify(CONSTANT.insertCompleted, {
-                args: args.event, type: events.requestType, isNotify: true,
-                elements: args.elements
-            } as IShowPopupArgs);
-        }
-        self.autoResize();
+            self.autoResize();
+        });
     }
     /**
      * Save the data for undo and redo action.
@@ -144,9 +151,11 @@ export class Formatter {
         let status: { [key: string]: boolean } = this.getUndoStatus();
         if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             updateUndoRedoStatus(self.quickToolbarModule.inlineQTBar.quickTBarObj, status);
+            self.trigger(CONSTANT.toolbarStatusUpdate, status);
         } else {
             if (self.toolbarModule) {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
+                self.trigger(CONSTANT.toolbarStatusUpdate, status);
             }
         }
     }

@@ -269,3 +269,83 @@ export let dateTimedataInterval: any[] = [
     { x: new Date(2000, 0, 23), y: 12 }, { x: new Date(2001, 2, 12), y: 10 }, { x: new Date(2001, 3, 12), y: 23 },
     { x: new Date(2001, 4, 20), y: 10 }, { x: new Date(2001, 5, 12), y: 34 }, { x: new Date(2001, 6, 56), y: 10 }
 ];
+
+export let remoteData: Object[] = [
+    {
+        Assignee: "Nancy Davloio",
+        Estimate: 3.5,
+        Id: 1,
+        ImgUrl: "../content/images/kanban/1.png",
+        Priority: "Low",
+        Status: "Open",
+        Summary: "Analyze the new requirements gathered from the customer",
+        Tags: "Analyze,Customer",
+        Type: "Story"
+    },
+    {
+        Assignee: "Andrew Fuller",
+        Estimate: 6,
+        Id: 2,
+        ImgUrl: "../content/images/kanban/2.png",
+        Priority: "Normal",
+        Status: "InProgress",
+        Summary: "Improve application performance",
+        Tags: "Improvement",
+        Type: "Improvement"
+    },
+    {
+        Assignee: "Janet Leverling",
+        Estimate: 5.5,
+        Id: 3,
+        ImgUrl: "../content/images/kanban/3.png",
+        Priority: "Critical",
+        Status: "Open",
+        Summary: "Arrange a web meeting with the customer to get new requirements",
+        Tags: "Meeting",
+        Type: "Others"
+    },
+    {
+        Assignee: "Janet Leverling",
+        Estimate: 2.5,
+        Id: 4,
+        ImgUrl: "../content/images/kanban/4.png",
+        Priority: "Release Breaker",
+        Status: "InProgress",
+        Summary: "Fix the issues reported in IE browsers",
+        Tags: "IE",
+        Type: "Bug"
+    },
+    {
+        Assignee: "Steven walker",
+        Estimate: 3.5,
+        Id: 5,
+        ImgUrl: "../content/images/kanban/5.png",
+        Priority: "Low",
+        Status: "Testing",
+        Summary: "Fix the issues reported by the customer",
+        Tags: "Customer",
+        Type: "Bug"
+    },
+    {
+        Assignee: "Michael Suyama",
+        Estimate: 2,
+        Id: 6,
+        ImgUrl: "../content/images/kanban/6.png",
+        Priority: "Low",
+        Status: "Close",
+        Summary: "Arrange a web meeting with the customer to get the login page requirements",
+        Tags: "Meeting",
+        Type: "Others"
+    },
+    {
+        Assignee: "Robert King",
+        Estimate: 1.5,
+        Id: 7,
+        ImgUrl: "../content/images/kanban/7.png",
+        Priority: "Low",
+        Status: "Validate",
+        Summary: "Validate new requirements",
+        Tags: "Validation",
+        Type: "Improvement"
+    }
+];

@@ -1,17 +1,17 @@
-import { Ajax, isNullOrUndefined, createElement, select } from '@syncfusion/ej2-base';
+import { Ajax, createElement, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, setValue, getValue } from '@syncfusion/ej2-base';
-import { IFileManager, ReadArgs, FileBeforeSendEventArgs, ITreeView } from '../base/interface';
+import { IFileManager, ReadArgs, BeforeSendEventArgs } from '../base/interface';
 import * as events from '../base/constant';
-import { createDialog } from '../pop-up/dialog';
-import { FileDetails } from '../../index';
-import { fileType, setNodeId, getLocaleText, setDateObject } from '../common/utility';
+import { createDialog, createExtDialog } from '../pop-up/dialog';
+import { FileDetails, FileDragEventArgs, FailureEventArgs, SuccessEventArgs } from '../../index';
+import { fileType, setNodeId, getLocaleText, setDateObject, doPasteUpdate, getParentPath, getPathObject } from '../common/utility';
 
 /**
  * Function to read the content from given path in File Manager.
  * @private
  */
 export function read(parent: IFileManager, event: string, path: string): void {
-    let data: Object = { action: 'Read', path: path, showHiddenItems: parent.showHiddenItems, data: parent.itemData };
+    let data: Object = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: parent.itemData };
     createAjax(parent, data, readSuccess, event);
 }
 
@@ -20,19 +20,29 @@ export function read(parent: IFileManager, event: string, path: string): void {
  * @private
  */
 export function createFolder(parent: IFileManager, itemName: string): void {
-    let data: Object = { action: 'CreateFolder', path: parent.path, name: itemName, data: parent.itemData };
+    let data: Object = { action: 'create', path: parent.path, name: itemName, data: parent.itemData };
     createAjax(parent, data, createSuccess);
 }
 
-/* Function to rename the folder/file in File Manager.
-* @private
-*/
-export function rename(parent: IFileManager, itemNewName: string): void {
+/**
+ * Function to rename the folder/file in File Manager.
+ * @private
+ */
+export function rename(parent: IFileManager, path: string, itemNewName: string): void {
+    let name: string;
+    let newName: string;
+    if (parent.breadcrumbbarModule.searchObj.element.value === '') {
+        name = parent.currentItemText;
+        newName = itemNewName;
+    } else {
+        let fPath: string = parent.filterPath.replace(/\\/g, '/');
+        name = fPath.replace(path, '') + parent.currentItemText;
+        newName = fPath.replace(path, '') + itemNewName;
+    }
     let data: Object = {
-        action: 'Rename', path: parent.path, name: parent.currentItemText, itemNewName: itemNewName,
-        data: parent.itemData
+        action: 'rename', path: path, name: name, newName: newName, data: parent.itemData
     };
-    createAjax(parent, data, renameSuccess, parent.path);
+    createAjax(parent, data, renameSuccess, path);
 }
 
 
@@ -43,21 +53,21 @@ export function rename(parent: IFileManager, itemNewName: string): void {
 export function paste(
     // tslint:disable-next-line
     parent: IFileManager, path: string, names: string[], targetPath: string, pasteOperation: string,
-    navigationPane?: ITreeView, replaceItems?: string[]): void {
+    renameItems?: string[], actionRecords?: Object[]): void {
     let data: Object = {
-        action: pasteOperation, path: path,
-        targetPath: targetPath, itemNames: names, CommonFiles: replaceItems
+        action: pasteOperation, path: path, targetData: parent.itemData[0],
+        targetPath: targetPath, names: names, renameFiles: renameItems, data: actionRecords
     };
-    createAjax(parent, data, pasteSuccess, path, navigationPane, pasteOperation, targetPath);
+    createAjax(parent, data, pasteSuccess, path, pasteOperation, targetPath);
 }
 
 /**
  * Function to delete file's and folder's in File Manager.
  * @private
  */
-export function Delete(parent: IFileManager, items: string[], path: string, operation: string, treeView: ITreeView): void {
-    let data: Object = { action: operation, path: path, itemNames: items };
-    createAjax(parent, data, deleteSuccess, path, treeView);
+export function Delete(parent: IFileManager, items: string[], path: string, operation: string): void {
+    let data: Object = { action: operation, path: path, names: items, data: parent.itemData };
+    createAjax(parent, data, deleteSuccess, path);
 }
 
 /**
@@ -65,14 +75,14 @@ export function Delete(parent: IFileManager, items: string[], path: string, oper
  * @private
  */
 /* istanbul ignore next */
-export function GetDetails(parent: IFileManager, itemNames: string[], path: string, operation: string): void {
-    let data: Object = { action: operation, path: path, itemNames: itemNames };
-    createAjax(parent, data, detailsSuccess, path, null, operation);
+export function GetDetails(parent: IFileManager, names: string[], path: string, operation: string): void {
+    let data: Object = { action: operation, path: path, names: names, data: parent.itemData };
+    createAjax(parent, data, detailsSuccess, path, operation);
 }
 
 function createAjax(
     parent: IFileManager, data: Object, fn: Function, event?: string,
-    navigationPane?: ITreeView, operation?: string, targetPath?: string): void {
+    operation?: string, targetPath?: string): void {
     let ajaxSettings: Object = {
         url: parent.ajaxSettings.url,
         type: 'POST',
@@ -84,70 +94,83 @@ function createAjax(
         onFailure: null,
         beforeSend: null
     };
-    let eventArgs: FileBeforeSendEventArgs = { action: getValue('action', data), ajaxSettings: ajaxSettings, cancel: false };
-    parent.trigger('beforeSend', eventArgs);
-    if (eventArgs.cancel) {
-        return;
-    }
-    parent.notify(events.beforeRequest, {});
-    let ajax: Ajax = new Ajax({
-        url: getValue('url', eventArgs.ajaxSettings),
-        type: getValue('type', eventArgs.ajaxSettings),
-        mode: getValue('mode', eventArgs.ajaxSettings),
-        dataType: getValue('dataType', eventArgs.ajaxSettings),
-        contentType: getValue('contentType', eventArgs.ajaxSettings),
-        data: getValue('data', eventArgs.ajaxSettings),
-        beforeSend: getValue('beforeSend', eventArgs.ajaxSettings),
-        onSuccess: (result: ReadArgs) => {
-            if (typeof (result) === 'string') {
-                result = JSON.parse(result);
-            }
-            parent.notify(events.afterRequest, { action: 'success' });
-            if (!isNOU(result.files)) {
-                // tslint:disable-next-line
-                setDateObject(result.files);
-                for (let i: number = 0, len: number = result.files.length; i < len; i++) {
-                    let item: Object = result.files[i];
-                    setValue('iconClass', fileType(item), item);
-                }
-            }
-            if (getValue('action', data) === 'Read') {
-                let path: string = getValue('path', data);
-                setNodeId(result, parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1]);
-                setValue(path, result.files, parent.feFiles);
-                setValue(path, result.cwd, parent.feParent);
-            }
-            fn(parent, result, event, navigationPane, operation, targetPath);
-            if (typeof getValue('onSuccess', eventArgs.ajaxSettings) === 'function') {
-                getValue('onSuccess', eventArgs.ajaxSettings)();
-            }
-        },
-        onFailure: () => {
-            let result: ReadArgs = {
-                files: null,
-                error: {
-                    code: '404',
-                    message: 'NetworkError: Faild to send on XMLHTTPRequest: Failed to load ' + parent.ajaxSettings.url,
-                    fileExists: null
+    let eventArgs: BeforeSendEventArgs = { action: getValue('action', data), ajaxSettings: ajaxSettings, cancel: false };
+    parent.trigger('beforeSend', eventArgs, (beforeSendArgs: BeforeSendEventArgs) => {
+        if (!beforeSendArgs.cancel) {
+            parent.notify(events.beforeRequest, {});
+            let ajax: Ajax = new Ajax({
+                url: getValue('url', beforeSendArgs.ajaxSettings),
+                type: getValue('type', beforeSendArgs.ajaxSettings),
+                mode: getValue('mode', beforeSendArgs.ajaxSettings),
+                dataType: getValue('dataType', beforeSendArgs.ajaxSettings),
+                contentType: getValue('contentType', beforeSendArgs.ajaxSettings),
+                data: getValue('data', beforeSendArgs.ajaxSettings),
+                beforeSend: getValue('beforeSend', beforeSendArgs.ajaxSettings),
+                onSuccess: (result: ReadArgs) => {
+                    if (typeof (result) === 'string') {
+                        result = JSON.parse(result);
+                    }
+                    parent.notify(events.afterRequest, { action: 'success' });
+                    if (!isNOU(result.files)) {
+                        // tslint:disable-next-line
+                        setDateObject(result.files);
+                        for (let i: number = 0, len: number = result.files.length; i < len; i++) {
+                            let item: Object = result.files[i];
+                            setValue('_fm_iconClass', fileType(item), item);
+                        }
+                    }
+                    if (getValue('action', data) === 'read') {
+                        let path: string = getValue('path', data);
+                        setNodeId(result, parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1]);
+                        setValue(path, result.files, parent.feFiles);
+                        setValue(path, result.cwd, parent.feParent);
+                    }
+                    fn(parent, result, event, operation, targetPath);
+                    if (typeof getValue('onSuccess', beforeSendArgs.ajaxSettings) === 'function') {
+                        getValue('onSuccess', beforeSendArgs.ajaxSettings)();
+                    }
                 },
-            };
-            parent.notify(events.afterRequest, { action: 'failure' });
-            fn(parent, result, event, navigationPane, operation, targetPath);
-            if (typeof getValue('onFailure', eventArgs.ajaxSettings) === 'function') {
-                getValue('onFailure', eventArgs.ajaxSettings)();
-            }
+                onFailure: () => {
+                    let result: ReadArgs = {
+                        files: null,
+                        error: {
+                            code: '404',
+                            message: 'NetworkError: Failed to send on XMLHTTPRequest: Failed to load ' + parent.ajaxSettings.url,
+                            fileExists: null
+                        },
+                    };
+                    parent.notify(events.afterRequest, { action: 'failure' });
+                    fn(parent, result, event, operation, targetPath);
+                    if (typeof getValue('onFailure', beforeSendArgs.ajaxSettings) === 'function') {
+                        getValue('onFailure', beforeSendArgs.ajaxSettings)();
+                    }
+                }
+            });
+            ajax.send();
         }
     });
-    ajax.send();
 }
 
 function readSuccess(parent: IFileManager, result: ReadArgs, event: string): void {
     if (!isNOU(result.files)) {
         parent.notify(event, result);
         parent.notify(events.selectionChanged, {});
-        parent.trigger('onSuccess', { action: 'Read', result: result });
+        let args: SuccessEventArgs = { action: 'read', result: result };
+        parent.trigger('success', args);
     } else {
-        onFailure(parent, result, 'Read');
+        if (result.error.code === '401') {
+            result.files = [];
+            parent.notify(event, result);
+            parent.notify(events.selectionChanged, {});
+        }
+        onFailure(parent, result, 'read');
+    }
+    if (parent.isDragDrop && parent.isDropEnd) {
+        if (parent.droppedObjects.length !== 0) {
+            let args: FileDragEventArgs = { fileDetails: parent.droppedObjects };
+            parent.trigger('fileDropped', args);
+        }
+        parent.isDropEnd = parent.isDragDrop = false;
     }
 }
 /* istanbul ignore next */
@@ -155,7 +178,10 @@ function createSuccess(parent: IFileManager, result: ReadArgs): void {
     if (!isNOU(result.files)) {
         parent.dialogObj.hide();
         parent.createdItem = result.files[0];
-        parent.trigger('onSuccess', { action: 'CreateFolder', result: result });
+        parent.breadcrumbbarModule.searchObj.value = '';
+        let args: SuccessEventArgs = { action: 'create', result: result };
+        parent.trigger('success', args);
+        parent.itemData = [getPathObject(parent)];
         read(parent, events.createEnd, parent.path);
     } else {
         if (result.error.code === '400') {
@@ -164,26 +190,34 @@ function createSuccess(parent: IFileManager, result: ReadArgs): void {
             ele.parentElement.nextElementSibling.innerHTML = error;
         } else {
             parent.dialogObj.hide();
-            onFailure(parent, result, 'CreateFolder');
+            onFailure(parent, result, 'create');
         }
     }
 }
 
-/* Function to rename the folder/file in File Manager.
+/**
+ * Function to rename the folder/file in File Manager.
  * @private
  */
 /* istanbul ignore next */
 function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): void {
     if (!isNOU(result.files)) {
         parent.dialogObj.hide();
-        parent.trigger('onSuccess', { action: 'Rename', result: result });
+        let args: SuccessEventArgs = { action: 'rename', result: result };
+        parent.trigger('success', args);
         parent.renamedItem = result.files[0];
-        if (parent.selectedItems.length === 0 && parent.navigationpaneModule) {
-            let treePath: string[] = parent.parentPath.split('/');
-            let newPath: string = parent.parentPath.replace(treePath[treePath.length - 2] + '/', parent.renameText + '/');
+        if (parent.activeModule === 'navigationpane') {
+            let newPath: string = getParentPath(parent) + parent.renameText + '/';
             parent.setProperties({ path: newPath }, true);
+            parent.itemData = result.files;
+        } else {
+            parent.itemData = [getPathObject(parent)];
         }
-        read(parent, events.renameEnd, parent.path);
+        if (parent.breadcrumbbarModule.searchObj.value !== '') {
+            Search(parent, events.renameEnd, parent.path, parent.searchWord, parent.showHiddenItems, !parent.searchSettings.ignoreCase);
+        } else {
+            read(parent, events.renameEnd, parent.path);
+        }
     } else {
         if (result.error.code === '400') {
             let ele: HTMLInputElement = select('#rename', parent.dialogObj.element) as HTMLInputElement;
@@ -192,7 +226,7 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
             ele.parentElement.nextElementSibling.innerHTML = error;
         } else {
             parent.dialogObj.hide();
-            onFailure(parent, result, 'Rename');
+            onFailure(parent, result, 'rename');
         }
     }
 }
@@ -205,31 +239,24 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
 /* istanbul ignore next */
 function pasteSuccess(
     // tslint:disable-next-line
-    parent: IFileManager, result: ReadArgs, path: string, treeView: ITreeView, operation: string): void {
+    parent: IFileManager, result: ReadArgs, path: string, operation: string): void {
     if (result.error && result.error.fileExists) {
         parent.fileLength = 0;
-        for (let i: number = 0; i < result.files.length; i++) {
-            createDialog(parent, 'DuplicateItems', result, null, result.error.fileExists);
+        if (!isNOU(result.files)) {
+            parent.isPasteError = true;
+            doPasteUpdate(parent, operation, result);
         }
-        parent.detailsviewModule.pasteOperation = true;
-        parent.largeiconsviewModule.pasteOperation = true;
-        parent.duplicateItems = [];
+        createExtDialog(parent, 'DuplicateItems', result.error.fileExists);
+        if (result.error.code === '404') {
+            createDialog(parent, 'Error', result);
+        }
     } else if (!result.error && !isNOU(result.files)) {
-        parent.detailsviewModule.pasteOperation = true;
-        parent.largeiconsviewModule.pasteOperation = true;
-        parent.pasteNodes = parent.selectedNodes;
-        read(parent as IFileManager, events.pathChanged, parent.path);
-        if (operation === 'MoveTo' && treeView.treeNodes.length !== 0) {
-            parent.selectedNodes = [];
-            treeView.moveNode();
-        } else if (operation === 'CopyTo' && treeView.copyNodes.length !== 0) {
-            treeView.copyNode();
-        }
-        if (operation === 'MoveTo') {
-            parent.enablePaste = false;
-            parent.notify(events.hidePaste, {});
-        }
-        parent.trigger('onSuccess', { action: operation, result: result });
+        parent.isPasteError = false;
+        doPasteUpdate(parent, operation, result);
+    } else if (result.error && !isNOU(result.files)) {
+        parent.isPasteError = true;
+        doPasteUpdate(parent, operation, result);
+        createDialog(parent, 'Error', result);
     } else {
         onFailure(parent, result, operation);
     }
@@ -239,59 +266,56 @@ function pasteSuccess(
 function deleteSuccess(parent: IFileManager, result: ReadArgs, path: string): void {
     if (!isNOU(result.files)) {
         parent.setProperties({ path: path }, true);
+        parent.itemData = [getPathObject(parent)];
         read(parent, events.deleteEnd, parent.path);
-        parent.trigger('onSuccess', { action: 'Remove', result: result });
+        let args: SuccessEventArgs = { action: 'delete', result: result };
+        parent.trigger('success', args);
     } else {
-        onFailure(parent, result, 'Remove');
+        onFailure(parent, result, 'delete');
     }
 }
 /* istanbul ignore next */
 function detailsSuccess(
     // tslint:disable-next-line
-    parent: IFileManager, result: ReadArgs, path: string, treeView: ITreeView, operation: string): void {
+    parent: IFileManager, result: ReadArgs, path: string, operation: string): void {
     if (!isNOU(result.details)) {
-        createDialog(parent as IFileManager, operation, null, <FileDetails>result.details);
-        parent.trigger('onSuccess', { action: 'GetDetails', result: result });
+        createDialog(parent, operation, null, <FileDetails>result.details);
+        let args: SuccessEventArgs = { action: 'details', result: result };
+        parent.trigger('success', args);
     } else {
-        onFailure(parent, result, 'GetDetails');
+        onFailure(parent, result, 'details');
     }
 }
 
 function onFailure(parent: IFileManager, result: ReadArgs, action: string): void {
     createDialog(parent, 'Error', result);
-    parent.trigger('onError', { action: action, error: result.error });
+    let args: FailureEventArgs = { action: action, error: result.error };
+    parent.trigger('failure', args);
 }
 /* istanbul ignore next */
 export function Search(
     // tslint:disable-next-line
     parent: IFileManager, event: string, path: string, searchString: string, showHiddenItems?: boolean, caseSensitive?: boolean): void {
-    let data: Object = { action: 'Search', path: path, searchString: searchString, showHiddenItems: showHiddenItems, caseSensitive: caseSensitive };
+    let data: Object = {
+        action: 'search', path: path, searchString: searchString, showHiddenItems: showHiddenItems, caseSensitive: caseSensitive,
+        data: parent.itemData
+    };
     createAjax(parent, data, searchSuccess, event);
 }
 /* istanbul ignore next */
 function searchSuccess(parent: IFileManager, result: ReadArgs, event: string): void {
     if (!isNOU(result.files)) {
         parent.notify(event, result);
-        parent.trigger('onSuccess', { action: 'Search', result: result });
+        let args: SuccessEventArgs = { action: 'search', result: result };
+        parent.trigger('success', args);
     } else {
-        onFailure(parent, result, 'Search');
+        onFailure(parent, result, 'search');
     }
 }
 /* istanbul ignore next */
-// tslint:disable-next-line
-export function Download(parent: IFileManager, selectedRecords: Array<any>): void {
-    let itemNames: string[] = [];
-    let itemPath: string;
+export function Download(parent: IFileManager, path: string, items: string[]): void {
     let downloadUrl: string = parent.ajaxSettings.downloadUrl ? parent.ajaxSettings.downloadUrl : parent.ajaxSettings.url;
-    for (let item: number = 0; item < selectedRecords.length; item++) {
-        itemNames.push(selectedRecords[item].name);
-        itemPath = selectedRecords[item].filterPath;
-    }
-    let data: Object = {
-        'action': 'Download',
-        'path': !isNullOrUndefined(itemPath) ? itemPath : parent.path,
-        'itemNames': itemNames
-    };
+    let data: Object = { 'action': 'download', 'path': path, 'names': items, 'data': parent.itemData };
     let form: HTMLElement = createElement('form', {
         id: parent.element.id + '_downloadForm',
         attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }

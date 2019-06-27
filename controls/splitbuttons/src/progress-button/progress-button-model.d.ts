@@ -138,30 +138,35 @@ export interface ProgressButtonModel {
     /**
      * Triggers once the component rendering is completed.
      * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 
     /**
      * Triggers when the progress starts.
      * @event
+     * @blazorProperty 'OnBegin'
      */
     begin?: EmitType<ProgressEventArgs>;
 
     /**
      * Triggers in specified intervals.
      * @event
+     * @blazorProperty 'Progressing'
      */
     progress?: EmitType<ProgressEventArgs>;
 
     /**
      * Triggers when the progress is completed.
      * @event
+     * @blazorProperty 'OnEnd'
      */
     end?: EmitType<ProgressEventArgs>;
 
     /**
      * Triggers when the progress is incomplete.
      * @event
+     * @blazorProperty 'OnFailure'
      */
     fail?: EmitType<Event>;
 

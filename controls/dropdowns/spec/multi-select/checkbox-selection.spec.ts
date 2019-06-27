@@ -2021,6 +2021,22 @@ describe('MultiSelect', () => {
             mouseEventArgs.target = document.body;
             (<any>multiObj).checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
         });
+        it('focus the input and click the document', () => {
+            let multiObj = new MultiSelect({
+                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
+            });
+            multiObj.appendTo('#newlist');
+            let mouseEvenArg: any = { preventDefault: function () { }, target: (<any>multiObj).overAllWrapper };
+            (<any>multiObj).wrapperClick(mouseEvenArg);
+            expect((<any>multiObj).isPopupOpen()).toBe(true);
+            (<any>multiObj).wrapperClick(mouseEvenArg);
+            expect((<any>multiObj).isPopupOpen()).toBe(false);
+            expect((<any>multiObj).overAllWrapper.classList.contains('e-input-focus')).toBe(true);
+            let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+            mouseEventArgs.target = document.body;
+            (<any>multiObj).checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
+            expect((<any>multiObj).overAllWrapper.classList.contains('e-input-focus')).toBe(false);
+        });
         it('reordering the selected value', () => {
             let multiObj = new MultiSelect({
                 dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']

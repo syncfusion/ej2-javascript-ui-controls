@@ -1,17 +1,14 @@
-import { compile, isNullOrUndefined, extend, EventHandler, formatUnit, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, EventHandler, formatUnit, Browser } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, removeClass, append, prepend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { WorkCellInteraction } from '../actions/work-cells';
-import { ViewBase } from './view-base';
+import { ViewBase, ViewHelper } from './view-base';
 import { VerticalEvent } from '../event-renderer/vertical-view';
 import { MonthEvent } from '../event-renderer/month';
 import { RenderCellEventArgs, CellTemplateArgs, TdData, NotifyEventArgs, IRenderer, TimeSlotData } from '../base/interface';
 import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
-
-const MAJOR_SLOT_TEMPLATE: string = '<span>${getTime(date)}</span>';
-const MINOR_SLOT_TEMPLATE: string = '&nbsp;';
 
 /**
  * vertical view
@@ -22,8 +19,6 @@ export class VerticalView extends ViewBase implements IRenderer {
     public isInverseTableSelect: boolean = true;
     public baseCssClass: string = 'e-vertical-view';
     public workCellAction: WorkCellInteraction;
-    public dateHeaderTemplate: string = '<div class="e-header-day">${getDayName(date)}</div>' +
-        '<div class="e-header-date e-navigate" role="link">${getDate(date)}</div>';
     /**
      * Constructor for vertical view
      */
@@ -201,7 +196,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             !this.parent.uiStateValues.isGroupAdaptive) {
             let count: number = 0;
             for (let resource of this.parent.resourceBase.lastResourceLevel) {
-                let index: number = this.parent.getIndexOfDate(resource.renderDates, util.resetTime(new Date()));
+                let index: number = this.parent.getIndexOfDate(resource.renderDates, util.resetTime(this.parent.getCurrentTime()));
                 if (index >= 0) {
                     let resIndex: number = this.parent.activeViewOptions.group.byDate ?
                         (this.parent.resourceBase.lastResourceLevel.length * index) + count : count + index;
@@ -212,7 +207,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         } else {
             let renderDates: Date[] = (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) ?
                 this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex].renderDates : this.renderDates;
-            let index: number = this.parent.getIndexOfDate(renderDates, util.resetTime(new Date()));
+            let index: number = this.parent.getIndexOfDate(renderDates, util.resetTime(this.parent.getCurrentTime()));
             if (index >= 0) {
                 currentDateIndex.push(index);
             }
@@ -236,7 +231,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         this.removeCurrentTimeIndicatorElements();
         let currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
         let firstRow: HTMLTableRowElement = (this.parent.getContentTable() as HTMLTableElement).rows[0];
-        let top: number = this.getTopFromDateTime(new Date());
+        let top: number = this.getTopFromDateTime(this.parent.getCurrentTime());
         let topInPx: string = formatUnit(top);
         let rowIndex: number = Math.floor(top / firstRow.cells[0].offsetHeight);
         if (isNullOrUndefined(rowIndex) || isNaN(rowIndex)) { return; }
@@ -248,7 +243,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             curTimeWrap[day].appendChild(createElement('div', { className: cls.CURRENT_TIMELINE_CLASS, styles: 'top:' + topInPx }));
         }
         let currentTimeEle: HTMLElement = createElement('div', {
-            innerHTML: this.parent.getTimeString(new Date()),
+            innerHTML: this.parent.getTimeString(this.parent.getCurrentTime()),
             className: cls.CURRENT_TIME_CLASS,
             styles: 'top:' + topInPx
         });
@@ -269,35 +264,47 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
     private getTdContent(date: Date, type: string, groupIndex?: number): NodeList {
         let cntEle: NodeList;
+        let wrapper: HTMLElement = createElement('div');
+        let templateName: string = '';
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
+                    templateName = 'dateHeaderTemplate';
                     let args: CellTemplateArgs = { date: date, type: type };
-                    cntEle = this.parent.getDateHeaderTemplate()(args);
+                    cntEle = this.parent.getDateHeaderTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
                 } else {
-                    cntEle = compile(this.dateHeaderTemplate, this.customHelper)({ date: date });
+                    wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
+                        `<span class="e-header-date e-navigate">${ViewHelper.getTimelineDate(this.parent, date)}</span>` :
+                        `<div class="e-header-day">${ViewHelper.getDayName(this.parent, date)}</div>` +
+                        `<div class="e-header-date e-navigate" role="link">${ViewHelper.getDate(this.parent, date)}</div>`;
+                    cntEle = wrapper.childNodes;
                 }
                 break;
             case 'majorSlot':
                 if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
+                    templateName = 'majorSlotTemplate';
                     let args: CellTemplateArgs = { date: date, type: type };
-                    cntEle = this.parent.getMajorSlotTemplate()(args);
+                    cntEle = this.parent.getMajorSlotTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
                 } else {
-                    cntEle = compile(MAJOR_SLOT_TEMPLATE, this.customHelper)({ date: date });
+                    wrapper.innerHTML = `<span>${ViewHelper.getTime(this.parent, date)}</span>`;
+                    cntEle = wrapper.childNodes;
                 }
                 break;
             case 'minorSlot':
                 if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
+                    templateName = 'minorSlotTemplate';
                     let args: CellTemplateArgs = { date: date, type: type };
-                    cntEle = this.parent.getMinorSlotTemplate()(args);
+                    cntEle = this.parent.getMinorSlotTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
                 } else {
-                    cntEle = compile(MINOR_SLOT_TEMPLATE, this.customHelper)({ date: date });
+                    wrapper.innerHTML = '&nbsp;';
+                    cntEle = wrapper.childNodes;
                 }
                 break;
             case 'alldayCells':
                 if (this.parent.activeViewOptions.cellTemplate) {
+                    templateName = 'cellTemplate';
                     let args: CellTemplateArgs = { date: date, type: type, groupIndex: groupIndex };
-                    cntEle = this.parent.getCellTemplate()(args);
+                    cntEle = this.parent.getCellTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
                 }
                 break;
         }
@@ -535,7 +542,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args: CellTemplateArgs = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
-            append([].slice.call(this.parent.getCellTemplate()(args)), ntd);
+            let templateId: string = this.parent.element.id + 'cellTemplate';
+            let tooltipTemplate: NodeList = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId);
+            append([].slice.call(tooltipTemplate), ntd);
         }
         ntd.setAttribute('data-date', cellDate.getTime().toString());
         if (!isNullOrUndefined(tdData.groupIndex) || this.parent.uiStateValues.isGroupAdaptive) {

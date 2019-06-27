@@ -11,8 +11,8 @@ import { pivot_nodata } from '../../../spec/base/datasource.spec';
 
 PivotView.Inject(VirtualScroll, FieldList);
 let pivotGridObj: PivotView = new PivotView({
-    dataSource: {
-        data: pivot_nodata as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_nodata as IDataSet[],
         expandAll: true,
         rows: [{ name: 'Country', showNoDataItems: true }, { name: 'State', showNoDataItems: true }],
         columns: [{ name: 'Product', showNoDataItems: true }, { name: 'Date', showNoDataItems: true }],

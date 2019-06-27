@@ -11,11 +11,57 @@ export let toolbarItems3: string[] = ['NewFolder', 'Upload', '|', 'Delete', 'Ren
 
 export let data1: any = {
     "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\" },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};
+
+export let uploadData1: any = {
+    "files": [
         { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": null },
         { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
         { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
         { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
-        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null }
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "sample.txt", "size": 49792, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\" },
+};
+
+export let uploadData2: any = {
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": null },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "sample.txt", "size": 49792, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "sample(1).txt", "size": 49792, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\" },
+};
+
+export let uploadData3: any = {
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": null },
+        { "name": "demo(1).txt", "size": 49792, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "sample.txt", "size": 49792, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "demo.txt", "size": 49792, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "sample(1).txt", "size": 49792, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null }
     ],
     "error": null,
     "details": null,
@@ -92,6 +138,20 @@ export let data5: any = {
         { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
         { "name": "Nature", "size": 0, "dateModified": "10/22/2018 4:00:52 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
         { "name": "New folder", "size": 0, "dateModified": "10/23/2018 8:25:45 PM", "dateCreated": "10/23/2018 8:25:45 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": "0", "dateModified": "1-23-2019 9:21:31 PM", "dateCreated": "12-24-2018 5:14:59 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
+};
+
+export let data5rename: any = {
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": null },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },
+        { "name": "Nature", "size": 0, "dateModified": "10/22/2018 4:00:52 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
+        { "name": "My Folder", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
     ],
     "error": null,
     "details": null,
@@ -192,7 +252,7 @@ export let data12: any = {
 
 export let dataContextMenu: any = {
     "cwd": { "name": "Food", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\" },
-    "files": [      
+    "files": [
         { "name": "Sugar cookie.png", "size": 93929, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\Sugar cookie.png" },
         { "name": "New folder", "size": 0, "dateModified": "11/15/2018 11:06:12 AM", "dateCreated": "11/15/2018 11:06:12 AM", "hasChild": false, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\New folder" },
         { "name": "test1", "size": 0, "dateModified": "11/15/2018 11:42:40 AM", "dateCreated": "11/15/2018 11:42:03 AM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\test1" },
@@ -224,6 +284,281 @@ export let data15: any = {
     "error": null,
     "details": null
 }
+export let data1pasteIN: any = {
+    "files": [
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};
+export let data1pasteIN2: any = {
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\" },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};
+export let data1pasteIN3: any = {
+    "files": [
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};
+export let data1pasteIN4: any = {
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};
+
+export let doubleClickEmpty: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" },
+    "files": [],
+    "error": null,
+    "details": null
+}
+
+export let doubleClickRead: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+    ],
+    "error": null,
+    "details": null
+}
+
+export let doubleClickRead1: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let doubleClickRead2: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let fileCopymissing1: any = {
+    "cwd": null,
+    "files": [
+        { "name": "1.png", "previousName": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "Employees", "previousName": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": { "code": "404", "message": "Food not found in given location.", "fileExists": null },
+    "details": null
+}
+
+export let fileCopymissing2: any = {
+    "cwd": null,
+    "files": [
+        { "name": "1.png", "previousName": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "Employees", "previousName": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": { "code": "404", "message": "Food not found in given location.", "fileExists": ["Documents"] },
+    "details": null
+}
+
+export let fileCopySuccess: any = {
+    "cwd": null,
+    "files": [
+        { "name": "1.png", "previousName": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let multiCopySuccess: any = {
+    "cwd": null,
+    "files": [
+        { "name": "1.png", "previousName": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let multiCopySuccess1: any = {
+    "cwd": null,
+    "files": [
+        { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": { "code": "503", "fileExists": ["1.png", "Employees"], "message": "File Already Exists" },
+    "details": null
+}
+
+export let multiCopySuccess2: any = {
+    "cwd": null,
+    "files": [
+        { "name": "Employees(1)", "previousName": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let multiCopySuccess3: any = {
+    "cwd": null,
+    "files": [
+        { "name": "1(1).png", "previousName": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let fileCopyRead: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let multiItemCopyRead: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let multiItemCopyRead3: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\" },
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let multiItemCopyRead1: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\" },
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "1(1).png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let multiItemCopyRead2: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\" },
+        { "name": "Employees(1)", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\" },
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Food\\" },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let folderCopySuccess: any = {
+    "cwd": null,
+    "files": [
+        { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let folderDragSuccess: any = {
+    "cwd": null,
+    "files": [
+        { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Employees\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let folderDragSuccess1: any = {
+    "cwd": null,
+    "files": [
+        { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Food\\Employees\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let folderDragSuccess2: any = {
+    "cwd": null,
+    "files": [],
+    "error": { "code": "503", "fileExists": ["Employees"], "message": "File Already Exists" },
+    "details": null
+}
+
+export let folderDragRead: any = {
+    "cwd": { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" },
+    "files": [
+        { "name": "Documents", "previousName": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\Employees\\" }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let folderCopyRead: any = {
+    "cwd": { "name": "Food", "size": 0, "_fm_id": "fe_tree_2", "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [
+        { "name": "Bread.png", "size": 100486, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Doughnut.png", "size": 99344, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Food\\" }
+    ],
+    "error": null,
+    "details": null
+}
 
 export let rename: any = {
     "files": [
@@ -240,12 +575,12 @@ export let rename: any = {
 
 export let folderRename: any = {
     "files": [
-        
+
         { "name": "My Folder", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null }
     ],
     "error": null,
     "details": null,
-    "cwd":null
+    "cwd": null
 };
 
 export let renameExist: any = {
@@ -287,21 +622,21 @@ export let renamedwithout_ext: any = {
 export let getMultipleDetails: any = {
     "files": null,
     "error": null,
-    "details": { "location": "D:/EJ2 FE service/FEService/FEService/FileContent/", "size": 199483, "multipleFiles": true },
+    "details": { "name": "Documents, Employees", "location": "D:/EJ2 FE service/FEService/FEService/FileContent/", "size": 199483, "multipleFiles": true },
     "cwd": { "name": "FileContent", "size": "0", "dateModified": "1-23-2019 9:21:31 PM", "dateCreated": "12-24-2018 5:14:59 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
 };
 
 export let getSingleDetails: any = {
     "files": null,
     "error": null,
-    "details": { "name": "FileContent", location:'/FileContent', "size": 0, "modified": "10/16/2018 7:43:17 PM", "created": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
+    "details": { "name": "FileContent", location: '/FileContent', "size": 0, "modified": "10/16/2018 7:43:17 PM", "created": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
     "cwd": null
 };
 
 export let singleSelectionDetails: any = {
     "files": null,
     "error": null,
-    "details": { "name": "Documents", "size": 0, location:'/Documents',"modified": "10/16/2018 7:43:17 PM", "created": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
+    "details": { "name": "Documents", "size": 0, location: '/Documents', "modified": "10/16/2018 7:43:17 PM", "created": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
     "cwd": null
 };
 
@@ -342,8 +677,8 @@ export let pastesuccess: any = {
         { "name": "test3", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/15/2018 11:42:21 AM", "hasChild": false, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\test3" },
         { "name": "New folder", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": null },
     ],
-    "error":null,
-    "details":null
+    "error": null,
+    "details": null
 }
 
 export let data16: any = {
@@ -354,28 +689,214 @@ export let data16: any = {
 }
 
 export let data17: any = {
-    "cwd": { "name": "Documents", "size": 0, "dateModified": "2019-03-13T12:58:06.1173237+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\" },
-    "files": [{ "name": "docs", "size": 0, "dateModified": "2019-03-13T12:58:14.6420886+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\docs" }],
+    "cwd": { "name": "Documents", "size": 0, "dateModified": "2019-03-13T12:58:06.1173237+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "files": [{ "name": "docs", "size": 0, "dateModified": "2019-03-13T12:58:14.6420886+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\" }],
     "error": null,
     "details": null
 }
 
 //Search 'doc' key in FileContent
 export let data18: any = {
-    "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
     "files": [
-        { "name": "EJ2 File Manager.docx", "size": 12403, "dateModified": "2019-03-07T14:49:02.6204366+05:30", "dateCreated": "2019-03-07T14:49:02.619437+05:30", "hasChild": false, "isFile": true, "type": ".docx", "filterPath": "\\Documents\\EJ2 File Manager.docx" },
-        { "name": "Documents", "size": 0, "dateModified": "2019-03-14T14:55:22.5808132+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents" },
-        { "name": "docs", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\docs" }],
+        { "name": "EJ2 File Manager.docx", "size": 12403, "dateModified": "2019-03-07T14:49:02.6204366+05:30", "dateCreated": "2019-03-07T14:49:02.619437+05:30", "hasChild": false, "isFile": true, "type": ".docx", "filterPath": "\\Documents\\" },
+        { "name": "Documents", "size": 0, "dateModified": "2019-03-14T14:55:22.5808132+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "docs", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\" }],
     "error": null,
     "details": null
 }
 
+//Search 'doc' key in FileContent
+export let searchdocstart: any = {
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+    "files": [
+        { "name": "Documents", "size": 0, "dateModified": "2019-03-14T14:55:22.5808132+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "docs", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\" }],
+    "error": null,
+    "details": null
+}
+
+//Search 'doc' key in FileContent
+export let searchdoccase: any = {
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+    "files": [
+        { "name": "docs", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\" }],
+    "error": null,
+    "details": null
+}
+
+//Search '.png' key in FileContent
+export let searchpng: any = {
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "2019-03-14T14:57:45.3485237+05:30", "dateCreated": "2019-03-14T14:57:45.3465235+05:30", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\" },
+        { "name": "Sugar cookie.png", "size": 93929, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-14T14:57:45.3465235+05:30", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Food\\" },
+    ],
+    "error": null,
+    "details": null
+}
+
+//Search 'hello.png' key in FileContent
+export let searchhellopng: any = {
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+    "files": [],
+    "error": null,
+    "details": null
+}
+
+
 export let data19: any = {
-    "cwd": { "name": "docs", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Documents\\docs\\" },
+    "cwd": { "name": "docs", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Documents\\" },
     "files": [{ "name": "1.png", "size": 49792, "dateModified": "2019-03-14T14:57:45.3485237+05:30", "dateCreated": "2019-03-14T14:57:45.3465235+05:30", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Documents\\docs\\" }],
     "error": null,
     "details": null
 }
 
-export let stringData: string = '{"files":[{"name":"1.png","size":49792,"dateModified":"1/3/2018 4:07:28 PM","dateCreated":"10/17/2018 12:57:59 PM","hasChild":false,"isFile":true,"type":".png","filterPath":null},{"name":"Documents","size":0,"dateModified":"10/16/2018 7:43:17 PM","dateCreated":"10/15/2018 5:39:03 PM","hasChild":true,"isFile":false,"type":"","filterPath":null},{"name":"Employees","size":0,"dateModified":"10/15/2018 5:39:03 PM","dateCreated":"10/15/2018 5:39:03 PM","hasChild":false,"isFile":false,"type":"","filterPath":null},{"name":"Food","size":0,"dateModified":"10/15/2018 5:39:03 PM","dateCreated":"10/15/2018 5:39:03 PM","hasChild":false,"isFile":false,"type":"","filterPath":null},{"name":"Nature","size":0,"dateModified":"10/15/2018 5:39:03 PM","dateCreated":"10/15/2018 5:39:03 PM","hasChild":false,"isFile":false,"type":"","filterPath":null}],"error":null,"details":null,"cwd":{"name":"FileContent","size":0,"dateModified":"11/15/2018 11:42:21 AM","dateCreated":"11/8/2018 4:07:00 PM","hasChild":true,"isFile":false,"type":"","filterPath":"D:/EJ2/FileExplorer//Services"}}';
+export let data20: any = {
+    "cwd": null,
+    "files": [{ "name": "docs1", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Documents\\" }],
+    "error": null,
+    "details": null
+}
+
+export let data21: any = {
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+    "files": [
+        { "name": "EJ2 File Manager.docx", "size": 12403, "dateModified": "2019-03-07T14:49:02.6204366+05:30", "dateCreated": "2019-03-07T14:49:02.619437+05:30", "hasChild": false, "isFile": true, "type": ".docx", "filterPath": "\\Documents\\" },
+        { "name": "Documents", "size": 0, "dateModified": "2019-03-14T14:55:22.5808132+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "docs1", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\" }],
+    "error": null,
+    "details": null
+}
+
+export let data22: any = {
+    "cwd": null,
+    "files": [{ "name": "docs", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Documents\\" }],
+    "error": null,
+    "details": null
+}
+
+export let stringData: string = '{"files":[{ "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": null },{ "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },{ "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },{ "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null },{ "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": null }],"error": null,    "details": null,        "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:/EJ2/FileExplorer//Services" }}';
+
+export let data23: any = {
+    "files": [
+        { "name": "image.abc", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": "abc", "filterPath": "\\Documents\\" },
+        { "name": "music.mp3", "size": 41392, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/14/2018 5:39:03 PM", "hasChild": false, "isFile": true, "type": "mp3", "filterPath": "\\Documents\\" },
+        { "name": "new.html", "size": 4972, "dateModified": "10/12/2018 5:39:03 PM", "dateCreated": "10/10/2018 5:39:03 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\Documents\\" },
+        { "name": "start.exe", "size": 492, "dateModified": "10/25/2018 5:39:03 PM", "dateCreated": "10/11/2018 5:39:03 PM", "hasChild": false, "isFile": true, "type": "html", "filterPath": "\\Documents\\" },
+        { "name": "video.mp4", "size": 39792, "dateModified": "10/22/2018 5:39:03 PM", "dateCreated": "10/12/2018 5:39:03 PM", "hasChild": false, "isFile": true, "type": "mp4", "filterPath": "\\Documents\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "Document", "size": "0", "dateModified": "1-23-2019 9:21:31 PM", "dateCreated": "12-24-2018 5:14:59 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+};
+
+export let accessSearchData: any = {
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+    "files": [
+        { "name": "EJ2 File Manager.docx", "size": 12403, "dateModified": "2019-03-07T14:49:02.6204366+05:30", "dateCreated": "2019-03-07T14:49:02.619437+05:30", "hasChild": false, "isFile": true, "type": ".docx", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": false } },
+        { "name": "Documents", "size": 0, "dateModified": "2019-03-14T14:55:22.5808132+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": true, "download": false, "edit": false, "editContents": true, "read": true, "upload": true } },
+        { "name": "docs", "size": 0, "dateModified": "2019-03-14T14:57:45.3465235+05:30", "dateCreated": "2019-03-13T12:58:06.1173237+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": false, "edit": false, "editContents": true, "read": true, "upload": true } }],
+    "error": null,
+    "details": null
+}
+
+export let accessData1: any = {
+    "cwd": { "name": "Files", "size": 0, "dateModified": "2019-04-26T15:23:18.7087237+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "", "permission": { "copy": false, "download": false, "edit": false, "editContents": false, "read": true, "upload": false } },
+    "files": [
+        { "name": "Documents", "size": 0, "dateModified": "2019-04-29T16:41:41.314427+05:30", "dateCreated": "2019-04-22T12:38:31.9246688+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": true, "download": false, "edit": false, "editContents": true, "read": true, "upload": true } },
+        { "name": "Downloads", "size": 0, "dateModified": "2019-04-24T12:56:17.3095747+05:30", "dateCreated": "2019-03-07T14:49:02.6324297+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": false, "read": false, "upload": false } },
+        { "name": "Music.png", "size": 0, "dateModified": "2019-04-26T11:59:16.2421514+05:30", "dateCreated": "2019-04-22T17:48:53.9322593+05:30", "hasChild": true, "isFile": false, "type": ".png", "filterPath": "\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "Videos", "size": 0, "dateModified": "2019-03-07T14:49:02.6654092+05:30", "dateCreated": "2019-03-07T14:49:02.6644086+05:30", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": false, "read": false, "upload": false } },
+        { "name": "2.gif", "size": 207320, "dateModified": "2019-03-06T10:43:51.8195497+05:30", "dateCreated": "2019-04-16T15:31:27.8010411+05:30", "hasChild": false, "isFile": true, "type": ".gif", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "2.png", "size": 66523, "dateModified": "2019-03-07T14:49:02.6434232+05:30", "dateCreated": "2019-04-16T15:00:29.3932591+05:30", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\", "permission": { "copy": false, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "3.png", "size": 62190, "dateModified": "2019-03-07T14:49:02.6454208+05:30", "dateCreated": "2019-04-16T15:00:29.3622788+05:30", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": true, "upload": true } },
+        { "name": "README.md", "size": 517, "dateModified": "2019-03-11T11:02:01.7962742+05:30", "dateCreated": "2019-03-11T11:02:01.7952736+05:30", "hasChild": false, "isFile": true, "type": ".md", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": false, "upload": true } },
+        { "name": "textbooks", "size": 0, "dateModified": "2019-04-17T09:34:10.2358973+05:30", "dateCreated": "2019-04-17T09:34:54.741977+05:30", "hasChild": false, "isFile": true, "type": "", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": false, "upload": true } }
+    ],
+    "error": null, "details": null
+}
+
+export let accessDetails1: any = {
+    "cwd": null,
+    "files": null,
+    "error": null,
+    "details": { "name": "Downloads", "location": "\\Files\\Downloads", "isFile": false, "size": "206.1 KB", "created": "2019-03-07T14:49:02.6324297+05:30", "modified": "2019-04-24T12:56:17.3095747+05:30", "multipleFiles": false, "permission": { "copy": false, "download": false, "edit": false, "editContents": false, "read": false, "upload": false } }
+}
+
+export let accessDetails2: any = {
+    "cwd": null,
+    "files": null,
+    "error": null,
+    "details": { "name": "Downloads, Music.png", "location": "\\Files", "isFile": false, "size": "305.9 KB", "created": "0001-01-01T00:00:00", "modified": "0001-01-01T00:00:00", "multipleFiles": true, "permission": null }
+}
+
+export let accessData2: any = {
+    "cwd": { "name": "Documents", "size": 0, "dateModified": "2019-05-07T09:50:24.051718+05:30", "dateCreated": "2019-04-22T12:38:31.9246688+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": true, "download": false, "edit": false, "editContents": true, "read": true, "upload": true } },
+    "files": [
+        { "name": "demo1", "size": 0, "dateModified": "2019-04-26T18:12:28.0480335+05:30", "dateCreated": "2019-04-26T18:12:23.9210595+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "Music.png", "size": 0, "dateModified": "2019-04-22T14:30:28.6565228+05:30", "dateCreated": "2019-04-22T12:38:53.1888675+05:30", "hasChild": false, "isFile": false, "type": ".png", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": false, "edit": true, "editContents": true, "read": true, "upload": false } },
+        { "name": "1.png", "size": 49792, "dateModified": "2019-04-10T17:12:27.2532121+05:30", "dateCreated": "2019-04-22T12:39:18.5190803+05:30", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Documents\\", "permission": { "copy": false, "download": true, "edit": true, "editContents": true, "read": false, "upload": true } },
+        { "name": "2.gif", "size": 207320, "dateModified": "2019-03-06T10:43:51.8195497+05:30", "dateCreated": "2019-04-22T12:39:18.5280705+05:30", "hasChild": false, "isFile": true, "type": ".gif", "filterPath": "\\Documents\\", "permission": { "copy": false, "download": true, "edit": false, "editContents": true, "read": false, "upload": true } },
+        { "name": "2.png", "size": 66523, "dateModified": "2019-03-07T14:49:02.6434232+05:30", "dateCreated": "2019-04-22T12:39:18.537065+05:30", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\Documents\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": false, "upload": true } },
+        { "name": "2.txt", "size": 274, "dateModified": "2019-03-07T14:49:02.6324297+05:30", "dateCreated": "2019-04-22T12:39:18.5510561+05:30", "hasChild": false, "isFile": true, "type": ".txt", "filterPath": "\\Documents\\", "permission": { "copy": false, "download": true, "edit": false, "editContents": true, "read": false, "upload": true } },
+        { "name": "3.PNG", "size": 62190, "dateModified": "2019-03-07T14:49:02.6454208+05:30", "dateCreated": "2019-04-22T12:39:18.5630472+05:30", "hasChild": false, "isFile": true, "type": ".PNG", "filterPath": "\\Documents\\", "permission": { "copy": false, "download": true, "edit": true, "editContents": true, "read": false, "upload": true } },
+        { "name": "4.jpg", "size": 46393, "dateModified": "2019-03-07T14:49:02.641425+05:30", "dateCreated": "2019-04-22T12:39:18.5700425+05:30", "hasChild": false, "isFile": true, "type": ".jpg", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "EJ2 File Manager.docx", "size": 12403, "dateModified": "2019-03-07T14:49:02.6204366+05:30", "dateCreated": "2019-04-22T12:39:18.5760393+05:30", "hasChild": false, "isFile": true, "type": ".docx", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "EJ2 File Manager.pdf", "size": 90099, "dateModified": "2019-03-07T14:49:02.6224359+05:30", "dateCreated": "2019-04-22T12:39:18.583036+05:30", "hasChild": false, "isFile": true, "type": ".pdf", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "File Manager PPT.pptx", "size": 578010, "dateModified": "2019-03-07T14:49:02.6314292+05:30", "dateCreated": "2019-04-22T12:39:18.5930286+05:30", "hasChild": false, "isFile": true, "type": ".pptx", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "File Manager.txt", "size": 274, "dateModified": "2019-03-07T14:49:02.6324297+05:30", "dateCreated": "2019-04-22T12:39:18.6050224+05:30", "hasChild": false, "isFile": true, "type": ".txt", "filterPath": "\\Documents\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let accessData3: any = {
+    "cwd": { "name": "Downloads", "size": 0, "dateModified": "2019-04-24T12:56:17.3095747+05:30", "dateCreated": "2019-03-07T14:49:02.6324297+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": false, "read": false, "upload": false } },
+    "files": null,
+    "error": { "code": "401", "message": "'/Downloads/' is not accessible. Access is denied.", "fileExists": null },
+    "details": null
+}
+
+export let accessData4: any = {
+    "cwd": { "name": "Music.png", "oldName": null, "size": 0, "dateModified": "2019-05-17T14:51:49.1146061+05:30", "dateCreated": "2019-04-22T17:48:53.9322593+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+    "files": [
+        { "name": "as", "oldName": null, "size": 0, "dateModified": "2019-05-17T09:26:13.3180631+05:30", "dateCreated": "2019-04-26T11:59:16.2421514+05:30", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\Music.png\\", "permission": { "copy": false, "download": false, "edit": true, "editContents": true, "read": false, "upload": false } },
+        { "name": "4.jpg", "oldName": null, "size": 46393, "dateModified": "2019-03-07T14:49:02.641425+05:30", "dateCreated": "2019-04-22T12:39:18.5700425+05:30", "hasChild": false, "isFile": true, "type": ".jpg", "filterPath": "\\Music.png\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": false, "upload": true } },
+        { "name": "Music.mp3", "oldName": null, "size": 0, "dateModified": "2019-03-07T14:49:02.6344281+05:30", "dateCreated": "2019-04-22T17:48:53.9352567+05:30", "hasChild": false, "isFile": true, "type": ".mp3", "filterPath": "\\Music.png\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": false, "upload": true } },
+        { "name": "Sample Music.mp3", "oldName": null, "size": 0, "dateModified": "2019-03-07T14:49:02.6354274+05:30", "dateCreated": "2019-04-22T17:48:53.9522458+05:30", "hasChild": false, "isFile": true, "type": ".mp3", "filterPath": "\\Music.png\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": false, "upload": true } }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let accessData5: any = {
+    "cwd": { "name": "Files", "size": 0, "dateModified": "2019-05-07T10:22:34.1406062+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+    "files": [
+        { "name": "Documents", "size": 0, "dateModified": "2019-05-07T11:15:20.235362+05:30", "dateCreated": "2019-04-22T12:38:31.9246688+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": true, "download": false, "edit": false, "editContents": true, "read": true, "upload": true } },
+        { "name": "Downloads", "size": 0, "dateModified": "2019-04-24T12:56:17.3095747+05:30", "dateCreated": "2019-03-07T14:49:02.6324297+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": true, "editContents": true, "read": false, "upload": false } },
+        { "name": "Music.png", "size": 0, "dateModified": "2019-05-07T09:46:48.2605339+05:30", "dateCreated": "2019-04-22T17:48:53.9322593+05:30", "hasChild": true, "isFile": false, "type": ".png", "filterPath": "\\", "permission": { "copy": true, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "Videos", "size": 0, "dateModified": "2019-03-07T14:49:02.6654092+05:30", "dateCreated": "2019-03-07T14:49:02.6644086+05:30", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": true, "editContents": true, "read": false, "upload": false } },
+        { "name": "2.gif", "size": 207320, "dateModified": "2019-03-06T10:43:51.8195497+05:30", "dateCreated": "2019-04-16T15:31:27.8010411+05:30", "hasChild": false, "isFile": true, "type": ".gif", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "2.png", "size": 66523, "dateModified": "2019-03-07T14:49:02.6434232+05:30", "dateCreated": "2019-04-16T15:00:29.3932591+05:30", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\", "permission": { "copy": false, "download": true, "edit": true, "editContents": true, "read": true, "upload": true } },
+        { "name": "3.png", "size": 62190, "dateModified": "2019-03-07T14:49:02.6454208+05:30", "dateCreated": "2019-04-16T15:00:29.3622788+05:30", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": true, "upload": true } },
+        { "name": "README.md", "size": 517, "dateModified": "2019-03-11T11:02:01.7962742+05:30", "dateCreated": "2019-03-11T11:02:01.7952736+05:30", "hasChild": false, "isFile": true, "type": ".md", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": false, "upload": true } },
+        { "name": "textbooks", "size": 0, "dateModified": "2019-04-17T09:34:10.2358973+05:30", "dateCreated": "2019-04-17T09:34:54.741977+05:30", "hasChild": false, "isFile": true, "type": "", "filterPath": "\\", "permission": { "copy": false, "download": false, "edit": false, "editContents": true, "read": false, "upload": true } }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let accessData6: any = {
+    "cwd": null,
+    "files": null,
+    "error": { "code": "401", "message": "'Files/README.md' is not accessible. Access is denied.", "fileExists": null },
+    "details": null
+}
+
+export let accessData7: any = {
+    "cwd": null,
+    "files": null,
+    "error": { "code": "401", "message": "'Files/2.gif' is not accessible. Access is denied.", "fileExists": null },
+    "details": null
+}

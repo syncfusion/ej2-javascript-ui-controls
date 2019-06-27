@@ -75,15 +75,30 @@ export const shapeRendering: string = 'shapeRendering';
  */
 export const markerRendering: string = 'markerRendering';
 /**
+ * Specifies maps clusterRendering event name.
+ * @private
+ */
+export const markerClusterRendering: string = 'markerClusterRendering';
+/**
  * Specifies maps markerClick event name.
  * @private
  */
 export const markerClick: string = 'markerClick';
 /**
+ * Specifies maps clusterClick event name.
+ * @private
+ */
+export const markerClusterClick: string = 'markerClusterClick';
+/**
  * Specifies maps markerMouseMove event name.
  * @private
  */
 export const markerMouseMove: string = 'markerMouseMove';
+/**
+ * Specifies maps clusterMouseMove event name.
+ * @private
+ */
+export const markerClusterMouseMove: string = 'markerClusterMouseMove';
 /**
  * Specifies maps dataLabelRendering event name.
  * @private

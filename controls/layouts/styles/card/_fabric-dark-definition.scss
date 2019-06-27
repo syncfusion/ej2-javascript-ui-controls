@@ -1,6 +1,6 @@
 
 /*! component's default definitions and variables */
-$card-skin-name: 'fabric' !default;
+$skin-name: 'material' !default;
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: $border-radius !default;
 $card-box-shadow: $shadow-color !default;
@@ -122,6 +122,8 @@ $card-header-txt-title-color: $default-font-color !default;
 $card-header-txt-subtitle-color: $default-font-color !default;
 $card-content-font-color: $card-header-txt-subtitle-color !default;
 $card-action-btn-icon-color: $default-font-color !default;
+/*! component's theme wise override material-definitions and variables */
+$skin-name: 'fabric' !default;
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: 4px !default;
 

@@ -36,7 +36,9 @@ export class ColumnWidthService {
             this.setColumnWidth(column, wFlag && this.parent.enableColumnVirtualization ? undefined : index + i);
         });
         totalColumnsWidth = this.getTableWidth(this.parent.getColumns());
-        this.setMinwidthBycalculation(totalColumnsWidth);
+        if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
+            this.setMinwidthBycalculation(totalColumnsWidth);
+        }
     }
 
     public setMinwidthBycalculation(tWidth?: number): void {
@@ -82,7 +84,9 @@ export class ColumnWidthService {
         let tgridWidth: number = this.getTableWidth(this.parent.getColumns());
         if (cWidth !== null) {
             this.setWidth(cWidth, columnIndex);
-            this.setMinwidthBycalculation(tgridWidth);
+            if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
+                this.setMinwidthBycalculation(tgridWidth);
+            }
             if ((this.parent.allowResizing && module === 'resize') || (this.parent.getFrozenColumns() && this.parent.allowResizing)) {
                 this.setWidthToTable();
             }

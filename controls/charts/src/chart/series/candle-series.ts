@@ -161,10 +161,13 @@ export class CandleSeries extends ColumnBase {
             fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
         let element: Element = getElement(options.id);
         let previousDirection: string = element ? element.getAttribute('d') : null;
-        let candleElement: HTMLElement = series.chart.renderer.drawPath(options) as HTMLElement;
+        let candleElement: HTMLElement =
+            series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
         candleElement.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
-        series.seriesElement.appendChild(candleElement);
+        if (!series.chart.enableCanvas) {
+            series.seriesElement.appendChild(candleElement);
+        }
         pathAnimation(element, direction, series.chart.redraw, previousDirection);
     }
 

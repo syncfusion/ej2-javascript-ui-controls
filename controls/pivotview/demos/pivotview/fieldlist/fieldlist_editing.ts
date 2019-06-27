@@ -58,8 +58,8 @@ document.getElementById('columns').onclick = function () {
     pivotGridObj.editSettings.allowCommandColumns = true;
 };
 let fieldlist: PivotFieldList = new PivotFieldList({
-    dataSource: {
-        data: pivot_dataset as IDataSet[],
+    dataSourceSettings: {
+        dataSource: pivot_dataset as IDataSet[],
         expandAll: false,
         enableSorting: true,
         sortSettings: [{ name: 'company', order: 'Descending' }],

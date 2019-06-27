@@ -546,7 +546,7 @@ let diagram: Diagram = new Diagram({
         type: 'RadialTree', horizontalSpacing: 30, verticalSpacing: 30, root: 'parent'
     },
     dataSourceSettings: {
-        id: 'Id', parentId: 'ReportingPerson', dataManager: items
+        id: 'Id', parentId: 'ReportingPerson', dataSource: items
     },
 
     getNodeDefaults: (obj: Node, diagram: Diagram) => {

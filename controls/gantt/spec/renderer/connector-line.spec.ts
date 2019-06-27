@@ -453,5 +453,37 @@ describe('Gantt connector line support', () => {
             ganttObj.updatePredecessor(ganttObj.flatData[8].ganttProperties.taskId, '2FS,5FS,4FS,3FS');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
         });
+        it('Aria-label testing - SS', (done: Function) => {
+            ganttObj.dataSource = connectorLineSSDatasource;
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('#ConnectorLineparent2child7 > div').getAttribute('aria-label').indexOf('SS Start to SS Start')> -1).toBeTruthy();
+                done();
+            }
+            ganttObj.refresh();            
+        });
+        it('Aria-label testing - FF', (done: Function) => {
+            ganttObj.dataSource = connectorLineFFDatasource;
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('#ConnectorLineparent9child7 > div').getAttribute('aria-label').indexOf('FF Finish to FF Finish')> -1).toBeTruthy();
+                done();
+            }
+            ganttObj.refresh();            
+        });
+        it('Aria-label testing - SF', (done: Function) => {
+            ganttObj.dataSource = connectorLineSFDatasource;
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('#ConnectorLineparent7child13 > div').getAttribute('aria-label').indexOf('SF Start to SF Finish')> -1).toBeTruthy();
+                done();
+            }
+            ganttObj.refresh();            
+        });                
+        it('Aria-label testing - FS', (done: Function) => {
+            ganttObj.dataSource = connectorLineFSDatasource;
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('#ConnectorLineparent7child6 > div').getAttribute('aria-label').indexOf('FS Finish to FS Start')> -1).toBeTruthy();
+                done();
+            }
+            ganttObj.refresh();            
+        });
     });
 });

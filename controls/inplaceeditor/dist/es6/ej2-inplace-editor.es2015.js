@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, select, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, ODataV4Adaptor, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
@@ -263,7 +263,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     appendValueElement() {
         this.valueWrap = this.createElement('div', { id: this.element.id + '_wrap', className: VALUE_WRAPPER });
-        this.element.innerHTML = '';
+        let blazorContain = Object.keys(window);
+        if (blazorContain.indexOf('ejsIntrop') === -1) {
+            this.element.innerHTML = '';
+        }
         this.valueEle = this.createElement('span', { className: VALUE });
         this.editIcon = this.createElement('span', {
             className: OVERLAY_ICON + ' ' + ICONS,
@@ -578,6 +581,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.isExtModule ? this.notify(setFocus, {}) : this.componentObj.element.focus();
     }
     removeEditor() {
+        resetBlazorTemplate(this.element.id + 'template', 'Template');
         let tipEle;
         if (this.tipObj && this.formEle) {
             tipEle = closest(this.formEle, '.' + ROOT_TIP);
@@ -653,22 +657,23 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     sendValue() {
         let eventArgs = { data: { name: this.name, primaryKey: this.primaryKey, value: this.getSendValue() } };
-        this.trigger('actionBegin', eventArgs);
-        if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey)) {
-            this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
-            if (this.adaptor === 'UrlAdaptor') {
-                this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+        this.trigger('actionBegin', eventArgs, (actionBeginArgs) => {
+            if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey)) {
+                this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
+                if (this.adaptor === 'UrlAdaptor') {
+                    this.dataManager.executeQuery(this.getQuery(actionBeginArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+                }
+                else {
+                    let crud = this.dataManager.insert(actionBeginArgs.data);
+                    crud.then((e) => this.successHandler(e)).catch((e) => this.failureHandler(e));
+                }
             }
             else {
-                let crud = this.dataManager.insert(eventArgs.data);
-                crud.then((e) => this.successHandler(e)).catch((e) => this.failureHandler(e));
+                let eventArg = { data: {}, value: actionBeginArgs.data.value };
+                this.triggerSuccess(eventArg);
             }
-        }
-        else {
-            let eventArg = { data: {}, value: eventArgs.data.value };
-            this.triggerSuccess(eventArg);
-        }
-        this.dataManager = undefined;
+            this.dataManager = undefined;
+        });
     }
     isEmpty(value) {
         return (!isNullOrUndefined(value) && value.length !== 0) ? false : true;
@@ -683,12 +688,13 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         let compiler = compile(tempStr);
         if (!isNullOrUndefined(compiler)) {
-            tempEle = compiler({}, this, 'template');
+            tempEle = compiler({}, this, 'template', this.element.id + 'template');
         }
         if (!isNullOrUndefined(compiler) && tempEle.length > 0) {
             [].slice.call(tempEle).forEach((el) => {
                 trgEle.appendChild(el);
             });
+            updateBlazorTemplate(this.element.id + 'template', 'Template');
         }
     }
     appendTemplate(trgEle, tempStr) {
@@ -728,14 +734,15 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                         errorMessage: e.message,
                         data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
                     };
-                    this.trigger('validating', args);
-                    if (e.status === 'failure') {
-                        e.errorElement.innerText = args.errorMessage;
-                        this.toggleErrorClass(true);
-                    }
-                    else {
-                        this.toggleErrorClass(false);
-                    }
+                    this.trigger('validating', args, (validateArgs) => {
+                        if (e.status === 'failure') {
+                            e.errorElement.innerText = validateArgs.errorMessage;
+                            this.toggleErrorClass(true);
+                        }
+                        else {
+                            this.toggleErrorClass(false);
+                        }
+                    });
                 },
                 customPlacement: (inputElement, errorElement) => {
                     select('.' + EDITABLE_ERROR, this.formEle).appendChild(errorElement);
@@ -748,14 +755,15 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                 errorMessage: '',
                 data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
             };
-            this.trigger('validating', args);
-            if (args.errorMessage) {
-                select('.' + EDITABLE_ERROR, this.formEle).innerHTML = args.errorMessage;
-                this.toggleErrorClass(true);
-            }
-            else {
-                this.toggleErrorClass(false);
-            }
+            this.trigger('validating', args, (validateArgs) => {
+                if (validateArgs.errorMessage) {
+                    select('.' + EDITABLE_ERROR, this.formEle).innerHTML = validateArgs.errorMessage;
+                    this.toggleErrorClass(true);
+                }
+                else {
+                    this.toggleErrorClass(false);
+                }
+            });
         }
     }
     toggleErrorClass(value) {
@@ -780,10 +788,11 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     triggerSuccess(args) {
         let val = args.value;
-        this.trigger('actionSuccess', args);
-        this.removeSpinner('submit');
-        this.renderValue(this.checkValue((args.value !== val) ? args.value : this.getRenderValue()));
-        this.removeEditor();
+        this.trigger('actionSuccess', args, (actionArgs) => {
+            this.removeSpinner('submit');
+            this.renderValue(this.checkValue((actionArgs.value !== val) ? actionArgs.value : this.getRenderValue()));
+            this.removeEditor();
+        });
     }
     wireEvents() {
         this.wireEditEvent(this.editableOn);

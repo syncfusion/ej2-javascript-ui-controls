@@ -42,9 +42,9 @@ export class MarkerExplode extends ChartData {
      * @hidden
      */
     public removeEventListener(): void {
-         if (this.chart.isDestroyed) { return; }
-         this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
-         this.chart.off(Browser.touchEndEvent, this.mouseUpHandler);
+        if (this.chart.isDestroyed) { return; }
+        this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
+        this.chart.off(Browser.touchEndEvent, this.mouseUpHandler);
     }
 
     /**
@@ -90,6 +90,9 @@ export class MarkerExplode extends ChartData {
             ) {
                 (<PointData[]>this.currentPoints).push(data);
             }
+            if (data.point && explodeSeries && chart.isPointMouseDown) {
+                (<PointData[]>this.currentPoints).push(data);
+            }
         } else {
             if (!withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
                 return null;
@@ -114,7 +117,7 @@ export class MarkerExplode extends ChartData {
         }
         let length: number = this.previousPoints.length;
         if (this.currentPoints.length > 0) {
-             if (length === 0 || (length > 0 && this.previousPoints[0].point !== this.currentPoints[0].point)) {
+             if (length === 0 || chart.isPointMouseDown || (length > 0 && this.previousPoints[0].point !== this.currentPoints[0].point)) {
                 if (this.previousPoints.length > 0) {
                     this.removeHighlightedMarker();
                 }
@@ -174,7 +177,8 @@ export class MarkerExplode extends ChartData {
                 i ? borderColor : markerShadow,
                 (marker.opacity || seriesMarker.opacity), null, null
             );
-            let symbol: Element = drawSymbol(location, shape, size, seriesMarker.imageUrl, options, '');
+            let symbol: Element = drawSymbol(location, shape, size, seriesMarker.imageUrl, options, '',
+                                             this.chart.svgRenderer, series.clipRect);
             symbol.setAttribute('style', 'pointer-events:none');
             symbol.setAttribute('class', 'EJ2-Trackball');
             element.appendChild(symbol);

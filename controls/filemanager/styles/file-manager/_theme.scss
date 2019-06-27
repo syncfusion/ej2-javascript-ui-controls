@@ -34,10 +34,6 @@
     .e-toolbar {
       border-bottom-color: $fe-border-color;
 
-      .e-status {
-        color: $fe-text-color;
-      }
-
       .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
         //Based on toolbar active background modify the dropdowns background
         &.e-active {
@@ -137,6 +133,10 @@
           }
         }
       }
+
+      .e-list-parent .e-list-item.e-fe-drop-folder.e-hover > .e-fullrow {
+        border-color: $fe-drop-folder-bg-color;
+      }
     }
 
     .e-grid {
@@ -150,6 +150,10 @@
         .e-headercell {
 
           &:not(.e-fe-grid-icon):hover {
+            background: $fe-hover-bg-color;
+          }
+
+          &:not(.e-fe-grid-icon):focus {
             background: $fe-hover-bg-color;
           }
 
@@ -211,6 +215,10 @@
           color: $fe-grid-type-color;
         }
       }
+
+      &.e-gridhover tr[role='row'].e-fe-drop-file:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
+        background-color: transparent;
+      }
     }
 
     .e-dialog {
@@ -252,6 +260,10 @@
         &.e-focus {
           border-color: $fe-focus-border-color;
         }
+
+        &.e-hover.e-fe-drop-folder {
+          border-color: $fe-drop-folder-bg-color;
+        }
       }
 
       .e-checkbox-wrapper {
@@ -271,6 +283,25 @@
 
       .e-upload-actions {
         border-bottom-color: $fe-up-list-border-color;
+      }
+    }
+
+    .e-fe-clone {
+
+      .e-fe-content {
+        background-color: $fe-clone-bg-color;
+        border-color: $fe-clone-border-color;
+        color: $fe-bc-color;
+
+        @if $fm-skin-name == 'highcontrast' {
+          color: $fe-active-font-color;
+        }
+      }
+
+      .e-fe-count {
+        background-color: $fe-clone-count-bg-color;
+        border-color: $fe-clone-count-border-color;
+        color: $fe-clone-count-font-color;
       }
     }
 

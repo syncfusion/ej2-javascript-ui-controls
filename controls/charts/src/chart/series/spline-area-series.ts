@@ -48,7 +48,7 @@ export class SplineAreaSeries extends SplineBase {
                     pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
                     bpt1 = getCoordinate(controlPt1.x, controlPt1.y, xAxis, yAxis, isInverted, series);
                     bpt2 = getCoordinate(controlPt2.x, controlPt2.y, xAxis, yAxis, isInverted, series);
-                    direction = direction.concat(' C ' + bpt1.x + ' '
+                    direction = direction.concat('C ' + bpt1.x + ' '
                         + bpt1.y + ' ' + bpt2.x + ' ' + bpt2.y + ' ' + pt2.x + ' ' + pt2.y + ' ');
                 } else {
                     // Start point for the current path

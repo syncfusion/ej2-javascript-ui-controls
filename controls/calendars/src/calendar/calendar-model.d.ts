@@ -1,5 +1,5 @@
 import { Component, EventHandler, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';import { createElement, removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';import { Islamic, IslamicDateArgs } from './index';
-import {CalendarType,CalendarView,NavigatedEventArgs,RenderDayCellEventArgs,ChangedEventArgs} from "./calendar";
+import {CalendarType,CalendarView,DayHeaderFormats,NavigatedEventArgs,RenderDayCellEventArgs,ChangedEventArgs} from "./calendar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -110,6 +110,17 @@ export interface CalendarBaseModel extends ComponentModel{
     showTodayButton?: boolean;
 
     /**
+     * Specifies the format of the day that to be displayed in header. By default, the format is ‘short’.
+     * Possible formats are:
+     * * `Short` - Sets the short format of day name (like Su ) in day header.
+     * * `Narrow` - Sets the single character of day name (like S ) in day header.
+     * * `Abbreviated` - Sets the min format of day name (like Sun ) in day header.
+     * * `Wide` - Sets the long format of day name (like Sunday ) in day header.
+     * @default Short
+     */
+    dayHeaderFormat?: DayHeaderFormats;
+
+    /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
      * @default false
@@ -118,25 +129,29 @@ export interface CalendarBaseModel extends ComponentModel{
 
     /**
      * Triggers when Calendar is created.
-     * @event 
+     * @event
+     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when Calendar is destroyed.
-     * @event 
+     * @event
+     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the Calendar is navigated to another level or within the same level of view.
      * @event
+     * @blazorProperty 'Navigated'
      */
     navigated?: EmitType<NavigatedEventArgs>;
 
     /**
      * Triggers when each day cell of the Calendar is rendered.
      * @event
+     * @blazorProperty 'OnRenderDayCell'
      */
     renderDayCell?: EmitType<RenderDayCellEventArgs>;
 
@@ -168,7 +183,8 @@ export interface CalendarModel extends CalendarBaseModel{
 
     /**
      * Triggers when the Calendar value is changed.
-     * @event  
+     * @event
+     * @blazorProperty 'ValueChange'
      */
     change?: EmitType<ChangedEventArgs>;
 

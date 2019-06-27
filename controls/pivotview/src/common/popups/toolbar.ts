@@ -50,13 +50,23 @@ export class Toolbar {
         if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar') !== null) {
             remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
         }
-        this.parent.element.insertBefore(
-            createElement(
-                'div', {
-                    id: this.parent.element.id + 'pivot-toolbar',
-                    className: cls.GRID_TOOLBAR
-                }),
-            this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList'));
+        let element: HTMLElement = createElement(
+            'div', {
+                id: this.parent.element.id + 'pivot-toolbar',
+                className: cls.GRID_TOOLBAR
+            });
+        if (this.parent.showFieldList &&
+            this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList')) {
+            this.parent.element.insertBefore(
+                element, this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList'));
+        } else if (this.parent.showGroupingBar &&
+            this.parent.element.querySelector('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar')) {
+            this.parent.element.insertBefore(
+                element, this.parent.element.querySelector('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar'));
+        } else {
+            this.parent.element.insertBefore(
+                element, this.parent.element.querySelector('#' + this.parent.element.id + '_grid'));
+        }
 
         this.toolbar = new tool({
             created: this.create.bind(this),
@@ -187,9 +197,10 @@ export class Toolbar {
             let loadArgs: LoadReportArgs = {
                 reportName: args.itemData.value as string
             };
-            this.parent.trigger(events.loadReport, loadArgs);
-            this.currentReport = loadArgs.reportName;
-            this.parent.isModified = false;
+            this.parent.trigger(events.loadReport, loadArgs, (observedArgs: LoadReportArgs) => {
+                this.currentReport = observedArgs.reportName;
+                this.parent.isModified = false;
+            });
         }
     }
 
@@ -420,6 +431,7 @@ export class Toolbar {
             ]
         });
         this.confirmPopUp.appendTo(errorDialog);
+        this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
 
     private okButtonClick(): void {
@@ -615,13 +627,13 @@ export class Toolbar {
         if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
             args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
         }
-        if (this.parent.dataSource.showSubTotals && this.parent.dataSource.showRowSubTotals && !this.parent.dataSource.showColumnSubTotals) {
+        if (this.parent.dataSourceSettings.showSubTotals && this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (this.parent.dataSource.showSubTotals && !this.parent.dataSource.showRowSubTotals && this.parent.dataSource.showColumnSubTotals) {
+        } else if (this.parent.dataSourceSettings.showSubTotals && !this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (this.parent.dataSource.showSubTotals && this.parent.dataSource.showRowSubTotals && this.parent.dataSource.showColumnSubTotals) {
+        } else if (this.parent.dataSourceSettings.showSubTotals && this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (!this.parent.dataSource.showSubTotals && !this.parent.dataSource.showRowSubTotals && !this.parent.dataSource.showColumnSubTotals) {
+        } else if (!this.parent.dataSourceSettings.showSubTotals && !this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
@@ -639,13 +651,13 @@ export class Toolbar {
         if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
             args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
         }
-        if (this.parent.dataSource.showGrandTotals && this.parent.dataSource.showRowGrandTotals && !this.parent.dataSource.showColumnGrandTotals) {
+        if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (this.parent.dataSource.showGrandTotals && !this.parent.dataSource.showRowGrandTotals && this.parent.dataSource.showColumnGrandTotals) {
+        } else if (this.parent.dataSourceSettings.showGrandTotals && !this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (this.parent.dataSource.showGrandTotals && this.parent.dataSource.showRowGrandTotals && this.parent.dataSource.showColumnGrandTotals) {
+        } else if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (!this.parent.dataSource.showGrandTotals && !this.parent.dataSource.showRowGrandTotals && !this.parent.dataSource.showColumnGrandTotals) {
+        } else if (!this.parent.dataSourceSettings.showGrandTotals && !this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
@@ -661,29 +673,30 @@ export class Toolbar {
             this.reportList.value = this.currentReport;
             this.reportList.text = this.currentReport;
         }
+        this.reportList.refresh();
     }
 
     private grandTotalClick(args: ClickEventArgs): void {
         switch (args.item.id) {
             case (this.parent.element.id + 'notgrandtotal'):
-                this.parent.dataSource.showGrandTotals = false;
-                this.parent.dataSource.showColumnGrandTotals = false;
-                this.parent.dataSource.showRowGrandTotals = false;
+                this.parent.dataSourceSettings.showGrandTotals = false;
+                this.parent.dataSourceSettings.showColumnGrandTotals = false;
+                this.parent.dataSourceSettings.showRowGrandTotals = false;
                 break;
             case (this.parent.element.id + 'grandtotalrow'):
-                this.parent.dataSource.showGrandTotals = true;
-                this.parent.dataSource.showColumnGrandTotals = false;
-                this.parent.dataSource.showRowGrandTotals = true;
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = false;
+                this.parent.dataSourceSettings.showRowGrandTotals = true;
                 break;
             case (this.parent.element.id + 'grandtotalcolumn'):
-                this.parent.dataSource.showGrandTotals = true;
-                this.parent.dataSource.showColumnGrandTotals = true;
-                this.parent.dataSource.showRowGrandTotals = false;
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = true;
+                this.parent.dataSourceSettings.showRowGrandTotals = false;
                 break;
             case (this.parent.element.id + 'grandtotal'):
-                this.parent.dataSource.showGrandTotals = true;
-                this.parent.dataSource.showColumnGrandTotals = true;
-                this.parent.dataSource.showRowGrandTotals = true;
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = true;
+                this.parent.dataSourceSettings.showRowGrandTotals = true;
                 break;
         }
     }
@@ -691,24 +704,24 @@ export class Toolbar {
     private subTotalClick(args: ClickEventArgs): void {
         switch (args.item.id) {
             case (this.parent.element.id + 'notsubtotal'):
-                this.parent.dataSource.showSubTotals = false;
-                this.parent.dataSource.showColumnSubTotals = false;
-                this.parent.dataSource.showRowSubTotals = false;
+                this.parent.dataSourceSettings.showSubTotals = false;
+                this.parent.dataSourceSettings.showColumnSubTotals = false;
+                this.parent.dataSourceSettings.showRowSubTotals = false;
                 break;
             case (this.parent.element.id + 'subtotalrow'):
-                this.parent.dataSource.showSubTotals = true;
-                this.parent.dataSource.showColumnSubTotals = false;
-                this.parent.dataSource.showRowSubTotals = true;
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = false;
+                this.parent.dataSourceSettings.showRowSubTotals = true;
                 break;
             case (this.parent.element.id + 'subtotalcolumn'):
-                this.parent.dataSource.showSubTotals = true;
-                this.parent.dataSource.showColumnSubTotals = true;
-                this.parent.dataSource.showRowSubTotals = false;
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = true;
+                this.parent.dataSourceSettings.showRowSubTotals = false;
                 break;
             case (this.parent.element.id + 'subtotal'):
-                this.parent.dataSource.showSubTotals = true;
-                this.parent.dataSource.showColumnSubTotals = true;
-                this.parent.dataSource.showRowSubTotals = true;
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = true;
+                this.parent.dataSourceSettings.showRowSubTotals = true;
                 break;
         }
     }
@@ -718,10 +731,11 @@ export class Toolbar {
             this.parent.grid.element.style.display = '';
             this.parent.chart.element.style.display = 'none';
             this.parent.currentView = 'Table';
-            if(this.parent.showGroupingBar) { 
+            if (this.parent.showGroupingBar) {
                 (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "";
                 (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "none";
             }
+            this.parent.layoutRefresh();
         }
     }
 
@@ -732,7 +746,7 @@ export class Toolbar {
                 this.parent.grid.element.style.display = 'none';
                 this.parent.chart.element.style.display = '';
                 this.parent.currentView = 'Chart';
-                if(this.parent.showGroupingBar) { 
+                if (this.parent.showGroupingBar) {
                     (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "none";
                     (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "";
                 }

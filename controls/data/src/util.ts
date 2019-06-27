@@ -449,7 +449,8 @@ export class DataUtil {
         while (left.length > 0 || right.length > 0) {
             if (left.length > 0 && right.length > 0) {
                 if (comparer) {
-                    current = (<Function>comparer)(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName)) <= 0 ? left : right;
+                    current = (<Function>comparer)(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName),
+                                                   left[0], right[0]) <= 0 ? left : right;
                 } else {
                     current = left[0][fieldName] < left[0][fieldName] ? left : right;
                 }

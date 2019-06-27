@@ -32,7 +32,7 @@ let diagram: Diagram = new Diagram({
     },
     //Configures data source
     dataSourceSettings: {
-        id: 'id', parentId: 'ancestor', dataManager: new DataManager(keyBoardData as JSON[]),
+        id: 'id', parentId: 'ancestor', dataSource: new DataManager(keyBoardData as JSON[]),
         //binds the external data with node
         doBinding: (nodeModel: NodeModel, data: DataInfo) => {
             nodeModel.annotations = [{

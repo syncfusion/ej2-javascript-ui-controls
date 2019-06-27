@@ -1,16 +1,17 @@
 import { Toolbar as BaseToolbar, ItemModel, ClickEventArgs, MenuEventArgs, DisplayMode } from '@syncfusion/ej2-navigations';
-import { select, selectAll, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
+import { select, isNullOrUndefined as isNOU, closest, selectAll } from '@syncfusion/ej2-base';
 import { createDialog } from '../pop-up/dialog';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
-import { IFileManager, NotifyArgs, FileToolbarClickEventArgs, ReadArgs } from '../base/interface';
-import { refresh, getFileObject, getItemObject, getPathObject, getLocaleText, getCssClass, sortbyClickHandler } from '../common/utility';
-import { read, Download, Search } from '../common/operations';
+import { IFileManager, NotifyArgs, ToolbarClickEventArgs, ToolbarCreateEventArgs } from '../base/interface';
+import { refresh, getPathObject, getLocaleText, getCssClass, sortbyClickHandler } from '../common/utility';
+import { createDeniedDialog, updateLayout } from '../common/utility';
+import { Download, GetDetails } from '../common/operations';
 import { DropDownButton, ItemModel as SplitButtonItemModel } from '@syncfusion/ej2-splitbuttons';
-import { cutFiles, copyFiles } from '../common/index';
+import { cutFiles, copyFiles, pasteHandler, hasEditAccess, hasContentAccess, hasUploadAccess, hasDownloadAccess } from '../common/index';
 
 /**
- * `Toolbar` module is used to handle Toolbar actions.
+ * Toolbar module
  */
 export class Toolbar {
 
@@ -38,7 +39,8 @@ export class Toolbar {
     }
 
     private render(): void {
-        this.items = this.toolbarItemData(this.getItems(this.parent.toolbarSettings.items));
+        this.items = this.toolbarItemData(this.getItems(this.parent.toolbarSettings.items.map((item: string) => item.trim())));
+        this.triggerToolbarCreate();
         this.toolbarObj = new BaseToolbar({
             items: this.items,
             created: this.toolbarCreateHandler.bind(this),
@@ -47,6 +49,13 @@ export class Toolbar {
             enableRtl: this.parent.enableRtl
         });
         this.toolbarObj.appendTo('#' + this.parent.element.id + CLS.TOOLBAR_ID);
+    }
+
+    private triggerToolbarCreate(): void {
+        let eventArgs: ToolbarCreateEventArgs = { items: this.items };
+        this.parent.trigger('toolbarCreate', eventArgs, (toolbarCreateArgs: ToolbarCreateEventArgs) => {
+            this.items = toolbarCreateArgs.items;
+        });
     }
 
     private getItems(items: string[]): string[] {
@@ -58,87 +67,104 @@ export class Toolbar {
     private onClicked(args: ClickEventArgs): void {
         if (isNOU(args.item) || !args.item.id) { return; }
         let tool: string = args.item.id.substr((this.parent.element.id + '_tb_').length);
-        let details: Object;
-        if (tool === 'refresh' || tool === 'newfolder') {
-            details = getPathObject(this.parent);
-            this.parent.itemData = [details];
+        let details: Object[];
+        if (tool === 'refresh' || tool === 'newfolder' || tool === 'upload') {
+            details = [getPathObject(this.parent)];
+            this.parent.itemData = details;
         } else {
-            details = getFileObject(this.parent);
+            this.parent.notify(events.selectedData, {});
+            details = this.parent.itemData;
         }
-        let eventArgs: FileToolbarClickEventArgs = { cancel: false, fileDetails: details, item: args.item };
-        this.parent.trigger('toolbarClick', eventArgs);
-        if (eventArgs.cancel) { return; }
-        switch (tool) {
-            case 'sortby':
-                let target: Element = closest((args.originalEvent.target as Element), '.' + CLS.TB_ITEM);
-                if (target && target.classList.contains('e-toolbar-popup')) {
-                    args.cancel = true;
-                }
-                break;
-            case 'newfolder':
-                createDialog(this.parent, 'NewFolder');
-                break;
-            /* istanbul ignore next */
-            case 'cut':
-                cutFiles(this.parent as IFileManager);
-                if (this.parent.nodeNames) {
-                    this.parent.fileOperation(this.parent.nodeNames);
-                }
-                break;
-            /* istanbul ignore next */
-            case 'copy':
-                copyFiles(this.parent as IFileManager);
-                if (this.parent.nodeNames) {
-                    this.parent.fileOperation(this.parent.nodeNames);
-                }
-                if (this.parent.activeModule === 'navigationPane') {
-                    this.parent.navigationpaneModule.copyNodes = <{ [key: string]: Object[]; }[]>this.parent.nodeNames;
-                }
-                break;
-            case 'delete':
-                createDialog(this.parent, 'Delete');
-                break;
-            case 'details':
-                this.parent.getDetails();
-                break;
-            /* istanbul ignore next */
-            case 'paste':
-                this.parent.pasteHandler();
-                break;
-            case 'refresh':
-                refresh(this.parent);
-                break;
-            /* istanbul ignore next */
-            case 'download':
-                if (this.parent.selectedItems.length > 0) {
-                    if (this.parent.view === 'LargeIcons') {
-                        let elementRecords: Object[] = [];
-                        let elements: Element[] = selectAll('.e-active', this.parent.largeiconsviewModule.listElements);
-                        for (let ele: number = 0; ele < elements.length; ele++) {
-                            elementRecords[ele] = getItemObject(this.parent, elements[ele]);
+        let eventArgs: ToolbarClickEventArgs = { cancel: false, fileDetails: details, item: args.item };
+        this.parent.trigger('toolbarClick', eventArgs, (toolbarClickArgs: ToolbarClickEventArgs) => {
+            if (!toolbarClickArgs.cancel) {
+                switch (tool) {
+                    case 'sortby':
+                        let target: Element = closest((args.originalEvent.target as Element), '.' + CLS.TB_ITEM);
+                        if (target && target.classList.contains('e-toolbar-popup')) {
+                            args.cancel = true;
                         }
-                        Download(this.parent, elementRecords);
-                    } else {
-                        Download(this.parent, this.parent.detailsviewModule.gridObj.getSelectedRecords());
-                    }
-                } else {
-                    return;
+                        break;
+                    case 'newfolder':
+                        if (!hasContentAccess(details[0])) {
+                            createDeniedDialog(this.parent, details[0]);
+                        } else {
+                            createDialog(this.parent, 'NewFolder');
+                        }
+                        break;
+                    case 'cut':
+                        cutFiles(this.parent);
+                        break;
+                    case 'copy':
+                        copyFiles(this.parent);
+                        break;
+                    case 'delete':
+                        for (let i: number = 0; i < details.length; i++) {
+                            if (!hasEditAccess(details[i])) {
+                                createDeniedDialog(this.parent, details[i]);
+                                return;
+                            }
+                        }
+                        createDialog(this.parent, 'Delete');
+                        break;
+                    case 'details':
+                        this.parent.notify(events.detailsInit, {});
+                        let sItems: string[] = this.parent.selectedItems;
+                        if (this.parent.activeModule === 'navigationpane') {
+                            sItems = [];
+                        }
+                        GetDetails(this.parent, sItems, this.parent.path, 'details');
+                        break;
+                    case 'paste':
+                        this.parent.folderPath = '';
+                        pasteHandler(this.parent);
+                        break;
+                    case 'refresh':
+                        refresh(this.parent);
+                        break;
+                    case 'download':
+                        this.doDownload();
+                        break;
+                    case 'rename':
+                        if (!hasEditAccess(details[0])) {
+                            createDeniedDialog(this.parent, details[0]);
+                        } else {
+                            this.parent.notify(events.renameInit, {});
+                            createDialog(this.parent, 'Rename');
+                        }
+                        break;
+                    case 'upload':
+                        if (!hasUploadAccess(details[0])) {
+                            createDeniedDialog(this.parent, details[0]);
+                        } else {
+                            let eleId: string = '#' + this.parent.element.id + CLS.UPLOAD_ID;
+                            let uploadEle: HTMLElement = <HTMLElement>select(eleId, this.parent.element);
+                            uploadEle.click();
+                        }
+                        break;
+                    case 'selectall':
+                        this.parent.notify(events.selectAllInit, {});
+                        break;
+                    case 'selection':
+                        this.parent.notify(events.clearAllInit, {});
+                        break;
                 }
-                break;
-            case 'rename':
-                this.parent.notify(events.renameInit, {});
-                createDialog(this.parent, 'Rename');
-                break;
-            case 'upload':
-                let uploadEle: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.UPLOAD_ID, this.parent.element);
-                uploadEle.click();
-                break;
-            case 'selectall':
-                this.parent.notify(events.selectAllInit, {});
-                break;
-            case 'selection':
-                this.parent.notify(events.clearAllInit, {});
-                break;
+            }
+        });
+    }
+
+    private doDownload(): void {
+        let items: Object[] = this.parent.itemData;
+        for (let i: number = 0; i < items.length; i++) {
+            if (!hasDownloadAccess(items[i])) {
+                createDeniedDialog(this.parent, items[i]);
+                return;
+            }
+        }
+        if (this.parent.selectedItems.length > 0) {
+            Download(this.parent, this.parent.path, this.parent.selectedItems);
+        } else {
+            return;
         }
     }
 
@@ -159,7 +185,7 @@ export class Toolbar {
             });
             this.buttonObj.appendTo('#' + this.getId('SortBy'));
         }
-        if (!isNOU(select('#' + this.parent.element.id + CLS.VIEW_ID, this.parent.element))) {
+        if (!isNOU(select('#' + this.getId('View'), this.parent.element))) {
             let gridSpan: string = '<span class="' + CLS.ICON_GRID + ' ' + CLS.MENU_ICON + '"></span>';
             let largeIconSpan: string = '<span class="' + CLS.ICON_LARGE + ' ' + CLS.MENU_ICON + '"></span>';
             let layoutItems: SplitButtonItemModel[] = [
@@ -178,10 +204,25 @@ export class Toolbar {
                 items: layoutItems, select: this.layoutChange.bind(this),
                 enableRtl: this.parent.enableRtl
             });
-            this.layoutBtnObj.appendTo('#' + this.parent.element.id + CLS.VIEW_ID);
+            this.layoutBtnObj.appendTo('#' + this.getId('View'));
         }
         this.hideItems(this.default, true);
         this.hideStatus();
+
+        let btnElement: HTMLInputElement[] = (selectAll('.e-btn', this.toolbarObj.element) as HTMLInputElement[]);
+        for (let btnCount: number = 0; btnCount < btnElement.length; btnCount++) {
+            /* istanbul ignore next */
+            btnElement[btnCount].onkeydown = (e: KeyboardEvent) => {
+                if (e.keyCode === 13 && !(<HTMLElement>e.target).classList.contains('e-fe-popup')) {
+                    e.preventDefault();
+                }
+            };
+            btnElement[btnCount].onkeyup = (e: KeyboardEvent) => {
+                if (e.keyCode === 13 && !(<HTMLElement>e.target).classList.contains('e-fe-popup')) {
+                    btnElement[btnCount].click();
+                }
+            };
+        }
     }
 
     private updateSortByButton(): void {
@@ -192,7 +233,7 @@ export class Toolbar {
             } else if (items[itemCount].id === this.getPupupId('size')) {
                 items[itemCount].iconCss = this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '';
             } else if (items[itemCount].id === this.getPupupId('date')) {
-                items[itemCount].iconCss = this.parent.sortBy === 'dateModified' ? CLS.TB_OPTION_DOT : '';
+                items[itemCount].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
             } else if (items[itemCount].id === this.getPupupId('ascending')) {
                 items[itemCount].iconCss = this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '';
             } else if (items[itemCount].id === this.getPupupId('descending')) {
@@ -208,32 +249,12 @@ export class Toolbar {
     private layoutChange(args: MenuEventArgs): void {
         if (this.parent.view === 'Details') {
             if (args.item.id === this.getPupupId('large')) {
-                this.updateLayout('LargeIcons');
+                updateLayout(this.parent, 'LargeIcons');
             }
         } else {
             if (args.item.id === this.getPupupId('details')) {
-                this.updateLayout('Details');
+                updateLayout(this.parent, 'Details');
             }
-        }
-    }
-
-    private updateLayout(view: string): void {
-        this.parent.setProperties({ view: view }, true);
-        let searchWord: string;
-        if (this.parent.breadcrumbbarModule.searchObj.value && this.parent.breadcrumbbarModule.searchObj.value === '') {
-            this.parent.notify(events.pathColumn, { args: this.parent });
-        }
-        if (this.parent.searchSettings.filterType === 'startWith') {
-            searchWord = '*' + this.parent.breadcrumbbarModule.searchObj.value;
-        } else if (this.parent.searchSettings.filterType === 'endsWith') {
-            searchWord = this.parent.breadcrumbbarModule.searchObj.value + '*';
-        } else {
-            searchWord = '*' + this.parent.breadcrumbbarModule.searchObj.value + '*';
-        }
-        if (this.parent.breadcrumbbarModule.searchObj.value.length === 0) {
-            read(this.parent, events.layoutChange, this.parent.path);
-        } else {
-            Search(this.parent, events.layoutChange, this.parent.path, searchWord, false, false);
         }
     }
 
@@ -266,15 +287,16 @@ export class Toolbar {
                     item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_REFRESH, showTextOn: mode };
                     break;
                 case 'Selection':
-                    let txt: string = '<span class="e-status">2 ' + itemText + '</span><span class="' + CLS.ICON_CLEAR + '"></span>';
-                    item = { id: itemId, tooltipText: itemTooltip, overflow: 'Show', align: 'Right', template: txt };
+                    item = {
+                        id: itemId, text: itemText, tooltipText: itemTooltip, suffixIcon: CLS.ICON_CLEAR, overflow: 'Show',
+                        align: 'Right'
+                    };
                     break;
                 case 'View':
-                    let id: string = this.parent.element.id + CLS.VIEW_ID;
                     item = {
                         id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
                         overflow: 'Show', align: 'Right',
-                        template: '<button id="' + id + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1"></button>'
+                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1"></button>'
                     };
                     break;
                 case 'Details':
@@ -325,18 +347,19 @@ export class Toolbar {
         this.parent.on(events.hidePaste, this.hidePaste, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.sortByChange, this.updateSortByButton, this);
-
     }
 
     private reRenderToolbar(e: NotifyArgs): void {
         if (e.newProp.toolbarSettings.items !== undefined) {
-            this.items = this.toolbarItemData(this.getItems(e.newProp.toolbarSettings.items));
+            this.items = this.toolbarItemData(this.getItems(e.newProp.toolbarSettings.items.map((item: string) => item.trim())));
+            this.triggerToolbarCreate();
             this.toolbarObj.items = this.items;
             this.toolbarObj.dataBind();
+            this.toolbarCreateHandler();
         }
     }
 
-    private onSelectionChanged(e?: NotifyArgs): void {
+    private onSelectionChanged(): void {
         this.hideStatus();
         this.hideItems(this.single, true);
         this.hideItems(this.selection, false);
@@ -347,13 +370,15 @@ export class Toolbar {
             this.hideItems(this.multiple, false);
             this.hideItems(this.selection, true);
         }
-        let ele: Element = select('.' + CLS.STATUS, this.toolbarObj.element);
+        let ele: Element = select('#' + this.getId('Selection'), this.toolbarObj.element);
         if (this.parent.selectedItems.length > 0 && ele) {
+            let txt: string;
             if (this.parent.selectedItems.length === 1) {
-                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Item-Selection');
+                txt = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Item-Selection');
             } else {
-                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Items-Selection');
+                txt = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Items-Selection');
             }
+            select('.e-tbar-btn-text', ele).textContent = txt;
             this.toolbarObj.hideItem(ele.parentElement, false);
         }
     }
@@ -366,7 +391,7 @@ export class Toolbar {
     }
 
     private hideStatus(): void {
-        let ele: Element = select('.' + CLS.STATUS, this.toolbarObj.element);
+        let ele: Element = select('#' + this.getId('Selection'), this.toolbarObj.element);
         if (ele) { this.toolbarObj.hideItem(ele.parentElement, true); }
     }
 
@@ -378,7 +403,7 @@ export class Toolbar {
         this.hideItems(['Paste'], true);
     }
 
-    private onLayoutChange(args: ReadArgs): void {
+    private onLayoutChange(): void {
         if (this.layoutBtnObj) {
             this.layoutBtnObj.iconCss = this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE;
             let items: SplitButtonItemModel[] = this.layoutBtnObj.items;
@@ -432,28 +457,10 @@ export class Toolbar {
                 case 'toolbarSettings':
                     this.reRenderToolbar(e);
                     break;
-                case 'enableRtl':
-                    let rtl: boolean = e.newProp.enableRtl;
-                    this.toolbarObj.enableRtl = rtl;
-                    this.toolbarObj.dataBind();
-                    if (this.buttonObj) {
-                        this.buttonObj.enableRtl = rtl;
-                        this.buttonObj.dataBind();
-                    }
-                    if (this.layoutBtnObj) {
-                        this.layoutBtnObj.enableRtl = rtl;
-                        this.layoutBtnObj.dataBind();
-                    }
-                    break;
             }
         }
     }
 
-    /**
-     * Destroys the Toolbar module.
-     * @method destroy
-     * @return {void}
-     */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
         this.removeEventListener();
@@ -462,11 +469,6 @@ export class Toolbar {
         this.toolbarObj.destroy();
     }
 
-    /**
-     * Enables or disables the specified Toolbar items.
-     * @param {string[]} items - Specifies an array of items to be enabled or disabled.
-     * @param {boolean} isEnable - Determines whether the Toolbar items should to be enabled or disabled.
-     */
     public enableItems(items: string[], isEnable?: boolean): void {
         for (let i: number = 0; i < items.length; i++) {
             let ele: Element = select('#' + this.getId(items[i]), this.parent.element);

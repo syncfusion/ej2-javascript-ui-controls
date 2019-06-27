@@ -6,7 +6,7 @@ import {
     LineWidget, ElementBox, TextElementBox, ParagraphWidget,
     BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget
 } from '../viewer/page';
-import { ElementInfo } from '../editor/editor-helper';
+import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
 import { TextSearchResults } from './text-search-results';
 import { DocumentEditor } from '../../document-editor';
@@ -48,8 +48,18 @@ export class TextSearch {
         if (textToFind.indexOf('\\') > -1) {
             textToFind = textToFind.split('\\').join('\\\\');
         }
-        if (textToFind.indexOf('.') > -1) {
-            textToFind = '\\' + textToFind;
+        // tslint:disable-next-line:max-line-length
+        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1) {
+            let text: string = '';
+            for (let i: number = 0; i < textToFind.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']') {
+                    text += '\\' + textToFind[i];
+                } else {
+                    text += textToFind[i];
+                }
+            }
+            textToFind = text;
         }
         if (option === 'WholeWord' || option === 'CaseSensitiveWholeWord') {
             textToFind = this.wordBefore + textToFind + this.wordAfter;
@@ -81,6 +91,126 @@ export class TextSearch {
             return results;
         }
         return undefined;
+    }
+    /**
+     * Method to retrieve text from a line widget
+     * @param  {ElementBox} inlineElement 
+     * @param {number} indexInInline 
+     * @param {boolean} includeNextLine 
+     * @private
+     */
+    public getElementInfo(inlineElement: ElementBox, indexInInline: number, includeNextLine?: boolean): TextInLineInfo {
+        let inlines: ElementBox = inlineElement;
+        let stringBuilder: string = '';
+        let spans: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
+        //tslint:disable no-constant-condition
+        do {
+            // tslint:disable-next-line:max-line-length 
+            if (inlineElement instanceof TextElementBox && (!isNullOrUndefined((inlineElement as TextElementBox).text) && (inlineElement as TextElementBox).text !== '')) {
+                spans.add(inlineElement as TextElementBox, stringBuilder.length);
+                // IndexInInline Handled specifically for simple find operation to start from starting point
+                if (inlineElement === inlines) {
+                    stringBuilder = stringBuilder + ((inlineElement as TextElementBox).text.substring(indexInInline));
+                } else {
+                    stringBuilder = stringBuilder + ((inlineElement as TextElementBox).text);
+                }
+            } else if (inlineElement instanceof FieldElementBox) {
+                let fieldBegin: FieldElementBox = inlineElement as FieldElementBox;
+                if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
+                    // tslint:disable-next-line:max-line-length 
+                    inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd as FieldElementBox : fieldBegin.fieldSeparator as FieldElementBox;
+                }
+            }
+            if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
+                break;
+            }
+            if (!isNullOrUndefined(inlineElement)) {
+                if ((!isNullOrUndefined(includeNextLine) && !includeNextLine)) {
+                    let elementBoxes: ElementBox[] = inlineElement.line.children;
+                    let length: number = inlineElement.line.children.length;
+                    if (elementBoxes.indexOf(inlineElement) < length - 1) {
+                        inlineElement = inlineElement.nextNode;
+                    } else {
+                        inlineElement = undefined;
+                        break;
+                    }
+                } else {
+                    inlineElement = inlineElement.nextNode;
+                }
+            }
+        } while (true);
+
+        let text: string = stringBuilder.toString();
+
+        return { elementsWithOffset: spans, fullText: text };
+    }
+    /**
+     * Method to update location for matched text
+     * @param {RegExpExecArray} matches 
+     * @param {TextSearchResults} results 
+     * @param {Dictionary<TextElementBox, number>} textInfo 
+     * @param {number}indexInInline 
+     * @param {boolean} isInline 
+     * @param {boolean}isFirstMatch 
+     * @param {TextPosition}selectionEnd 
+     */
+    // tslint:disable-next-line:max-line-length
+    public updateMatchedTextLocation(matches: RegExpExecArray[], results: TextSearchResults, textInfo: Dictionary<TextElementBox, number>, indexInInline: number, inlines: ElementBox, isFirstMatch: boolean, selectionEnd: TextPosition, startPosition?: number): void {
+        for (let i: number = 0; i < matches.length; i++) {
+            let match: RegExpExecArray = matches[i];
+            let isMatched: boolean;
+            if (!(isNullOrUndefined(startPosition)) && match.index < startPosition) {
+                continue;
+            }
+            let result: TextSearchResult = results.addResult();
+            let spanKeys: TextElementBox[] = textInfo.keys;
+            for (let i: number = 0; i < spanKeys.length; i++) {
+                let span: TextElementBox = spanKeys[i];
+                let startIndex: number = textInfo.get(span);
+                let spanLength: number = span.length;
+                // IndexInInline Handled specifically for simple find operation to start from starting point
+                if (span as ElementBox === inlines) {
+                    spanLength -= indexInInline;
+                }
+                if (isNullOrUndefined(result.start) && match.index < startIndex + spanLength) {
+                    let index: number = match.index - startIndex;
+                    // IndexInInline Handled specifically for simple find operation to start from starting point
+                    if (span as ElementBox === inlines) {
+                        index += indexInInline;
+                    }
+                    let offset: number = (span.line).getOffset(span, index);
+                    result.start = this.getTextPosition(span.line, offset.toString());
+                    result.start.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
+                    result.start.setPositionParagraph(span.line, offset);
+                }
+                if (match.index + match[0].length <= startIndex + spanLength) {
+                    let index: number = (match.index + match[0].length) - startIndex;
+                    // IndexInInline Handled specifically for simple find operation to start from starting point
+                    if (span as ElementBox === inlines) {
+                        index += indexInInline;
+                    }
+                    let offset: number = (span.line).getOffset(span, index);
+                    result.end = this.getTextPosition(span.line, offset.toString());
+                    result.end.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
+                    result.end.setPositionParagraph(span.line, offset);
+                    isMatched = true;
+                    break;
+                }
+            }
+            result.isHeader = this.isHeader;
+            result.isFooter = this.isFooter;
+            if (isFirstMatch) {
+                results.currentIndex = 0;
+                break;
+            // tslint:disable-next-line:max-line-length   
+            } else if (results.currentIndex < 0 && !isNullOrUndefined(selectionEnd) && (selectionEnd.isExistBefore(result.start) ||
+            selectionEnd.isAtSamePosition(result.start))) {
+                results.currentIndex = results.indexOf(result);
+            }
+            if (!isNullOrUndefined(startPosition) && isMatched) {
+                break;
+            }
+        }
     }
     // tslint:disable-next-line:max-line-length     
     private findDocument(results: TextSearchResults, pattern: RegExp, isFirstMatch: boolean, findOption?: FindOption, hierachicalPosition?: string): void {
@@ -188,91 +318,31 @@ export class TextSearch {
     // tslint:disable-next-line:max-line-length     
     private findInline(inlineElement: ElementBox, pattern: RegExp, option: FindOption, indexInInline: number, isFirstMatch: boolean, results: TextSearchResults, selectionEnd: TextPosition): ParagraphWidget {
         let inlines: ElementBox = inlineElement;
-        let stringBuilder: string = '';
-        let spans: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
-        //tslint:disable no-constant-condition
-        do {
-            // tslint:disable-next-line:max-line-length 
-            if (inlineElement instanceof TextElementBox && (!isNullOrUndefined((inlineElement as TextElementBox).text) && (inlineElement as TextElementBox).text !== '')) {
-                spans.add(inlineElement as TextElementBox, stringBuilder.length);
-                // IndexInInline Handled specifically for simple find operation to start from starting point
-                if (inlineElement === inlines) {
-                    stringBuilder = stringBuilder + ((inlineElement as TextElementBox).text.substring(indexInInline));
-                } else {
-                    stringBuilder = stringBuilder + ((inlineElement as TextElementBox).text);
-                }
-            } else if (inlineElement instanceof FieldElementBox) {
-                let fieldBegin: FieldElementBox = inlineElement as FieldElementBox;
-                if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
-                    // tslint:disable-next-line:max-line-length 
-                    inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd as FieldElementBox : fieldBegin.fieldSeparator as FieldElementBox;
-                }
-            }
-            if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
-                break;
-            }
-            if (!isNullOrUndefined(inlineElement)) {
-                inlineElement = inlineElement.nextNode as ElementBox;
-            }
-        } while (true);
-        let text: string = stringBuilder.toString();
+        let textInfo: TextInLineInfo = this.getElementInfo(inlineElement, indexInInline);
+        let text: string = textInfo.fullText;
         let matches: RegExpExecArray[] = [];
+        let spans: Dictionary<TextElementBox, number> = textInfo.elementsWithOffset;
         let matchObject: RegExpExecArray;
         //tslint:disable no-conditional-assignment
         while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
             matches.push(matchObject);
         }
-        for (let i: number = 0; i < matches.length; i++) {
-            let match: RegExpExecArray = matches[i];
-            let result: TextSearchResult = results.addResult();
-            let spanKeys: TextElementBox[] = spans.keys;
-            for (let i: number = 0; i < spanKeys.length; i++) {
-                let span: TextElementBox = spanKeys[i];
-                let startIndex: number = spans.get(span);
-                let spanLength: number = span.length;
-                // IndexInInline Handled specifically for simple find operation to start from starting point
-                if (span as ElementBox === inlines) {
-                    spanLength -= indexInInline;
-                }
-                if (isNullOrUndefined(result.start) && match.index < startIndex + spanLength) {
-                    let index: number = match.index - startIndex;
-                    // IndexInInline Handled specifically for simple find operation to start from starting point
-                    if (span as ElementBox === inlines) {
-                        index += indexInInline;
-                    }
-                    let offset: number = (span.line).getOffset(span, index);
-                    result.start = this.getTextPosition(span.line, offset.toString());
-                    result.start.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
-                    result.start.setPositionParagraph(span.line, offset);
-                }
-                if (match.index + match[0].length <= startIndex + spanLength) {
-                    let index: number = (match.index + match[0].length) - startIndex;
-                    // IndexInInline Handled specifically for simple find operation to start from starting point
-                    if (span as ElementBox === inlines) {
-                        index += indexInInline;
-                    }
-                    let offset: number = (span.line).getOffset(span, index);
-                    result.end = this.getTextPosition(span.line, offset.toString());
-                    result.end.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
-                    result.end.setPositionParagraph(span.line, offset);
-                    break;
-                }
-            }
-            result.isHeader = this.isHeader;
-            result.isFooter = this.isFooter;
-            if (isFirstMatch) {
-                results.currentIndex = 0;
-                return undefined;
-            } else if (results.currentIndex < 0 && (selectionEnd.isExistBefore(result.start) ||
-                selectionEnd.isAtSamePosition(result.start))) {
-                results.currentIndex = results.indexOf(result);
-            }
+
+        this.updateMatchedTextLocation(matches, results, spans, indexInInline, inlines, isFirstMatch, selectionEnd);
+        if (isFirstMatch) {
+            return undefined;
         }
         // tslint:disable-next-line:max-line-length
         let paragraphWidget: ParagraphWidget = this.owner.selection.getNextParagraphBlock(inlineElement.line.paragraph) as ParagraphWidget;
         return paragraphWidget;
     }
-    private getTextPosition(lineWidget: LineWidget, hierarchicalIndex: string): TextPosition {
+    /**
+     * Method to get text position
+     * @param {LineWidget} lineWidget 
+     * @param {string} hierarchicalIndex 
+     * @private
+     */
+    public getTextPosition(lineWidget: LineWidget, hierarchicalIndex: string): TextPosition {
         let textPosition: TextPosition = new TextPosition(this.owner);
         let index: string = textPosition.getHierarchicalIndex(lineWidget, hierarchicalIndex);
         textPosition.setPositionForCurrentIndex(index);

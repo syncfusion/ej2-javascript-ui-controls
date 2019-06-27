@@ -206,7 +206,7 @@ export class ColumnBase {
         let previousDirection: string = previousElement ? previousElement.getAttribute('d') : '';
         let options: PathOption = new PathOption(
             name, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
-        let element: HTMLElement = chart.renderer.drawPath(options) as HTMLElement;
+        let element: HTMLElement = chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
         switch (series.seriesType) {
             case 'XY':
                 element.setAttribute('aria-label', point.x.toString() + ':' + point.yValue.toString());
@@ -215,8 +215,10 @@ export class ColumnBase {
                 element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString() + ':' + point.low.toString());
                 break;
         }
-        appendChildElement(series.seriesElement, element, chart.redraw);
-        pathAnimation(element, direction, chart.redraw, previousDirection, chart.duration);
+        appendChildElement(series.chart.enableCanvas, series.seriesElement, element, chart.redraw);
+        if (!series.chart.enableCanvas) {
+            pathAnimation(element, direction, chart.redraw, previousDirection, chart.duration);
+        }
     }
     /**
      * To animate the series.

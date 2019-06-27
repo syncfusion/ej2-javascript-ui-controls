@@ -5,13 +5,14 @@ import { IDropDownItemModel } from './../base/interface';
 import { ServiceLocator } from './../services/service-locator';
 import * as events from '../base/constant';
 import { CLS_RTE_ELEMENTS } from '../base/classes';
-import { Dialog } from '@syncfusion/ej2-popups';
+import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
 import { dispatchEvent, parseHtml } from '../base/util';
+import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
 
 /**
@@ -27,6 +28,7 @@ export class Link {
     public serviceLocator: ServiceLocator;
     private rendererFactory: RendererFactory;
     private quickToolObj: IRenderer;
+    private dialogRenderObj: DialogRenderer;
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -34,6 +36,7 @@ export class Link {
         this.addEventListener();
         this.serviceLocator = serviceLocator;
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
+        this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
     }
     protected addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
@@ -223,7 +226,7 @@ export class Link {
         let linkInsert: string = this.i10n.getConstant('dialogInsert'); let linkCancel: string = this.i10n.getConstant('dialogCancel');
         let selection: NodeSelection = e.selection;
         let selectObj: NotifyArgs = { selfLink: this, selection: e.selection, selectParent: e.selectParent, args: e.args as MouseEvent };
-        this.dialogObj = new Dialog({
+        let dialogModel: DialogModel = {
             header: this.i10n.getConstant('linkHeader'),
             content: linkContent,
             cssClass: CLS_RTE_ELEMENTS,
@@ -250,9 +253,11 @@ export class Link {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
+                this.dialogRenderObj.close(this.dialogObj);
                 this.dialogObj = null;
             },
-        });
+        };
+        this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(linkDialogEle);
         linkDialogEle.style.maxHeight = 'inherit';
@@ -298,6 +303,7 @@ export class Link {
             closest(
                 (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '#' + proxy.parent.contentModule.getPanel().id))) {
             (proxy.parent.contentModule.getEditPanel() as HTMLElement).focus();
+            if (Browser.isIE && proxy.parent.iframeSettings.enable) { (this as NotifyArgs).selection.restore(); }
             let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
             (this as NotifyArgs).selection = proxy.parent.formatter.editorManager.nodeSelection.save(
                 range, proxy.parent.contentModule.getDocument());

@@ -5,6 +5,7 @@ import { createElement, EventHandler } from '@syncfusion/ej2-base';
 import { ListBox } from '../../src/index';
 import { cssClass } from '@syncfusion/ej2-lists';
 import { CheckBoxSelection } from '../../src/multi-select/checkbox-selection';
+import { Query } from '@syncfusion/ej2-data';
 
 ListBox.Inject(CheckBoxSelection);
 
@@ -236,7 +237,7 @@ describe('ListBox', () => {
         });
 
         it('selectionSettings', () => {
-            listObj = new ListBox({ dataSource: data, selectionSettings: { showCheckbox: true, showSelectAll: true } }, elem);
+            listObj = new ListBox({ dataSource: data, selectionSettings: { showCheckbox: true, showSelectAll: true, checkboxPosition: 'Right'} }, elem);
             var ele = listObj.list.getElementsByClassName('e-selectall-parent');
             expect(listObj.list.childElementCount).toEqual(4);
             expect(ele.length).toEqual(1);
@@ -248,6 +249,44 @@ describe('ListBox', () => {
             listObj.dataBind();
             expect(listObj.list.childElementCount).toEqual(4);
             expect(ele.length).toEqual(1);
+            ele = listObj.list;
+            expect(ele.classList).toContain('e-right');
+            listObj.selectionSettings.checkboxPosition = 'Left';
+            listObj.dataBind();
+            expect(ele.classList).not.toContain('e-right');
+        });
+
+        it('allowFiltering', () => {
+            listObj = new ListBox({
+                dataSource: data, allowFiltering: true, value: ['JAVA', 'C#', 'C++', 'NET', 'Oracle'],
+                filtering: function (e) {
+                    let query: Query = new Query().select(['text', 'id']);
+                    query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
+                    e.updateData(data, query);
+                }, selectionSettings: { showCheckbox: true, showSelectAll: true }
+            }, elem);
+            var ele = listObj.list.getElementsByClassName('e-input-filter')[0];
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(5);
+            expect(listObj.list.getElementsByClassName('e-list-item')[0].getAttribute('data-value').charAt(0)).not.toEqual(listObj.list.getElementsByClassName('e-list-item')[1].getAttribute('data-value').charAt(0));
+            ele.click();
+            ele.value = "c";
+            listObj.dataBind();
+            listObj.keyDownStatus = true;
+            listObj.onInput();
+            listObj.KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'c',
+                charCode: 22,
+                keyCode: 67,
+                which: 22,
+                code: 22
+            });
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(2);
+            expect(listObj.list.getElementsByClassName('e-list-item')[0].getAttribute('data-value').charAt(0)).toEqual(listObj.list.getElementsByClassName('e-list-item')[1].getAttribute('data-value').charAt(0));
         });
     });
 
@@ -514,6 +553,65 @@ describe('ListBox', () => {
             expect(listObj1.dataSource[4].text).toEqual('NET');
             expect(toolChild[1].disabled).toBeTruthy();
             expect(listObj1.list.scrollTop).toBeGreaterThan(0);
+        });
+    });
+
+    describe('Toolbar with sorting', () => {
+        let elem1: HTMLElement = createElement('input', { id: 'listbox1-sort' });
+        let elem2: HTMLElement = createElement('input', { id: 'listbox2-sort' });
+        let listObj1: any;
+        let listObj2: any;
+        beforeAll(() => {
+            document.body.appendChild(elem1);
+            document.body.appendChild(elem2);
+        });
+
+        beforeEach(() => {
+            listObj1 = new ListBox({
+                dataSource: data, scope: '#listbox2-sort', sortOrder: 'Ascending',
+                toolbarSettings: { items: ['moveUp', 'moveDown', 'moveTo', 'moveFrom', 'moveAllTo', 'moveAllFrom'] }
+            }, elem1);
+            listObj2 = new ListBox({ dataSource: vegetableData, sortOrder: 'Ascending' }, elem2);
+        });
+
+        afterEach(() => {
+            listObj1.destroy();
+            listObj2.destroy();
+        });
+
+        it('Move To & From', () => {
+            let toolChild: any = listObj1.getToolElem().children;
+            // Move To
+            listObj1.getItems()[1].click();
+            toolChild[2].click();
+            expect(listObj2.getItems()[1].innerText).toEqual('C++');
+            expect(listObj1.getDataByValue('C++')).toBeNull();
+            expect(listObj2.dataSource[11].text).toEqual('C++');
+            expect(listObj2.sortedData[1].text).toEqual('C++');
+
+            listObj2.getItems()[0].click();
+            toolChild[3].click();
+            expect(listObj1.getItems()[0].innerText).toEqual('Bean');
+            expect(listObj2.getDataByValue('Bean')).toBeNull();
+            expect(listObj1.dataSource[4].text).toEqual('Bean');
+            expect(listObj1.sortedData[0].text).toEqual('Bean');
+        });
+
+        it('Move All To & From', () => {
+            let toolChild: any = listObj1.getToolElem().children;
+            // Move To
+            toolChild[4].click();
+            expect(listObj2.getItems()[0].innerText).toEqual('Bean');
+            expect(listObj2.getItems()[1].innerText).toEqual('C#');
+            expect(listObj1.dataSource.length).toEqual(0);
+            expect(listObj2.dataSource[11].text).toEqual('C#');
+            expect(listObj2.sortedData[0].text).toEqual('Bean');
+            expect(listObj2.sortedData[1].text).toEqual('C#');
+
+            toolChild[5].click();
+            expect(listObj1.getItems()[2].innerText).toEqual('C++');
+            expect(listObj1.getItems()[3].innerText).toEqual('Cabbage');
+            expect(listObj2.dataSource.length).toEqual(0);
         });
     });
 

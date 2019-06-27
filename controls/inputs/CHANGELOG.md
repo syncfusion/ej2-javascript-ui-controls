@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## 17.2.28-beta (2019-06-27)
+
+### TextBox
+
+#### New Features
+
+- #228310, #233267 - Now, you can add additional html attribute to the element using  `htmlAttributes` property.
+
+#### Bug Fixes
+
+- #238248 - Issue with "throws error while reset the form" has been resolved.
+
+- #235983 - Resolved the HTML5 standard issues in textbox control.
+
+### NumericTextBox
+
+#### New Features
+
+- #228310, #233267 - Now, you can add additional html attribute to the element using  `htmlAttributes` property.
+
+#### Bug Fixes
+
+- #237600 - Now, validation message get removed while change the numeric value through spin buttons.
+
+### MaskedTextBox
+
+#### New Features
+
+- #228310, #233267 - Now, you can add additional html attribute to the element using  `htmlAttributes` property.
+
 ## 17.1.50 (2019-06-04)
 
 ### Uploader

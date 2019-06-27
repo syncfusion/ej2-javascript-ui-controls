@@ -439,6 +439,8 @@ export const ROW_SELECT: string = 'e-rowselect';
 /** @hidden */
 export const GRID_HEADER: string = 'e-gridheader';
 /** @hidden */
+export const GRID_CONTENT: string = 'e-gridcontent';
+/** @hidden */
 export const GRID_EXPORT: string = 'e-export';
 /** @hidden */
 export const PIVOTVIEW_EXPORT: string = 'e-pivotview-export';

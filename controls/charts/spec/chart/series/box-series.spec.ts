@@ -17,8 +17,8 @@ import { MouseEvents } from '../base/events.spec';
 import { bar, barData, datetimeData, categoryData, categoryData1, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+
 
 Chart.Inject(BoxAndWhiskerSeries, Tooltip, Crosshair, Category, DataLabel, Selection);
 

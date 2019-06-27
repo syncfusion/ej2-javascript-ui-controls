@@ -61,8 +61,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 let dataBound: EmitType<Object> = () => { done(); };
                 fieldListObj = new PivotFieldList({
-                    dataSource: {
-                        data: pivot_dataset as IDataSet[],
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
                         expandAll: false,
                         enableSorting: true,
                         sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -95,7 +95,7 @@ describe('PivotFieldList spec', () => {
                 expect(true).toBeTruthy();
             });
             it('field-list getPersist expect', () => {
-                expect(!isNullOrUndefined(JSON.parse(persistdata).dataSource)).toBeTruthy();
+                expect(!isNullOrUndefined(JSON.parse(persistdata).dataSourceSettings)).toBeTruthy();
             });
             it('set rtl property', (done: Function) => {
                 fieldListObj.enableRtl = true;
@@ -146,8 +146,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 let dataBound: EmitType<Object> = () => { done(); };
                 fieldListObj = new PivotFieldList({
-                    dataSource: {
-                        data: pivot_dataset as IDataSet[],
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
                         expandAll: false,
                         enableSorting: true,
                         sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -213,8 +213,8 @@ describe('PivotFieldList spec', () => {
             let dataBound: EmitType<Object> = () => { done(); };
             fieldListObj = new PivotFieldList(
                 {
-                    dataSource: {
-                        data: pivot_dataset as IDataSet[],
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
                         rows: [{ name: 'product' }, { name: 'state' }],
                         columns: [{ name: 'gender' }],
                         values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'index' }]
@@ -398,8 +398,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -450,8 +450,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem1);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -526,8 +526,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem1);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -596,8 +596,8 @@ describe('PivotFieldList spec', () => {
                     document.body.appendChild(elem);
                     let dataBound: EmitType<Object> = () => { done(); };
                     fieldListObj = new PivotFieldList({
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -945,8 +945,8 @@ describe('PivotFieldList spec', () => {
                     document.body.appendChild(elem);
                     let dataBound: EmitType<Object> = () => { done(); };
                     fieldListObj = new PivotFieldList({
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -1178,8 +1178,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -1310,8 +1310,8 @@ describe('PivotFieldList spec', () => {
                 let dataBound: EmitType<Object> = () => { done(); };
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: false,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -1334,8 +1334,8 @@ describe('PivotFieldList spec', () => {
                 expect((pivotButtons[0]).querySelector('.e-icons').classList.contains('e-disable')).toBeTruthy;
             });
             it('enable enableSorting on dataSource', (done: Function) => {
-                fieldListObj.dataSource = {
-                    data: pivot_dataset as IDataSet[],
+                fieldListObj.dataSourceSettings = {
+                    dataSource: pivot_dataset as IDataSet[],
                     expandAll: false,
                     enableSorting: true,
                     sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -1400,8 +1400,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -1626,8 +1626,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: true,
                             enableSorting: true,
                             allowLabelFilter: true,
@@ -1843,8 +1843,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: true,
                             enableSorting: true,
                             allowLabelFilter: true,
@@ -2064,8 +2064,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: true,
                             enableSorting: true,
                             allowLabelFilter: true,
@@ -2285,8 +2285,8 @@ describe('PivotFieldList spec', () => {
                 let dataBound: EmitType<Object> = () => { done(); };
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: true,
                             enableSorting: true,
                             allowLabelFilter: true,
@@ -2573,8 +2573,8 @@ describe('PivotFieldList spec', () => {
                 let dataBound: EmitType<Object> = () => { done(); };
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -2814,8 +2814,8 @@ describe('PivotFieldList spec', () => {
                 PivotFieldList.Inject(CalculatedField);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -3020,8 +3020,8 @@ describe('PivotFieldList spec', () => {
                 let dataBound: EmitType<Object> = () => { done(); };
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -3037,6 +3037,7 @@ describe('PivotFieldList spec', () => {
                     });
                 fieldListObj.appendTo('#PivotFieldList');
                 pivotCommon = fieldListObj.pivotCommon;
+                pivotCommon.dataSourceUpdate.control = fieldListObj;
             });
             it('testing row axis using drop args', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
@@ -3154,8 +3155,8 @@ describe('PivotFieldList spec', () => {
                 pivotGridObj.appendTo('#PivotView');
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -3283,8 +3284,8 @@ describe('PivotFieldList spec', () => {
                 pivotGridObj.appendTo('#PivotView');
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -3310,6 +3311,7 @@ describe('PivotFieldList spec', () => {
                     });
                 fieldListObj.appendTo('#PivotFieldList');
                 pivotCommon = fieldListObj.pivotCommon;
+                pivotCommon.dataSourceUpdate.control = fieldListObj;
             });
             it('testing row axis using drop args', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
@@ -3439,8 +3441,8 @@ describe('PivotFieldList spec', () => {
                 pivotGridObj.appendTo('#PivotView');
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             rows: [{ name: 'state' }],
@@ -3654,8 +3656,8 @@ describe('PivotFieldList spec', () => {
                 let dataBound: EmitType<Object> = () => { done(); };
                 PivotView.Inject(GroupingBar, FieldList);
                 pivotGridObj = new PivotView({
-                    dataSource: {
-                        data: pivot_dataset as IDataSet[],
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
                         expandAll: false,
                         enableSorting: true,
                         sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -3709,7 +3711,7 @@ describe('PivotFieldList spec', () => {
                 setTimeout(() => {
                     menuObj.close();
                     expect(buttonText.innerHTML).toEqual('Count of balance');
-                    pivotGridObj.dataSource.showAggregationOnValueField = false;
+                    pivotGridObj.dataSourceSettings.showAggregationOnValueField = false;
                     done();
                 }, 1000);
             });
@@ -3740,7 +3742,7 @@ describe('PivotFieldList spec', () => {
                 setTimeout(() => {
                     menuObj.close();
                     expect(buttonText.innerHTML).toEqual('balance');
-                    pivotGridObj.dataSource.showAggregationOnValueField = true;
+                    pivotGridObj.dataSourceSettings.showAggregationOnValueField = true;
                     done();
                 }, 1000);
             });
@@ -4167,8 +4169,8 @@ describe('PivotFieldList spec', () => {
                 let dataBound: EmitType<Object> = () => { done(); };
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -4236,8 +4238,8 @@ describe('PivotFieldList spec', () => {
                 PivotFieldList.Inject(CalculatedField);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -4365,8 +4367,8 @@ describe('PivotFieldList spec', () => {
                 PivotFieldList.Inject(CalculatedField);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -4428,8 +4430,8 @@ describe('PivotFieldList spec', () => {
                 PivotView.Inject(GroupingBar);
                 pivotGridObj = new PivotView(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -4540,8 +4542,8 @@ describe('PivotFieldList spec', () => {
                 PivotView.Inject(FieldList);
                 pivotGridObj = new PivotView(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -4628,8 +4630,8 @@ describe('PivotFieldList spec', () => {
                 PivotView.Inject(GroupingBar, FieldList);
                 pivotGridObj = new PivotView(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -4688,8 +4690,8 @@ describe('PivotFieldList spec', () => {
                 let dataBound: EmitType<Object> = () => { done(); };
                 pivotGridObj = new PivotView(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -4771,8 +4773,8 @@ describe('PivotFieldList spec', () => {
             document.body.appendChild(elem);
             PivotView.Inject(GroupingBar, FieldList, CalculatedField);
             pivotGridObj = new PivotView({
-                dataSource: {
-                    data: pivot_dataset as IDataSet[],
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
                     expandAll: false,
                     formatSettings: [{ name: 'balance', format: 'C' }],
                     sortSettings: [{ name: 'eyeColor', order: 'Descending' }],
@@ -4956,8 +4958,8 @@ describe('PivotFieldList spec', () => {
                 document.body.appendChild(elem);
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'Descending' }],
@@ -5095,7 +5097,7 @@ describe('PivotFieldList spec', () => {
                 expect((pivotButtons[pivotButtons.length - 1]).querySelector('.e-btn-filter').classList.contains('e-pv-filtered')).toBeTruthy;
             });
             it('check filter button state', (done: Function) => {
-                fieldListObj.dataSource.filterSettings = [{ name: 'eyeColor', type: 'Include', items: ['green'] }];
+                fieldListObj.dataSourceSettings.filterSettings = [{ name: 'eyeColor', type: 'Include', items: ['green'] }];
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
@@ -5105,7 +5107,7 @@ describe('PivotFieldList spec', () => {
                 }, 2000);
             });
             it('check single node on filter popup', (done: Function) => {
-                fieldListObj.dataSource.filterSettings = [{ name: 'eyeColor', type: 'Include', items: ['green'] }];
+                fieldListObj.dataSourceSettings.filterSettings = [{ name: 'eyeColor', type: 'Include', items: ['green'] }];
                 expect(pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(false);
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5219,8 +5221,8 @@ describe('PivotFieldList spec', () => {
                 let dataBound: EmitType<Object> = () => { done(); };
                 fieldListObj = new PivotFieldList(
                     {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
+                        dataSourceSettings: {
+                            dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
                             sortSettings: [{ name: 'company', order: 'None' },{ name: 'state', order: 'Ascending' },{ name: 'name', order: 'Descending' }],
@@ -5275,7 +5277,7 @@ describe('PivotFieldList spec', () => {
             it('fieldlist obj sort none', (done: Function) => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    fieldListObj.dataSource.sortSettings = [{ name: 'company', order: 'None' }];
+                    fieldListObj.dataSourceSettings.sortSettings = [{ name: 'company', order: 'None' }];
                     expect(document.querySelectorAll('.e-pivot-button')[1].querySelectorAll('.e-sort')).toBeFalsy;
                     done();
                 }, 1000);
@@ -5283,7 +5285,7 @@ describe('PivotFieldList spec', () => {
             it('fieldlist obj sort asc', (done: Function) => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    fieldListObj.dataSource.sortSettings = [{ name: 'company', order: 'Ascending' }];
+                    fieldListObj.dataSourceSettings.sortSettings = [{ name: 'company', order: 'Ascending' }];
                     expect(document.querySelectorAll('.e-pivot-button')[1].querySelectorAll('.e-sort')).toBeTruthy;
                     done();
                 }, 1000);
@@ -5291,7 +5293,7 @@ describe('PivotFieldList spec', () => {
             it('fieldlist obj sort desc', (done: Function) => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    fieldListObj.dataSource.sortSettings = [{ name: 'company', order: 'Descending' }];
+                    fieldListObj.dataSourceSettings.sortSettings = [{ name: 'company', order: 'Descending' }];
                     expect(document.querySelectorAll('.e-pivot-button')[1].querySelectorAll('.e-sort')).toBeTruthy;
                     done();
                 }, 1000);
@@ -5305,7 +5307,7 @@ describe('PivotFieldList spec', () => {
                 ((pivotButtons[2]).querySelector('.e-sort') as HTMLElement).click();
                 ((pivotButtons[3]).querySelector('.e-sort') as HTMLElement).click();
                 setTimeout(function () {
-                    fieldListObj.dataSource.sortSettings = [{ name: 'company', order: 'Descending' }];
+                    fieldListObj.dataSourceSettings.sortSettings = [{ name: 'company', order: 'Descending' }];
                     expect(document.querySelectorAll('.e-pivot-button')[1].querySelectorAll('.e-descend')).toBeTruthy;
                     done();
                 }, 1000);
@@ -5330,8 +5332,8 @@ describe('PivotFieldList spec', () => {
             document.body.appendChild(elem);
             fieldListObj = new PivotFieldList(
                 {
-                    dataSource: {
-                        data: pivot_dataset as IDataSet[],
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
                         expandAll: false,
                         enableSorting: true,
                         excludeFields: ['index','_id','guid','pno','phone','email','advance'],
@@ -5357,12 +5359,12 @@ describe('PivotFieldList spec', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect((fieldListObj.element.querySelector('.e-list-parent') as HTMLElement).children.length).toBe(13);
-                fieldListObj.dataSource.excludeFields = [];
+                fieldListObj.dataSourceSettings.excludeFields = [];
                 done();
             }, 2000);
         });
         it('exclude fields null and ui check',(done: Function)=>{
-            fieldListObj.dataSource.excludeFields = [];
+            fieldListObj.dataSourceSettings.excludeFields = [];
             fieldListObj.refresh();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {

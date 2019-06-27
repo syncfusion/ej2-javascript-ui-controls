@@ -55,4 +55,29 @@ describe('Iframe Content renderer module', () => {
             destroy(rteObj);
         });
     });
+    
+        describe('Click action on readonly mode with RTE editpanel focus testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                    attributes: {
+                        readonly: 'readonly'
+                    }
+                },
+                value: 'RichTextEdit'
+            });
+        });
+
+        it('click action to editpanel focus testing', () => {
+            expect(document.activeElement.nodeName).toBe('BODY');
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            expect(document.activeElement.classList.contains('e-rte-content')).toBe(false);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

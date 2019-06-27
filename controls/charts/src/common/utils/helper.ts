@@ -1,5 +1,5 @@
 import { Animation, AnimationOptions, compile as templateComplier, Browser } from '@syncfusion/ej2-base';
-import { merge, Effect, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
 import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
@@ -15,7 +15,7 @@ import { IShapes } from '../model/interface';
 import { IAxisLabelRenderEventArgs } from '../../chart/model/chart-interface';
 import { axisLabelRender } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
-import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 
 
 /**
@@ -43,10 +43,12 @@ export function sort(data: Object[], fields: string[], isDescending?: boolean): 
     });
     return sortData;
 }
+
 /** @private */
 export function isBreakLabel(label: string): boolean {
     return label.indexOf('<br>') !== -1;
 }
+
 /** @private */
 export function rotateTextSize(font: FontModel, text: string, angle: number, chart: Chart): Size {
 
@@ -326,7 +328,7 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
         'left:' + left.toString() + 'px;' +
         'color:black !important; ' +
         'background:#FFFFFF !important; ' +
-        'position:absolute;border:1px solid #707070;font-size:' + fontSize + ';border-radius:2px;';
+        'position:absolute;border:1px solid #707070;font-size:' + fontSize + ';border-radius:2px; z-index:1';
     if (!tooltip) {
         tooltip = createElement('div', {
             id: id, innerHTML: '&nbsp;' + text + '&nbsp;', styles: style
@@ -373,11 +375,14 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
         }
         x = x + (margin / 2);
         y = y + (3 * (size.height / 4)) + (margin / 2);
-        parent.appendChild(chart.renderer.drawPath(new PathOption(
-            chart.element.id + '_Zoom_' + index + '_AxisLabel_Shape_' + i,
-            chart.themeStyle.crosshairFill, 2, chart.themeStyle.crosshairFill, 1, null, direction)
+        parent.appendChild(chart.renderer.drawPath(
+            new PathOption(
+                chart.element.id + '_Zoom_' + index + '_AxisLabel_Shape_' + i,
+                chart.themeStyle.crosshairFill, 2, chart.themeStyle.crosshairFill, 1, null, direction
+            )
         ) as HTMLElement);
         textElement(
+            chart.renderer,
             new TextOption(
                 chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel),
             { color: chart.themeStyle.crosshairLabel, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' },
@@ -421,6 +426,22 @@ export function findClipRect(series: Series): void {
 /** @private */
 export function firstToLowerCase(str: string): string {
     return str.substr(0, 1).toLowerCase() + str.substr(1);
+}
+/** @private */
+export function getTransform(xAxis: Axis, yAxis: Axis, invertedAxis: boolean): Rect {
+    let x: number; let y: number; let width: number; let height: number;
+    if (invertedAxis) {
+        x = yAxis.rect.x;
+        y = xAxis.rect.y;
+        width = yAxis.rect.width;
+        height = xAxis.rect.height;
+    } else {
+        x = xAxis.rect.x;
+        y = yAxis.rect.y;
+        width = xAxis.rect.width;
+        height = yAxis.rect.height;
+    }
+    return new Rect(x, y, width, height);
 }
 /** @private */
 export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): number {
@@ -562,14 +583,14 @@ export function animateRectElement(
  * @param previousDirection previous direction of the path
  */
 export function pathAnimation(
-    element: Element, direction: string, redraw: boolean, previousDirection?: string, animateduration ?: number
+    element: Element, direction: string, redraw: boolean, previousDirection?: string, animateDuration ?: number
 ): void {
     if (!redraw || (!previousDirection && !element)) {
         return null;
     }
     let duration: number = 300;
-    if (animateduration) {
-        duration = animateduration;
+    if (animateDuration) {
+        duration = animateDuration;
     }
     let startDirections: string = previousDirection || element.getAttribute('d');
     let splitDirections: string[] = startDirections.split(/(?=[LMCZAQ])/);
@@ -713,11 +734,13 @@ export function templateAnimate(
 }
 
 /** @private */
-export function drawSymbol(location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string): Element {
-    let chartRenderer: SvgRenderer = new SvgRenderer('');
+export function drawSymbol(location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string,
+                           renderer ?: SvgRenderer | CanvasRenderer, clipRect ?: Rect): Element {
+    let chartRenderer: SvgRenderer | CanvasRenderer = renderer ? renderer : new SvgRenderer('');
     let shapeOption: IShapes = calculateShapes(location, size, shape, options, url);
-    let drawElement: Element = chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption);
-    drawElement.setAttribute('aria-label', label);
+    let drawElement: Element =
+     chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null);
+    //drawElement.setAttribute('aria-label', label);
     return drawElement;
 }
 /** @private */
@@ -858,7 +881,9 @@ export function createTemplate(
     let templateElement: HTMLCollection;
     templateFn = getTemplateFunction(content);
     try {
-        let elementData: Element[] = templateFn ? templateFn({ chart: chart, series: series, point: point }) : [];
+        let blazor: string = 'Blazor';
+        let tempObject: Object = window[blazor] ? {} : { chart: chart, series: series, point: point };
+        let elementData: Element[] = templateFn ? templateFn(tempObject, null, null, childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
             let len: number = templateElement.length;
@@ -924,7 +949,7 @@ export function appendElement(
     x: string = 'x', y: string = 'y'
 ): void {
     if (child && child.hasChildNodes() && parent) {
-        appendChildElement(parent, child, redraw, animate, x, y);
+        appendChildElement(false, parent, child, redraw, animate, x, y);
     } else {
         return null;
     }
@@ -936,15 +961,19 @@ export function appendElement(
  * @param isReplace
  */
 export function appendChildElement(
+    isCanvas: boolean,
     parent: Element | HTMLElement, childElement: Element | HTMLElement,
     redraw?: boolean, isAnimate: boolean = false, x: string = 'x', y: string = 'y',
     start?: ChartLocation, direction?: string, forceAnimate: boolean = false,
-    isRect: boolean = false, previousRect: Rect = null , animateduration ?: number
+    isRect: boolean = false, previousRect: Rect = null , animateDuration ?: number
 ): void {
+    if (isCanvas) {
+        return null;
+    }
     let existChild: HTMLElement = parent.querySelector('#' + childElement.id);
     let element: HTMLElement = <HTMLElement>(existChild || getElement(childElement.id));
     let child: HTMLElement = <HTMLElement>childElement;
-    let duration: number = animateduration ? animateduration : 300;
+    let duration: number = animateDuration ? animateDuration : 300;
     if (redraw && isAnimate && element) {
         start = start || (element.tagName === 'DIV' ?
             new ChartLocation(+(element.style[x].split('px')[0]), +(element.style[y].split('px')[0])) :
@@ -1300,7 +1329,7 @@ export function stringToNumber(value: string, containerSize: number): number {
 /** @private */
 export function redrawElement(
     redraw: boolean, id: string, options?: PathAttributes | RectAttributes | CircleAttributes,
-    renderer?: SvgRenderer
+    renderer?: SvgRenderer | CanvasRenderer
 ): Element {
     if (!redraw) {
         return null;
@@ -1345,36 +1374,37 @@ export function animateRedrawElement(
 }
 /** @private */
 export function textElement(
-    option: TextOption, font: FontModel, color: string,
+    renderer: SvgRenderer | CanvasRenderer, option: TextOption, font: FontModel, color: string,
     parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
-    forceAnimate: boolean = false, animateduration ?: number
+    forceAnimate: boolean = false, animateDuration ?: number, seriesClipRect ?: Rect
 ): Element {
     let renderOptions: Object = {};
     let htmlObject: Element;
     let tspanElement: Element;
-    let renderer: SvgRenderer = new SvgRenderer('');
+    //let renderer: SvgRenderer = new SvgRenderer('');
     let text: string;
     let height: number;
     renderOptions = {
         'id': option.id,
         'x': option.x,
         'y': option.y,
-        'fill': color,
+        'fill': color ? color : 'black',
         'font-size': font.size,
         'font-style': font.fontStyle,
         'font-family': font.fontFamily,
         'font-weight': font.fontWeight,
         'text-anchor': option.anchor,
+        'labelRotation': option.labelRotation,
         'transform': option.transform,
         'opacity': font.opacity,
         'dominant-baseline': option.baseLine
     };
     text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
-    htmlObject = renderer.createText(renderOptions, text);
+    htmlObject = renderer.createText(renderOptions, text, seriesClipRect ? seriesClipRect.x : 0, seriesClipRect ? seriesClipRect.y : 0);
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
             height = (measureText(option.text[i], font).height);
-            tspanElement = renderer.createTSpan(
+            tspanElement = (renderer as SvgRenderer).createTSpan(
                 {
                     'x': option.x, 'id': option.id,
                     'y': (option.y) + ((isMinus) ? -(i * height) : (i * height))
@@ -1384,7 +1414,8 @@ export function textElement(
             htmlObject.appendChild(tspanElement);
         }
     }
-    appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateduration);
+    appendChildElement(renderer instanceof CanvasRenderer, parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null,
+                       forceAnimate, false, null, animateDuration);
     return htmlObject;
 }
 
@@ -1421,18 +1452,27 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
     );
 }
 export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): void {
-    chart.renderer = new SvgRenderer(chart.element.id);
+    (chart as Chart).canvasRender = new CanvasRenderer(chart.element.id);
+    chart.renderer = (chart as Chart).enableCanvas ? (chart as Chart).canvasRender : new SvgRenderer(chart.element.id);
     calculateSize(chart);
     if ((chart as Chart).stockChart && chart.getModuleName() === 'chart') {
         chart.svgObject = (chart as Chart).stockChart.chartObject;
     } else if ((chart as RangeNavigator).stockChart && chart.getModuleName() === 'rangeNavigator') {
         chart.svgObject = (chart as RangeNavigator).stockChart.selectorObject;
     } else {
-        chart.svgObject = chart.renderer.createSvg({
-            id: chart.element.id + '_svg',
-            width: chart.availableSize.width,
-            height: chart.availableSize.height
-        });
+        if ((chart as Chart).enableCanvas) {
+            chart.svgObject = chart.renderer.createCanvas({
+                id: chart.element.id + '_canvas',
+                width: chart.availableSize.width,
+                height: chart.availableSize.height
+            });
+        } else {
+            chart.svgObject = chart.renderer.createSvg({
+                id: chart.element.id + '_svg',
+                width: chart.availableSize.width,
+                height: chart.availableSize.height
+            });
+        }
     }
 }
 
@@ -1499,6 +1539,16 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
     }
     return labelCollection;
 }
+
+/**
+ * Method to reset the blazor templates
+ */
+export function blazorTemplatesReset(control: Chart | AccumulationChart ) : void {
+    for (let i: number = 0; i < control.annotations.length; i++) {
+        resetBlazorTemplate((control.element.id + '_Annotation_' + i).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate');
+    }
+}
+
 /** @private */
 export class CustomizeOption {
 
@@ -1540,6 +1590,7 @@ export class RectOption extends PathOption {
         this.rx = rx ? rx : 0;
         this.ry = ry ? ry : 0;
         this.transform = transform ? transform : '';
+        this.stroke = (border.width !== 0 && this.stroke !== '') ? border.color : 'transparent';
     }
 }
 /** @private */

@@ -11,7 +11,7 @@ import { AccPoints, AccumulationSeries} from '../../../src/accumulation-chart/mo
 import { getElement, removeElement} from '../../../src/common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { IAccLoadedEventArgs} from '../../../src/accumulation-chart/model/pie-interface';
-import { data, datetimeData1} from '../../chart/base/data.spec';
+import { data, datetimeData1, remoteData} from '../../chart/base/data.spec';
 import { MouseEvents} from '../../chart/base/events.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -323,15 +323,14 @@ describe('accumulation and Doughnut Control Checking', () => {
     });
     it('remote data checking', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            expect((accumulation.series[0] as AccumulationSeries).points.length).toBe(6);
+            expect((accumulation.series[0] as AccumulationSeries).points.length).toBe(7);
             expect(getElement(id + '_Series_0_Point_3').getAttribute('opacity')).toBe('0.2');
             done();
         };
-        accumulation.series[0].dataSource = dataManager;
+        accumulation.series[0].dataSource = remoteData;
         accumulation.series[0].xName = 'Id';
         accumulation.series[0].opacity = 0.2;
         accumulation.series[0].yName = 'Estimate';
-        accumulation.series[0].query = query;
         accumulation.series[0].groupTo = null;
         accumulation.title = '';
         accumulation.refresh();
@@ -387,57 +386,57 @@ describe('accumulation and Doughnut Control Checking', () => {
 
 });
 
-describe('Accumulation chart with remote dataSource', () => {
-    let pie: AccumulationChart;
-    let ele: Element;
-    let loaded: EmitType<IAccLoadedEventArgs>;
-    let dataManager: DataManager = new DataManager({
-        url: 'https://mvc.syncfusion.com/Services/Northwnd.svc/Tasks/'
-    });
-    let query: Query = new Query().take(5).where('Estimate', 'lessThan', 3, false);
-    beforeAll(() => {
-        ele = createElement('div', { id: 'remote' });
-        document.body.appendChild(ele);
-        pie = new AccumulationChart(
-            {
-                series: [
-                    {
-                        dataSource: dataManager,
-                        xName: 'Assignee', yName: 'Estimate', animation: { enable: false },
-                        name: 'Story Point',
-                    }
-                ],
-            });
-        pie.appendTo('#remote');
+// describe('Accumulation chart with remote dataSource', () => {
+//     let pie: AccumulationChart;
+//     let ele: Element;
+//     let loaded: EmitType<IAccLoadedEventArgs>;
+//     let dataManager: DataManager = new DataManager({
+//         url: 'https://mvc.syncfusion.com/Services/Northwnd.svc/Tasks/'
+//     });
+//     let query: Query = new Query().take(5).where('Estimate', 'lessThan', 3, false);
+//     beforeAll(() => {
+//         ele = createElement('div', { id: 'remote' });
+//         document.body.appendChild(ele);
+//         pie = new AccumulationChart(
+//             {
+//                 series: [
+//                     {
+//                         dataSource: dataManager,
+//                         xName: 'Assignee', yName: 'Estimate', animation: { enable: false },
+//                         name: 'Story Point',
+//                     }
+//                 ],
+//             });
+//         pie.appendTo('#remote');
 
 
-    });
-    afterAll((): void => {
-        pie.destroy();
-        ele.remove();
-    });
-    it('Checking the series without query', (done: Function) => {
-        loaded = (args: Object): void => {
-            let element: Element = getElement('remote');
-            let svgObject = getElement('remote' + '_svg');
-            expect(svgObject).not.toBe(null);
-            done();
-        };
-        pie.loaded = loaded;
-        pie.refresh();
-    });
-    it('Checking with query', (done: Function) => {
-        loaded = (args: Object): void => {
-            let element: Element = getElement('remote');
-            let svgObject = getElement('remote' + '_svg');
-            expect(svgObject).not.toBe(null);
-            done();
-        };
-        pie.loaded = loaded;
-        pie.series[0].query = query;
-        pie.refresh();
-    });
-});
+//     });
+//     afterAll((): void => {
+//         pie.destroy();
+//         ele.remove();
+//     });
+//     it('Checking the series without query', (done: Function) => {
+//         loaded = (args: Object): void => {
+//             let element: Element = getElement('remote');
+//             let svgObject = getElement('remote' + '_svg');
+//             expect(svgObject).not.toBe(null);
+//             done();
+//         };
+//         pie.loaded = loaded;
+//         pie.refresh();
+//     });
+//     it('Checking with query', (done: Function) => {
+//         loaded = (args: Object): void => {
+//             let element: Element = getElement('remote');
+//             let svgObject = getElement('remote' + '_svg');
+//             expect(svgObject).not.toBe(null);
+//             done();
+//         };
+//         pie.loaded = loaded;
+//         pie.series[0].query = query;
+//         pie.refresh();
+//     });
+// });
 it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

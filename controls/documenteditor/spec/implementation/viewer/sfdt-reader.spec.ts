@@ -4,7 +4,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
-import { TextElementBox, BodyWidget } from '../../../src';
+import { TextElementBox, BodyWidget, ParagraphWidget, LineWidget, EditRangeStartElementBox, EditRangeEndElementBox } from '../../../src/document-editor/implementation/viewer/page';
 
 
 let charParaBidi: any = { "sections": [{ "blocks": [{ "characterFormat": { "bidi": true }, "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "???", "characterFormat": { "bidi": true } }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Second column", "characterFormat": { "bdo": "RTL" } }, { "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }, { "text": " ", "characterFormat": { "bdo": "RTL" } }, { "text": "?", "characterFormat": { "bdo": "RTL" } }] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "Third column " }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Second Page" }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "ssASasAS" }] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": true } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Character", "name": "Line Number", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Header", "basedOn": "Normal", "link": "Header Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Header Char", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Footer", "basedOn": "Normal", "link": "Footer Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Footer Char", "basedOn": "Default Paragraph Font" }] };
@@ -129,6 +129,8 @@ let tab: any = {
     ],
     "defaultTabWidth": 56.0
 };
+let chart: any = {"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false},"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"chartLegend":{"position":"Bottom","chartTitleArea":{"fontName":"+mn-lt","fontSize":9,"layout":{"layoutX":0,"layoutY":0},"dataFormat":{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"808080","rgb":"#808080"}}}},"chartTitleArea":{"fontName":"+mn-lt","fontSize":14,"layout":{"layoutX":0,"layoutY":0},"dataFormat":{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"000000","rgb":"#000000"}}},"chartArea":{"foreColor":"#FFFFFFFF"},"plotArea":{"foreColor":"#000000FF"},"chartCategory":[{"chartData":[{"yValue":4.3},{"yValue":2.4},{"yValue":2}],"categoryXName":"Category 1"},{"chartData":[{"yValue":2.5},{"yValue":4.4},{"yValue":2}],"categoryXName":"Category 2"},{"chartData":[{"yValue":3.5},{"yValue":1.8},{"yValue":3}],"categoryXName":"Category 3"},{"chartData":[{"yValue":4.5},{"yValue":2.8},{"yValue":5}],"categoryXName":"Category 4"}],"chartSeries":[{"dataPoints":[{"fill":{"foreColor":"4472c4","rgb":"#4472c4"},"line":{"color":"000000","rgb":"#000000"}}],"seriesName":"Series 1","dataLabel":{"position":"Outside","fontName":"+mn-lt","fontColor":"404040","fontSize":9,"isLegendKey":false,"isBubbleSize":false,"isCategoryName":false,"isSeriesName":false,"isValue":true,"isPercentage":false,"isLeaderLines":false},"errorBar":{"type":"StandardError","direction":"Both","endStyle":"Cap","errorValue":10},"trendLines":[{"name":"Linear (Series 1)","type":"Linear","forward":0,"backward":0,"intercept":2,"isDisplayEquation":true,"isDisplayRSquared":true}]},{"dataPoints":[{"fill":{"foreColor":"ed7d31","rgb":"#ed7d31"},"line":{"color":"000000","rgb":"#000000"}}],"seriesName":"Series 2","dataLabel":{"position":"Outside","fontName":"+mn-lt","fontColor":"404040","fontSize":9,"isLegendKey":false,"isBubbleSize":false,"isCategoryName":false,"isSeriesName":false,"isValue":true,"isPercentage":false,"isLeaderLines":false},"errorBar":{"type":"StandardError","direction":"Both","endStyle":"Cap","errorValue":10}},{"dataPoints":[{"fill":{"foreColor":"a5a5a5","rgb":"#a5a5a5"},"line":{"color":"000000","rgb":"#000000"}}],"seriesName":"Series 3","dataLabel":{"position":"Outside","fontName":"+mn-lt","fontColor":"404040","fontSize":9,"isLegendKey":false,"isBubbleSize":false,"isCategoryName":false,"isSeriesName":false,"isValue":true,"isPercentage":false,"isLeaderLines":false},"errorBar":{"type":"StandardError","direction":"Both","endStyle":"Cap","errorValue":10}}],"chartPrimaryCategoryAxis":{"chartTitle":null,"chartTitleArea":{"layout":{},"dataFormat":{"fill":{},"line":{}}},"categoryType":"Automatic","fontSize":9,"fontName":"+mn-lt","numberFormat":"General","maximumValue":0,"minimumValue":0,"majorUnit":0,"hasMajorGridLines":false,"hasMinorGridLines":false,"majorTickMark":"TickMark_None","minorTickMark":"TickMark_None","tickLabelPosition":"TickLabelPosition_NextToAxis"},"chartPrimaryValueAxis":{"chartTitle":null,"chartTitleArea":{"layout":{},"dataFormat":{"fill":{},"line":{}}},"fontSize":9,"fontName":"+mn-lt","maximumValue":6,"minimumValue":0,"majorUnit":1,"hasMajorGridLines":true,"hasMinorGridLines":false,"majorTickMark":"TickMark_None","minorTickMark":"TickMark_None","tickLabelPosition":"TickLabelPosition_NextToAxis"},"chartTitle":"ClusterBar","chartType":"Bar_Clustered","gapWidth":182,"overlap":0,"height":252,"width":432},{"characterFormat":{},"bookmarkType":0,"name":"_GoBack"},{"characterFormat":{},"bookmarkType":1,"name":"_GoBack"}]}],"headersFooters":{}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","listFormat":{},"bidi":false},"defaultTabWidth":36,"styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Balloon Text","type":"Paragraph","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{}},"characterFormat":{"fontSize":9,"fontFamily":"Segoe UI","fontSizeBidi":9,"fontFamilyBidi":"Segoe UI"},"basedOn":"Normal","link":"Balloon Text Char"},{"name":"Balloon Text Char","type":"Character","characterFormat":{"fontSize":9,"fontFamily":"Segoe UI","fontSizeBidi":9,"fontFamilyBidi":"Segoe UI"},"basedOn":"Default Paragraph Font"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 1 Char","next":"Normal"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 2 Char","next":"Normal"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Normal","link":"Heading 3 Char","next":"Normal"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 4 Char","next":"Normal"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 5 Char","next":"Normal"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Normal","link":"Heading 6 Char","next":"Normal"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Default Paragraph Font"}],"lists":[],"abstractLists":[]};
+let lineChart: any = {"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false},"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"chartLegend":{"position":"Bottom","chartTitleArea":{"fontName":"+mn-lt","fontSize":9,"layout":{"layoutX":0,"layoutY":0},"dataFormat":{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"808080","rgb":"#808080"}}}},"chartTitleArea":{"fontName":"+mn-lt","fontSize":14,"layout":{"layoutX":0,"layoutY":0},"dataFormat":{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"000000","rgb":"#000000"}}},"chartArea":{"foreColor":"#FFFFFFFF"},"plotArea":{"foreColor":"#000000FF"},"chartCategory":[{"chartData":[{"yValue":4.3},{"yValue":2.4},{"yValue":2}],"categoryXName":"Category 1"},{"chartData":[{"yValue":2.5},{"yValue":4.4},{"yValue":2}],"categoryXName":"Category 2"},{"chartData":[{"yValue":3.5},{"yValue":1.8},{"yValue":3}],"categoryXName":"Category 3"},{"chartData":[{"yValue":4.5},{"yValue":2.8},{"yValue":5}],"categoryXName":"Category 4"}],"chartSeries":[{"dataPoints":[{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"4472c4","rgb":"#4472c4"}}],"seriesName":"Series 1","seriesFormat":{"markerStyle":"Circle","markerSize":5,"markerColor":"ff4472c4"}},{"dataPoints":[{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"ed7d31","rgb":"#ed7d31"}}],"seriesName":"Series 2","seriesFormat":{"markerStyle":"Circle","markerSize":5,"markerColor":"ffed7d31"}},{"dataPoints":[{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"a5a5a5","rgb":"#a5a5a5"}}],"seriesName":"Series 3","seriesFormat":{"markerStyle":"Circle","markerSize":5,"markerColor":"ffa5a5a5"}}],"chartPrimaryCategoryAxis":{"chartTitle":null,"chartTitleArea":{"layout":{},"dataFormat":{"fill":{},"line":{}}},"categoryType":"Automatic","fontSize":9,"fontName":"+mn-lt","numberFormat":"General","maximumValue":0,"minimumValue":0,"majorUnit":0,"hasMajorGridLines":false,"hasMinorGridLines":false,"majorTickMark":"TickMark_None","minorTickMark":"TickMark_None","tickLabelPosition":"TickLabelPosition_NextToAxis"},"chartPrimaryValueAxis":{"chartTitle":null,"chartTitleArea":{"layout":{},"dataFormat":{"fill":{},"line":{}}},"fontSize":9,"fontName":"+mn-lt","maximumValue":6,"minimumValue":0,"majorUnit":1,"hasMajorGridLines":true,"hasMinorGridLines":false,"majorTickMark":"TickMark_None","minorTickMark":"TickMark_None","tickLabelPosition":"TickLabelPosition_NextToAxis"},"chartTitle":"Chart Title","chartType":"Line_Markers","gapWidth":0,"overlap":0,"height":252,"width":432},{"characterFormat":{},"bookmarkType":0,"name":"_GoBack"},{"characterFormat":{},"bookmarkType":1,"name":"_GoBack"}]}],"headersFooters":{}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","listFormat":{},"bidi":false},"defaultTabWidth":36,"enforcement":false,"hashValue":"","saltValue":"","formatting":false,"protectionType":"ReadOnly","styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Balloon Text","type":"Paragraph","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{}},"characterFormat":{"fontSize":9,"fontFamily":"Segoe UI","fontSizeBidi":9,"fontFamilyBidi":"Segoe UI"},"basedOn":"Normal","link":"Balloon Text Char"},{"name":"Balloon Text Char","type":"Character","characterFormat":{"fontSize":9,"fontFamily":"Segoe UI","fontSizeBidi":9,"fontFamilyBidi":"Segoe UI"},"basedOn":"Default Paragraph Font"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 1 Char","next":"Normal"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 2 Char","next":"Normal"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Normal","link":"Heading 3 Char","next":"Normal"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 4 Char","next":"Normal"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 5 Char","next":"Normal"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Normal","link":"Heading 6 Char","next":"Normal"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Default Paragraph Font"}],"lists":[],"abstractLists":[]};
 describe('Default tab width validation and export validation', () => {
     let editor: DocumentEditor;
     let viewer: LayoutViewer;
@@ -162,5 +164,442 @@ describe('Default tab width validation and export validation', () => {
         editor.openBlank();
         expect(editor.viewer.defaultTabWidth).toBe(36);
     });
+    it('open chart', () => {
+        editor.open(JSON.stringify(chart));
+    });
+    it('open Line chart', () => {
+        editor.open(JSON.stringify(lineChart));
+    });
 });
 
+let format_restrict = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "afterSpacing": 30.0,
+                        "styleName": "Heading 1"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Adventure Works Cycles"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "formatting": true,
+    "protectionType": "NoProtection",
+    "enforcement": true,
+    "hashValue": "eVoNOXijTwRG8BOdeNzDDfHsmd+qOT/aaKgI8NhmnXkKJcCxatJyWYaED+5RG52qgIXFlcAVQvQPp0EqPDskjg==",
+    "saltValue": "Qb4b+Mg0aedgk8Al1wNpLQ=="
+};
+
+let without_format_restrict = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "afterSpacing": 30.0,
+                        "styleName": "Heading 1"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Adventure Works Cycles"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "formatting": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "hashValue": "eVoNOXijTwRG8BOdeNzDDfHsmd+qOT/aaKgI8NhmnXkKJcCxatJyWYaED+5RG52qgIXFlcAVQvQPp0EqPDskjg==",
+    "saltValue": "Qb4b+Mg0aedgk8Al1wNpLQ=="
+};
+describe('restrict editing feature formatting validation', () => {
+    let editor: DocumentEditor;
+    let viewer: LayoutViewer;
+    let sections: BodyWidget[];
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({});
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+        editor.open(JSON.stringify(format_restrict));
+    });
+    afterAll((done): void => {
+        viewer.destroy();
+        viewer = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Formatting restriction validation', () => {
+        expect(editor.viewer.restrictFormatting).toBe(true);
+        expect(editor.viewer.isDocumentProtected).toBe(true);
+    });
+    it(' without Formatting restriction validation', () => {
+        editor.open(JSON.stringify(without_format_restrict));
+        expect(editor.viewer.restrictFormatting).toBe(false);
+        expect(editor.viewer.isDocumentProtected).toBe(false);
+    }, 200);
+});
+
+let edit_readonly = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Hello word,"
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "editRangeId": "627587516",
+                            "group": "everyone"
+                        },
+                        {
+                            "text": "This from Suriya."
+                        },
+                        {
+                            "editRangeId": "627587516",
+                            "editableRangeStart": {
+                                "editRangeId": "627587516",
+                                "group": "everyone"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Protected from e"
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 1
+                        },
+                        {
+                            "text": "diting"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "formatting": false,
+    "protectionType": "ReadOnly",
+    "enforcement": true,
+    "hashValue": "a4ntS1Ca8S7ltINO8o9diMl91O9OcKm2WsI1vKiQhNtaUsQY2SVBe23OUuSg2kkNJN9Usj11/UCa4oMFYtzAlA==",
+    "saltValue": "djMAIQcobGK07uT6YaP+Ww=="
+};
+
+let edit_restrict_table = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "rows": [
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 0.0,
+                                "heightType": "AtLeast"
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "Sample"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1
+                                    }
+                                },
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "Sample2"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 0.0,
+                                "heightType": "AtLeast"
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "name": "_GoBack",
+                                                    "bookmarkType": 0
+                                                },
+                                                {
+                                                    "editRangeId": "1805148856",
+                                                    "user": "sample@gmail.com"
+                                                },
+                                                {
+                                                    "editRangeId": "1390048315",
+                                                    "user": "helo@gmail.com"
+                                                },
+                                                {
+                                                    "text": "Sample3"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1
+                                    }
+                                },
+                                {
+                                    "blocks": [
+                                        {
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "Sampl4"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "tableFormat": {
+                        "allowAutoFit": true,
+                        "leftIndent": 0.0,
+                        "tableAlignment": "Left",
+                        "preferredWidthType": "Auto",
+                        "borders": {
+                            "left": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "right": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "top": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "bottom": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "vertical": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "horizontal": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "diagonalDown": {
+                                "lineStyle": "None",
+                                "lineWidth": 0.0,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "diagonalUp": {
+                                "lineStyle": "None",
+                                "lineWidth": 0.0,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            }
+                        },
+                        "bidi": false
+                    }
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Sam"
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 1
+                        },
+                        {
+                            "editRangeId": "1805148856",
+                            "editableRangeStart": {
+                                "editRangeId": "1805148856",
+                                "user": "sample@gmail.com"
+                            }
+                        },
+                        {
+                            "editRangeId": "1390048315",
+                            "editableRangeStart": {
+                                "editRangeId": "1390048315",
+                                "user": "helo@gmail.com"
+                            }
+                        },
+                        {
+                            "text": "ple"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "protectionType": "NoProtection",
+    "enforcement": false
+};
+describe('restrict editing feature- editing validation', () => {
+    let editor: DocumentEditor;
+    let viewer: LayoutViewer;
+    let sections: BodyWidget[];
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({});
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+        editor.open(JSON.stringify(edit_readonly));
+    });
+    afterAll((done): void => {
+        viewer.destroy();
+        viewer = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Edit readonly with everyone validation', () => {
+        expect(editor.viewer.protectionType).toBe('ReadOnly');
+        let lineWidget: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets[0] as LineWidget;
+        expect(lineWidget.children.length).toBe(3);
+        expect((lineWidget.children[0] as EditRangeStartElementBox).group).toBe('Everyone');
+    });
+    it('Edit readonly with single user validation validation', () => {
+        editor.open(JSON.stringify(edit_restrict_table));
+        expect(editor.viewer.protectionType).toBe('NoProtection');
+        expect(editor.viewer.isDocumentProtected).toBe(false);
+        let lineWidget: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[2] as ParagraphWidget).childWidgets[0] as LineWidget;
+        expect(lineWidget.children.length).toBe(5);
+        expect((lineWidget.children[2] as EditRangeEndElementBox).editRangeStart.user).toBe('sample@gmail.com');
+    });
+});

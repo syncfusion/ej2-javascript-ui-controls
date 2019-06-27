@@ -5,6 +5,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { NodeModel, Rect, DiagramElement } from '../../../src';
 
 /**
  * Text Element
@@ -232,6 +233,67 @@ describe('Diagram Control', () => {
             ele.remove();
         });
     });
+
+    describe('Text element With text overflow', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramoverflow' });
+            document.body.appendChild(ele);
+
+            let node: NodeModel = {
+                id: 'node1', width: 75, height: 75, offsetX: 200, offsetY: 200,
+                annotations: [{
+                    content: 'The text element given with property of overflow as clip and wrapping as wrap so that element to be clipped',
+                    style: { textWrapping: 'Wrap', textOverflow: 'Clip' }
+                }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 75, height: 75, offsetX: 300, offsetY: 200,
+                annotations: [{
+                    content: 'The text element given with property of overflow as clip and wrapping as wrap so that element to be clipped',
+                    style: { textOverflow: 'Ellipsis', textWrapping: 'Wrap' }
+                }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 75, height: 75, offsetX: 400, offsetY: 200, annotations: [{ content: 'Node3', style: { textOverflow: 'Clip', textWrapping: 'WrapWithOverflow' } }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 75, height: 75, offsetX: 500, offsetY: 200,
+                annotations: [{
+                    content: 'The text element given with property of overflow as clip and wrapping as wrap so that element to be clipped',
+                    style: { textOverflow: 'Clip', textWrapping: 'NoWrap' }
+                }]
+            };
+            let node5: NodeModel = {
+                id: 'node5', width: 75, height: 75, offsetX: 600, offsetY: 200,
+                annotations: [{
+                    content: 'The text element given with property of overflow as clip and wrapping as wrap so that element to be clipped',
+                    style: { textOverflow: 'Ellipsis', textWrapping: 'NoWrap' }
+                }]
+            };
+            diagram = new Diagram({
+                width: '1000px', height: '500px', nodes: [node, node2, node3, node4, node5],
+                mode: 'Canvas'
+            });
+            diagram.appendTo('#diagramoverflow');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Node creation', () => {
+            expect(diagram.nodes.length === 5).toBe(true);
+            
+        })
+    });
+
     describe('Text element style with Text Align', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

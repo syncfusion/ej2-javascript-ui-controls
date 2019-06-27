@@ -32,12 +32,31 @@ $ddl-bigger-list-header-font-size: $ddl-list-font-size !default;
 $ddl-multi-column-border-width: 0 0 1px 0 !default;
 $ddl-multi-column-border-color: $grey-88 !default;
 
+// small size
+$ddl-small-icon-font-size: 14px !default;
+$ddl-small-line-height: 22px !default;
+$ddl-small-list-font-color: $grey-dark-font !default;
+$ddl-small-list-text-indent: 12px !default;
+
+// Touch Small
+
+$ddl-bigger-small-icon-font-size: 18px !default;
+$ddl-bigger-small-line-height: 34px !default;
+$ddl-bigger-small-list-font-color: $grey-dark-font !default;
+$ddl-bigger-small-list-text-indent: 16px !default;
+$ddl-bigger-small-list-header-font-size: 14px !default;
+
 @include export-module('dropdownbase-bootstrap-dark') {
   .e-dropdownbase .e-list-item .e-list-icon {
     padding: 0 10px 0 0;
   }
 
-  .e-bigger .e-dropdownbase .e-list-item .e-list-icon {
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon,
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
     padding: 0 12px 0 0;
+  }
+
+  .e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 8px 0 0;
   }
 }

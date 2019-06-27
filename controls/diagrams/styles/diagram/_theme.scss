@@ -13,6 +13,19 @@
     display: block;
   }
 
+  .e-content-placeholder.e-diagram.e-placeholder-diagram {
+    background-size: 100% 100%;
+    max-height: 500px;
+    max-width: 500px;
+   }
+
+  .e-content-placeholder.e-symbolpalette.e-placeholder-symbolpalette {
+    background-size: 100% 100%;
+    max-height: 200px;
+    max-width: 200px;
+   }
+
+
   .e-diagram-endpoint-handle {
     fill: $diagram-endpoint-handle-color;
     stroke: $diagram-resize-handle-stroke;

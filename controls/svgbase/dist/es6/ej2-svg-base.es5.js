@@ -52,9 +52,10 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
     /**
      * To draw a path
      * @param {PathAttributes} options - Options to draw a path in SVG
+     * @param {Int32Array} canvasTranslate - Used as dummy variable for canvas rendering
      * @return {Element}
      */
-    SvgRenderer.prototype.drawPath = function (options) {
+    SvgRenderer.prototype.drawPath = function (options, canvasTranslate) {
         var path = document.getElementById(options.id);
         if (path === null) {
             path = document.createElementNS(this.svgLink, 'path');
@@ -80,7 +81,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
      * @param {BaseAttibutes} options - Required options to draw a rectangle in SVG
      * @return {Element}
      */
-    SvgRenderer.prototype.drawRectangle = function (options) {
+    SvgRenderer.prototype.drawRectangle = function (options, canvasTranslate) {
         var rectangle = document.getElementById(options.id);
         if (rectangle === null) {
             rectangle = document.createElementNS(this.svgLink, 'rect');
@@ -167,7 +168,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
      * @param {TextAttributes} options - Options needed to draw a text in SVG
      * @return {Element}
      */
-    SvgRenderer.prototype.createText = function (options, label) {
+    SvgRenderer.prototype.createText = function (options, label, transX, transY) {
         var text = document.createElementNS(this.svgLink, 'text');
         text = this.setElementAttributes(options, text);
         if (!isNullOrUndefined(label)) {
@@ -364,6 +365,15 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         }
         return element;
     };
+    /**
+     * To create a Html5 canvas element
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options to create canvas
+     * @return {HTMLCanvasElement}
+     */
+    SvgRenderer.prototype.createCanvas = function (options) {
+        return null;
+    };
     return SvgRenderer;
 }());
 
@@ -443,18 +453,20 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         this.ctx.lineTo(options.x2, options.y2);
         this.ctx.stroke();
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     };
     /**
      * To draw a rectangle
      * @param {RectAttributes} options - required options to draw a rectangle on the canvas
      * @return {void}
      */
-    CanvasRenderer.prototype.drawRectangle = function (options) {
+    CanvasRenderer.prototype.drawRectangle = function (options, canvasTranslate) {
         var canvasCtx = this.ctx;
         var cornerRadius = options.rx;
         this.ctx.save();
         this.ctx.beginPath();
+        if (canvasTranslate) {
+            this.ctx.translate(canvasTranslate[0], canvasTranslate[1]);
+        }
         this.ctx.globalAlpha = this.getOptionValue(options, 'opacity');
         this.setAttributes(options);
         this.ctx.rect(options.x, options.y, options.width, options.height);
@@ -471,7 +483,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         }
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return (this.canvasObj);
     };
     // To draw the corner of a rectangle
     CanvasRenderer.prototype.drawCornerRadius = function (options) {
@@ -499,7 +511,6 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
-        this.dataUrl = this.canvasObj.toDataURL();
     };
     /**
      * To draw a path on the canvas
@@ -534,6 +545,12 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
                         this.ctx.lineTo(x1, y1);
                     }
                     break;
+                case 'Q':
+                    var q1 = parseFloat(dataSplit[i + 3]);
+                    var q2 = parseFloat(dataSplit[i + 4]);
+                    this.ctx.quadraticCurveTo(x1, y1, q1, q2);
+                    i = i + 2;
+                    break;
                 case 'C':
                     var c1 = parseFloat(dataSplit[i + 3]);
                     var c2 = parseFloat(dataSplit[i + 4]);
@@ -561,7 +578,10 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
                     i = i + 5;
                     break;
                 case 'z':
+                case 'Z':
                     this.ctx.closePath();
+                    //since for loop is incremented by 3, to get next value after 'z' i is decremented for 2.
+                    i = i - 2;
                     break;
             }
         }
@@ -574,7 +594,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         }
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     };
     /**
      * To draw a text
@@ -582,7 +602,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
      * @param {string} label - Specifies the text which has to be drawn on the canvas
      * @return {void}
      */
-    CanvasRenderer.prototype.drawText = function (options, label) {
+    CanvasRenderer.prototype.createText = function (options, label, transX, transY) {
         var fontWeight = this.getOptionValue(options, 'font-weight');
         if (!isNullOrUndefined(fontWeight) && fontWeight.toLowerCase() === 'regular') {
             fontWeight = 'normal';
@@ -605,18 +625,18 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
             this.ctx.textBaseline = options.baseline;
         }
         var txtlngth = 0;
-        this.ctx.translate(options.x + (txtlngth / 2), options.y);
+        this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
         this.ctx.rotate(options.labelRotation * Math.PI / 180);
         this.ctx.fillText(label, 0, 0);
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     };
     /**
      * To draw circle on the canvas
      * @param {CircleAttributes} options - required options to draw the circle
      * @return {void}
      */
-    CanvasRenderer.prototype.drawCircle = function (options) {
+    CanvasRenderer.prototype.drawCircle = function (options, canvasTranslate) {
         var canvasCtx = this.ctx;
         this.ctx.save();
         this.ctx.beginPath();
@@ -624,11 +644,14 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         this.ctx.fillStyle = options.fill;
         this.ctx.globalAlpha = options.opacity;
         this.ctx.fill();
+        if (canvasTranslate) {
+            this.ctx.translate(canvasTranslate[0], canvasTranslate[1]);
+        }
         this.setAttributes(options);
         this.ctx.stroke();
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
+        return this.canvasObj;
     };
     /**
      * To draw polyline
@@ -654,14 +677,13 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         this.ctx.strokeStyle = options.stroke;
         this.ctx.stroke();
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     };
     /**
      * To draw an ellipse on the canvas
      * @param {EllipseAttributes} options - options needed to draw ellipse
      * @return {void}
      */
-    CanvasRenderer.prototype.drawEllipse = function (options) {
+    CanvasRenderer.prototype.drawEllipse = function (options, canvasTranslate) {
         var canvasCtx = this.ctx;
         var circumference = Math.max(options.rx, options.ry);
         var scaleX = options.rx / circumference;
@@ -669,6 +691,9 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.translate(options.cx, options.cy);
+        if (canvasTranslate) {
+            this.ctx.translate(canvasTranslate[0], canvasTranslate[1]);
+        }
         this.ctx.save();
         this.ctx.scale(scaleX, scaleY);
         this.ctx.arc(0, 0, circumference, 0, 2 * Math.PI, false);
@@ -680,7 +705,6 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         this.ctx.stroke();
         this.ctx.restore();
         this.ctx = canvasCtx;
-        this.dataUrl = this.canvasObj.toDataURL();
     };
     /**
      * To draw an image
@@ -695,7 +719,6 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
             this.ctx.drawImage(imageObj, options.x, options.y, options.width, options.height);
         }
         this.ctx.restore();
-        this.dataUrl = this.canvasObj.toDataURL();
     };
     /**
      * To create a linear gradient
@@ -738,7 +761,6 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         else {
             colorName = colors[0].color.toString();
         }
-        this.dataUrl = this.canvasObj.toDataURL();
         return colorName;
     };
     /**
@@ -753,7 +775,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < keys.length; i++) {
             element.setAttribute(keys[i], values[i]);
         }
-        return element;
+        return null;
     };
     /**
      * To update the values of the canvas element attributes
@@ -771,6 +793,86 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
             img_1.src = this.dataUrl;
         }
     };
+    /**
+     * This method clears the given rectangle region
+     * @param options
+     */
+    CanvasRenderer.prototype.clearRect = function (rect) {
+        this.ctx.restore();
+        this.ctx.clearRect(rect.x, rect.y, rect.width, rect.height);
+    };
+    
+    /**
+     * For canvas rendering in chart
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options needed to create group
+     * @return {Element}
+     */
+    CanvasRenderer.prototype.createGroup = function (options) {
+        return null;
+    };
+    /**
+     * To render a clip path
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options required to render a clip path
+     * @return {Element}
+     */
+    CanvasRenderer.prototype.drawClipPath = function (options) {
+        return null;
+    };
+    /**
+     * Clip method to perform clip in canvas mode
+     * @param options
+     */
+    CanvasRenderer.prototype.canvasClip = function (options) {
+        this.ctx.save();
+        this.ctx.fillStyle = 'transparent';
+        this.ctx.rect(options.x, options.y, options.width, options.height);
+        this.ctx.fill();
+        this.ctx.clip();
+    };
+    /**
+     * Tp restore the canvas
+     * @param options
+     */
+    CanvasRenderer.prototype.canvasRestore = function () {
+        this.ctx.restore();
+    };
+    /**
+     * To draw a polygon
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {PolylineAttributes} options - Options needed to draw a polygon in SVG
+     * @return {Element}
+     */
+    CanvasRenderer.prototype.drawPolygon = function (options) {
+        return null;
+    };
+    /**
+     * To create defs element in SVG
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @return {Element}
+     */
+    CanvasRenderer.prototype.createDefs = function () {
+        return null;
+    };
+    /**
+     * To create clip path in SVG
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {BaseAttibutes} options - Options needed to create clip path
+     * @return {Element}
+     */
+    CanvasRenderer.prototype.createClipPath = function (options) {
+        return null;
+    };
+    /**
+     * To create a Html5 SVG element
+     * Dummy method for using canvas/svg render in the same variable name in chart control
+     * @param {SVGAttributes} options - Options to create SVG
+     * @return {Element}
+     */
+    CanvasRenderer.prototype.createSvg = function (options) {
+        return null;
+    };
     return CanvasRenderer;
 }());
 
@@ -782,6 +884,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
 function getTooltipThemeColor(theme) {
     var style;
     switch (theme) {
+        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 tooltipFill: '#ffffff',
@@ -842,6 +945,7 @@ var __extends$1 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 function measureText(text, font) {
+    var breakText = text || ''; // For avoid NuLL value
     var htmlObject = document.getElementById('chartmeasuretext');
     if (htmlObject === null) {
         htmlObject = createElement('text', { id: 'chartmeasuretext' });
@@ -856,7 +960,7 @@ function measureText(text, font) {
         }
         text = textArray.join(' ');
     }
-    htmlObject.innerHTML = text;
+    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
@@ -980,17 +1084,19 @@ var CustomizeOption = /** @__PURE__ @class */ (function () {
 /** @private */
 var TextOption = /** @__PURE__ @class */ (function (_super) {
     __extends$1(TextOption, _super);
-    function TextOption(id, x, y, anchor, text, transform, baseLine) {
+    function TextOption(id, x, y, anchor, text, transform, baseLine, labelRotation) {
         if (transform === void 0) { transform = ''; }
         var _this = _super.call(this, id) || this;
         _this.transform = '';
         _this.baseLine = 'auto';
+        _this.labelRotation = 0;
         _this.x = x;
         _this.y = y;
         _this.anchor = anchor;
         _this.text = text;
         _this.transform = transform;
         _this.baseLine = baseLine;
+        _this.labelRotation = labelRotation;
         return _this;
     }
     return TextOption;
@@ -1167,7 +1273,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 };
 /**
  * Configures the fonts in charts.
- * @public
+ * @private
  */
 var TextStyle = /** @__PURE__ @class */ (function (_super) {
     __extends(TextStyle, _super);
@@ -1260,7 +1366,7 @@ var ToolLocation = /** @__PURE__ @class */ (function (_super) {
  *   tooltipObj.appendTo("#tooltip");
  * </script>
  * ```
- * @public
+ * @private
  */
 var Tooltip = /** @__PURE__ @class */ (function (_super) {
     __extends(Tooltip, _super);
@@ -1277,7 +1383,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
      */
     Tooltip.prototype.preRender = function () {
         this.initPrivateVariable();
-        this.removeSVG();
+        if (!this.isCanvas) {
+            this.removeSVG();
+        }
         this.createTooltipElement();
     };
     Tooltip.prototype.initPrivateVariable = function () {
@@ -1329,7 +1437,11 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             var svgObject = this.renderer.createSvg({ id: this.element.id + '_svg' });
             this.element.appendChild(svgObject);
             // Group to hold text and path.
-            var groupElement = this.renderer.createGroup({ id: this.element.id + '_group' });
+            var groupElement = document.getElementById(this.element.id + '_group');
+            if (!groupElement) {
+                groupElement = this.renderer.createGroup({ id: this.element.id + '_group' });
+                groupElement.setAttribute('transform', 'translate(0,0)');
+            }
             svgObject.appendChild(groupElement);
             var pathElement = this.renderer.drawPath({
                 'id': this.element.id + '_path', 'stroke-width': this.theme === 'Bootstrap4' ? 0 : this.border.width,
@@ -1425,7 +1537,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
             shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
             var defElement = this.renderer.createDefs();
-            defElement.setAttribute('id', 'SVG_tooltip_definition');
+            defElement.setAttribute('id', this.element.id + 'SVG_tooltip_definition');
             groupElement.appendChild(defElement);
             defElement.innerHTML = shadow;
         }
@@ -1475,11 +1587,11 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var fontWeight = 'Normal';
         var labelColor = this.themeStyle.tooltipLightLabel;
         var dy = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
-        if (!isRender) {
+        if (!isRender || this.isCanvas) {
             removeElement(this.element.id + '_text');
             removeElement(this.element.id + '_header_path');
             removeElement(this.element.id + '_trackball_group');
-            removeElement('SVG_tooltip_definition');
+            removeElement(this.element.id + 'SVG_tooltip_definition');
         }
         var options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), 'start', '');
         var parentElement = textElement(options, font, null, groupElement);
@@ -1565,6 +1677,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var argsData = { cancel: false, name: 'tooltipRender', tooltip: this };
         this.trigger('tooltipRender', argsData);
         var parent = document.getElementById(this.element.id);
+        if (this.isCanvas) {
+            this.removeSVG();
+        }
         var firstElement = parent.firstElementChild;
         if (firstElement) {
             remove(firstElement);
@@ -1576,7 +1691,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 elem.appendChild(templateElement[0]);
             }
             parent.appendChild(elem);
-            var rect = this.element.getBoundingClientRect();
+            var element = this.isCanvas ? elem : this.element;
+            var rect = element.getBoundingClientRect();
             this.padding = 0;
             this.elementSize = new Size(rect.width, rect.height);
             var tooltipRect = this.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
@@ -1584,7 +1700,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 this.animateTooltipDiv(this.element, tooltipRect);
             }
             else {
-                this.updateDiv(this.element, tooltipRect.x, tooltipRect.y);
+                this.updateDiv(element, tooltipRect.x, tooltipRect.y);
             }
         }
         else {
@@ -1715,10 +1831,18 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     /** @private */
     Tooltip.prototype.fadeOut = function () {
         var _this = this;
-        var tooltipElement = getElement(this.element.id);
+        var tooltipElement = (this.isCanvas && !this.template) ? getElement(this.element.id + '_svg') :
+            getElement(this.element.id);
         if (tooltipElement) {
             var tooltipGroup_1 = tooltipElement.firstChild;
-            var opacity_1 = parseFloat(tooltipGroup_1.getAttribute('opacity')) || 1;
+            if (this.isCanvas && !this.template) {
+                tooltipGroup_1 = document.getElementById(this.element.id + '_group') ? document.getElementById(this.element.id + '_group') :
+                    tooltipGroup_1;
+            }
+            var opacity_1;
+            if (tooltipGroup_1) {
+                opacity_1 = parseFloat(tooltipGroup_1.getAttribute('opacity')) || 1;
+            }
             new Animation({}).animate(tooltipGroup_1, {
                 duration: 200,
                 progress: function (args) {
@@ -1859,6 +1983,12 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Complex({ x: 0, y: 0, width: 0, height: 0 }, AreaBounds)
     ], Tooltip.prototype, "areaBounds", void 0);
+    __decorate([
+        Property(null)
+    ], Tooltip.prototype, "availableSize", void 0);
+    __decorate([
+        Property(false)
+    ], Tooltip.prototype, "isCanvas", void 0);
     __decorate([
         Event()
     ], Tooltip.prototype, "tooltipRender", void 0);

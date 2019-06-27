@@ -154,31 +154,37 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private items;
     private customOperators;
     private operators;
-    private operatorValue;
     private ruleElem;
     private groupElem;
     private dataColl;
     private dataManager;
     private fields;
     private selectedColumn;
+    private isOperatorRendered;
+    private isValueRendered;
+    private actionButton;
     /**
      * Triggers when the component is created.
      * @event
+     * @blazorProperty 'Created'
      */
     created: EmitType<Event>;
     /**
      * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
+     * @blazorProperty 'OnChange'
      */
     beforeChange: EmitType<ChangeEventArgs>;
     /**
      * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
+     * @blazorProperty 'Changed'
      */
     change: EmitType<ChangeEventArgs>;
     /**
      * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
+     * @blazorProperty 'RuleChanged'
      */
     ruleChange: EmitType<RuleChangeEventArgs>;
     /**
@@ -267,10 +273,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getWrapper;
     protected getModuleName(): string;
     private initialize;
-    private triggerEvents;
     private clickEventHandler;
+    private beforeSuccessCallBack;
     private selectBtn;
     private addRuleElement;
+    private addRuleSuccessCallBack;
     private renderToolTip;
     /**
      * Validate the conditions and it display errors for invalid fields.
@@ -282,10 +289,17 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private groupTemplate;
     private ruleTemplate;
     private addGroupElement;
+    private addGroupSuccess;
     notifyChange(value: string | number | boolean | Date | string[] | number[] | Date[], element: Element): void;
     private changeValue;
+    private changeValueSuccessCallBack;
     private changeField;
     private changeRule;
+    private changeFilter;
+    private changeOperator;
+    private fieldChangeSuccess;
+    private operatorChangeSuccess;
+    private changeRuleValues;
     private destroyControls;
     private templateDestroy;
     private getDistinctValues;
@@ -339,7 +353,9 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     protected unWireEvents(): void;
     private getParentGroup;
     private deleteGroup;
+    private deleteGroupSuccessCallBack;
     private deleteRule;
+    private deleteRuleSuccessCallBack;
     private setGroupRules;
     /**
      * return the valid rule or rules collection.

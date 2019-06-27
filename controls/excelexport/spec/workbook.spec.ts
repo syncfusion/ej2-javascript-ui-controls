@@ -441,4 +441,57 @@ it('Formula', (done) => {
             }
         });
     });
+    it('CorruptionFix', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    rows: [
+                        /*row -> 1*/ { index: 1, cells: [{ index: 1, value: 'Fitzhugh CD, Abraham AA, Tisdale JF, Hsieh MM. <b><a href=\'https:\\www.syncfusion.com\'>Hematopoietic stem cell transplantation for patients with sickle cell disease: progress and future directions.</a></b>' },
+                         { index: 2, value: "World" }, 
+                         { index: 3, value: "Hello" }] }, /*Text*/
+                    ]
+                }
+            ],
+        }, 'xlsx');
+
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'CorruptionFix.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
+    it('HTMLHyperlink', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Hyperlink',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: '<a href=\'https:\\www.google.com\'>ghtj</a>Hodges E, <b>Rosebrock AP</b>" ' }] },
+                        { index: 2, cells: [{ index: 1, value: 'Hodges E, <b>Rosebrock AP</b>' }] },
+                        { index: 3, cells: [{ index: 1, value: '<i> Chen FK</i>' }] },                       
+                    ],
+                }]
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'HTMLHyperlink.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });    
 });
