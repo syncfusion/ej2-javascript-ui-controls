@@ -102,6 +102,7 @@ export class EventWindow {
             dialogModel.header = '<div class="e-title-text">' + this.l10n.getConstant('newEvent') + '</div>';
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
+        this.dialogObject.isStringTemplate = true;
         addClass([this.element.parentElement], cls.EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -212,8 +213,8 @@ export class EventWindow {
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
             }
-            let templateId: string = this.parent.element.id + 'editorTemplate';
-            let editorTemplate: NodeList = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId);
+            let templateId: string = this.parent.currentView + '_editorTemplate';
+            let editorTemplate: NodeList = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId, false);
             append(editorTemplate, form);
             updateBlazorTemplate(templateId, 'EditorTemplate');
         } else {
@@ -250,6 +251,7 @@ export class EventWindow {
         this.buttonObj = new Button({ iconCss: REPEAT_BUTTON_ICON_CLASS + ' e-icons', cssClass: 'e-medium ' + this.parent.cssClass });
         repeatEditConainer.appendChild(button);
         this.buttonObj.appendTo(button);
+        this.buttonObj.isStringTemplate = true;
         repeatDiv.appendChild(repeatEditConainer);
         repeatParentDiv.appendChild(repeatDiv);
         if (this.parent.isAdaptive) {
@@ -315,6 +317,7 @@ export class EventWindow {
             step: this.getSlotDuration(),
             value: this.parent.getCurrentTime(), width: '100%'
         });
+        dateTimePicker.isStringTemplate = true;
         dateTimePicker.appendTo(dateTimeInput);
         return dateTimeDiv;
     }
@@ -371,6 +374,7 @@ export class EventWindow {
                 mode: 'Box'
             });
             listObj.appendTo(resourceInput);
+            listObj.isStringTemplate = true;
         } else {
             let drowDownList: DropDownList = new DropDownList({
                 cssClass: this.parent.cssClass || '',
@@ -389,6 +393,7 @@ export class EventWindow {
                 itemTemplate: resourceTemplate
             });
             drowDownList.appendTo(resourceInput);
+            drowDownList.isStringTemplate = true;
         }
         return resourceDiv;
     }
@@ -417,6 +422,7 @@ export class EventWindow {
             popupHeight: '230px',
         });
         drowDownList.appendTo(timezoneInput);
+        drowDownList.isStringTemplate = true;
         return timezoneDiv;
     }
 
@@ -499,6 +505,7 @@ export class EventWindow {
             label: this.getFieldLabel(value)
         });
         checkBox.appendTo(checkBoxInput);
+        checkBox.isStringTemplate = true;
         checkBoxInput.setAttribute('name', fieldName);
         if (fieldName === 'Repeat') {
             this.repeatStatus = checkBox;
@@ -630,6 +637,7 @@ export class EventWindow {
         });
         this.element.appendChild(element);
         this.repeatDialogObject.appendTo(element);
+        this.repeatDialogObject.isStringTemplate = true;
         this.createRecurrenceEditor(<HTMLElement>this.repeatDialogObject.element.querySelector('.e-rec-editor'));
     }
 

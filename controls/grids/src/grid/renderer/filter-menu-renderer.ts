@@ -103,6 +103,8 @@ export class FilterMenuRenderer {
             animationSettings: { effect: 'None' },
             cssClass: 'e-filter-popup'
         });
+        let isStringTemplate: string = 'isStringTemplate';
+        this.dlgObj[isStringTemplate] = true;
         this.dlgObj.appendTo(this.dlgDiv);
     }
 

@@ -307,6 +307,7 @@ export interface BasicShapeModel extends ShapeModel{
     /**
      * Defines the collection of points to draw a polygon
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     points?: PointModel[];
@@ -596,6 +597,7 @@ export interface BpmnSubEventModel {
     /**
      * Defines the collection of textual annotations of the sub events
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     annotations?: ShapeAnnotationModel[];
@@ -603,6 +605,7 @@ export interface BpmnSubEventModel {
     /**
      * Defines the collection of connection points of the sub events
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     ports?: PointPortModel[];
@@ -610,6 +613,7 @@ export interface BpmnSubEventModel {
     /**
      * Sets the width of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -617,6 +621,7 @@ export interface BpmnSubEventModel {
     /**
      * Sets the height of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -890,6 +895,7 @@ export interface BpmnAnnotationModel {
     /**
      * Sets the angle between the bpmn shape and the annotation
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     angle?: number;
@@ -897,6 +903,7 @@ export interface BpmnAnnotationModel {
     /**
      * Sets the height of the text
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -904,6 +911,7 @@ export interface BpmnAnnotationModel {
     /**
      * Sets the width of the text
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -911,6 +919,7 @@ export interface BpmnAnnotationModel {
     /**
      * Sets the distance between the bpmn shape and the annotation
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     length?: number;
@@ -1274,6 +1283,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Defines the collection of textual annotations of nodes/connectors
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     annotations?: ShapeAnnotationModel[];
@@ -1299,6 +1309,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets the width of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -1306,6 +1317,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets the height of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -1313,6 +1325,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets the minimum width of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     minWidth?: number;
@@ -1320,6 +1333,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets the minimum height of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     minHeight?: number;
@@ -1327,6 +1341,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets the maximum width of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     maxWidth?: number;
@@ -1334,6 +1349,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets the maximum height of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     maxHeight?: number;
@@ -1366,6 +1382,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Sets the border width of the node
      * @default 0
+     * @isBlazorNullableType true
      */
     borderWidth?: number;
 
@@ -1417,7 +1434,8 @@ export interface NodeModel extends NodeBaseModel{
      * * InheritTooltip - Enables or disables tool tip for the Nodes
      * * ReadOnly - Enables the  ReadOnly support for Annotation
      * @default 'Default'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     constraints?: NodeConstraints;
 
@@ -1430,6 +1448,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Defines the children of group element
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     children?: string[];
@@ -1437,6 +1456,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Defines the type of the container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default null
      */
 
@@ -1457,6 +1477,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Used to define the rows for the grid container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1465,6 +1486,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Used to define the column for the grid container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1473,6 +1495,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Used to define a index of row in the grid
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1481,6 +1504,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Used to define a index of column in the grid
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1489,6 +1513,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Merge the row use the property in the grid container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     rowSpan?: number;
@@ -1496,6 +1521,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Merge the column use the property in the grid container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     columnSpan?: number;
@@ -1676,6 +1702,7 @@ export interface ChildContainerModel {
     /**
      * Defines the type of the container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default Canvas
      */
     type?: ContainerTypes;
@@ -1683,6 +1710,7 @@ export interface ChildContainerModel {
     /**
      * Defines the type of the swimLane orientation.
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     orientation?: Orientation;

@@ -75,7 +75,9 @@ export interface KeyGestureModel {
      * * The Plus
      * * The Star
      * @aspDefaultValueIgnore
-     * @aspNumberEnum 
+     * @blazorDefaultValueIgnore
+     * @aspNumberEnum
+     * @blazorNumberEnum
      * @default undefined
      */
     key?: Keys;
@@ -88,7 +90,9 @@ export interface KeyGestureModel {
      * * Alt - alt key
      * * Shift - shift key
      * @aspDefaultValueIgnore
-     * @aspNumberEnum 
+     * @blazorDefaultValueIgnore
+     * @aspNumberEnum
+     * @blazorNumberEnum
      * @default undefined
      */
     keyModifiers?: KeyModifiers;
@@ -109,6 +113,7 @@ export interface CommandModel {
     /**
      * Check the command is executable at the moment or not
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -117,6 +122,7 @@ export interface CommandModel {
     /**
      * Defines what to be executed when the key combination is recognized
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -197,6 +203,7 @@ export interface ContextMenuSettingsModel {
     /**
      * Enables/Disables the context menu items
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     show?: boolean;
@@ -204,6 +211,7 @@ export interface ContextMenuSettingsModel {
     /**
      * Shows only the custom context menu items
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     showCustomMenuOnly?: boolean;
@@ -226,6 +234,7 @@ export interface ContextMenuSettingsModel {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     items?: ContextMenuItemModel[];

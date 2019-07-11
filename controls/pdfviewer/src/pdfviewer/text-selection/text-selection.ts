@@ -1282,7 +1282,7 @@ export class TextSelection {
      * @private
      */
     public initiateTouchSelection(event: TouchEvent, x: number, y: number): void {
-        if (this.pdfViewerBase.isShapeAnnotationModule() || this.pdfViewerBase.isCalibrateAnnotationModule()) {
+        if (this.pdfViewerBase.isShapeBasedAnnotationsEnabled()) {
             if (this.pdfViewer.selectedItems.annotations.length > 0) {
                 this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
             }
@@ -1736,7 +1736,7 @@ export class TextSelection {
             }
         }
         if (selectionText.length > 0) {
-            if (this.pdfViewerBase.isShapeAnnotationModule()) {
+            if (this.pdfViewer.annotation) {
                 this.pdfViewer.annotation.isShapeCopied = false;
             }
             let textArea: HTMLElement = document.createElement('textarea');

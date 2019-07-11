@@ -87,7 +87,7 @@ describe('RTE CR issues', () => {
         });
 
         it('I213118 => EJ2-15261 - RTE removes spacing between words when content is pasted from a word document', () => {
-            expect((rteObj as any).inputElement.innerHTML === innerHTML.replace(/>\s+</g, '><')).toBe(true);
+            expect((rteObj as any).inputElement.innerHTML === innerHTML).toBe(true);
         });
 
         afterAll(() => {

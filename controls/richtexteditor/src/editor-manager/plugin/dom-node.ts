@@ -222,9 +222,9 @@ export class DOMNode {
     }
 
     public getPreviousNode(element: Element): Element {
-        element = element.previousSibling as Element;
+        element = element.previousElementSibling  as Element;
         for (; element && element.textContent === '\n'; null) {
-            element = element.previousSibling as Element;
+            element = element.previousElementSibling  as Element;
         }
         return element;
     }
@@ -240,9 +240,7 @@ export class DOMNode {
         let end: Element = this.parent.querySelector('.' + markerClassName.endSelection);
         let startTextNode: Element;
         let endTextNode: Element;
-        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab' &&
-        (!isNullOrUndefined(start.parentElement) && start.parentElement.tagName !== 'LI' &&
-        this.parent.textContent !== '')) {
+        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab') {
             if (start.childNodes.length === 1 && start.childNodes[0].nodeName === 'BR') {
                 start.innerHTML = '&#65279;&#65279;<br>';
             } else {
@@ -416,9 +414,10 @@ export class DOMNode {
                     if (nodes.indexOf(node) < 0 && node.childNodes && node.childNodes.length) {
                         nodes.push(node);
                         node = node.childNodes[0] as Element;
-                    } else if (node && (node.tagName === 'BR' || node.nodeType === Node.TEXT_NODE ||
-                        (node as Element).classList.contains(markerClassName.startSelection) ||
-                        (node as Element).classList.contains(markerClassName.endSelection)) &&
+                    } else if (node && (node.tagName === 'BR' || (node.nodeType === Node.TEXT_NODE &&
+                        node.textContent.trim() !== '') || (node.nodeType !== Node.TEXT_NODE &&
+                        ((node as Element).classList.contains(markerClassName.startSelection) ||
+                        (node as Element).classList.contains(markerClassName.endSelection)))) &&
                         CONSTANT.IGNORE_BLOCK_TAGS.indexOf((node.parentNode as Element).tagName.toLocaleLowerCase()) >= 0) {
                         node = this.createTempNode(node as Element);
                     } else if (node.nextSibling && ((node.nextSibling as Element).tagName === 'BR' ||

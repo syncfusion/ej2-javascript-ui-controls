@@ -37,6 +37,11 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      */
     @Property()
     public locale: string;
+    /**
+     * string template option for Blazor template rendering
+     * @private
+     */
+    public isStringTemplate: boolean = false;
     protected needsID: boolean = false;
     protected moduleLoader: ModuleLoader;
     protected localObserver: Observer;

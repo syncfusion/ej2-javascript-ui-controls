@@ -470,7 +470,7 @@ export class TextMarkupAnnotation {
                 pageAnnotations.splice(index, 1);
             } else if (action === 'Text Markup Deleted') {
                 // tslint:disable-next-line:max-line-length
-                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageAnnotations[index], annotation.shapeAnnotationType);
+                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageNumber, annotation.shapeAnnotationType);
                 pageAnnotations.splice(index, 0, annotation);
             }
         }
@@ -512,7 +512,7 @@ export class TextMarkupAnnotation {
         if (pageAnnotations) {
             if (action === 'Text Markup Added') {
                 // tslint:disable-next-line:max-line-length
-                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageAnnotations[index], annotation.shapeAnnotationType);
+                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageNumber, annotation.shapeAnnotationType);
                 pageAnnotations.push(annotation);
             } else if (action === 'Text Markup Deleted') {
                 this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(pageAnnotations[index], 'textMarkup');
@@ -766,15 +766,17 @@ export class TextMarkupAnnotation {
                 this.currentTextMarkupAnnotation = currentAnnot;
                 this.selectTextMarkupCurrentPage = pageNumber;
                 this.enableAnnotationPropertiesTool(true);
-                // tslint:disable-next-line
-                let accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
-                if (accordionExpand) {
-                    accordionExpand.ej2_instances[0].expandItem(true);
-                }
-                // tslint:disable-next-line
-                let comments: any = document.getElementById(currentAnnot.annotName);
-                if (comments) {
-                    comments.firstChild.click();
+                if (document.getElementById(this.pdfViewer.element.id + '_commantPanel').style.display === 'block') {
+                    // tslint:disable-next-line
+                    let accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
+                    if (accordionExpand) {
+                        accordionExpand.ej2_instances[0].expandItem(true);
+                    }
+                    // tslint:disable-next-line
+                    let comments: any = document.getElementById(currentAnnot.annotName);
+                    if (comments) {
+                        comments.firstChild.click();
+                    }
                 }
                 if (this.pdfViewer.toolbarModule) {
                     this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
@@ -785,7 +787,7 @@ export class TextMarkupAnnotation {
             }
             this.clearCurrentAnnotationSelection(pageNumber);
         } else {
-            if (!this.pdfViewerBase.isClickedOnScrollBar(event)) {
+            if (!this.pdfViewerBase.isClickedOnScrollBar(event, true)) {
                 this.clearCurrentAnnotation();
                 this.clearCurrentAnnotationSelection(pageNumber);
             }
@@ -1098,7 +1100,7 @@ export class TextMarkupAnnotation {
         // tslint:disable-next-line:max-line-length
         let modifiedDate: string = predefinedDate ? predefinedDate : date.toLocaleString();
         let annotationName: string = this.pdfViewer.annotation.createGUID();
-        let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('textMarkup', pageNumber + 1);
+        let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('textMarkup', pageNumber + 1, type);
         document.getElementById(commentsDivid).id = annotationName;
         let annotation: ITextMarkupAnnotation = {
             // tslint:disable-next-line:max-line-length

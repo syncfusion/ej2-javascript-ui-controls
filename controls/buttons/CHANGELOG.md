@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### Chips
+
+#### Bug Fixes
+
+- I239111 - Issue with getting selected chip using `getSelectedChips` method in Edge browser has been fixed.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Chips

@@ -432,6 +432,7 @@ export class BasicShape extends Shape {
     /**
      * Defines the collection of points to draw a polygon
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Collection<PointModel>([], Point)
@@ -778,6 +779,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
     /**
      * Defines the collection of textual annotations of the sub events
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Collection<ShapeAnnotationModel>([], ShapeAnnotation)
@@ -786,6 +788,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
     /**
      * Defines the collection of connection points of the sub events
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Collection<PointPortModel>([], PointPort)
@@ -794,6 +797,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
     /**
      * Sets the width of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -802,6 +806,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
     /**
      * Sets the height of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1126,6 +1131,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
     /**
      * Sets the angle between the bpmn shape and the annotation
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property(0)
@@ -1134,6 +1140,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
     /**
      * Sets the height of the text
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1142,6 +1149,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
     /**
      * Sets the width of the text
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1150,6 +1158,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
     /**
      * Sets the distance between the bpmn shape and the annotation
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property(0)
@@ -1615,6 +1624,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Defines the collection of textual annotations of nodes/connectors
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Collection<ShapeAnnotationModel>([], ShapeAnnotation)
@@ -1644,6 +1654,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets the width of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1652,6 +1663,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets the height of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1660,6 +1672,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets the minimum width of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1668,6 +1681,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets the minimum height of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1676,6 +1690,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets the maximum width of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1684,6 +1699,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets the maximum height of the node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1720,6 +1736,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Sets the border width of the node
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public borderWidth: number;
@@ -1778,7 +1795,8 @@ export class Node extends NodeBase implements IElement {
      * * InheritTooltip - Enables or disables tool tip for the Nodes
      * * ReadOnly - Enables the  ReadOnly support for Annotation
      * @default 'Default'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     @Property(NodeConstraints.Default)
     public constraints: NodeConstraints;
@@ -1793,6 +1811,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Defines the children of group element
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1801,6 +1820,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Defines the type of the container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default null
      */
 
@@ -1822,6 +1842,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Used to define the rows for the grid container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1831,6 +1852,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Used to define the column for the grid container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1840,6 +1862,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Used to define a index of row in the grid
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1849,6 +1872,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Used to define a index of column in the grid
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1858,6 +1882,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Merge the row use the property in the grid container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1866,6 +1891,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Merge the column use the property in the grid container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2574,6 +2600,7 @@ export class ChildContainer {
     /**
      * Defines the type of the container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default Canvas
      */
     @Property('Canvas')
@@ -2581,6 +2608,7 @@ export class ChildContainer {
     /**
      * Defines the type of the swimLane orientation.
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property('Vertical')

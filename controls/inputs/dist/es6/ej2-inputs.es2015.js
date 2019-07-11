@@ -23,9 +23,18 @@ const CLASSNAMES = {
  */
 var Input;
 (function (Input) {
+    let floatType;
+    /**
+     * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
+     * ```
+     * E.g : Input.createInput({ element: element, floatLabelType : "Auto", properties: { placeholder: 'Search' } });
+     * ```
+     * @param args
+     */
     function createInput(args, internalCreateElement) {
         let makeElement = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         let inputObject = { container: null, buttons: [], clearButton: null };
+        floatType = args.floatLabelType;
         if (isNullOrUndefined(args.floatLabelType) || args.floatLabelType === 'Never') {
             inputObject.container = createInputContainer(args, CLASSNAMES.INPUTGROUP, CLASSNAMES.INPUTCUSTOMTAG, 'span', makeElement);
             args.element.parentNode.insertBefore(inputObject.container, args.element);
@@ -35,17 +44,23 @@ var Input;
         else {
             createFloatingInput(args, inputObject, makeElement);
         }
+        checkInputValue(args.floatLabelType, args.element);
         args.element.addEventListener('focus', function () {
             let parent = getParentNode(this);
-            if (parent.classList.contains('e-input-group')) {
+            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+                || parent.classList.contains('e-filled')) {
                 parent.classList.add('e-input-focus');
             }
         });
         args.element.addEventListener('blur', function () {
             let parent = getParentNode(this);
-            if (parent.classList.contains('e-input-group')) {
+            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+                || parent.classList.contains('e-filled')) {
                 parent.classList.remove('e-input-focus');
             }
+        });
+        args.element.addEventListener('input', () => {
+            checkInputValue(floatType, args.element);
         });
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
             args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
@@ -64,6 +79,15 @@ var Input;
         return inputObject;
     }
     Input.createInput = createInput;
+    function checkInputValue(floatLabelType, inputElement) {
+        let inputValue = inputElement.value;
+        if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
+            inputElement.parentElement.classList.add('e-valid-input');
+        }
+        else if (floatLabelType !== 'Always') {
+            inputElement.parentElement.classList.remove('e-valid-input');
+        }
+    }
     function _focusFn() {
         let label = getParentNode(this).getElementsByClassName('e-float-text')[0];
         addClass([label], CLASSNAMES.LABELTOP);
@@ -146,12 +170,18 @@ var Input;
             floatLabelElement.setAttribute('for', args.element.getAttribute('id'));
         }
     }
+    function checkFloatLabelType(type, container) {
+        if (type === 'Always' && container.classList.contains('e-outline')) {
+            container.classList.add('e-valid-input');
+        }
+    }
     function setPropertyValue(args, inputObject) {
         if (!isNullOrUndefined(args.properties)) {
             for (let prop of Object.keys(args.properties)) {
                 switch (prop) {
                     case 'cssClass':
                         setCssClass(args.properties.cssClass, [inputObject.container]);
+                        checkFloatLabelType(args.floatLabelType, inputObject.container);
                         break;
                     case 'enabled':
                         setEnabled(args.properties.enabled, args.element, args.floatLabelType, inputObject.container);
@@ -298,6 +328,7 @@ var Input;
                 addClass([button], CLASSNAMES.CLEARICONHIDE);
             }
         }
+        checkInputValue(floatLabelType, element);
     }
     Input.setValue = setValue$$1;
     /**
@@ -516,6 +547,7 @@ var Input;
     function addFloating(input, type, placeholder, internalCreateElement) {
         let makeElement = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         let container = closest(input, '.' + CLASSNAMES.INPUTGROUP);
+        floatType = type;
         if (type !== 'Never') {
             let customTag = container.tagName;
             customTag = customTag !== 'DIV' && customTag !== 'SPAN' ? customTag : null;
@@ -538,6 +570,7 @@ var Input;
                 container.insertBefore(floatText, iconEle);
             }
         }
+        checkFloatLabelType(type, input.parentElement);
     }
     Input.addFloating = addFloating;
     /**
@@ -9584,7 +9617,7 @@ let ColorPicker = class ColorPicker extends Component {
         }
     }
     setNoColor() {
-        let noColorEle = selectAll('.e-row')[0].children[0];
+        let noColorEle = this.container.querySelector('.e-row').children[0];
         noColorEle.classList.add(NOCOLOR);
         if (!this.value) {
             noColorEle.classList.add(SELECT);
@@ -9688,12 +9721,17 @@ let ColorPicker = class ColorPicker extends Component {
         this.hsv[3] = value / 100;
         this.rgb[3] = value / 100;
         let cValue = this.rgbToHex(this.rgb);
-        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
-            getInstance(select('.' + OPACITY, this.container), NumericTextBox).value = value;
-        }
+        this.updateOpacityInput(value);
         let rgb = this.convertToRgbString(this.rgb);
         this.updatePreview(rgb);
         this.triggerEvent(cValue, pValue, rgb);
+    }
+    updateOpacityInput(value) {
+        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
+            let opacityTextBoxInst = getInstance(select('.' + OPACITY, this.container), NumericTextBox);
+            opacityTextBoxInst.value = value;
+            opacityTextBoxInst.dataBind();
+        }
     }
     createPreview(parentEle) {
         let previewContainer = this.createElement('div', { className: PREVIEW });
@@ -10783,6 +10821,9 @@ let ColorPicker = class ColorPicker extends Component {
             this.createSlider();
             this.setHsvContainerBg();
             this.updateInput(newProp);
+            if (this.rgb.length === 4) {
+                this.updateOpacityInput(this.rgb[3] * 100);
+            }
         }
         else {
             this.removeTileSelection();

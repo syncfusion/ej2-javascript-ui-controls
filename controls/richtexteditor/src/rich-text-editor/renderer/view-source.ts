@@ -142,7 +142,7 @@ export class ViewSource {
         this.parent.enableToolbarItem('SourceCode');
         if (this.parent.getToolbar()) { removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]); }
         removeClass(tbItems, [CLS_ACTIVE]);
-        this.parent.setContentHeight('sourceCode');
+        this.parent.setContentHeight('sourceCode', true);
         this.wireEvent(this.previewElement);
         this.unWireBaseKeyDown();
         this.previewElement.focus();
@@ -177,7 +177,7 @@ export class ViewSource {
         this.parent.isBlur = false;
         this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
         if (this.parent.getToolbar()) { removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]); }
-        this.parent.setContentHeight();
+        this.parent.setContentHeight('preview', true);
         this.unWireEvent();
         this.wireBaseKeyDown();
         (this.contentModule.getEditPanel() as HTMLElement).focus();

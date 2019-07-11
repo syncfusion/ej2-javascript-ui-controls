@@ -195,6 +195,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  Usually, it defaults to the current System date.
      * @default 'new Date()'
      * @aspDefaultValue DateTime.Now
+     * @blazorDefaultValue DateTime.Now
      */
     @Property(new Date())
     public selectedDate: Date;
@@ -238,6 +239,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  view whereas on other views, it will display all the usual days and simply highlights the working days with different shade.
      * @default '[1, 2, 3, 4, 5]'
      * @aspType int[]
+     * @blazorType int[]
      */
     @Property([1, 2, 3, 4, 5])
     public workDays: number[];
@@ -726,6 +728,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             let currentIndex: number = this.getViewIndex(this.currentView);
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
+        this.uiStateValues.viewIndex = this.viewIndex;
     }
     private getActiveViewOptions(): ViewsModel {
         let timeScale: TimeScaleModel = {
@@ -857,6 +860,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     public changeView(view: View, event?: Event, muteOnChange?: boolean, index?: number): void {
+        this.uiStateValues.viewIndex = this.viewIndex;
         if (isNullOrUndefined(index)) {
             index = this.getViewIndex(view);
         }
@@ -980,7 +984,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.uiStateValues = {
-            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
+            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false, viewIndex: 0,
             isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
         };
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };

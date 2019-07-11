@@ -2023,7 +2023,7 @@ describe('TextBox ', () => {
             expect(inputObj.element.hasAttribute('readonly')).toBe(true);
             expect(inputObj.element.hasAttribute('disabled')).toBe(true);
             expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
-            expect(inputObj.textboxWrapper.container.getAttribute('class')).toBe('test');
+            expect(inputObj.textboxWrapper.container.classList.contains('test')).toBe(true);
             expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:yellow');
             expect(inputObj.element.getAttribute('placeholder')).toBe('Number of states');
         });
@@ -2052,7 +2052,7 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('maxlength')).toBe('50');
             expect(inputObj.element.getAttribute('minlength')).toBe('10');
             expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
-            expect(inputObj.textboxWrapper.container.getAttribute('class')).toBe('test');
+            expect(inputObj.textboxWrapper.container.classList.contains('test')).toBe(true);
             expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:yellow');
             inputObj.htmlAttributes = { placeholder:"Enter a number", readonly: "false", value: "50", type: "number", maxlength: "60", minlength: "5", class: "multiple", title:"heading", style: 'background-color:red'};
             inputObj.dataBind();
@@ -2063,7 +2063,7 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('maxlength')).toBe('60');
             expect(inputObj.element.getAttribute('minlength')).toBe('5');
             expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('heading');
-            expect(inputObj.textboxWrapper.container.getAttribute('class')).toBe('multiple');
+            expect(inputObj.textboxWrapper.container.classList.contains('multiple')).toBe(true);
             expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:red');
         });
         it('Placeholder testing in auto case', () => {

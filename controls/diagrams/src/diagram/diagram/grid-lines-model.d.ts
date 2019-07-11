@@ -87,7 +87,8 @@ export interface SnapSettingsModel {
      * * SnapToLines - Enables the object to snap with both horizontal and Vertical gridlines.
      * * snapToObject - Enables the object to snap with the other objects in the diagram.
      * @default 'All'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     constraints?: SnapConstraints;
 

@@ -263,11 +263,12 @@ export function getEditValue(value: string, rteObj: IRichTextEditor): string {
 }
 export function updateTextNode(value: string): string {
     let tempNode: HTMLElement = document.createElement('div');
-    tempNode.innerHTML = value.replace(/>\s+</g, '><');
+    tempNode.innerHTML = value;
     let childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
     if (childNodes.length > 0) {
         [].slice.call(childNodes).forEach((childNode: Node) => {
-            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode) {
+            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
+                && childNode.textContent.trim() !== '') {
                 let defaultTag: HTMLElement = document.createElement('p');
                 let parentNode: Element = childNode.parentNode as Element;
                 parentNode.insertBefore(defaultTag, childNode);

@@ -3,7 +3,10 @@ import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '
 import { MultiSelect, ISelectAllEventArgs } from '../../src/multi-select/index';
 import { FilteringEventArgs } from '../../src/drop-down-base';
 import { DataManager, Query, ODataV4Adaptor, ODataAdaptor } from '@syncfusion/ej2-data';
+import { CheckBoxSelection } from '../../src/multi-select/checkbox-selection';
 import { extend } from '@syncfusion/ej2-base';
+MultiSelect.Inject(CheckBoxSelection);
+
 let mouseEventArgs: any = { preventDefault: function () { }, target: null };
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -244,6 +247,109 @@ describe('MultiSelect', () => {
             mObj.mode = "Box";
             mObj.dataBind();
             expect(mObj.chipCollectionWrapper.childElementCount === 10).toBe(true);
+        });
+    });
+    describe('EJ2-28369 - Hide the “Select All” checkbox if only one item exists in filtered state', () => {
+        let listObj: any;
+        let checkObj : any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            checkObj = new CheckBoxSelection();
+            checkObj.destroy();
+        });
+        it('Select all text for after filtering', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' },
+                { Name: 'Bermuda', Code: 'BM' },
+                { Name: 'United States', Code: 'US' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                showSelectAll: true, mode: 'CheckBox',
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                selectAllText: 'Check All',
+                filtering: function (e) {
+                    let query: Query = new Query().select(['Name', 'text']);
+                    query = (e.text !== '') ? query.where('Name', 'startswith', e.text, true) : query;
+                    e.updateData(data, query);
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            (<any>listObj).checkBoxSelectionModule.filterInput.value = "a"
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 70;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).KeyUp(keyboardEventArgs);
+            expect(listObj.checkBoxSelectionModule.checkAllParent.style.display == "none").toBe(true);
+        });
+        it('Select all text for initial rendering', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                showSelectAll: true, mode: 'CheckBox',
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                selectAllText: 'Check All',
+                filtering: function (e) {
+                    let query: Query = new Query().select(['Name', 'text']);
+                    query = (e.text !== '') ? query.where('Name', 'startswith', e.text, true) : query;
+                    e.updateData(data, query);
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.checkBoxSelectionModule.checkAllParent.style.display == "none").toBe(true);
+        });
+        it('Select all text for initial rendering', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' },
+                { Name: 'Bermuda', Code: 'BM' },
+                { Name: 'United States', Code: 'US' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                showSelectAll: true, mode: 'CheckBox',
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                selectAllText: 'Check All',
+                filtering: function (e) {
+                    let query: Query = new Query().select(['Name', 'text']);
+                    query = (e.text !== '') ? query.where('Name', 'startswith', e.text, true) : query;
+                    e.updateData(data, query);
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.checkBoxSelectionModule.checkAllParent.style.display == "block").toBe(true);
+        });
+        it('Select all text for initial rendering with grouping', () => {
+            let data: { [key: string]: Object }[] = [
+                { vegetable: 'Cabbage', category: 'Leafy and Salad' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                showSelectAll: true, mode: 'CheckBox',
+                fields: { groupBy: 'category', text: 'vegetable' },
+                selectAllText: 'Check All',
+                enableGroupCheckBox: true,
+                filtering: function (e) {
+                    let query = new Query();
+                    query = (e.text != "") ? query.where("vegetable", "startswith", e.text, true) : query;
+                    e.updateData(data, query);
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect(listObj.checkBoxSelectionModule.checkAllParent.style.display == "block").toBe(false);
         });
     });
     describe('EJ2-10278 - multiselect component is not updating the popup correctly', () => {

@@ -11,14 +11,14 @@ export interface CalendarBaseModel extends ComponentModel{
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
      * @default new Date(1900, 00, 01)
-     * @aspDefaultValue new DateTime(1900, 01, 01)
+     * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
     min?: Date;
 
     /**
      * Gets or sets the maximum date that can be selected in the Calendar.
      * @default new Date(2099, 11, 31)
-     * @aspDefaultValue new DateTime(2099, 12, 31)
+     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     max?: Date;
 
@@ -26,6 +26,7 @@ export interface CalendarBaseModel extends ComponentModel{
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
      * @default 0
      * @aspType int
+     * @blazorType int
      * > For more details about firstDayOfWeek refer to 
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
@@ -165,7 +166,7 @@ export interface CalendarModel extends CalendarBaseModel{
     /**
      * Gets or sets the selected date of the Calendar.
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     value?: Date;
 

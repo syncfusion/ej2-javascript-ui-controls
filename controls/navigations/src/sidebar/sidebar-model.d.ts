@@ -1,4 +1,4 @@
-﻿import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest } from '@syncfusion/ej2-base';import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
+import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest } from '@syncfusion/ej2-base';import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import {SidebarPosition,SidebarType,EventArgs,ChangeEventArgs} from "./sidebar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -26,6 +26,7 @@ export interface SidebarModel extends ComponentModel{
      * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     mediaQuery?: string | MediaQueryList;
 
@@ -140,6 +141,7 @@ export interface SidebarModel extends ComponentModel{
      * Specifies the z-index of the Sidebar. It is applicable only when sidebar act as overlay type.
      * @default 1000
      * @aspType double
+     * @blazorType double
      */
     zIndex?: string | number;
 

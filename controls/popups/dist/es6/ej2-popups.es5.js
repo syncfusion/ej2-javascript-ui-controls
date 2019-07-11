@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getUniqueID, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 
 /**
@@ -1688,6 +1688,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         };
         this.dlgOverlayClickEventHandler = function (event) {
             _this.trigger('overlayClick', event);
+            _this.focusContent();
         };
         var localeText = { close: 'Close' };
         this.l10n = new L10n('dialog', localeText, this.locale);
@@ -2044,7 +2045,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
         else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
             var blazorContain = Object.keys(window);
-            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
+            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsInterop') === -1) {
                 this.contentEle.innerHTML = this.content;
             }
             else if (this.content instanceof HTMLElement) {
@@ -2077,31 +2078,39 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         else {
             templateProps = this.element.id + 'content';
         }
+        var templateValue;
         if (!isNullOrUndefined(template.outerHTML)) {
             templateFn = compile(template.outerHTML);
-        }
-        else if (typeof (template) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
-            templateFn = compile(template);
+            templateValue = template.outerHTML;
         }
         else {
-            toElement.innerHTML = template;
+            templateFn = compile(template);
+            templateValue = template;
         }
         var fromElements = [];
         if (!isNullOrUndefined(templateFn)) {
-            for (var _i = 0, _a = templateFn({}, null, null, templateProps); _i < _a.length; _i++) {
+            var isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+                !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
+                this.isStringTemplate : true;
+            for (var _i = 0, _a = templateFn({}, null, null, templateProps, isString); _i < _a.length; _i++) {
                 var item = _a[_i];
                 fromElements.push(item);
             }
             append([].slice.call(fromElements), toElement);
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
+                this.blazorTemplate(templateProps);
+            }
         }
+    };
+    Dialog.prototype.blazorTemplate = function (templateProps) {
         if (templateProps === this.element.id + 'header') {
-            updateBlazorTemplate(templateProps, 'Header');
+            updateBlazorTemplate(templateProps, 'Header', this);
         }
         else if (templateProps === this.element.id + 'footerTemplate') {
-            updateBlazorTemplate(templateProps, 'FooterTemplate');
+            updateBlazorTemplate(templateProps, 'FooterTemplate', this);
         }
         else {
-            updateBlazorTemplate(templateProps, 'Content');
+            updateBlazorTemplate(templateProps, 'Content', this);
         }
     };
     Dialog.prototype.setMaxHeight = function () {
@@ -3105,6 +3114,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.popupObj.dataBind();
     };
     Tooltip.prototype.openPopupHandler = function () {
+        if (this.needTemplateReposition()) {
+            this.reposition(this.findTarget());
+        }
         this.trigger('afterOpen', this.tooltipEventArgs);
     };
     Tooltip.prototype.closePopupHandler = function () {
@@ -3247,7 +3259,6 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         arrowEle.style.left = leftValue;
     };
     Tooltip.prototype.renderContent = function (target) {
-        var _this = this;
         var tooltipContent = this.tooltipEle.querySelector('.' + CONTENT);
         if (target && !isNullOrUndefined(target.getAttribute('title'))) {
             target.setAttribute('data-content', target.getAttribute('title'));
@@ -3264,7 +3275,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             else {
                 var templateFunction = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                setTimeout(function () { updateBlazorTemplate(_this.element.id + 'content', 'Content'); }, 0);
+                updateBlazorTemplate(this.element.id + 'content', 'Content', this);
             }
         }
         else {
@@ -3409,6 +3420,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 _this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: _this.tooltipEle } :
                     { type: null, cancel: false, target: target, event: null, element: _this.tooltipEle };
                 var this$_1 = _this;
+                if (_this.needTemplateReposition()) {
+                    _this.tooltipEle.style.display = 'none';
+                }
                 _this.trigger('beforeOpen', _this.tooltipEventArgs, function (observedArgs) {
                     if (observedArgs.cancel) {
                         this$_1.isHidden = true;
@@ -3440,6 +3454,13 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 });
             }
         });
+    };
+    Tooltip.prototype.needTemplateReposition = function () {
+        // tslint:disable-next-line:no-any
+        var tooltip = this;
+        return !isNullOrUndefined(tooltip.viewContainerRef)
+            && typeof tooltip.viewContainerRef !== 'string'
+            || isBlazor();
     };
     Tooltip.prototype.checkCollision = function (target, x, y) {
         var elePos = {

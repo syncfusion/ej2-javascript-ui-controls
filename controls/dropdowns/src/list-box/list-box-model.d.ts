@@ -74,6 +74,7 @@ export interface ListBoxModel extends DropDownBaseModel{
      * Sets the specified item to the selected state or gets the selected item in the ListBox.
      * @default []
      * @aspType object
+     * @blazorType object
      */
     value?: string[] | number[] | boolean[];
 
@@ -136,7 +137,7 @@ export interface ListBoxModel extends DropDownBaseModel{
     /**
      * Triggers after dragging the list item.
      * @event
-     * @blazorProperty 'OnDragStart'
+     * @blazorProperty 'DragStart'
      */
     dragStart?: EmitType<DragEventArgs>;
 

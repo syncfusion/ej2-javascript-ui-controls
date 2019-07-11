@@ -23,6 +23,7 @@ export interface RecurrenceEditorModel extends ComponentModel{
      * Sets the start date on recurrence editor.
      * @default new Date()
      * @aspDefaultValue DateTime.Now
+     * @blazorDefaultValue DateTime.Now
      */
     startDate?: Date;
 
@@ -54,6 +55,7 @@ export interface RecurrenceEditorModel extends ComponentModel{
      * Sets the minimum date on recurrence editor.
      * @default new Date(1900, 1, 1)
      * @aspDefaultValue new DateTime(1900, 0, 1)
+     * @blazorDefaultValue new DateTime(1900, 0, 1)
      */
     minDate?: Date;
 
@@ -61,6 +63,7 @@ export interface RecurrenceEditorModel extends ComponentModel{
      * Sets the maximum date on recurrence editor.
      * @default new Date(2099, 12, 31)
      * @aspDefaultValue new DateTime(2099, 11, 31)
+     * @blazorDefaultValue new DateTime(2099, 11, 31)
      */
     maxDate?: Date;
 
@@ -73,6 +76,7 @@ export interface RecurrenceEditorModel extends ComponentModel{
     /**
      * Triggers for value changes on every sub-controls rendered within the recurrence editor.
      * @event
+     * @blazorproperty 'OnChange'
      */
     change?: EmitType<RecurrenceEditorChangeEventArgs>;
 

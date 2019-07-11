@@ -371,7 +371,7 @@ var RenderType;
     RenderType[RenderType["Toolbar"] = 0] = "Toolbar";
     /**  Defines RenderType as Content */
     RenderType[RenderType["Content"] = 1] = "Content";
-    /**  Defines RenderType as Content */
+    /**  Defines RenderType as Popup */
     RenderType[RenderType["Popup"] = 2] = "Popup";
     /**  Defines RenderType as LinkToolbar */
     RenderType[RenderType["LinkToolbar"] = 3] = "LinkToolbar";
@@ -379,8 +379,9 @@ var RenderType;
     RenderType[RenderType["TextToolbar"] = 4] = "TextToolbar";
     /**  Defines RenderType as ImageToolbar */
     RenderType[RenderType["ImageToolbar"] = 5] = "ImageToolbar";
-    /**  Defines RenderType as ImageToolbar */
+    /**  Defines RenderType as InlineToolbar */
     RenderType[RenderType["InlineToolbar"] = 6] = "InlineToolbar";
+    /**  Defines RenderType as TableToolbar */
     RenderType[RenderType["TableToolbar"] = 7] = "TableToolbar";
 })(RenderType || (RenderType = {}));
 var ToolbarType;
@@ -1415,11 +1416,12 @@ function getEditValue(value, rteObj) {
 }
 function updateTextNode(value) {
     let tempNode = document.createElement('div');
-    tempNode.innerHTML = value.replace(/>\s+</g, '><');
+    tempNode.innerHTML = value;
     let childNodes = tempNode.childNodes;
     if (childNodes.length > 0) {
         [].slice.call(childNodes).forEach((childNode) => {
-            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode) {
+            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
+                && childNode.textContent.trim() !== '') {
                 let defaultTag = document.createElement('p');
                 let parentNode = childNode.parentNode;
                 parentNode.insertBefore(defaultTag, childNode);
@@ -1508,6 +1510,7 @@ class ToolbarRenderer {
             enablePersistence: args.enablePersistence,
             enableRtl: args.enableRtl
         });
+        args.rteToolbarObj.toolbarObj.isStringTemplate = true;
         args.rteToolbarObj.toolbarObj.createElement = this.parent.createElement;
         args.rteToolbarObj.toolbarObj.appendTo(args.target);
     }
@@ -1551,6 +1554,7 @@ class ToolbarRenderer {
             open: this.dropDownOpen.bind(this),
             beforeItemRender: this.beforeDropDownItemRender.bind(this)
         });
+        dropDown.isStringTemplate = true;
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
         args.element.tabIndex = -1;
@@ -1611,10 +1615,8 @@ class ToolbarRenderer {
             proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
         content.appendChild(inlineEle);
         let dropDown = new DropDownButton({
-            target: colorPicker.element.parentElement,
-            cssClass: css,
-            enablePersistence: this.parent.enablePersistence,
-            enableRtl: this.parent.enableRtl,
+            target: colorPicker.element.parentElement, cssClass: css,
+            enablePersistence: this.parent.enablePersistence, enableRtl: this.parent.enableRtl,
             beforeOpen: (dropDownArgs) => {
                 if (proxy.parent.readonly || !proxy.parent.enabled) {
                     dropDownArgs.cancel = true;
@@ -1629,9 +1631,13 @@ class ToolbarRenderer {
                     dropDownArgs.cancel = true;
                     let colorpickerValue = element.classList.contains(CLS_RTE_ELEMENTS) ? element.style.borderBottomColor :
                         element.querySelector('.' + CLS_RTE_ELEMENTS).style.borderBottomColor;
+                    proxy.parent.notify(selectionRestore, {});
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
+                    let parentNode = range.startContainer.parentNode;
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
-                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed) {
+                        (closest(range.startContainer.parentNode, 'td,th')) ||
+                        (proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')))
+                        && range.collapsed) {
                         proxy.parent.notify(tableColorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
                                 value: colorpickerValue }
                         });
@@ -1671,6 +1677,7 @@ class ToolbarRenderer {
                 if (Browser.isDevice) {
                     this.popupModal(dropDownArgs.element.parentElement);
                 }
+                this.pickerRefresh(dropDownArgs);
             },
             beforeClose: (dropDownArgs) => {
                 let element = (dropDownArgs.event) ? dropDownArgs.event.target : null;
@@ -1704,6 +1711,7 @@ class ToolbarRenderer {
                 }
             }
         });
+        dropDown.isStringTemplate = true;
         dropDown.createElement = proxy.parent.createElement;
         dropDown.appendTo(args.element);
         let popupElement = document.getElementById(dropDown.element.id + '-popup');
@@ -1713,6 +1721,14 @@ class ToolbarRenderer {
         dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = () => { proxy.parent.notify(selectionSave, {}); };
         return dropDown;
+    }
+    pickerRefresh(dropDownArgs) {
+        if (this.parent.backgroundColor.mode === 'Picker') {
+            let popupElem = dropDownArgs.element.parentElement;
+            popupElem.style.width = (popupElem.offsetWidth + 5).toString() + 'px';
+            getInstance(popupElem, Popup).refreshPosition(popupElem);
+            popupElem.style.width = (popupElem.offsetWidth - 5).toString() + 'px';
+        }
     }
     popupModal(element) {
         let popupInst = getInstance(element, Popup);
@@ -1771,6 +1787,7 @@ class ToolbarRenderer {
                 this.colorPicker.showButtons = args.mode === 'Palette' ? false : true;
             }
         });
+        this.colorPicker.isStringTemplate = true;
         this.colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
         this.colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
             this.parent.fontColor.colorCode;
@@ -2529,7 +2546,10 @@ class Toolbar$1 {
         let isFloat = false;
         let scrollParent;
         let floatOffset = this.parent.floatingToolbarOffset;
-        if (e && e.target !== document) {
+        if (e && this.parent.iframeSettings.enable && this.parent.inputElement.ownerDocument === e.target) {
+            scrollParent = e.target.body;
+        }
+        else if (e && e.target !== document) {
             scrollParent = e.target;
         }
         else {
@@ -2630,6 +2650,16 @@ class Toolbar$1 {
                 items: this.parent.toolbarSettings.items
             });
             this.refreshToolbarOverflow();
+        }
+        let divEle = this.parent.element.querySelector('.e-rte-srctextarea');
+        let iframeEle = this.parent.element.querySelector('.e-source-content');
+        if ((!this.parent.iframeSettings.enable && (!isNullOrUndefined(divEle) && divEle.style.display === 'block')) ||
+            (this.parent.iframeSettings.enable && (!isNullOrUndefined(iframeEle) && iframeEle.style.display === 'block'))) {
+            this.parent.notify(updateToolbarItem, {
+                targetItem: 'SourceCode', updateItem: 'Preview',
+                baseToolbar: this.parent.getBaseToolbarObject()
+            });
+            this.parent.disableToolbarItem(this.parent.toolbarSettings.items);
         }
     }
     addFixedTBarClass() {
@@ -3772,16 +3802,16 @@ class QuickToolbar {
      * @hidden
      */
     hideQuickToolbars() {
-        if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close')) {
+        if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close') && document.body.contains(this.linkQTBar.element)) {
             this.linkQTBar.hidePopup();
         }
-        if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) {
+        if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close') && document.body.contains(this.textQTBar.element)) {
             this.textQTBar.hidePopup();
         }
-        if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) {
+        if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close') && document.body.contains(this.imageQTBar.element)) {
             this.imageQTBar.hidePopup();
         }
-        if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) {
+        if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close') && document.body.contains(this.tableQTBar.element)) {
             this.tableQTBar.hidePopup();
         }
         if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
@@ -4294,6 +4324,9 @@ class MarkdownToolbarStatus {
             superscript: args.documentNode ? false : this.parent.formatter.editorManager.mdSelectionFormats.isAppliedCommand('SuperScript'),
             uppercase: args.documentNode ? false : this.parent.formatter.editorManager.mdSelectionFormats.isAppliedCommand('UpperCase')
         };
+        if (this.parent.formatter.editorManager.mdSelectionFormats.isAppliedCommand('InlineCode')) {
+            this.toolbarStatus.formats = 'pre';
+        }
         this.parent.notify(toolbarUpdated, this.toolbarStatus);
     }
     isListsApplied(lines, type) {
@@ -4328,17 +4361,48 @@ class MarkdownToolbarStatus {
                 break;
             }
             else if (keys[i] === 'pre') {
-                let parentLines = this.selection.getAllParents(this.element.value);
-                let firstPrevText = parentLines[lines[0].line - 1];
-                let lastNextText = parentLines[lines.length + 1];
-                if (this.selection.isStartWith(firstPrevText, this.parent.formatter.formatTags[keys[i]].split('\n')[0]) &&
-                    this.selection.isStartWith(lastNextText, this.parent.formatter.formatTags[keys[i]].split('\n')[0])) {
+                if (this.codeFormat()) {
                     format = keys[i];
                     break;
                 }
             }
         }
         return format;
+    }
+    codeFormat() {
+        let isFormat = false;
+        let textArea = this.parent.inputElement;
+        let start = textArea.selectionStart;
+        let splitAt = (index) => (x) => [x.slice(0, index), x.slice(index)];
+        let splitText = splitAt(start)(textArea.value);
+        let cmdPre = this.parent.formatter.formatTags.pre;
+        let selectedText = this.getSelectedText(textArea);
+        if (selectedText !== '' && selectedText === selectedText.toLocaleUpperCase()) {
+            return true;
+        }
+        else if (selectedText === '') {
+            let beforeText = textArea.value.substr(splitText[0].length - 1, 1);
+            let afterText = splitText[1].substr(0, 1);
+            if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
+                beforeText === beforeText.toLocaleUpperCase() && afterText === afterText.toLocaleUpperCase()) {
+                return true;
+            }
+        }
+        if ((this.isCode(splitText[0], cmdPre) && this.isCode(splitText[1], cmdPre)) &&
+            (splitText[0].match(this.multiCharRegx(cmdPre)).length % 2 === 1 &&
+                splitText[1].match(this.multiCharRegx(cmdPre)).length % 2 === 1)) {
+            isFormat = true;
+        }
+        return isFormat;
+    }
+    getSelectedText(textarea) {
+        return textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+    }
+    isCode(text, cmd) {
+        return text.search('\\' + cmd + '') !== -1;
+    }
+    multiCharRegx(cmd) {
+        return new RegExp('(\\' + cmd + ')', 'g');
     }
 }
 
@@ -5644,7 +5708,8 @@ const htmlKeyConfig = {
     'unordered-list': 'ctrl+alt+o',
     'space': '32',
     'enter': '13',
-    'tab': '9'
+    'tab': '9',
+    'delete': '46'
 };
 /**
  * Default  markdown key config for adapter
@@ -7032,9 +7097,9 @@ class DOMNode {
         return this.nodeSelection.get(this.currentDocument);
     }
     getPreviousNode(element) {
-        element = element.previousSibling;
+        element = element.previousElementSibling;
         for (; element && element.textContent === '\n'; null) {
-            element = element.previousSibling;
+            element = element.previousElementSibling;
         }
         return element;
     }
@@ -7048,9 +7113,7 @@ class DOMNode {
         let end = this.parent.querySelector('.' + markerClassName.endSelection);
         let startTextNode;
         let endTextNode;
-        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab' &&
-            (!isNullOrUndefined(start.parentElement) && start.parentElement.tagName !== 'LI' &&
-                this.parent.textContent !== '')) {
+        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab') {
             if (start.childNodes.length === 1 && start.childNodes[0].nodeName === 'BR') {
                 start.innerHTML = '&#65279;&#65279;<br>';
             }
@@ -7234,9 +7297,10 @@ class DOMNode {
                         nodes.push(node);
                         node = node.childNodes[0];
                     }
-                    else if (node && (node.tagName === 'BR' || node.nodeType === Node.TEXT_NODE ||
-                        node.classList.contains(markerClassName.startSelection) ||
-                        node.classList.contains(markerClassName.endSelection)) &&
+                    else if (node && (node.tagName === 'BR' || (node.nodeType === Node.TEXT_NODE &&
+                        node.textContent.trim() !== '') || (node.nodeType !== Node.TEXT_NODE &&
+                        (node.classList.contains(markerClassName.startSelection) ||
+                            node.classList.contains(markerClassName.endSelection)))) &&
                         IGNORE_BLOCK_TAGS.indexOf(node.parentNode.tagName.toLocaleLowerCase()) >= 0) {
                         node = this.createTempNode(node);
                     }
@@ -7302,7 +7366,10 @@ function isIDevice$1() {
 }
 function setEditFrameFocus(editableElement, selector) {
     if (editableElement.nodeName === 'BODY' && !isNullOrUndefined(selector)) {
-        top.window.document.querySelector(selector).contentWindow.focus();
+        let iframe = top.window.document.querySelector(selector);
+        if (!isNullOrUndefined(iframe)) {
+            iframe.contentWindow.focus();
+        }
     }
 }
 
@@ -7604,6 +7671,7 @@ class Lists {
     applyLists(elements, type, selector) {
         if (this.isRevert(elements, type)) {
             this.revertList(elements);
+            this.removeEmptyListElements();
         }
         else {
             this.checkLists(elements, type);
@@ -7629,6 +7697,14 @@ class Lists {
         }
         this.saveSelection = this.domNode.saveMarker(this.saveSelection);
         this.saveSelection.restore();
+    }
+    removeEmptyListElements() {
+        let listElem = this.parent.editableElement.querySelectorAll('ol, ul');
+        for (let i = 0; i < listElem.length; i++) {
+            if (listElem[i].textContent.trim() === '') {
+                detach(listElem[i]);
+            }
+        }
     }
     isRevert(nodes, tagName) {
         let isRevert = true;
@@ -7661,11 +7737,11 @@ class Lists {
         let liParents = this.parent.editableElement.querySelectorAll('ol + ol, ul + ul');
         for (let c = 0; c < liParents.length; c++) {
             let node = liParents[c];
-            if (this.domNode.isList(node.previousSibling) &&
-                this.domNode.openTagString(node) === this.domNode.openTagString(node.previousSibling)) {
+            if (this.domNode.isList(node.previousElementSibling) &&
+                this.domNode.openTagString(node) === this.domNode.openTagString(node.previousElementSibling)) {
                 let contentNodes = this.domNode.contents(node);
                 for (let f = 0; f < contentNodes.length; f++) {
-                    node.previousSibling.appendChild(contentNodes[f]);
+                    node.previousElementSibling.appendChild(contentNodes[f]);
                 }
                 node.parentNode.removeChild(node);
             }
@@ -7946,16 +8022,20 @@ class NodeCutter {
             if (isCollapsed) {
                 node = parent.childNodes[index];
                 fragment = this.spliceEmptyNode(fragment, false);
-                if (fragment && fragment.textContent !== '') {
-                    if (node) {
-                        InsertMethods.AppendBefore(fragment, node);
-                    }
-                    else {
-                        parent.appendChild(fragment);
-                        let divNode = document.createElement('div');
-                        divNode.innerHTML = '&#65279;&#65279;';
-                        node = divNode.firstChild;
-                        parent.appendChild(node);
+                if (fragment && fragment.childNodes.length > 0) {
+                    let isEmpty = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
+                        && isNullOrUndefined(fragment.querySelector('img')) && fragment.textContent === '') ? true : false;
+                    if (!isEmpty) {
+                        if (node) {
+                            InsertMethods.AppendBefore(fragment, node);
+                        }
+                        else {
+                            parent.appendChild(fragment);
+                            let divNode = document.createElement('div');
+                            divNode.innerHTML = '&#65279;&#65279;';
+                            node = divNode.firstChild;
+                            parent.appendChild(node);
+                        }
                     }
                 }
             }
@@ -7963,16 +8043,20 @@ class NodeCutter {
                 node = parent.childNodes.length > 1 ? parent.childNodes[index] :
                     parent.childNodes[0];
                 fragment = this.spliceEmptyNode(fragment, true);
-                if (fragment && fragment.textContent !== '') {
-                    if (node) {
-                        InsertMethods.AppendBefore(fragment, node, true);
-                    }
-                    else {
-                        parent.appendChild(fragment);
-                        let divNode = document.createElement('div');
-                        divNode.innerHTML = '&#65279;&#65279;';
-                        parent.insertBefore(divNode.firstChild, parent.firstChild);
-                        node = parent.firstChild;
+                if (fragment && fragment.childNodes.length > 0) {
+                    let isEmpty = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
+                        && isNullOrUndefined(fragment.querySelector('img')) && fragment.textContent === '') ? true : false;
+                    if (!isEmpty) {
+                        if (node) {
+                            InsertMethods.AppendBefore(fragment, node, true);
+                        }
+                        else {
+                            parent.appendChild(fragment);
+                            let divNode = document.createElement('div');
+                            divNode.innerHTML = '&#65279;&#65279;';
+                            parent.insertBefore(divNode.firstChild, parent.firstChild);
+                            node = parent.firstChild;
+                        }
                     }
                 }
             }
@@ -8074,10 +8158,10 @@ class InsertHtml {
         let isCollapsed = range.collapsed;
         let nodes = nodeSelection.getInsertNodeCollection(range);
         let closestParentNode = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
-        if ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
+        if (editNode !== range.startContainer && ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
             TABLE_BLOCK_TAGS.indexOf(closestParentNode.tagName.toLocaleLowerCase()) !== -1))
             || (node.nodeName.toLowerCase() === 'table' && closestParentNode &&
-                TABLE_BLOCK_TAGS.indexOf(closestParentNode.tagName.toLocaleLowerCase()) === -1)) {
+                TABLE_BLOCK_TAGS.indexOf(closestParentNode.tagName.toLocaleLowerCase()) === -1))) {
             let preNode = nodeCutter.GetSpliceNode(range, closestParentNode);
             let sibNode = preNode.previousSibling;
             let parentNode = preNode.parentNode;
@@ -8094,6 +8178,9 @@ class InsertHtml {
             range.extractContents();
             for (let index = 0; index < nodes.length; index++) {
                 if (nodes[index].nodeType !== 3 && nodes[index].parentNode != null) {
+                    if (nodes[index].nodeName === 'IMG') {
+                        continue;
+                    }
                     nodes[index].parentNode.removeChild(nodes[index]);
                 }
             }
@@ -8156,7 +8243,8 @@ class InsertHtml {
         let el = element;
         while (el && el.nodeType === 1) {
             if (el.parentNode === editNode ||
-                IGNORE_BLOCK_TAGS.indexOf(el.parentNode.tagName.toLocaleLowerCase()) !== -1) {
+                (!isNullOrUndefined(el.parentNode.tagName) &&
+                    IGNORE_BLOCK_TAGS.indexOf(el.parentNode.tagName.toLocaleLowerCase()) !== -1)) {
                 return el;
             }
             el = el.parentNode;
@@ -8212,6 +8300,7 @@ class LinkCommand {
                 anchorEle.removeAttribute('target');
             }
             e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
+            e.item.selection.restore();
         }
         else {
             let anchor = createElement('a', {
@@ -8226,9 +8315,10 @@ class LinkCommand {
             anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
             e.item.selection.restore();
             InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
-            if (e.event && e.event.type === 'keydown' && e.event.keyCode === 32) {
+            if (e.event && e.event.type === 'keydown' && (e.event.keyCode === 32
+                || e.event.keyCode === 13)) {
                 let startContainer = e.item.selection.range.startContainer;
-                startContainer.textContent = this.removeText(startContainer.textContent, e.item.url);
+                startContainer.textContent = this.removeText(startContainer.textContent, e.item.text);
             }
             else {
                 let startIndex = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
@@ -8335,8 +8425,8 @@ class Alignments {
     }
     getTableNode(range) {
         let startNode = range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentNode;
-        let tdNode = closest(startNode, 'td');
-        return [tdNode];
+        let cellNode = closest(startNode, 'td,th');
+        return [cellNode];
     }
     applyAlignment(e) {
         let isTableAlign = e.value === 'Table' ? true : false;
@@ -8960,7 +9050,12 @@ class TableCommand {
             detach(closest(selectedCell.parentElement, 'table'));
         }
         else {
-            parentTable.deleteRow(selectedRowIndex);
+            if (selectedCell.tagName === 'TH') {
+                detach(parentTable.querySelector('thead'));
+            }
+            else {
+                parentTable.deleteRow(selectedRowIndex);
+            }
             e.item.selection.setSelectionText(this.parent.currentDocument, parentTable.querySelector('td'), parentTable.querySelector('td'), 0, 0);
             parentTable.querySelector('td, th').classList.add('e-cell-select');
         }
@@ -8993,11 +9088,17 @@ class TableCommand {
         }
     }
     tableHeader(e) {
+        let headerExit = false;
         let selectedCell = e.item.selection.range.startContainer;
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
         let table = closest(selectedCell.parentElement, 'table');
-        if (table && 0 === table.querySelectorAll('thead').length) {
-            let cellCount = table.querySelector('tr').querySelectorAll('td').length;
+        [].slice.call(table.childNodes).forEach((el) => {
+            if (el.nodeName === 'THEAD') {
+                headerExit = true;
+            }
+        });
+        if (table && !headerExit) {
+            let cellCount = table.querySelector('tr').childElementCount;
             let header = table.createTHead();
             let row = header.insertRow(0);
             for (let i = 0; i < cellCount; i++) {
@@ -9247,7 +9348,7 @@ class SelectionCommands {
                     range = nodeCutter.GetCursorRange(docElement, range, nodes[0]);
                 }
                 else if (range.startContainer.nodeName.toLowerCase() !== 'td') {
-                    let cursorNode = this.insertCursorNode(domSelection, range, isFormatted, nodeCutter, format, value, endNode);
+                    let cursorNode = this.insertCursorNode(docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode);
                     domSelection.endContainer = domSelection.startContainer = domSelection.getNodeArray(cursorNode, true);
                     domSelection.endOffset = domSelection.startOffset = 1;
                 }
@@ -9262,7 +9363,7 @@ class SelectionCommands {
                     nodes[index] = this.removeFormat(nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value, domSelection);
                 }
                 else {
-                    nodes[index] = this.insertFormat(nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value);
+                    nodes[index] = this.insertFormat(docElement, nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value);
                 }
                 domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
             }
@@ -9272,7 +9373,7 @@ class SelectionCommands {
             save.restore();
         }
     }
-    static insertCursorNode(domSelection, range, isFormatted, nodeCutter, format, value, endNode) {
+    static insertCursorNode(docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode) {
         let cursorNodes = domSelection.getNodeCollection(range);
         let cursorFormat = (cursorNodes.length > 0) ? isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
         let cursorNode = null;
@@ -9281,7 +9382,7 @@ class SelectionCommands {
             InsertMethods.unwrap(cursorFormat);
         }
         else {
-            cursorNode = this.getInsertNode(range, format, value).firstChild;
+            cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
         }
         return cursorNode;
     }
@@ -9333,10 +9434,22 @@ class SelectionCommands {
             for (let num = 0; num < child.length; num++) {
                 child[num] = InsertMethods.Wrap(child[num], this.GetFormatNode(format, value));
             }
+            if (format === 'fontsize') {
+                let liElement = nodes[index].parentElement;
+                let parentElement = nodes[index].parentElement;
+                while (!isNullOrUndefined(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                    parentElement = parentElement.parentElement;
+                    liElement = parentElement;
+                }
+                if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                    liElement.textContent === nodes[index].textContent) {
+                    liElement.style.fontSize = value;
+                }
+            }
         }
         return nodes[index];
     }
-    static insertFormat(nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value) {
+    static insertFormat(docElement, nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value) {
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
                 nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index]);
@@ -9358,9 +9471,7 @@ class SelectionCommands {
                             liElement.textContent === nodes[index].textContent) {
                             liElement.style.fontSize = value;
                         }
-                        else {
-                            nodes[index] = this.applyStyles(nodes, index, element);
-                        }
+                        nodes[index] = this.applyStyles(nodes, index, element);
                     }
                     else {
                         nodes[index] = this.applyStyles(nodes, index, element);
@@ -9373,7 +9484,7 @@ class SelectionCommands {
         }
         else {
             if (format !== 'uppercase' && format !== 'lowercase') {
-                let element = this.getInsertNode(range, format, value);
+                let element = this.getInsertNode(docElement, range, format, value);
                 nodes[index] = element.firstChild;
                 nodeCutter.position = 1;
             }
@@ -9389,10 +9500,17 @@ class SelectionCommands {
         nodes[index] = this.getChildNode(nodes[index], element);
         return nodes[index];
     }
-    static getInsertNode(range, format, value) {
+    static getInsertNode(docElement, range, format, value) {
         let element = this.GetFormatNode(format, value);
         element.innerHTML = '&#65279;&#65279;';
-        range.insertNode(element);
+        if (Browser.isIE) {
+            let frag = docElement.createDocumentFragment();
+            frag.appendChild(element);
+            range.insertNode(frag);
+        }
+        else {
+            range.insertNode(element);
+        }
         return element;
     }
     static getChildNode(node, element) {
@@ -10585,8 +10703,9 @@ class ToolbarStatus {
         let nodeCollection = JSON.parse(JSON.stringify(statusCollection));
         let nodeSelection = new NodeSelection();
         let nodes = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
+        let nodesLength = nodes.length;
         for (let index = 0; index < nodes.length; index++) {
-            if (nodes[index].nodeType !== 3) {
+            if (nodes[index].nodeType !== 3 || (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
                 nodes.splice(index, 1);
                 index--;
             }
@@ -11357,7 +11476,7 @@ class HtmlEditor {
     spaceLink(e) {
         let range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
         let selectNodeEle = this.nodeSelectionObj.getParentNodeCollection(range);
-        let text = range.startContainer.textContent;
+        let text = range.startContainer.textContent.substr(0, range.endOffset);
         let splitText = text.split(' ');
         let urlText = splitText[splitText.length - 1];
         let urlTextRange = range.startOffset - (text.length - splitText[splitText.length - 1].length);
@@ -11365,13 +11484,14 @@ class HtmlEditor {
         let regex = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
         if (selectNodeEle[0].nodeName !== 'A' && urlText.match(regex)) {
             let selection = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
+            let url = urlText.indexOf('http') > -1 ? urlText : 'http://' + urlText;
             let selectParent = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             let value = {
-                url: urlText,
+                url: url,
                 selection: selection, selectParent: selectParent,
-                text: '',
+                text: urlText,
                 title: '',
-                target: ''
+                target: '_blank'
             };
             this.parent.formatter.process(this.parent, {
                 item: {
@@ -11686,12 +11806,15 @@ class PasteCleanup {
     }
     radioRender() {
         let keepRadioButton = new RadioButton({ label: 'Keep', name: 'pasteOption', checked: true });
+        keepRadioButton.isStringTemplate = true;
         let keepFormatElement = this.parent.element.querySelector('#keepFormating');
         keepRadioButton.appendTo(keepFormatElement);
         let cleanRadioButton = new RadioButton({ label: 'Clean', name: 'pasteOption' });
+        cleanRadioButton.isStringTemplate = true;
         let cleanFormatElement = this.parent.element.querySelector('#cleanFormat');
         cleanRadioButton.appendTo(cleanFormatElement);
         let plainTextRadioButton = new RadioButton({ label: 'Plain Text', name: 'pasteOption' });
+        plainTextRadioButton.isStringTemplate = true;
         let plainTextElement = this.parent.element.querySelector('#plainTextFormat');
         plainTextRadioButton.appendTo(plainTextElement);
     }
@@ -12290,6 +12413,7 @@ class Link {
         let linkTitle = linkContent.querySelector('.e-rte-linkTitle');
         let linkOpenLabel = this.i10n.getConstant('linkOpenInNewWindow');
         this.checkBoxObj = new CheckBox({ label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl });
+        this.checkBoxObj.isStringTemplate = true;
         this.checkBoxObj.createElement = this.parent.createElement;
         this.checkBoxObj.appendTo(linkTarget);
         selectText = (this.parent.editorMode === 'HTML') ? e.selection.getRange(this.parent.contentModule.getDocument()).toString() :
@@ -12370,7 +12494,7 @@ class Link {
         }
         if (!this.selfLink.isUrl(linkUrl)) {
             linkText = (linkText === '') ? linkUrl : linkText;
-            linkUrl = 'http://' + linkUrl;
+            linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
         }
         else {
             this.selfLink.checkUrl(false);
@@ -12432,7 +12556,7 @@ class Link {
             select('iframe', this.parent.element).contentWindow.focus();
         }
         else {
-            this.contentModule.getEditPanel().focus();
+            this.parent.contentModule.getEditPanel().focus();
         }
         this.hideLinkQuickToolbar();
     }
@@ -13196,6 +13320,7 @@ class Image {
                     }
                 }
             });
+            this.checkBoxObj.isStringTemplate = true;
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
             let target = this.checkBoxObj.checked ? '_blank' : null;
@@ -13579,6 +13704,10 @@ class Image {
             proxy.dialogObj.hide({ returnValue: false });
             proxy.parent.formatter.process(proxy.parent, this.args, this.args.originalEvent, proxy.uploadUrl);
             proxy.uploadUrl.url = '';
+            if (proxy.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+                proxy.imgEle.style.outline = '';
+                proxy.remvoeResizEle();
+            }
         }
         else if (url !== '') {
             if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(closest(this.selection.range.startContainer.parentNode, '#' + proxy.contentModule.getPanel().id))) {
@@ -13629,6 +13758,7 @@ class Image {
             max: this.parent.insertImageSettings.maxWidth,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        widthNum.isStringTemplate = true;
         widthNum.createElement = this.parent.createElement;
         widthNum.appendTo(imgSizeWrap.querySelector('#imgwidth'));
         let heightNum = new NumericTextBox({
@@ -13636,6 +13766,7 @@ class Image {
             max: this.parent.insertImageSettings.maxHeight,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        heightNum.isStringTemplate = true;
         heightNum.createElement = this.parent.createElement;
         heightNum.appendTo(imgSizeWrap.querySelector('#imgheight'));
         return imgSizeWrap;
@@ -13699,8 +13830,10 @@ class Image {
         let save;
         let selectParent;
         let proxy = this;
+        let iframe = proxy.parent.iframeSettings.enable;
         if (proxy.parent.editorMode === 'HTML' &&
-            isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))) {
+            (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))
+                || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
             this.contentModule.getEditPanel().focus();
             let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
@@ -13727,6 +13860,7 @@ class Image {
         uploadParentEle.appendChild(span);
         let browserMsg = this.i10n.getConstant('browse');
         let button = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
+        button.isStringTemplate = true;
         button.createElement = this.parent.createElement;
         button.appendTo(btnEle);
         let btnClick = (Browser.isDevice) ? span : btnEle;
@@ -13788,6 +13922,7 @@ class Image {
                 proxy.uploadUrl.url = '';
             }
         });
+        this.uploadObj.isStringTemplate = true;
         this.uploadObj.createElement = this.parent.createElement;
         this.uploadObj.appendTo(uploadEle);
         return uploadParentEle;
@@ -13974,7 +14109,7 @@ class ViewSource {
             removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
         }
         removeClass(tbItems, [CLS_ACTIVE]);
-        this.parent.setContentHeight('sourceCode');
+        this.parent.setContentHeight('sourceCode', true);
         this.wireEvent(this.previewElement);
         this.unWireBaseKeyDown();
         this.previewElement.focus();
@@ -14011,7 +14146,7 @@ class ViewSource {
         if (this.parent.getToolbar()) {
             removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
         }
-        this.parent.setContentHeight();
+        this.parent.setContentHeight('preview', true);
         this.unWireEvent();
         this.wireBaseKeyDown();
         this.contentModule.getEditPanel().focus();
@@ -14209,8 +14344,8 @@ class Table {
     }
     verticalAlign(args, e) {
         let tdEle = (args.selection.range.startContainer.nodeName === 'TD' ||
-            args.selection.range.startContainer.nodeName === 'TH') ?
-            args.selection.range.startContainer : args.selection.range.startContainer.parentElement;
+            args.selection.range.startContainer.nodeName === 'TH') ? args.selection.range.startContainer :
+            args.selection.range.startContainer.parentNode;
         if (tdEle.nodeName !== 'TD' && tdEle.nodeName !== 'TH') {
             return;
         }
@@ -14421,7 +14556,14 @@ class Table {
     }
     tableInsert(row, col, e, selectionObj) {
         let proxy = (selectionObj.self) ? selectionObj.self : this;
-        if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(closest(selectionObj.selection.range.startContainer.parentNode, '#' + proxy.contentModule.getPanel().id))) {
+        let startContainer = selectionObj.selection.range.startContainer;
+        if (startContainer.nodeName === 'P' && startContainer.textContent.trim() === '' && !(startContainer.childNodes.length > 0)) {
+            startContainer.innerHTML = '<br />';
+        }
+        let parentNode = startContainer.parentNode;
+        if (proxy.parent.editorMode === 'HTML' &&
+            ((proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')) ||
+                (!proxy.parent.iframeSettings.enable && isNullOrUndefined(closest(parentNode, '#' + proxy.contentModule.getPanel().id))))) {
             proxy.contentModule.getEditPanel().focus();
             let range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
             selectionObj.selection = proxy.parent.formatter.editorManager.nodeSelection.save(range, proxy.contentModule.getDocument());
@@ -14673,18 +14815,22 @@ class Table {
                 let tableReBox = this.contentModule.getEditPanel().querySelector('.e-table-box');
                 let tableWidth = parseInt(getComputedStyle(this.curTable).width, 10);
                 let tableHeight = parseInt(getComputedStyle(this.curTable).height, 10);
+                let paddingSize = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
+                let rteWidth = this.contentModule.getEditPanel().offsetWidth - paddingSize * 2;
                 if (this.resizeBtnStat.column) {
                     let cellColl = this.curTable.rows[0].cells;
-                    let width = parseFloat(getComputedStyle(this.columnEle).width);
+                    let width = parseFloat(this.columnEle.offsetWidth.toLocaleString());
                     let actualwid = width - mouseX;
-                    let totalwid = parseFloat(getComputedStyle(this.columnEle).width) +
-                        parseFloat(getComputedStyle(cellColl[this.colIndex - 1]).width);
+                    let totalwid = parseFloat(this.columnEle.offsetWidth.toLocaleString()) +
+                        parseFloat(cellColl[this.colIndex - 1].offsetWidth.toLocaleString());
                     for (let i = 0; i < this.curTable.rows.length; i++) {
                         if ((totalwid - actualwid) > 20 && actualwid > 20) {
+                            let leftColumnWidth = totalwid - actualwid;
+                            let rightColWidth = actualwid;
                             this.curTable.rows[i].cells[this.colIndex - 1].style.width =
-                                totalwid - actualwid + 'px';
+                                this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                             this.curTable.rows[i].cells[this.colIndex].style.width =
-                                actualwid + 'px';
+                                this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
                         }
                     }
                     this.updateHelper();
@@ -14704,7 +14850,9 @@ class Table {
                     if (!Browser.isDevice) {
                         EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
                     }
-                    this.curTable.style.width = tableWidth + mouseX + 'px';
+                    let widthType = this.curTable.style.width.indexOf('%') > -1;
+                    this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, rteWidth) + '%'
+                        : tableWidth + mouseX + 'px';
                     this.curTable.style.height = tableHeight + mouseY + 'px';
                     tableReBox.classList.add('e-rbox-select');
                     tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
@@ -14712,6 +14860,9 @@ class Table {
                 }
             }
         });
+    }
+    convertPixelToPercentage(value, offsetValue) {
+        return (value / offsetValue) * 100;
     }
     cancelResizeAction() {
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
@@ -14806,6 +14957,7 @@ class Table {
             iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        button.isStringTemplate = true;
         button.appendTo(btnEle);
         EventHandler.add(btnEle, 'click', this.insertTableDialog, { self: this, args: args.args, selection: args.selection });
         this.parent.getToolbar().appendChild(this.dlgDiv);
@@ -14852,6 +15004,9 @@ class Table {
             !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')
             && !closest(target, '.e-rte-elements')) {
             removeClass(this.parent.element.querySelectorAll('table td'), CLS_TABLE_SEL);
+            if (!Browser.isIE) {
+                this.hideTableQuickToolbar();
+            }
         }
         if (target && target.classList && !target.classList.contains(CLS_TB_COL_RES) &&
             !target.classList.contains(CLS_TB_ROW_RES) && !target.classList.contains(CLS_TB_BOX_RES)) {
@@ -14939,6 +15094,7 @@ class Table {
             max: 50,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        this.columnTextBox.isStringTemplate = true;
         this.columnTextBox.appendTo(tableWrap.querySelector('#tableColumn'));
         this.rowTextBox = new NumericTextBox({
             format: 'n0',
@@ -14949,6 +15105,7 @@ class Table {
             max: 50,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        this.rowTextBox.isStringTemplate = true;
         this.rowTextBox.appendTo(tableWrap.querySelector('#tableRow'));
         return tableWrap;
     }
@@ -15036,6 +15193,7 @@ class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        widthNum.isStringTemplate = true;
         widthNum.appendTo(tableWrap.querySelector('#tableWidth'));
         let padding = new NumericTextBox({
             format: 'n0',
@@ -15045,6 +15203,7 @@ class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        padding.isStringTemplate = true;
         padding.appendTo(tableWrap.querySelector('#cellPadding'));
         let spacing = new NumericTextBox({
             format: 'n0',
@@ -15054,6 +15213,7 @@ class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        spacing.isStringTemplate = true;
         spacing.appendTo(tableWrap.querySelector('#cellSpacing'));
         return tableWrap;
     }
@@ -15593,7 +15753,7 @@ class FullScreen {
         this.addEventListener();
     }
     showFullScreen(event) {
-        if (this.parent.toolbarSettings.enable === true) {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         this.scrollableParent = getScrollableParent(this.parent.element);
@@ -15624,7 +15784,7 @@ class FullScreen {
         }
     }
     hideFullScreen(event) {
-        if (this.parent.toolbarSettings.enable === true) {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
@@ -15703,6 +15863,7 @@ class DialogRenderer {
         this.parent = parent;
     }
     render(e) {
+        let dlgObj;
         if (isNullOrUndefined(e.beforeOpen)) {
             e.beforeOpen = this.beforeOpen.bind(this);
         }
@@ -15712,7 +15873,9 @@ class DialogRenderer {
         if (isNullOrUndefined(e.close)) {
             e.close = this.close.bind(this);
         }
-        return new Dialog(e);
+        dlgObj = new Dialog(e);
+        dlgObj.isStringTemplate = true;
+        return dlgObj;
     }
     beforeOpen(args) {
         this.parent.trigger(beforeDialogOpen, args);
@@ -15744,6 +15907,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
 let RichTextEditor = class RichTextEditor extends Component {
     constructor(options, element) {
         super(options, element);
+        this.defaultResetValue = null;
         /**
          * @hidden
          */
@@ -15838,7 +16002,9 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (this.value === null || this.valueTemplate !== null) {
             this.setValue();
         }
-        this.element.innerHTML = '';
+        if (!this.isBlazor()) {
+            this.element.innerHTML = '';
+        }
         let invalidAttr = ['class', 'style', 'id', 'ejs-for'];
         let htmlAttr = {};
         for (let a = 0; a < this.element.attributes.length; a++) {
@@ -15856,7 +16022,9 @@ let RichTextEditor = class RichTextEditor extends Component {
             let rteOuterWrapper = this.createElement('div', {
                 className: this.element.getAttribute('class')
             });
-            this.element.innerHTML = '';
+            if (!this.isBlazor()) {
+                this.element.innerHTML = '';
+            }
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element;
             removeClass([this.valueContainer], this.element.getAttribute('class').split(' '));
@@ -16012,7 +16180,12 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
         this.setContentHeight();
         if (this.value !== null) {
-            this.valueContainer.defaultValue = this.value;
+            if (!this.isBlazor()) {
+                this.valueContainer.defaultValue = this.value;
+            }
+            else {
+                this.defaultResetValue = this.value;
+            }
         }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
     }
@@ -16138,12 +16311,21 @@ let RichTextEditor = class RichTextEditor extends Component {
     ensureModuleInjected(module) {
         return this.getInjectedModules().indexOf(module) >= 0;
     }
+    /**
+     * @hidden
+     */
     onCopy() {
         this.contentModule.getDocument().execCommand('copy', false, null);
     }
+    /**
+     * @hidden
+     */
     onCut() {
         this.contentModule.getDocument().execCommand('cut', false, null);
     }
+    /**
+     * @hidden
+     */
     onPaste(e) {
         let evenArgs = {
             originalEvent: e,
@@ -16444,13 +16626,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
     }
     updatePanelValue() {
-        let value;
-        if (this.editorMode === 'HTML' && this.value) {
-            value = this.value.replace(/>\s+</g, '><');
-        }
-        else {
-            value = this.value;
-        }
+        let value = this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         if (value) {
             if (this.valueContainer) {
@@ -16702,6 +16878,9 @@ let RichTextEditor = class RichTextEditor extends Component {
         });
         styleEle.rel = 'stylesheet';
         return styleEle;
+    }
+    isBlazor() {
+        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
     }
     setValue() {
         if (this.valueTemplate) {
@@ -16958,6 +17137,9 @@ let RichTextEditor = class RichTextEditor extends Component {
         for (let element of this.scrollParentElements) {
             EventHandler.add(element, 'scroll', this.scrollHandler, this);
         }
+        if (!this.iframeSettings.enable) {
+            EventHandler.add(this.contentModule.getPanel(), 'scroll', this.scrollHandler, this);
+        }
     }
     wireContextEvent() {
         if (this.quickToolbarSettings.showOnRightClick) {
@@ -16981,6 +17163,9 @@ let RichTextEditor = class RichTextEditor extends Component {
         for (let element of this.scrollParentElements) {
             EventHandler.remove(element, 'scroll', this.scrollHandler);
         }
+        if (!this.iframeSettings.enable) {
+            EventHandler.remove(this.contentModule.getPanel(), 'scroll', this.scrollHandler);
+        }
     }
     touchHandler(e) {
         this.notifyMouseUp(e.originalEvent);
@@ -16990,7 +17175,8 @@ let RichTextEditor = class RichTextEditor extends Component {
         e.preventDefault();
     }
     resetHandler() {
-        this.setProperties({ value: this.valueContainer.defaultValue === '' ? null : this.valueContainer.defaultValue });
+        let defaultValue = this.valueContainer.defaultValue.trim();
+        this.setProperties({ value: defaultValue === '' ? null : (this.isBlazor() ? this.defaultResetValue : defaultValue) });
     }
     /**
      * @hidden
@@ -17040,6 +17226,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
+            EventHandler.add(this.inputElement.ownerDocument, 'scroll', this.scrollHandler, this);
             EventHandler.add(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown, this);
         }
         this.wireScrollElementsEvents();
@@ -17057,7 +17244,7 @@ let RichTextEditor = class RichTextEditor extends Component {
                 this.onCut();
                 break;
         }
-        if (e.callBack && (e.event.action === 'copy' || e.event.action === 'cut')) {
+        if (e.callBack && (e.event.action === 'copy' || e.event.action === 'cut' || e.event.action === 'delete')) {
             e.callBack({
                 requestType: e.event.action,
                 editorMode: 'HTML',
@@ -17093,6 +17280,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);
+            EventHandler.remove(this.inputElement.ownerDocument, 'scroll', this.scrollHandler);
             EventHandler.remove(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown);
         }
         this.unWireScrollElementsEvents();

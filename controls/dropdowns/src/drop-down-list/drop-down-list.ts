@@ -7,7 +7,7 @@ import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@sync
 import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { incrementalSearch } from '../common/incremental-search';
 import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';
-import { FocusEventArgs, ResultData } from '../drop-down-base/drop-down-base';
+import { FocusEventArgs, ResultData, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { DropDownListModel } from '../drop-down-list';
 /* tslint:disable */
@@ -17,6 +17,7 @@ import { SortOrder } from '@syncfusion/ej2-lists';
 export interface ChangeEventArgs extends SelectEventArgs {
     /**
      * Returns the selected value
+     * @isGenericType true
      */
     value: number | string | boolean;
     /**
@@ -25,6 +26,7 @@ export interface ChangeEventArgs extends SelectEventArgs {
     previousItem: HTMLLIElement;
     /**
      * Returns the previous selected item as JSON Object from the data source.
+     * @blazorType object
      */
     previousItemData: FieldSettingsModel;
     /**
@@ -145,6 +147,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * its parent container. You can also set the width in pixel values.
      * @default '100%'
      * @aspType string
+     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -154,6 +157,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
      * @default '300px'
      * @aspType string
+     * @blazorType string
      */
     @Property('300px')
     public popupHeight: string | number;
@@ -164,6 +168,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
      * @default '100%'
      * @aspType string
+     * @blazorType string
      */
     @Property('100%')
     public popupWidth: string | number;
@@ -259,6 +264,7 @@ export class DropDownList extends DropDownBase implements IInput {
     /**
      * Gets or sets the value of the selected item in the component.
      * @default null
+     * @isGenericType true
      */
     @Property(null)
     public value: number | string | boolean;
@@ -270,6 +276,8 @@ export class DropDownList extends DropDownBase implements IInput {
      * {% codeBlock src="dropdownlist/index-api/index.html" %}{% endcodeBlock %}
      * 
      * @default null
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     @Property(null)
     public index: number;
@@ -287,6 +295,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
@@ -322,6 +331,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Triggers when the popup before opens.
      * @event
      * @blazorProperty 'OnOpen'
+     * @blazorType BeforeOpenEventArgs
      */
     @Event()
     public beforeOpen: EmitType<Object>;
@@ -342,14 +352,12 @@ export class DropDownList extends DropDownBase implements IInput {
     /**
      * Triggers when focus moves out from the component.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<Object>;
     /**
      * Triggers when the component is focused.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<Object>;
@@ -811,7 +819,6 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.isValidLI(li)) {
             return;
         }
-        this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
         this.setSelection(li, e);
         if (Browser.isDevice && this.isFilterLayout()) {
             history.back();
@@ -1123,7 +1130,7 @@ export class DropDownList extends DropDownBase implements IInput {
         let selectedData: string | number | boolean | {
             [key: string]: Object;
         } = this.getDataByValue(value);
-        if (!this.initial && !preventSelect) {
+        if (!this.initial && !preventSelect && !isNullOrUndefined(e)) {
             let items: FieldSettingsModel = this.detachChanges(selectedData);
             this.isSelected = true;
             let eventArgs: SelectEventArgs = {
@@ -1179,6 +1186,7 @@ export class DropDownList extends DropDownBase implements IInput {
             Input.setValue(dataItem.text, this.inputElement, this.floatLabelType, this.showClearButton);
         }
         if (this.valueTemplate && this.itemData !== null) {
+            this.DropDownBaseresetBlazorTemplates(false, false, false, false, true);
             this.setValueTemplate();
         } else if (this.inputElement.previousSibling === this.valueTempElement) {
             detach(this.valueTempElement);
@@ -1238,10 +1246,10 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.valueTempElement.innerHTML = '';
         compiledString = compile(this.valueTemplate);
-        for (let item of compiledString(this.itemData, null, null, this.valueTemplateId)) {
+        for (let item of compiledString(this.itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
             this.valueTempElement.appendChild(item);
         }
-        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
+        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
     }
 
     protected removeSelection(): void {
@@ -1274,7 +1282,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected onChangeEvent(eve: MouseEvent | KeyboardEvent | TouchEvent): void {
         let dataItem: { [key: string]: string } = this.getItemData();
         let index: number = this.isSelectCustom ? null : this.activeIndex;
-        this.setProperties({ 'value': dataItem.value, 'index': index, 'text': dataItem.text }, true);
+        this.setProperties({ 'index': index, 'text': dataItem.text, 'value': dataItem.value }, true);
         this.detachChangeEvent(eve);
     };
 
@@ -1686,97 +1694,99 @@ export class DropDownList extends DropDownBase implements IInput {
             this.refreshPopup();
             return;
         }
-        let args: { [key: string]: boolean } = { cancel: false };
-        this.trigger('beforeOpen', args, (args: { [key: string]: boolean }) => {
-            let popupEle: HTMLElement = this.createElement('div', {
-                id: this.element.id + '_popup', className: 'e-ddl e-popup ' + (this.cssClass != null ? this.cssClass : '')
-            });
-            let searchBox: InputObject = this.setSearchBox(popupEle);
-            this.listHeight = formatUnit(this.popupHeight);
-            if (this.headerTemplate) {
-                this.setHeaderTemplate(popupEle);
-            }
-            append([this.list], popupEle);
-            if (this.footerTemplate) {
-                this.setFooterTemplate(popupEle);
-            }
-            document.body.appendChild(popupEle);
-            popupEle.style.visibility = 'hidden';
-            if (this.popupHeight !== 'auto') {
-                this.searchBoxHeight = 0;
-                if (!isNullOrUndefined(searchBox.container)) {
-                    this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
-                    this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
-                }
+        let args: BeforeOpenEventArgs = { cancel: false };
+        this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
+            if (!args.cancel) {
+                let popupEle: HTMLElement = this.createElement('div', {
+                    id: this.element.id + '_popup', className: 'e-ddl e-popup ' + (this.cssClass != null ? this.cssClass : '')
+                });
+                let searchBox: InputObject = this.setSearchBox(popupEle);
+                this.listHeight = formatUnit(this.popupHeight);
                 if (this.headerTemplate) {
-                    let height: number = Math.round(this.header.getBoundingClientRect().height);
-                    this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                    this.setHeaderTemplate(popupEle);
                 }
+                append([this.list], popupEle);
                 if (this.footerTemplate) {
-                    let height: number = Math.round(this.footer.getBoundingClientRect().height);
-                    this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                    this.setFooterTemplate(popupEle);
                 }
-                this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
-                popupEle.style.maxHeight = formatUnit(this.popupHeight);
-            } else {
-                popupEle.style.height = 'auto';
-            }
-            let offsetValue: number = 0;
-            let left: number;
-            if (!isNullOrUndefined(this.selectedLI) && (!isNullOrUndefined(this.activeIndex) && this.activeIndex >= 0)) {
-                this.setScrollPosition();
-            } else {
-                this.list.scrollTop = 0;
-            }
-            if (Browser.isDevice && (!this.allowFiltering && (this.getModuleName() === 'dropdownlist' ||
-                (this.isDropDownClick && this.getModuleName() === 'combobox')))) {
-                offsetValue = this.getOffsetValue(popupEle);
-                let firstItem: HTMLElement = this.isEmptyList() ? this.list : this.liCollections[0];
-                left = -(parseInt(getComputedStyle(firstItem).textIndent, 10) -
-                    parseInt(getComputedStyle(this.inputElement).paddingLeft, 10) +
-                    parseInt(getComputedStyle(this.inputElement.parentElement).borderLeftWidth, 10));
-            }
-            this.getFocusElement();
-            this.createPopup(popupEle, offsetValue, left);
-            this.checkCollision(popupEle);
-            if (Browser.isDevice) {
-                this.popupObj.element.classList.add(dropDownListClasses.device);
-                if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
-                    && !this.allowFiltering && this.isDropDownClick)) {
-                    this.popupObj.collision = { X: 'fit', Y: 'fit' };
+                document.body.appendChild(popupEle);
+                popupEle.style.visibility = 'hidden';
+                if (this.popupHeight !== 'auto') {
+                    this.searchBoxHeight = 0;
+                    if (!isNullOrUndefined(searchBox.container)) {
+                        this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
+                        this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
+                    }
+                    if (this.headerTemplate) {
+                        let height: number = Math.round(this.header.getBoundingClientRect().height);
+                        this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                    }
+                    if (this.footerTemplate) {
+                        let height: number = Math.round(this.footer.getBoundingClientRect().height);
+                        this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                    }
+                    this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
+                    popupEle.style.maxHeight = formatUnit(this.popupHeight);
+                } else {
+                    popupEle.style.height = 'auto';
                 }
-                if (this.isFilterLayout()) {
-                    this.popupObj.element.classList.add(dropDownListClasses.mobileFilter);
-                    this.popupObj.position = { X: 0, Y: 0 };
-                    this.popupObj.dataBind();
-                    attributes(this.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
-                    addClass([document.body, this.popupObj.element], dropDownListClasses.popupFullScreen);
-                    this.setSearchBoxPosition();
-                    this.backIconElement = searchBox.container.querySelector('.e-back-icon');
-                    this.clearIconElement = searchBox.container.querySelector('.' + dropDownListClasses.clearIcon);
-                    EventHandler.add(this.backIconElement, 'click', this.clickOnBackIcon, this);
-                    EventHandler.add(this.clearIconElement, 'click', this.clearText, this);
+                let offsetValue: number = 0;
+                let left: number;
+                if (!isNullOrUndefined(this.selectedLI) && (!isNullOrUndefined(this.activeIndex) && this.activeIndex >= 0)) {
+                    this.setScrollPosition();
+                } else {
+                    this.list.scrollTop = 0;
                 }
-            }
-            popupEle.style.visibility = 'visible';
-            addClass([popupEle], 'e-popup-close');
-            let scrollParentElements: HTMLElement[] = this.popupObj.getScrollableParent(this.inputWrapper.container);
-            for (let element of scrollParentElements) { EventHandler.add(element, 'scroll', this.scrollHandler, this); }
-            if (Browser.isDevice && this.isFilterLayout()) {
-                EventHandler.add(this.list, 'scroll', this.listScroll, this);
-            }
-            attributes(this.targetElement(), { 'aria-expanded': 'true' });
-            let inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
-            addClass([inputParent], [dropDownListClasses.inputFocus]);
-            let animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
-            this.beforePopupOpen = true;
-            let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
-            this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
-                if (!eventArgs.cancel) {
-                    addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
-                    this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
+                if (Browser.isDevice && (!this.allowFiltering && (this.getModuleName() === 'dropdownlist' ||
+                    (this.isDropDownClick && this.getModuleName() === 'combobox')))) {
+                    offsetValue = this.getOffsetValue(popupEle);
+                    let firstItem: HTMLElement = this.isEmptyList() ? this.list : this.liCollections[0];
+                    left = -(parseInt(getComputedStyle(firstItem).textIndent, 10) -
+                        parseInt(getComputedStyle(this.inputElement).paddingLeft, 10) +
+                        parseInt(getComputedStyle(this.inputElement.parentElement).borderLeftWidth, 10));
                 }
-            });
+                this.getFocusElement();
+                this.createPopup(popupEle, offsetValue, left);
+                this.checkCollision(popupEle);
+                if (Browser.isDevice) {
+                    this.popupObj.element.classList.add(dropDownListClasses.device);
+                    if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
+                        && !this.allowFiltering && this.isDropDownClick)) {
+                        this.popupObj.collision = { X: 'fit', Y: 'fit' };
+                    }
+                    if (this.isFilterLayout()) {
+                        this.popupObj.element.classList.add(dropDownListClasses.mobileFilter);
+                        this.popupObj.position = { X: 0, Y: 0 };
+                        this.popupObj.dataBind();
+                        attributes(this.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
+                        addClass([document.body, this.popupObj.element], dropDownListClasses.popupFullScreen);
+                        this.setSearchBoxPosition();
+                        this.backIconElement = searchBox.container.querySelector('.e-back-icon');
+                        this.clearIconElement = searchBox.container.querySelector('.' + dropDownListClasses.clearIcon);
+                        EventHandler.add(this.backIconElement, 'click', this.clickOnBackIcon, this);
+                        EventHandler.add(this.clearIconElement, 'click', this.clearText, this);
+                    }
+                }
+                popupEle.style.visibility = 'visible';
+                addClass([popupEle], 'e-popup-close');
+                let scrollParentElements: HTMLElement[] = this.popupObj.getScrollableParent(this.inputWrapper.container);
+                for (let element of scrollParentElements) { EventHandler.add(element, 'scroll', this.scrollHandler, this); }
+                if (Browser.isDevice && this.isFilterLayout()) {
+                    EventHandler.add(this.list, 'scroll', this.listScroll, this);
+                }
+                attributes(this.targetElement(), { 'aria-expanded': 'true' });
+                let inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
+                addClass([inputParent], [dropDownListClasses.inputFocus]);
+                let animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
+                this.beforePopupOpen = true;
+                let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+                this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
+                    if (!eventArgs.cancel) {
+                        addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
+                        this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
+                    }
+                });
+            }
         });
     }
     private checkCollision(popupEle: HTMLElement): void {
@@ -1973,6 +1983,8 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
         }
+        let isResetItem: boolean = (this.getModuleName() === 'autocomplete') ? true : false;
+        this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
         this.filterInputObj = null;
@@ -2131,7 +2143,7 @@ export class DropDownList extends DropDownBase implements IInput {
             addClass([this.footer], dropDownListClasses.footer);
         }
         compiledString = compile(this.footerTemplate);
-        for (let item of compiledString({}, null, null, this.footerTemplateId)) {
+        for (let item of compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate)) {
             this.footer.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
@@ -2147,7 +2159,7 @@ export class DropDownList extends DropDownBase implements IInput {
             addClass([this.header], dropDownListClasses.header);
         }
         compiledString = compile(this.headerTemplate);
-        for (let item of compiledString({}, null, null, this.headerTemplateId)) {
+        for (let item of compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate)) {
             this.header.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
@@ -2367,7 +2379,7 @@ export class DropDownList extends DropDownBase implements IInput {
             return;
         }
         this.beforePopupOpen = true;
-        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0] && !this.itemTemplate) {
+        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
             this.isActive = true;
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         } else if (isNullOrUndefined(this.list) || !isUndefined(this.list) && this.list.classList.contains(dropDownBaseClasses.noData)) {
@@ -2391,8 +2403,9 @@ export class DropDownList extends DropDownBase implements IInput {
      * @returns void.
      */
     public hidePopup(): void {
-        let isResetItem: boolean = (this.getModuleName() === 'autocomplete') ? true : false;
-        this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
+        let isHeader: boolean = (this.headerTemplate) ? true : false;
+        let isFooter: boolean = (this.headerTemplate) ? true : false;
+        this.DropDownBaseresetBlazorTemplates(false, false, false, false, false, isHeader, isFooter);
         if (this.isEscapeKey && this.getModuleName() === 'dropdownlist') {
             Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
             this.isEscapeKey = false;

@@ -7,7 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 
 
-import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderCopySuccess, folderCopyRead, data23, toolbarItems3, data3, data4, multiItemCopyRead, doubleClickRead1, multiCopySuccess1, multiCopySuccess, doubleClickRead2, multiItemCopyRead1, multiCopySuccess2, multiItemCopyRead2, multiCopySuccess3, multiItemCopyRead3, data1pasteIN, data1pasteIN2, folderDragSuccess, data1pasteIN3, data1pasteIN4, folderDragSuccess1, folderDragRead } from '../data';
+import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderCopySuccess, folderCopyRead, data23, multiItemCopyRead, multiCopySuccess1, multiCopySuccess, doubleClickRead2, multiItemCopyRead1, multiCopySuccess2, multiItemCopyRead2, multiCopySuccess3, multiItemCopyRead3, data1pasteIN, data1pasteIN2, data1pasteIN3, data1pasteIN4, folderDragSuccess1, folderDragRead } from '../data';
 import { createElement, closest, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -65,6 +65,9 @@ describe('FileManager control LargeIcons view', () => {
                 tapCount: 1
             };
             setTimeout(function () {
+                let menuObj: any = (document.getElementById(feObj.element.id + '_contextmenu') as any).ej2_instances[0];
+                menuObj.animationSettings = { effect: 'None' };
+                menuObj.dataBind();
                 done();
             }, 500);
         });
@@ -74,7 +77,7 @@ describe('FileManager control LargeIcons view', () => {
             ele.remove();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
-        it('folder context menu testing', (done) => {
+        it('folder context menu testing', () => {
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[1];
             mouseEventArgs.target = Li;
@@ -84,17 +87,14 @@ describe('FileManager control LargeIcons view', () => {
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
-            setTimeout(function () {
-                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
-                expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
-                expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(true);
-                done();
-            }, 500);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(true);
         });
-        it('folder context menu(mouse hover) testing', (done) => {
+        it('folder context menu(mouse hover) testing', () => {
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[0];
             (<any>feObj.largeiconsviewModule).onMouseOver(mouseEventArgs);
@@ -107,17 +107,40 @@ describe('FileManager control LargeIcons view', () => {
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
-            setTimeout(function () {
-                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
-                expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
-                expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(true);
-                done();
-            }, 500);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(true);
         });
-        it('File context menu testing', (done) => {
+        it('folder context menu testing (multiple item copy)', () => {
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[2].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            Li = document.getElementById('file_largeicons').querySelectorAll('li')[0].querySelector('.e-frame.e-icons');
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            (<HTMLElement>document.getElementsByClassName('e-fe-copy')[0]).click();
+            Li = document.getElementById('file_largeicons').querySelectorAll('li')[1];
+            mouseEventArgs.target = Li;
+            tapEvent.tapCount = 1;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            Li.dispatchEvent(evt);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(false);
+        });
+        it('File context menu testing', () => {
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[4];
             mouseEventArgs.target = Li;
@@ -127,15 +150,12 @@ describe('FileManager control LargeIcons view', () => {
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
-            setTimeout(function () {
-                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
-                expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
-                done();
-            }, 500);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
         });
-        it('Layout context menu testing', (done) => {
+        it('Layout context menu testing', () => {
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             let Li: any = document.getElementById('file_largeicons');
             mouseEventArgs.target = Li;
@@ -145,47 +165,38 @@ describe('FileManager control LargeIcons view', () => {
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
-            setTimeout(function () {
-                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Paste');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(true);
-                done();
-            }, 500);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Paste');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(true);
         });
-        it('Treeview (Root Folder) context menu testing', (done) => {
+        it('Treeview (Root Folder) context menu testing', () => {
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             let li: any = feObj.navigationpaneModule.treeObj.element.querySelectorAll("li")[0];
             let sourceElement: any = el.ej2_instances[0];
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             li.querySelector('.e-fullrow').dispatchEvent(evt);
-            setTimeout(function () {
-                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(true);
-                expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(true);
-                expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(true);
-                done();
-            }, 500);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(true);
+            expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(true);
+            expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(true);
         });
-        it('Treeview (Sub-Folder) context menu testing', (done) => {
+        it('Treeview (Sub-Folder) context menu testing', () => {
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             let li: any = feObj.navigationpaneModule.treeObj.element.querySelectorAll("li")[1];
             let sourceElement: any = el.ej2_instances[0];
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             li.querySelector('.e-fullrow').dispatchEvent(evt);
-            setTimeout(function () {
-                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
-                expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
-                expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(true);
-                done();
-            }, 500);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
+            expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(true);
         });
-        it('Toolbar testing', (done) => {
+        it('Toolbar testing', () => {
             expect(closest(document.getElementsByClassName('e-fe-cut')[0], 'div').classList.contains('e-hidden')).toBe(true);
             expect(closest(document.getElementsByClassName('e-fe-copy')[0], 'div').classList.contains('e-hidden')).toBe(true);
             expect(closest(document.getElementsByClassName('e-fe-paste')[0], 'div').classList.contains('e-hidden')).toBe(true);
@@ -193,12 +204,9 @@ describe('FileManager control LargeIcons view', () => {
             mouseEventArgs.target = Li;
             tapEvent.tapCount = 1;
             (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
-            setTimeout(function () {
-                expect(closest(document.getElementsByClassName('e-fe-cut')[0], 'div').classList.contains('e-hidden')).toBe(false);
-                expect(closest(document.getElementsByClassName('e-fe-copy')[0], 'div').classList.contains('e-hidden')).toBe(false);
-                expect(closest(document.getElementsByClassName('e-fe-paste')[0], 'div').classList.contains('e-hidden')).toBe(true);
-                done();
-            }, 500);
+            expect(closest(document.getElementsByClassName('e-fe-cut')[0], 'div').classList.contains('e-hidden')).toBe(false);
+            expect(closest(document.getElementsByClassName('e-fe-copy')[0], 'div').classList.contains('e-hidden')).toBe(false);
+            expect(closest(document.getElementsByClassName('e-fe-paste')[0], 'div').classList.contains('e-hidden')).toBe(true);
         });
         it('Toolbar file copy paste testing', (done) => {
             let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[4];
@@ -417,7 +425,7 @@ describe('FileManager control LargeIcons view', () => {
                 done();
             }, 500);
         });
-        it('Keyboard file cut array maintenance testing', (done) => {
+        it('Keyboard file cut array maintenance testing', () => {
             let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[4];
             mouseEventArgs.target = Li;
             tapEvent.tapCount = 1;
@@ -430,14 +438,11 @@ describe('FileManager control LargeIcons view', () => {
             expect(document.getElementById('file_largeicons').querySelectorAll('li')[4].classList.contains('e-blur')).toBe(true);
             expect(feObj.selectedNodes.length).toBe(1);
             expect(feObj.actionRecords.length).toBe(1);
-            setTimeout(function () {
-                keyboardEventArgs.action = 'esc';
-                (<any>feObj.largeiconsviewModule).keyActionHandler(keyboardEventArgs);
-                expect(document.getElementById('file_largeicons').querySelectorAll('li')[4].classList.contains('e-blur')).toBe(false);
-                expect(feObj.selectedNodes.length).toBe(0);
-                expect(feObj.actionRecords.length).toBe(0);
-                done();
-            }, 500);
+            keyboardEventArgs.action = 'esc';
+            (<any>feObj.largeiconsviewModule).keyActionHandler(keyboardEventArgs);
+            expect(document.getElementById('file_largeicons').querySelectorAll('li')[4].classList.contains('e-blur')).toBe(false);
+            expect(feObj.selectedNodes.length).toBe(0);
+            expect(feObj.actionRecords.length).toBe(0);
         });
         it('Keyboard file copy paste testing', (done) => {
             let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[4];
@@ -490,51 +495,47 @@ describe('FileManager control LargeIcons view', () => {
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
+            expect(feObj.selectedItems.length).toBe(1);
+            expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
+            sourceElement.element.querySelectorAll('li')[0].click();
+            expect(feObj.selectedNodes.length).toBe(1);
+            expect(feObj.actionRecords.length).toBe(1);
+            mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[2];
+            tapEvent.tapCount = 2;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(doubleClickRead)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
             setTimeout(function () {
-                expect(feObj.selectedItems.length).toBe(1);
-                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+                expect(feObj.selectedItems.length).toBe(0);
+                let Li: Element = document.getElementById('file_largeicons');
+                let evt = document.createEvent('MouseEvents')
+                evt.initEvent('contextmenu', true, true);
+                Li.dispatchEvent(evt);
+                expect(feObj.selectedItems.length).toBe(0);
+                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Paste');
                 expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
                 sourceElement.element.querySelectorAll('li')[0].click();
-                expect(feObj.selectedNodes.length).toBe(1);
-                expect(feObj.actionRecords.length).toBe(1);
-                mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[2];
-                tapEvent.tapCount = 2;
-                (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
-                    responseText: JSON.stringify(doubleClickRead)
+                    responseText: JSON.stringify(fileCopySuccess)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(fileCopyRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
-                    expect(feObj.selectedItems.length).toBe(0);
-                    let Li: Element = document.getElementById('file_largeicons');
-                    let evt = document.createEvent('MouseEvents')
-                    evt.initEvent('contextmenu', true, true);
-                    Li.dispatchEvent(evt);
-                    setTimeout(function () {
-                        expect(feObj.selectedItems.length).toBe(0);
-                        expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Paste');
-                        expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
-                        sourceElement.element.querySelectorAll('li')[0].click();
-                        this.request = jasmine.Ajax.requests.mostRecent();
-                        this.request.respondWith({
-                            status: 200,
-                            responseText: JSON.stringify(fileCopySuccess)
-                        });
-                        this.request = jasmine.Ajax.requests.mostRecent();
-                        this.request.respondWith({
-                            status: 200,
-                            responseText: JSON.stringify(fileCopyRead)
-                        });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-                        setTimeout(function () {
-                            expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
-                            done();
-                        }, 500);
-                    }, 100);
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
+                    done();
                 }, 500);
-            }, 100);
+            }, 500);
         });
         it('Context menu file copy paste testing testing', (done) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -548,51 +549,47 @@ describe('FileManager control LargeIcons view', () => {
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
+            expect(feObj.selectedItems.length).toBe(1);
+            expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
+            sourceElement.element.querySelectorAll('li')[1].click();
+            expect(feObj.selectedNodes.length).toBe(1);
+            expect(feObj.actionRecords.length).toBe(1);
+            mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[2];
+            tapEvent.tapCount = 2;
+            (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(doubleClickRead)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
             setTimeout(function () {
-                expect(feObj.selectedItems.length).toBe(1);
-                expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[1]).classList.contains('e-disabled')).toBe(false);
-                sourceElement.element.querySelectorAll('li')[1].click();
-                expect(feObj.selectedNodes.length).toBe(1);
-                expect(feObj.actionRecords.length).toBe(1);
-                mouseEventArgs.target = document.getElementById('file_largeicons').querySelectorAll('li')[2];
-                tapEvent.tapCount = 2;
-                (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+                expect(feObj.selectedItems.length).toBe(0);
+                let Li: Element = document.getElementById('file_largeicons');
+                let evt = document.createEvent('MouseEvents')
+                evt.initEvent('contextmenu', true, true);
+                Li.dispatchEvent(evt);
+                expect(feObj.selectedItems.length).toBe(0);
+                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Paste');
+                expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
+                sourceElement.element.querySelectorAll('li')[0].click();
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
-                    responseText: JSON.stringify(doubleClickRead)
+                    responseText: JSON.stringify(fileCopySuccess)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(fileCopyRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
-                    expect(feObj.selectedItems.length).toBe(0);
-                    let Li: Element = document.getElementById('file_largeicons');
-                    let evt = document.createEvent('MouseEvents')
-                    evt.initEvent('contextmenu', true, true);
-                    Li.dispatchEvent(evt);
-                    setTimeout(function () {
-                        expect(feObj.selectedItems.length).toBe(0);
-                        expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Paste');
-                        expect((<Element>sourceElement.element.querySelectorAll('li')[0]).classList.contains('e-disabled')).toBe(false);
-                        sourceElement.element.querySelectorAll('li')[0].click();
-                        this.request = jasmine.Ajax.requests.mostRecent();
-                        this.request.respondWith({
-                            status: 200,
-                            responseText: JSON.stringify(fileCopySuccess)
-                        });
-                        this.request = jasmine.Ajax.requests.mostRecent();
-                        this.request.respondWith({
-                            status: 200,
-                            responseText: JSON.stringify(fileCopyRead)
-                        });
-                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-                        setTimeout(function () {
-                            expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
-                            done();
-                        }, 500);
-                    }, 100);
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
+                    done();
                 }, 500);
-            }, 100);
+            }, 500);
         });
         it('Toolbar folder copy paste testing', (done) => {
             let Li: any = document.getElementById('file_largeicons').querySelectorAll('li')[0];
@@ -611,32 +608,30 @@ describe('FileManager control LargeIcons view', () => {
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
+            expect(sourceElement.element.querySelectorAll('li')[4].innerText).toBe('Open');
+            sourceElement.element.querySelectorAll('li')[4].click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(doubleClickRead)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
-                expect(sourceElement.element.querySelectorAll('li')[4].innerText).toBe('Open');
-                sourceElement.element.querySelectorAll('li')[4].click();
+                (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
-                    responseText: JSON.stringify(doubleClickRead)
+                    responseText: JSON.stringify(folderCopySuccess)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopyRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
-                    (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify(folderCopySuccess)
-                    });
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify(folderCopyRead)
-                    });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-                    setTimeout(function () {
-                        expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
-                        done();
-                    }, 500);
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
+                    done();
                 }, 500);
             }, 500);
         });
@@ -657,32 +652,30 @@ describe('FileManager control LargeIcons view', () => {
             let evt = document.createEvent('MouseEvents')
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
+            expect(sourceElement.element.querySelectorAll('li')[4].innerText).toBe('Open');
+            sourceElement.element.querySelectorAll('li')[4].click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(doubleClickRead)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
-                expect(sourceElement.element.querySelectorAll('li')[4].innerText).toBe('Open');
-                sourceElement.element.querySelectorAll('li')[4].click();
+                (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
-                    responseText: JSON.stringify(doubleClickRead)
+                    responseText: JSON.stringify(folderCopySuccess)
                 });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopyRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                 setTimeout(function () {
-                    (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify(folderCopySuccess)
-                    });
-                    this.request = jasmine.Ajax.requests.mostRecent();
-                    this.request.respondWith({
-                        status: 200,
-                        responseText: JSON.stringify(folderCopyRead)
-                    });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-                    setTimeout(function () {
-                        expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
-                        done();
-                    }, 500);
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
+                    done();
                 }, 500);
             }, 500);
         });
@@ -705,43 +698,39 @@ describe('FileManager control LargeIcons view', () => {
                 let evt = document.createEvent('MouseEvents')
                 evt.initEvent('contextmenu', true, true);
                 li[1].querySelector('.e-fullrow').dispatchEvent(evt);
+                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
+                sourceElement.element.querySelectorAll('li')[0].click();
+                expect(feObj.selectedNodes.length).toBe(1);
+                expect(feObj.actionRecords.length).toBe(1);
+                mouseEventArgs.target = li[3].querySelector('.e-fullrow');
+                (<any>feObj.navigationpaneModule.treeObj).touchClickObj.tap(tapEvent);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(doubleClickRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
                 setTimeout(function () {
-                    expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Cut');
-                    sourceElement.element.querySelectorAll('li')[0].click();
-                    expect(feObj.selectedNodes.length).toBe(1);
-                    expect(feObj.actionRecords.length).toBe(1);
-                    mouseEventArgs.target = li[3].querySelector('.e-fullrow');
-                    (<any>feObj.navigationpaneModule.treeObj).touchClickObj.tap(tapEvent);
+                    li[3].querySelector('.e-fullrow').dispatchEvent(evt);
+                    expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
+                    sourceElement.element.querySelectorAll('li')[2].click();
                     this.request = jasmine.Ajax.requests.mostRecent();
                     this.request.respondWith({
                         status: 200,
-                        responseText: JSON.stringify(doubleClickRead)
+                        responseText: JSON.stringify(folderCopySuccess)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(folderCopyRead)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
-                        li[3].querySelector('.e-fullrow').dispatchEvent(evt);
-                        setTimeout(function () {
-                            expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
-                            sourceElement.element.querySelectorAll('li')[2].click();
-                            this.request = jasmine.Ajax.requests.mostRecent();
-                            this.request.respondWith({
-                                status: 200,
-                                responseText: JSON.stringify(folderCopySuccess)
-                            });
-                            this.request = jasmine.Ajax.requests.mostRecent();
-                            this.request.respondWith({
-                                status: 200,
-                                responseText: JSON.stringify(folderCopyRead)
-                            });
-                            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-                            setTimeout(function () {
-                                expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
-                                expect(document.getElementById('file_tree').querySelectorAll('li')[1].textContent).toBe('Employees')
-                                done();
-                            }, 500);
-                        }, 100);
+                        expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
+                        expect(document.getElementById('file_tree').querySelectorAll('li')[1].textContent).toBe('Employees')
+                        done();
                     }, 500);
-                }, 100);
+                }, 500);
             }, 500);
         });
         it('TreeView copy paste testing', (done) => {
@@ -763,43 +752,39 @@ describe('FileManager control LargeIcons view', () => {
                 let evt = document.createEvent('MouseEvents')
                 evt.initEvent('contextmenu', true, true);
                 li[1].querySelector('.e-fullrow').dispatchEvent(evt);
+                expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
+                sourceElement.element.querySelectorAll('li')[1].click();
+                expect(feObj.selectedNodes.length).toBe(1);
+                expect(feObj.actionRecords.length).toBe(1);
+                mouseEventArgs.target = li[3].querySelector('.e-fullrow');
+                (<any>feObj.navigationpaneModule.treeObj).touchClickObj.tap(tapEvent);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(doubleClickRead)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
                 setTimeout(function () {
-                    expect(sourceElement.element.querySelectorAll('li')[1].innerText).toBe('Copy');
-                    sourceElement.element.querySelectorAll('li')[1].click();
-                    expect(feObj.selectedNodes.length).toBe(1);
-                    expect(feObj.actionRecords.length).toBe(1);
-                    mouseEventArgs.target = li[3].querySelector('.e-fullrow');
-                    (<any>feObj.navigationpaneModule.treeObj).touchClickObj.tap(tapEvent);
+                    li[3].querySelector('.e-fullrow').dispatchEvent(evt);
+                    expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
+                    sourceElement.element.querySelectorAll('li')[2].click();
                     this.request = jasmine.Ajax.requests.mostRecent();
                     this.request.respondWith({
                         status: 200,
-                        responseText: JSON.stringify(doubleClickRead)
+                        responseText: JSON.stringify(folderCopySuccess)
                     });
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(folderCopyRead)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
                     setTimeout(function () {
-                        li[3].querySelector('.e-fullrow').dispatchEvent(evt);
-                        setTimeout(function () {
-                            expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
-                            sourceElement.element.querySelectorAll('li')[2].click();
-                            this.request = jasmine.Ajax.requests.mostRecent();
-                            this.request.respondWith({
-                                status: 200,
-                                responseText: JSON.stringify(folderCopySuccess)
-                            });
-                            this.request = jasmine.Ajax.requests.mostRecent();
-                            this.request.respondWith({
-                                status: 200,
-                                responseText: JSON.stringify(folderCopyRead)
-                            });
-                            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-                            setTimeout(function () {
-                                expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
-                                expect(document.getElementById('file_tree').querySelectorAll('li')[1].textContent).toBe('Documents')
-                                done();
-                            }, 500);
-                        }, 100);
+                        expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
+                        expect(document.getElementById('file_tree').querySelectorAll('li')[1].textContent).toBe('Documents')
+                        done();
                     }, 500);
-                }, 100);
+                }, 500);
             }, 500);
         });
         it('Multiple Item copy paste testing', (done) => {
@@ -1037,27 +1022,25 @@ describe('FileManager control LargeIcons view', () => {
             tapEvent.tapCount = 1;
             (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
             Li.dispatchEvent(evt);
+            expect(feObj.selectedItems.length).toBe(1);
+            expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
+            expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(false);
+            sourceElement.element.querySelectorAll('li')[2].click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(fileCopySuccess)
+            });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1pasteIN)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             setTimeout(function () {
-                expect(feObj.selectedItems.length).toBe(1);
-                expect(sourceElement.element.querySelectorAll('li')[2].innerText).toBe('Paste');
-                expect((<Element>sourceElement.element.querySelectorAll('li')[2]).classList.contains('e-disabled')).toBe(false);
-                sourceElement.element.querySelectorAll('li')[2].click();
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(fileCopySuccess)
-                });
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data1pasteIN)
-                });
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
-                setTimeout(function () {
-                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
-                    done();
-                }, 500);
-            }, 100);
+                expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
+                done();
+            }, 500);
         });
     });
 
@@ -1105,10 +1088,9 @@ describe('FileManager control LargeIcons view', () => {
             return eventarg;
         }
 
-        let mouseEventArgs: any, tapEvent: any, keyboardEventArgs: any;
+        let mouseEventArgs: any, tapEvent: any;
         let feObj: FileManager;
         let ele: HTMLElement;
-        let dblclickevent: MouseEvent;
         let originalTimeout: any;
         let drag: number = 0;
         let start: number = 0;

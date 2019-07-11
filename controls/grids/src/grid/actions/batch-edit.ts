@@ -330,12 +330,13 @@ export class BatchEdit {
                 .map((row: Row<Column>) => row.data)
         };
         let args: BeforeBatchSaveArgs = { batchChanges: changes, cancel: false };
-        gObj.trigger(events.beforeBatchSave, args);
-        if (args.cancel) {
-            return;
-        }
-        gObj.showSpinner();
-        gObj.notify(events.bulkSave, { changes: changes, original: original });
+        gObj.trigger(events.beforeBatchSave, args, (beforeBatchSaveArgs: BeforeBatchSaveArgs) => {
+            if (beforeBatchSaveArgs.cancel) {
+                return;
+            }
+            gObj.showSpinner();
+            gObj.notify(events.bulkSave, { changes: changes, original: original });
+        });
     }
 
     public getBatchChanges(): Object {
@@ -425,55 +426,56 @@ export class BatchEdit {
         if (!args.row) {
             return;
         }
-        gObj.trigger(events.beforeBatchDelete, args);
-        if (args.cancel) {
-            return;
-        }
-        if (this.parent.frozenColumns || selectedRows.length === 1) {
-            let uid: string = args.row.getAttribute('data-uid');
-            if (args.row.classList.contains('e-insertedrow')) {
-                this.removeRowObjectFromUID(uid);
-                remove(args.row);
-            } else {
-                let rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
-                rowObj.isDirty = true;
-                rowObj.edit = 'delete';
-                classList(args.row as HTMLTableRowElement, ['e-hiddenrow', 'e-updatedtd'], []);
-                if (gObj.getFrozenColumns()) {
-                    classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
-                    if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
-                        gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
-                            .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
-                        gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
-                            .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
-                    }
-                } else if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
-                    gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
-                }
+        gObj.trigger(events.beforeBatchDelete, args, (beforeBatchDeleteArgs: BeforeBatchDeleteArgs) => {
+            if (beforeBatchDeleteArgs.cancel) {
+                return;
             }
-            delete args.row;
-        } else {
-            for (let i: number = 0; i < selectedRows.length; i++) {
-                let uniqueid: string = selectedRows[i].getAttribute('data-uid');
-                if (selectedRows[i].classList.contains('e-insertedrow')) {
-                    this.removeRowObjectFromUID(uniqueid);
-                    remove(selectedRows[i]);
+            if (this.parent.frozenColumns || selectedRows.length === 1) {
+                let uid: string = beforeBatchDeleteArgs.row.getAttribute('data-uid');
+                if (beforeBatchDeleteArgs.row.classList.contains('e-insertedrow')) {
+                    this.removeRowObjectFromUID(uid);
+                    remove(beforeBatchDeleteArgs.row);
                 } else {
-                    classList(selectedRows[i] as HTMLTableRowElement, ['e-hiddenrow', 'e-updatedtd'], []);
-                    let selectedRow: Row<Column> = gObj.getRowObjectFromUID(uniqueid);
-                    selectedRow.isDirty = true;
-                    selectedRow.edit = 'delete';
-                    delete selectedRows[i];
+                    let rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
+                    rowObj.isDirty = true;
+                    rowObj.edit = 'delete';
+                    classList(beforeBatchDeleteArgs.row as HTMLTableRowElement, ['e-hiddenrow', 'e-updatedtd'], []);
+                    if (gObj.getFrozenColumns()) {
+                        classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
+                        if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
+                            gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
+                                .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
+                            gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
+                                .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                        }
+                    } else if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
+                        gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                    }
+                }
+                delete beforeBatchDeleteArgs.row;
+            } else {
+                for (let i: number = 0; i < selectedRows.length; i++) {
+                    let uniqueid: string = selectedRows[i].getAttribute('data-uid');
+                    if (selectedRows[i].classList.contains('e-insertedrow')) {
+                        this.removeRowObjectFromUID(uniqueid);
+                        remove(selectedRows[i]);
+                    } else {
+                        classList(selectedRows[i] as HTMLTableRowElement, ['e-hiddenrow', 'e-updatedtd'], []);
+                        let selectedRow: Row<Column> = gObj.getRowObjectFromUID(uniqueid);
+                        selectedRow.isDirty = true;
+                        selectedRow.edit = 'delete';
+                        delete selectedRows[i];
+                    }
                 }
             }
-        }
-        this.refreshRowIdx();
-        this.removeSelectedData =  gObj.getSelectedRecords();
-        gObj.clearSelection();
-        gObj.selectRow(index);
-        gObj.trigger(events.batchDelete, args);
-        gObj.notify(events.batchDelete, { rows: this.parent.getRowsObject() });
-        gObj.notify(events.toolbarRefresh, {});
+            this.refreshRowIdx();
+            this.removeSelectedData =  gObj.getSelectedRecords();
+            gObj.clearSelection();
+            gObj.selectRow(index);
+            gObj.trigger(events.batchDelete, beforeBatchDeleteArgs);
+            gObj.notify(events.batchDelete, { rows: this.parent.getRowsObject() });
+            gObj.notify(events.toolbarRefresh, {});
+        });
     }
 
     private refreshRowIdx(): void {
@@ -537,74 +539,75 @@ export class BatchEdit {
             primaryKey: gObj.getPrimaryKeyFieldNames(),
             cancel: false
         };
-        gObj.trigger(events.beforeBatchAdd, args);
-        if (args.cancel) {
-            return;
-        }
-        this.isAdded = true;
-        gObj.clearSelection();
-        let mTr: Element;
-        let mTbody: Element;
-        let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
-        let model: IModelGenerator<Column> = new RowModelGenerator(this.parent);
-        let modelData: Row<Column>[] = model.generateRows([args.defaultData]);
-        let tr: HTMLTableRowElement = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
-        let col: Column;
-        let index: number;
-        for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
-            tr.insertBefore(this.parent.createElement('td', { className: 'e-indentcell' }), tr.firstChild);
-            modelData[0].cells.unshift(new Cell<Column>({ cellType: CellType.Indent }));
-        }
-        let tbody: Element = gObj.getContentTable().querySelector('tbody');
-        tr.classList.add('e-insertedrow');
-        if (tbody.querySelector('.e-emptyrow')) {
-            tbody.querySelector('.e-emptyrow').remove();
-        }
-        if (gObj.getFrozenColumns()) {
-            mTr = this.renderMovable(tr);
+        gObj.trigger(events.beforeBatchAdd, args, (beforeBatchAddArgs: BeforeBatchAddArgs) => {
+            if (beforeBatchAddArgs.cancel) {
+                return;
+            }
+            this.isAdded = true;
+            gObj.clearSelection();
+            let mTr: Element;
+            let mTbody: Element;
+            let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
+            let model: IModelGenerator<Column> = new RowModelGenerator(this.parent);
+            let modelData: Row<Column>[] = model.generateRows([beforeBatchAddArgs.defaultData]);
+            let tr: HTMLTableRowElement = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
+            let col: Column;
+            let index: number;
+            for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
+                tr.insertBefore(this.parent.createElement('td', { className: 'e-indentcell' }), tr.firstChild);
+                modelData[0].cells.unshift(new Cell<Column>({ cellType: CellType.Indent }));
+            }
+            let tbody: Element = gObj.getContentTable().querySelector('tbody');
+            tr.classList.add('e-insertedrow');
+            if (tbody.querySelector('.e-emptyrow')) {
+                tbody.querySelector('.e-emptyrow').remove();
+            }
+            if (gObj.getFrozenColumns()) {
+                mTr = this.renderMovable(tr);
+                if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
+                    mTbody = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+                } else {
+                    mTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                }
+                this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
+                addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+                if (this.parent.height === 'auto') {
+                    this.parent.notify(events.frozenHeight, {});
+                }
+            }
             if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
-                mTbody = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+                tbody = gObj.getHeaderContent().querySelector('tbody');
             } else {
-                mTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                tbody = gObj.getContent().querySelector('tbody');
             }
-            this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
-            addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
-            if (this.parent.height === 'auto') {
-                this.parent.notify(events.frozenHeight, {});
+            this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
+            addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+            modelData[0].isDirty = true;
+            modelData[0].changes = extend({}, {}, modelData[0].data, true);
+            modelData[0].edit = 'add';
+            this.addRowObject(modelData[0]);
+            this.refreshRowIdx();
+            this.focus.forgetPrevious();
+            gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject() });
+            let changes: Object = this.getBatchChanges();
+            let addedRecords: string = 'addedRecords';
+            this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
+                gObj.selectRow(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1);
+            if (!data) {
+                index = this.findNextEditableCell(0, true);
+                col = (gObj.getColumns()[index] as Column);
+                this.parent.editSettings.newRowPosition === 'Top' ? this.editCell(0, col.field, true) :
+                    this.editCell(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
             }
-        }
-        if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
-            tbody = gObj.getHeaderContent().querySelector('tbody');
-        } else {
-            tbody = gObj.getContent().querySelector('tbody');
-        }
-        this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
-        addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
-        modelData[0].isDirty = true;
-        modelData[0].changes = extend({}, {}, modelData[0].data, true);
-        modelData[0].edit = 'add';
-        this.addRowObject(modelData[0]);
-        this.refreshRowIdx();
-        this.focus.forgetPrevious();
-        gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject() });
-        let changes: Object = this.getBatchChanges();
-        let addedRecords: string = 'addedRecords';
-        this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
-            gObj.selectRow(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1);
-        if (!data) {
-            index = this.findNextEditableCell(0, true);
-            col = (gObj.getColumns()[index] as Column);
-            this.parent.editSettings.newRowPosition === 'Top' ? this.editCell(0, col.field, true) :
-                this.editCell(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
-        }
-        if (this.parent.aggregates.length > 0 && data) {
-            this.parent.notify(events.refreshFooterRenderer, {});
-        }
-        let args1: BatchAddArgs = {
-            defaultData: args.defaultData, row: tr,
-            columnObject: col, columnIndex: index, primaryKey: args.primaryKey, cell: tr.cells[index]
-        };
-        gObj.trigger(events.batchAdd, args1);
+            if (this.parent.aggregates.length > 0 && data) {
+                this.parent.notify(events.refreshFooterRenderer, {});
+            }
+            let args1: BatchAddArgs = {
+                defaultData: beforeBatchAddArgs.defaultData, row: tr,
+                columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: tr.cells[index]
+            };
+            gObj.trigger(events.batchAdd, args1);
+        });
     }
 
     private renderMovable(ele: Element): Element {

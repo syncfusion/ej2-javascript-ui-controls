@@ -100,6 +100,7 @@ export class DrillThroughDialog {
             target: document.body,
             close: this.removeDrillThroughDialog.bind(this)
         });
+        this.dialogPopUp.isStringTemplate = true;
         this.dialogPopUp.appendTo(drillThroughDialog);
         this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
         setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
@@ -220,6 +221,7 @@ export class DrillThroughDialog {
             Grid.Inject(VirtualScroll);
         }
         document.body.appendChild(drillThroughGrid);
+        this.drillThroughGrid.isStringTemplate = true;
         this.drillThroughGrid.appendTo(drillThroughGrid);
         drillThroughBody.appendChild(drillThroughBodyHeader);
         drillThroughBody.appendChild(drillThroughGrid);

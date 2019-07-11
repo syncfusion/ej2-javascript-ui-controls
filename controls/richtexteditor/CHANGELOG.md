@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F145376` - The issue, "action complete event is not triggered when deleting the content with text and images" has been resolved.
+
+- `#237729` - The issue "table column width is shown as pixel instead of percentage while resizing" has been fixed.
+
+- `#237729` - Pickers mode throws script error when selecting the color in table's quick toolbar, that issue has been fixed.
+
+- `#237729` - Color picker value doesn't set as RGBA(alpha) value in content editor, that issue has been fixed.
+
+- `#240808` - The issue "opening a link in new window throws an error for auto generated link" has been fixed.
+
+- `#240024` - The issue, "spacing between words is removed when focus out the editor" has been resolved.
+
+- `#234519`, `#234586`, `#F138909` - The issues with table and its functionalities in IE11 has been resolved.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### RichTextEditor
@@ -17,7 +37,7 @@
 
 #### Bug Fixes
 
-- #238872 - Issue with cursor position when enabled list with empty editor that issue has been resolved.
+- `#238872` - Issue with cursor position when enabled list with empty editor that issue has been resolved.
 
 ## 17.1.49 (2019-05-29)
 
@@ -25,7 +45,7 @@
 
 #### Bug Fixes
 
-- #235461 - Thrown the console error while rendering the RichTextEditor within a table element and pressing the tab key from edit area that issue has been resolved.
+- `#235461` - Thrown the console error while rendering the RichTextEditor within a table element and pressing the tab key from edit area that issue has been resolved.
 
 ## 17.1.48 (2019-05-21)
 
@@ -33,11 +53,11 @@
 
 #### New Features
 
-- #230976 - Opens a quick toolbar on right-click support has been provided.
+- `#230976` - Opens a quick toolbar on right-click support has been provided.
 
 #### Bug Fixes
 
-- #235120 - RichTextEditor's paste as plain text doesn't preserve line break that issue has been resolved.
+- `#235120` - RichTextEditor's paste as plain text doesn't preserve line break that issue has been resolved.
 
 ## 17.1.43 (2019-04-30)
 
@@ -45,7 +65,7 @@
 
 #### Bug Fixes
 
-- #234280 - RichTextEditor's toolbar is broken when using ES2015 target that issue has been resolved.
+- `#234280` - RichTextEditor's toolbar is broken when using ES2015 target that issue has been resolved.
 
 ## 17.1.42 (2019-04-23)
 
@@ -62,10 +82,6 @@
 #### Bug Fixes
 
 - Insert image functionality of `RichTextEditor` is not working when render with `File Upload`, that issue has been fixed.
-
-- #237729 - Pickers mode throws script error when selecting the color in table's quick toolbar, that issue has been fixed.
-
-- #237729 - Color picker value doesn't set as RGBA(alpha) value in content editor, that issue has been fixed.
 
 ## 17.1.32-beta (2019-03-13)
 

@@ -23,6 +23,7 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * Specifies the HTML element ID as a string that can be added as a editable field.
      * @default ''
+     * @blazorType string
      */
     template?: string | HTMLElement;
 

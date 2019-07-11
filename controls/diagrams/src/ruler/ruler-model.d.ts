@@ -46,6 +46,7 @@ export interface RulerModel extends ComponentModel{
     /**
      * Sets the segment width of the ruler.
      * @default null
+     * @deprecated
      */
     arrangeTick?: Function | string;
 

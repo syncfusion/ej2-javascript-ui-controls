@@ -19,6 +19,7 @@ export interface IMulitSelect extends Component<HTMLElement> {
     onKeyDown?(e?: KeyboardEventArgs): void;
     mainList?: HTMLElement;
     list?: HTMLElement;
+    listData?: { [key: string]: Object }[];
     targetElement?(): string;
     targetInputElement?: HTMLInputElement | string;
     selectAllText?: string;

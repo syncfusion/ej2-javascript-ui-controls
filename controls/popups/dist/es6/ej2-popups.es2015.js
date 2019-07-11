@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getUniqueID, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 
 /**
@@ -1631,6 +1631,7 @@ let Dialog = class Dialog extends Component {
         };
         this.dlgOverlayClickEventHandler = (event) => {
             this.trigger('overlayClick', event);
+            this.focusContent();
         };
         let localeText = { close: 'Close' };
         this.l10n = new L10n('dialog', localeText, this.locale);
@@ -1984,7 +1985,7 @@ let Dialog = class Dialog extends Component {
         }
         else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
             let blazorContain = Object.keys(window);
-            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
+            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsInterop') === -1) {
                 this.contentEle.innerHTML = this.content;
             }
             else if (this.content instanceof HTMLElement) {
@@ -2017,30 +2018,38 @@ let Dialog = class Dialog extends Component {
         else {
             templateProps = this.element.id + 'content';
         }
+        let templateValue;
         if (!isNullOrUndefined(template.outerHTML)) {
             templateFn = compile(template.outerHTML);
-        }
-        else if (typeof (template) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
-            templateFn = compile(template);
+            templateValue = template.outerHTML;
         }
         else {
-            toElement.innerHTML = template;
+            templateFn = compile(template);
+            templateValue = template;
         }
         let fromElements = [];
         if (!isNullOrUndefined(templateFn)) {
-            for (let item of templateFn({}, null, null, templateProps)) {
+            let isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+                !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
+                this.isStringTemplate : true;
+            for (let item of templateFn({}, null, null, templateProps, isString)) {
                 fromElements.push(item);
             }
             append([].slice.call(fromElements), toElement);
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
+                this.blazorTemplate(templateProps);
+            }
         }
+    }
+    blazorTemplate(templateProps) {
         if (templateProps === this.element.id + 'header') {
-            updateBlazorTemplate(templateProps, 'Header');
+            updateBlazorTemplate(templateProps, 'Header', this);
         }
         else if (templateProps === this.element.id + 'footerTemplate') {
-            updateBlazorTemplate(templateProps, 'FooterTemplate');
+            updateBlazorTemplate(templateProps, 'FooterTemplate', this);
         }
         else {
-            updateBlazorTemplate(templateProps, 'Content');
+            updateBlazorTemplate(templateProps, 'Content', this);
         }
     }
     setMaxHeight() {
@@ -3020,6 +3029,9 @@ let Tooltip = class Tooltip extends Component {
         this.popupObj.dataBind();
     }
     openPopupHandler() {
+        if (this.needTemplateReposition()) {
+            this.reposition(this.findTarget());
+        }
         this.trigger('afterOpen', this.tooltipEventArgs);
     }
     closePopupHandler() {
@@ -3178,7 +3190,7 @@ let Tooltip = class Tooltip extends Component {
             else {
                 let templateFunction = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'Content'); }, 0);
+                updateBlazorTemplate(this.element.id + 'content', 'Content', this);
             }
         }
         else {
@@ -3320,6 +3332,9 @@ let Tooltip = class Tooltip extends Component {
                 this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
                     { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
                 const this$ = this;
+                if (this.needTemplateReposition()) {
+                    this.tooltipEle.style.display = 'none';
+                }
                 this.trigger('beforeOpen', this.tooltipEventArgs, (observedArgs) => {
                     if (observedArgs.cancel) {
                         this$.isHidden = true;
@@ -3351,6 +3366,13 @@ let Tooltip = class Tooltip extends Component {
                 });
             }
         });
+    }
+    needTemplateReposition() {
+        // tslint:disable-next-line:no-any
+        const tooltip = this;
+        return !isNullOrUndefined(tooltip.viewContainerRef)
+            && typeof tooltip.viewContainerRef !== 'string'
+            || isBlazor();
     }
     checkCollision(target, x, y) {
         let elePos = {

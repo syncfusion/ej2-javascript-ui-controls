@@ -346,6 +346,12 @@ export abstract class LayoutViewer {
      */
     public scrollTimer: number;
 
+    /**
+     * @private
+     * @default false
+     */
+    public isScrollToSpellCheck: boolean;
+
     //Document Protection Properties Starts
     /**
      * preserve the format
@@ -1106,7 +1112,8 @@ export abstract class LayoutViewer {
         }
         this.isScrollHandler = false;
         this.scrollTimer = setTimeout(() => {
-            if (!this.isScrollHandler) {
+            if (!this.isScrollHandler && this.owner.enableSpellCheck) {
+                this.isScrollToSpellCheck = true;
                 this.updateScrollBars();
             }
         }, 200);
@@ -2348,17 +2355,18 @@ export abstract class LayoutViewer {
         if (!isNullOrUndefined(page) && !isNullOrUndefined(this.selection)) {
             let fieldCode: string = this.selection.getFieldCode(fieldBegin);
             let fieldCodes: string[] = fieldCode.split('\*');
+            let fieldCategory: string = fieldCodes[0].replace(/[^\w\s]/gi, '').trim().toLowerCase();
+            let fieldPattern: string = '';
             if (fieldCodes.length > 1) {
-                let fieldCategory: string = fieldCodes[0].replace(/[^\w\s]/gi, '').trim().toLowerCase();
-                let fieldPattern: string = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
-                switch (fieldCategory) {
-                    case 'page':
-                        return this.getFieldText(fieldPattern, (page.index + 1));
-                    case 'numpages':
-                        return this.getFieldText(fieldPattern, page.viewer.pages.length);
-                    default:
-                        break;
-                }
+                fieldPattern = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
+            }
+            switch (fieldCategory) {
+                case 'page':
+                    return this.getFieldText(fieldPattern, (page.index + 1));
+                case 'numpages':
+                    return this.getFieldText(fieldPattern, page.viewer.pages.length);
+                default:
+                    break;
             }
         }
         return '';
@@ -2974,6 +2982,7 @@ export class PageLayoutViewer extends LayoutViewer {
             }
         }
         this.updateScrollBarPosition(containerWidth, containerHeight, viewerWidth, viewerHeight, width, height);
+        this.isScrollToSpellCheck = false;
     }
     // tslint:disable-next-line:max-line-length
     public updateScrollBarPosition(containerWidth: number, containerHeight: number, viewerWidth: number, viewerHeight: number, width: number, height: number): void {

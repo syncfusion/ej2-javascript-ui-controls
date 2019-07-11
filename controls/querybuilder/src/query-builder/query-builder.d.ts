@@ -163,6 +163,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isOperatorRendered;
     private isValueRendered;
     private actionButton;
+    private isInitialLoad;
     /**
      * Triggers when the component is created.
      * @event
@@ -172,7 +173,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     /**
      * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
-     * @blazorProperty 'OnChange'
+     * @blazorProperty 'OnValueChange'
      */
     beforeChange: EmitType<ChangeEventArgs>;
     /**

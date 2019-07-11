@@ -64,6 +64,10 @@ export class Print {
             hashId: this.pdfViewerBase.hashId, zoomFactor: 1,
             action: 'PrintImages'
         };
+        if (this.pdfViewerBase.jsonDocumentId) {
+            // tslint:disable-next-line
+            (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+        }
         proxy.printRequestHandler = new AjaxHandler(proxy.pdfViewer);
         proxy.printRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.print;
         proxy.printRequestHandler.responseType = null;

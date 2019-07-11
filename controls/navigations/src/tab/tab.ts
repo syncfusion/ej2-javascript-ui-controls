@@ -104,6 +104,7 @@ export class TabActionSettings extends ChildProperty<TabActionSettings> {
      * Specifies the animation effect for displaying Tab content.
      * @default 'SlideLeftIn'
      * @aspType string
+     * @blazorType string
      */
     @Property('SlideLeftIn')
     public effect: 'None' | Effect;
@@ -434,8 +435,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         });
         this.expTemplateContent();
         if (!this.isTemplate) {
-            while (this.element.firstChild) {
-                remove(this.element.firstChild);
+            while (this.element.firstElementChild) {
+                remove(this.element.firstElementChild);
             }
         } else {
             let cntEle: Element = select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
@@ -485,7 +486,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     protected render(): void {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title} });
         this.renderContainer();
-        this.refreshTemplate();
+        this.refreshTabTemplate();
         this.wireEvents();
         this.initRender = false;
     }
@@ -540,7 +541,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 hdrItems.push(this.hdrEle.children.item(i).innerHTML);
             }
             if (count > 0) {
-                this.hdrEle.innerHTML = '';
+                while (this.hdrEle.firstElementChild) {
+                    detach(this.hdrEle.firstElementChild);
+                }
                 this.hdrEle.appendChild(this.createElement('div', {className: CLS_ITEMS}));
                 hdrItems.forEach((item: string, index: number) => {
                     this.lastIndex = index;
@@ -567,6 +570,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this)
         });
+        this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(<HTEle> this.hdrEle);
         this.updateOrientationAttribute();
@@ -615,7 +619,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (!isNOU((<HTEle>txt).tagName)) {
               txtWrapEle.appendChild(txt as HTEle);
             } else {
-              this.headerTextCompile(txtWrapEle, txt as string); }
+              this.headerTextCompile(txtWrapEle, txt as string, i); }
             let tEle: HTEle;
             let icon: HTEle = this.createElement('span', {
                 className: CLS_ICONS + ' ' + CLS_TAB_ICON + ' ' + CLS_ICON + '-' + pos + ' ' + css
@@ -665,17 +669,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         return tItems;
     }
 
-    private refreshTemplate(): void {
-        for (let item of this.items) {
-            if (item.header.text && typeof item.header.text === 'string' &&
-                (<string>item.header.text).indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'text', 'Text');
-                updateBlazorTemplate(this.element.id + 'text', 'Text');
-            }
-            if (item.content && typeof item.content === 'string' &&
-                (<string>item.content).indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'content', 'Content');
-                updateBlazorTemplate(this.element.id + 'content', 'Content');
+    private refreshTabTemplate(): void {
+        let blazorContain: string[] = Object.keys(window) as string[];
+        for (let a: number = 0, length: number = this.items.length; a < length; a++) {
+            let item: TabItemModel = this.items[a];
+            if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
+                (<string>item.content).indexOf('<div>Blazor') === 0) {
+                resetBlazorTemplate(this.element.id + a + '_content', 'Content');
+                updateBlazorTemplate(this.element.id + a + '_content', 'Content', item);
             }
         }
     }
@@ -859,36 +860,41 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         });
     }
-    private templateCompile(ele: HTEle, cnt: Str): void {
+    private templateCompile(ele: HTEle, cnt: Str, index: number): void {
         let tempEle: HTEle = this.createElement('div');
-        this.compileElement(tempEle, cnt, 'content');
+        this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
           ele.appendChild(tempEle);
         }
     }
-    private compileElement(ele: HTEle, val: string, prop: string): void {
-      if (typeof val === 'string') {
-        val = val.trim(); }
-      let templateFn: Function = compile(val);
+    private compileElement(ele: HTEle, val: string, prop: string, index: number): void {
+      let blazorContain: string[] = Object.keys(window) as string[];
+      let templateFn: Function;
+      if (typeof val === 'string' && blazorContain.indexOf('Blazor') > -1 && val.indexOf('<div>Blazor') !== 0) {
+        val = val.trim();
+        ele.innerHTML = val;
+      } else {
+        templateFn = compile(val);
+      }
       let templateFUN: HTMLElement[];
       if (!isNOU(templateFn)) {
         let templateProps: string;
         if (ele.classList.contains(CLS_TEXT)) {
           templateProps = this.element.id + 'text';
         } else if (ele.classList.contains(CLS_CONTENT)) {
-          templateProps = this.element.id + 'content';
+          templateProps = this.element.id + index + '_content';
         }
-        templateFUN = templateFn({}, this, prop, templateProps); }
+        templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate); }
       if (!isNOU(templateFn) && templateFUN.length > 0) {
         [].slice.call(templateFUN).forEach((el: HTEle): void => {
           ele.appendChild(el);
         });
       }
     }
-    private headerTextCompile (element: HTEle, text: string): void {
-      this.compileElement(element, text, 'headerText');
+    private headerTextCompile (element: HTEle, text: string, index: number): void {
+      this.compileElement(element, text, 'headerText', index);
     }
-    private getContent(ele: HTEle, cnt: Str | HTEle, callType: string): void {
+    private getContent(ele: HTEle, cnt: Str | HTEle, callType: string, index: number): void {
         let eleStr: Str;
         if (typeof cnt === 'string' || isNOU((<HTEle>cnt).innerHTML)) {
             if ((<Str>cnt)[0] === '.' || (<Str>cnt)[0] === '#') {
@@ -902,10 +908,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         eleVal.style.display = '';
                     }
                 } else {
-                    this.templateCompile(ele, <Str>cnt);
+                    this.templateCompile(ele, <Str>cnt, index);
                 }
             } else {
-                this.templateCompile(ele, <Str>cnt);
+                this.templateCompile(ele, <Str>cnt, index);
             }
         } else {
             ele.appendChild(cnt);
@@ -1011,13 +1017,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
                 let ele: HTEle = <HTEle> this.cntEle.children.item(0);
                 for (let i: number = 0; i < this.items.length; i++) {
-                    this.getContent(ele, this.items[i].content, 'clone');
+                    this.getContent(ele, this.items[i].content, 'clone', i);
                     this.maxHeight = Math.max(this.maxHeight, this.getHeight(ele));
                     while (ele.firstChild) { ele.removeChild(ele.firstChild); }
                 }
                 this.clearTemplate(['content']);
                 this.templateEle = [];
-                this.getContent(ele, this.items[0].content, 'render');
+                this.getContent(ele, this.items[0].content, 'render', 0);
                 ele.classList.remove(CLS_ACTIVE);
             }
             setStyle(this.cntEle, { 'height': this.maxHeight + 'px' });
@@ -1104,7 +1110,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }));
                 let eleTrg: HTEle = this.getTrgContent(this.cntEle, this.extIndex(id));
                 let itemIndex: number = Array.prototype.indexOf.call(this.itemIndexArray, trg.id);
-                this.getContent(eleTrg, this.items[itemIndex].content, 'render');
+                this.getContent(eleTrg, this.items[itemIndex].content, 'render', itemIndex);
             } else {
                 item.classList.add(CLS_ACTIVE);
             }
@@ -1357,7 +1363,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.setItems(<TabItemModel[]>newProp.items);
                 if (this.templateEle.length > 0) { this.expTemplateContent(); }
                 this.templateEle = [];
-                select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element).innerHTML = '';
+                let selectElement: HTEle = <HTEle>select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
+                while (selectElement.firstElementChild) {
+                    detach(selectElement.firstElementChild);
+                }
                 this.select(this.selectedItem);
             }
         }
@@ -1433,7 +1442,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     });
                     this.cntEle.insertBefore(ele, this.cntEle.children[(index + place)]);
                     let eleTrg: HTEle = this.getTrgContent(this.cntEle, no.toString());
-                    this.getContent(eleTrg, item.content, 'render');
+                    this.getContent(eleTrg, item.content, 'render', index);
                 }
             });
             this.tbObj.addItems(tabItems, index);

@@ -1465,7 +1465,31 @@ describe('document layout testing', () => {
         done();
     });
 });
-
+describe('ShowTodayButton set as false', () => {
+    let datetimepicker: any;
+    datetimepicker = undefined;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dateTime' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Dynamically change ShowTodayButton as false', () => {
+        datetimepicker = new DateTimePicker({ value: new Date("10/15/2019 10:30 PM") });
+        datetimepicker.appendTo('#dateTime');
+        datetimepicker.min = new Date('10/10/2019 10:00 AM');
+        datetimepicker.dataBind();
+        datetimepicker.max = new Date('12/20/2019 12:00 AM');
+        datetimepicker.ShowTodayButton = false;
+        expect(datetimepicker.min).toEqual(new Date('10/10/2019 10:00 AM'));
+        expect(datetimepicker.max).toEqual(new Date('12/20/2019 12:00 AM'));
+        expect(datetimepicker.ShowTodayButton).toBe(false);
+    });
+});
 describe('Localization testing', () => {
     let datetimepicker: any;
     beforeEach(() => {

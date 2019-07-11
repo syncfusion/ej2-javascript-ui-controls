@@ -165,7 +165,8 @@ export class Selection {
     /**
      * Gets the instance of selection character format.
      * @default undefined
-     * @asptype SelectionCharacterFormat
+     * @aspType SelectionCharacterFormat
+     * @blazorType SelectionCharacterFormat
      * @return {SelectionCharacterFormat}
      */
     public get characterFormat(): SelectionCharacterFormat {
@@ -174,7 +175,8 @@ export class Selection {
     /**
      * Gets the instance of selection paragraph format.
      * @default undefined
-     * @asptype SelectionParagraphFormat
+     * @aspType SelectionParagraphFormat
+     * @blazorType SelectionParagraphFormat
      * @return {SelectionParagraphFormat}
      */
     public get paragraphFormat(): SelectionParagraphFormat {
@@ -183,7 +185,8 @@ export class Selection {
     /**
      * Gets the instance of selection section format.
      * @default undefined
-     * @asptype SelectionSectionFormat
+     * @aspType SelectionSectionFormat
+     * @blazorType SelectionSectionFormat
      * @return {SelectionSectionFormat}
      */
     public get sectionFormat(): SelectionSectionFormat {
@@ -192,7 +195,8 @@ export class Selection {
     /**
      * Gets the instance of selection table format.
      * @default undefined
-     * @asptype SelectionTableFormat
+     * @aspType SelectionTableFormat
+     * @blazorType SelectionTableFormat
      * @return {SelectionTableFormat}
      */
     public get tableFormat(): SelectionTableFormat {
@@ -201,7 +205,8 @@ export class Selection {
     /**
      * Gets the instance of selection cell format.
      * @default undefined
-     * @asptype SelectionCellFormat
+     * @aspType SelectionCellFormat
+     * @blazorType SelectionCellFormat
      * @return {SelectionCellFormat}
      */
     public get cellFormat(): SelectionCellFormat {
@@ -210,7 +215,8 @@ export class Selection {
     /**
      * Gets the instance of selection row format.
      * @default undefined
-     * @asptype SelectionRowFormat
+     * @aspType SelectionRowFormat
+     * @blazorType SelectionRowFormat
      * @returns {SelectionRowFormat}
      */
     public get rowFormat(): SelectionRowFormat {
@@ -219,7 +225,8 @@ export class Selection {
     /**
      * Gets the instance of selection image format.
      * @default undefined
-     * @asptype SelectionImageFormat
+     * @aspType SelectionImageFormat
+     * @blazorType SelectionImageFormat
      * @returns {SelectionImageFormat}
      */
     public get imageFormat(): SelectionImageFormat {
@@ -284,7 +291,8 @@ export class Selection {
     /**
      * Gets the text within selection.
      * @default ''
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      * @returns {string}
      */
     public get text(): string {

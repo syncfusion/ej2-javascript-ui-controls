@@ -45,6 +45,7 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
      * Specifies menu items with its properties which will be rendered as ContextMenu.
      * @default []
      * @aspType object
+     * @blazorType object
      */
     @Collection<MenuItemModel>([], MenuItem)
     public items: MenuItemModel[];

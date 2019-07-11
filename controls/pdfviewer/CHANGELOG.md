@@ -2,6 +2,46 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### PDF Viewer
+
+#### Breaking Changes
+
+- The following event arguments are renamed.
+
+| Existing Event Arguments Name| New Event Arguments Name |
+|------|-------------|
+|IUnloadEventArgs|UnloadEventArgs|
+|ILoadEventArgs|LoadEventArgs|
+|ILoadFailedEventArgs|LoadFailedEventArgs|
+|IAjaxRequestFailureEventArgs|AjaxRequestFailureEventArgs|
+|IPageChangeEventArgs|PageChangeEventArgs|
+|IPageClickEventArgs|PageClickEventArgs|
+|IZoomChangeEventArgs|ZoomChangeEventArgs|
+|IHyperlinkClickEventArgs |HyperlinkClickEventArgs |
+|IAnnotationAddEventArgs|AnnotationAddEventArgs|
+|IAnnotationRemoveEventArgs|AnnotationRemoveEventArgs|
+|IAnnotationPropertiesChangeEventArgs|AnnotationPropertiesChangeEventArgs|
+
+#### New Features
+
+- #208298, #223253, #224643, #233655, #238694 - Provided the supports for shape annotations.
+- #219446, #224643, #230115, #233032, #F144297, #236825, #238694 - Provided the supports for stamp annotations.
+- #229426 - Provided the supports for calibrate annotations.
+- #223253, #238694 - Provided the supports for sticky notes annotations.
+- #238812 – Provided support to restrict the hyperlink navigation.
+- #236995 – Provided support to restrict the pinch zooming using the ‘enablePinchZoom’ property.
+
+#### Bug Fixes
+
+- #233161 – Now, loading Indicator will be shown properly while loading a large page size document.
+- #233035 - HyperlinkClick event is now triggered properly.
+- #234364 - Pan interaction mode is now working properly when the toolbar is disabled.
+- #231436 - PDF document is now rendered properly while using the PDF Viewer control inside Tab control.
+- #232104 - Cleared the warnings in css files.
+- #238761 - Height of the PDF Viewer control is now maintained properly when using inside the tab control.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### PDF Viewer

@@ -101,12 +101,14 @@ export class Toolbar {
         let buttonElement: HTMLButtonElement = createElement('button', { attrs: { type: 'button' } }) as HTMLButtonElement;
         propertiesPaneDiv.appendChild(buttonElement);
         let cssClassName: string = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
+        let iconCss: string = 'e-icons e-de-ctnr-showhide';
         if (this.container.enableRtl) {
             cssClassName += '-rtl';
+            iconCss = 'e-icons e-de-ctnr-showhide e-de-flip';
         }
         this.propertiesPaneButton = new Button({
             cssClass: cssClassName,
-            iconCss: 'e-icons e-de-ctnr-showhide'
+            iconCss: iconCss
         });
         this.propertiesPaneButton.appendTo(buttonElement);
         EventHandler.add(buttonElement, 'click', this.showHidePropertiesPane, this);

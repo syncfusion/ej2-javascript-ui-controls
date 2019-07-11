@@ -2370,6 +2370,8 @@ export class TableCellWidget extends BlockWidget {
     get leftMargin(): number {
         if (this.cellFormat && this.cellFormat.containsMargins()) {
             return this.cellFormat.leftMargin;
+        } else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('leftMargin')) {
+            return this.ownerRow.rowFormat.leftMargin;
         } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
             return this.ownerTable.tableFormat.leftMargin;
         } else {
@@ -2382,6 +2384,8 @@ export class TableCellWidget extends BlockWidget {
     get topMargin(): number {
         if (this.cellFormat && this.cellFormat.containsMargins()) {
             return this.cellFormat.topMargin;
+        } else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('topMargin')) {
+            return this.ownerRow.rowFormat.topMargin;
         } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
             return this.ownerTable.tableFormat.topMargin;
         } else {
@@ -2394,6 +2398,8 @@ export class TableCellWidget extends BlockWidget {
     get rightMargin(): number {
         if (this.cellFormat && this.cellFormat.containsMargins()) {
             return this.cellFormat.rightMargin;
+        } else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('rightMargin')) {
+            return this.ownerRow.rowFormat.rightMargin;
         } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
             return this.ownerTable.tableFormat.rightMargin;
         } else {
@@ -2406,6 +2412,8 @@ export class TableCellWidget extends BlockWidget {
     get bottomMargin(): number {
         if (this.cellFormat && this.cellFormat.containsMargins()) {
             return this.cellFormat.bottomMargin;
+        } else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('bottomMargin')) {
+            return this.ownerRow.rowFormat.bottomMargin;
         } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
             return this.ownerTable.tableFormat.bottomMargin;
         } else {

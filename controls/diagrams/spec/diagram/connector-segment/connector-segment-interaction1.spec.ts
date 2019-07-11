@@ -300,8 +300,8 @@ describe('Diagram Control', () => {
             let conn: ConnectorModel = diagram.selectedItems.connectors[0];
             let srcNode: NodeModel = diagram.nodes[1];
             expect(diagram.selectedItems.connectors[0].sourceID == '').toBe(true);
-           // mouseEvents.dragAndDropEvent(diagramCanvas, conn.sourcePoint.x + diagram.element.offsetLeft, conn.sourcePoint.y + diagram.element.offsetTop, srcNode.offsetX + diagram.element.offsetLeft, srcNode.offsetY + diagram.element.offsetTop);
-           // expect(diagram.selectedItems.connectors[0].sourceID == srcNode.id).toBe(true);
+            mouseEvents.dragAndDropEvent(diagramCanvas, conn.sourcePoint.x + diagram.element.offsetLeft, conn.sourcePoint.y + diagram.element.offsetTop, srcNode.offsetX + diagram.element.offsetLeft, srcNode.offsetY + diagram.element.offsetTop);
+            expect(diagram.selectedItems.connectors[0].sourceID == srcNode.id).toBe(true);
             done();
         });
         });

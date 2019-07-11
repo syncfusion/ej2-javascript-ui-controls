@@ -509,7 +509,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      *  Gets the selection object of the document editor.
-     * @asptype Selection
+     * @aspType Selection
+     * @blazorType Selection
      * @returns {Selection}
      * @default undefined
      */
@@ -518,7 +519,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      *  Gets the editor object of the document editor.
-     * @asptype Editor
+     * @aspType Editor
+     * @blazorType Editor
      * @returns {Editor}
      * @default undefined
      */
@@ -527,7 +529,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /** 
      * Gets the editor history object of the document editor.
-     * @asptype EditorHistory
+     * @aspType EditorHistory
+     * @blazorType EditorHistory
      * @returns {EditorHistory}
      */
     public get editorHistory(): EditorHistory {
@@ -535,7 +538,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /** 
      * Gets the search object of the document editor.
-     * @asptype Search
+     * @aspType Search
+     * @blazorType Search
      * @returns { Search }
      */
     public get search(): Search {
@@ -543,7 +547,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the context menu object of the document editor.
-     * @asptype ContextMenu
+     * @aspType ContextMenu
+     * @blazorType ContextMenu
      * @returns {ContextMenu}
      */
     public get contextMenu(): ContextMenu {

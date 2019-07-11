@@ -148,14 +148,12 @@ export interface MaskedTextBoxModel extends ComponentModel{
     /**
      * Triggers when the MaskedTextBox got focus in.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<MaskFocusEventArgs>;
 
     /**
      * Triggers when the MaskedTextBox got focus out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<MaskBlurEventArgs>;
 

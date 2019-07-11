@@ -870,6 +870,46 @@ describe("Toolbar - Actions Module", () => {
         });
     });
 
+    describe("SourceCode view checking if dyncamically property is updated in DIV mode", () => {
+        let rteObj: RichTextEditor;
+        let ele1: HTMLElement = createElement("div", { id: "div1", styles: "height: 400px" });
+        let controlId: string;
+        let elem: HTMLElement;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enableFloating: false,
+                    items: ["Bold", "Italic", "SourceCode"]
+                },
+                value: 'The Rich Text Editor (RTE) control is an easy to render in\nclient side.',
+            });
+            document.body.appendChild(ele1);
+            elem = rteObj.element;
+            controlId = elem.id;
+            done();
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it("Preventing the SourceCode view while updating the enableFloating dynamically", () => {
+            expect(document.querySelector(".e-bold").parentElement.parentElement.attributes[1].value).toBe("false");
+            expect(document.querySelector(".e-italic").parentElement.parentElement.attributes[1].value).toBe("false");
+            expect(document.querySelector(".e-source-code").parentElement.parentElement.attributes[1].value).toBe("false");
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            item.click();
+            expect((document.querySelector(".e-rte-srctextarea")as HTMLElement).style.display).toBe("block");            
+            rteObj.toolbarSettings.enableFloating = true;
+            rteObj.dataBind();
+            expect(document.querySelector(".e-bold").parentElement.parentElement.attributes[1].value).toBe("true");
+            expect(document.querySelector(".e-italic").parentElement.parentElement.attributes[1].value).toBe("true");
+            expect(document.querySelector(".e-preview").parentElement.parentElement.attributes[1].value).toBe("false");
+            expect((document.querySelector(".e-rte-srctextarea")as HTMLElement).style.display).toBe("block");            
+        });
+        
+    });
+
     describe("Floating toolbar with transform element testing", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

@@ -1,8 +1,8 @@
 import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
-import { addClass, isVisible, closest, attributes, classList, detach, select } from '@syncfusion/ej2-base';
+import { isVisible, closest, attributes, detach, select } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
-import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate, resetBlazorTemplate  } from '@syncfusion/ej2-base';
+import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
 import { AccordionModel, AccordionItemModel, AccordionAnimationSettingsModel, AccordionActionSettingsModel } from './accordion-model';
 
@@ -83,6 +83,7 @@ export class AccordionActionSettings extends ChildProperty<AccordionActionSettin
    * Specifies the type of animation.
    * @default 'SlideDown'
    * @aspType string
+   * @blazorType string
    */
   @Property('SlideDown')
   public effect: 'None' | Effect;
@@ -357,7 +358,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     protected render(): void {
         this.initialize();
         this.renderControl();
-        this.refreshTemplate();
         this.wireEvents();
     }
     private initialize(): void {
@@ -405,45 +405,26 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       (<HTEle>e.target).parentElement.classList.remove(CLS_ITEMFOCUS);
     }
     private ctrlTemplate(): void {
-       this.ctrlTem = <HTEle>this.element.cloneNode(true);
-       let innerEles: HTMLCollection;
-       let rootEle: HTMLElement = <HTMLElement>select('.' + CLS_CONTAINER, this.element);
-       if (rootEle) {
+      this.ctrlTem = <HTEle>this.element.cloneNode(true);
+      let innerEles: HTMLCollection;
+      let rootEle: HTMLElement = <HTMLElement>select('.' + CLS_CONTAINER, this.element);
+      if (rootEle) {
         innerEles = rootEle.children as HTMLCollection;
-       } else {
+      } else {
           innerEles = this.element.children as HTMLCollection;
-       }
-       let content: HTEle;
-       addClass([].slice.call(innerEles), [CLS_ITEM]);
-       [].slice.call(innerEles).forEach((el: HTEle) => {
-         el.id = getUniqueID('acrdn_item');
-         if (el.children.length > 0) {
-           this.add(<HTEle>el.children[0], CLS_HEADER);
-           let header: Element = el.children[0];
-           attributes(header, {'tabindex': '0', 'role': 'heading', 'aria-level': innerEles.length.toString() });
-           header.id = getUniqueID('acrdn_header');
-           EventHandler.add(header, 'focus', this.focusIn, this);
-           EventHandler.add(header, 'blur', this.focusOut, this);
-           let headerEle: HTEle = <HTEle>header.firstElementChild;
-           if (headerEle) {
-             headerEle.classList.add(CLS_HEADERCTN);
-           }
-           content = <HTEle>el.children[1];
-           if (content) {
-               content.id = getUniqueID('acrdn_panel');
-               header.setAttribute('aria-controls', content.id);
-               content.style.display = '';
-               el.classList.add(CLS_SLCT);
-               el.children[0].appendChild(this.toggleIconGenerate());
-               classList(content, [CLS_CONTENT, CLS_CTNHIDE], []);
-               attributes(content, {'aria-labelledby': header.id, 'aria-hidden': 'true' });
-               content = <HTEle>content.firstElementChild;
-               if (content) {
-                 content.classList.add(CLS_CTENT);
-                 content.style.display = ''; }
-           }
-         }
-       });
+      }
+      let items: AccordionItemModel[] = [];
+      [].slice.call(innerEles).forEach((el: HTEle) => {
+        items.push({
+          header: (el.childElementCount > 0 && el.children[0]) ? (el.children[0]).innerHTML : '' ,
+          content: (el.childElementCount > 1 && el.children[1]) ? (el.children[1]).innerHTML : ''
+        });
+        el.parentNode.removeChild(el);
+      });
+      if (rootEle) {
+        this.element.removeChild(rootEle);
+      }
+      this.setProperties({ items: items }, true);
     }
     private toggleIconGenerate(): HTEle {
       let tglIcon: HTEle = this.createElement('div', {className: CLS_TOOGLEICN});
@@ -466,13 +447,19 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         let innerItem: HTEle;
         if (isNOU(this.initExpand)) {
           this.initExpand = []; }
-        let items: AccordionItem[] = <AccordionItem[]>this.items;
         if (!isNOU(this.trgtEle)) {
           this.ctrlTemplate();
-        } else  if (ele && items.length > 0) {
+        }
+        let items: AccordionItem[] = <AccordionItem[]>this.items;
+        if (ele && items.length > 0) {
             items.forEach( (item: AccordionItem, index: number) =>  {
               innerItem = this.renderInnerItem(item, index);
               ele.appendChild(innerItem);
+              let blazorContain: string[] = Object.keys(window) as string[];
+              if (item.header && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate
+                && item.header.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
+              }
               if (innerItem.childElementCount > 0) {
                 EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
                 EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -506,9 +493,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      if (acrdnCtnItem) {
        eventArgs.item = this.items[this.getIndexByItem(acrdnCtnItem)]; }
      eventArgs.originalEvent = e;
-     let ctnCheck: Boolean = !isNOU(tglIcon) && isNOU(this.trgtEle) && acrdnItem.childElementCount <= 1;
+     let ctnCheck: Boolean = !isNOU(tglIcon) && acrdnItem.childElementCount <= 1;
      if (ctnCheck && (isNOU(acrdnCtn) || !isNOU(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem )))) {
        acrdnItem.appendChild(this.contentRendering(index));
+       let blazorContain: string[] = Object.keys(window) as string[];
+       if (eventArgs.item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate
+         && eventArgs.item.content.indexOf('<div>Blazor') === 0) {
+         updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', eventArgs.item);
+       }
        this.ariaAttrUpdate(acrdnItem);
      }
      this.trigger('clicked', eventArgs);
@@ -652,21 +644,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       return innerEle;
     }
 
-    private refreshTemplate(): void {
-      for (let item of this.items) {
-        if (item.header && typeof item.header === 'string' &&
-          item.header.indexOf('BlazorTemplate')) {
-          resetBlazorTemplate(this.element.id + 'header', 'Header');
-          updateBlazorTemplate(this.element.id + 'header', 'Header');
-        }
-        if (item.content && typeof item.content === 'string' &&
-          item.content.indexOf('BlazorTemplate')) {
-          resetBlazorTemplate(this.element.id + 'content', 'Content');
-          updateBlazorTemplate(this.element.id + 'content', 'Content');
-        }
-      }
-    }
-
     private angularnativeCondiCheck(item: AccordionItemModel, prop: string): boolean {
       let property: string = prop === 'content' ? item.content : item.header;
       let content: AcrdnTemplateRef = (property as Object) as AcrdnTemplateRef;
@@ -687,6 +664,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
 
     private fetchElement(ele: HTEle, value: Str, index: number, isHeader: boolean): HTEle {
+      let blazorContain: string[] = Object.keys(window) as string[];
       let templateFn: Function;
       let temString: Str;
       try {
@@ -697,17 +675,21 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
           eleVal.style.display = '';
         }
       } catch (e) {
-        templateFn = templateCompiler(value);
+        if (typeof (value) === 'string' && blazorContain.indexOf('Blazor') > -1 && value.indexOf('<div>Blazor') !== 0) {
+          ele.innerHTML = value;
+        } else {
+          templateFn = templateCompiler(value);
+        }
       }
       let tempArray: HTEle[];
       if (!isNOU(templateFn)) {
-          let templateProps: string;
-          if (ele.classList.contains(CLS_HEADERCTN)) {
-            templateProps = this.element.id + 'header';
-          } else if (ele.classList.contains(CLS_CTENT)) {
-            templateProps = this.element.id + 'content';
-          }
-          tempArray = templateFn({}, null, null, templateProps);
+        let templateProps: string;
+        if (ele.classList.contains(CLS_HEADERCTN)) {
+          templateProps = this.element.id + index + '_header';
+        } else if (ele.classList.contains(CLS_CTENT)) {
+          templateProps = this.element.id + index + '_content';
+        }
+        tempArray = templateFn({}, null, null, templateProps, this.isStringTemplate);
       }
       if (!isNOU(tempArray) && tempArray.length > 0 && !(isNOU(tempArray[0].tagName) && tempArray.length === 1) ) {
         [].slice.call(tempArray).forEach((el: HTEle): void => {
@@ -822,7 +804,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.expandedItems.push (index);  }
     }
     private getIndexByItem(item: HTEle): number {
-      return [].slice.call(this.element.children).indexOf(item);
+      return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).indexOf(item);
     }
     private expandedItemsPop(item: HTEle): void {
       let index: number = this.getIndexByItem(item);
@@ -914,7 +896,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         return 'accordion';
     }
     private itemAttribUpdate(): void {
-      let itemEle: HTEle[] = [].slice.call(this.element.children);
+      let itemEle: HTEle[] = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM));
       let itemLen: number = this.items.length;
       itemEle.forEach((ele: HTEle): void => {
         select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -937,7 +919,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (ele.childElementCount === index) {
           ele.appendChild(innerItemEle);
         } else {
-          ele.insertBefore(innerItemEle, ele.children[index]);
+          ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM)[index]);
         }
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -950,7 +932,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       }
     }
     private expandedItemRefresh(ele: HTEle): void {
-      [].slice.call(ele.children).forEach( (el: HTEle) => {
+      [].slice.call(ele.querySelectorAll('.' + CLS_ITEM)).forEach( (el: HTEle) => {
         if (el.classList.contains(CLS_SLCTED)) {
           this.expandedItemsPush(el);
         }
@@ -962,7 +944,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public removeItem(index: number): void {
-      let ele: HTEle = <HTEle>this.element.children[index];
+      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
       if (isNOU(ele)) { return; }
       this.restoreContent(index);
       detach(ele);
@@ -977,7 +959,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public select(index: number): void {
-      let ele: HTEle = <HTEle>this.element.children[index];
+      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
       if (isNOU(ele) || isNOU(select('.' + CLS_HEADER, ele))) {
            return; }
       (<HTEle>ele.children[0]).focus();
@@ -990,7 +972,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public hideItem(index: number, isHidden?: Boolean): void {
-      let ele: HTEle = <HTEle>this.element.children[index];
+      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
       if (isNOU(ele)) {
            return; }
       if (isNOU(isHidden)) {
@@ -1004,8 +986,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * If the `isEnable` value is true, the item is enabled or else it is disabled.
      * @returns void.
      */
-    public  enableItem(index: number,  isEnable: boolean): void {
-      let ele: HTEle = <HTEle>this.element.children[index];
+    public enableItem(index: number,  isEnable: boolean): void {
+      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
       if (isNOU(ele)) {
            return; }
       let eleHeader: HTEle = <HTEle>ele.firstElementChild;
@@ -1033,11 +1015,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let root: HTEle = this.element;
       if (isNOU(index)) {
        if (this.expandMode === 'Single' && isExpand) {
-        let ele: HTEle = <HTEle>root.children[root.childElementCount - 1];
+        let ele: HTEle = <HTEle>root.querySelectorAll('.' + CLS_ITEM)[root.childElementCount - 1];
         this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
        } else {
         let item: HTMLElement = <HTMLElement>select('#' + this.lastActiveItemId, this.element);
-        [].slice.call(this.element.children).forEach( (el: HTEle) => {
+        [].slice.call(root.querySelectorAll('.' + CLS_ITEM)).forEach( (el: HTEle) => {
           this.itemExpand(isExpand, el, this.getIndexByItem(el));
           el.classList.remove(CLS_EXPANDSTATE);
         });
@@ -1046,7 +1028,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (item) { item.classList.add(CLS_EXPANDSTATE); }
       }
       } else {
-      let ele: HTEle = <HTEle>this.element.children[index];
+      let ele: HTEle = <HTEle>root.querySelectorAll('.' + CLS_ITEM)[index];
       if (isNOU(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
            return; } else {
             if (this.expandMode === 'Single') {
@@ -1062,6 +1044,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       if (isNOU(ctn) && isExpand) {
         ctn = this.contentRendering(index);
         ele.appendChild(ctn);
+        let blazorContain: string[] = Object.keys(window) as string[];
+        let item: AccordionItemModel = this.items[index];
+        if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
+          updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+        }
         this.ariaAttrUpdate(ele);
       } else if (isNOU(ctn)) {
         return;

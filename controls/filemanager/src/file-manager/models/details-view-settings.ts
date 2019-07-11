@@ -8,16 +8,14 @@ export const columnArray: ColumnModel[] = [
         field: 'name', headerText: 'Name', minWidth: 120, width: 'auto',
         template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name'}
     },
-
     {
         field: '_fm_modified', headerText: 'DateModified',
         format: { type: 'date', format: 'MMMM dd, yyyy HH:mm' },
-        minWidth: 50, width: '190'
+        minWidth: 120, width: '190'
     },
     {
-        field: 'size', headerText: 'Size', minWidth: 50, width: '110', template: '<span class="e-fe-size">${size}</span>'
+        field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>'
     }
-
 ];
 /**
  * Specifies the grid settings of the File Manager.

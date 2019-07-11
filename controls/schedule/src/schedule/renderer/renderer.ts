@@ -26,6 +26,7 @@ export class Render {
     }
 
     private initializeLayout(viewName: View): void {
+        this.resetTemplates();
         if (this.parent.activeView) {
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
@@ -77,7 +78,6 @@ export class Render {
             }
             throw Error('Inject required modules');
         }
-        this.resetTemplates();
         this.updateLabelText(viewName);
         this.parent.activeView.addEventListener();
         this.parent.activeView.getRenderDates();
@@ -120,73 +120,74 @@ export class Render {
 
     private refreshTemplates(): void {
         if (this.parent.dateHeaderTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'dateHeaderTemplate', 'DateHeaderTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_dateHeaderTemplate', 'DateHeaderTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'majorSlotTemplate', 'MajorSlotTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_majorSlotTemplate', 'MajorSlotTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'minorSlotTemplate', 'MinorSlotTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_minorSlotTemplate', 'MinorSlotTemplate', this.parent);
         }
         if (this.parent.cellTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'cellTemplate', 'CellTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_cellTemplate', 'CellTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.eventTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'eventTemplate', 'EventTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_eventTemplate', 'EventTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'headerTooltipTemplate', 'HeaderTooltipTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_headerTooltipTemplate', 'HeaderTooltipTemplate', this.parent);
         }
         if (this.parent.eventSettings.tooltipTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'tooltipTemplate', 'TooltipTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_tooltipTemplate', 'TooltipTemplate', this.parent);
         }
         if (this.parent.quickInfoTemplates.header) {
-            updateBlazorTemplate(this.parent.element.id + 'header', 'Header');
+            updateBlazorTemplate(this.parent.currentView + '_header', 'Header', this.parent);
         }
         if (this.parent.quickInfoTemplates.content) {
-            updateBlazorTemplate(this.parent.element.id + 'content', 'Content');
+            updateBlazorTemplate(this.parent.currentView + '_content', 'Content', this.parent);
         }
         if (this.parent.quickInfoTemplates.footer) {
-            updateBlazorTemplate(this.parent.element.id + 'footer', 'Footer');
+            updateBlazorTemplate(this.parent.currentView + '_footer', 'Footer', this.parent);
         }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'resourceHeaderTemplate', 'ResourceHeaderTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this.parent);
         }
     }
 
     private resetTemplates(): void {
+        let viewName: string = this.parent.viewCollections[this.parent.uiStateValues.viewIndex].option;
         if (this.parent.dateHeaderTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'dateHeaderTemplate', 'DateHeaderTemplate');
+            resetBlazorTemplate(viewName + '_dateHeaderTemplate', 'DateHeaderTemplate');
         }
         if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'majorSlotTemplate', 'MajorSlotTemplate');
+            resetBlazorTemplate(viewName + '_majorSlotTemplate', 'MajorSlotTemplate');
         }
         if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'minorSlotTemplate', 'MinorSlotTemplate');
+            resetBlazorTemplate(viewName + '_minorSlotTemplate', 'MinorSlotTemplate');
         }
         if (this.parent.cellTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'cellTemplate', 'CellTemplate');
+            resetBlazorTemplate(viewName + '_cellTemplate', 'CellTemplate');
         }
         if (this.parent.activeViewOptions.eventTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'eventTemplate', 'EventTemplate');
+            resetBlazorTemplate(viewName + '_eventTemplate', 'EventTemplate');
         }
         if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'headerTooltipTemplate', 'HeaderTooltipTemplate');
+            resetBlazorTemplate(viewName + '_headerTooltipTemplate', 'HeaderTooltipTemplate');
         }
         if (this.parent.eventSettings.tooltipTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'tooltipTemplate', 'TooltipTemplate');
+            resetBlazorTemplate(viewName + '_tooltipTemplate', 'TooltipTemplate');
         }
         if (this.parent.quickInfoTemplates.header) {
-            resetBlazorTemplate(this.parent.element.id + 'header', 'Header');
+            resetBlazorTemplate(viewName + '_header', 'Header');
         }
         if (this.parent.quickInfoTemplates.content) {
-            resetBlazorTemplate(this.parent.element.id + 'content', 'Content');
+            resetBlazorTemplate(viewName + '_content', 'Content');
         }
         if (this.parent.quickInfoTemplates.footer) {
-            resetBlazorTemplate(this.parent.element.id + 'footer', 'Footer');
+            resetBlazorTemplate(viewName + '_footer', 'Footer');
         }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'resourceHeaderTemplate', 'ResourceHeaderTemplate');
+            resetBlazorTemplate(viewName + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
         }
     }
 

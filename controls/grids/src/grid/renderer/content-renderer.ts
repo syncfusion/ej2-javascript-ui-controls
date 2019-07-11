@@ -324,7 +324,7 @@ export class ContentRender implements IRenderer {
                     }
                 } else {
                     if (gObj.rowTemplate) {
-                        updateBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate');
+                        updateBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate', gObj);
                     }
                     this.appendContent(this.tbody, frag, args);
                 }

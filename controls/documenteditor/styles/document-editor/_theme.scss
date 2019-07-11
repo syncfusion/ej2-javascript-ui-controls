@@ -90,6 +90,11 @@
     margin-left: 40px;
   }
 
+  .e-de-para-dlg-spacing-div.e-de-rtl {
+    margin-left: 0;
+    margin-right: 40px;
+  }
+
   .e-de-toc-dlg-heading {
     color: $de-dlg-heading-main-header;
     display: block;
@@ -1033,11 +1038,6 @@
 
   .e-de-font-content-label {
     width: $de-font-label-width;
-  }
-
-  .e-de-font-content-label.e-rtl {
-    margin-left: $de-font-dlg-margin-right;
-    margin-right: $de-font-dlg-effect-margin-left;
   }
 
   .e-de-font-color-margin {
@@ -1998,7 +1998,7 @@
     left: 50%;
     position: absolute;
     top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-43%, -43%);
   }
 
   .e-de-header-footer-list {

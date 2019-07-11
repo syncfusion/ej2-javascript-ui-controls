@@ -25,6 +25,7 @@ export class EventTooltip {
             enableRtl: this.parent.enableRtl
         });
         this.tooltipObj.appendTo(this.parent.element);
+        this.tooltipObj.isStringTemplate = true;
     }
 
     private getTargets(): string {
@@ -57,8 +58,9 @@ export class EventTooltip {
                 resourceData: resCollection.resourceData
             };
             let contentContainer: HTMLElement = createElement('div');
-            let templateId: string = this.parent.element.id + 'headerTooltipTemplate';
-            let tooltipTemplate: NodeList = this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId);
+            let templateId: string = this.parent.currentView + '_headerTooltipTemplate';
+            let tooltipTemplate: NodeList =
+                this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
             return;
@@ -67,8 +69,9 @@ export class EventTooltip {
             <{ [key: string]: Object }>this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             let contentContainer: HTMLElement = createElement('div');
-            let templateId: string = this.parent.element.id + 'tooltipTemplate';
-            let tooltipTemplate: NodeList = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId);
+            let templateId: string = this.parent.currentView + '_tooltipTemplate';
+            let tooltipTemplate: NodeList =
+                this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         } else {

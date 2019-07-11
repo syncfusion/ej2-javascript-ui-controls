@@ -106,7 +106,8 @@ describe('HTML - Parent based selection', () => {
             it("Formats - P with selection", () => {
                 action = false;
                 selectNode = editNode.querySelector('.first-p-node');
-                nodeSelection.setSelectionContents(document, selectNode);
+                //The selection type was changed because the previous code will select the element along with the space content after the element
+                nodeSelection.setSelectionText(curDocument, selectNode.childNodes[0], selectNode.childNodes[1].childNodes[0], 0, 9);
                 let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
                 (trgEle.childNodes[0] as HTMLElement).click();
                 let popupElement: Element = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];

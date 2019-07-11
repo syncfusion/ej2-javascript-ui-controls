@@ -147,6 +147,7 @@ export class PivotButton implements IAction {
                             buttonWrapper.appendChild(dropLastIndicatorElement);
                             element.appendChild(buttonWrapper);
                             let pivotButton: Button = new Button({ enableRtl: this.parent.enableRtl });
+                            pivotButton.isStringTemplate = true;
                             pivotButton.appendTo(buttonElement);
                             this.unWireEvent(buttonWrapper, i === valuePos ? 'values' : axis);
                             this.wireEvent(buttonWrapper, i === valuePos ? 'values' : axis);
@@ -183,6 +184,7 @@ export class PivotButton implements IAction {
                                         }
                                     }
                                 });
+                                this.valueFiedDropDownList.isStringTemplate = true;
                                 this.valueFiedDropDownList.appendTo(ddlDiv);
                             }
                         }

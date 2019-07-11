@@ -351,6 +351,7 @@ export type DiagramRegions =
  * Connect - Shows the port when a connection end point is dragged over a node
  * Default - By default the ports will be visible when a node is hovered and being tried to connect
  * @aspNumberEnum
+ * @blazorNumberEnum
  */
 export enum PortVisibility {
     /** Always shows the port */
@@ -373,7 +374,8 @@ export enum PortVisibility {
  * SnapToLines - Enables the object to snap with both horizontal and Vertical gridlines.
  * snapToObject - Enables the object to snap with the other objects in the diagram.
  * @IgnoreSingular
- * @aspNumberEnum 
+ * @aspNumberEnum
+ * @blazorNumberEnum
  */
 
 export enum SnapConstraints {
@@ -414,6 +416,7 @@ export enum SnapConstraints {
  * UserHandles - Shows/hides the user handles of the selector
  * Resize - Shows/hides all resize handles of the selector
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum SelectorConstraints {
@@ -714,6 +717,7 @@ export type TextAlign =
  * * ReadOnly - Enables ReadOnly
  * * Default - Default features of the connector.
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum ConnectorConstraints {
@@ -765,6 +769,7 @@ export enum ConnectorConstraints {
  * Interaction - Enables annotation to inherit the interaction option
  * None - Disable all annotation constraints
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum AnnotationConstraints {
@@ -817,6 +822,7 @@ export enum AnnotationConstraints {
  * ReadOnly - Enables the  ReadOnly support for Annotation
  * Default - Enables all constraints
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum NodeConstraints {
@@ -955,6 +961,7 @@ export enum ThumbsConstraints {
  * Virtualization - Enables/Disable Virtualization support the diagram
  * Default - Enables/Disable all constraints
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum DiagramConstraints {
@@ -998,6 +1005,7 @@ export enum DiagramConstraints {
  * ContinuousDraw - Enables/Disable continuousDraw support for the diagram
  * Default - Enables/Disable all constraints
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum DiagramTools {
@@ -1915,6 +1923,7 @@ export type ScrollLimit =
  * * Alt - alt key
  * * Shift - shift key
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 
@@ -2001,6 +2010,7 @@ export enum KeyModifiers {
  * * The Plus
  * * The Star
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 
@@ -2318,6 +2328,7 @@ export type FitModes =
 
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum PortConstraints {

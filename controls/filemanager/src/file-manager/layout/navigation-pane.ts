@@ -25,7 +25,6 @@ export class NavigationPane {
     private keyboardModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
     private expandNodeTarget: string;
-    public rootNode: string;
     public removeNodes: string[] = [];
     public moveNames: string[] = [];
     public touchClickObj: Touch;
@@ -55,12 +54,19 @@ export class NavigationPane {
 
     private onInit(): void {
         if (!isNOU(this.treeObj)) { return; }
-        let rootData: { [key: string]: Object; } = getValue('/', this.parent.feParent);
+        let rootData: { [key: string]: Object; } = getValue(this.parent.pathId[0], this.parent.feParent);
         setValue('_fm_icon', 'e-fe-folder', rootData);
-        if (!hasEditAccess(rootData)) {
-            setValue('_fm_htmlAttr', { 'class': getAccessClass(rootData) }, rootData);
+        let attr: Object = {};
+        let id: string = getValue('id', rootData);
+        if (!isNOU(id)) {
+            setValue('data-id', id, attr);
         }
-        this.rootNode = getValue('name', getValue('/', this.parent.feParent));
+        if (!hasEditAccess(rootData)) {
+            setValue('class', getAccessClass(rootData), attr);
+        }
+        if (!isNOU(attr)) {
+            setValue('_fm_htmlAttr', attr, rootData);
+        }
         this.treeObj = new BaseTreeView({
             fields: {
                 dataSource: [rootData], id: '_fm_id', parentID: '_fm_pId', expanded: '_fm_expanded', selected: '_fm_selected', text: 'name',
@@ -75,6 +81,7 @@ export class NavigationPane {
             enableRtl: this.parent.enableRtl,
             dataBound: this.addDragDrop.bind(this)
         });
+        this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parent.element.id + CLS.TREE_ID);
         this.treeObj.element.style.width = '25%';
         this.wireEvents();
@@ -112,10 +119,21 @@ export class NavigationPane {
         this.parent.dragNodes = [];
         getModule(this.parent, dragLi);
         this.parent.dragData = <{ [key: string]: Object; }[]>this.getTreeData(dragLi);
-        this.parent.dragPath = <string>this.parent.dragData[0].filterPath;
+        this.parent.dragPath = this.getDragPath(dragLi, <string>this.parent.dragData[0].name);
         this.parent.dragNodes.push(<string>this.parent.dragData[0].name);
         createVirtualDragElement(this.parent);
         return this.parent.virtualDragElement;
+    }
+
+    private getDragPath(dragLi: Element, text: string): string {
+        let path: string = this.getDropPath(dragLi, text);
+        return getParentPath(path);
+    }
+
+    private getDropPath(node: Element, text: string): string {
+        let id: string = node.getAttribute('data-id');
+        let newText: string = this.parent.hasId ? id : text;
+        return getPath(node, newText, this.parent.hasId);
     }
 
     private onDrowNode(args: DrawNodeEventArgs): void {
@@ -134,8 +152,16 @@ export class NavigationPane {
             let folders: { [key: string]: Object; }[] = <{ [key: string]: Object; }[]>directories;
             while (length < directories.length) {
                 folders[length]._fm_icon = 'e-fe-folder';
+                let attr: Object = {};
+                let id: string = getValue('id', folders[length]);
+                if (!isNOU(id)) {
+                    setValue('data-id', id, attr);
+                }
                 if (!hasEditAccess(folders[length])) {
-                    setValue('_fm_htmlAttr', { 'class': getAccessClass(folders[length]) }, folders[length]);
+                    setValue('class', getAccessClass(folders[length]), attr);
+                }
+                if (!isNOU(attr)) {
+                    setValue('_fm_htmlAttr', attr, folders[length]);
                 }
                 length++;
             }
@@ -149,16 +175,15 @@ export class NavigationPane {
         }
         this.parent.searchedItems = [];
         if (!args.isInteracted && !this.isPathDragged) { return; }
-        let text: string = getValue('text', args.nodeData);
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
         this.parent.selectedItems = [];
-        updatePath(args.node, text, this.parent);
+        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
+        updatePath(args.node, this.parent.itemData[0], this.parent);
         this.expandNodeTarget = null;
         if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
             this.expandNodeTarget = 'add';
         }
-        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
         read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
         this.parent.visitedItem = args.node;
         this.isPathDragged = false;
@@ -171,8 +196,12 @@ export class NavigationPane {
     /* istanbul ignore next */
     private onNodeExpand(args: NodeExpandEventArgs): void {
         if (!args.isInteracted && !this.isDrag) { return; }
-        let path: string = getPath(args.node, getValue('text', args.nodeData));
         if (args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
+            let text: string = getValue('text', args.nodeData);
+            let id: string = args.node.getAttribute('data-id');
+            let isId: boolean = isNOU(id) ? false : true;
+            let newText: string = isNOU(id) ? text : id;
+            let path: string = getPath(args.node, newText, isId);
             this.expandNodeTarget = args.node.getAttribute('data-uid');
             this.parent.expandedId = this.expandNodeTarget;
             this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
@@ -200,7 +229,7 @@ export class NavigationPane {
 
     private onPathChanged(args: ReadArgs): void {
         this.parent.isCut = false;
-        let currFiles: { [key: string]: Object; }[] = getValue(this.parent.path, this.parent.feFiles);
+        let currFiles: { [key: string]: Object; }[] = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feFiles);
         if (this.expandNodeTarget === 'add') {
             let sNode: Element = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
             let ul: Element = select('.' + CLS.LIST_PARENT, sNode);
@@ -210,16 +239,18 @@ export class NavigationPane {
             this.expandNodeTarget = '';
         }
         if (isNOU(currFiles)) {
-            setValue(this.parent.path, args.files, this.parent.feFiles);
+            setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
         }
     }
 
     private updateTree(args: ReadArgs): void {
-        let id: string = this.treeObj.selectedNodes[0];
-        let toExpand: boolean = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
-        this.removeChildNodes(id);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
-        this.addChild(args.files, id, !toExpand);
+        if (this.treeObj) {
+            let id: string = this.treeObj.selectedNodes[0];
+            let toExpand: boolean = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
+            this.removeChildNodes(id);
+            setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
+            this.addChild(args.files, id, !toExpand);
+        }
     }
 
     private removeChildNodes(id: string): void {
@@ -304,14 +335,20 @@ export class NavigationPane {
             this.treeObj.updateNode(this.parent.renamedNodeId, this.parent.renameText);
             this.parent.renamedNodeId = null;
         } else {
-            let resultData: Object[] = new DataManager(this.treeObj.getTreeData()).
-                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.currentItemText, false));
-            if (resultData.length > 0) {
-                let data: Object[] = new DataManager(resultData).
-                    executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
-                if (data.length > 0) {
-                    this.treeObj.updateNode(getValue(this.treeObj.fields.id, data[0]), this.parent.renameText);
+            let resultData: Object[] = [];
+            if (this.parent.hasId) {
+                resultData = new DataManager(this.treeObj.getTreeData()).
+                    executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+            } else {
+                let nData: Object[] = new DataManager(this.treeObj.getTreeData()).
+                    executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.currentItemText, false));
+                if (nData.length > 0) {
+                    resultData = new DataManager(nData).
+                        executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
                 }
+            }
+            if (resultData.length > 0) {
+                this.treeObj.updateNode(getValue(this.treeObj.fields.id, resultData[0]), this.parent.renameText);
             }
         }
     }
@@ -359,21 +396,23 @@ export class NavigationPane {
         let moveNames: string[] = [];
         for (let i: number = 0; i < files.length; i++) {
             if (!files[i].isFile) {
-                let name: string = <string>(files[i].previousName);
-                if (flag) {
-                    path = path + files[i].previousName;
-                    let index: number = path.lastIndexOf('/');
-                    name = path.substring(index + 1);
-                    path = path.substring(0, index + 1);
-                }
-                let resultData: Object[] = new DataManager(this.treeObj.getTreeData()).
-                    executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
-                for (let j: number = 0; j < resultData.length; j++) {
-                    let fPath: string = getValue('filterPath', resultData[j]);
-                    fPath = fPath.replace(/\\/g, '/');
-                    if (fPath === path) {
-                        moveNames.push(getValue(this.treeObj.fields.id, resultData[j]));
-                        break;
+                if (!this.parent.hasId) {
+                    let name: string = <string>(files[i].previousName);
+                    if (flag) {
+                        path = path + files[i].previousName;
+                        let index: number = path.lastIndexOf('/');
+                        name = path.substring(index + 1);
+                        path = path.substring(0, index + 1);
+                    }
+                    let resultData: Object[] = new DataManager(this.treeObj.getTreeData()).
+                        executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
+                    for (let j: number = 0; j < resultData.length; j++) {
+                        let fPath: string = getValue('filterPath', resultData[j]);
+                        fPath = fPath.replace(/\\/g, '/');
+                        if (fPath === path) {
+                            moveNames.push(getValue(this.treeObj.fields.id, resultData[j]));
+                            break;
+                        }
                     }
                 }
             }
@@ -391,41 +430,49 @@ export class NavigationPane {
         this.treeObj.removeNodes(moveNames);
     }
     private selectResultNode(resultObj: object): void {
-        let path: string = getValue('filterPath', resultObj);
-        let itemname: string = getValue('name', resultObj);
-        let data: Object[] = new DataManager(this.treeObj.getTreeData()).
-            executeLocal(new Query().where(this.treeObj.fields.text, 'equal', itemname, false));
-        if (data.length > 0) {
-            let resultData: Object[] = new DataManager(data).
-                executeLocal(new Query().where('filterPath', 'equal', path, false));
-            if (resultData.length > 0) {
-                let id: string = getValue(this.treeObj.fields.id, resultData[0]);
-                this.treeObj.selectedNodes = [id];
+        if (!this.parent.hasId) {
+            let path: string = getValue('filterPath', resultObj);
+            let itemname: string = getValue('name', resultObj);
+            let data: Object[] = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', itemname, false));
+            if (data.length > 0) {
+                let resultData: Object[] = new DataManager(data).
+                    executeLocal(new Query().where('filterPath', 'equal', path, false));
+                if (resultData.length > 0) {
+                    let id: string = getValue(this.treeObj.fields.id, resultData[0]);
+                    this.treeObj.selectedNodes = [id];
+                    this.treeObj.dataBind();
+                }
             }
+        } else {
+            this.treeObj.selectedNodes = [getValue('_fm_id', resultObj)];
+            this.treeObj.dataBind();
         }
     }
     private onDropPath(args: ReadArgs): void {
         this.onpasteEnd(args);
-        let pathObj: object = getValue(this.parent.path, this.parent.feParent);
-        this.selectResultNode(pathObj);
+        this.selectResultNode(this.parent.dropData);
         this.parent.isDropEnd = !this.parent.isPasteError;
     }
 
     private onpasteEnd(args: ReadArgs): void {
-        let name: string = getValue('name', args.cwd);
-        let path: string = getValue('filterPath', args.cwd);
-        let resultData: Object[] = new DataManager(this.treeObj.getTreeData()).
-            executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
-        if (resultData.length > 0) {
-            let data: Object[] = new DataManager(resultData).
-                executeLocal(new Query().where('filterPath', 'equal', path, false));
-            if (data.length > 0) {
-                let id: string = getValue(this.treeObj.fields.id, data[0]);
-                let toExpand: boolean = this.treeObj.expandedNodes.indexOf(id) === -1;
-                this.removeChildNodes(id);
-                setValue(getDirectoryPath(args), args.files, this.parent.feFiles);
-                this.addChild(args.files, id, toExpand);
+        let resultData: Object[] = [];
+        if (this.parent.hasId) {
+            resultData = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where('id', 'equal', getValue('id', args.cwd), false));
+        } else {
+            let nData: Object[] = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', getValue('name', args.cwd), false));
+            if (nData.length > 0) {
+                resultData = new DataManager(nData).
+                    executeLocal(new Query().where('filterPath', 'equal', getValue('filterPath', args.cwd), false));
             }
+        }
+        if (resultData.length > 0) {
+            let id: string = getValue(this.treeObj.fields.id, resultData[0]);
+            let toExpand: boolean = this.treeObj.expandedNodes.indexOf(id) === -1;
+            this.removeChildNodes(id);
+            this.addChild(args.files, id, toExpand);
         }
         this.parent.expandedId = null;
         this.onPathChanged(args);
@@ -433,7 +480,11 @@ export class NavigationPane {
     }
 
     private checkDropPath(args: ReadArgs): void {
-        if ((this.parent.dropPath.indexOf(getDirectoryPath(args)) === -1)) {
+        if (this.parent.hasId) {
+            this.parent.isDropEnd = !this.parent.isPasteError;
+            return;
+        }
+        if ((this.parent.dropPath.indexOf(getDirectoryPath(this.parent, args)) === -1)) {
             this.parent.isDropEnd = false;
             readDropPath(this.parent);
         } else {
@@ -552,16 +603,8 @@ export class NavigationPane {
     private onDropInit(args: DragEventArgs): void {
         if (this.parent.targetModule === this.getModuleName()) {
             let dropLi: Element = closest(args.target, 'li');
-            let uid: string = dropLi.getAttribute('data-uid');
-            /* istanbul ignore next */
-            if (uid !== this.parent.pathId[0]) {
-                let info: { [key: string]: Object; } = <{ [key: string]: Object; }>this.getTreeData(dropLi)[0];
-                this.parent.dropPath = ((<string>info.filterPath).replace(/\\/g, '/') + <string>info.name + '/');
-                this.parent.dropData = this.getTreeData(uid)[0];
-            } else {
-                this.parent.dropPath = '/';
-                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
-            }
+            this.parent.dropData = this.getTreeData(dropLi)[0];
+            this.parent.dropPath = this.getDropPath(dropLi, getValue('name', this.parent.dropData));
         }
     }
 
@@ -671,12 +714,14 @@ export class NavigationPane {
 
     private updateActionData(): void {
         this.updateItemData();
-        let newPath: string = getParentPath(this.parent);
+        let newPath: string = getParentPath(this.parent.path);
         this.parent.setProperties({ path: newPath }, true);
+        this.parent.pathId.pop();
+        this.parent.pathNames.pop();
     }
     /* istanbul ignore next */
     private doDownload(): void {
-        let newPath: string = getParentPath(this.parent);
+        let newPath: string = getParentPath(this.parent.path);
         let itemId: string = this.treeObj.selectedNodes[0];
         let name: string = (itemId === this.parent.pathId[0]) ? '' : getValue('name', this.parent.itemData[0]);
         Download(this.parent, newPath, [name]);

@@ -58,6 +58,7 @@ export class Editor {
     private endOffset: number;
     private pasteRequestHandler: XmlHttpRequestHandler;
     private endParagraph: ParagraphWidget = undefined;
+    private removeEditRange: boolean = false;
     /**
      * @private
      */
@@ -144,6 +145,11 @@ export class Editor {
         return 'Editor';
     }
 
+    /**
+     * Inserts the specified field at cursor position
+     * @param code
+     * @param result
+     */
     public insertField(code: string, result?: string): void {
         let fieldCode: string = code;
         if (isNullOrUndefined(result)) {
@@ -1991,7 +1997,7 @@ export class Editor {
     public pasteInternal(event: ClipboardEvent, pasteWindow?: any): void {
         this.currentPasteOptions = 'KeepSourceFormatting';
         if (this.viewer.owner.enableLocalPaste) {
-            this.pasteLocal();
+            this.paste();
         } else {
             this.selection.isViewPasteOptions = true;
             if (isNullOrUndefined(pasteWindow)) {
@@ -2057,12 +2063,16 @@ export class Editor {
     }
 
     /**
-     * Pastes the data present in local clipboard if any.
+     * Pastes provided sfdt content or the data present in local clipboard if any .
+     * @param {string} sfdt? insert the specified sfdt content at current position 
      */
-    public pasteLocal(): void {
+    public paste(sfdt?: string): void {
+        if (isNullOrUndefined(sfdt)) {
+            sfdt = this.owner.enableLocalPaste ? this.copiedData : undefined;
+        }
         /* tslint:disable:no-any */
-        if (this.copiedData && this.owner.enableLocalPaste) {
-            let document: any = JSON.parse(this.copiedData);
+        if (sfdt) {
+            let document: any = JSON.parse(sfdt);
             this.pasteContents(document);
         }
     }
@@ -2140,12 +2150,12 @@ export class Editor {
                 for (let k: number = 0; k < lineWidget.children.length; k++) {
                     let inlineCharacterFormat: WCharacterFormat = lineWidget.children[k].characterFormat;
                     let characterFormat: WCharacterFormat = inlineCharacterFormat.cloneFormat();
-                    inlineCharacterFormat.copyFormat(insertFormat);
+                    lineWidget.children[k].characterFormat = insertFormat;
                     if (characterFormat.bold) {
-                        inlineCharacterFormat.bold = characterFormat.bold;
+                        lineWidget.children[k].characterFormat.bold = characterFormat.bold;
                     }
                     if (characterFormat.italic) {
-                        inlineCharacterFormat.italic = characterFormat.italic;
+                        lineWidget.children[k].characterFormat.italic = characterFormat.italic;
                     }
 
                 }
@@ -7558,6 +7568,7 @@ export class Editor {
      * @private
      */
     public onBackSpace(): void {
+        this.removeEditRange = true;
         let selection: Selection = this.viewer.selection;
         this.viewer.triggerSpellCheck = true;
         if (selection.isEmpty) {
@@ -7577,6 +7588,7 @@ export class Editor {
             }
             this.viewer.triggerSpellCheck = false;
         }
+        this.removeEditRange = false;
 
     }
     /**
@@ -7630,6 +7642,14 @@ export class Editor {
         textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
         selection.selectContent(textPosition, true);
         return skipBackSpace;
+    }
+    private removeWholeElement(selection: Selection): void {
+        this.initHistory('BackSpace');
+        this.deleteSelectedContents(selection, true);
+        if (this.checkEndPosition(selection)) {
+            this.updateHistoryPosition(selection.end, false);
+        }
+        this.reLayout(selection);
     }
     /**
      * @private
@@ -7687,6 +7707,27 @@ export class Editor {
                 offset = inline.line.getOffset(inline, inline.length);
             }
         }
+        if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
+            if ((inline.nextNode instanceof EditRangeEndElementBox && (inline as EditRangeStartElementBox).editRangeEnd === inline.nextNode)
+                || (inline.previousNode instanceof EditRangeStartElementBox
+                    && (inline as EditRangeEndElementBox).editRangeStart === inline.previousNode)) {
+                return;
+            }
+            if (inline instanceof EditRangeEndElementBox) {
+                inline = inline.previousNode;
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, inline.length);
+            }
+            if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
+                && inline.previousNode instanceof EditRangeStartElementBox) {
+                let start: EditRangeStartElementBox = inline.previousNode;
+                let end: EditRangeEndElementBox = inline.nextNode;
+                selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
+                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
+                this.removeWholeElement(selection);
+                return;
+            }
+        }
         if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 1
             || inline.previousNode instanceof BookmarkElementBox)) {
             if (inline instanceof BookmarkElementBox) {
@@ -7699,12 +7740,7 @@ export class Editor {
                 let end: BookmarkElementBox = inline.nextNode;
                 selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
-                this.initHistory('BackSpace');
-                this.deleteSelectedContents(selection, true);
-                if (this.checkEndPosition(selection)) {
-                    this.updateHistoryPosition(selection.end, false);
-                }
-                this.reLayout(selection);
+                this.removeWholeElement(selection);
                 return;
             }
         }
@@ -7836,6 +7872,7 @@ export class Editor {
      * @private
      */
     public onDelete(): void {
+        this.removeEditRange = true;
         let selection: Selection = this.viewer.selection;
         if (selection.isEmpty) {
             this.singleDelete(selection, false);
@@ -7862,6 +7899,15 @@ export class Editor {
             //     this.updateComplexWithoutHistory();
             // }
         }
+        this.removeEditRange = false;
+    }
+    private deleteEditElement(selection: Selection): void {
+        this.initHistory('Delete');
+        this.deleteSelectedContentInternal(selection, false, selection.start, selection.end);
+        let textPosition: TextPosition = new TextPosition(selection.owner);
+        this.setPositionForCurrentIndex(textPosition, selection.editPosition);
+        selection.selectContent(textPosition, true);
+        this.reLayout(selection);
     }
     /**
      * Remove single character on right of cursor position
@@ -7905,6 +7951,27 @@ export class Editor {
                 }
             }
         }
+        if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
+            if ((inline.nextNode instanceof EditRangeEndElementBox && (inline as EditRangeStartElementBox).editRangeEnd === inline.nextNode)
+                || (inline.previousNode instanceof EditRangeStartElementBox
+                    && (inline as EditRangeEndElementBox).editRangeStart === inline.previousNode)) {
+                return;
+            }
+            if (inline instanceof EditRangeStartElementBox) {
+                inline = inline.nextNode;
+                offset = inline.line.getOffset(inline, 0);
+                paragraph = inline.line.paragraph;
+            }
+            if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
+                && inline.previousNode instanceof EditRangeStartElementBox) {
+                let editStart: EditRangeStartElementBox = inline.previousNode;
+                let editEnd: EditRangeEndElementBox = inline.nextNode;
+                selection.start.setPositionParagraph(editStart.line, editStart.line.getOffset(editStart, 0));
+                selection.end.setPositionParagraph(editEnd.line, editEnd.line.getOffset(editEnd, 0) + 1);
+                this.deleteEditElement(selection);
+                return;
+            }
+        }
         if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 0
             || inline.nextNode instanceof BookmarkElementBox)) {
             if (inline instanceof BookmarkElementBox) {
@@ -7918,12 +7985,7 @@ export class Editor {
                 let bookMarkEnd: BookmarkElementBox = inline.nextNode;
                 selection.start.setPositionParagraph(bookMarkBegin.line, bookMarkBegin.line.getOffset(bookMarkBegin, 0));
                 selection.end.setPositionParagraph(bookMarkEnd.line, bookMarkEnd.line.getOffset(bookMarkEnd, 0) + 1);
-                this.initHistory('Delete');
-                this.deleteSelectedContentInternal(selection, false, selection.start, selection.end);
-                let textPosition: TextPosition = new TextPosition(selection.owner);
-                this.setPositionForCurrentIndex(textPosition, selection.editPosition);
-                selection.selectContent(textPosition, true);
-                this.reLayout(selection);
+                this.deleteEditElement(selection);
                 return;
             }
         }

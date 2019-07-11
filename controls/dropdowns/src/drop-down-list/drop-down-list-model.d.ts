@@ -1,4 +1,4 @@
-import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append } from '@syncfusion/ej2-base';import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { addClass, removeClass, setStyleAttribute, closest, prepend, detach, classList } from '@syncfusion/ej2-base';import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { incrementalSearch } from '../common/incremental-search';import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, ResultData } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { DropDownListModel } from '../drop-down-list';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';
+import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append } from '@syncfusion/ej2-base';import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { addClass, removeClass, setStyleAttribute, closest, prepend, detach, classList } from '@syncfusion/ej2-base';import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { incrementalSearch } from '../common/incremental-search';import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, ResultData, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { DropDownListModel } from '../drop-down-list';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';
 import {ChangeEventArgs} from "./drop-down-list";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -18,6 +18,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * its parent container. You can also set the width in pixel values.
      * @default '100%'
      * @aspType string
+     * @blazorType string
      */
     width?: string | number;
 
@@ -27,6 +28,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
      * @default '300px'
      * @aspType string
+     * @blazorType string
      */
     popupHeight?: string | number;
 
@@ -37,6 +39,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
      * @default '100%'
      * @aspType string
+     * @blazorType string
      */
     popupWidth?: string | number;
 
@@ -132,6 +135,7 @@ export interface DropDownListModel extends DropDownBaseModel{
     /**
      * Gets or sets the value of the selected item in the component.
      * @default null
+     * @isGenericType true
      */
     value?: number | string | boolean;
 
@@ -143,6 +147,8 @@ export interface DropDownListModel extends DropDownBaseModel{
      * {% codeBlock src="dropdownlist/index-api/index.html" %}{% endcodeBlock %}
      * 
      * @default null
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     index?: number;
 
@@ -160,6 +166,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      */
     floatLabelType?: FloatLabelType;
 
@@ -194,6 +201,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Triggers when the popup before opens.
      * @event
      * @blazorProperty 'OnOpen'
+     * @blazorType BeforeOpenEventArgs
      */
     beforeOpen?: EmitType<Object>;
 
@@ -214,14 +222,12 @@ export interface DropDownListModel extends DropDownBaseModel{
     /**
      * Triggers when focus moves out from the component.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<Object>;
 
     /**
      * Triggers when the component is focused.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<Object>;
 

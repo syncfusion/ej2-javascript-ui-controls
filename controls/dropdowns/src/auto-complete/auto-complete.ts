@@ -72,6 +72,7 @@ export class AutoComplete extends ComboBox {
      * Supports the [`specified number`](../../auto-complete/filtering#filter-item-count)
      * of list items on the suggestion popup.
      * @default 20
+     * @blazorType int
      */
     @Property(20)
     public suggestionCount: number;
@@ -102,6 +103,7 @@ export class AutoComplete extends ComboBox {
      * (../../auto-complete/filtering#limit-the-minimum-filter-character),
      * the search action will perform after typed minimum characters.
      * @default 1
+     * @blazorType int
      */
     @Property(1)
     public minLength: number;
@@ -153,6 +155,8 @@ export class AutoComplete extends ComboBox {
      * Not applicable to this component.
      * @default null
      * @private
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     @Property(null)
     public index: number;
@@ -170,6 +174,7 @@ export class AutoComplete extends ComboBox {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
@@ -403,6 +408,7 @@ export class AutoComplete extends ComboBox {
      * @returns void.
      */
     public hidePopup(): void {
+        this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         super.hidePopup();
         this.activeIndex = -1;
     }

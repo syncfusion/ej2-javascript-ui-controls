@@ -87,7 +87,7 @@ describe('Selection Public APi testing ', () => {
         editor.selection.selectAll();
         editor.selection.copy();
         expect(editor.editorModule.copiedData).not.toBe('');
-        editor.editorModule.pasteLocal();
+        editor.editorModule.paste();
         editor.selection.selectAll();
         editor.editor.cut();
         expect(editor.selectionModule.start.paragraph.isEmpty()).toBe(true);

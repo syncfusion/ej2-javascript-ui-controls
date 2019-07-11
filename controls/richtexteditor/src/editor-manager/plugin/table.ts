@@ -195,7 +195,11 @@ export class TableCommand {
             e.item.selection.restore();
             detach(closest(selectedCell.parentElement, 'table'));
         } else {
-            parentTable.deleteRow(selectedRowIndex);
+            if ((selectedCell as HTMLElement).tagName === 'TH') {
+                detach(parentTable.querySelector('thead'));
+            } else {
+                parentTable.deleteRow(selectedRowIndex);
+            }
             e.item.selection.setSelectionText(
                 this.parent.currentDocument, parentTable.querySelector('td'), parentTable.querySelector('td'), 0, 0);
             parentTable.querySelector('td, th').classList.add('e-cell-select');
@@ -231,11 +235,15 @@ export class TableCommand {
     }
 
     private tableHeader(e: IHtmlItem): void {
+        let headerExit: boolean = false;
         let selectedCell: Node = e.item.selection.range.startContainer;
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
         let table: HTMLTableElement = closest(selectedCell.parentElement, 'table') as HTMLTableElement;
-        if (table && 0 === table.querySelectorAll('thead').length) {
-            let cellCount: number = table.querySelector('tr').querySelectorAll('td').length;
+        [].slice.call(table.childNodes).forEach((el: Element): void => {
+            if (el.nodeName === 'THEAD') { headerExit = true; }
+        });
+        if (table && !headerExit) {
+            let cellCount: number = table.querySelector('tr').childElementCount;
             let header: HTMLTableSectionElement = table.createTHead();
             let row: HTMLTableRowElement = header.insertRow(0);
             for (let i: number = 0; i < cellCount; i++) {

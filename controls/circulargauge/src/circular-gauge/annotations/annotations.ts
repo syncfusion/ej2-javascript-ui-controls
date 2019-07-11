@@ -4,7 +4,7 @@ import { stringToNumber, GaugeLocation, getLocationFromAngle, getFontStyle } fro
 import { getElement, getTemplateFunction, measureElementRect } from '../utils/helper';
 import { IAnnotationRenderEventArgs } from '../model/interface';
 import { annotationRender } from '../model/constants';
-import { createElement, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { createElement, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 /**
  * Annotation Module handles the Annotation of the axis.
@@ -40,7 +40,9 @@ export class Annotations {
         });
         if (parentElement && element.childElementCount) {
             parentElement.appendChild(element);
-            updateBlazorTemplate(element.id + '_ContentTemplate', 'ContentTemplate');
+            for (let i: number = 0; i < this.gauge.axes[index].annotations.length; i++) {
+                updateBlazorTemplate(this.gauge.element.id + '_Axis' + index + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[index].annotations[i]);
+            }
         }
     }
 
@@ -65,8 +67,8 @@ export class Annotations {
             let blazor: string = 'Blazor';
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content);                
-                if (templateFn && (!window[blazor] ? templateFn(axis, null, null, element.id + '_ContentTemplate').length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, element.id + '_ContentTemplate'));
+                if (templateFn && (!window[blazor] ? templateFn(axis, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     let length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -79,9 +81,7 @@ export class Annotations {
                 }
                 this.updateLocation(childElement, axis, <Annotation>annotation);
                 element.appendChild(childElement);
-                } else {
-                    resetBlazorTemplate(element.id + '_ContentTemplate', '_ContentTemplate');
-                }
+            }
         });
     }
 

@@ -167,7 +167,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public serverActionSettings: ContainerServerActionSettingsModel;
     /**
      * Gets DocumentEditor instance.
-     * @asptype DocumentEditor
+     * @aspType DocumentEditor
+     * @blazorType DocumentEditor
      */
     public get documentEditor(): DocumentEditor {
         return this.documentEditorInternal;

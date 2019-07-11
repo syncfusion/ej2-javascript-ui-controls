@@ -1192,12 +1192,16 @@ export class CartesianAxisLayoutPanel {
                     case 'WithoutTopBorder':
                         if (startX < axisRect.x) {
                             labelBorder += ('M' + ' ' + axisRect.x + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
-                        } else if (Math.floor(endX) > axisRect.width + axisRect.x) {
+                        } else if (Math.floor(endX) > axisRect.width + axisRect.x && !(axis.visibleLabels.length === 1)) {
                             labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
                                 'L' + ' ' + (axisRect.width + axisRect.x) + ' ' + endY + ' ');
                         } else {
                             labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' +
                                 endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
+                            if (i === 0) {
+                                labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                                    'M ' + startX + ' ' + endY + ' L ' + (axisRect.x) + ' ' + endY);
+                            }
                             if (i === axis.visibleLabels.length - 1) {
                                 labelBorder += ('M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ' +
                                     'M ' + endX + ' ' + endY + ' L ' + (axisRect.width + axisRect.x) + ' ' + endY);

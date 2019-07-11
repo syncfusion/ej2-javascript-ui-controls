@@ -1,4 +1,4 @@
-import { Property, ChildProperty, EmitType, Event } from '@syncfusion/ej2-base';import { ExcelHeaderQueryCellInfoEventArgs, GridLine, ClipMode, BeforeCopyEventArgs, PrintMode } from '@syncfusion/ej2-grids';import { ExcelQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs, SelectionSettingsModel } from '@syncfusion/ej2-grids';import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, CellSelectEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';import { CellSelectingEventArgs, CellDeselectEventArgs, ResizeArgs, PrintEventArgs, TextWrapSettings } from '@syncfusion/ej2-grids';import { ContextMenuItemModel, RowDeselectEventArgs, PdfQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { CheckboxSelectionType, CellSelectionMode, SelectionType } from '@syncfusion/ej2-grids';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { ColumnRenderEventArgs, SelectionSettings } from '../../common';import { PivotContextMenuItem, SelectionMode } from '../../common/base/enum';
+import { Property, ChildProperty, EmitType, Event } from '@syncfusion/ej2-base';import { ExcelHeaderQueryCellInfoEventArgs, GridLine, ClipMode, BeforeCopyEventArgs, PrintMode } from '@syncfusion/ej2-grids';import { ExcelQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs, SelectionSettingsModel } from '@syncfusion/ej2-grids';import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, CellSelectEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';import { CellSelectingEventArgs, CellDeselectEventArgs, ResizeArgs, PrintEventArgs, TextWrapSettings } from '@syncfusion/ej2-grids';import { ContextMenuItemModel, RowDeselectEventArgs, PdfQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { CheckboxSelectionType, SelectionType } from '@syncfusion/ej2-grids';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { ColumnRenderEventArgs, SelectionSettings } from '../../common';import { PivotContextMenuItem, SelectionMode, PivotCellSelectionMode } from '../../common/base/enum';
 
 /**
  * Interface for a class PivotSelectionSettings
@@ -19,12 +19,13 @@ export interface PivotSelectionSettingsModel {
      * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
      * @default Flow
      */
-    cellSelectionMode?: CellSelectionMode;
+    cellSelectionMode?: PivotCellSelectionMode;
 
     /**
      * Defines options for selection type. They are 
      * * `Single`: Allows selection of only a row or a column or a cell. 
      * * `Multiple`: Allows selection of multiple rows or columns or cells. 
+     * @blazorType PivotSelectionType
      * @default Single 
      */
     type?: SelectionType;
@@ -49,6 +50,7 @@ export interface PivotSelectionSettingsModel {
      * * `Default`: This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
      * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
      *  rows can be selected by using CTRL or SHIFT key.
+     * @blazorType PivotCheckboxSelectionType
      * @default Default
      */
     checkboxMode?: CheckboxSelectionType;
@@ -85,6 +87,7 @@ export interface GridSettingsModel {
      * * `Horizontal`: Displays the horizontal grid lines only.
      * * `Vertical`: Displays the vertical grid lines only.
      * * `Default`: Displays grid lines based on the theme.
+     * @blazorType PivotGridLine
      * @default Both
      */
     gridLines?: GridLine;
@@ -128,6 +131,7 @@ export interface GridSettingsModel {
      * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
      * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
      * also it will display tooltip while hover on ellipsis applied cell.
+     * @blazorType PivotClipMode
      * @default Ellipsis
      */
     clipMode?: ClipMode;
@@ -161,12 +165,14 @@ export interface GridSettingsModel {
      * Defines the print modes. The available print modes are
      * * `AllPages`: Prints all pages of the Grid.
      * * `CurrentPage`: Prints the current page of the Grid.
+     * @blazorType PivotPrintMode
      * @default AllPages
      */
     printMode?: PrintMode;
 
     /**
-     * `contextMenuItems` defines both built-in and custom context menu items.         
+     * `contextMenuItems` defines both built-in and custom context menu items.
+     * @blazorType List<PivotContextMenuItem>       
      * @default null
      */
     contextMenuItems?: PivotContextMenuItem[] | ContextMenuItemModel[];

@@ -14,7 +14,7 @@
 
 #### Bug Fixes
 
-- #I235721 - The issue with color value in individual nodes of levels in treemap has been resolved.
+- `#I235721` - The issue with color value in individual nodes of levels in treemap has been resolved.
 
 ## 17.1.44 (2019-05-07)
 
@@ -22,7 +22,7 @@
 
 #### Bug Fixes
 
-- #I234615 - The issue with value from the "fill" property is not applied when we have both the "fill" and "colorValuePath" APIs has been fixed.
+- `#I234615` - The issue with value from the "fill" property is not applied when we have both the "fill" and "colorValuePath" APIs has been fixed.
 
 ## 17.1.42 (2019-04-23)
 
@@ -30,7 +30,7 @@
 
 #### Bug Fixes
 
-- #I233284 – The issue of breaking the treemap, if data contains the "_" character in its value has been fixed.
+- `#I233284` – The issue of breaking the treemap, if data contains the "_" character in its value has been fixed.
 
 ## 17.1.32-beta (2019-03-13)
 

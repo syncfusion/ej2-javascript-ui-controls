@@ -86,7 +86,8 @@ export class Selection {
     }
     private rowSelected(args: RowSelectEventArgs): void {
         let rowIndexes: string = 'rowIndexes';
-        let index: number[] = args[rowIndexes] || [args.rowIndex];
+        let index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes])) ?
+        args[rowIndexes] : [args.rowIndex];
         this.addClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.selectedRowIndex }, true);
@@ -289,9 +290,10 @@ export class Selection {
     private addClass(records: number[]): void {
         let ganttRow: HTMLCollection = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
         for (let i: number = 0; i < records.length; i++) {
-            addClass([ganttRow[records[i]]], 'e-active');
-            ganttRow[records[i]].setAttribute('aria-selected', 'true');
-
+            if (!isNullOrUndefined(ganttRow[records[i]])) {
+                addClass([ganttRow[records[i]]], 'e-active');
+                ganttRow[records[i]].setAttribute('aria-selected', 'true');
+            }
         }
     }
 
@@ -362,7 +364,7 @@ export class Selection {
      */
     private mouseUpHandler(e: PointerEvent): void {
         let isTaskbarEdited: boolean = false;
-        if (this.parent.editSettings.allowTaskbarEditing) {
+        if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing) {
             let taskbarEdit: TaskbarEdit = this.parent.editModule.taskbarEditModule;
             if (taskbarEdit.isMouseDragged || taskbarEdit.tapPointOnFocus) {
                 isTaskbarEdited = true;

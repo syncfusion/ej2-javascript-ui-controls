@@ -39,7 +39,7 @@ import { AccumulationAnnotationSettingsModel } from './model/acc-base-model';
 import { AccumulationAnnotationSettings } from './model/acc-base';
 import { AccumulationAnnotation } from './annotation/annotation';
 import { IPrintEventArgs } from '../chart/model/chart-interface';
-import { Alignment } from '../common/utils/enum';
+import { Alignment, ExportType } from '../common/utils/enum';
 import { getTitle } from '../common/utils/helper';
 import {Index} from '../common/model/base';
 import { IThemeStyle } from '../index';
@@ -587,6 +587,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /** @private */
     public themeStyle: IThemeStyle;
     private chartid : number = 57724;
+    /** @private */
+    public isBlazor: boolean;
     /**
      * Constructor for creating the AccumulationChart widget
      * @private
@@ -600,6 +602,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      *  To create svg object, renderer and binding events for the container.
      */
     protected preRender(): void {
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
+
         this.unWireEvents();
         this.setCulture();
         this.animateSeries = true;
@@ -753,14 +758,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public accumulationResize(e: Event): boolean {
         this.animateSeries = false;
         let args: IAccResizeEventArgs = {
-            accumulation: this,
+            accumulation: this.isBlazor ? {}  as AccumulationChart : this,
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
             ),
             name: resized,
             currentSize: new Size(0, 0),
-            chart: this,
+            chart: this.isBlazor ? {}  as AccumulationChart : this,
         };
 
         if (this.resizeTo) {
@@ -786,9 +791,22 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Handles the print method for accumulation chart control.
      */
     public print(id?: string[] | string | Element): void {
+        // To handle the print funtion in IE and Edge browsers
+        let clippath: string = document.getElementById(this.element.id + '_Series_0').style.clipPath;
+        document.getElementById(this.element.id + '_Series_0').style.clipPath = '';
         let exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
+        document.getElementById(this.element.id + '_Series_0').style.clipPath = clippath;
     }
+
+    /**
+     * Export method for the chart.
+     */
+    public export(type: ExportType, fileName: string): void {
+        if (this.exportModule) {
+            this.exportModule.export(type, fileName);
+        }
+     }
 
     /**
      * Applying styles for accumulation chart element
@@ -892,7 +910,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     private triggerPointEvent(event : string, element : Element) : void {
         let indexes : Index = indexFinder(element.id, true);
         if (indexes.series >= 0 && indexes.point >= 0 ) {
-           this.trigger(event, { series : this.series[indexes.series],
+           this.trigger(event, { series : this.isBlazor ? {} : this.series[indexes.series],
              point : (<AccumulationSeries>this.series[indexes.series]).points[indexes.point],
              seriesIndex : indexes.series, pointIndex : indexes.point,
              x: this.mouseX, y: this.mouseY });
@@ -1084,7 +1102,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
         this.setSecondaryElementPosition();
 
-        this.trigger('loaded', { accumulation: this, chart: this });
+        this.trigger('loaded', { accumulation: this.isBlazor ? {} : this, chart: this.isBlazor ? {} : this });
 
         this.animateSeries = false;
     }

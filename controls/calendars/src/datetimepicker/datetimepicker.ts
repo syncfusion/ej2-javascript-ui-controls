@@ -103,7 +103,7 @@ export class DateTimePicker extends DatePicker {
      * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
      * the given value is not present in the timepicker popup list.
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     @Property(null)
     public scrollTo: Date;
@@ -111,6 +111,7 @@ export class DateTimePicker extends DatePicker {
      * specifies the z-index value of the popup element.
      * @default 1000
      * @aspType int
+     * @blazorType int
      */
     @Property(1000)
     public zIndex: number;
@@ -179,6 +180,7 @@ export class DateTimePicker extends DatePicker {
      * Triggers when popup is opened.
      * @event 
      * @blazorProperty 'OnOpen'
+     * @blazorType PopupObjectArgs
      */
     @Event()
     public open: EmitType<Object>;
@@ -186,20 +188,19 @@ export class DateTimePicker extends DatePicker {
      * Triggers when popup is closed.
      * @event 
      * @blazorProperty 'OnClose'
+     * @blazorType PopupObjectArgs
      */
     @Event()
     public close: EmitType<Object>;
     /** 
      * Triggers when input loses the focus.
-     * @event 
-     * @blazorProperty 'OnBlur'
+     * @event
      */
     @Event()
     public blur: EmitType<Object>;
     /** 
      * Triggers when input gets focus.
-     * @event 
-     * @blazorProperty 'OnFocus'
+     * @event
      */
     @Event()
     public focus: EmitType<Object>;
@@ -670,7 +671,8 @@ export class DateTimePicker extends DatePicker {
             }
         } else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
-                this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge'));
+                this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
+                    && target === this.popupObject.element);
                 event.preventDefault();
             }
         }

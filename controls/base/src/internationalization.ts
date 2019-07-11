@@ -294,6 +294,19 @@ export function getNumericObject(locale: string, type?: string): Object {
     let pattern: string = IntlBase.getSymbolPattern(type || 'decimal', numSystem, numObject, false);
     return extend(symbPattern, IntlBase.getFormatData(pattern, true, '', true), { 'dateSeparator': IntlBase.getDateSeparator(dateObject) });
 }
+
+/**
+ * To get the numeric CLDR  number base object for given culture
+ * @param {string} locale - Specifies the locale for which numericObject to be returned.
+ * @param {string} currency - Specifies the currency for which numericObject to be returned.
+ * @ignore
+ * @private
+ */
+ export function getNumberDependable(locale: string, currency: string): string  {
+      let numObject: Object = (<any>IntlBase.getDependables(cldrData, locale, '', true));
+      return IntlBase.getCurrencySymbol((<any>numObject).numericObject, currency);
+ }
+
 /**
  * To get the default date CLDR object.
  * @ignore

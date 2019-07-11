@@ -1375,7 +1375,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private reRender(): void {
         this.resetBlazorTemplates();
-        this.element.innerHTML = '';
+        if (Object.keys(window).indexOf('ejsInterop') === -1) {
+            this.element.innerHTML = '';
+        }
         this.headerEle = this.ulElement = this.liCollection = undefined;
         this.setLocalData();
         this.header();
@@ -1413,26 +1415,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private updateBlazorTemplates(
         template: boolean = false,
         headerTemplate: boolean = false): void {
-        if (this.template && template) {
-            setTimeout(
-                () => {
-                    updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
-                },
-                0);
+        if (this.template && template && !this.enableVirtualization) {
+            updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY, this);
         }
-        if (this.groupTemplate && template) {
-            setTimeout(
-                () => {
-                    updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
-                },
-                0);
+        if (this.groupTemplate && template && !this.enableVirtualization) {
+            updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY, this);
         }
         if (this.headerTemplate && headerTemplate) {
-            setTimeout(
-                () => {
-                    updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
-                },
-                0);
+            updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this);
         }
     }
 

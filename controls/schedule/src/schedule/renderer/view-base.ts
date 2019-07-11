@@ -356,8 +356,9 @@ export class ViewBase {
     public setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string = 'e-text-ellipsis'): void {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
             let data: ResourceDetails = { resource: tdData.resource, resourceData: tdData.resourceData };
-            let templateId: string = this.parent.element.id + 'resourceHeaderTemplate';
-            let quickTemplate: NodeList = this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId);
+            let templateId: string = this.parent.currentView + '_resourceHeaderTemplate';
+            let quickTemplate: NodeList =
+                this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false);
             append(quickTemplate, tdElement);
         } else {
             tdElement.appendChild(createElement('div', {

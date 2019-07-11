@@ -2556,7 +2556,7 @@ function markerAnimate(element, delay, duration, series, pointIndex, point, isLa
             element.style.visibility = '';
             element.removeAttribute('transform');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         }
     });
@@ -4687,13 +4687,17 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                         if (startX < axisRect.x) {
                             labelBorder += ('M' + ' ' + axisRect.x + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
                         }
-                        else if (Math.floor(endX) > axisRect.width + axisRect.x) {
+                        else if (Math.floor(endX) > axisRect.width + axisRect.x && !(axis.visibleLabels.length === 1)) {
                             labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
                                 'L' + ' ' + (axisRect.width + axisRect.x) + ' ' + endY + ' ');
                         }
                         else {
                             labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' +
                                 endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
+                            if (i === 0) {
+                                labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                                    'M ' + startX + ' ' + endY + ' L ' + (axisRect.x) + ' ' + endY);
+                            }
                             if (i === axis.visibleLabels.length - 1) {
                                 labelBorder += ('M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ' +
                                     'M ' + endX + ' ' + endY + ' L ' + (axisRect.width + axisRect.x) + ' ' + endY);
@@ -7624,6 +7628,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * Initialize the event handler.
      */
     Chart.prototype.preRender = function () {
+        // It is used for checking blazor framework or not.
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -7990,7 +7997,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         }
         if (render && (!this.visibleSeries.length || this.visibleSeriesCount === this.visibleSeries.length && check)) {
             this.refreshBound();
-            this.trigger('loaded', { chart: this });
+            this.trigger('loaded', { chart: this.isBlazor ? {} : this });
         }
     };
     Chart.prototype.initializeDataModule = function (series) {
@@ -8460,11 +8467,12 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Export method for the chart.
-     * @return {boolean}
-     * @private
      */
-    // tslint:disable-next-line
-    Chart.prototype.export = function (type, fileName) { };
+    Chart.prototype.export = function (type, fileName) {
+        if (this.exportModule) {
+            this.exportModule.export(type, fileName);
+        }
+    };
     /**
      * Handles the chart resize.
      * @return {boolean}
@@ -8474,7 +8482,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.animateSeries = false;
         var arg = {
-            chart: this,
+            chart: this.isBlazor ? {} : this,
             name: resized,
             currentSize: new Size(0, 0),
             previousSize: new Size(this.availableSize.width, this.availableSize.height),
@@ -8492,7 +8500,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             _this.trigger(resized, arg);
             _this.refreshAxis();
             _this.refreshBound();
-            _this.trigger('loaded', { chart: _this });
+            _this.trigger('loaded', { chart: _this.isBlazor ? {} : _this });
         }, 500);
         return false;
     };
@@ -8576,7 +8584,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         var pointData = data.getData();
         if (pointData.series && pointData.point) {
             this.trigger(event, {
-                series: pointData.series,
+                series: this.isBlazor ? {} : pointData.series,
                 point: pointData.point,
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
                 x: this.mouseX, y: this.mouseY
@@ -9298,13 +9306,13 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             if (!refreshBounds && renderer) {
                 this.removeSvg();
                 this.renderElements();
-                this.trigger('loaded', { chart: this });
+                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
                 this.refreshAxis();
                 this.refreshBound();
-                this.trigger('loaded', { chart: this });
+                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
                 this.redraw = false;
                 this.animated = false;
             }
@@ -10906,7 +10914,7 @@ var LineBase = /** @__PURE__ @class */ (function () {
             },
             end: function (model) {
                 path.setAttribute('stroke-dasharray', strokeDashArray);
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     };
@@ -10959,7 +10967,7 @@ var LineBase = /** @__PURE__ @class */ (function () {
             },
             end: function (model) {
                 clipRect.setAttribute('transform', 'translate(0,0)');
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     };
@@ -11353,7 +11361,7 @@ var ColumnBase = /** @__PURE__ @class */ (function () {
                 var seriesElement = series.seriesElement;
                 if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
                     (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
-                    series.chart.trigger('animationComplete', { series: series });
+                    series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
                     if (series.type === 'Waterfall') {
                         var rectElements = seriesElement.childNodes;
                         for (var i = 0; i < rectElements.length; i++) {
@@ -12525,7 +12533,7 @@ var PolarSeries = /** @__PURE__ @class */ (function (_super) {
             end: function (model) {
                 animateElement.style.visibility = 'visible';
                 animateElement.removeAttribute('transform');
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     };
@@ -21272,7 +21280,6 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
      * @param parentElement
      */
     AnnotationBase.prototype.processAnnotation = function (annotation, index, parentElement) {
-        var _this = this;
         var annotationElement;
         var location;
         location = new ChartLocation(0, 0);
@@ -21283,7 +21290,7 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
         else if (this.control.redraw) {
             removeElement$1(annotationElement.id);
         }
-        setTimeout(function () { updateBlazorTemplate((_this.control.element.id + 'Annotation' + index), 'ContentTemplate'); }, 0);
+        updateBlazorTemplate((this.control.element.id + 'Annotation' + index), 'ContentTemplate', this.control.annotations[index]);
     };
     /**
      * Method to calculate the location for annotation - coordinate unit as point in accumulation chart.
@@ -22797,7 +22804,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         var currentZPWidth = circleRadius + (circleWidth / 2);
         this.zoomPosition = (currentX - (currentX - currentZPWidth <= 0 ? currentZPWidth : 0)) / (this.isVertical
             ? axis.rect.height : this.width);
-        this.zoomFactor = (currentWidth + (currentScrollWidth === this.width ? circleRadius + circleWidth : 0)) / (this.isVertical
+        this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / (this.isVertical
             ? axis.rect.height : this.width);
         axis.zoomPosition = this.zoomPosition;
         axis.zoomFactor = this.zoomFactor;
@@ -22820,9 +22827,14 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         var zoomFactor = this.zoomFactor;
         if (this.isThumbDrag) {
             this.component.isScrolling = this.isThumbDrag;
-            this.svgObject.style.cursor = '-webkit-grabbing';
             mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
             var currentX = elem.thumbRectX + (mouseXY - this.previousXY);
+            if (mouseXY >= currentX + elem.thumbRectWidth) {
+                this.setCursor(target);
+            }
+            else {
+                this.svgObject.style.cursor = '-webkit-grabbing';
+            }
             if (mouseXY >= 0 && mouseXY <= currentX + elem.thumbRectWidth) {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
                 this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
@@ -22990,7 +23002,8 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
             currentEnd = currentStart + zoomFactor * range.delta;
         }
         if (currentEnd) {
-            args = { axis: this.axis, currentRange: this.getStartEnd(currentStart, currentEnd, true), previousAxisRange: previousRange };
+            args = { axis: (this.component.isBlazor ? {} : this.axis), currentRange: this.getStartEnd(currentStart, currentEnd, true),
+                previousAxisRange: previousRange };
         }
         return args;
     };
@@ -23277,7 +23290,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
     };
     ScrollBar.prototype.getArgs = function (eventName, range, zoomPosition, zoomFactor) {
         var scrollArgs = {
-            axis: this.axis,
+            axis: (this.component.isBlazor ? {} : this.axis),
             name: eventName,
             range: this.axis.visibleRange,
             zoomFactor: this.axis.zoomFactor,
@@ -23658,7 +23671,8 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
         accumulation.trigger(seriesRender, argsData);
         this.resultData = e.result !== '' ? e.result : [];
         this.getPoints(this.resultData, accumulation);
-        if (++accumulation.seriesCounts === accumulation.visibleSeries.length && render) {
+        // tslint:disable
+        if ((++accumulation.seriesCounts === accumulation.visibleSeries.length && render) || (window['Blazor'] && !render && accumulation.seriesCounts === 1)) {
             accumulation.refreshChart();
         }
     };
@@ -24526,7 +24540,8 @@ var PieBase = /** @__PURE__ @class */ (function (_super) {
             end: function (args) {
                 _this.center.x -= 1;
                 slice.setAttribute('d', _this.getPathArc(_this.center, 0, 359.99999, radius, 0));
-                _this.accumulation.trigger(animationComplete, { series: series, accumulation: _this.accumulation, chart: _this.accumulation });
+                _this.accumulation.trigger(animationComplete, _this.accumulation.isBlazor ? {} :
+                    { series: series, accumulation: _this.accumulation, chart: _this.accumulation });
                 var datalabelGroup = getElement(_this.accumulation.element.id + '_datalabel_Series_' + series.index);
                 datalabelGroup.style.visibility = _this.accumulation.isDestroyed ? 'hidden' : 'visible';
             }
@@ -24780,6 +24795,8 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
      *  To create svg object, renderer and binding events for the container.
      */
     AccumulationChart.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.setCulture();
         this.animateSeries = true;
@@ -24915,11 +24932,11 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.animateSeries = false;
         var args = {
-            accumulation: this,
+            accumulation: this.isBlazor ? {} : this,
             previousSize: new Size(this.availableSize.width, this.availableSize.height),
             name: resized,
             currentSize: new Size(0, 0),
-            chart: this,
+            chart: this.isBlazor ? {} : this,
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -24941,8 +24958,20 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
      * Handles the print method for accumulation chart control.
      */
     AccumulationChart.prototype.print = function (id) {
+        // To handle the print funtion in IE and Edge browsers
+        var clippath = document.getElementById(this.element.id + '_Series_0').style.clipPath;
+        document.getElementById(this.element.id + '_Series_0').style.clipPath = '';
         var exportChart = new ExportUtils(this);
         exportChart.print(id);
+        document.getElementById(this.element.id + '_Series_0').style.clipPath = clippath;
+    };
+    /**
+     * Export method for the chart.
+     */
+    AccumulationChart.prototype.export = function (type, fileName) {
+        if (this.exportModule) {
+            this.exportModule.export(type, fileName);
+        }
     };
     /**
      * Applying styles for accumulation chart element
@@ -25035,7 +25064,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
     AccumulationChart.prototype.triggerPointEvent = function (event, element) {
         var indexes = indexFinder(element.id, true);
         if (indexes.series >= 0 && indexes.point >= 0) {
-            this.trigger(event, { series: this.series[indexes.series],
+            this.trigger(event, { series: this.isBlazor ? {} : this.series[indexes.series],
                 point: this.series[indexes.series].points[indexes.point],
                 seriesIndex: indexes.series, pointIndex: indexes.point,
                 x: this.mouseX, y: this.mouseY });
@@ -25207,7 +25236,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         this.processExplode();
         this.renderAnnotation();
         this.setSecondaryElementPosition();
-        this.trigger('loaded', { accumulation: this, chart: this });
+        this.trigger('loaded', { accumulation: this.isBlazor ? {} : this, chart: this.isBlazor ? {} : this });
         this.animateSeries = false;
     };
     /**
@@ -29207,7 +29236,8 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         if (!this.stockChart) {
             this.element.appendChild(this.svgObject);
         }
-        this.trigger('loaded', { rangeNavigator: this });
+        var blazor = 'Blazor';
+        this.trigger('loaded', { rangeNavigator: window[blazor] ? {} : this });
         this.rangeSlider.setSlider(this.startValue, this.endValue, false, this.tooltip.enable && this.tooltip.displayMode === 'Always');
     };
     /**
@@ -29832,6 +29862,8 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
                 _this.setSelectedStyle(_this.selectedIndex);
             }
         });
+        var isStringTemplate = 'isStringTemplate';
+        this.toolbar[isStringTemplate] = true;
         this.toolbar.appendTo(selectorElement);
         this.triggerChange = true;
         this.datePicker = new DateRangePicker({
@@ -35697,7 +35729,10 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
                 var event = {
                     cancel: false, name: animationComplete$1, smithchart: smithchart
                 };
-                smithchart.trigger(animationComplete$1, event);
+                var blazorEvent = {
+                    cancel: false, name: animationComplete$1, smithchart: smithchart
+                };
+                smithchart.trigger(animationComplete$1, smithchart.isBlazor ? blazorEvent : event);
             }
         });
     };
@@ -36005,6 +36040,8 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
      * Initialize the event handler.
      */
     Smithchart.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.trigger('load', { smithchart: this });
         this.unWireEVents();
         this.initPrivateVariable();
@@ -36044,7 +36081,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
-        this.trigger('loaded', { smithchart: this });
+        this.trigger('loaded', this.isBlazor ? {} : { smithchart: this });
     };
     Smithchart.prototype.createSecondaryElement = function () {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
@@ -38256,7 +38293,10 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
         var args = {
             name: name, cancel: false, border: border, fill: fill, sparkline: this.sparkline, pointIndex: i
         };
-        this.sparkline.trigger(name, args);
+        var blazorArgs = {
+            name: name, cancel: false, border: border, fill: fill, pointIndex: i
+        };
+        this.sparkline.trigger(name, this.sparkline.isBlazor ? blazorArgs : args);
         return args;
     };
     return SparklineRenderer;
@@ -38308,6 +38348,8 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
      * Initializing pre-required values for sparkline.
      */
     Sparkline.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.trigger('load', { sparkline: this });
         this.sparkTheme = getThemeColor$2(this.theme);
@@ -38326,7 +38368,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
-        this.trigger('loaded', { sparkline: this });
+        this.trigger('loaded', this.isBlazor ? {} : { sparkline: this });
     };
     /**
      * To render sparkline elements
@@ -38475,7 +38517,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
             _this.refreshing = true;
             _this.wireEvents();
             args.currentSize = _this.availableSize;
-            _this.trigger('resize', args);
+            _this.trigger('resize', _this.isBlazor ? {} : args);
             _this.render();
         }, 500);
         return false;
@@ -38491,13 +38533,19 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         var args = {
             name: 'sparklineMouseMove', cancel: false, sparkline: this, event: e
         };
-        this.trigger(args.name, args);
+        var blazorArgs = {
+            name: 'sparklineMouseMove', cancel: false, event: e
+        };
+        this.trigger(args.name, this.isBlazor ? blazorArgs : args);
         var pointClick = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             var pointArgs = {
                 name: 'pointRegionMouseMove', cancel: false, event: e, sparkline: this, pointIndex: pointClick.pointIndex
             };
-            this.trigger(pointArgs.name, pointArgs);
+            var pointBlazorArgs = {
+                name: 'pointRegionMouseMove', cancel: false, event: e, pointIndex: pointClick.pointIndex
+            };
+            this.trigger(pointArgs.name, this.isBlazor ? pointBlazorArgs : pointArgs);
         }
         return false;
     };
@@ -38511,13 +38559,19 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         var args = {
             name: 'sparklineMouseClick', cancel: false, sparkline: this, event: e
         };
-        this.trigger(args.name, args);
+        var blazorArgs = {
+            name: 'sparklineMouseClick', cancel: false, event: e
+        };
+        this.trigger(args.name, this.isBlazor ? blazorArgs : args);
         var pointClick = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             var pointArgs = {
                 name: 'pointRegionMouseClick', cancel: false, event: e, sparkline: this, pointIndex: pointClick.pointIndex
             };
-            this.trigger(pointArgs.name, pointArgs);
+            var pointBlazorArgs = {
+                name: 'pointRegionMouseClick', cancel: false, event: e, pointIndex: pointClick.pointIndex
+            };
+            this.trigger(pointArgs.name, this.isBlazor ? pointBlazorArgs : pointArgs);
         }
         return false;
     };

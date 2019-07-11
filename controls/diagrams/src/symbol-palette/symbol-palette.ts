@@ -43,6 +43,7 @@ export class Palette extends ChildProperty<Palette> {
     /**
      * Sets the height of the symbol group
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -89,6 +90,7 @@ export class SymbolPreview extends ChildProperty<SymbolPreview> {
     /**
      * Sets the preview width of the symbols
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -97,6 +99,7 @@ export class SymbolPreview extends ChildProperty<SymbolPreview> {
     /**
      * Sets the preview height of the symbols
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -159,6 +162,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the size, appearance and description of a symbol
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     /**
@@ -208,6 +212,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the symbols to be added in search palette
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -217,6 +222,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the content of a symbol
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -226,6 +232,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the width of the symbol
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -234,6 +241,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the height of the symbol
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -256,6 +264,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the size and position of the symbol preview
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<SymbolPreviewModel>({}, SymbolPreview)
@@ -325,6 +334,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private timer: Object;
     private draggable: Draggable;
     private laneTable: {} = {};
+    private isExpand: boolean = false;
+    private isCollapsed: boolean = false;
 
     //region - protected methods 
 
@@ -401,6 +412,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                             } else {
                                 (this.palettes[index] as Palette).isInteraction = false;
                             }
+                            this.isExpand = true;
+                            this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
+                            if (index === 0) {
+                                this.isCollapsed = true;
+                            } else {
+                                this.isCollapsed = false;
+                            }
+
                         }
                     }
                     break;
@@ -430,6 +449,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
         if (refresh) {
             this.refreshPalettes();
+        }
+        if (this.isExpand && !refresh && this.isCollapsed) {
+            this.refresh();
+            for (let p: number = 0; p < this.palettes.length; p++) {
+                let paletteElement: string = this.palettes[p].id;
+                if (window[paletteElement]) {
+                    if (window[paletteElement].length > 1) {
+                        window[paletteElement][1].parentNode.removeChild(window[paletteElement][1]);
+                        window[paletteElement][1] = null;
+                    }
+                }
+            }
         }
     }
 
@@ -1571,6 +1602,7 @@ export interface SymbolInfo {
     /**
      * Defines the width of the symbol to be drawn over the palette
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -1578,6 +1610,7 @@ export interface SymbolInfo {
     /**
      * Defines the height of the symbol to be drawn over the palette
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -1615,6 +1648,7 @@ export interface SymbolDescription {
     /**
      * Defines the symbol description
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     text?: string;

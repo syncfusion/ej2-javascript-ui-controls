@@ -1,4 +1,4 @@
-import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { ResultData, FocusEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { attributes, setValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend } from '@syncfusion/ej2-base';import { MultiSelectModel } from '../multi-select';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, setStyleAttribute, closest, detach, remove, select } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { CheckBoxSelection } from './checkbox-selection';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur } from './float-label';import { IMulitSelect } from './interface';
+import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { ResultData, FocusEventArgs, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { attributes, setValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend } from '@syncfusion/ej2-base';import { MultiSelectModel } from '../multi-select';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, setStyleAttribute, closest, detach, remove, select } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { CheckBoxSelection } from './checkbox-selection';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur } from './float-label';import { IMulitSelect } from './interface';
 import {visualMode,MultiSelectChangeEventArgs,RemoveEventArgs,ISelectAllEventArgs,TaggingEventArgs,CustomValueEventArgs} from "./multi-select";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -29,6 +29,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * container dimension.
      * @default '100%'
      * @aspType string
+     * @blazorType string
      */
     width?: string | number;
 
@@ -39,6 +40,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * 
      * @default '300px'
      * @aspType string
+     * @blazorType string
      */
     popupHeight?: string | number;
 
@@ -49,6 +51,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * 
      * @default '100%'
      * @aspType string
+     * @blazorType string
      */
     popupWidth?: string | number;
 
@@ -145,6 +148,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Sets limitation to the value selection.
      * based on the limitation, list selection will be prevented.
      * @default 1000
+     * @blazorType int
      */
     maximumSelectionLength?: number;
 
@@ -165,6 +169,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
     /**
      * Selects the list item which maps the data `value` field in the component.
      * @default null
+     * @isGenericType true
      */
     value?: number[] | string[] | boolean[];
 
@@ -230,6 +235,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      */
     floatLabelType?: FloatLabelType;
 
@@ -299,6 +305,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Fires when popup opens before animation.
      * @event
      * @blazorProperty 'OnOpen'
+     * @blazorType BeforeOpenEventArgs
      */
     beforeOpen?: EmitType<Object>;
 
@@ -319,14 +326,12 @@ export interface MultiSelectModel extends DropDownBaseModel{
     /**
      * Event triggers when the input get focus-out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<Object>;
 
     /**
      * Event triggers when the input get focused.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<Object>;
 

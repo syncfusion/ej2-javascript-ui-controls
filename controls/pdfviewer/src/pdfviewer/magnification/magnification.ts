@@ -185,6 +185,10 @@ export class Magnification {
     private calculateFitZoomFactor(type: string): number {
         let viewerWidth: number = this.pdfViewerBase.viewerContainer.getBoundingClientRect().width;
         let viewerHeight: number = this.pdfViewerBase.viewerContainer.getBoundingClientRect().height;
+        if (viewerWidth === 0 && viewerHeight === 0) {
+            viewerWidth = parseFloat(this.pdfViewer.width.toString());
+            viewerHeight = parseFloat(this.pdfViewer.height.toString());
+        }
         let highestWidth: number = 0;
         let highestHeight: number = 0;
         this.fitType = type;

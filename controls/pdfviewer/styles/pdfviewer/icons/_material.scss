@@ -265,12 +265,18 @@
     font-family: 'e-icons';
   }
 
+  .e-pv-comment-panel-icon::before {
+    content: '\eb5d';
+    font-family: 'e-icons';
+  }
+
   .e-pv-accepted-icon::before {
     color: $pv-status-icon-color;
     content: '\e682';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
-    padding-left: $pv-status-icon-padding-left;
+    padding: $pv-accepted-icon-padding;
+    position: $pv-status-icon-position;
   }
 
   .e-pv-rejected-icon::before {
@@ -278,7 +284,8 @@
     content: '\e683';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
-    padding-left: $pv-status-icon-padding-left;
+    padding: $pv-rejected-icon-padding;
+    position: $pv-status-icon-position;
   }
 
   .e-pv-completed-icon::before {
@@ -286,7 +293,8 @@
     content: '\e614';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
-    padding-left: $pv-status-icon-padding-left;
+    padding: $pv-status-icon-padding;
+    position: $pv-status-icon-position;
   }
 
   .e-pv-cancelled-icon::before {
@@ -294,7 +302,8 @@
     content: '\e60a';
     font-family: 'e-icons';
     font-size: $pv-status-icon-font-size;
-    padding-left: $pv-status-icon-padding-left;
+    padding: $pv-status-icon-padding;
+    position: $pv-status-icon-position;
   }
 
   .e-pv-scale-ratio-icon::before {

@@ -111,6 +111,7 @@ export class Column {
      * It accepts either template string or HTML element ID.
      * @default null
      * @aspIgnore
+     * @blazorIgnore
      */
     public editTemplate: string;
     /**    
@@ -174,7 +175,8 @@ export class Column {
      * [`number`](../../../common/internationalization/#supported-format-string) 
      * and [`date`](../../../common/internationalization/#supported-format-string-1) formats.  
      * @default null  
-     * @aspType string  
+     * @aspType string
+     * @blazorType string  
      */
 
     public format: string | NumberFormatOptions | DateFormatOptions;
@@ -369,6 +371,7 @@ export interface ColumnModel {
    * @default Syncfusion.EJ2.Grids.TextAlign.Left
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.TextAlign
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.TextAlign
    */
 
   textAlign?: TextAlign;
@@ -388,6 +391,7 @@ export interface ColumnModel {
    * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.ClipMode
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.ClipMode
    */
   clipMode?: ClipMode;
 
@@ -395,8 +399,10 @@ export interface ColumnModel {
    * Define the alignment of column header which is used to align the text of column header.       
    * @default null
    * @aspDefaultValueIgnore
+   * @blazorDefaultValueIgnore
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.TextAlign
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.TextAlign
    */
   headerTextAlign?: TextAlign;
 
@@ -451,7 +457,8 @@ export interface ColumnModel {
    * [`number`](../../../common/internationalization/#supported-format-string) 
    * and [`date`](../../../common/internationalization/#supported-format-string-1) formats.  
    * @default null  
-   * @aspType string  
+   * @aspType string
+   * @blazorType string  
    */
 
   format?: string | NumberFormatOptions | DateFormatOptions;
@@ -622,6 +629,7 @@ export interface ColumnModel {
      * Defines the cell edit template that used as editor for a particular column.
      * It accepts either template string or HTML element ID.
      * @aspIgnore
+     * @blazorIgnore
      */
     editTemplate?: string;
 

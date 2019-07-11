@@ -292,5 +292,77 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.refresh();
         });
+		it('Checking with Tooltip appendInBodyTag', (done: Function): void => {
+            gauge.tooltipRender = (args: ITooltipRenderEventArgs): void => {
+                args.tooltip.showAtMousePosition = true;
+				args.appendInBodyTag = true;
+            };
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                targetElement = document.getElementById('container_Axis_0_Pointer_NeedleRect_0');
+                trigger.mousemoveEvent(targetElement, 0, 0, 5, 5);
+                done();
+            };
+            gauge.refresh();
+        });
+    });
+    describe('Checking Gauge Events', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let svg: HTMLElement;
+        let svg1: HTMLElement;
+        let value: string[] | string | number;
+        let location: GaugeLocation;
+        let trigger: MouseEvents = new MouseEvents();
+        let targetElement: HTMLElement;
+        let targetToolElement: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                axes: [{
+                    lineStyle: { width: 10, color: 'transparent' },
+                    labelStyle: {
+                        position: 'Inside', useRangeColor: false,
+                        font: { size: '12px', color: '#424242', fontFamily: 'Roboto', fontStyle: 'Regular' }
+                    },
+                    majorTicks: { height: 10, offset: 5, color: '#9E9E9E' },
+                    minorTicks: { height: 0 },
+                    startAngle: 210, endAngle: 150, minimum: 0, maximum: 120, radius: '80%',
+                    ranges: [
+                        { start: 0, end: 40, color: '#30B32D' },
+                        { start: 40, end: 80, color: '#FFDD00' },
+                        { start: 80, end: 120, color: '#F03E3E' }
+                    ],
+                    pointers: [{
+                        animation: { enable: false },
+                        value: 30,
+                    }]
+                }],
+                tooltip: { enable: true },
+                
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            gauge.annotationsModule = null;
+            ele.remove();
+        });
+        it('Checking with Tooltip appendInBodyTag', (done: Function): void => {
+            gauge.tooltipRender = (args: ITooltipRenderEventArgs): void => {
+                args.tooltip.showAtMousePosition = true;
+                args.appendInBodyTag = true;
+                targetToolElement = document.getElementById('container_CircularGauge_Tooltip');
+                targetToolElement.style.left = '-100px';
+            };
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let element : HTMLElement = document.getElementById('container');
+                element.style.left = "1530px"; 
+                targetElement = document.getElementById('container_Axis_0_Pointer_NeedleRect_0');
+                trigger.mousemoveEvent(targetElement, 0, 0, 1000, 250);
+                done();
+            };
+            gauge.refresh();
+        });
     });
 });

@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';
+import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile, isBlazor } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';
 import { attributes, closest, removeClass, addClass, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
@@ -411,6 +411,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.popupObj.dataBind();
     }
     private openPopupHandler(): void {
+        if (this.needTemplateReposition()) {
+            this.reposition(this.findTarget());
+        }
         this.trigger('afterOpen', this.tooltipEventArgs);
     }
     private closePopupHandler(): void {
@@ -555,7 +558,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 let templateFunction: Function = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'Content'); }, 0);
+                updateBlazorTemplate(this.element.id + 'content', 'Content', this);
             }
         } else {
             if (target && !isNullOrUndefined(target.getAttribute('data-content'))) {
@@ -686,6 +689,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
                     { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
                 const this$: Tooltip = this;
+                if (this.needTemplateReposition()) {
+                    this.tooltipEle.style.display = 'none';
+                }
                 this.trigger('beforeOpen', this.tooltipEventArgs, (observedArgs: TooltipEventArgs) => {
                     if (observedArgs.cancel) {
                         this$.isHidden = true;
@@ -715,6 +721,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 });
             }
         });
+    }
+
+    private needTemplateReposition(): boolean {
+        // tslint:disable-next-line:no-any
+        const tooltip: any = this;
+        return !isNullOrUndefined(tooltip.viewContainerRef)
+            && typeof tooltip.viewContainerRef !== 'string'
+            || isBlazor();
     }
 
     private checkCollision(target: HTMLElement, x: number, y: number): ElementPosition {

@@ -125,7 +125,7 @@ export interface IMouseEventArgs extends ILinearGaugeEventArgs {
     /**
      * event argument linear gauge model
      */
-    model: LinearGauge;
+    model?: LinearGauge;
     /**
      * event argument target
      */
@@ -171,7 +171,7 @@ export interface IValueChangeEventArgs {
     /**
      * event argument gauge
      */
-    gauge: LinearGauge;
+    gauge?: LinearGauge;
     /**
      * event argument element
      */
@@ -183,7 +183,7 @@ export interface IValueChangeEventArgs {
     /**
      * event argument axis
      */
-    axis: Axis;
+    axis?: Axis;
     /**
      * event argument pointer index
      */
@@ -191,7 +191,7 @@ export interface IValueChangeEventArgs {
     /**
      * event argument pointer
      */
-    pointer: Pointer;
+    pointer?: Pointer;
     /**
      * event argument value
      */

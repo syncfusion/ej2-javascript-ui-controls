@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate , isBlazor  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {ExpandOnSettings,SortOrder,DataBoundEventArgs,DataSourceChangedEventArgs,DrawNodeEventArgs,NodeKeyPressEventArgs,NodeCheckEventArgs,NodeClickEventArgs,NodeExpandEventArgs,DragAndDropEventArgs,NodeEditEventArgs,NodeSelectEventArgs} from "./treeview";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -16,6 +16,7 @@ export interface FieldsSettingsModel {
      * Specifies the array of JavaScript objects or instance of DataManager to populate the nodes.
      * @default []
      * @aspDatasourceNullIgnore
+     * @blazorDatasourceNullIgnore
      */
     dataSource?: DataManager | { [key: string]: Object }[];
 
@@ -440,7 +441,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is selected/unselected successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeSelected'
      */

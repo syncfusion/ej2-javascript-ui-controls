@@ -7,7 +7,7 @@ export enum RenderType {
     Toolbar,
     /**  Defines RenderType as Content */
     Content,
-    /**  Defines RenderType as Content */
+    /**  Defines RenderType as Popup */
     Popup,
     /**  Defines RenderType as LinkToolbar */
     LinkToolbar,
@@ -15,19 +15,11 @@ export enum RenderType {
     TextToolbar,
     /**  Defines RenderType as ImageToolbar */
     ImageToolbar,
-    /**  Defines RenderType as ImageToolbar */
+    /**  Defines RenderType as InlineToolbar */
     InlineToolbar,
-
+    /**  Defines RenderType as TableToolbar */
     TableToolbar
 }
-
-export type Action =
-    /**  Defines current Action as Refresh */
-    'refresh' |
-    /** Defines current Action as Print */
-    'print' |
-    'Undo' |
-    'Redo';
 
 export type ActionOnScroll = 'hide' | 'none';
 

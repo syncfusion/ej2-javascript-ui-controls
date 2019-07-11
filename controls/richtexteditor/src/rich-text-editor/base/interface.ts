@@ -2,7 +2,7 @@
 import { Component, Observer, L10n, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton } from '@syncfusion/ej2-splitbuttons';
-import { Action, ToolbarType, RenderType } from './enum';
+import { ToolbarType, RenderType } from './enum';
 import { Toolbar } from '../actions/toolbar';
 import { UndoRedoManager } from '../../editor-manager/plugin/undo';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -166,7 +166,7 @@ export interface NotifyArgs {
     module?: string;
     args?: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent;
     cancel?: boolean;
-    requestType?: Action;
+    requestType?: string;
     enable?: boolean;
     properties?: Object;
     selection?: NodeSelection;
@@ -234,7 +234,7 @@ export interface IImageNotifyArgs {
     module?: string;
     args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel | ClipboardEvent | TouchEvent;
     cancel?: boolean;
-    requestType?: Action;
+    requestType?: string;
     enable?: boolean;
     properties?: Object;
     selection?: NodeSelection;
@@ -286,7 +286,7 @@ export interface ITableNotifyArgs {
     selectNode?: Node[];
     selectParent?: Node[];
     cancel?: boolean;
-    requestType?: Action;
+    requestType?: string;
     enable?: boolean;
     properties?: Object;
     self?: Table;
@@ -369,7 +369,7 @@ export interface IDropDownItemModel extends DropDownItemModel {
 
 export interface ActionCompleteEventArgs {
     /** Defines the current action. */
-    requestType?: Action;
+    requestType?: string;
     /** Defines the event name. */
     name?: string;
     /** Defines the editor mode. */
@@ -384,7 +384,7 @@ export interface ActionCompleteEventArgs {
 
 export interface ActionBeginEventArgs {
     /** Defines the current action. */
-    requestType?: Action;
+    requestType?: string;
     /** Cancel the print action */
     cancel?: boolean;
     /** Defines the current item. */

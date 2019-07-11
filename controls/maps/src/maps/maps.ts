@@ -546,7 +546,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      public dataLabelShape: number[] = [];
      public mouseDownEvent: Object = { x: null, y: null };
      public mouseClickEvent: Object = { x: null, y: null };
-
+    /** @private */
+    public isBlazor: boolean;
 
     /**
      * Constructor for creating the widget
@@ -568,6 +569,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     protected preRender(): void {
 
         this.isDevice = Browser.isDevice;
+
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
 
         this.initPrivateVariable();
 
@@ -708,8 +712,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             let bottom: number = svg.bottom - tile.bottom - element.offsetTop;
             let left: number = parseFloat(tileElement.style.left) + element.offsetLeft;
             let top: number = parseFloat(tileElement.style.top) + element.offsetTop;
-            top = (bottom <= 10) ? top : (top * 2);
-            left = (bottom <= 10) ? left : (left * 2);
+            top = (bottom <= 11) ? top : (top * 2);
+            left = (bottom <= 11) ? left : (left * 2);
             tileElement.style.top = top + 'px';
             tileElement.style.left = left + 'px';
         }
@@ -724,7 +728,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.zoomingChange();
 
-        this.trigger(loaded, { maps: this });
+        this.trigger(loaded, this.isBlazor ? {} : { maps: this });
 
     }
 
@@ -1032,7 +1036,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     public mouseLeaveOnMap(e: PointerEvent): void {
-        if (document.getElementsByClassName('highlightMapStyle').length > 0) {
+        if (document.getElementsByClassName('highlightMapStyle').length > 0 && this.legendModule) {
             this.legendModule.removeShapeHighlightCollection();
             removeClass(document.getElementsByClassName('highlightMapStyle')[0]);
         }
@@ -1208,7 +1212,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     this.refreshing = true;
                     this.wireEVents();
                     args.currentSize = this.availableSize;
-                    this.trigger(resize, args);
+                    this.trigger(resize, this.isBlazor ? {} : args);
                     this.render();
                 },
                 500);

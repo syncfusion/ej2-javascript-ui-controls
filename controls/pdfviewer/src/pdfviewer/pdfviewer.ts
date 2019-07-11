@@ -905,6 +905,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Returns the page count of the document loaded in the PdfViewer control.
      * @asptype int
+     * @blazorType int
      */
     public get pageCount(): number {
         return this.viewerBase.pageCount;
@@ -913,6 +914,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Checks whether the PDF document is edited.
      * @asptype bool
+     * @blazorType bool
      */
     public get isDocumentEdited(): boolean {
         return this.viewerBase.isDocumentEdited;
@@ -921,6 +923,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
      * @asptype int
+     * @blazorType int
      */
     public get currentPageNumber(): number {
         return this.viewerBase.currentPageNumber;
@@ -935,6 +938,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Returns the current zoom percentage of the PdfViewer control.
      * @asptype int
+     * @blazorType int
      */
     public get zoomPercentage(): number {
         return this.magnificationModule.zoomFactor * 100;
@@ -1319,6 +1323,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /** 
      * Gets the bookmark view object of the pdf viewer.
      * @asptype BookmarkView
+     * @blazorType BookmarkView
      * @returns { BookmarkView }
      */
     public get bookmark(): BookmarkView {
@@ -1328,6 +1333,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /** 
      * Gets the print object of the pdf viewer.
      * @asptype Print 
+     * @blazorType Print
      * @returns { Print }
      */
     public get print(): Print {
@@ -1337,6 +1343,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /** 
      * Gets the magnification object of the pdf viewer.
      * @asptype Magnification
+     * @blazorType Magnification
      * @returns { Magnification }
      */
     public get magnification(): Magnification {
@@ -1345,6 +1352,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /** 
      * Gets the navigation object of the pdf viewer.
      * @asptype Navigation
+     * @blazorType Navigation
      * @returns { Navigation }
      */
     public get navigation(): Navigation {
@@ -1354,6 +1362,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /** 
      * Gets the text search object of the pdf viewer.
      * @asptype TextSearch
+     * @blazorType TextSearch
      * @returns { TextSearch }
      */
     public get textSearch(): TextSearch {
@@ -1363,6 +1372,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /** 
      * Gets the toolbar object of the pdf viewer.
      * @asptype Toolbar
+     * @blazorType Toolbar
      * @returns { Toolbar }
      */
     public get toolbar(): Toolbar {
@@ -1372,6 +1382,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /** 
      * Gets the thumbnail-view object of the pdf viewer.
      * @asptype ThumbnailView
+     * @blazorType ThumbnailView
      * @returns { ThumbnailView }
      */
     public get thumbnailView(): ThumbnailView {
@@ -1381,6 +1392,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Gets the annotation object of the pdf viewer.
      * @asptype Annotation
+     * @blazorType Annotation
      * @returns { Annotation }
      */
     public get annotation(): Annotation {
@@ -1721,7 +1733,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Calibrate Area': 'Calibrate Area',
         'Calibrate Radius': 'Calibrate Radius',
         'Calibrate Volume': 'Calibrate Volume',
-        'Depth': 'Depth'
+        'Depth': 'Depth',
+        'Closed': 'Closed',
+        'Round': 'Round',
+        'Square': 'Square',
+        'Diamond': 'Diamond',
+        'Edit': 'Edit',
+        'Comment': 'Comment',
+        'Comment Panel': 'Comment Panel',
+        'Set Status': 'Set Status',
+        'Post': 'Post',
+        'Page': 'Page',
+        'Add a comment': 'Add a comment',
+        'Add a reply': 'Add a reply'
     };
 
     /**
@@ -1863,9 +1887,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    public fireHyperlinkClick(hyperlink: string): void {
+    public fireHyperlinkClick(hyperlink: string, hyperlinkElement: HTMLAnchorElement): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink };
+        let eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink, hyperlinkElement: hyperlinkElement };
         this.trigger('hyperlinkClick', eventArgs);
     }
 
@@ -1902,7 +1926,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (!index && this.viewerBase.activeElements.activePageID) {
             index = this.viewerBase.activeElements.activePageID;
         }
-        this.annotation.renderAnnotations(index, null, null, null, canvas);
+        if (this.annotation) {
+            this.annotation.renderAnnotations(index, null, null, null, canvas);
+        }
     }
     /**
      * @private

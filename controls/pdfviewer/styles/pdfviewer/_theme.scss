@@ -1582,6 +1582,7 @@
   }
 
   .e-pv-line-styles-container {
+    line-height: 0;
     padding: 17px;
   }
 
@@ -1600,6 +1601,7 @@
 
   .e-pv-properties-line-style-content {
     float: left;
+    line-height: 16px;
     width: 44px;
   }
 
@@ -1611,21 +1613,23 @@
 
   .e-pv-properties-line-style.e-btn {
     height: 32px;
+    line-height: 0;
     padding: $pv-properties-line-style-padding;
     white-space: pre;
   }
 
   .e-pv-properties-line-start.e-btn .e-caret,
   .e-pv-properties-line-end.e-btn .e-caret {
+    display: inline;
+    line-height: 16px;
     margin-left: $pv-properties-drop-down-margin-left;
-    margin-top: $pv-properties-drop-down-margin-top;
   }
 
   .e-pv-line-styles-content-container {
     float: left;
-    line-height: 0;
+    font-size: 0;
     margin-right: 7.5px;
-    margin-top: 2.5px;
+    margin-top: $pv-prop-line-styles-margin-top;
     width: 138px;
   }
 
@@ -1877,7 +1881,7 @@
     }
   }
 
-  .e-pdfviewer .e-editable-value-wrapper.e-hide {
+  .e-pdfviewer .e-inplaceeditor .e-editable-value-wrapper.e-hide {
     display: none;
   }
 
@@ -1885,12 +1889,16 @@
     padding: 7px 8px 42px;
   }
 
+  .e-pv-comment-textbox {
+    min-height: 22px;
+  }
+
   .e-pdfviewer .e-editable-value-wrapper {
     color: $pv-comment-font-color;
     font-size: 14px;
     line-height: normal;
     min-height: 22px;
-    padding: 2px 8px;
+    padding: 2px 8px 3px;
   }
 
   .e-pdfviewer .e-pv-comment-textbox .e-editable-value-wrapper {
@@ -1898,7 +1906,7 @@
     font-size: 14px;
     line-height: normal;
     min-height: 24px;
-    padding: 2px 8px 2px 32px;
+    padding: 2px 8px 3px 32px;
   }
 
   .e-pdfviewer .e-inplaceeditor .e-editable-action-buttons {
@@ -1931,7 +1939,7 @@
     border-radius: $pv-thumbnail-border-radius;
     box-shadow: $pv-thumbnail-view-button-box-shadow;
     float: right;
-    padding: 10px 8px 1px 1px;
+    padding: $pv-more-option-button-padding;
   }
 
   .e-pdfviewer .e-editable-inline .e-btn.e-outline.e-primary,
@@ -1960,7 +1968,7 @@
     padding-right: 7px;
   }
 
-  .e-pdfviewer .e-btn .e-outline .e-primary :disabled {
+  .e-pdfviewer .e-btn-save.e-outline.e-primary:disabled {
     background-color: $pv-save-button-bg-color;
     border-radius: 2px;
     color: $pv-save-button-color;
@@ -1979,8 +1987,7 @@
   .e-pv-comment-panel {
     background-color: $pv-comment-panel-bg;
     border: $pv-sidebar-toolbar-border;
-    border-width: 1px;
-    bottom: 1px;
+    border-width: 1px 1px 0;
     opacity: 1;
     overflow: hidden;
     position: absolute;
@@ -2032,6 +2039,9 @@
 
   .e-pv-comments-content-container {
     background-color: $pv-comments-content-container-bg;
+    border-color: $pv-comment-panel-border-color;
+    border-style: double;
+    border-width: 0 1px 1px 0;
     height: calc(100% - 45px);
     overflow: auto;
   }
@@ -2053,8 +2063,8 @@
   .e-pv-comment-title {
     color: $pv-comment-text-color;
     font-size: 14px;
-    padding-left: 31px;
-    padding-top: 8px;
+    padding-left: 32px;
+    padding-top: $pv-comment-title-padding-top;
     position: absolute;
   }
 
@@ -2062,7 +2072,7 @@
     color: $pv-comment-text-color;
     font-size: 14px;
     padding-left: 8px;
-    padding-top: 8px;
+    padding-top: $pv-comment-title-padding-top;
     position: absolute;
   }
 
@@ -2112,7 +2122,11 @@
     word-break: break-all;
   }
 
-  .e-pdfviewer .e-inplaceeditor.e-editable-value-wrapper:hover {
+  .e-pdfviewer .e-inplaceeditor .e-editable-value-wrapper {
+    display: block;
+  }
+
+  .e-pdfviewer .e-inplaceeditor .e-editable-value-wrapper:hover {
     background: transparent;
   }
 
@@ -2152,5 +2166,9 @@
 
   .e-content-placeholder.e-pdfviewer.e-placeholder-pdfviewer {
     background-size: 100%;
+  }
+
+  .e-pdfviewer .e-accordion .e-acrdn-item .e-acrdn-panel .e-acrdn-content {
+    line-height: normal;
   }
 }

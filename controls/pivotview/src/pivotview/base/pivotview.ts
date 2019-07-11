@@ -625,7 +625,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public cellTemplate: string;
 
 
-     //Event Declarations
+    //Event Declarations
 
     /** 
      * @hidden
@@ -1264,6 +1264,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 beforeRender: this.setToolTip.bind(this),
                 beforeOpen: this.onBeforeTooltipOpen
             });
+            this.tooltip.isStringTemplate = true;
             this.tooltip.appendTo(this.element);
         } else if (this.tooltip) {
             this.tooltip.destroy();
@@ -1657,6 +1658,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public renderPivotGrid(): void {
+        if (this.currentView === 'Table') {
+            /* tslint:disable-next-line */
+            if (this.cellTemplate && (window && (window as any).Blazor)) {
+                resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+            }
+        }
         if (this.chartModule) {
             this.chartModule.engineModule = this.engineModule;
             this.chartModule.loadChart(this, this.chartSettings);
@@ -1943,14 +1950,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.engineModule.generateGridData(this.dataSourceSettings);
         }
         this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
-        /* tslint:disable-next-line */
-        if (this.cellTemplate && (window && (window as any).Blazor)) {
-            resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
-        }
         this.renderPivotGrid();
     }
 
     private onContentReady(): void {
+        if (this.currentView !== 'Table') {
+            /* tslint:disable-next-line */
+            if (this.cellTemplate && (window && (window as any).Blazor)) {
+                resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+            }
+        }
         this.isPopupClicked = false;
         if (this.showFieldList) {
             hideSpinner(this.pivotFieldListModule.fieldListSpinnerElement as HTMLElement);
@@ -2036,16 +2045,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 for (let cell of gridCells) {
                     let tCell: HTMLElement = this.gridCellCollection[cell];
                     /* tslint:disable-next-line */
-                    let dataObj: IAxisSet = this.engineModule.pivotValues[Number(cell.split('_')[0])][Number(cell.split('_')[1])] as IAxisSet;
-                    let dummyData: object = {
-                        name: dataObj.actualText,
-                        caption: dataObj.formattedText,
-                        axis: dataObj.axis
-                    };
-                    /* tslint:disable-next-line */
-                    append([].slice.call(this.getCellTemplate()(extend({ targetCell: tCell }, dummyData), this, 'cellTemplate', this.element.id + '_cellTemplate')), tCell);
+                    append([].slice.call(this.getCellTemplate()({ targetCell: tCell }, this, 'cellTemplate', this.element.id + '_cellTemplate')), tCell);
                 }
-                updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+                updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
             }
         }
     }
@@ -2437,9 +2439,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (!this.showGroupingBar) {
                 this.setGridColumns(this.grid.columns as ColumnModel[]);
             }
-            /* tslint:disable-next-line */
-            if (this.cellTemplate && (window && (window as any).Blazor)) {
-                resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+            if (this.currentView === 'Table') {
+                /* tslint:disable-next-line */
+                if (this.cellTemplate && (window && (window as any).Blazor)) {
+                    resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+                }
             }
             this.grid.refreshColumns();
             if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
@@ -2697,6 +2701,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.grid.hideSpinner = () => { };
             /* tslint:enable:no-empty */
             this.element.appendChild(createElement('div', { id: this.element.id + '_grid' }));
+            this.grid.isStringTemplate = true;
             this.grid.appendTo('#' + this.element.id + '_grid');
             /* tslint:disable-next-line:no-any */
             this.grid.off('data-ready', (this.grid as any).dataReady);

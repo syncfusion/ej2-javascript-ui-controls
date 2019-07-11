@@ -1338,7 +1338,7 @@ describe('List paste issue', () => {
         editor.selection.selectAll();
         editor.selection.copy();
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
-        editor.editorModule.pasteLocal();
+        editor.editorModule.paste();
         for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
             let block: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].childWidgets[i] as BlockWidget;
             expect(((block.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((i + 1) + '.');
@@ -1424,7 +1424,7 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         let i: number = 0;
         while (i <= 30) {
-            editor.editorModule.pasteLocal();
+            editor.editorModule.paste();
             i++;
         }
         expect(editor.viewer.pages.length).toBe(2);

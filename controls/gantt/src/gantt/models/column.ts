@@ -56,10 +56,12 @@ export class Column {
      * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
      * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
      * also it will display tooltip while hover on ellipsis applied cell.
-     * @default EllipsisWithTooltip
+     * @default Syncfusion.EJ2.Grids.ClipMode.EllipsisWithTooltip
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.ClipMode
      */
     public clipMode: ClipMode;
 
@@ -253,10 +255,12 @@ export interface ColumnModel {
      * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
      * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
      * also it will display tooltip while hover on ellipsis applied cell.
-     * @default EllipsisWithTooltip
+     * @default Syncfusion.EJ2.Grids.ClipMode.EllipsisWithTooltip
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.ClipMode
      */
     clipMode?: ClipMode;
 
@@ -299,6 +303,7 @@ export interface ColumnModel {
      * and [`date`](../../../common/internationalization/#formatting) formats.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
 
@@ -327,6 +332,7 @@ export interface ColumnModel {
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.TextAlign
      */
     headerTextAlign?: TextAlign;
 
@@ -361,6 +367,7 @@ export interface ColumnModel {
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.TextAlign
      */
     textAlign?: TextAlign;
 

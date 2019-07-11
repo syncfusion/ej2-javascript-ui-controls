@@ -307,4 +307,8 @@
   .e-de-ctnr-alignbottom::before {
     content: '\ea91';
   }
+
+  .e-de-flip {
+    transform: scaleX(-1);
+  }
 }

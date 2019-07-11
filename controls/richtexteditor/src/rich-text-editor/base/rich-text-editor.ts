@@ -74,6 +74,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private onResizeHandler: EventListenerOrEventListenerObject;
     private timeInterval: number;
     private touchModule: EJ2Touch;
+    private defaultResetValue: string = null;
     /**
      * @hidden
      */
@@ -552,6 +553,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Set the cancel argument to true to cancel the open of a dialog.
      * @event
      * @blazorProperty 'OnDialogOpen'
+     * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
 
     @Event()
@@ -622,7 +624,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers when RichTextEditor is focused out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<Object>;
@@ -636,7 +637,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /** 
      * Triggers when RichTextEditor is focused in
      * @event
-     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<Object>;
@@ -778,7 +778,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.value === null || this.valueTemplate !== null) {
             this.setValue();
         }
-        this.element.innerHTML = '';
+        if (!this.isBlazor()) { this.element.innerHTML = ''; }
         let invalidAttr: string[] = ['class', 'style', 'id', 'ejs-for'];
         let htmlAttr: { [key: string]: string; } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
@@ -796,7 +796,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             let rteOuterWrapper: HTMLElement = this.createElement('div', {
                 className: this.element.getAttribute('class')
             }) as HTMLElement;
-            this.element.innerHTML = '';
+            if (!this.isBlazor()) { this.element.innerHTML = ''; }
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element as HTMLTextAreaElement;
             removeClass([this.valueContainer], this.element.getAttribute('class').split(' '));
@@ -963,7 +963,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.setContentHeight();
         if (this.value !== null) {
-            this.valueContainer.defaultValue = this.value;
+            if (!this.isBlazor()) {
+                this.valueContainer.defaultValue = this.value;
+            } else {
+                this.defaultResetValue = this.value;
+            }
         }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
     }
@@ -1095,14 +1099,23 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return this.getInjectedModules().indexOf(module) >= 0;
     }
 
+    /**
+     * @hidden
+     */
     public onCopy(): void {
         this.contentModule.getDocument().execCommand('copy', false, null);
     }
 
+    /**
+     * @hidden
+     */
     public onCut(): void {
         this.contentModule.getDocument().execCommand('cut', false, null);
     }
 
+    /**
+     * @hidden
+     */
     public onPaste(e?: KeyboardEvent | ClipboardEvent): void {
         let evenArgs: { [key: string]: Object } = {
             originalEvent: e,
@@ -1389,12 +1402,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private updatePanelValue(): void {
-        let value: string;
-        if (this.editorMode === 'HTML' && this.value) {
-            value = this.value.replace(/>\s+</g, '><');
-        } else {
-            value = this.value;
-        }
+        let value: string = this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         if (value) {
             if (this.valueContainer) {
@@ -1639,6 +1647,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }) as HTMLLinkElement;
         styleEle.rel = 'stylesheet';
         return styleEle;
+    }
+
+    private isBlazor(): boolean {
+        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
     }
 
     private setValue(): void {
@@ -1897,6 +1909,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         for (let element of this.scrollParentElements) {
             EventHandler.add(element, 'scroll', this.scrollHandler, this);
         }
+        if (!this.iframeSettings.enable) {
+            EventHandler.add(this.contentModule.getPanel(), 'scroll', this.scrollHandler, this);
+        }
     }
 
     private wireContextEvent(): void {
@@ -1921,6 +1936,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         for (let element of this.scrollParentElements) {
             EventHandler.remove(element, 'scroll', this.scrollHandler);
         }
+        if (!this.iframeSettings.enable) {
+            EventHandler.remove(this.contentModule.getPanel(), 'scroll', this.scrollHandler);
+        }
     }
 
     private touchHandler(e: TapEventArgs): void {
@@ -1933,7 +1951,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private resetHandler(): void {
-        this.setProperties({ value: this.valueContainer.defaultValue === '' ? null : this.valueContainer.defaultValue });
+        let defaultValue: string = this.valueContainer.defaultValue.trim();
+        this.setProperties({ value: defaultValue === '' ? null : (this.isBlazor() ? this.defaultResetValue : defaultValue) });
     }
 
     /**
@@ -1982,6 +2001,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
+            EventHandler.add(this.inputElement.ownerDocument, 'scroll', this.scrollHandler, this);
             EventHandler.add(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown, this);
         }
         this.wireScrollElementsEvents();
@@ -2001,7 +2021,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.onCut();
                 break;
         }
-        if (e.callBack && (e.event.action === 'copy' || e.event.action === 'cut')) {
+        if (e.callBack && (e.event.action === 'copy' || e.event.action === 'cut' || e.event.action === 'delete')) {
             e.callBack({
                 requestType: e.event.action,
                 editorMode: 'HTML',
@@ -2037,6 +2057,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);
+            EventHandler.remove(this.inputElement.ownerDocument, 'scroll', this.scrollHandler);
             EventHandler.remove(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown);
         }
         this.unWireScrollElementsEvents();

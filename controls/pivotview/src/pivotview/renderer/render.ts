@@ -93,6 +93,7 @@ export class Render {
             this.parent.element.innerHTML = '';
             this.bindGrid(this.parent, (this.engine.isEmptyData ? true : false));
             this.parent.element.appendChild(createElement('div', { id: this.parent.element.id + '_grid' }));
+            this.parent.grid.isStringTemplate = true;
             this.parent.grid.appendTo('#' + this.parent.element.id + '_grid');
         }
         /* tslint:disable */

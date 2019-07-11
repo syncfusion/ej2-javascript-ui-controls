@@ -89,6 +89,10 @@ export class ThumbnailView {
         }
         // tslint:disable-next-line:max-line-length
         let jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages' };
+        if (this.pdfViewerBase.jsonDocumentId) {
+            // tslint:disable-next-line
+            (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+        }
         this.thumbnailRequestHandler = new AjaxHandler(this.pdfViewer);
         this.thumbnailRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
         this.thumbnailRequestHandler.responseType = 'json';
@@ -102,7 +106,8 @@ export class ThumbnailView {
             }
             proxy.renderThumbnailImage(data);
             if (!proxy.isThumbnailCompleted) {
-                proxy.startIndex = data.endPage;
+                let index: number = (data && isNaN(data.endPage)) ? data.endPage : proxy.thumbnailLimit;
+                proxy.startIndex = index;
                 proxy.isThumbnailCompleted = true;
             }
         };
@@ -189,7 +194,9 @@ export class ThumbnailView {
     // tslint:disable-next-line
     private renderThumbnailImage(data: any): void {
         if (this.thumbnailView) {
-            for (let i: number = data.startPage; i < data.endPage; i++) {
+            let startPage: number = (data && isNaN(data.startPage)) ? data.startPage : this.startIndex;
+            let endPage: number = (data && isNaN(data.endPage)) ? data.endPage : this.thumbnailLimit;
+            for (let i: number = startPage; i < endPage; i++) {
                 // tslint:disable-next-line:max-line-length
                 let pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i , attrs: {'aria-label': 'Thumbnail of Page' + (i + 1) , 'tabindex': '-1', 'role': 'link' }}) as HTMLAnchorElement;
                 // tslint:disable-next-line:max-line-length

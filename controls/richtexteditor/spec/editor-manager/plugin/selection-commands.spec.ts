@@ -514,14 +514,15 @@ describe('Selection commands', () => {
 
     it('Apply fontsize tag for list elements', () => {
         let node1: Node = document.getElementById('paragraph20');
-        let listNode1: Text = node1.childNodes[0] as Text;
+        //The childnode changed because the span element is added to list element with styles
+        let listNode1: Text = node1.childNodes[0].childNodes[0] as Text;
         let node2: Node = document.getElementById('paragraph26');
-        let listNode2: Text = node2.childNodes[0] as Text;
+        let listNode2: Text = node2.childNodes[0].childNodes[0] as Text;
         domSelection.setSelectionText(document, listNode1, listNode2, 5, 5);
         SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '10px');
         expect(document.getElementById('paragraph20').parentElement.style.fontSize).not.toEqual('10px');
-        expect((document.getElementById('paragraph20').firstElementChild.tagName.toLowerCase()) === 'span').toBe(true);
-        expect((document.getElementById('paragraph20').firstElementChild as HTMLElement).style.fontSize).toEqual('10px');
+        expect(((document.getElementById('paragraph20').firstElementChild as HTMLElement).tagName.toLowerCase()) === 'span').toBe(true);
+        expect((document.getElementById('paragraph20').childNodes[1] as HTMLElement).style.fontSize).toEqual('10px');
         expect(document.getElementById('paragraph21').parentElement.style.fontSize).toEqual('10px');
         expect(document.getElementById('paragraph22').parentElement.style.fontSize).toEqual('10px');
         expect(document.getElementById('paragraph23').parentElement.style.fontSize).toEqual('10px');

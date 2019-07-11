@@ -140,13 +140,14 @@ describe('Gantt Selection support', () => {
             }
             dialog.hide();
         });
-        it('Custom key testing', () => {
+        it('Custom key testing', (done) => {
             setTimeout(function () {
                 let args: any = { action: 'customKey', preventDefault: preventDefault };
                 ganttObj.keyboardModule.keyAction(args);
                 expect(ganttObj.selectedRowIndex).toBe(6);
+                done();
             }, 100);
-        });       
+        }, 200);   
         it('saveRequest key testing', () => {  
             let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(taskName, 'dblclick');           
@@ -156,7 +157,7 @@ describe('Gantt Selection support', () => {
             ganttObj.keyboardModule.keyAction(args1); 
             expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
         });       
-        it('Search key testing', () => {
+        it('Search key testing', (done) => {
             let args: any = { action: 'focusSearch', preventDefault: preventDefault };
             ganttObj.keyboardModule.keyAction(args);
             let searchbar: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbar'));
@@ -166,7 +167,8 @@ describe('Gantt Selection support', () => {
                 expect(ganttObj.currentViewData.length).toBe(3);
                 searchbar.value = '';
                 (ganttObj.toolbarModule as any).keyUpHandler(getKeyUpObj(13, searchbar));
+                done();
               }, 100);   
-        });		
+        }, 200);		
     });
 });

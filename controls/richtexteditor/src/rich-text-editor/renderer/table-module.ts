@@ -1,4 +1,4 @@
-import { detach, closest, Browser, L10n } from '@syncfusion/ej2-base';
+import { detach, closest, Browser, L10n, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, EventHandler, addClass, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IRenderer, IDropDownItemModel, OffsetPosition, ResizeArgs } from '../base/interface';
 import { IColorPickerEventArgs, ITableArgs, ITableNotifyArgs, IToolbarItemModel, NotifyArgs } from '../base/interface';
@@ -13,14 +13,14 @@ import { RenderType } from '../base/enum';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
-import { dispatchEvent, parseHtml } from '../base/util';
+import { dispatchEvent, parseHtml, hasClass } from '../base/util';
 import { EditorManager } from '../../editor-manager';
 import { DialogRenderer } from './dialog-renderer';
 /**
  * `Table` module is used to handle table actions.
  */
 export class Table {
-    public ensureInsideTableList: boolean = true ;
+    public ensureInsideTableList: boolean = true;
     public element: HTMLElement;
     private rteID: string;
     private parent: IRichTextEditor;
@@ -202,9 +202,9 @@ export class Table {
         }
     }
     private verticalAlign(args: ITableNotifyArgs, e: ClickEventArgs): void {
-        let tdEle: HTMLElement = (args.selection.range.startContainer.nodeName === 'TD' ||
-            args.selection.range.startContainer.nodeName === 'TH') ?
-            args.selection.range.startContainer as HTMLElement : (args.selection.range.startContainer as HTMLElement).parentElement;
+        let tdEle: Element = (args.selection.range.startContainer.nodeName === 'TD' ||
+            args.selection.range.startContainer.nodeName === 'TH') ? args.selection.range.startContainer as HTMLElement :
+            (<Element>(args.selection.range.startContainer as HTMLElement).parentNode);
         if (tdEle.nodeName !== 'TD' && tdEle.nodeName !== 'TH') { return; }
         this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: (e.item as IDropDownItemModel).subCommand });
     }
@@ -412,9 +412,14 @@ export class Table {
 
     private tableInsert(row: number, col: number, e: MouseEvent, selectionObj?: ITableNotifyArgs): void {
         let proxy: Table = (selectionObj.self) ? selectionObj.self : this;
-        if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
-            closest(
-                selectionObj.selection.range.startContainer.parentNode, '#' + proxy.contentModule.getPanel().id))) {
+        let startContainer: Node = selectionObj.selection.range.startContainer;
+        if (startContainer.nodeName === 'P' && startContainer.textContent.trim() === '' && !(startContainer.childNodes.length > 0)) {
+            (startContainer as Element).innerHTML = '<br />';
+        }
+        let parentNode: Node = startContainer.parentNode;
+        if (proxy.parent.editorMode === 'HTML' &&
+            ((proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')) ||
+                (!proxy.parent.iframeSettings.enable && isNOU(closest(parentNode, '#' + proxy.contentModule.getPanel().id))))) {
             (proxy.contentModule.getEditPanel() as HTMLElement).focus();
             let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
             selectionObj.selection = proxy.parent.formatter.editorManager.nodeSelection.save(
@@ -658,18 +663,22 @@ export class Table {
                 let tableReBox: HTMLElement = this.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
                 let tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
                 let tableHeight: number = parseInt(getComputedStyle(this.curTable).height as string, 10);
+                let paddingSize: number = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
+                let rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - paddingSize * 2;
                 if (this.resizeBtnStat.column) {
                     let cellColl: NodeListOf<Element> = this.curTable.rows[0].cells;
-                    let width: number = parseFloat(getComputedStyle(this.columnEle).width as string);
+                    let width: number = parseFloat(this.columnEle.offsetWidth.toLocaleString());
                     let actualwid: number = width - mouseX;
-                    let totalwid: number = parseFloat(getComputedStyle(this.columnEle).width) +
-                        parseFloat(getComputedStyle(cellColl[this.colIndex - 1]).width);
+                    let totalwid: number = parseFloat(this.columnEle.offsetWidth.toLocaleString()) +
+                        parseFloat((cellColl[this.colIndex - 1] as HTMLElement).offsetWidth.toLocaleString());
                     for (let i: number = 0; i < this.curTable.rows.length; i++) {
                         if ((totalwid - actualwid) > 20 && actualwid > 20) {
+                            let leftColumnWidth: number = totalwid - actualwid;
+                            let rightColWidth: number = actualwid;
                             (this.curTable.rows[i].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width =
-                            totalwid - actualwid + 'px';
+                                this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                             (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width =
-                            actualwid + 'px';
+                                this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
                         }
                     }
                     this.updateHelper();
@@ -687,7 +696,9 @@ export class Table {
                     if (!Browser.isDevice) {
                         EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
                     }
-                    this.curTable.style.width = tableWidth + mouseX + 'px';
+                    let widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
+                    this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, rteWidth) + '%'
+                        : tableWidth + mouseX + 'px';
                     this.curTable.style.height = tableHeight + mouseY + 'px';
                     tableReBox.classList.add('e-rbox-select');
                     tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
@@ -695,6 +706,10 @@ export class Table {
                 }
             }
         });
+    }
+
+    private convertPixelToPercentage(value: number, offsetValue: number): number {
+        return (value / offsetValue) * 100;
     }
 
     private cancelResizeAction(): void {
@@ -790,6 +805,7 @@ export class Table {
             iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        button.isStringTemplate = true;
         button.appendTo(btnEle);
         EventHandler.add(btnEle, 'click', this.insertTableDialog, { self: this, args: args.args, selection: args.selection });
         this.parent.getToolbar().appendChild(this.dlgDiv);
@@ -832,6 +848,7 @@ export class Table {
             !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown') && !closest(target, '.e-rte-dropdown-popup')
             && !closest(target, '.e-rte-elements')) {
             removeClass(this.parent.element.querySelectorAll('table td'), classes.CLS_TABLE_SEL);
+            if (!Browser.isIE) { this.hideTableQuickToolbar(); }
         }
         if (target && target.classList && !target.classList.contains(classes.CLS_TB_COL_RES) &&
             !target.classList.contains(classes.CLS_TB_ROW_RES) && !target.classList.contains(classes.CLS_TB_BOX_RES)) {
@@ -919,6 +936,7 @@ export class Table {
             max: 50,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        this.columnTextBox.isStringTemplate = true;
         this.columnTextBox.appendTo(tableWrap.querySelector('#tableColumn') as HTMLElement);
         this.rowTextBox = new NumericTextBox({
             format: 'n0',
@@ -929,6 +947,7 @@ export class Table {
             max: 50,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        this.rowTextBox.isStringTemplate = true;
         this.rowTextBox.appendTo(tableWrap.querySelector('#tableRow') as HTMLElement);
         return tableWrap;
     }
@@ -1020,6 +1039,7 @@ export class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        widthNum.isStringTemplate = true;
         widthNum.appendTo(tableWrap.querySelector('#tableWidth') as HTMLElement);
         let padding: NumericTextBox = new NumericTextBox({
             format: 'n0',
@@ -1029,6 +1049,7 @@ export class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        padding.isStringTemplate = true;
         padding.appendTo(tableWrap.querySelector('#cellPadding') as HTMLElement);
         let spacing: NumericTextBox = new NumericTextBox({
             format: 'n0',
@@ -1038,6 +1059,7 @@ export class Table {
             floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        spacing.isStringTemplate = true;
         spacing.appendTo(tableWrap.querySelector('#cellSpacing') as HTMLElement);
         return tableWrap;
     }

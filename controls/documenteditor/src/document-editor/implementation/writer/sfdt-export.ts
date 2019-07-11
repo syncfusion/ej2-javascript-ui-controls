@@ -329,7 +329,7 @@ export class SfdtExport {
             inline.columnLast = element.columnLast;
             inline.editRangeId = element.editRangeId.toString();
         } else if (element instanceof EditRangeEndElementBox) {
-            inline.editRangeStart = {
+            inline.editableRangeStart = {
                 'user': element.editRangeStart.user,
                 'group': element.editRangeStart.group,
                 'columnFirst': element.editRangeStart.columnFirst,
@@ -791,6 +791,11 @@ export class SfdtExport {
         rowFormat.gridAfter = wRowFormat.gridAfter;
         rowFormat.gridAfterWidth = wRowFormat.gridAfterWidth;
         rowFormat.gridAfterWidthType = wRowFormat.gridAfterWidthType;
+        rowFormat.leftMargin = wRowFormat.leftMargin;
+        rowFormat.topMargin = wRowFormat.topMargin;
+        rowFormat.rightMargin = wRowFormat.rightMargin;
+        rowFormat.bottomMargin = wRowFormat.bottomMargin;
+        rowFormat.leftIndent = wRowFormat.leftIndent;
         return rowFormat;
     }
     private writeTableFormat(wTableFormat: WTableFormat): any {

@@ -414,7 +414,8 @@ export interface ConnectorModel extends NodeBaseModel{
      * * Interaction - Features of the connector used for interaction.
      * * ReadOnly - Enables ReadOnly
      * @default 'None'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     constraints?: ConnectorConstraints;
 
@@ -529,12 +530,14 @@ export interface ConnectorModel extends NodeBaseModel{
     /**
      * Sets the source padding of the connector
      * @default 0
+     * @isBlazorNullableType true
      */
     sourcePadding?: number;
 
     /**
      * Sets the target padding of the connector
      * @default 0
+     * @isBlazorNullableType true
      */
     targetPadding?: number;
 

@@ -435,6 +435,8 @@ export interface ITemplateData {
     taskEndDate?: Date;
     taskDuration?: number;
     taskDurationUnit?: string;
+    taskPredecessorsName?: string;
+    taskResourceNames?: string;
     isAutoSchedule?: boolean;
     isMilestone?: boolean;
     left?: number;

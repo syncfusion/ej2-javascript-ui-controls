@@ -164,8 +164,9 @@ export interface MultiLevelCategoriesModel {
      * * Without Border
      * * Brace
      * * CurlyBrace
-     * @default ''
+     * @default 'Rectangle'
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     type?: BorderType;
 

@@ -296,8 +296,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     InPlaceEditor.prototype.appendValueElement = function () {
         this.valueWrap = this.createElement('div', { id: this.element.id + '_wrap', className: VALUE_WRAPPER });
-        var blazorContain = Object.keys(window);
-        if (blazorContain.indexOf('ejsIntrop') === -1) {
+        if (Object.keys(window).indexOf('ejsInterop') === -1) {
             this.element.innerHTML = '';
         }
         this.valueEle = this.createElement('span', { className: VALUE });
@@ -614,7 +613,10 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.isExtModule ? this.notify(setFocus, {}) : this.componentObj.element.focus();
     };
     InPlaceEditor.prototype.removeEditor = function () {
-        resetBlazorTemplate(this.element.id + 'template', 'Template');
+        var blazorContain = Object.keys(window);
+        if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate) {
+            resetBlazorTemplate(this.element.id + 'template', 'Template');
+        }
         var tipEle;
         if (this.tipObj && this.formEle) {
             tipEle = closest(this.formEle, '.' + ROOT_TIP);
@@ -717,18 +719,24 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     InPlaceEditor.prototype.templateCompile = function (trgEle, tempStr) {
         var tempEle;
+        var blazorContain = Object.keys(window);
         if (typeof tempStr === 'string') {
             tempStr = tempStr.trim();
         }
         var compiler = compile(tempStr);
         if (!isNullOrUndefined(compiler)) {
-            tempEle = compiler({}, this, 'template', this.element.id + 'template');
+            var isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+                !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) ?
+                this.isStringTemplate : true;
+            tempEle = compiler({}, this, 'template', this.element.id + 'template', isString);
         }
         if (!isNullOrUndefined(compiler) && tempEle.length > 0) {
             [].slice.call(tempEle).forEach(function (el) {
                 trgEle.appendChild(el);
             });
-            updateBlazorTemplate(this.element.id + 'template', 'Template');
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + 'template', 'Template', this);
+            }
         }
     };
     InPlaceEditor.prototype.appendTemplate = function (trgEle, tempStr) {

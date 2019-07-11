@@ -224,6 +224,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * 
      * {% codeBlock src="dialog/content-api/index.html" %}{% endcodeBlock %}
      * @default ''
+     * @blazorType string
      */
     @Property('')
     public content: string | HTMLElement;
@@ -246,6 +247,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Specifies the value that can be displayed in the dialog's title area that can be configured with plain text or HTML elements.
      * This is optional property and the dialog can be displayed without header, if the header property is null.
      * @default ''
+     * @blazorType string
      */
     @Property('')
     public header: string | HTMLElement;
@@ -291,6 +293,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Specifies the target element in which to display the dialog.
      * The default value is null, which refers the `document.body` element.
      * @default null
+     * @blazorType string
      */
     @Property(null)
     public target: HTMLElement | string;
@@ -303,6 +306,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * > More information on the footer template configuration can be found on this [documentation](../../dialog/template/#footer) section.
      * 
      * @default ''
+     * @blazorType string
      */
     @Property('')
     public footerTemplate: HTMLElement | string;
@@ -493,6 +497,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         };
         this.dlgOverlayClickEventHandler = (event: Object): void => {
             this.trigger('overlayClick', event);
+            this.focusContent();
         };
         let localeText: object = { close: 'Close' };
         this.l10n = new L10n('dialog', localeText, this.locale);
@@ -849,7 +854,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.contentEle.appendChild(this.innerContentElement);
         } else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
             let blazorContain: string[] = Object.keys(window) as string[];
-            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
+            if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsInterop') === -1) {
                 this.contentEle.innerHTML = this.content;
             } else if (this.content instanceof HTMLElement) {
                 this.contentEle.appendChild(this.content);
@@ -878,26 +883,36 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         } else {
             templateProps = this.element.id + 'content';
         }
+        let templateValue: string;
         if (!isNullOrUndefined((<HTMLElement>template).outerHTML)) {
             templateFn = compile((<HTMLElement>template).outerHTML);
-        } else if (typeof (template) === 'string' && blazorContain.indexOf('ejsIntrop') === -1) {
-            templateFn = compile(template as string);
+            templateValue = (<HTMLElement>template).outerHTML;
         } else {
-            toElement.innerHTML = template as string;
+            templateFn = compile(template as string);
+            templateValue = template as string;
         }
         let fromElements: HTMLElement[] = [];
         if (!isNullOrUndefined(templateFn)) {
-            for (let item of templateFn({}, null, null, templateProps)) {
+            let isString: boolean = (blazorContain.indexOf('ejsInterop') !== -1 &&
+                !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
+                this.isStringTemplate : true;
+            for (let item of templateFn({}, null, null, templateProps, isString)) {
                 fromElements.push(item);
             }
             append([].slice.call(fromElements), toElement);
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
+                this.blazorTemplate(templateProps);
+            }
         }
+    }
+
+    private blazorTemplate(templateProps: string): void {
         if (templateProps === this.element.id + 'header') {
-            updateBlazorTemplate(templateProps, 'Header');
+            updateBlazorTemplate(templateProps, 'Header', this);
         } else if (templateProps === this.element.id + 'footerTemplate') {
-            updateBlazorTemplate(templateProps, 'FooterTemplate');
+            updateBlazorTemplate(templateProps, 'FooterTemplate', this);
         } else {
-            updateBlazorTemplate(templateProps, 'Content');
+            updateBlazorTemplate(templateProps, 'Content', this);
         }
     }
 

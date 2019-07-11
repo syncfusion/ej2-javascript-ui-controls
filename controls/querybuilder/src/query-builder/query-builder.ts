@@ -197,6 +197,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isOperatorRendered: boolean;
     private isValueRendered: boolean;
     private actionButton: Element;
+    private isInitialLoad: boolean;
     /** 
      * Triggers when the component is created.
      * @event
@@ -207,7 +208,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     /**
      * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
-     * @blazorProperty 'OnChange'
+     * @blazorProperty 'OnValueChange'
      */
     @Event()
     public beforeChange: EmitType<ChangeEventArgs>;
@@ -331,6 +332,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.isImportRules = false;
         let bodeElem: Element = this.element.querySelector('.e-group-body');
         bodeElem.innerHTML = '';
+        (this.element.querySelector('.e-btngroup-and') as HTMLInputElement).checked = true;
         bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
         this.levelColl[this.element.id + '_group0'] = [0];
         this.rule = { condition: 'and', rules: [] };
@@ -500,11 +502,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             return;
         }
         let args: ChangeEventArgs = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertRule' };
-        if (!this.isImportRules) {
+        if (!this.isImportRules && !this.isInitialLoad) {
             this.trigger('beforeChange', args, (observedChangeArgs: ChangeEventArgs) => {
                 this.addRuleSuccessCallBack(observedChangeArgs, target, rule);
             });
         } else {
+            this.isInitialLoad = false;
             this.addRuleSuccessCallBack(args, target, rule);
         }
     }
@@ -749,11 +752,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private addGroupElement(isGroup: boolean, target: Element, condition?: string, isBtnClick?: boolean): void {
         let args: ChangeEventArgs = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertGroup' };
-        if (!this.isImportRules) {
+        if (!this.isImportRules && !this.isInitialLoad) {
             this.trigger('beforeChange', args, (observedChangeArgs: ChangeEventArgs) => {
                 this.addGroupSuccess(observedChangeArgs, isGroup, target, condition, isBtnClick);
             });
         } else {
+            this.isInitialLoad = false;
             this.addGroupSuccess(args, isGroup, target, condition, isBtnClick);
         }
     }
@@ -975,6 +979,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
         } else {
             this.isOperatorRendered = true;
+            this.isValueRendered = true;
         }
         this.isOperatorRendered = true;
     }
@@ -1542,7 +1547,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 break;
             case 'datepicker':
                 let column: ColumnsModel = this.getColumn(rule.field);
-                let format: DateFormatOptions = { type: 'dateTime', format: column.format } as DateFormatOptions;
+                let format: DateFormatOptions = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' } as DateFormatOptions;
                 if (rule.operator.indexOf('between') > -1) {
                     rule.value[i] = (getComponent(element, controlName) as DatePicker).value;
                 } else if (isNullOrUndefined(format.format)) {
@@ -1554,9 +1559,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             case 'multiselect':
                 rule.value = (getComponent(element, controlName) as MultiSelect).value as number[] | string[];
                 break;
-
         }
-
     }
     private updateRules(
         target: Element, selectedValue: string | number | Date | boolean | string[] | number[] | Date[] | Element, i?: number): void {
@@ -1800,6 +1803,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
     private initWrapper(): void {
+        this.isInitialLoad = true;
         if (this.cssClass) {
             addClass([this.element], this.cssClass);
         }
@@ -2373,6 +2377,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         for (let i: number = 0, len: number = ruleColl.length; i < len; i++) {
             let keys: string[] = Object.keys(ruleColl[i]);
+            ignoreCase = false;
             if (keys.indexOf('rules') > -1 && ruleColl[i].rules) {
                 pred2 = this.getPredicate(ruleColl[i]);
                 if (pred2) {
@@ -2389,7 +2394,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else if (ruleColl[i].operator.length) {
                 let oper: string = ruleColl[i].operator.toLowerCase();
                 let dateOperColl: string[] = ['equal', 'notequal'];
-                ignoreCase = this.matchCase ? false : true;
+                if (ruleColl[i].type === 'string') {
+                    ignoreCase = this.matchCase ? false : true;
+                }
                 if (ruleColl[i].type === 'date' && dateOperColl.indexOf(oper) > -1) {
                     ignoreCase = true;
                 }
@@ -2503,6 +2510,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private importRules(rule: RuleModel, parentElem?: Element, isReset?: boolean): Element {
         if (!isReset) {
             parentElem = this.renderGroup(rule.condition, parentElem);
+        } else {
+            if (rule.condition === 'or') {
+                (parentElem.querySelector('.e-btngroup-or') as HTMLInputElement).checked = true;
+            } else {
+                (parentElem.querySelector('.e-btngroup-and') as HTMLInputElement).checked = true;
+            }
         }
         let ruleColl: RuleModel[] = rule.rules;
         if (!isNullOrUndefined(ruleColl)) {
@@ -2625,7 +2638,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return this.parser;
     }
     private parseSqlStrings(sqlString: string): number {
-        let operators: string[] = ['=', '!=', '<', '>', '<=', '>='];
+        let operators: string[] = ['=', '!=', '<=', '>=', '<', '>'];
         let conditions: string[] = ['and', 'or'];
         let subOp: string[] = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN'];
         let regexStr: string;
@@ -2686,6 +2699,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         //Number
         if (/^[0-9]+(\.[0-9]+)?/.exec(sqlString)) {
             matchValue = /^[0-9]+(\.[0-9]+)?/.exec(sqlString)[0];
+            this.parser.push(['Number', matchValue]);
+            return matchValue.length;
+        }
+        //Negative Number
+        if (/^-?[0-9]+(\.[0-9]+)?/.exec(sqlString)) {
+            matchValue = /^-?[0-9]+(\.[0-9]+)?/.exec(sqlString)[0];
             this.parser.push(['Number', matchValue]);
             return matchValue.length;
         }

@@ -76,6 +76,7 @@ export class TreeViewRenderer implements IAction {
             nodeDragStop: this.dragStop.bind(this)
         });
         this.treeViewElement.innerHTML = '';
+        this.fieldTable.isStringTemplate = true;
         this.fieldTable.appendTo(this.treeViewElement);
         this.getTreeUpdate();
     }
@@ -113,6 +114,7 @@ export class TreeViewRenderer implements IAction {
             target: this.parentElement.parentElement,
             close: this.dialogClose.bind(this)
         });
+        this.fieldDialog.isStringTemplate = true;
         this.fieldDialog.appendTo(fieldListDialog);
         this.fieldDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('adaptiveFieldHeader');
     }
@@ -142,6 +144,7 @@ export class TreeViewRenderer implements IAction {
             cssClass: cls.EDITOR_SEARCH_CLASS,
             change: this.textChange.bind(this)
         });
+        this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
         editorTreeWrapper.appendChild(treeViewContainer);
         this.fieldTable = new TreeView({
@@ -151,6 +154,7 @@ export class TreeViewRenderer implements IAction {
             enableRtl: this.parent.enableRtl,
             nodeChecked: this.addNode.bind(this),
         });
+        this.fieldTable.isStringTemplate = true;
         this.fieldTable.appendTo(treeViewContainer);
         return editorTreeWrapper;
     }

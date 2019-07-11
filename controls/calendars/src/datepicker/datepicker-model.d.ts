@@ -34,6 +34,7 @@ export interface DatePickerModel extends CalendarModel{
      * Specifies the format of the value that to be displayed in component. By default, the format is based on the culture.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     format?: string | FormatObject;
 
@@ -91,6 +92,7 @@ export interface DatePickerModel extends CalendarModel{
      * specifies the z-index value of the datePicker popup element.
      * @default 1000
      * @aspType int
+     * @blazorType int
      */
     zIndex?: number;
 
@@ -114,6 +116,7 @@ export interface DatePickerModel extends CalendarModel{
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
      */
     floatLabelType?: FloatLabelType | string;
@@ -122,6 +125,7 @@ export interface DatePickerModel extends CalendarModel{
      * Triggers when the popup is opened.
      * @event
      * @blazorProperty 'OnOpen'
+     * @blazorType PopupObjectArgs
      */
     open?: EmitType<PreventableEventArgs | PopupObjectArgs>;
 
@@ -129,20 +133,19 @@ export interface DatePickerModel extends CalendarModel{
      * Triggers when the popup is closed.
      * @event
      * @blazorProperty 'OnClose'
+     * @blazorType PopupObjectArgs
      */
     close?: EmitType<PreventableEventArgs | PopupObjectArgs>;
 
     /**
      * Triggers when the input loses the focus.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<BlurEventArgs>;
 
     /**
      *  Triggers when the input gets focus.
-     * @event 
-     * @blazorProperty 'OnFocus'
+     * @event
      */
     focus?: EmitType<FocusEventArgs>;
 

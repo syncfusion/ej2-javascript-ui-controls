@@ -22,7 +22,7 @@
 
 #### Bug Fixes
 
-- #I235628 - The issue with "Resizing web browser broken in Linear Gauge rendering" has been resolved.
+- `#I235628` - The issue with "Resizing web browser broken in Linear Gauge rendering" has been resolved.
 
 ## 17.1.38 (2019-03-29)
 

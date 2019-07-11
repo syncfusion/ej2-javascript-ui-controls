@@ -97,6 +97,7 @@ export class DialogRenderer {
                 enableRtl: this.parent.enableRtl,
                 change: this.onCheckChange.bind(this)
             });
+            this.deferUpdateCheckBox.isStringTemplate = true;
             this.deferUpdateCheckBox.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
             this.deferUpdateApplyButton = new Button({
                 cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
@@ -105,6 +106,7 @@ export class DialogRenderer {
                 enableRtl: this.parent.enableRtl,
                 isPrimary: true
             });
+            this.deferUpdateApplyButton.isStringTemplate = true;
             this.deferUpdateApplyButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton1');
             this.deferUpdateApplyButton.element.onclick = this.parent.renderMode === 'Fixed' ? this.applyButtonClick.bind(this) :
                 this.onDeferUpdateClick.bind(this);
@@ -116,6 +118,7 @@ export class DialogRenderer {
                 this.parent.localeObj.getConstant('close'),
             enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate
         });
+        this.deferUpdateCancelButton.isStringTemplate = true;
         this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
         this.deferUpdateCancelButton.element.onclick = this.parent.renderMode === 'Fixed' ? this.cancelButtonClick.bind(this) :
             this.onCloseFieldList.bind(this);
@@ -236,6 +239,7 @@ export class DialogRenderer {
                 target: document.body,
                 close: this.removeFieldListIcon.bind(this)
             });
+            this.fieldListDialog.isStringTemplate = true;
             this.fieldListDialog.appendTo(fieldListWrappper);
             this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_dialog-content') as HTMLElement, {
@@ -268,6 +272,7 @@ export class DialogRenderer {
                     <HTMLElement>document.querySelector(<string>this.parent.target) : <HTMLElement>this.parent.target : document.body,
                 close: this.removeFieldListIcon.bind(this)
             });
+            this.fieldListDialog.isStringTemplate = true;
             this.fieldListDialog.appendTo(fieldListWrappper);
             this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             this.fieldListDialog.element.querySelector('.e-footer-content').innerHTML = template;
@@ -342,9 +347,11 @@ export class DialogRenderer {
         if (this.parent.renderMode === 'Fixed') {
             layoutFooter.appendChild(this.createAddButton());
             addClass([fieldListWrappper], cls.STATIC_FIELD_LIST_CLASS);
+            this.adaptiveElement.isStringTemplate = true;
             this.adaptiveElement.appendTo(this.parentElement);
             this.parentElement.appendChild(layoutFooter);
         } else {
+            this.adaptiveElement.isStringTemplate = true;
             this.adaptiveElement.appendTo(this.parentElement);
         }
     }
@@ -383,6 +390,7 @@ export class DialogRenderer {
             content: this.parent.localeObj.getConstant('calculatedField'),
             enableRtl: this.parent.enableRtl
         });
+        calculateField.isStringTemplate = true;
         calculateField.appendTo(calculatedButton);
         if (this.parent.calculatedFieldModule) {
             removeClass([calculatedButton], cls.ICON_DISABLE);
@@ -407,7 +415,9 @@ export class DialogRenderer {
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
             enableRtl: this.parent.enableRtl
         });
+        fieldList.isStringTemplate = true;
         fieldList.appendTo(fieldListButton);
+        calculateField.isStringTemplate = true;
         calculateField.appendTo(calculatedButton);
         footerContainer.appendChild(fieldListButton);
         footerContainer.appendChild(calculatedButton);

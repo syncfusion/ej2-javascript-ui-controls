@@ -126,12 +126,14 @@ export interface ScrollSettingsModel {
     /**
      * Defines horizontal offset of the scroller
      * @default 0
+     * @isBlazorNullableType true
      */
     horizontalOffset?: number;
 
     /**
      * Defines vertical offset of the scroller
      * @default 0
+     * @isBlazorNullableType true
      */
     verticalOffset?: number;
 
@@ -144,12 +146,14 @@ export interface ScrollSettingsModel {
     /**
      * Allows to read the viewport width of the diagram
      * @default 0
+     * @isBlazorNullableType true
      */
     viewPortWidth?: number;
 
     /**
      * Allows to read the viewport height of the diagram
      * @default 0
+     * @isBlazorNullableType true
      */
     viewPortHeight?: number;
 
@@ -189,6 +193,7 @@ export interface ScrollSettingsModel {
     /**
      * Defines the scrollable area of diagram. Applicable, if the scroll limit is “limited”.
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     scrollableArea?: Rect;

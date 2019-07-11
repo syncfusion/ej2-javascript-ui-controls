@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### Diagram
+
+#### Bug Fixes
+
+- #239193 - The issue "element does not placed properly when specify the position as (0,0)" is now resolved.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Diagram

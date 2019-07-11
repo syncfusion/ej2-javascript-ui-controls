@@ -22,6 +22,7 @@ export class ChartRows {
     private parentTaskbarTemplateFunction: Function;
     private leftTaskLabelTemplateFunction: Function;
     private rightTaskLabelTemplateFunction: Function;
+    private taskLabelTemplateFunction: Function;
     private childTaskbarTemplateFunction: Function;
     private milestoneTemplateFunction: Function;
     private templateData: IGanttData;
@@ -31,14 +32,6 @@ export class ChartRows {
     private connectorPointMargin: number;
     public taskBarMarginTop: number;
     public milestoneMarginTop: number;
-    /** @private */
-    public taskbarTooltipTemplateFunction: Function;
-    /** @private */
-    public baselineTooltipTemplateFunction: Function;
-    /** @private */
-    public connectorLineTooltipTemplateFunction: Function;
-    /** @private */
-    public editingTooltipTemplateFunction: Function;
 
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
@@ -138,10 +131,20 @@ export class ChartRows {
         if (this.childTaskbarTemplateFunction) {
             childTaskbarNode = this.childTaskbarTemplateFunction(
                 extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.Child,
-                this.getTemplateID(TemplateName.Child));
+                this.getTemplateID(TemplateName.Child), false);
         } else {
-            let labelString: string = this.getTaskLabel(this.parent.labelSettings.taskLabel);
-            labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
+            let labelString: string = '';
+            if (this.taskLabelTemplateFunction) {
+                let taskLabelTemplateNode: NodeList = this.taskLabelTemplateFunction(
+                    extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.TaskLabel,
+                    this.getTemplateID(TemplateName.TaskLabel), false);
+                let tempDiv: Element = createElement('div');
+                tempDiv.appendChild(taskLabelTemplateNode[0]);
+                labelString = tempDiv.innerHTML;
+            } else {
+                labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
+                labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
+            }
             let template: string = (data.ganttProperties.startDate && data.ganttProperties.endDate
                 && data.ganttProperties.duration) ? (
                     '<div class="' + cls.childTaskBarInnerDiv + ' ' + cls.traceChildTaskBar + '"' +
@@ -185,7 +188,7 @@ export class ChartRows {
         if (this.milestoneTemplateFunction) {
             milestoneNode = this.milestoneTemplateFunction(
                 extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.Milestone,
-                this.getTemplateID(TemplateName.Milestone));
+                this.getTemplateID(TemplateName.Milestone), false);
         } else {
             let template: string = '<div class="' + cls.traceMilestone + '" style="position:absolute;">' +
                 '<div class="' + cls.milestoneTop + ((!data.ganttProperties.startDate && !data.ganttProperties.endDate) ?
@@ -255,7 +258,7 @@ export class ChartRows {
         if (this.leftTaskLabelTemplateFunction) {
             leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(
                 extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.LeftLabel,
-                this.getTemplateID(TemplateName.LeftLabel));
+                this.getTemplateID(TemplateName.LeftLabel), false);
         } else {
             let field: string = this.parent.labelSettings.leftLabel;
             let labelString: string = this.getTaskLabel(field);
@@ -268,7 +271,7 @@ export class ChartRows {
                 leftLabelTemplateNode = this.createDivElement(templateString);
             }
         }
-        if (leftLabelTemplateNode) {
+        if (leftLabelTemplateNode && leftLabelTemplateNode.length > 0) {
             leftLabelNode[0].appendChild([].slice.call(leftLabelTemplateNode)[0]);
         }
         return leftLabelNode;
@@ -285,7 +288,7 @@ export class ChartRows {
         if (this.rightTaskLabelTemplateFunction) {
             rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(
                 extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.RightLabel,
-                this.getTemplateID(TemplateName.RightLabel));
+                this.getTemplateID(TemplateName.RightLabel), false);
         } else {
             let field: string = this.parent.labelSettings.rightLabel;
             let labelString: string = this.getTaskLabel(field);
@@ -297,7 +300,7 @@ export class ChartRows {
                 rightLabelTemplateNode = this.createDivElement(templateString);
             }
         }
-        if (rightLabelTemplateNode) {
+        if (rightLabelTemplateNode && rightLabelTemplateNode.length > 0) {
             rightLabelNode[0].appendChild([].slice.call(rightLabelTemplateNode)[0]);
         }
         return rightLabelNode;
@@ -313,11 +316,21 @@ export class ChartRows {
         if (this.parentTaskbarTemplateFunction) {
             parentTaskbarNode = this.parentTaskbarTemplateFunction(
                 extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.Parent,
-                this.getTemplateID(TemplateName.Parent));
+                this.getTemplateID(TemplateName.Parent), false);
         } else {
             let data: IGanttData = this.templateData;
-            let labelString: string = this.getTaskLabel(this.parent.labelSettings.taskLabel);
-            labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
+            let labelString: string = '';
+            if (this.taskLabelTemplateFunction) {
+                let parentTaskLabelNode: NodeList = this.taskLabelTemplateFunction(
+                    extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.TaskLabel,
+                    this.getTemplateID(TemplateName.TaskLabel), false);
+                let div: Element = createElement('div');
+                div.appendChild(parentTaskLabelNode[0]);
+                labelString = div.innerHTML;
+            } else {
+                labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
+                labelString = labelString === 'isCustomTemplate' ? this.parent.labelSettings.taskLabel : labelString;
+            }
             let template: string = '<div class="' + cls.parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + cls.traceParentTaskBar + '"' +
                 ' style="width:' + data.ganttProperties.width + 'px;height:' + this.taskBarHeight + 'px;">' +
@@ -367,6 +380,10 @@ export class ChartRows {
             this.isTemplate(this.parent.labelSettings.rightLabel)) {
             this.rightTaskLabelTemplateFunction = this.templateCompiler(this.parent.labelSettings.rightLabel);
         }
+        if (!isNullOrUndefined(this.parent.labelSettings.taskLabel) &&
+            this.isTemplate(this.parent.labelSettings.taskLabel)) {
+            this.taskLabelTemplateFunction = this.templateCompiler(this.parent.labelSettings.taskLabel);
+        }
         if (!isNullOrUndefined(this.parent.taskbarTemplate)) {
             this.childTaskbarTemplateFunction = this.templateCompiler(this.parent.taskbarTemplate);
         }
@@ -400,6 +417,7 @@ export class ChartRows {
     /** @private */
     public getTemplateData(data: IGanttData): IGanttData {
         let templateData: ITemplateData = extend({}, {}, data.taskData, true);
+        let predecessorName: string = data.ganttProperties.predecessorsName as string;
         templateData.hasChildRecords = data.hasChildRecords;
         templateData.expanded = data.expanded;
         templateData.index = data.index;
@@ -408,12 +426,14 @@ export class ChartRows {
         templateData.taskEndDate = data.ganttProperties.endDate;
         templateData.taskDuration = data.ganttProperties.duration;
         templateData.taskDurationUnit = data.ganttProperties.durationUnit;
+        templateData.taskResourceNames = data.ganttProperties.resourceNames;
         templateData.isMilestone = data.ganttProperties.isMilestone;
         templateData.isAutoSchedule = data.ganttProperties.isAutoSchedule;
         templateData.left = data.ganttProperties.left;
         templateData.width = data.ganttProperties.width;
         templateData.baselineWidth = data.ganttProperties.baselineWidth;
         templateData.progressWidth = data.ganttProperties.progressWidth;
+        templateData.taskPredecessorsName = !isNullOrUndefined(predecessorName) ? predecessorName : '';
         return templateData;
     }
 
@@ -432,28 +452,28 @@ export class ChartRows {
         }
         if (this.parentTaskbarTemplateFunction && isParent) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Parent), TemplateName.Parent);
+                updateBlazorTemplate(this.getTemplateID(TemplateName.Parent), TemplateName.Parent, this.parent);
             } else {
                 resetBlazorTemplate(this.getTemplateID(TemplateName.Parent), TemplateName.Parent);
             }
         }
         if (this.childTaskbarTemplateFunction && isChild) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Child), TemplateName.Child);
+                updateBlazorTemplate(this.getTemplateID(TemplateName.Child), TemplateName.Child, this.parent);
             } else {
                 resetBlazorTemplate(this.getTemplateID(TemplateName.Child), TemplateName.Child);
             }
         }
         if (this.milestoneTemplateFunction && isMilestone) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Milestone), TemplateName.Milestone);
+                updateBlazorTemplate(this.getTemplateID(TemplateName.Milestone), TemplateName.Milestone, this.parent);
             } else {
                 resetBlazorTemplate(this.getTemplateID(TemplateName.Milestone), TemplateName.Milestone);
             }
         }
         if (this.leftTaskLabelTemplateFunction) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.LeftLabel), TemplateName.LeftLabel);
+                updateBlazorTemplate(this.getTemplateID(TemplateName.LeftLabel), TemplateName.LeftLabel, this.parent.labelSettings);
             } else {
                 resetBlazorTemplate(this.getTemplateID(TemplateName.LeftLabel), TemplateName.LeftLabel);
             }
@@ -461,10 +481,19 @@ export class ChartRows {
         if (this.rightTaskLabelTemplateFunction) {
             if (isUpdate) {
                 updateBlazorTemplate(
-                    this.getTemplateID(TemplateName.RightLabel), TemplateName.RightLabel);
+                    this.getTemplateID(TemplateName.RightLabel), TemplateName.RightLabel, this.parent.labelSettings);
             } else {
                 resetBlazorTemplate(
                     this.getTemplateID(TemplateName.RightLabel), TemplateName.RightLabel);
+            }
+        }
+        if (this.taskLabelTemplateFunction && (isParent || isChild)) {
+            if (isUpdate) {
+                updateBlazorTemplate(
+                    this.getTemplateID(TemplateName.TaskLabel), TemplateName.TaskLabel, this.parent.labelSettings);
+            } else {
+                resetBlazorTemplate(
+                    this.getTemplateID(TemplateName.TaskLabel), TemplateName.TaskLabel);
             }
         }
     }
@@ -698,7 +727,6 @@ export class ChartRows {
      * @private
      */
     public refreshGanttRows(): void {
-        this.ganttChartTableBody.innerHTML = '';
         this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
         this.createTaskbarTemplate();
         this.triggerQueryTaskbarInfo();
@@ -737,14 +765,18 @@ export class ChartRows {
         }
         if (this.templateData.hasChildRecords) {
             let parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i);
-            taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
+            if (parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
+                taskbarContainerNode[0].appendChild([].slice.call(parentTaskbarTemplateNode)[0]);
+            }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
                 taskBaselineTemplateNode = this.getTaskBaselineNode();
             }
         } else if (this.templateData.ganttProperties.isMilestone) {
             let milestoneTemplateNode: NodeList = this.getMilestoneNode(i);
-            taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
+            if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
+                taskbarContainerNode[0].appendChild([].slice.call(milestoneTemplateNode)[0]);
+            }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
                 taskBaselineTemplateNode = this.getMilestoneBaselineNode();
@@ -765,7 +797,7 @@ export class ChartRows {
                 if (childTaskbarLeftResizeNode) {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarLeftResizeNode)[0]);
                 }
-                if (childTaskbarTemplateNode) {
+                if (childTaskbarTemplateNode && childTaskbarTemplateNode.length > 0) {
                     taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
                 }
                 if (childTaskbarProgressResizeNode) {
@@ -808,7 +840,9 @@ export class ChartRows {
                 parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskIndicatorNode)[0]);
             }
         }
-        parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(rightLabelNode)[0]);
+        if (rightLabelNode && rightLabelNode.length > 0) {
+            parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(rightLabelNode)[0]);
+        }
         if (!isNullOrUndefined(taskBaselineTemplateNode)) {
             parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskBaselineTemplateNode)[0]);
         }

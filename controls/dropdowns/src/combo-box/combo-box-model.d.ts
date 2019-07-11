@@ -62,6 +62,8 @@ export interface ComboBoxModel extends DropDownListModel{
      * {% codeBlock src="combobox/index-api/index.html" %}{% endcodeBlock %}
      * 
      * @default null
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     index?: number;
 
@@ -109,6 +111,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      */
     floatLabelType?: FloatLabelType;
 

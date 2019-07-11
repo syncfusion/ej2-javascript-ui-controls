@@ -119,14 +119,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
      * @default new Date(1900, 00, 01)
-     * @aspDefaultValue new DateTime(1900, 01, 01)
+     * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
     @Property(new Date(1900, 0, 1))
     public min: Date;
     /**
      * Gets or sets the maximum date that can be selected in the Calendar.
      * @default new Date(2099, 11, 31)
-     * @aspDefaultValue new DateTime(2099, 12, 31)
+     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public max: Date;
@@ -134,6 +134,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
      * @default 0
      * @aspType int
+     * @blazorType int
      * > For more details about firstDayOfWeek refer to 
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
@@ -1298,9 +1299,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     if (newProp.showTodayButton) {
                         this.createContentFooter();
                     } else {
-                        detach(this.todayElement);
-                        detach(this.footer);
-                        this.todayElement = this.footer = undefined;
+                        if (!isNullOrUndefined(this.todayElement) && !isNullOrUndefined(this.footer)) {
+                            detach(this.todayElement);
+                            detach(this.footer);
+                            this.todayElement = this.footer = undefined;
+                        }
                     }
                     this.setProperties({ showTodayButton: newProp.showTodayButton }, true);
                     break;
@@ -1911,7 +1914,7 @@ export class Calendar extends CalendarBase {
     /**
      * Gets or sets the selected date of the Calendar.
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     @Property(null)
     public value: Date;

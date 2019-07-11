@@ -1,4 +1,4 @@
-import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, remove } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, ZoomEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../actions/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';import { RowDataBoundEventArgs, HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { Filter } from '../actions/filter';import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../renderer/connector-line';import { ConnectorLineEdit } from '../actions/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';import { Selection } from '../actions/selection';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';
+import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, remove } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, ZoomEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../actions/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';import { RowDataBoundEventArgs, HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { QueryCellInfoEventArgs, ColumnMenuItemModel } from '@syncfusion/ej2-grids';import { Filter } from '../actions/filter';import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../renderer/connector-line';import { ConnectorLineEdit } from '../actions/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';import { Selection } from '../actions/selection';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -45,6 +45,18 @@ export interface GanttModel extends ComponentModel{
     showColumnMenu?: boolean;
 
     /**
+     * `columnMenuItems` defines both built-in and custom column menu items.
+     * <br><br>
+     * The available built-in items are,
+     * * `ColumnChooser` - To show/hide the TreeGrid columns.
+     * * `SortAscending` - Sort the current column in ascending order.
+     * * `SortDescending` - Sort the current column in descending order.
+     * * `Filter` - Filter options will show based on filterSettings property.
+     * @default null
+     */
+    columnMenuItems?: ColumnMenuItem[] | ColumnMenuItemModel[];
+
+    /**
      * If `collapseAllParentTasks` set to true, then root tasks are rendered with collapsed state.
      * @default false
      */
@@ -60,6 +72,7 @@ export interface GanttModel extends ComponentModel{
      * To define expander column index in Grid.
      * @default 0
      * @aspType int
+     * @blazorType int
      */
     treeColumnIndex?: number;
 
@@ -193,12 +206,15 @@ export interface GanttModel extends ComponentModel{
      * Defines height value for grid rows and chart rows in Gantt.
      * @default 36
      * @aspType int
+     * @blazorType int
      */
     rowHeight?: number;
 
     /**
      * Defines height of taskbar element in Gantt.
      * @aspType int?
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     taskbarHeight?: number;
 
@@ -242,6 +258,7 @@ export interface GanttModel extends ComponentModel{
      * Defines width of dependency lines.
      * @default 1
      * @aspType int
+     * @blazorType int
      */
     connectorLineWidth?: number;
 
@@ -271,6 +288,7 @@ export interface GanttModel extends ComponentModel{
      * You can also get the currently selected row index.
      * @default -1
      * @aspType int
+     * @blazorType int
      */
     selectedRowIndex?: number;
 

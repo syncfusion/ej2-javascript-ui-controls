@@ -58,6 +58,7 @@ export class GanttTreeGrid {
 
     private composeProperties(): void {
         this.parent.treeGrid.showColumnMenu = this.parent.showColumnMenu;
+        this.parent.treeGrid.columnMenuItems = this.parent.columnMenuItems;
         this.parent.treeGrid.childMapping = this.parent.taskFields.child;
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
@@ -472,7 +473,6 @@ export class GanttTreeGrid {
 
     private initiateFiltering(column: GanttColumnModel): void {
         column.allowFiltering = column.allowFiltering === false ? false : true;
-        column.filter = column.filter ? column.filter : null;
         if (column.allowFiltering && this.parent.filterSettings.type === 'Menu' && !column.filter) {
             column.filter = { ui: this.getCustomFilterUi(column) };
         }

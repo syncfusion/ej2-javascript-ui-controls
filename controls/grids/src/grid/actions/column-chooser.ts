@@ -317,6 +317,8 @@ export class ColumnChooser implements IAction {
             cssClass: 'e-cc',
             animationSettings: { effect: 'None' },
         });
+        let isStringTemplate: string = 'isStringTemplate';
+        this.dlgObj[isStringTemplate] = true;
         this.dlgObj.appendTo(this.dlgDiv);
         this.wireEvents();
     }

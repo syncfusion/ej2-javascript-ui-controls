@@ -74,6 +74,8 @@ export class DialogEditRender {
             },
             gObj.editSettings.dialog.params
         ));
+        let isStringTemplate: string = 'isStringTemplate';
+        this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dialog);
         this.parent.applyBiggerTheme(this.dialogObj.element.parentElement);
     }
@@ -112,7 +114,7 @@ export class DialogEditRender {
             let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
             let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
             appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
-            updateBlazorTemplate(editTemplateID, 'Template');
+            updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
             div.appendChild(form);
             return div;
         }

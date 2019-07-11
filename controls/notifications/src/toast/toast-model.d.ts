@@ -50,7 +50,7 @@ export interface ButtonModelPropsModel {
     /**
    * Specifies the click event binding of action buttons created within Toast.
    * @event
-   * @blazorProperty 'OnClick'
+   * @blazorProperty 'Clicked'
    */
     click?: EmitType<Event>;
 
@@ -128,6 +128,7 @@ export interface ToastModel extends ComponentModel{
     /**
      * Specifies the content to be displayed on the Toast.
      * @default null
+     * @blazorType string
      */
     content?: string | HTMLElement;
 

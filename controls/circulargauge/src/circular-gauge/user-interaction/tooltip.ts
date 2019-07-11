@@ -6,7 +6,7 @@ import { GaugeLocation, getPointer, Rect, getMousePosition, Size, getElementSize
 import { getAngleFromValue, getLabelFormat, getLocationFromAngle } from '../utils/helper';
 import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
-import { Browser, createElement, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, createElement, remove, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { tooltipRender } from '../model/constants';
 /**
  * Tooltip Module handles the tooltip of the circular gauge
@@ -106,7 +106,8 @@ export class GaugeTooltip {
                 (angle >= 0 && angle <= 45))) ? (location.x + 10) : location.x;
             let tooltipArgs: ITooltipRenderEventArgs = {
                 name: tooltipRender, cancel: false, content: content, location: location, axis: this.currentAxis,
-                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge
+                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge,
+                appendInBodyTag: false
             };
             this.gauge.trigger(tooltipRender, tooltipArgs, (observedArgs: ITooltipRenderEventArgs) => {
                 let template: string = tooltipArgs.tooltip.template;
@@ -151,6 +152,22 @@ export class GaugeTooltip {
                     }
                     if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
                         this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                    }
+                    if (tooltipArgs.appendInBodyTag) {
+                        let bodyToolElement : Object = document.getElementsByClassName('EJ2-CircularGauge-Tooltip e-control e-tooltip');
+                        if (!isNullOrUndefined(bodyToolElement)) {
+                            this.removeTooltip();
+                        }
+                        document.body.appendChild(this.tooltipEle);
+                        this.tooltipEle.style.zIndex = '100000000001';
+                        let bounds: ClientRect = this.tooltipEle.getBoundingClientRect();
+                        if (pageX + bounds['width'] <= window.innerWidth && bounds['x'] <= 0) {
+                            this.tooltipEle.style.left = pageX + 20 + 'px';
+                            this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
+                        } else if (bounds['x'] <= 0 && pageX + bounds['width'] >= window.innerWidth) {
+                            this.tooltipEle.style.left = pageX - bounds['width'] + 20 + 'px';
+                            this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
+                        }
                     }
                 }
             });

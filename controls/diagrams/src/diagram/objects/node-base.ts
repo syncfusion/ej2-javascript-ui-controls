@@ -47,6 +47,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
     /**
      * Defines the collection of connection points of nodes/connectors
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Collection<PointPortModel>([], PointPort)
@@ -90,6 +91,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
     /**
      * Allows the user to save custom information/data about a node/connector
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -98,6 +100,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
     /**
      * Flip the element in Horizontal/Vertical directions
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default None
      */
     @Property('None')

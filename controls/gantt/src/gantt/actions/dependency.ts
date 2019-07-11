@@ -663,6 +663,7 @@ export class Dependency {
             animationSettings: { effect: 'None' },
         });
         document.getElementById(this.parent.element.id + '_dialogValidationRule').innerHTML = '';
+        validationDialog.isStringTemplate = true;
         validationDialog.appendTo('#' + this.parent.element.id + '_dialogValidationRule');
         this.parent.validationDialogElement = validationDialog;
     }
@@ -720,7 +721,7 @@ export class Dependency {
             let predecessor: IPredecessor = validPredecessor[i];
             let parentTask: IGanttData = this.parent.getRecordByID(predecessor.from);
             let offset: number;
-            if (isScheduledTask(parentTask.ganttProperties)) {
+            if (isScheduledTask(parentTask.ganttProperties) && isScheduledTask(record.ganttProperties)) {
                 let tempStartDate: Date;
                 let tempEndDate: Date;
                 let tempDuration: number;
@@ -979,6 +980,7 @@ export class Dependency {
             id: this.parent.element.id + '_deletePredecessorConfirmDialog',
         });
         this.parent.element.appendChild(confirmDialog);
+        this.confirmPredecessorDialog.isStringTemplate = true;
         this.confirmPredecessorDialog.appendTo(confirmDialog);
     }
 

@@ -331,15 +331,18 @@ export interface ValidationMessages {
 
 /** @hidden */
 export interface IFileManager extends Component<HTMLElement> {
+    hasId: boolean;
+    pathNames: string[];
     pathId: string[];
     originalPath: string;
     filterPath: string;
+    filterId: string;
     expandedId: string;
     itemData: Object[];
     visitedData: Object;
     visitedItem: Element;
     feParent: Object[];
-    feFiles: Object;
+    feFiles: Object[];
     ajaxSettings: AjaxSettingsModel;
     toolbarSettings: ToolbarSettingsModel;
     dialogObj: Dialog;
@@ -368,6 +371,7 @@ export interface IFileManager extends Component<HTMLElement> {
     createdItem: { [key: string]: Object; };
     renamedItem: { [key: string]: Object; };
     renamedNodeId: string;
+    renamedId: string;
     uploadItem: string[];
     fileLength: number;
     detailsviewModule: DetailsView;
@@ -426,6 +430,7 @@ export interface IFileManager extends Component<HTMLElement> {
     isDropEnd: boolean;
     droppedObjects: Object[];
     uploadEventArgs: BeforeSendEventArgs;
+    destinationPath: string;
 }
 
 /** @hidden */
@@ -434,7 +439,6 @@ export interface ITreeView extends Component<HTMLElement> {
     removeNode: Function;
     removeNodes: string[];
     duplicateFiles: Function;
-    rootNode: string;
     rootID: string;
     activeNode: Element;
 }

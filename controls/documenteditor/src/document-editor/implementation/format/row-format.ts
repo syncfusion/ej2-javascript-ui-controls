@@ -77,6 +77,12 @@ export class WRowFormat {
     set isHeader(value: boolean) {
         this.setPropertyValue('isHeader', value);
     }
+    get rightMargin(): number {
+        return this.getPropertyValue('rightMargin') as number;
+    }
+    set rightMargin(value: number) {
+        this.setPropertyValue('rightMargin', value);
+    }
     get height(): number {
         return this.getPropertyValue('height') as number;
     }
@@ -98,6 +104,30 @@ export class WRowFormat {
             this.height = 0;
         }
         this.setPropertyValue('heightType', value);
+    }
+    get bottomMargin(): number {
+        return this.getPropertyValue('bottomMargin') as number;
+    }
+    set bottomMargin(value: number) {
+        this.setPropertyValue('bottomMargin', value);
+    }
+    get leftIndent(): number {
+        return this.getPropertyValue('leftIndent') as number;
+    }
+    set leftIndent(value: number) {
+        this.setPropertyValue('leftIndent', value);
+    }
+    get topMargin(): number {
+        return this.getPropertyValue('topMargin') as number;
+    }
+    set topMargin(value: number) {
+        this.setPropertyValue('topMargin', value);
+    }
+    get leftMargin(): number {
+        return this.getPropertyValue('leftMargin') as number;
+    }
+    set leftMargin(value: number) {
+        this.setPropertyValue('leftMargin', value);
     }
     constructor(node?: TableRowWidget) {
         this.ownerBase = node;
@@ -141,6 +171,11 @@ export class WRowFormat {
         this.addUniqueRowFormat('gridAfterWidth', property, propValue, uniqueRowFormatTemp);
         this.addUniqueRowFormat('gridgridAfterWidth', property, propValue, uniqueRowFormatTemp);
         this.addUniqueRowFormat('gridBeforeWidthType', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('leftMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('rightMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('topMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('bottomMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('leftIndent', property, propValue, uniqueRowFormatTemp);
         this.uniqueRowFormat = WRowFormat.uniqueRowFormats.addUniqueFormat(uniqueRowFormatTemp, WRowFormat.uniqueFormatType);
     }
     // tslint:disable-next-line:max-line-length
@@ -184,8 +219,30 @@ export class WRowFormat {
             case 'gridAfterWidthType':
                 value = 'Point';
                 break;
+            case 'leftMargin':
+                value = undefined;
+                break;
+            case 'topMargin':
+                value = undefined;
+                break;
+            case 'bottomMargin':
+                value = undefined;
+                break;
+            case 'rightMargin':
+                value = undefined;
+                break;
+            case 'leftIndent':
+                value = 0;
+                break;
         }
         return value;
+    }
+
+    public containsMargins(): boolean {
+        return (!isNullOrUndefined(this.leftMargin)
+            || !isNullOrUndefined(this.rightMargin)
+            || !isNullOrUndefined(this.bottomMargin)
+            || !isNullOrUndefined(this.topMargin));
     }
     public cloneFormat(): WRowFormat {
         let format: WRowFormat = new WRowFormat();
@@ -199,6 +256,11 @@ export class WRowFormat {
         format.gridAfter = this.gridAfter;
         format.gridAfterWidth = this.gridAfterWidth;
         format.gridAfterWidthType = this.gridAfterWidthType;
+        format.leftMargin = this.leftMargin;
+        format.rightMargin = this.rightMargin;
+        format.topMargin = this.topMargin;
+        format.bottomMargin = this.bottomMargin;
+        format.leftIndent = this.leftIndent;
         return format;
     }
     public hasValue(property: string): boolean {
@@ -221,6 +283,11 @@ export class WRowFormat {
                 this.gridAfter = format.gridAfter;
                 this.gridAfterWidth = format.gridAfterWidth;
                 this.gridAfterWidthType = format.gridAfterWidthType;
+                this.leftMargin = format.leftMargin;
+                this.topMargin = format.topMargin;
+                this.rightMargin = format.rightMargin;
+                this.bottomMargin = format.bottomMargin;
+                this.leftIndent = format.leftIndent;
             }
             if (!isNullOrUndefined(format.borders)) {
                 this.borders = new WBorders(this);

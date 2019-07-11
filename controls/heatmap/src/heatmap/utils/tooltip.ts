@@ -161,7 +161,7 @@ export class Tooltip {
      * @private
      */
     public createTooltipDiv(heatMap: HeatMap): void {
-        let position: string = heatMap.enableCanvasRendering && heatMap.allowSelection  ? 'relative' : 'absolute';
+        let position: string = 'absolute';
         let top: number = heatMap.enableCanvasRendering && heatMap.allowSelection ? heatMap.availableSize.height : 0;
         let element2: Element = <HTMLElement>createElement('div', {
             id: this.heatMap.element.id + 'Celltooltipcontainer',
@@ -212,7 +212,7 @@ export class Tooltip {
      * To render tooltip.
      * @private
      */
-    public renderTooltip(currentRect: CurrentRect): void {
+    public  renderTooltip(currentRect: CurrentRect): void {
         let hetmapSeries: Series = this.heatMap.heatMapSeries;
         let tempTooltipText: string[] = [''];
         let showTooltip: boolean = this.heatMap.bubbleSizeWithColor ?
@@ -222,6 +222,9 @@ export class Tooltip {
                 currentRect.value.toString() === '') ? false : true;
         if (!showTooltip) {
             this.showHideTooltip(false, false);
+            if (!currentRect.visible) {
+                this.showHideTooltip(false, false);
+            }
         } else {
             if (!isNullOrUndefined(this.heatMap.tooltipRender)) {
                 // this.tooltipObject.header = '';
@@ -230,7 +233,7 @@ export class Tooltip {
                 //     hetmapSeries.hoverYAxisLabel);
                 let content: string[] = this.getTooltipContent(currentRect, hetmapSeries);
                 let argData: ITooltipEventArgs = {
-                    heatmap: this.heatMap,
+                    heatmap: (this.heatMap.isBlazor ? null : this.heatMap),
                     cancel: false,
                     name: 'tooltipRender',
                     value: currentRect.value,
@@ -242,46 +245,51 @@ export class Tooltip {
                         this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
                     content: content
                 };
-                this.heatMap.trigger('tooltipRender', argData);
-                if (!argData.cancel) {
-                    tempTooltipText = argData.content;
+                this.heatMap.trigger('tooltipRender', argData, (observedArgs: ITooltipEventArgs) => {
+                    if (!observedArgs.cancel) {
+                        tempTooltipText = observedArgs.content;
+                        this.tooltipCallback(currentRect, tempTooltipText);
                 } else {
                     if (this.tooltipObject) {
                         this.showHideTooltip(false);
                     }
-                    return;
                 }
-
+                });
             } else {
                 //  this.tooltipObject.header = hetmapSeries.hoverYAxisLabel.toString();
-               tempTooltipText = this.getTooltipContent(currentRect, hetmapSeries);
+                tempTooltipText = this.getTooltipContent(currentRect, hetmapSeries);
+                this.tooltipCallback(currentRect, tempTooltipText);
             }
-            if (!this.tooltipObject) {
-                this.createTooltip(
-                    currentRect,
-                    currentRect.x + (currentRect.width / 2),
-                    currentRect.y + (currentRect.height / 2),
-                    tempTooltipText);
-            } else {
-                this.tooltipObject.content = tempTooltipText;
-                this.tooltipObject.data = {
-                    xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
-                    yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
-                    xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
-                    this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
-                    yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
-                    this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
-                    value: currentRect.value,
-
-                };
-            }
-            this.showHideTooltip(true);
-            this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;
-            this.isFirst = (this.isFirst) ? false : this.isFirst;
-            this.isFadeout = (this.isFadeout) ? false : this.isFadeout;
-            this.tooltipObject.location.x = currentRect.x + (currentRect.width / 2);
-            this.tooltipObject.location.y = currentRect.y + (currentRect.height / 2);
         }
+    }
+    /**
+     * To render tooltip.
+     */
+    private tooltipCallback(currentRect: CurrentRect, tempTooltipText: string[]): void {
+        if (!this.tooltipObject) {
+            this.createTooltip(
+                currentRect,
+                currentRect.x + (currentRect.width / 2),
+                currentRect.y + (currentRect.height / 2),
+                tempTooltipText);
+        } else {
+            this.tooltipObject.content = tempTooltipText;
+            this.tooltipObject.data = {
+                xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+                value: currentRect.value,
+            };
+        }
+        this.showHideTooltip(true);
+        this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;
+        this.isFirst = (this.isFirst) ? false : this.isFirst;
+        this.isFadeout = (this.isFadeout) ? false : this.isFadeout;
+        this.tooltipObject.location.x = currentRect.x + (currentRect.width / 2);
+        this.tooltipObject.location.y = currentRect.y + (currentRect.height / 2);
         if (!currentRect.visible) {
             this.showHideTooltip(false, false);
         }

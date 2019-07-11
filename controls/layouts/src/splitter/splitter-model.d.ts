@@ -1,4 +1,4 @@
-import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
+import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
 import {Orientation,ResizeEventArgs,ResizingEventArgs,BeforeExpandEventArgs,ExpandedEventArgs} from "./splitter";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -47,6 +47,7 @@ export interface PanePropertiesModel {
     /**
      * Specifies the content of split pane as plain text, HTML markup, or any other JavaScript controls.
      * @default ''
+     * @blazorType string
      */
     content?: string | HTMLElement;
 

@@ -277,9 +277,10 @@ export class MonthEvent extends EventBase {
         }
         let templateElement: HTMLElement[];
         let eventData: { [key: string]: Object } = record.data as { [key: string]: Object };
+        let eventObj: { [key: string]: Object } = this.getEventData(record);
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId: string = this.parent.element.id + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId);
+            let templateId: string = this.parent.currentView + '_eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
         } else {
             let eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
             let appointmentSubject: HTMLElement = createElement('div', {
@@ -481,7 +482,8 @@ export class MonthEvent extends EventBase {
 
     public renderEventElement(event: { [key: string]: Object }, appointmentElement: HTMLElement, cellTd: Element): void {
         let eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
-        let args: EventRenderedArgs = { data: event, element: appointmentElement, cancel: false, type: eventType };
+        let eventObj: { [key: string]: Object } = this.getEventData(event);
+        let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
         this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
             if (eventArgs.cancel) {
                 this.renderedEvents.pop();
@@ -489,6 +491,13 @@ export class MonthEvent extends EventBase {
                 this.renderElement(cellTd, appointmentElement);
             }
         });
+    }
+
+    public getEventData(event: { [key: string]: Object }): { [key: string]: Object } {
+        let eventObj: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
+        eventObj[this.fields.startTime] = (event.data as { [key: string]: Object })[this.fields.startTime];
+        eventObj[this.fields.endTime] = (event.data as { [key: string]: Object })[this.fields.endTime] ;
+        return eventObj;
     }
 
     public renderElement(cellTd: HTMLElement | Element, element: HTMLElement): void {

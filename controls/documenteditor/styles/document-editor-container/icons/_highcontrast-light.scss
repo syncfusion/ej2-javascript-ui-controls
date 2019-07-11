@@ -307,4 +307,8 @@
   .e-de-ctnr-upload::before {
     content: '\e58f';
   }
+
+  .e-de-flip {
+    transform: scaleX(-1);
+  }
 }

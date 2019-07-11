@@ -22,7 +22,7 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
      * the given value is not present in the timepicker popup list.
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     scrollTo?: Date;
 
@@ -30,6 +30,7 @@ export interface DateTimePickerModel extends DatePickerModel{
      * specifies the z-index value of the popup element.
      * @default 1000
      * @aspType int
+     * @blazorType int
      */
     zIndex?: number;
 
@@ -98,6 +99,7 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Triggers when popup is opened.
      * @event 
      * @blazorProperty 'OnOpen'
+     * @blazorType PopupObjectArgs
      */
     open?: EmitType<Object>;
 
@@ -105,20 +107,19 @@ export interface DateTimePickerModel extends DatePickerModel{
      * Triggers when popup is closed.
      * @event 
      * @blazorProperty 'OnClose'
+     * @blazorType PopupObjectArgs
      */
     close?: EmitType<Object>;
 
     /**
      * Triggers when input loses the focus.
-     * @event 
-     * @blazorProperty 'OnBlur'
+     * @event
      */
     blur?: EmitType<Object>;
 
     /**
      * Triggers when input gets focus.
-     * @event 
-     * @blazorProperty 'OnFocus'
+     * @event
      */
     focus?: EmitType<Object>;
 

@@ -27,7 +27,7 @@ import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArg
 import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs} from './interface';
 import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs } from './interface';
 import { Render } from '../renderer/render';
-import { Column, ColumnModel } from '../models/column';
+import { Column, ColumnModel, ActionEventArgs } from '../models/column';
 import { Action, SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
 import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition } from './enum';
 import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode } from './enum';
@@ -615,9 +615,10 @@ export class EditSettings extends ChildProperty<EditSettings> {
     /**
      * Defines the custom edit elements for the dialog template.
      * @default ''
+     * @aspType string
      */
     @Property('')
-    public template: string;
+    public template: string | Object;
 
     /**   
      * Defines the position of adding a new row. The available position are:
@@ -1421,15 +1422,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @blazorProperty 'OnActionBegin'
      */
     @Event()
-    public actionBegin: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
+    public actionBegin: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs>;
 
     /** 
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed. 
      * @event 
-     * @blazorProperty 'ActionCompleted'
+     * @blazorProperty 'OnActionComplete'
      */
     @Event()
-    public actionComplete: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
+    public actionComplete: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs>;
     /* tslint:enable */
 
     /** 
@@ -1443,7 +1444,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when data source is populated in the Grid.
      * @event 
-     * @blazorProperty 'OnDataBound'
+     * @blazorProperty 'DataBound'
      */
     @Event()
     public dataBound: EmitType<Object>;
@@ -1679,6 +1680,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when toolbar item is clicked.
      * @event
      * @blazorProperty 'OnToolbarClick'
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
@@ -1718,7 +1720,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are added in batch mode.
      * @event
-     * @deprecated
+     * @blazorProperty 'OnBatchAdd'
      */
     @Event()
     public beforeBatchAdd: EmitType<BeforeBatchAddArgs>;
@@ -1726,7 +1728,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are deleted in batch mode.
      * @event
-     * @deprecated
+     * @blazorProperty 'OnBatchDelete'
      */
     @Event()
     public beforeBatchDelete: EmitType<BeforeBatchDeleteArgs>;
@@ -1734,7 +1736,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before records are saved in batch mode.
      * @event
-     * @deprecated  
+     * @blazorProperty 'OnBatchSave'
      */
     @Event()
     public beforeBatchSave: EmitType<BeforeBatchSaveArgs>;
@@ -1750,7 +1752,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when command button is clicked.
      * @event
-     * @blazorProperty 'OnCommandClicked'
+     * @blazorProperty 'CommandClicked'
      */
     @Event()
     public commandClick: EmitType<CommandClickEventArgs>;
@@ -1806,7 +1808,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before data is bound to Grid.
      * @event
-     * @deprecated
+     * @blazorProperty 'OnDataBound'
      */
     @Event()
     public beforeDataBound: EmitType<BeforeDataBoundArgs>;
@@ -3982,7 +3984,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.rowTemplateFn = templateCompiler(this.rowTemplate);
         this.detailTemplateFn = templateCompiler(this.detailTemplate);
-        this.editTemplateFn = templateCompiler(this.editSettings.template);
+        this.editTemplateFn = templateCompiler(this.editSettings.template as string);
         if (!isNullOrUndefined(this.parentDetails)) {
             let value: string = isNullOrUndefined(this.parentDetails.parentKeyFieldValue) ? 'undefined' :
                 this.parentDetails.parentKeyFieldValue;
@@ -4284,10 +4286,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         for (let i: number = 0; i < this.columnModel.length; i++) {
 
             if (this.columnModel[i].template) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template');
+                updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
             }
             if (this.columnModel[i].headerTemplate) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate');
+                updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
             }
 
         }

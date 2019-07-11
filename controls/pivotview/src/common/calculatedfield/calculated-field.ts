@@ -223,6 +223,7 @@ export class CalculatedField implements IAction {
         });
         this.parent.element.appendChild(contextMenu);
         this.menuObj = new Menu(menuOptions);
+        this.menuObj.isStringTemplate = true;
         this.menuObj.appendTo(contextMenu);
     }
 
@@ -454,6 +455,7 @@ export class CalculatedField implements IAction {
             header: this.parent.localeObj.getConstant('createCalculatedField'),
             target: document.body
         });
+        this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parentID + 'calculateddialog');
     }
 
@@ -582,6 +584,7 @@ export class CalculatedField implements IAction {
             drawNode: this.drawTreeNode.bind(this),
             sortOrder: 'Ascending'
         });
+        this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parentID + 'tree');
     }
 
@@ -676,6 +679,7 @@ export class CalculatedField implements IAction {
         tabObj.items[4].content = this.renderDialogElements().outerHTML;
         tabObj.dataBind();
         let cancelBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true });
+        cancelBtn.isStringTemplate = true;
         cancelBtn.appendTo('#' + this.parentID + 'cancelBtn');
         if (cancelBtn.element) {
             cancelBtn.element.onclick = this.cancelBtnClick.bind(this);
@@ -683,10 +687,12 @@ export class CalculatedField implements IAction {
         if ((this.parent as PivotFieldList).
             dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) !== null && this.parent.isAdaptive) {
             let okBtn: Button = new Button({ cssClass: cls.FLAT + ' ' + cls.OUTLINE_CLASS, isPrimary: true });
+            okBtn.isStringTemplate = true;
             okBtn.appendTo('#' + this.parentID + 'okBtn');
             this.inputObj = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('fieldName')
             });
+            this.inputObj.isStringTemplate = true;
             this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
             if (this.formulaText !== null && (this.parent as PivotFieldList).
                 dialogRenderer.parentElement.querySelector('#' + this.parentID + 'droppable') !== null) {
@@ -710,7 +716,9 @@ export class CalculatedField implements IAction {
                 expanding: this.accordionExpand.bind(this),
             });
             let addBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true });
+            addBtn.isStringTemplate = true;
             addBtn.appendTo('#' + this.parentID + 'addBtn');
+            accordion.isStringTemplate = true;
             accordion.appendTo('#' + this.parentID + 'accordDiv');
             Object.keys(this.parent.engineModule.fieldList).forEach(this.updateType.bind(this));
             if (addBtn.element) {
@@ -731,6 +739,7 @@ export class CalculatedField implements IAction {
                             name: AGRTYPE + key,
                             change: this.onChange.bind(this),
                         });
+                        radiobutton.isStringTemplate = true;
                         radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
                     }
                 }
@@ -764,6 +773,7 @@ export class CalculatedField implements IAction {
         let checkbox: CheckBox = new CheckBox({
             label: this.parent.engineModule.fieldList[key].caption + ' (' + type + ')'
         });
+        checkbox.isStringTemplate = true;
         checkbox.appendTo('#' + this.parentID + '_' + index);
         document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
         document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
@@ -831,6 +841,7 @@ export class CalculatedField implements IAction {
         this.inputObj = new MaskedTextBox({
             placeholder: this.parent.localeObj.getConstant('fieldName')
         });
+        this.inputObj.isStringTemplate = true;
         this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
         this.createTreeView();
         this.createMenu();
@@ -886,6 +897,7 @@ export class CalculatedField implements IAction {
             target: document.body,
             close: this.removeErrorDialog.bind(this)
         });
+        this.confirmPopUp.isStringTemplate = true;
         this.confirmPopUp.appendTo(errorDialog);
         this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }

@@ -111,6 +111,19 @@ export enum EditType {
 }
 
 /**
+ * Defines the default items of Column menu
+ */
+export type ColumnMenuItem =
+    /**  Sort the current column in ascending order */
+    'SortAscending' |
+    /**  Sort the current column in descending order */
+    'SortDescending' |
+    /**  show the column chooser */
+    'ColumnChooser' |
+    /**  show the Filter popup */
+    'Filter';
+
+/**
  * Defines tab container type in add or edit dialog
  */
 export type DialogFieldType =
@@ -239,6 +252,7 @@ export enum TemplateName {
     Milestone = 'MilestoneTemplate',
     LeftLabel = 'LeftLabelTemplate',
     RightLabel = 'RightLabelTemplate',
+    TaskLabel = 'TaskLabelTemplate',
     TaskbarTooltip = 'TooltipTaskbarTemplate',
     BaselineTooltip = 'TooltipBaselineTemplate',
     ConnectorLineTooltip = 'TooltipConnectorLineTemplate',

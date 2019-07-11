@@ -15,6 +15,7 @@ export interface PaletteModel {
     /**
      * Sets the height of the symbol group
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -53,6 +54,7 @@ export interface SymbolPreviewModel {
     /**
      * Sets the preview width of the symbols
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -60,6 +62,7 @@ export interface SymbolPreviewModel {
     /**
      * Sets the preview height of the symbols
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -147,6 +150,7 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Defines the symbols to be added in search palette
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -155,6 +159,7 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Defines the content of a symbol
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -163,6 +168,7 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Defines the width of the symbol
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     symbolWidth?: number;
@@ -170,6 +176,7 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Defines the height of the symbol
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     symbolHeight?: number;
@@ -189,6 +196,7 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Defines the size and position of the symbol preview
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     symbolPreview?: SymbolPreviewModel;

@@ -152,6 +152,8 @@ export class PeriodSelector {
                 this.setSelectedStyle(this.selectedIndex);
             }
         });
+        let isStringTemplate: string = 'isStringTemplate';
+        this.toolbar[isStringTemplate] = true;
         this.toolbar.appendTo(selectorElement as HTMLElement);
         this.triggerChange = true;
         this.datePicker = new DateRangePicker({

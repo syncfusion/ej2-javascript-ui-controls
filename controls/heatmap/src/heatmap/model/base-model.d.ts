@@ -245,6 +245,7 @@ export interface MultiLevelCategoriesModel {
      * Start value of the multi level labels
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     start?: number | Date | string;
 
@@ -252,6 +253,7 @@ export interface MultiLevelCategoriesModel {
      * End value of the multi level labels
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     end?: number | Date | string;
 
@@ -265,6 +267,7 @@ export interface MultiLevelCategoriesModel {
      * Maximum width of the text for multi level labels.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     maximumTextWidth?: number;
 

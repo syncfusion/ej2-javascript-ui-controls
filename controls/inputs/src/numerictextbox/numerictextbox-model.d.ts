@@ -18,6 +18,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * Sets the value of the NumericTextBox.
      * @default null
      * @aspType object
+     * @blazorType object
      */
     value?: number;
 
@@ -27,6 +28,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * [min](../../numerictextbox/getting-started/#range-validation).
      * @default null
      * @aspType object
+     * @blazorType object
      */
     min?: number;
 
@@ -36,6 +38,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * [max](../../numerictextbox/getting-started/#range-validation).
      * @default null
      * @aspType object
+     * @blazorType object
      */
     max?: number;
 
@@ -199,14 +202,12 @@ export interface NumericTextBoxModel extends ComponentModel{
     /**
      * Triggers when the NumericTextBox got focus in.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<NumericFocusEventArgs>;
 
     /**
      * Triggers when the NumericTextBox got focus out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<NumericBlurEventArgs>;
 

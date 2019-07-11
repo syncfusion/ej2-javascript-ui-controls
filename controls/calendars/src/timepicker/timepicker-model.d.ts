@@ -36,6 +36,7 @@ export interface TimePickerModel extends ComponentModel{
      * [`Format`](../../timepicker/getting-started#setting-the-time-format) documentation.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     format?: string | TimeFormatObject;
 
@@ -66,6 +67,7 @@ export interface TimePickerModel extends ComponentModel{
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
      */
     floatLabelType?: FloatLabelType | string;
@@ -80,6 +82,7 @@ export interface TimePickerModel extends ComponentModel{
      * specifies the z-index value of the timePicker popup element.
      * @default 1000
      * @aspType int
+     * @blazorType int
      */
     zIndex?: number;
 
@@ -111,14 +114,14 @@ export interface TimePickerModel extends ComponentModel{
      * > For more details refer to 
      * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     scrollTo?: Date;
 
     /**
      * Gets or sets the value of the component. The value is parsed based on the culture specific time format.
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     value?: Date;
 
@@ -127,7 +130,7 @@ export interface TimePickerModel extends ComponentModel{
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
      * @default 00:00
-     * @aspDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
+     * @blazorDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
      */
     min?: Date;
 
@@ -136,7 +139,7 @@ export interface TimePickerModel extends ComponentModel{
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
      * @default 00:00
-     * @aspDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
+     * @blazorDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
      */
     max?: Date;
 
@@ -195,14 +198,12 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Triggers when the control loses the focus.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<BlurEventArgs>;
 
     /**
      * Triggers when the control gets focused.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<FocusEventArgs>;
 

@@ -42,6 +42,7 @@ export interface AggregateColumnModel {
      * [`number`](../../common/internationalization/#number-formatting/)
      * and [`date`](../../common/internationalization/#number-formatting/) formats.
      * @aspType string
+     * @blazorType string
      * @default null    
      */
     format?: string | NumberFormatOptions | DateFormatOptions;

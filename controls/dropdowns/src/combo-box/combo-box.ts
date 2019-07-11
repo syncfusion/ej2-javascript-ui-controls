@@ -92,6 +92,8 @@ export class ComboBox extends DropDownList {
      * {% codeBlock src="combobox/index-api/index.html" %}{% endcodeBlock %}
      * 
      * @default null
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     @Property(null)
     public index: number;
@@ -141,6 +143,7 @@ export class ComboBox extends DropDownList {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
@@ -760,6 +763,7 @@ export interface CustomValueSpecifierEventArgs {
     text: string;
     /**
      * Sets the text custom format data for set a `value` and `text`.
+     * @isGenericType true
      */
     item: { [key: string]: string | Object };
 }

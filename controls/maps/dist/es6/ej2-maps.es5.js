@@ -1,4 +1,4 @@
-import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -951,6 +951,14 @@ function filter(points, start, end) {
         }
     }
     return pointObject;
+}
+function getRatioOfBubble(min, max, value, minValue, maxValue) {
+    var percent = (100 / (maxValue - minValue)) * (value - minValue);
+    var bubbleRadius = (((max - min) / 100) * percent) + min;
+    if (maxValue === minValue) {
+        bubbleRadius = (((max - min) / 100)) + min;
+    }
+    return bubbleRadius;
 }
 /**
  * To find the midpoint of the polygon from points
@@ -3147,7 +3155,10 @@ var Marker = /** @__PURE__ @class */ (function () {
             cancel: false, name: markerClick, data: options.data, maps: this.maps, marker: options.marker,
             target: target, x: e.clientX, y: e.clientY
         };
-        this.maps.trigger(markerClick, eventArgs);
+        var eventBlazorArgs = {
+            cancel: false, name: markerClick, marker: options.marker, target: target, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(markerClick, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
     };
     /**
      * To check and trigger Cluster click event
@@ -3203,7 +3214,10 @@ var Marker = /** @__PURE__ @class */ (function () {
             cancel: false, name: markerMouseMove, data: options.data, maps: this.maps,
             target: targetId, x: e.clientX, y: e.clientY
         };
-        this.maps.trigger(markerMouseMove, eventArgs);
+        var eventBlazorArgs = {
+            cancel: false, name: markerMouseMove, target: targetId, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(markerMouseMove, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
     };
     /**
      * To check and trigger cluster move event
@@ -3814,6 +3828,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         }
         this.rectBounds = null;
         var shapeSettings = this.currentLayer.shapeSettings;
+        var bubbleSettings = this.currentLayer.bubbleSettings;
         renderData.forEach(function (geometryData, index) {
             if (!isNullOrUndefined(geometryData['geometry']) || !isNullOrUndefined(geometryData['coordinates'])) {
                 var type = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['type'] : geometryData['type'];
@@ -3871,6 +3886,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 data: this_1.currentLayer.dataSource ? this_1.currentLayer.dataSource[k] : null, maps: this_1.mapObject,
                 shape: shapeSettings, fill: fill, border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
             };
+            // tslint:disable-next-line:max-func-body-length
             this_1.mapObject.trigger('shapeRendering', eventArgs, function (shapeArgs) {
                 var drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
                     ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
@@ -3924,8 +3940,47 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                         break;
                     case 'Point':
                         var pointData = currentShapeData['point'];
-                        circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
-                        pathEle = _this.mapObject.renderer.drawCircle(circleOptions);
+                        if (fill !== eventArgs.fill) {
+                            eventArgs.fill = eventArgs.fill;
+                        }
+                        else {
+                            if (bubbleSettings.length > 0) {
+                                var _loop_3 = function (k_1) {
+                                    var bubbleColor = bubbleSettings[k_1].colorValuePath;
+                                    var shapePath = _this.currentLayer.shapePropertyPath;
+                                    var bubbleData = bubbleSettings[k_1].dataSource;
+                                    var radius = void 0;
+                                    var bubbleValue = bubbleSettings[k_1].valuePath;
+                                    var indexValue;
+                                    var bubbleFill;
+                                    var range = void 0;
+                                    bubbleData.forEach(function (bubble, index) {
+                                        if (currentShapeData['property'][shapePath] === bubbleData[index][shapePath]) {
+                                            bubbleFill = bubble[bubbleColor];
+                                            indexValue = index;
+                                        }
+                                    });
+                                    if (!isNullOrUndefined(indexValue)) {
+                                        range = { min: 0, max: 0 };
+                                        _this.bubbleCalculation(bubbleSettings[k_1], range);
+                                        radius = getRatioOfBubble(bubbleSettings[k_1]['minRadius'], bubbleSettings[k_1]['maxRadius'], bubbleData[k_1][bubbleValue], range.min, range.max);
+                                    }
+                                    if (isNullOrUndefined(bubbleFill) || isNullOrUndefined(radius)) {
+                                        bubbleFill = eventArgs.fill;
+                                        radius = shapeSettings.circleRadius;
+                                    }
+                                    circleOptions = new CircleOption(shapeID, bubbleFill, eventArgs.border, opacity, pointData['x'], pointData['y'], radius, null);
+                                    pathEle = _this.mapObject.renderer.drawCircle(circleOptions);
+                                };
+                                for (var k_1 = 0; k_1 < bubbleSettings.length; k_1++) {
+                                    _loop_3(k_1);
+                                }
+                            }
+                            else {
+                                circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                                pathEle = _this.mapObject.renderer.drawCircle(circleOptions);
+                            }
+                        }
                         break;
                     case 'Path':
                         path = currentShapeData['point'];
@@ -4088,12 +4143,26 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 this.currentLayer.layerData.push(newData);
                 break;
             case 'point':
-                latitude = coordinates[1];
-                longitude = coordinates[0];
-                var point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
-                this.currentLayer.layerData.push({
-                    point: point, type: type, lat: latitude, lng: longitude, property: properties
+                var arrayCollections_1 = false;
+                coordinates.map(function (points, index) {
+                    if (Object.prototype.toString.call(points) === '[object Array]') {
+                        latitude = points[1];
+                        longitude = points[0];
+                        arrayCollections_1 = true;
+                        var point = convertGeoToPoint(latitude, longitude, _this.currentFactor, _this.currentLayer, _this.mapObject);
+                        _this.currentLayer.layerData.push({
+                            point: point, type: type, lat: latitude, lng: longitude, property: properties
+                        });
+                    }
                 });
+                if (!arrayCollections_1) {
+                    latitude = coordinates[1];
+                    longitude = coordinates[0];
+                    var point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
+                    this.currentLayer.layerData.push({
+                        point: point, type: type, lat: latitude, lng: longitude, property: properties
+                    });
+                }
                 break;
             case 'path':
                 this.currentLayer.layerData.push({
@@ -4664,6 +4733,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      */
     Maps.prototype.preRender = function () {
         this.isDevice = Browser.isDevice;
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.initPrivateVariable();
         this.trigger(load, { maps: this });
         this.unWireEVents();
@@ -4779,8 +4850,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             var bottom = svg.bottom - tile.bottom - element.offsetTop;
             var left = parseFloat(tileElement.style.left) + element.offsetLeft;
             var top_1 = parseFloat(tileElement.style.top) + element.offsetTop;
-            top_1 = (bottom <= 10) ? top_1 : (top_1 * 2);
-            left = (bottom <= 10) ? left : (left * 2);
+            top_1 = (bottom <= 11) ? top_1 : (top_1 * 2);
+            left = (bottom <= 11) ? left : (left * 2);
             tileElement.style.top = top_1 + 'px';
             tileElement.style.left = left + 'px';
         }
@@ -4789,7 +4860,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             this.annotationsModule.renderAnnotationElements();
         }
         this.zoomingChange();
-        this.trigger(loaded, { maps: this });
+        this.trigger(loaded, this.isBlazor ? {} : { maps: this });
     };
     /**
      * Render the map area border
@@ -5069,7 +5140,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.mapsOnResize);
     };
     Maps.prototype.mouseLeaveOnMap = function (e) {
-        if (document.getElementsByClassName('highlightMapStyle').length > 0) {
+        if (document.getElementsByClassName('highlightMapStyle').length > 0 && this.legendModule) {
             this.legendModule.removeShapeHighlightCollection();
             removeClass(document.getElementsByClassName('highlightMapStyle')[0]);
         }
@@ -5232,7 +5303,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 _this.refreshing = true;
                 _this.wireEVents();
                 args.currentSize = _this.availableSize;
-                _this.trigger(resize, args);
+                _this.trigger(resize, _this.isBlazor ? {} : args);
                 _this.render();
             }, 500);
         }
@@ -5842,7 +5913,7 @@ var Bubble = /** @__PURE__ @class */ (function () {
         if (isNaN(bubbleValue) && isNaN(colorValue) && isNullOrUndefined(equalValue)) {
             return null;
         }
-        var radius = this.getRatioOfBubble(bubbleSettings.minRadius, bubbleSettings.maxRadius, bubbleValue, range.min, range.max);
+        var radius = getRatioOfBubble(bubbleSettings.minRadius, bubbleSettings.maxRadius, bubbleValue, range.min, range.max);
         var colorMapping = new ColorMapping(this.maps);
         var shapeColor = colorMapping.getColorByValue(bubbleSettings.colorMapping, colorValue, equalValue);
         bubbleColor = (Object.prototype.toString.call(shapeColor) === '[object Object]' &&
@@ -5938,18 +6009,15 @@ var Bubble = /** @__PURE__ @class */ (function () {
         }
     };
     Bubble.prototype.getPoints = function (shape, points) {
-        shape.map(function (current, index) {
-            points.push(new Point(current['point']['x'], current['point']['y']));
-        });
-        return points;
-    };
-    Bubble.prototype.getRatioOfBubble = function (min, max, value, minValue, maxValue) {
-        var percent = (100 / (maxValue - minValue)) * (value - minValue);
-        var bubbleRadius = (((max - min) / 100) * percent) + min;
-        if (maxValue === minValue) {
-            bubbleRadius = (((max - min) / 100)) + min;
+        if (isNullOrUndefined(shape.map)) {
+            points = shape['point'];
         }
-        return bubbleRadius;
+        else {
+            shape.map(function (current, index) {
+                points.push(new Point(current['point']['x'], current['point']['y']));
+            });
+        }
+        return points;
     };
     /**
      * To check and trigger bubble click event
@@ -5967,7 +6035,10 @@ var Bubble = /** @__PURE__ @class */ (function () {
             cancel: false, name: bubbleClick, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        this.maps.trigger(bubbleClick, eventArgs);
+        var eventBlazorArgs = {
+            cancel: false, name: bubbleClick, data: data, target: target, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(bubbleClick, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
     };
     /**
      * To get bubble from target id
@@ -6002,7 +6073,10 @@ var Bubble = /** @__PURE__ @class */ (function () {
             cancel: false, name: bubbleMouseMove, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        this.maps.trigger(bubbleMouseMove, eventArgs);
+        var eventBlazorArgs = {
+            cancel: false, name: bubbleMouseMove, data: data, target: target, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(bubbleMouseMove, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
     };
     /**
      * Get module name.
@@ -6159,14 +6233,14 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                 var transPoint = (_this.maps.isTileMap) ? _this.maps.translatePoint : translate['location'];
                 var labelElement;
                 if (eventargs_1.template !== '') {
+                    var blazor = 'Blazor';
                     templateFn = getTemplateFunction(eventargs_1.template);
-                    var templateElement = templateFn({}, null, null, labelId + '_DatalabelTemplate');
+                    var templateElement = templateFn ? templateFn(!window[blazor] ? _this.maps : {}, null, null, _this.maps.element.id) : document.createElement('div');
+                    templateElement.innerHTML = !templateFn ? eventargs_1.template : '';
                     labelElement = convertElementFromLabel(templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, _this.maps);
                     labelElement.style.left = ((Math.abs(_this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
                     labelElement.style.top = ((Math.abs(_this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + 'px';
                     labelTemplateElement.appendChild(labelElement);
-                    var labelWidth = labelElement.offsetWidth;
-                    var labelHeight = labelElement.offsetHeight;
                 }
                 else {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {
@@ -6261,7 +6335,6 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             });
             if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
-                updateBlazorTemplate(labelId + '_DatalabelTemplate', 'DatalabelTemplate');
             }
         }
     };
@@ -9479,5 +9552,5 @@ var Zoom = /** @__PURE__ @class */ (function () {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, MarkerClusterSettings, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, MarkerClusterSettings, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es5.js.map

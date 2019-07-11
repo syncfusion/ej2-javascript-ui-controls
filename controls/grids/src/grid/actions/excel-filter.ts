@@ -310,6 +310,8 @@ export class ExcelFilter extends CheckBoxFilter {
             width: 430,
             animationSettings: { effect: 'None' },
         });
+        let isStringTemplate: string = 'isStringTemplate';
+        this.dlgObj[isStringTemplate] = true;
         this.dlgObj.appendTo(this.dlgDiv);
     }
     private removeDialog(): void {

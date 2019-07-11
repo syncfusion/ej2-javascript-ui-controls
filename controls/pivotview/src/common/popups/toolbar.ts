@@ -24,6 +24,7 @@ export class Toolbar {
     private reportList: DropDownList;
     private currentReport: string = '';
     private confirmPopUp: Dialog;
+    private chartMenu: Menu;
     private exportMenu: Menu;
     private subTotalMenu: Menu;
     private grandTotalMenu: Menu;
@@ -55,8 +56,7 @@ export class Toolbar {
                 id: this.parent.element.id + 'pivot-toolbar',
                 className: cls.GRID_TOOLBAR
             });
-        if (this.parent.showFieldList &&
-            this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList')) {
+        if (this.parent.showFieldList && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList')) {
             this.parent.element.insertBefore(
                 element, this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList'));
         } else if (this.parent.showGroupingBar &&
@@ -74,6 +74,7 @@ export class Toolbar {
             width: this.parent.width ? (Number(this.parent.width) - 2) : (Number(this.parent.element.offsetWidth) - 2),
             items: this.getItems()
         });
+        this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
     }
 
@@ -131,31 +132,31 @@ export class Toolbar {
                     items.push({
                         prefixIcon: cls.TOOLBAR_GRID + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('grid'),
                         id: this.parent.element.id + 'grid', cssClass: toDisable ? cls.MENU_DISABLE : '',
-                        click: this.gridClick.bind(this),
+                        click: this.menuItemClick.bind(this)
                     });
                     break;
                 case 'Chart':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_pivotchart"></ul>',
-                        id: this.parent.element.id + 'chart'
+                        template: '<ul id="' + this.parent.element.id + 'chart_menu"></ul>',
+                        id: this.parent.element.id + 'chartmenu'
                     });
                     break;
                 case 'Export':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_menu"></ul>',
-                        id: this.parent.element.id + 'export'
+                        template: '<ul id="' + this.parent.element.id + 'export_menu"></ul>',
+                        id: this.parent.element.id + 'exportmenu'
                     });
                     break;
                 case 'SubTotal':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_summary"></ul>',
-                        id: this.parent.element.id + 'sub-total'
+                        template: '<ul id="' + this.parent.element.id + 'subtotal_menu"></ul>',
+                        id: this.parent.element.id + 'subtotalmenu'
                     });
                     break;
                 case 'GrandTotal':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_grandtotal"></ul>',
-                        id: this.parent.element.id + 'grand-total'
+                        template: '<ul id="' + this.parent.element.id + 'grandtotal_menu"></ul>',
+                        id: this.parent.element.id + 'grandtotalmenu'
                     });
                     break;
                 case 'ConditionalFormatting':
@@ -336,6 +337,7 @@ export class Toolbar {
             closeOnEscape: true,
             target: document.body
         });
+        this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
     }
 
@@ -430,6 +432,7 @@ export class Toolbar {
                 }
             ]
         });
+        this.confirmPopUp.isStringTemplate = true;
         this.confirmPopUp.appendTo(errorDialog);
         this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
@@ -467,7 +470,7 @@ export class Toolbar {
     private cancelButtonClick(): void {
         if (this.action === 'New') {
             this.createNewReport();
-        } else {
+        } else if (this.dropArgs) {
             this.reportLoad(this.dropArgs);
         }
         this.confirmPopUp.hide();
@@ -475,8 +478,8 @@ export class Toolbar {
     /* tslint:disable */
     private create(): void {
         let toDisable: boolean = this.parent.displayOption.view === 'Table';
-        let menuChartTypes: MenuItemModel[] = [
-            {
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+            let menu: MenuItemModel[] = [{
                 iconCss: cls.TOOLBAR_CHART + ' ' + cls.ICON,
                 items: toDisable ? [] : [
                     {
@@ -504,16 +507,17 @@ export class Toolbar {
                         id: this.parent.element.id + '_' + 'Polar'
                     }
                 ]
-            }
-        ];
-        new Menu(
-            {
-                items: menuChartTypes, cssClass: toDisable ? cls.MENU_DISABLE : '', enableRtl: this.parent.enableRtl,
-                select: this.chartClick.bind(this)
-            },
-            '#' + this.parent.element.id + '_pivotchart');
-        let menuData: MenuItemModel[] = [
-            {
+            }];
+            this.chartMenu = new Menu(
+                {
+                    items: menu, enableRtl: this.parent.enableRtl,
+                    select: this.menuItemClick.bind(this)
+                });
+            this.chartMenu.isStringTemplate = true;
+            this.chartMenu.appendTo('#' + this.parent.element.id + 'chart_menu');
+        }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'export_menu')) {
+            let menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_EXPORT + ' ' + cls.ICON,
                 items: [
                     {
@@ -532,14 +536,17 @@ export class Toolbar {
                         id: this.parent.element.id + 'csv'
                     }
                 ]
-            }
-        ];
-        this.exportMenu = new Menu(
-            { items: menuData, enableRtl: this.parent.enableRtl, select: this.export.bind(this) },
-            '#' + this.parent.element.id + '_menu');
-
-        let menu: MenuItemModel[] = [
-            {
+            }];
+            this.exportMenu = new Menu(
+                {
+                    items: menu, enableRtl: this.parent.enableRtl,
+                    select: this.menuItemClick.bind(this)
+                });
+            this.exportMenu.isStringTemplate = true;
+            this.exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
+        }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'subtotal_menu')) {
+            let menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_SUB_TOTAL + ' ' + cls.ICON,
                 items: [
                     {
@@ -563,14 +570,17 @@ export class Toolbar {
                         iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                 ]
-            }
-        ];
-        this.subTotalMenu = new Menu(
-            { items: menu, enableRtl: this.parent.enableRtl, select: this.subTotalClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this) },
-            '#' + this.parent.element.id + '_summary');
-
-        let menuTotal: MenuItemModel[] = [
-            {
+            }];
+            this.subTotalMenu = new Menu(
+                {
+                    items: menu, enableRtl: this.parent.enableRtl,
+                    select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this)
+                });
+            this.subTotalMenu.isStringTemplate = true;
+            this.subTotalMenu.appendTo('#' + this.parent.element.id + 'subtotal_menu');
+        }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'grandtotal_menu')) {
+            let menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_GRAND_TOTAL + ' ' + cls.ICON,
                 items: [
                     {
@@ -594,24 +604,30 @@ export class Toolbar {
                         iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                 ]
-            }
-        ];
-        this.grandTotalMenu = new Menu(
-            { items: menuTotal, enableRtl: this.parent.enableRtl, select: this.grandTotalClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this) },
-            '#' + this.parent.element.id + '_grandtotal');
-
-        let reports: FetchReportArgs = this.fetchReports();
-        this.reportList = new DropDownList({
-            dataSource: reports.reportName,
-            width: '150px',
-            popupHeight: '200px',
-            placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
-            enableRtl: this.parent.enableRtl,
-            cssClass: cls.REPORT_LIST_DROP,
-            select: this.reportChange.bind(this),
-            value: this.currentReport
-        });
-        this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+            }];
+            this.grandTotalMenu = new Menu(
+                {
+                    items: menu, enableRtl: this.parent.enableRtl,
+                    select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this)
+                });
+            this.grandTotalMenu.isStringTemplate = true;
+            this.grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
+        }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + '_reportlist')) {
+            let reports: FetchReportArgs = this.fetchReports();
+            this.reportList = new DropDownList({
+                dataSource: reports.reportName,
+                width: '150px',
+                popupHeight: '200px',
+                placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
+                enableRtl: this.parent.enableRtl,
+                cssClass: cls.REPORT_LIST_DROP,
+                select: this.reportChange.bind(this),
+                value: this.currentReport
+            });
+            this.reportList.isStringTemplate = true;
+            this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+        }
     }
 
     private updateSubtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
@@ -633,7 +649,7 @@ export class Toolbar {
             args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
         } else if (this.parent.dataSourceSettings.showSubTotals && this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (!this.parent.dataSourceSettings.showSubTotals && !this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals) {
+        } else if (!this.parent.dataSourceSettings.showSubTotals || (!this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals)) {
             args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
@@ -657,7 +673,7 @@ export class Toolbar {
             args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
         } else if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
-        } else if (!this.parent.dataSourceSettings.showGrandTotals && !this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals) {
+        } else if (!this.parent.dataSourceSettings.showGrandTotals || (!this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals)) {
             args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
@@ -676,86 +692,39 @@ export class Toolbar {
         this.reportList.refresh();
     }
 
-    private grandTotalClick(args: ClickEventArgs): void {
+    private menuItemClick(args: ClickEventArgs): void {
         switch (args.item.id) {
-            case (this.parent.element.id + 'notgrandtotal'):
-                this.parent.dataSourceSettings.showGrandTotals = false;
-                this.parent.dataSourceSettings.showColumnGrandTotals = false;
-                this.parent.dataSourceSettings.showRowGrandTotals = false;
-                break;
-            case (this.parent.element.id + 'grandtotalrow'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = false;
-                this.parent.dataSourceSettings.showRowGrandTotals = true;
-                break;
-            case (this.parent.element.id + 'grandtotalcolumn'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = true;
-                this.parent.dataSourceSettings.showRowGrandTotals = false;
-                break;
-            case (this.parent.element.id + 'grandtotal'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = true;
-                this.parent.dataSourceSettings.showRowGrandTotals = true;
-                break;
-        }
-    }
-
-    private subTotalClick(args: ClickEventArgs): void {
-        switch (args.item.id) {
-            case (this.parent.element.id + 'notsubtotal'):
-                this.parent.dataSourceSettings.showSubTotals = false;
-                this.parent.dataSourceSettings.showColumnSubTotals = false;
-                this.parent.dataSourceSettings.showRowSubTotals = false;
-                break;
-            case (this.parent.element.id + 'subtotalrow'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = false;
-                this.parent.dataSourceSettings.showRowSubTotals = true;
-                break;
-            case (this.parent.element.id + 'subtotalcolumn'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = true;
-                this.parent.dataSourceSettings.showRowSubTotals = false;
-                break;
-            case (this.parent.element.id + 'subtotal'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = true;
-                this.parent.dataSourceSettings.showRowSubTotals = true;
-                break;
-        }
-    }
-
-    private gridClick(args: ClickEventArgs): void {
-        if (this.parent.grid && this.parent.chart) {
-            this.parent.grid.element.style.display = '';
-            this.parent.chart.element.style.display = 'none';
-            this.parent.currentView = 'Table';
-            if (this.parent.showGroupingBar) {
-                (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "";
-                (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "none";
-            }
-            this.parent.layoutRefresh();
-        }
-    }
-
-    private chartClick(args: ClickEventArgs): void {
-        if (args.item && args.item.text) {
-            this.parent.chartSettings.chartSeries.type = args.item.id.split('_')[args.item.id.split('_').length - 1] as ChartSeriesType;
-            if (this.parent.grid && this.parent.chart) {
-                this.parent.grid.element.style.display = 'none';
-                this.parent.chart.element.style.display = '';
-                this.parent.currentView = 'Chart';
-                if (this.parent.showGroupingBar) {
-                    (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "none";
-                    (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "";
+            case (this.parent.element.id + 'grid'):
+                if (this.parent.grid && this.parent.chart) {
+                    this.parent.grid.element.style.display = '';
+                    this.parent.chart.element.style.display = 'none';
+                    this.parent.currentView = 'Table';
+                    if (this.parent.showGroupingBar) {
+                        (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "";
+                        (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "none";
+                    }
+                    this.parent.layoutRefresh();
                 }
-            }
-        }
-    }
-
-    private export(args: ClickEventArgs): void {
-        switch (args.item.id) {
+                break;
+            case (this.parent.element.id + '_' + 'Column'):
+            case (this.parent.element.id + '_' + 'Bar'):
+            case (this.parent.element.id + '_' + 'Line'):
+            case (this.parent.element.id + '_' + 'Area'):
+            case (this.parent.element.id + '_' + 'Scatter'):
+            case (this.parent.element.id + '_' + 'Polar'):
+                if (args.item && args.item.text) {
+                    this.parent.chartSettings.chartSeries.type = args.item.id.split('_')[args.item.id.split('_').length - 1] as ChartSeriesType;
+                    if (this.parent.grid && this.parent.chart) {
+                        this.parent.grid.element.style.display = 'none';
+                        this.parent.chart.element.style.display = '';
+                        this.parent.currentView = 'Chart';
+                        if (this.parent.showGroupingBar) {
+                            (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "none";
+                            (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "";
+                        }
+                    }
+                }
+                break;
             case (this.parent.element.id + 'pdf'):
                 if (this.parent.pdfExportModule) {
                     this.parent.pdfExportModule.exportToPDF();
@@ -776,6 +745,46 @@ export class Toolbar {
                 } else {
                     this.parent.csvExport();
                 }
+                break;
+            case (this.parent.element.id + 'notsubtotal'):
+                this.parent.dataSourceSettings.showSubTotals = false;
+                this.parent.dataSourceSettings.showColumnSubTotals = false;
+                this.parent.dataSourceSettings.showRowSubTotals = false;
+                break;
+            case (this.parent.element.id + 'subtotalrow'):
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = false;
+                this.parent.dataSourceSettings.showRowSubTotals = true;
+                break;
+            case (this.parent.element.id + 'subtotalcolumn'):
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = true;
+                this.parent.dataSourceSettings.showRowSubTotals = false;
+                break;
+            case (this.parent.element.id + 'subtotal'):
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = true;
+                this.parent.dataSourceSettings.showRowSubTotals = true;
+                break;
+            case (this.parent.element.id + 'notgrandtotal'):
+                this.parent.dataSourceSettings.showGrandTotals = false;
+                this.parent.dataSourceSettings.showColumnGrandTotals = false;
+                this.parent.dataSourceSettings.showRowGrandTotals = false;
+                break;
+            case (this.parent.element.id + 'grandtotalrow'):
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = false;
+                this.parent.dataSourceSettings.showRowGrandTotals = true;
+                break;
+            case (this.parent.element.id + 'grandtotalcolumn'):
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = true;
+                this.parent.dataSourceSettings.showRowGrandTotals = false;
+                break;
+            case (this.parent.element.id + 'grandtotal'):
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = true;
+                this.parent.dataSourceSettings.showRowGrandTotals = true;
                 break;
         }
     }
@@ -817,6 +826,9 @@ export class Toolbar {
         }
         if (this.dialog && !this.dialog.isDestroyed) {
             this.dialog.destroy();
+        }
+        if (this.chartMenu && !this.chartMenu.isDestroyed) {
+            this.chartMenu.destroy();
         }
         if (this.exportMenu && !this.exportMenu.isDestroyed) {
             this.exportMenu.destroy();

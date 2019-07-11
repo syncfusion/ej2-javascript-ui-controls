@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### File Manager
+
+#### New Features
+
+- Provided the `id` based support for `path` property to manage the files in an efficient way on going with file system providers.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### File Manager

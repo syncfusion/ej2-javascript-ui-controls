@@ -4636,7 +4636,7 @@ describe('Change Event testing', () => {
             numerictextbox.updateHTMLAttrToWrapper();
             expect(numerictextbox.hiddenInput.getAttribute('name')).toBe('numeric');
             expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('sample');
-            expect(numerictextbox.inputWrapper.container.getAttribute('class')).toBe('test');
+            expect(numerictextbox.inputWrapper.container.classList.contains('test')).toBe(true);
             expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
         });
         it('Dynamically change attributes with htmlAttributes API', () => {
@@ -4650,7 +4650,7 @@ describe('Change Event testing', () => {
             expect(numerictextbox.element.hasAttribute('readonly')).toBe(true);
             expect(numerictextbox.element.hasAttribute('disabled')).toBe(true);
             expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('sample');
-            expect(numerictextbox.inputWrapper.container.getAttribute('class')).toBe('test');
+            expect(numerictextbox.inputWrapper.container.classList.contains('test')).toBe(true);
             expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
         });
     });
@@ -4688,7 +4688,7 @@ describe('Change Event testing', () => {
             expect(numerictextbox.element.min).toBe('5');
             expect(numerictextbox.element.max).toBe('60');
             expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('heading');
-            expect(numerictextbox.inputWrapper.container.getAttribute('class')).toBe('multiple');
+            expect(numerictextbox.inputWrapper.container.classList.contains('multiple')).toBe(true);
             expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
         });
         it('Placeholder testing in auto case', () => {

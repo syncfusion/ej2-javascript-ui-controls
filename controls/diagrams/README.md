@@ -22,7 +22,7 @@ npm install @syncfusion/ej2-diagrams
 
 * [Getting Started](https://ej2.syncfusion.com/documentation/diagram/getting-started.html?lang=typescript&utm_source=npm&utm_campaign=diagram)
 * [View Online Demos](https://ej2.syncfusion.com/16.2.41/demos/#/material/diagram/default-functionalities.html)
-* [Product Page](https://www.syncfusion.com/javascript-ui-controls/diagram)
+* [Product Page](https://www.syncfusion.com/javascript-ui-controls/diagram) 
 
 ## Supported Frameworks
 

@@ -8,14 +8,24 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### Maps
+
+#### Bug Fixes
+
+- `#F143717` - Zooming toolbar position misalign problem that occurs when there are multiple elements in DOM has been fixed
+- `#I238404` - The issue that occurs when rendering bubble for point type Shape Data has been fixed
+- `#I238839` - The console error that occurs when mouse leaves from the maps Shapes with legend hide option has been resolved
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Maps
 
 #### New Features
 
-- #I227277 - Support has been provided to get geo location when clicking on maps.
-- #I217458 - Support has been provided to hide and cluster a marker when it intersects with other markers.
+- `#I227277` - Support has been provided to get geo location when clicking on maps.
+- `#I217458` - Support has been provided to hide and cluster a marker when it intersects with other markers.
 
 ## 17.1.51 (2019-06-11)
 
@@ -23,7 +33,7 @@
 
 #### Bug Fixes
 
-- #I237116 - The issue with default highlight and selection fill color has been resolved.
+- `#I237116` - The issue with default highlight and selection fill color has been resolved.
 
 ## 17.1.50 (2019-06-04)
 
@@ -31,14 +41,14 @@
 
 #### Bug Fixes
 
-- #I237138 - The issue with maintaining zoom factor when the mouse wheel and pinch zoom on maps with call "refresh()" method has been fixed.
-- #I237041 - The issue with the re-rendering of the second sub-layer on zoom or panning has been resolved.
+- `#I237138` - The issue with maintaining zoom factor when the mouse wheel and pinch zoom on maps with call "refresh()" method has been fixed.
+- `#I237041` - The issue with the re-rendering of the second sub-layer on zoom or panning has been resolved.
 
 ### Maps
 
 #### Bug Fixes
 
-- #I237041 - The issue in the sublayers are not re-rendered when zooming or panning is fixed.
+- `#I237041` - The issue in the sublayers are not re-rendered when zooming or panning is fixed.
 
 ## 17.1.48 (2019-05-21)
 
@@ -46,7 +56,7 @@
 
 #### New Features
 
-- #I233127 - The issue with recalculating the data labels when zooming the maps has been fixed.
+- `#I233127` - The issue with recalculating the data labels when zooming the maps has been fixed.
 
 ## 17.1.44 (2019-05-07)
 
@@ -54,8 +64,8 @@
 
 #### Bug Fixes
 
-- #I234578 - The issue with rendering data label and tooltip when the layers type is set to 'Sublayer' has been fixed.
-- #I234578 - The issue with returning wrong highlight opacity to shapes in maps when highlighting the legend has been fixed.
+- `#I234578` - The issue with rendering data label and tooltip when the layers type is set to 'Sublayer' has been fixed.
+- `#I234578` - The issue with returning wrong highlight opacity to shapes in maps when highlighting the legend has been fixed.
 
 ## 17.1.43 (2019-04-30)
 
@@ -63,8 +73,8 @@
 
 #### Bug Fixes
 
-- #F143717 - The div containing the maps component overlaps the div with inputs above it issue has                 been fixed
-- #I233127 - The issue with the last interacted scaling is not maintained when refreshing the browser
+- `#F143717` - The div containing the maps component overlaps the div with inputs above it issue has                 been fixed
+- `#I233127` - The issue with the last interacted scaling is not maintained when refreshing the browser
              with the 'enablePersistence' API as true has been fixed.
 
 ## 17.1.42 (2019-04-23)
@@ -73,9 +83,9 @@
 
 #### Bug Fixes
 
-- #I233129 – The issue in data label rendering, if you resize the map by setting the "intersectionAction" property to 'hide' has been fixed.
-- #I233127 - When selecting the new shape, the border for old shape is not removed issue has been fixed.
-- #I233127 – The issue of border width changing, when zooming the map has been fixed.
+- `#I233129` – The issue in data label rendering, if you resize the map by setting the "intersectionAction" property to 'hide' has been fixed.
+- `#I233127` - When selecting the new shape, the border for old shape is not removed issue has been fixed.
+- `#I233127` – The issue of border width changing, when zooming the map has been fixed.
 
 ## 17.1.41 (2019-04-16)
 
@@ -83,7 +93,7 @@
 
 #### Bug Fixes
 
-- #F143717 - The issue "When setting high zoom factor to OpenStreetMap, sub layer is not placed properly" has been fixed".
+- `#F143717` - The issue "When setting high zoom factor to OpenStreetMap, sub layer is not placed properly" has been fixed".
 
 ## 17.1.32-beta (2019-03-13)
 

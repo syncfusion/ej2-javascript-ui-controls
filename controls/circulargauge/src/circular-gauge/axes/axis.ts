@@ -14,7 +14,6 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * The width of the line in pixels.
-     * @aspDefaultValueIgnore
      * @default 2
      */
 

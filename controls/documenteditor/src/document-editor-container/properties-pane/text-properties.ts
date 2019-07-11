@@ -128,7 +128,7 @@ export class Text {
         this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Clear all formatting'));
     }
     private createHighlightColorSplitButton = (id: string, width: number, divElement: HTMLElement, toolTipText: string): SplitButton => {
-        let buttonElement: HTMLButtonElement = createElement('button', { id: id , attrs: { type: 'button' }}) as HTMLButtonElement;
+        let buttonElement: HTMLButtonElement = createElement('button', { id: id, attrs: { type: 'button' } }) as HTMLButtonElement;
         // buttonElement.style.width = width + 'px';
         // buttonElement.style.padding = '1px';
         // buttonElement.style.height = 30 + 'px';
@@ -357,7 +357,7 @@ export class Text {
             showClearButton: false,
             enableRtl: this.isRtl
         });
-        this.fontSize.focus = (): void => { this.isRetrieving = false; };
+        this.fontSize.focus = (): void => { this.isRetrieving = false; (this.fontSize.element as HTMLInputElement).select(); };
         this.fontSize.value = this.documentEditor.selection.characterFormat.fontSize.toString();
         this.fontSize.appendTo(fontSelectElement);
         this.fontSize.element.parentElement.setAttribute('title', this.localObj.getConstant('Font Size'));
@@ -381,7 +381,8 @@ export class Text {
             showClearButton: false,
             enableRtl: this.isRtl
         });
-        this.fontFamily.focus = (): void => { this.isRetrieving = false; };
+        this.fontFamily.isStringTemplate = true;
+        this.fontFamily.focus = (): void => { this.isRetrieving = false; (this.fontFamily.element as HTMLInputElement).select(); };
         this.fontFamily.appendTo(fontSelectElement);
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
     }

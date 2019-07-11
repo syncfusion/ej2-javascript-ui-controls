@@ -1,6 +1,6 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';
-import { ResultData, FocusEventArgs } from '../drop-down-base/drop-down-base';
+import { ResultData, FocusEventArgs, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -115,6 +115,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * container dimension.
      * @default '100%'
      * @aspType string
+     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -125,6 +126,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * 
      * @default '300px'
      * @aspType string
+     * @blazorType string
      */
     @Property('300px')
     public popupHeight: string | number;
@@ -135,6 +137,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * 
      * @default '100%'
      * @aspType string
+     * @blazorType string
      */
     @Property('100%')
     public popupWidth: string | number;
@@ -231,6 +234,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * Sets limitation to the value selection.
      * based on the limitation, list selection will be prevented.
      * @default 1000
+     * @blazorType int
      */
     @Property(1000)
     public maximumSelectionLength: number;
@@ -251,6 +255,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Selects the list item which maps the data `value` field in the component.
      * @default null
+     * @isGenericType true
      */
     @Property(null)
     public value: number[] | string[] | boolean[];
@@ -316,6 +321,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
@@ -385,6 +391,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * Fires when popup opens before animation.
      * @event
      * @blazorProperty 'OnOpen'
+     * @blazorType BeforeOpenEventArgs
      */
     @Event()
     public beforeOpen: EmitType<Object>;
@@ -405,14 +412,12 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Event triggers when the input get focus-out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<Object>;
     /**
      * Event triggers when the input get focused.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<Object>;
@@ -501,6 +506,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         let modules: ModuleDeclaration[] = [];
         if (this.mode === 'CheckBox') {
             this.isGroupChecking = this.enableGroupCheckBox;
+            if (this.enableGroupCheckBox) {
+                let prevOnChange: boolean = this.isProtectedOnChange;
+                this.isProtectedOnChange = true;
+                this.enableSelectionOrder = false;
+                this.isProtectedOnChange = prevOnChange;
+            }
             this.allowCustomValue = false;
             this.hideSelectedItem = false;
             this.closePopupOnSelect = false;
@@ -1173,6 +1184,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
         this.overAllClear.style.display = 'none';
         if (this.isPopupOpen()) {
+            this.DropDownBaseresetBlazorTemplates(false, false, true, true, false, true, true);
             this.hidePopup();
         }
         this.makeTextBoxEmpty();
@@ -1832,6 +1844,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         length?: number,
         isClearAll?: boolean): void {
         let index: number = (this.value as string[]).indexOf(this.getFormattedValue(<string>value) as string);
+        let isValueTemp: boolean = (this.valueTemplate) ? true : false;
+        this.DropDownBaseresetBlazorTemplates(false, false, false, false, isValueTemp, false, false);
         if (index === -1 && this.allowCustomValue && !isNullOrUndefined(value)) {
             index = (this.value as string[]).indexOf(value.toString());
         }
@@ -2074,8 +2088,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             itemData = this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
+            this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
             let compiledString: Function = compile(this.valueTemplate);
-            for (let item of compiledString(itemData, null, null, this.valueTemplateId)) {
+            for (let item of compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
                 chipContent.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
@@ -2143,12 +2158,10 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
 
     private renderPopup(): void {
-        if (!this.list) {
-            super.render();
-        }
+        if (!this.list) { super.render(); }
         if (!this.popupObj) {
-            let args: { [key: string]: boolean } = { cancel: false };
-            this.trigger('beforeOpen', args, (args: { [key: string]: object }) => {
+            let args: BeforeOpenEventArgs = { cancel: false };
+            this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
                 if (!args.cancel) {
                     document.body.appendChild(this.popupWrapper);
                     let checkboxFilter: HTMLElement = this.popupWrapper.querySelector('.' + FILTERPARENT);
@@ -2176,12 +2189,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                     } else if (this.mode === 'CheckBox' && !this.showSelectAll) {
                         this.notify('selectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                         overAllHeight = parseInt(<string>this.popupHeight, 10);
-                        if (this.headerTemplate && this.header) {
-                            overAllHeight -= this.header.offsetHeight;
-                        }
-                        if (this.footerTemplate && this.footer) {
-                            overAllHeight -= this.footer.offsetHeight;
-                        }
+                        if (this.headerTemplate && this.header) { overAllHeight -= this.header.offsetHeight; }
+                        if (this.footerTemplate && this.footer) { overAllHeight -= this.footer.offsetHeight; }
                     }
                     if (this.mode === 'CheckBox') {
                         let args: { [key: string]: Object | string } = {
@@ -2198,14 +2207,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if (this.popupHeight !== 'auto') {
                         this.list.style.maxHeight = formatUnit(overAllHeight);
                         this.popupWrapper.style.maxHeight = formatUnit(this.popupHeight);
-                    } else {
-                        this.list.style.maxHeight = formatUnit(this.popupHeight);
-                    }
+                    } else { this.list.style.maxHeight = formatUnit(this.popupHeight); }
                     this.popupObj = new Popup(this.popupWrapper, {
                         width: this.calcPopupWidth(), targetType: 'relative', position: { X: 'left', Y: 'bottom' },
                         relateTo: this.overAllWrapper, collision: { X: 'flip', Y: 'flip' }, offsetY: 1,
-                        enableRtl: this.enableRtl,
-                        zIndex: this.zIndex,
+                        enableRtl: this.enableRtl, zIndex: this.zIndex,
                         close: () => {
                             if (this.popupObj.element.parentElement) {
                                 this.popupObj.unwireScrollEvents();
@@ -2216,7 +2222,17 @@ export class MultiSelect extends DropDownBase implements IInput {
                             if (!this.isFirstClick) {
                                 let ulElement: HTMLElement = this.list.querySelector('ul');
                                 if (ulElement) {
-                                    this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
+                                    let isBlazor: boolean = (Object.keys(window) as string[]).indexOf('Blazor') >= 0;
+                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor) {
+                                        setTimeout(
+                                            (): void => {
+                                                this.mainList = this.ulElement;
+                                            },
+                                            0
+                                        );
+                                    } else {
+                                        this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
+                                    }
                                 }
                                 this.isFirstClick = true;
                             }
@@ -2226,9 +2242,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                             if (this.allowFiltering) {
                                 this.notify(
                                     'inputFocus',
-                                    { module: 'CheckBoxSelection',
-                                    enable: this.mode === 'CheckBox',
-                                    value: 'focus' });
+                                    {
+                                        module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus'
+                                    });
                             }
                         }
                     });
@@ -2249,7 +2265,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.header = this.createElement('div');
         addClass([this.header], HEADER);
         compiledString = compile(this.headerTemplate);
-        let elements: [Element] = compiledString({}, null, null, this.headerTemplateId);
+        let elements: [Element] = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
         for (let temp: number = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
         }
@@ -2269,7 +2285,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.footer = this.createElement('div');
         addClass([this.footer], FOOTER);
         compiledString = compile(this.footerTemplate);
-        let elements: [Element] = compiledString({}, null, null, this.footerTemplateId);
+        let elements: [Element] = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
         for (let temp: number = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
         }
@@ -2636,7 +2652,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         let target: Element = <Element>e.target;
         let li: HTMLElement = <HTMLElement>closest(target, '.' + dropDownBaseClasses.li);
         let listElement : Element;
-        this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
         if (!li && this.enableGroupCheckBox && this.mode === 'CheckBox' && this.fields.groupBy) {
             target = target.classList.contains('e-list-group-item') ? target.firstElementChild.lastElementChild
             : <Element>e.target;
@@ -3341,7 +3356,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                 duration: 100,
                 delay: delay ? delay : 0
             };
-            this.DropDownBaseresetBlazorTemplates(false, false, true, true, false, true, true);
             let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
             this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
                 if (!eventArgs.cancel) {
@@ -3617,6 +3631,7 @@ export class MultiSelect extends DropDownBase implements IInput {
 export interface CustomValueEventArgs {
     /**
      * Gets the newly added data.
+     * @isGenericType true
      */
     newData: Object;
     /**
@@ -3632,6 +3647,7 @@ export interface TaggingEventArgs {
     isInteracted: boolean;
     /**
      * Returns the selected item as JSON Object from the data source.
+     * @isGenericType true
      */
     itemData: FieldSettingsModel;
     /**
@@ -3656,10 +3672,12 @@ export interface MultiSelectChangeEventArgs {
     isInteracted: boolean;
     /**
      * Returns the component initial Value.
+     * @isGenericType true
      */
     oldValue: number[] | string[] | boolean[];
     /**
      * Returns the updated component Values.
+     * @isGenericType true
      */
     value: number[] | string[] | boolean[];
     /**
@@ -3684,6 +3702,7 @@ export interface ISelectAllEventArgs {
     items: HTMLLIElement[];
     /**
      * Returns the selected items as JSON Object from the data source.
+     * @isGenericType true
      */
     itemData: FieldSettingsModel[];
     /**

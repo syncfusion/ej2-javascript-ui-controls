@@ -130,10 +130,18 @@ export class QuickToolbar {
      * @hidden
      */
     public hideQuickToolbars(): void {
-        if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close')) { this.linkQTBar.hidePopup(); }
-        if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) { this.textQTBar.hidePopup(); }
-        if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) { this.imageQTBar.hidePopup(); }
-        if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) { this.tableQTBar.hidePopup(); }
+        if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close') && document.body.contains(this.linkQTBar.element)) {
+            this.linkQTBar.hidePopup();
+        }
+        if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close') && document.body.contains(this.textQTBar.element)) {
+            this.textQTBar.hidePopup();
+        }
+        if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close') && document.body.contains(this.imageQTBar.element)) {
+            this.imageQTBar.hidePopup();
+        }
+        if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close') && document.body.contains(this.tableQTBar.element)) {
+            this.tableQTBar.hidePopup();
+        }
         if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             this.hideInlineQTBar();
         }

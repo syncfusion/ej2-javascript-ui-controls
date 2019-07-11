@@ -4,7 +4,7 @@ import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WLevelOverride } from '../list/level-override';
-import { WCharacterFormat, WListFormat, WParagraphFormat, WCellFormat, WTableFormat, WTabStop } from '../format/index';
+import { WCharacterFormat, WListFormat, WParagraphFormat, WTabStop } from '../format/index';
 import { WBorder, WBorders } from '../format/index';
 import { LayoutViewer, PageLayoutViewer } from './viewer';
 import {
@@ -2188,8 +2188,17 @@ export class Layout {
                 left = isNullOrUndefined(cell.cellFormat.leftMargin) ? HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.leftMargin) : HelperMethods.convertPointToPixel(cell.cellFormat.leftMargin);
                 right = isNullOrUndefined(cell.cellFormat.rightMargin) ? HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.rightMargin) : HelperMethods.convertPointToPixel(cell.cellFormat.rightMargin);
             } else {
-                left = HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.leftMargin);
-                right = HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.rightMargin);
+                if (cell.columnIndex === 0 && cell.ownerRow.rowFormat.hasValue('leftMargin')) {
+                    left = HelperMethods.convertPointToPixel(cell.ownerRow.rowFormat.leftMargin);
+                } else {
+                    left = HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.leftMargin);
+                }
+                if (cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1 &&
+                    cell.ownerRow.rowFormat.hasValue('rightMargin')) {
+                    right = HelperMethods.convertPointToPixel(cell.ownerRow.rowFormat.rightMargin);
+                } else {
+                    right = HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.rightMargin);
+                }
             }
         }
         cell.margin = new Margin(left, top, right, bottom);
@@ -4074,10 +4083,12 @@ export class Layout {
         let rowWidgets: TableRowWidget[] = [row];
         let widget: TableRowWidget = this.addTableRowWidget(viewer.clientActiveArea, rowWidgets) as TableRowWidget;
         viewer.updateClientAreaForRow(row, true);
+        let topMargin: number = this.getMaxTopCellMargin(row);
+        let bottomMargin: number = this.getMaxBottomCellMargin(row);
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
             // tslint:disable-next-line:max-line-length
-            this.layoutCell(cell, this.getMaxTopOrBottomCellMargin(row, 0) + row.topBorderWidth, this.getMaxTopOrBottomCellMargin(row, 1) + row.bottomBorderWidth, widget);
+            this.layoutCell(cell, topMargin + row.topBorderWidth, bottomMargin + row.bottomBorderWidth, widget);
         }
         viewer.updateClientAreaForRow(row, false);
         let rows: TableRowWidget[] = [row];
@@ -4159,40 +4170,53 @@ export class Layout {
         return rowWidget;
     }
     /**
-     * Gets maximum top or bottom cell margin.
+     * Gets maximum top cell margin.
      * @param row 
      * @param topOrBottom 
      */
-    private getMaxTopOrBottomCellMargin(row: TableRowWidget, topOrBottom: number): number {
+    private getMaxTopCellMargin(row: TableRowWidget): number {
         if (isNullOrUndefined(row.childWidgets)) {
             return 0;
         }
         let value: number = 0;
         for (let i: number = 0; i < row.childWidgets.length; i++) {
-            if (row.childWidgets.length > 0) {
-                let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
-                let cellFormat: WCellFormat = cell.cellFormat;
-                if (cellFormat.containsMargins()) {
-                    let leftMargin: number = HelperMethods.convertPointToPixel(cellFormat.topMargin);
-                    let bottomMargin: number;
-                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) && leftMargin > value) {
-                        value = leftMargin;
-                    } else if (topOrBottom === 1 && !isNullOrUndefined(cellFormat.bottomMargin) &&
-                        // tslint:disable-next-line:no-conditional-assignment 
-                        (bottomMargin = HelperMethods.convertPointToPixel(cellFormat.bottomMargin)) > value) {
-                        value = bottomMargin;
-                    }
-                } else {
-                    let tableFormat: WTableFormat = cell.ownerTable.tableFormat;
-                    let topMargin: number = HelperMethods.convertPointToPixel(tableFormat.topMargin);
-                    let bottomMargin: number;
-                    if (topOrBottom === 0 && topMargin > value) {
-                        value = topMargin;
-                        // tslint:disable-next-line:no-conditional-assignment 
-                    } else if (topOrBottom === 1 && (bottomMargin = HelperMethods.convertPointToPixel(tableFormat.bottomMargin)) > value) {
-                        value = bottomMargin;
-                    }
-                }
+            let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
+            let topMargin: number = 0;
+            if (cell.cellFormat.hasValue('topMargin')) {
+                topMargin = HelperMethods.convertPointToPixel(cell.cellFormat.topMargin);
+            } else if (row.rowFormat.hasValue('topMargin')) {
+                topMargin = HelperMethods.convertPointToPixel(row.rowFormat.topMargin);
+            } else {
+                topMargin = HelperMethods.convertPointToPixel(row.ownerTable.topMargin);
+            }
+            if (topMargin > value) {
+                value = topMargin;
+            }
+        }
+        return value;
+    }
+    /**
+     * Gets maximum bottom cell margin.
+     * @param row 
+     * @param topOrBottom 
+     */
+    private getMaxBottomCellMargin(row: TableRowWidget): number {
+        if (isNullOrUndefined(row.childWidgets)) {
+            return 0;
+        }
+        let value: number = 0;
+        for (let i: number = 0; i < row.childWidgets.length; i++) {
+            let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
+            let bottomMargin: number = 0;
+            if (cell.cellFormat.hasValue('bottomMargin')) {
+                bottomMargin = HelperMethods.convertPointToPixel(cell.cellFormat.bottomMargin);
+            } else if (row.rowFormat.hasValue('bottomMargin')) {
+                bottomMargin = HelperMethods.convertPointToPixel(row.rowFormat.bottomMargin);
+            } else {
+                bottomMargin = HelperMethods.convertPointToPixel(row.ownerTable.bottomMargin);
+            }
+            if (bottomMargin > value) {
+                value = bottomMargin;
             }
         }
         return value;
@@ -4424,7 +4448,7 @@ export class Layout {
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
             // tslint:disable-next-line:max-line-length
-            this.shiftCellWidget(cell, this.getMaxTopOrBottomCellMargin(row, 0) + row.topBorderWidth, this.getMaxTopOrBottomCellMargin(row, 1) + row.bottomBorderWidth);
+            this.shiftCellWidget(cell, this.getMaxTopCellMargin(row) + row.topBorderWidth, this.getMaxBottomCellMargin(row) + row.bottomBorderWidth);
         }
         viewer.updateClientAreaForRow(row, false);
         this.updateWidgetsToTable(tables, rows, row);

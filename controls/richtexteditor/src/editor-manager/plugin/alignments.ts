@@ -52,8 +52,8 @@ export class Alignments {
     }
     private getTableNode(range: Range): Node[] {
         let startNode: Node = range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentNode;
-        let tdNode: Node = closest(startNode, 'td');
-        return [tdNode];
+        let cellNode: Node = closest(startNode, 'td,th');
+        return [cellNode];
     }
 
     private applyAlignment(e: IHtmlSubCommands): void {

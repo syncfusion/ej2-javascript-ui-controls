@@ -4,13 +4,21 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#I238300` - The issue with animation in circular gauge and flickering has been resolved
+
 ## 17.1.50 (2019-06-04)
 
 ### CircularGauge
 
 #### Bug Fixes
 
-- #I237023 - The issue with pointer animation on setting more than 80% of the pointer radius has been fixed.
+- `#I237023` - The issue with pointer animation on setting more than 80% of the pointer radius has been fixed.
 
 ## 17.1.48 (2019-05-21)
 
@@ -18,7 +26,7 @@
 
 #### Bug Fixes
 
-- #I236468 - When drag the range bar pointer, the console error thrown is resolved now.
+- `#I236468` - When drag the range bar pointer, the console error thrown is resolved now.
 
 ## 17.1.44 (2019-05-07)
 
@@ -26,7 +34,7 @@
 
 #### Bug Fixes
 
-- #I234531 - The issue with rendering circular gauge when setting cancel argument to true in the "axisLabelRender" event has been fixed.
+- `#I234531` - The issue with rendering circular gauge when setting cancel argument to true in the "axisLabelRender" event has been fixed.
 
 ## 17.1.43 (2019-04-30)
 
@@ -34,8 +42,8 @@
 
 #### Bug Fixes
 
-- #I234082 - Circular gauge tooltip is not shown in IE browser issue has been fixed.
-- #I234174 - Tooltip content width and adding a border to control container alignment issues have been fixed
+- `#I234082` - Circular gauge tooltip is not shown in IE browser issue has been fixed.
+- `#I234174` - Tooltip content width and adding a border to control container alignment issues have been fixed
 
 ## 16.4.54 (2019-02-19)
 

@@ -148,12 +148,15 @@ export class PasteCleanup {
 
   private radioRender(): void {
     let keepRadioButton: RadioButton = new RadioButton({ label: 'Keep', name: 'pasteOption', checked: true });
+    keepRadioButton.isStringTemplate = true;
     let keepFormatElement: HTMLElement = this.parent.element.querySelector('#keepFormating');
     keepRadioButton.appendTo(keepFormatElement);
     let cleanRadioButton: RadioButton = new RadioButton({ label: 'Clean', name: 'pasteOption' });
+    cleanRadioButton.isStringTemplate = true;
     let cleanFormatElement: HTMLElement = this.parent.element.querySelector('#cleanFormat');
     cleanRadioButton.appendTo(cleanFormatElement);
     let plainTextRadioButton: RadioButton = new RadioButton({ label: 'Plain Text', name: 'pasteOption' });
+    plainTextRadioButton.isStringTemplate = true;
     let plainTextElement: HTMLElement = this.parent.element.querySelector('#plainTextFormat');
     plainTextRadioButton.appendTo(plainTextElement);
   }

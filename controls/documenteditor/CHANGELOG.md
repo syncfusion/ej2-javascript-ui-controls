@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### Document Editor
+
+#### Breaking Changes
+
+- The `pasteLocal` method in `Editor` module is changed to `paste`, which accepts the sfdt string as argument. If sfdt string does not present, paste the local clipboard data.
+
+#### Bug Fixes
+
+- `#240558` - Page numbers are now updated properly.
+- `#228049` - Table left border and shadings are now rendered properly.
+- `#228049` - Paragraph left indent will never add extra space in table cell.
+- `#239144` - Font Type and size value gets highlight when focused on corresponding dropdown list.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Document Editor
@@ -12,21 +27,21 @@
 
 #### New Features
 
-- #229069 - Added contextual spacing support.
-- #158324, #226019, #226018, #227644, #238417 - Added support for chart preservation.
-- #94889 ,#87537, #223333 ,#222513, #224521 ,#227620 ,#227052 ,#227362, #236997 - Added spell check support.
-- #226631 ,#227594, #231373, #233073 - Added clipboard paste with formatted content.
-- #140903 ,#227192, #227641 ,#227640 - Added restrict editing support.
-- #237725 - Added API to customize gap between each page.
+- `#229069` - Added contextual spacing support.
+- `#158324`, `#226019`, `#226018`, `#227644`, `#238417` - Added support for chart preservation.
+- `#94889` ,`#87537`, `#223333` ,`#222513`, `#224521` ,`#227620` ,`#227052` ,`#227362`, `#236997` - Added spell check support.
+- `#226631` ,`#227594`, `#231373`, `#233073` - Added clipboard paste with formatted content.
+- `#140903` ,`#227192`, `#227641` ,`#227640` - Added restrict editing support.
+- `#237725` - Added API to customize gap between each page.
 
 #### Bug Fixes
 
-- #237415, #238902 - Document exported properly when document contains hyphen character.
-- #228049 - Tab character width is now calculated properly.
-- #228049 - Table with repeat header is now layout properly.
-- #234073 - Table is now pasted properly.
-- #236808 - Document exported properly when document contains text form field.
-- #144848 - Table shading is now exported properly.
+- `#237415`, `#238902` - Document exported properly when document contains hyphen character.
+- `#228049` - Tab character width is now calculated properly.
+- `#228049` - Table with repeat header is now layout properly.
+- `#234073` - Table is now pasted properly.
+- `#236808` - Document exported properly when document contains text form field.
+- `#144848` - Table shading is now exported properly.
 
 ## 17.1.50 (2019-06-04)
 
@@ -34,8 +49,8 @@
 
 #### Bug Fixes
 
-- #236930 - Table exported properly when document contains continuous table.
-- #236502 - Table last column resizing is now working properly.
+- `#236930` - Table exported properly when document contains continuous table.
+- `#236502` - Table last column resizing is now working properly.
 
 ## 17.1.49 (2019-05-29)
 
@@ -43,7 +58,7 @@
 
 #### Bug Fixes
 
-- #226399 - Header and Footer is now layout properly if document contains section break
+- `#226399` - Header and Footer is now layout properly if document contains section break
 
 ## 17.1.48 (2019-05-21)
 
@@ -51,15 +66,15 @@
 
 #### Bug Fixes
 
-- #234799 - Bold button is now aligned properly in modify style dialog.
-- #236061, #236039 - Document editor container component is now destroyed properly.
-- #234146 - Section formats are now applied properly.
-- #233556, #234406 - Table of Contents are now inserted properly.
-- #234249 - Multilevel lists are now exported properly.
-- #234084 - Selection is now updated properly after clear formatting.
-- #234073 - Copy is now working properly for nested table.
-- #234799 - Renaming the existing style in modify style dialog is now updated properly.
-- #234799 - Text alignment is now updating properly while modify style using style dialog.
+- `#234799` - Bold button is now aligned properly in modify style dialog.
+- `#236061`, `#236039` - Document editor container component is now destroyed properly.
+- `#234146` - Section formats are now applied properly.
+- `#233556`, `#234406` - Table of Contents are now inserted properly.
+- `#234249` - Multilevel lists are now exported properly.
+- `#234084` - Selection is now updated properly after clear formatting.
+- `#234073` - Copy is now working properly for nested table.
+- `#234799` - Renaming the existing style in modify style dialog is now updated properly.
+- `#234799` - Text alignment is now updating properly while modify style using style dialog.
 
 ## 17.1.47 (2019-05-14)
 
@@ -67,12 +82,12 @@
 
 #### New Features
 
-- #142821 - Added API to insert bookmark and fetch all bookmarks in document.
-- #142820 - Added API to insert hyperlink.
+- `#142821` - Added API to insert bookmark and fetch all bookmarks in document.
+- `#142820` - Added API to insert hyperlink.
 
 #### Bug Fixes
 
-- #230628 - Updated dialog animation.
+- `#230628` - Updated dialog animation.
 
 ## 17.1.44 (2019-05-07)
 
@@ -80,7 +95,7 @@
 
 #### Bug Fixes
 
-- #233280 - Improvised performance while updating page field.
+- `#233280` - Improvised performance while updating page field.
 
 ## 17.1.43 (2019-04-30)
 
@@ -88,7 +103,7 @@
 
 #### Bug Fixes
 
-- #233908 - Height for merged cell is now updated properly.
+- `#233908` - Height for merged cell is now updated properly.
 
 ## 17.1.42 (2019-04-23)
 
@@ -96,7 +111,7 @@
 
 #### Bug Fixes
 
-- #231353 - Text search results are now navigated properly.
+- `#231353` - Text search results are now navigated properly.
 
 ## 17.1.41 (2019-04-16)
 
@@ -104,9 +119,9 @@
 
 #### Bug Fixes
 
-- #232616 - Document contents are now exported properly.
-- #232616 - Page hang on editing the document is fixed.
-- #232327 - Tables are now removed properly.
+- `#232616` - Document contents are now exported properly.
+- `#232616` - Page hang on editing the document is fixed.
+- `#232327` - Tables are now removed properly.
 
 ## 17.1.40 (2019-04-09)
 

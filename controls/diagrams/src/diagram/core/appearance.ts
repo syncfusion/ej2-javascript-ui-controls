@@ -58,6 +58,7 @@ export class Margin extends ChildProperty<Margin> {
     /**
      * Sets the space to be left from the left side of the immediate parent of an element
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public left: number;
@@ -65,6 +66,7 @@ export class Margin extends ChildProperty<Margin> {
     /**
      * Sets the space to be left from the right side of the immediate parent of an element
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public right: number;
@@ -72,6 +74,7 @@ export class Margin extends ChildProperty<Margin> {
     /**
      * Sets the space to be left from the top side of the immediate parent of an element
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public top: number;
@@ -79,6 +82,7 @@ export class Margin extends ChildProperty<Margin> {
     /**
      * Sets the space to be left from the bottom side of the immediate parent of an element
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public bottom: number;
@@ -163,6 +167,7 @@ export class Stop extends ChildProperty<Stop> {
     /**
      * Sets the position where the previous color transition ends and a new color transition starts
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public offset: number;

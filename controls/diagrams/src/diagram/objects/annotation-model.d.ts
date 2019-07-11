@@ -63,7 +63,8 @@ export interface AnnotationModel {
      * * ReadOnly - Enables/Disables the ReadOnly Constraints
      * * InheritReadOnly - Enables/Disables the InheritReadOnly Constraints
      * @default 'InheritReadOnly'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     constraints?: AnnotationConstraints;
 
@@ -89,6 +90,7 @@ export interface AnnotationModel {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     hyperlink?: HyperlinkModel;
@@ -102,6 +104,7 @@ export interface AnnotationModel {
     /**
      * Sets the width of the text
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -109,6 +112,7 @@ export interface AnnotationModel {
     /**
      * Sets the height of the text
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -188,6 +192,7 @@ export interface AnnotationModel {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     addInfo?: Object;
@@ -221,6 +226,7 @@ export interface PathAnnotationModel extends AnnotationModel{
     /**
      * Sets the displacement of an annotation from its actual position
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     displacement?: PointModel;

@@ -107,6 +107,7 @@ export interface ColorPickerModel extends ComponentModel{
      * Triggers before opening the ColorPicker popup.
      * @event
      * @blazorProperty 'OnOpen'
+     * @deprecated
      */
     beforeOpen?: EmitType<BeforeOpenCloseEventArgs>;
 
@@ -121,6 +122,7 @@ export interface ColorPickerModel extends ComponentModel{
      * Triggers before closing the ColorPicker popup.
      * @event
      * @blazorProperty 'OnClose'
+     * @deprecated
      */
     beforeClose?: EmitType<BeforeOpenCloseEventArgs>;
 

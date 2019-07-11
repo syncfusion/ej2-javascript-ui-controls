@@ -144,6 +144,21 @@ export class WUniqueFormat {
         if (property === 'gridAfterWidthType') {
             return 10;
         }
+        if (property === 'leftMargin') {
+            return 11;
+        }
+        if (property === 'topMargin') {
+            return 12;
+        }
+        if (property === 'bottomMargin') {
+            return 13;
+        }
+        if (property === 'rightMargin') {
+            return 14;
+        }
+        if (property === 'leftIndent') {
+            return 15;
+        }
         return 0;
     }
     private static getListFormatType(property: string): number {
@@ -594,6 +609,21 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('gridAfterWidthType', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('leftMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('topMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('bottomMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('rightMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('leftIndent', source, modifiedProperty, modifiedValue, 6)) {
             return false;
         }
         return true;

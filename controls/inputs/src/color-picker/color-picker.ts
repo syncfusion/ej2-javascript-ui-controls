@@ -206,6 +206,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
      * Triggers before opening the ColorPicker popup.
      * @event
      * @blazorProperty 'OnOpen'
+     * @deprecated
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseEventArgs>;
@@ -222,6 +223,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
      * Triggers before closing the ColorPicker popup.
      * @event
      * @blazorProperty 'OnClose'
+     * @deprecated
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseEventArgs>;
@@ -497,7 +499,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     private setNoColor(): void {
-        let noColorEle: HTMLElement = selectAll('.e-row')[0].children[0] as HTMLElement;
+        let noColorEle: HTMLElement = this.container.querySelector('.e-row').children[0] as HTMLElement;
         noColorEle.classList.add(NOCOLOR);
         if (!this.value) {
             noColorEle.classList.add(SELECT);
@@ -612,12 +614,18 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         let pValue: string = this.rgbToHex(this.rgb);
         this.hsv[3] = value / 100; this.rgb[3] = value / 100;
         let cValue: string = this.rgbToHex(this.rgb);
-        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
-            (getInstance(select('.' + OPACITY, this.container) as HTMLInputElement, NumericTextBox) as NumericTextBox).value = value;
-        }
+        this.updateOpacityInput(value);
         let rgb: string = this.convertToRgbString(this.rgb);
         this.updatePreview(rgb);
         this.triggerEvent(cValue, pValue, rgb);
+    }
+
+    private updateOpacityInput(value: number): void {
+        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
+            let opacityTextBoxInst: NumericTextBox = getInstance(
+                select('.' + OPACITY, this.container) as HTMLInputElement, NumericTextBox) as NumericTextBox;
+            opacityTextBoxInst.value = value; opacityTextBoxInst.dataBind();
+        }
     }
 
     private createPreview(parentEle?: Element): void {
@@ -1688,6 +1696,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             this.createSlider();
             this.setHsvContainerBg();
             this.updateInput(newProp);
+            if (this.rgb.length === 4) { this.updateOpacityInput(this.rgb[3] * 100); }
         } else {
             this.removeTileSelection();
             let ele: Element = select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);

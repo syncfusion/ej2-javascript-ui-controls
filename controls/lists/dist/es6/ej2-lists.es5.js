@@ -484,7 +484,7 @@ var ListBase;
             }
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
-                append(compiledString(curItem, null, null, currentID), li);
+                append(compiledString(curItem, null, null, currentID, !!curOpt.isStringTemplate), li);
                 li.setAttribute('data-value', value);
                 li.setAttribute('role', 'option');
             }
@@ -522,7 +522,7 @@ var ListBase;
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData, null, null, curOpt.groupTemplateID), header);
+            append(compiledString(headerData, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
         }
         return headerItems;
     }
@@ -662,11 +662,11 @@ var ListBase;
         !isNullOrUndefined(uID) ? li.setAttribute('data-uid', uID) : li.setAttribute('data-uid', generateId());
         if (grpLI && options && options.groupTemplate) {
             var compiledString = compile(options.groupTemplate);
-            append(compiledString(item, null, null, curOpt.groupTemplateID), li);
+            append(compiledString(item, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         }
         else if (!grpLI && options && options.template) {
             var compiledString = compile(options.template);
-            append(compiledString(item, null, null, curOpt.templateID), li);
+            append(compiledString(item, null, null, curOpt.templateID, !!curOpt.isStringTemplate), li);
         }
         else {
             var innerDiv = createElement('div', {
@@ -1816,7 +1816,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     };
     ListView.prototype.reRender = function () {
         this.resetBlazorTemplates();
-        this.element.innerHTML = '';
+        if (Object.keys(window).indexOf('ejsInterop') === -1) {
+            this.element.innerHTML = '';
+        }
         this.headerEle = this.ulElement = this.liCollection = undefined;
         this.setLocalData();
         this.header();
@@ -1847,23 +1849,16 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.updateBlazorTemplates = function (template, headerTemplate) {
-        var _this = this;
         if (template === void 0) { template = false; }
         if (headerTemplate === void 0) { headerTemplate = false; }
-        if (this.template && template) {
-            setTimeout(function () {
-                updateBlazorTemplate(_this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
-            }, 0);
+        if (this.template && template && !this.enableVirtualization) {
+            updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY, this);
         }
-        if (this.groupTemplate && template) {
-            setTimeout(function () {
-                updateBlazorTemplate(_this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
-            }, 0);
+        if (this.groupTemplate && template && !this.enableVirtualization) {
+            updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY, this);
         }
         if (this.headerTemplate && headerTemplate) {
-            setTimeout(function () {
-                updateBlazorTemplate(_this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
-            }, 0);
+            updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this);
         }
     };
     ListView.prototype.renderSubList = function (li) {

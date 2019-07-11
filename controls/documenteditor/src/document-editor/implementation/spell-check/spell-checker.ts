@@ -1,7 +1,7 @@
 // tslint:disable-next-line:max-line-length
 import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults } from '../index';
 import { Dictionary } from '../../base/dictionary';
-import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget } from '../viewer/page';
+import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaselineAlignment } from '../../base/types';
 /**
@@ -15,7 +15,7 @@ export class SpellChecker {
     public languageID: number;
     /**
      * Indicates whether spell checking and suggestions to be enabled.
-     * @default false
+     * @default true
      */
     public allowSpellCheckAndSuggestion: boolean;
     /**
@@ -570,7 +570,9 @@ export class SpellChecker {
     public handleWordByWordSpellCheck(jsonObject: any, elementBox: TextElementBox, left: number, top: number, underlineY: number, baselineAlignment: BaselineAlignment, isSamePage: boolean): void {
         if (jsonObject.HasSpellingError && isSamePage) {
             this.addErrorCollection(elementBox.text, elementBox, jsonObject.Suggestions);
-            this.viewer.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment);
+             // tslint:disable-next-line:max-line-length
+            let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
+            this.viewer.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
             elementBox.isSpellChecked = true;
         } else {
             elementBox.isSpellChecked = true;
@@ -673,7 +675,7 @@ export class SpellChecker {
 
     /**
      * Method to handle splitted and combined words for spell check.
-     * @param {any} jsonObject M
+     * @param {any} jsonObject 
      * @param {string} currentText 
      * @param {ElementBox} elementBox 
      * @param {boolean} isSamePage 
@@ -716,7 +718,8 @@ export class SpellChecker {
             }
             this.addErrorCollection(span.text, span, suggestions);
             // tslint:disable-next-line:max-line-length
-            this.viewer.render.renderWavyline(span, span.start.location.x, span.start.location.y, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment);
+            let backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
+            this.viewer.render.renderWavyline(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
             if (isLastItem) {
                 elementBox.isSpellChecked = true;
             }

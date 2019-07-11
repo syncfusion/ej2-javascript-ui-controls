@@ -111,7 +111,9 @@ export class TableProperties {
         this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
         // tslint:disable-next-line:max-line-length
         let items: TabItemModel[] = [{ header: { text: this.localObj.getConstant('Table') }, content: this.tableProperties }, { header: { text: this.localObj.getConstant('Text') }, content: this.tableTextProperties.element }] as TabItemModel[];
-        this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection }, this.element);
+        this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection });
+        this.propertiesTab.isStringTemplate = true;
+        this.propertiesTab.appendTo(this.element);
         this.parentElement.appendChild(this.element);
         this.container.propertiesPaneContainer.appendChild(this.parentElement);
     }

@@ -41,7 +41,8 @@ export class FieldList implements IAction {
     private initiateModule(): void {
         this.element = createElement('div', {
             id: this.parent.element.id + '_PivotFieldList',
-            styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width
+            styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
+            ';display:none'
         });
         this.parent.element.parentElement.setAttribute('id', 'ContainerWrapper');
         this.parent.element.parentElement.appendChild(this.element);
@@ -66,6 +67,7 @@ export class FieldList implements IAction {
 
     private updateControl(): void {
         if (this.element) {
+            this.element.style.display = 'block';
             prepend([this.element], this.parent.element);
             if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
                 clearTimeout(this.timeOutObj);

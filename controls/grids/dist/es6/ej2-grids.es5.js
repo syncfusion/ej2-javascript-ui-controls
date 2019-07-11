@@ -1246,12 +1246,12 @@ function isComplexField(field) {
 /** @hidden */
 function getComplexFieldID(field) {
     if (field === void 0) { field = ''; }
-    return field.replace(/\./g, '_');
+    return field.replace(/\./g, '___');
 }
 /** @hidden */
 function setComplexFieldID(field) {
     if (field === void 0) { field = ''; }
-    return field.replace(/_/g, '.');
+    return field.replace(/___/g, '.');
 }
 /** @hidden */
 function isEditable(col, type, elem) {
@@ -1970,6 +1970,8 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
             created: this.dialogCreated.bind(this),
             open: this.dialogOpen.bind(this)
         });
+        var isStringTemplate = 'isStringTemplate';
+        this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dlg);
         this.dialogObj.element.style.maxHeight = '800px';
         this.dialogObj.show();
@@ -4243,7 +4245,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             }
             else {
                 if (gObj.rowTemplate) {
-                    updateBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate');
+                    updateBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate', gObj);
                 }
                 _this.appendContent(_this.tbody, frag, args);
             }
@@ -5123,7 +5125,8 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             var literals = ['index'];
             var dummyData = extendObjWithFn({}, data, (_a = {}, _a[foreignKeyData] = fData, _a));
             var templateID = this.parent.element.id + cell.column.uid;
-            result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID);
+            var str = 'isStringTemplate';
+            result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });
             result = null;
@@ -5485,8 +5488,9 @@ var HeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
         var colIndex = gridObj.getColumnIndexByField(column.field);
         if (!isNullOrUndefined(column.headerTemplate)) {
             //need to pass the template id for blazor headertemplate
-            var headerTempID = gridObj.element.id + column.field + 'headerTemplate';
-            result = column.getHeaderTemplate()(extend({ 'index': colIndex }, column), gridObj, 'headerTemplate', headerTempID);
+            var headerTempID = gridObj.element.id + column.uid + 'headerTemplate';
+            var str = 'isStringTemplate';
+            result = column.getHeaderTemplate()(extend({ 'index': colIndex }, column), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
             node.firstElementChild.innerHTML = '';
             appendChildren(node.firstElementChild, result);
         }
@@ -6237,77 +6241,79 @@ var Render = /** @__PURE__ @class */ (function () {
     };
     /** @hidden */
     Render.prototype.dataManagerSuccess = function (e, args) {
+        var _this = this;
         var gObj = this.parent;
         this.contentRenderer = this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = this.renderer.getRenderer(RenderType.Header);
         e.actionArgs = args;
-        gObj.trigger(beforeDataBound, e);
-        if (e.cancel) {
-            return;
-        }
-        var len = Object.keys(e.result).length;
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        if ((!gObj.getColumns().length && !len) && !(gObj.columns.length && gObj.columns[0] instanceof Column)) {
-            gObj.hideSpinner();
-            return;
-        }
-        this.parent.isEdit = false;
-        this.parent.notify(tooltipDestroy, {});
-        gObj.currentViewData = e.result;
-        if (!len && e.count && gObj.allowPaging && args && args.requestType !== 'delete') {
-            gObj.prevPageMoving = true;
-            gObj.pageSettings.totalRecordsCount = e.count;
-            gObj.pageSettings.currentPage = Math.ceil(e.count / gObj.pageSettings.pageSize);
-            gObj.dataBind();
-            return;
-        }
-        if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj)) {
-            this.updatesOnInitialRender(e);
-        }
-        if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
-            this.updateColumnType(gObj.getCurrentViewRecords()[0]);
-        }
-        if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
-            !this.parent.groupSettings.columns.length) {
-            e.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
-        }
-        this.parent.notify(dataReady, extend({ count: e.count, result: e.result, aggregates: e.aggregates }, args));
-        if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
-            && (args && args.requestType !== 'filtering')) {
-            this.headerRenderer.refreshUI();
-        }
-        if (len) {
-            if (isGroupAdaptive(gObj)) {
-                var content = 'content';
-                args.scrollTop = { top: this.contentRenderer[content].scrollTop };
-            }
-            this.contentRenderer.refreshContentRows(args);
-        }
-        else {
-            if (!gObj.getColumns().length) {
-                gObj.element.innerHTML = '';
-                alert(this.l10n.getConstant('EmptyDataSourceError')); //ToDO: change this alert as dialog
+        gObj.trigger(beforeDataBound, e, function (dataArgs) {
+            if (dataArgs.cancel) {
                 return;
             }
-            this.contentRenderer.setRowElements([]);
-            this.contentRenderer.setRowObjects([]);
-            this.ariaService.setBusy(this.parent.getContent().firstChild, false);
-            this.renderEmptyRow();
-            if (args) {
-                var action = (args.requestType || '').toLowerCase() + '-complete';
-                this.parent.notify(action, args);
-                if (args.requestType === 'batchsave') {
-                    args.cancel = false;
-                    args.rows = [];
-                    args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
-                    this.parent.trigger(actionComplete, args);
-                }
+            var len = Object.keys(dataArgs.result).length;
+            if (_this.parent.isDestroyed) {
+                return;
             }
-            this.parent.hideSpinner();
-        }
-        this.parent.notify(toolbarRefresh, {});
+            if ((!gObj.getColumns().length && !len) && !(gObj.columns.length && gObj.columns[0] instanceof Column)) {
+                gObj.hideSpinner();
+                return;
+            }
+            _this.parent.isEdit = false;
+            _this.parent.notify(tooltipDestroy, {});
+            gObj.currentViewData = dataArgs.result;
+            if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete') {
+                gObj.prevPageMoving = true;
+                gObj.pageSettings.totalRecordsCount = dataArgs.count;
+                gObj.pageSettings.currentPage = Math.ceil(dataArgs.count / gObj.pageSettings.pageSize);
+                gObj.dataBind();
+                return;
+            }
+            if ((!gObj.getColumns().length && len || !_this.isLayoutRendered) && !isGroupAdaptive(gObj)) {
+                _this.updatesOnInitialRender(dataArgs);
+            }
+            if (!_this.isColTypeDef && gObj.getCurrentViewRecords()) {
+                _this.updateColumnType(gObj.getCurrentViewRecords()[0]);
+            }
+            if (!_this.parent.isInitialLoad && _this.parent.groupSettings.disablePageWiseAggregates &&
+                !_this.parent.groupSettings.columns.length) {
+                dataArgs.result = _this.parent.dataSource instanceof Array ? _this.parent.dataSource : _this.parent.currentViewData;
+            }
+            _this.parent.notify(dataReady, extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates }, args));
+            if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
+                && (args && args.requestType !== 'filtering')) {
+                _this.headerRenderer.refreshUI();
+            }
+            if (len) {
+                if (isGroupAdaptive(gObj)) {
+                    var content = 'content';
+                    args.scrollTop = { top: _this.contentRenderer[content].scrollTop };
+                }
+                _this.contentRenderer.refreshContentRows(args);
+            }
+            else {
+                if (!gObj.getColumns().length) {
+                    gObj.element.innerHTML = '';
+                    alert(_this.l10n.getConstant('EmptyDataSourceError')); //ToDO: change this alert as dialog
+                    return;
+                }
+                _this.contentRenderer.setRowElements([]);
+                _this.contentRenderer.setRowObjects([]);
+                _this.ariaService.setBusy(_this.parent.getContent().firstChild, false);
+                _this.renderEmptyRow();
+                if (args) {
+                    var action = (args.requestType || '').toLowerCase() + '-complete';
+                    _this.parent.notify(action, args);
+                    if (args.requestType === 'batchsave') {
+                        args.cancel = false;
+                        args.rows = [];
+                        args.isFrozen = _this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+                        _this.parent.trigger(actionComplete, args);
+                    }
+                }
+                _this.parent.hideSpinner();
+            }
+            _this.parent.notify(toolbarRefresh, {});
+        });
     };
     Render.prototype.dataManagerFailure = function (e, args) {
         this.ariaService.setOptions(this.parent.getContent().firstChild, { busy: false, invalid: true });
@@ -13740,10 +13746,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.blazorTemplate = function () {
         for (var i = 0; i < this.columnModel.length; i++) {
             if (this.columnModel[i].template) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template');
+                updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
             }
             if (this.columnModel[i].headerTemplate) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate');
+                updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
             }
         }
     };
@@ -16595,6 +16601,8 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
             animationSettings: { effect: 'None' },
             cssClass: 'e-filter-popup'
         });
+        var isStringTemplate = 'isStringTemplate';
+        this.dlgObj[isStringTemplate] = true;
         this.dlgObj.appendTo(this.dlgDiv);
     };
     FilterMenuRenderer.prototype.dialogCreated = function (target, column) {
@@ -17022,6 +17030,8 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
             width: 430,
             animationSettings: { effect: 'None' },
         });
+        var isStringTemplate = 'isStringTemplate';
+        this.dlgObj[isStringTemplate] = true;
         this.dlgObj.appendTo(this.dlgDiv);
     };
     ExcelFilter.prototype.removeDialog = function () {
@@ -20899,10 +20909,13 @@ var DetailRow = /** @__PURE__ @class */ (function () {
                     var detailTemplateID = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
                     resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
-                    updateBlazorTemplate(detailTemplateID, 'DetailTemplate');
+                    updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj);
                 }
                 else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
+                    if (childGrid.query) {
+                        childGrid.query = childGrid.query.clone();
+                    }
                     childGrid[parent] = {
                         parentID: gObj.element.id,
                         parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
@@ -21192,6 +21205,8 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             enableRtl: this.parent.enableRtl,
             created: this.bindSearchEvents.bind(this)
         });
+        var isStringTemplate = 'isStringTemplate';
+        this.toolbar[isStringTemplate] = true;
         var viewStr = 'viewContainerRef';
         var registerTemp = 'registeredTemplate';
         if (this.parent[viewStr]) {
@@ -23015,6 +23030,8 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
                 },
                 { click: this.btnClick.bind(this), buttonModel: { cssClass: 'e-flat', content: this.l10n.getConstant('CancelButton') } }]
         }, gObj.editSettings.dialog.params));
+        var isStringTemplate = 'isStringTemplate';
+        this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dialog);
         this.parent.applyBiggerTheme(this.dialogObj.element.parentElement);
     };
@@ -23050,7 +23067,7 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
             var editTemplateID = this.parent.element.id + 'editSettingsTemplate';
             var dummyData = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
             appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
-            updateBlazorTemplate(editTemplateID, 'Template');
+            updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
             div.appendChild(form);
             return div;
         }
@@ -24229,12 +24246,13 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 .map(function (row) { return row.data; })
         };
         var args = { batchChanges: changes, cancel: false };
-        gObj.trigger(beforeBatchSave, args);
-        if (args.cancel) {
-            return;
-        }
-        gObj.showSpinner();
-        gObj.notify(bulkSave, { changes: changes, original: original });
+        gObj.trigger(beforeBatchSave, args, function (beforeBatchSaveArgs) {
+            if (beforeBatchSaveArgs.cancel) {
+                return;
+            }
+            gObj.showSpinner();
+            gObj.notify(bulkSave, { changes: changes, original: original });
+        });
     };
     BatchEdit.prototype.getBatchChanges = function () {
         var changes = {
@@ -24303,6 +24321,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             this.parent.getRowsObject().push(row);
     };
     BatchEdit.prototype.bulkDelete = function (fieldname, data) {
+        var _this = this;
         this.removeSelectedData = [];
         var gObj = this.parent;
         if (data) {
@@ -24319,59 +24338,60 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         if (!args.row) {
             return;
         }
-        gObj.trigger(beforeBatchDelete, args);
-        if (args.cancel) {
-            return;
-        }
-        if (this.parent.frozenColumns || selectedRows.length === 1) {
-            var uid = args.row.getAttribute('data-uid');
-            if (args.row.classList.contains('e-insertedrow')) {
-                this.removeRowObjectFromUID(uid);
-                remove(args.row);
+        gObj.trigger(beforeBatchDelete, args, function (beforeBatchDeleteArgs) {
+            if (beforeBatchDeleteArgs.cancel) {
+                return;
             }
-            else {
-                var rowObj = gObj.getRowObjectFromUID(uid);
-                rowObj.isDirty = true;
-                rowObj.edit = 'delete';
-                classList(args.row, ['e-hiddenrow', 'e-updatedtd'], []);
-                if (gObj.getFrozenColumns()) {
-                    classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
-                    if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
-                        gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
-                            .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
-                        gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
-                            .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
-                    }
-                }
-                else if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
-                    gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
-                }
-            }
-            delete args.row;
-        }
-        else {
-            for (var i = 0; i < selectedRows.length; i++) {
-                var uniqueid = selectedRows[i].getAttribute('data-uid');
-                if (selectedRows[i].classList.contains('e-insertedrow')) {
-                    this.removeRowObjectFromUID(uniqueid);
-                    remove(selectedRows[i]);
+            if (_this.parent.frozenColumns || selectedRows.length === 1) {
+                var uid = beforeBatchDeleteArgs.row.getAttribute('data-uid');
+                if (beforeBatchDeleteArgs.row.classList.contains('e-insertedrow')) {
+                    _this.removeRowObjectFromUID(uid);
+                    remove(beforeBatchDeleteArgs.row);
                 }
                 else {
-                    classList(selectedRows[i], ['e-hiddenrow', 'e-updatedtd'], []);
-                    var selectedRow = gObj.getRowObjectFromUID(uniqueid);
-                    selectedRow.isDirty = true;
-                    selectedRow.edit = 'delete';
-                    delete selectedRows[i];
+                    var rowObj = gObj.getRowObjectFromUID(uid);
+                    rowObj.isDirty = true;
+                    rowObj.edit = 'delete';
+                    classList(beforeBatchDeleteArgs.row, ['e-hiddenrow', 'e-updatedtd'], []);
+                    if (gObj.getFrozenColumns()) {
+                        classList(data ? gObj.getMovableRows()[index] : selectedRows[1], ['e-hiddenrow', 'e-updatedtd'], []);
+                        if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
+                            gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
+                                .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
+                            gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
+                                .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                        }
+                    }
+                    else if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
+                        gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                    }
+                }
+                delete beforeBatchDeleteArgs.row;
+            }
+            else {
+                for (var i = 0; i < selectedRows.length; i++) {
+                    var uniqueid = selectedRows[i].getAttribute('data-uid');
+                    if (selectedRows[i].classList.contains('e-insertedrow')) {
+                        _this.removeRowObjectFromUID(uniqueid);
+                        remove(selectedRows[i]);
+                    }
+                    else {
+                        classList(selectedRows[i], ['e-hiddenrow', 'e-updatedtd'], []);
+                        var selectedRow = gObj.getRowObjectFromUID(uniqueid);
+                        selectedRow.isDirty = true;
+                        selectedRow.edit = 'delete';
+                        delete selectedRows[i];
+                    }
                 }
             }
-        }
-        this.refreshRowIdx();
-        this.removeSelectedData = gObj.getSelectedRecords();
-        gObj.clearSelection();
-        gObj.selectRow(index);
-        gObj.trigger(batchDelete, args);
-        gObj.notify(batchDelete, { rows: this.parent.getRowsObject() });
-        gObj.notify(toolbarRefresh, {});
+            _this.refreshRowIdx();
+            _this.removeSelectedData = gObj.getSelectedRecords();
+            gObj.clearSelection();
+            gObj.selectRow(index);
+            gObj.trigger(batchDelete, beforeBatchDeleteArgs);
+            gObj.notify(batchDelete, { rows: _this.parent.getRowsObject() });
+            gObj.notify(toolbarRefresh, {});
+        });
     };
     BatchEdit.prototype.refreshRowIdx = function () {
         var rows = [];
@@ -24415,6 +24435,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         return inArray(data, this.parent.getCurrentViewRecords());
     };
     BatchEdit.prototype.bulkAddRow = function (data) {
+        var _this = this;
         var gObj = this.parent;
         if (!gObj.editSettings.allowAdding) {
             return;
@@ -24432,76 +24453,77 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             primaryKey: gObj.getPrimaryKeyFieldNames(),
             cancel: false
         };
-        gObj.trigger(beforeBatchAdd, args);
-        if (args.cancel) {
-            return;
-        }
-        this.isAdded = true;
-        gObj.clearSelection();
-        var mTr;
-        var mTbody;
-        var row = new RowRenderer(this.serviceLocator, null, this.parent);
-        var model = new RowModelGenerator(this.parent);
-        var modelData = model.generateRows([args.defaultData]);
-        var tr = row.render(modelData[0], gObj.getColumns());
-        var col;
-        var index;
-        for (var i = 0; i < this.parent.groupSettings.columns.length; i++) {
-            tr.insertBefore(this.parent.createElement('td', { className: 'e-indentcell' }), tr.firstChild);
-            modelData[0].cells.unshift(new Cell({ cellType: CellType.Indent }));
-        }
-        var tbody = gObj.getContentTable().querySelector('tbody');
-        tr.classList.add('e-insertedrow');
-        if (tbody.querySelector('.e-emptyrow')) {
-            tbody.querySelector('.e-emptyrow').remove();
-        }
-        if (gObj.getFrozenColumns()) {
-            mTr = this.renderMovable(tr);
+        gObj.trigger(beforeBatchAdd, args, function (beforeBatchAddArgs) {
+            if (beforeBatchAddArgs.cancel) {
+                return;
+            }
+            _this.isAdded = true;
+            gObj.clearSelection();
+            var mTr;
+            var mTbody;
+            var row = new RowRenderer(_this.serviceLocator, null, _this.parent);
+            var model = new RowModelGenerator(_this.parent);
+            var modelData = model.generateRows([beforeBatchAddArgs.defaultData]);
+            var tr = row.render(modelData[0], gObj.getColumns());
+            var col;
+            var index;
+            for (var i = 0; i < _this.parent.groupSettings.columns.length; i++) {
+                tr.insertBefore(_this.parent.createElement('td', { className: 'e-indentcell' }), tr.firstChild);
+                modelData[0].cells.unshift(new Cell({ cellType: CellType.Indent }));
+            }
+            var tbody = gObj.getContentTable().querySelector('tbody');
+            tr.classList.add('e-insertedrow');
+            if (tbody.querySelector('.e-emptyrow')) {
+                tbody.querySelector('.e-emptyrow').remove();
+            }
+            if (gObj.getFrozenColumns()) {
+                mTr = _this.renderMovable(tr);
+                if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
+                    mTbody = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+                }
+                else {
+                    mTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                }
+                _this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
+                addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+                if (_this.parent.height === 'auto') {
+                    _this.parent.notify(frozenHeight, {});
+                }
+            }
             if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
-                mTbody = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+                tbody = gObj.getHeaderContent().querySelector('tbody');
             }
             else {
-                mTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                tbody = gObj.getContent().querySelector('tbody');
             }
-            this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
-            addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
-            if (this.parent.height === 'auto') {
-                this.parent.notify(frozenHeight, {});
+            _this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
+            addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+            modelData[0].isDirty = true;
+            modelData[0].changes = extend({}, {}, modelData[0].data, true);
+            modelData[0].edit = 'add';
+            _this.addRowObject(modelData[0]);
+            _this.refreshRowIdx();
+            _this.focus.forgetPrevious();
+            gObj.notify(batchAdd, { rows: _this.parent.getRowsObject() });
+            var changes = _this.getBatchChanges();
+            var addedRecords = 'addedRecords';
+            _this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
+                gObj.selectRow(_this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1);
+            if (!data) {
+                index = _this.findNextEditableCell(0, true);
+                col = gObj.getColumns()[index];
+                _this.parent.editSettings.newRowPosition === 'Top' ? _this.editCell(0, col.field, true) :
+                    _this.editCell(_this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
             }
-        }
-        if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
-            tbody = gObj.getHeaderContent().querySelector('tbody');
-        }
-        else {
-            tbody = gObj.getContent().querySelector('tbody');
-        }
-        this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
-        addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
-        modelData[0].isDirty = true;
-        modelData[0].changes = extend({}, {}, modelData[0].data, true);
-        modelData[0].edit = 'add';
-        this.addRowObject(modelData[0]);
-        this.refreshRowIdx();
-        this.focus.forgetPrevious();
-        gObj.notify(batchAdd, { rows: this.parent.getRowsObject() });
-        var changes = this.getBatchChanges();
-        var addedRecords = 'addedRecords';
-        this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
-            gObj.selectRow(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1);
-        if (!data) {
-            index = this.findNextEditableCell(0, true);
-            col = gObj.getColumns()[index];
-            this.parent.editSettings.newRowPosition === 'Top' ? this.editCell(0, col.field, true) :
-                this.editCell(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
-        }
-        if (this.parent.aggregates.length > 0 && data) {
-            this.parent.notify(refreshFooterRenderer, {});
-        }
-        var args1 = {
-            defaultData: args.defaultData, row: tr,
-            columnObject: col, columnIndex: index, primaryKey: args.primaryKey, cell: tr.cells[index]
-        };
-        gObj.trigger(batchAdd, args1);
+            if (_this.parent.aggregates.length > 0 && data) {
+                _this.parent.notify(refreshFooterRenderer, {});
+            }
+            var args1 = {
+                defaultData: beforeBatchAddArgs.defaultData, row: tr,
+                columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: tr.cells[index]
+            };
+            gObj.trigger(batchAdd, args1);
+        });
     };
     BatchEdit.prototype.renderMovable = function (ele) {
         var mEle = ele.cloneNode(true);
@@ -25293,6 +25315,8 @@ var Edit = /** @__PURE__ @class */ (function () {
         };
         options.buttons = btnOptions;
         var obj = new Dialog(options);
+        var isStringTemplate = 'isStringTemplate';
+        obj[isStringTemplate] = true;
         obj.appendTo(div);
         return obj;
     };
@@ -26012,6 +26036,8 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
             cssClass: 'e-cc',
             animationSettings: { effect: 'None' },
         });
+        var isStringTemplate = 'isStringTemplate';
+        this.dlgObj[isStringTemplate] = true;
         this.dlgObj.appendTo(this.dlgDiv);
         this.wireEvents();
     };
@@ -27004,7 +27030,9 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 this.processAggregates(gObj, returnType.result, excelRow, currentViewRecords);
             }
             else {
-                this.processAggregates(gObj, returnType.result, excelRow);
+                var result = returnType.result.GroupGuid ?
+                    returnType.result.records : returnType.result;
+                this.processAggregates(gObj, result, excelRow);
             }
         }
         return excelRow;
@@ -28900,6 +28928,7 @@ var CommandColumn = /** @__PURE__ @class */ (function () {
         var buttonObj = target.ej2_instances[0];
         var type = buttonObj.commandType;
         var commandColumn;
+        var row = gObj.getRowObjectFromUID(closest(target, '.e-row').getAttribute('data-uid'));
         this.parent.columnModel.forEach(function (col) {
             if (col.commands) {
                 col.commands.forEach(function (commandCol) {
@@ -28914,7 +28943,7 @@ var CommandColumn = /** @__PURE__ @class */ (function () {
             cancel: false,
             target: target,
             commandColumn: commandColumn,
-            rowData: gObj.getRowObjectFromUID(closest(target, '.e-row').getAttribute('data-uid')).data
+            rowData: isNullOrUndefined(row) ? undefined : row.data
         };
         this.parent.trigger(commandClick, args, function (commandclickargs) {
             if (buttonObj.disabled || !gObj.editModule || commandclickargs.cancel) {
@@ -29115,6 +29144,9 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     ContextMenu$$1.prototype.contextMenuOpen = function () {
         this.isOpen = true;
     };
+    /**
+     * @hidden
+     */
     ContextMenu$$1.prototype.contextMenuItemClick = function (args) {
         var item = this.getKeyFromId(args.item.id);
         switch (item) {

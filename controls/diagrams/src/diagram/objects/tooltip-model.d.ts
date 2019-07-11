@@ -69,6 +69,7 @@ export interface DiagramTooltipModel {
      * }
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
      */
     animation?: AnimationModel;

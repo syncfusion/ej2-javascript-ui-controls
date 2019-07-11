@@ -206,6 +206,7 @@ export class NavigationPane {
         } else {
             this.commentPanelContainer.style.right = 0 + 'px';
         }
+        this.commentPanelContainer.style.bottom = 0 + 'px';
         this.createCommentPanelTitleContainer();
         this.commentPanelContainer.style.display = 'none';
         // tslint:disable-next-line:max-line-length
@@ -230,26 +231,29 @@ export class NavigationPane {
         closeButton.addEventListener('click', this.closeCommentPanelContainer.bind(this, NavigationPane));
     }
 
-    private closeCommentPanelContainer(): void {
+    /**
+     * @private
+     */
+    public closeCommentPanelContainer(): void {
         let proxy: NavigationPane = this;
         let viewerContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_viewerContainer');
         let pageContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageViewContainer');
         let commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
         if (commentPanel) {
             commentPanel.style.display = 'none';
-        }
-        if (viewerContainer) {
-            if (this.pdfViewer.enableRtl) {
-                viewerContainer.style.left = proxy.getViewerContainerRight() + 'px';
-            } else {
-                viewerContainer.style.right = proxy.getViewerContainerRight() + 'px';
+            if (viewerContainer) {
+                if (this.pdfViewer.enableRtl) {
+                    viewerContainer.style.left = proxy.getViewerContainerRight() + 'px';
+                } else {
+                    viewerContainer.style.right = proxy.getViewerContainerRight() + 'px';
+                }
+                // tslint:disable-next-line:max-line-length
+                viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight()) + 'px';
+                pageContainer.style.width = (proxy.pdfViewerBase.viewerContainer.offsetWidth - proxy.getViewerContainerScrollbarWidth()) + 'px';
             }
-            // tslint:disable-next-line:max-line-length
-            viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight()) + 'px';
-            pageContainer.style.width = (proxy.pdfViewerBase.viewerContainer.offsetWidth - proxy.getViewerContainerScrollbarWidth()) + 'px';
-        }
-        if (proxy.pdfViewerBase) {
-            proxy.pdfViewerBase.updateZoomValue();
+            if (proxy.pdfViewerBase) {
+                proxy.pdfViewerBase.updateZoomValue();
+            }
         }
     }
 
@@ -690,7 +694,8 @@ export class NavigationPane {
      */
     public updateViewerContainerOnClose(): void {
         let proxy: NavigationPane = this;
-        if (proxy.sideBarContentContainer) {
+        let sideBarContentContainer: HTMLElement = proxy.pdfViewerBase.getElement('_sideBarContentContainer');
+        if (sideBarContentContainer) {
             proxy.sideBarContentContainer.style.display = 'none';
             if (this.pdfViewer.enableRtl) {
                 proxy.pdfViewerBase.viewerContainer.style.right = (proxy.sideToolbarWidth) + 'px';

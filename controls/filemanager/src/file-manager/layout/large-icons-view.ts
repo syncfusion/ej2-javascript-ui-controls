@@ -9,9 +9,9 @@ import { ReadArgs, MouseArgs } from '../../index';
 import * as CLS from '../base/classes';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { read, GetDetails, Download, Delete } from '../common/operations';
-import { doRename, getAccessClass, getPathObject } from '../common/index';
+import { doRename, getAccessClass, getPathObject, getName, getFullPath, getDirectoryPath } from '../common/index';
 import { removeBlur, cutFiles, copyFiles, addBlur, openSearchFolder, removeActive, pasteHandler } from '../common/index';
-import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getDirectoryPath, getModule } from '../common/index';
+import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getModule } from '../common/index';
 import { openAction, fileType, refresh, getImageUrl, getSortedData, createDeniedDialog, updateLayout } from '../common/utility';
 import { createEmptyElement, hasReadAccess, hasEditAccess } from '../common/utility';
 import { createDialog, createImageDialog } from '../pop-up/dialog';
@@ -225,14 +225,14 @@ export class LargeIconsView {
     private onDropInit(args: DragEventArgs): void {
         if (this.parent.targetModule === this.getModuleName()) {
             let dropLi: Element = closest(args.target, '.e-list-item');
+            let cwdData: Object = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (dropLi) {
                 let info: { [key: string]: Object; } = <{ [key: string]: Object; }>this.getItemObject(dropLi);
-                this.parent.dropPath = info.isFile ? this.parent.path :
-                    ((<string>info.filterPath).replace(/\\/g, '/') + <string>info.name + '/');
-                this.parent.dropData = info.isFile ? info : this.getItemObject(dropLi);
+                this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
+                this.parent.dropData = info.isFile ? cwdData : info;
             } else {
                 this.parent.dropPath = this.parent.path;
-                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+                this.parent.dropData = cwdData;
             }
         }
     }
@@ -323,7 +323,7 @@ export class LargeIconsView {
             let name: string = getValue('name', items[i]);
             /* istanbul ignore next */
             let className: string = ((this.parent.selectedItems &&
-                this.parent.selectedItems.indexOf(this.getDataName(args.files[i])) !== -1)) ?
+                this.parent.selectedItems.indexOf(getName(this.parent, args.files[i])) !== -1)) ?
                 CLS.LARGE_ICON + ' e-active' : CLS.LARGE_ICON;
             if (!hasEditAccess(items[i])) {
                 className += ' ' + getAccessClass(items[i]);
@@ -343,7 +343,6 @@ export class LargeIconsView {
 
     private onFinalizeEnd(args: ReadArgs): void {
         this.render(args);
-        this.parent.notify(events.searchTextChange, args);
     }
 
     private onCreateEnd(args: ReadArgs): void {
@@ -405,7 +404,6 @@ export class LargeIconsView {
             removeBlur(this.parent);
             this.parent.setProperties({ selectedItems: [] }, true);
             this.onLayoutChange(args);
-            this.parent.notify(events.searchTextChange, args);
         }
     }
 
@@ -489,6 +487,7 @@ export class LargeIconsView {
         this.parent.off(events.dropInit, this.onDropInit);
         this.parent.off(events.detailsInit, this.onDetailsInit);
         this.parent.off(events.layoutRefresh, this.onLayoutRefresh);
+        this.parent.off(events.dropPath, this.onDropPath);
     }
 
     private addEventListener(): void {
@@ -520,6 +519,7 @@ export class LargeIconsView {
         this.parent.on(events.pasteEnd, this.onpasteEnd, this);
         this.parent.on(events.cutCopyInit, this.oncutCopyInit, this);
         this.parent.on(events.layoutRefresh, this.onLayoutRefresh, this);
+        this.parent.on(events.dropPath, this.onDropPath, this);
     }
 
     private onMenuItemData(args: { [key: string]: Object; }): void {
@@ -534,7 +534,7 @@ export class LargeIconsView {
             if (this.parent.selectedItems.length !== 0) {
                 this.updateSelectedData();
             } else {
-                this.parent.itemData = [getValue(this.parent.path, this.parent.feParent)];
+                this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
             }
         }
     }
@@ -561,9 +561,16 @@ export class LargeIconsView {
     private onpasteEnd(args: ReadArgs): void {
         if (this.parent.view === 'LargeIcons') {
             this.isPasteOperation = true;
-            if (this.parent.path === getDirectoryPath(args)) {
+            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args)) {
                 this.onPathChanged(args);
             }
+        }
+    }
+
+    private onDropPath(args: ReadArgs): void {
+        if (this.parent.view === 'LargeIcons') {
+            this.isPasteOperation = true;
+            this.onPathChanged(args);
         }
     }
 
@@ -804,12 +811,14 @@ export class LargeIconsView {
             let eventArgs: FileOpenEventArgs = { cancel: false, fileDetails: details };
             this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs: FileOpenEventArgs) => {
                 if (!fileOpenArgs.cancel) {
-                    let text: string = select('.' + CLS.LIST_TEXT, item).textContent;
+                    let text: string = getValue('name', details);
                     if (!this.parent.isFile) {
                         let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
                         if (val === '') {
-                            let newPath: string = this.parent.path + text + '/';
+                            let id: string = getValue('id', details);
+                            let newPath: string = this.parent.path + (isNOU(id) ? text : id) + '/';
                             this.parent.setProperties({ path: newPath }, true);
+                            this.parent.pathNames.push(text);
                             this.parent.pathId.push(getValue('_fm_id', details));
                             this.parent.itemData = [details];
                             openAction(this.parent);
@@ -821,7 +830,7 @@ export class LargeIconsView {
                         let icon: string = fileType(details);
                         if (icon === CLS.ICON_IMAGE) {
                             let imgUrl: string = getImageUrl(this.parent, details);
-                            createImageDialog(this.parent, getValue('name', details), imgUrl);
+                            createImageDialog(this.parent, text, imgUrl);
                         }
                     }
                 }
@@ -1158,7 +1167,7 @@ export class LargeIconsView {
     private addActive(nextItem: Element): void {
         if (!isNOU(nextItem)) {
             if (!nextItem.classList.contains(CLS.ACTIVE)) {
-                this.parent.selectedItems.push(this.getName(nextItem));
+                this.parent.selectedItems.push(this.getDataName(nextItem));
                 addClass([nextItem], [CLS.ACTIVE]);
                 nextItem.setAttribute('aria-selected', 'true');
                 this.checkState(nextItem, true);
@@ -1176,7 +1185,7 @@ export class LargeIconsView {
                 preItem.removeAttribute('aria-selected');
             }
             this.checkState(preItem, false);
-            let index: number = this.parent.selectedItems.indexOf(this.getName(preItem));
+            let index: number = this.parent.selectedItems.indexOf(this.getDataName(preItem));
             if (index > -1) {
                 this.parent.selectedItems.splice(index, 1);
             }
@@ -1184,17 +1193,9 @@ export class LargeIconsView {
         }
     }
 
-    private getName(item: Element): string {
+    private getDataName(item: Element): string {
         let data: Object = this.getItemObject(item);
-        return this.getDataName(data);
-    }
-    private getDataName(data: Object): string {
-        let name: string = getValue('name', data);
-        if (this.parent.breadcrumbbarModule.searchObj.element.value !== '') {
-            let fPath: string = getValue('filterPath', data).replace(/\\/g, '/');
-            name = fPath.replace(this.parent.path, '') + name;
-        }
-        return name;
+        return getName(this.parent, data);
     }
 
     private addFocus(item: Element): void {
@@ -1283,16 +1284,22 @@ export class LargeIconsView {
     }
 
     private addSelection(data: Object): void {
-        let resultData: Object[] = new DataManager(this.items).
-            executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
-        if (resultData.length > 0) {
-            let data: Object[] = new DataManager(resultData).
-                executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
-            if (data.length > 0) {
-                let index: number = this.items.indexOf(data[0]);
-                let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: false } as KeyboardEventArgs;
-                this.doSelection(this.itemList[index], eveArgs);
+        let resultData: Object[] = [];
+        if (this.parent.hasId) {
+            resultData = new DataManager(this.items).
+                executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+        } else {
+            let newData: Object[] = new DataManager(this.items).
+                executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
+            if (newData.length > 0) {
+                resultData = new DataManager(newData).
+                    executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
             }
+        }
+        if (resultData.length > 0) {
+            let index: number = this.items.indexOf(resultData[0]);
+            let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: false } as KeyboardEventArgs;
+            this.doSelection(this.itemList[index], eveArgs);
         }
     }
 

@@ -78,6 +78,7 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Sets the segment width of the ruler.
      * @default null
+     * @deprecated
      */
     @Property(null)
     public arrangeTick: Function | string;

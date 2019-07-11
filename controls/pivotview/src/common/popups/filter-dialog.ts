@@ -94,6 +94,7 @@ export class FilterDialog {
             /* tslint:disable-next-line:typedef */
             open: this.dialogOpen.bind(this)
         });
+        this.dialogPopUp.isStringTemplate = true;
         this.dialogPopUp.appendTo(editorDialog);
         this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = (this.allowExcelLikeFilter ? headerTemplate : filterCaption);
         if (this.allowExcelLikeFilter) {
@@ -173,6 +174,7 @@ export class FilterDialog {
                 this.updateCheckedState(fieldCaption);
             }
         });
+        this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
         let data: { [key: string]: Object }[] = [{ id: 'all', name: 'All', checkedStatus: true }];
         this.allMemberSelect = new TreeView({
@@ -182,6 +184,7 @@ export class FilterDialog {
             nodeClicked: this.nodeCheck.bind(this),
             keyPress: this.nodeCheck.bind(this)
         });
+        this.allMemberSelect.isStringTemplate = true;
         this.allMemberSelect.appendTo(selectAllContainer);
         editorTreeWrapper.appendChild(treeViewContainer);
         this.memberTreeView = new TreeView({
@@ -192,6 +195,7 @@ export class FilterDialog {
             nodeClicked: this.nodeCheck.bind(this),
             keyPress: this.nodeCheck.bind(this)
         });
+        this.memberTreeView.isStringTemplate = true;
         this.memberTreeView.appendTo(treeViewContainer);
         editorTreeWrapper.appendChild(labelWrapper);
         return editorTreeWrapper;
@@ -260,6 +264,7 @@ export class FilterDialog {
             selectedItem: selectedIndex,
             enableRtl: this.parent.enableRtl
         });
+        this.tabObj.isStringTemplate = true;
         this.tabObj.appendTo(wrapper);
         if (selectedIndex > 0) {
             /* tslint:disable-next-line:max-line-length */
@@ -303,8 +308,10 @@ export class FilterDialog {
                 'data-type': type, 'data-fieldName': fieldName, 'data-operator': selectedOption,
                 'data-measure': (this.parent.dataSourceSettings.values.length > 0 ?
                     this.parent.dataSourceSettings.values[selectedValueIndex].name : ''),
-                'data-value1': (filterObject && selectedOption === filterObject.condition ? filterObject.value1.toString() : ''),
-                'data-value2': (filterObject && selectedOption === filterObject.condition ? filterObject.value1.toString() : '')
+                'data-value1': (filterObject && selectedOption === filterObject.condition ?
+                    filterObject.value1 ? filterObject.value1.toString() : '' : ''),
+                'data-value2': (filterObject && selectedOption === filterObject.condition ?
+                    filterObject.value2 ? filterObject.value2.toString() : '' : '')
             }
         });
         let textContentdiv: HTMLElement = createElement('div', {
@@ -370,6 +377,7 @@ export class FilterDialog {
                 }
             }
         });
+        optionWrapper1.isStringTemplate = true;
         optionWrapper1.appendTo(optionDiv1);
         let optionWrapper: DropDownList = new DropDownList({
             dataSource: oDataSource, enableRtl: this.parent.enableRtl,
@@ -393,6 +401,7 @@ export class FilterDialog {
                 }
             }
         });
+        optionWrapper.isStringTemplate = true;
         optionWrapper.appendTo(optionDiv2);
         if (type === 'date') {
             let inputObj1: DateTimePicker = new DateTimePicker({
@@ -400,7 +409,7 @@ export class FilterDialog {
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
-                value: (filterObj && option === filterObj.condition ? filterObj.value1 as Date : null),
+                value: (filterObj && option === filterObj.condition ? (typeof (filterObj.value1) === 'string' ? new Date(filterObj.value1) : filterObj.value1) : null),
                 change: (e: ChangedEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                     if (!isNullOrUndefined(element)) {
@@ -416,7 +425,7 @@ export class FilterDialog {
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
-                value: (filterObj && option === filterObj.condition ? filterObj.value2 as Date : null),
+                value: (filterObj && option === filterObj.condition ? (typeof (filterObj.value2) === 'string' ? new Date(filterObj.value2) : filterObj.value2) : null),
                 change: (e: ChangedEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                     if (!isNullOrUndefined(element)) {
@@ -427,7 +436,9 @@ export class FilterDialog {
                 },
                 width: '100%',
             });
+            inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
             inputObj2.appendTo(inputDiv2);
         } else if (type === 'value') {
             let inputObj1: NumericTextBox = new NumericTextBox({
@@ -466,7 +477,9 @@ export class FilterDialog {
                     }
                 }, width: '100%'
             });
+            inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
             inputObj2.appendTo(inputDiv2);
         } else {
             let inputObj1: MaskedTextBox = new MaskedTextBox({
@@ -497,7 +510,9 @@ export class FilterDialog {
                     }
                 }, width: '100%'
             });
+            inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
             inputObj2.appendTo(inputDiv2);
         }
     }

@@ -123,8 +123,12 @@ export class ParagraphDialog {
         let spacingDiv: HTMLDivElement = createElement('div', { id: 'spacing_div' }) as HTMLDivElement;
         let leftSpacingDiv: HTMLDivElement = createElement('div', { id: 'left_spacing', styles: 'float:left;position:relative;' }) as HTMLDivElement;
         spacingDiv.appendChild(leftSpacingDiv);
+        let contextSpacingStyles: string = 'float:left';
+        if (isRtl) {
+            contextSpacingStyles = 'float:right;';
+        }
         let contextSpacingDiv: HTMLDivElement = createElement('div',
-            { id: 'context_spacing', styles: 'float:left;position:relative;' }) as HTMLDivElement;
+            { id: 'context_spacing', styles: contextSpacingStyles + 'position:relative;' }) as HTMLDivElement;
         spacingDiv.appendChild(contextSpacingDiv);
         // tslint:disable-next-line:max-line-length
         let rightSpacingDiv: HTMLDivElement = createElement('div', { styles: 'display:inline-flex;' }) as HTMLDivElement;
@@ -254,6 +258,10 @@ export class ParagraphDialog {
         });
         this.contextSpacing.appendTo(contextInputEle);
         this.target.addEventListener('keyup', instance.keyUpParagraphSettings);
+        if (isRtl) {
+            afterSpacingWholeDiv.classList.add('e-de-rtl');
+            lineTypeDiv.classList.add('e-de-rtl');
+        }
     }
     /**
      * @private

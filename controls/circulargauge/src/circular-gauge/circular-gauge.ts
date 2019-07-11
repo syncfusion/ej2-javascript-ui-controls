@@ -2,7 +2,7 @@
  * Circular Gauge
  */
 import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
-import { Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Complex, Browser, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, createElement } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -346,6 +346,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     public themeStyle: IThemeStyle;
+    /** @private */
+    public isBlazor: boolean;
 
     /**
      * Constructor for creating the widget
@@ -359,6 +361,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      *  To create svg object, renderer and binding events for the container.
      */
     protected preRender(): void {
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.trigger(load, { gauge: this });
         this.initPrivateVariable();
@@ -433,6 +437,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
         this.trigger('gaugeMouseMove', args, (observedArgs: IMouseEventArgs) => {
             let dragArgs: IPointerDragEventArgs;
+            let dragBlazorArgs: IPointerDragEventArgs;
             let tooltip: GaugeTooltip = this.tooltipModule;
             if (!args.cancel) {
                 if (this.enablePointerDrag && this.activePointer) {
@@ -443,9 +448,15 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                         name: dragMove,
                         currentValue: null
                     };
+                    dragBlazorArgs = {
+                        previousValue: this.activePointer.currentValue,
+                        name: dragMove,
+                        currentValue: null,
+                        pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+                    };
                     this.pointerDrag(new GaugeLocation(args.x, args.y));
-                    dragArgs.currentValue = this.activePointer.currentValue;
-                    this.trigger(dragMove, dragArgs);
+                    dragArgs.currentValue = dragBlazorArgs.currentValue = this.activePointer.currentValue;
+                    this.trigger(dragMove, this.isBlazor ? dragBlazorArgs : dragArgs);
                 }
             }
         });
@@ -516,7 +527,11 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             if (isNullOrUndefined(this.activePointer.pathElement)) {
                 this.activePointer.pathElement = [e.target as Element];
             }
-            this.trigger(dragStart, {
+            this.trigger(dragStart, this.isBlazor ? {
+                name: dragStart,
+                currentValue: this.activePointer.currentValue,
+                pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+            } as IPointerDragEventArgs : {
                 axis: this.activeAxis,
                 name: dragStart,
                 pointer: this.activePointer,
@@ -535,12 +550,19 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public mouseEnd(e: PointerEvent): boolean {
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
+        let blazorArgs: IMouseEventArgs = {
+            cancel: args.cancel, target: args.target, name: args.name, x: args.x, y: args.y
+        };
         let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         let tooltipInterval: number;
         let tooltip: GaugeTooltip = this.tooltipModule;
-        this.trigger(gaugeMouseUp, args);
+        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (this.activeAxis && this.activePointer) {
-            this.trigger(dragEnd, {
+            this.trigger(dragEnd, this.isBlazor ? {
+                name: dragEnd,
+                currentValue: this.activePointer.currentValue,
+                pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+            } as IPointerDragEventArgs : {
                 name: dragEnd,
                 axis: this.activeAxis,
                 pointer: this.activePointer,
@@ -598,7 +620,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     this.calculateBounds();
                     this.renderElements();
                     args.currentSize = this.availableSize;
-                    this.trigger(resized, args);
+                    this.trigger(resized, this.isBlazor ? {} : args);
                 },
                 500);
         }
@@ -643,6 +665,11 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @private
      */
     public removeSvg(): void {
+        for (let i: number = 0; i < this.axes.length; i++) {
+            for (let j: number = 0; j < this.axes[i].annotations.length; j++) {
+                resetBlazorTemplate(this.element.id + '_Axis' + i + '_ContentTemplate' + j, '_ContentTemplate');
+            }
+        }
         removeElement(this.element.id + '_Secondary_Element');
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > 0) {
@@ -728,7 +755,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
         this.element.appendChild(this.svgObject);
 
-        this.trigger(loaded, { gauge: this });
+        this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
 
     }
 

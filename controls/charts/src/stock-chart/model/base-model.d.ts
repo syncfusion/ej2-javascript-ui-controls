@@ -1039,7 +1039,7 @@ export interface StockChartAxisModel {
      * * Category: Renders a category axis.
      * * Logarithmic: Renders a log axis.
      * @default 'Double'
-     * @aspType Syncfusion.EJ2.Charts.ValueType
+     * @blazorType Syncfusion.EJ2.Blazor.Charts.ValueType
      * @isEnumeration true
      */
 

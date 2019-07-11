@@ -23,9 +23,18 @@ var CLASSNAMES = {
  */
 var Input;
 (function (Input) {
+    var floatType;
+    /**
+     * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
+     * ```
+     * E.g : Input.createInput({ element: element, floatLabelType : "Auto", properties: { placeholder: 'Search' } });
+     * ```
+     * @param args
+     */
     function createInput(args, internalCreateElement) {
         var makeElement = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         var inputObject = { container: null, buttons: [], clearButton: null };
+        floatType = args.floatLabelType;
         if (isNullOrUndefined(args.floatLabelType) || args.floatLabelType === 'Never') {
             inputObject.container = createInputContainer(args, CLASSNAMES.INPUTGROUP, CLASSNAMES.INPUTCUSTOMTAG, 'span', makeElement);
             args.element.parentNode.insertBefore(inputObject.container, args.element);
@@ -35,17 +44,23 @@ var Input;
         else {
             createFloatingInput(args, inputObject, makeElement);
         }
+        checkInputValue(args.floatLabelType, args.element);
         args.element.addEventListener('focus', function () {
             var parent = getParentNode(this);
-            if (parent.classList.contains('e-input-group')) {
+            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+                || parent.classList.contains('e-filled')) {
                 parent.classList.add('e-input-focus');
             }
         });
         args.element.addEventListener('blur', function () {
             var parent = getParentNode(this);
-            if (parent.classList.contains('e-input-group')) {
+            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+                || parent.classList.contains('e-filled')) {
                 parent.classList.remove('e-input-focus');
             }
+        });
+        args.element.addEventListener('input', function () {
+            checkInputValue(floatType, args.element);
         });
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
             args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
@@ -64,6 +79,15 @@ var Input;
         return inputObject;
     }
     Input.createInput = createInput;
+    function checkInputValue(floatLabelType, inputElement) {
+        var inputValue = inputElement.value;
+        if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
+            inputElement.parentElement.classList.add('e-valid-input');
+        }
+        else if (floatLabelType !== 'Always') {
+            inputElement.parentElement.classList.remove('e-valid-input');
+        }
+    }
     function _focusFn() {
         var label = getParentNode(this).getElementsByClassName('e-float-text')[0];
         addClass([label], CLASSNAMES.LABELTOP);
@@ -146,6 +170,11 @@ var Input;
             floatLabelElement.setAttribute('for', args.element.getAttribute('id'));
         }
     }
+    function checkFloatLabelType(type, container) {
+        if (type === 'Always' && container.classList.contains('e-outline')) {
+            container.classList.add('e-valid-input');
+        }
+    }
     function setPropertyValue(args, inputObject) {
         if (!isNullOrUndefined(args.properties)) {
             for (var _i = 0, _a = Object.keys(args.properties); _i < _a.length; _i++) {
@@ -153,6 +182,7 @@ var Input;
                 switch (prop) {
                     case 'cssClass':
                         setCssClass(args.properties.cssClass, [inputObject.container]);
+                        checkFloatLabelType(args.floatLabelType, inputObject.container);
                         break;
                     case 'enabled':
                         setEnabled(args.properties.enabled, args.element, args.floatLabelType, inputObject.container);
@@ -299,6 +329,7 @@ var Input;
                 addClass([button], CLASSNAMES.CLEARICONHIDE);
             }
         }
+        checkInputValue(floatLabelType, element);
     }
     Input.setValue = setValue$$1;
     /**
@@ -519,6 +550,7 @@ var Input;
     function addFloating(input, type, placeholder, internalCreateElement) {
         var makeElement = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         var container = closest(input, '.' + CLASSNAMES.INPUTGROUP);
+        floatType = type;
         if (type !== 'Never') {
             var customTag = container.tagName;
             customTag = customTag !== 'DIV' && customTag !== 'SPAN' ? customTag : null;
@@ -541,6 +573,7 @@ var Input;
                 container.insertBefore(floatText, iconEle);
             }
         }
+        checkFloatLabelType(type, input.parentElement);
     }
     Input.addFloating = addFloating;
     /**
@@ -9809,7 +9842,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ColorPicker.prototype.setNoColor = function () {
-        var noColorEle = selectAll('.e-row')[0].children[0];
+        var noColorEle = this.container.querySelector('.e-row').children[0];
         noColorEle.classList.add(NOCOLOR);
         if (!this.value) {
             noColorEle.classList.add(SELECT);
@@ -9915,12 +9948,17 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.hsv[3] = value / 100;
         this.rgb[3] = value / 100;
         var cValue = this.rgbToHex(this.rgb);
-        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
-            getInstance(select('.' + OPACITY, this.container), NumericTextBox).value = value;
-        }
+        this.updateOpacityInput(value);
         var rgb = this.convertToRgbString(this.rgb);
         this.updatePreview(rgb);
         this.triggerEvent(cValue, pValue, rgb);
+    };
+    ColorPicker.prototype.updateOpacityInput = function (value) {
+        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
+            var opacityTextBoxInst = getInstance(select('.' + OPACITY, this.container), NumericTextBox);
+            opacityTextBoxInst.value = value;
+            opacityTextBoxInst.dataBind();
+        }
     };
     ColorPicker.prototype.createPreview = function (parentEle) {
         var previewContainer = this.createElement('div', { className: PREVIEW });
@@ -11017,6 +11055,9 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
             this.createSlider();
             this.setHsvContainerBg();
             this.updateInput(newProp);
+            if (this.rgb.length === 4) {
+                this.updateOpacityInput(this.rgb[3] * 100);
+            }
         }
         else {
             this.removeTileSelection();

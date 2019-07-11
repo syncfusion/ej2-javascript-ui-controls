@@ -431,6 +431,8 @@ export class Edit implements IAction {
         };
         (options as { buttons: Object[] }).buttons = btnOptions;
         let obj: Dialog = new Dialog(options);
+        let isStringTemplate: string = 'isStringTemplate';
+        obj[isStringTemplate] = true;
         obj.appendTo(div);
         return obj;
     }

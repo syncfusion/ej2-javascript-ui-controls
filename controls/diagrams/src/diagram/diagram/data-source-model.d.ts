@@ -32,6 +32,7 @@ export interface CrudActionModel {
     /**
      * Add custom fields to node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     customFields?: Object[];
@@ -94,6 +95,7 @@ export interface ConnectionDataSourceModel {
     /**
      * Add CrudAction to connector data source
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     crudAction?: CrudActionModel;
@@ -142,6 +144,7 @@ export interface DataSourceModel {
     /**
      * Binds the custom data with node model
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -150,6 +153,7 @@ export interface DataSourceModel {
     /**
      * Add CrudAction to data source
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     crudAction?: CrudActionModel;
@@ -157,6 +161,7 @@ export interface DataSourceModel {
     /**
      * define connectorDataSource collection
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     connectionDataSource?: ConnectionDataSourceModel;

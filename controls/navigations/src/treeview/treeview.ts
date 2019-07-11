@@ -3,7 +3,7 @@ import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty,
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';
 import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate  } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate , isBlazor  } from '@syncfusion/ej2-base';
 import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';
@@ -198,12 +198,12 @@ export interface DragAndDropEventArgs {
     draggedNodeData: { [key: string]: Object };
     /**
      * Returns the dragged/dropped element's target index position
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     dropIndex: number;
     /**
      * Returns the dragged/dropped element's target level
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     dropLevel: number;
     /**
@@ -316,6 +316,7 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
      * Specifies the array of JavaScript objects or instance of DataManager to populate the nodes.
      * @default []
      * @aspDatasourceNullIgnore
+     * @blazorDatasourceNullIgnore
      */
     @Property([])
     public dataSource: DataManager | { [key: string]: Object }[];
@@ -521,6 +522,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private parentNodeCheck: string[] = [];
     private parentCheckData :  { [key: string]: Object }[];
     private expandChildren: string[] = [];
+    private isBlazorPlatform: boolean;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -852,7 +854,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node is selected/unselected successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeSelected'
      */
@@ -926,9 +927,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.beforeNodeCreate(e);
             },
         };
-        if (this.nodeTemplate) {
-            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-        }
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
         this.treeList = [];
@@ -980,6 +978,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.element.setAttribute('role', 'tree');
         this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
+        this.isBlazorPlatform = isBlazor();
         this.setCssClass(null, this.cssClass);
         this.setEnableRtl();
         this.setFullRow(this.fullRowSelect);
@@ -1125,6 +1124,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : this.getSortedData(this.rootData),
                                              this.listBaseOption);
         this.element.appendChild(this.ulElement);
+        if (this.nodeTemplate && this.loadOnDemand && this.isBlazorPlatform && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+        }
         if (this.loadOnDemand === false) {
             let rootNodes: NodeListOf<Element> = this.ulElement.querySelectorAll('.e-list-item');
             let i: number = 0;
@@ -1134,6 +1136,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         } else {
             this.finalizeNode(this.element);
+        }
+        if (this.nodeTemplate && !this.loadOnDemand && this.isBlazorPlatform && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
         }
         this.parentNodeCheck = [];
         this.parentCheckData = [];
@@ -1364,7 +1369,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNOU(this.nodeTemplateFn)) {
             let textEle: Element = e.item.querySelector('.' + LISTTEXT);
             textEle.innerHTML = '';
-            let tempArr: Element[]  = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate');
+            let tempArr: Element[]  = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate',
+                                                          this.isStringTemplate);
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, textEle);
         }
@@ -2220,10 +2226,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderChildNodes(parentLi: Element, expandChild?: boolean, callback?: Function, loaded?: boolean): void {
-        if (this.loadOnDemand && this.nodeTemplate) {
-            setTimeout(() => { resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-        }
         let eicon: Element = select('div.' + ICON, parentLi);
         if (isNOU(eicon)) {
             return;
@@ -2266,6 +2268,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.setSelectionForChildNodes(childItems);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
+                if (this.loadOnDemand && this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+                    resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+                    updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+                }
                 this.disableTreeNodes(childItems);
                 this.renderSubChild(parentLi, expandChild, loaded);
             }
@@ -3234,7 +3240,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
         if (!isNOU(this.nodeTemplateFn)) {
             txtEle.innerHTML = '';
-            let tempArr: Element[]  = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate');
+            let tempArr: Element[]  = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate',
+                                                          this.isStringTemplate);
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, txtEle);
         } else {
@@ -4259,9 +4266,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private triggerEvent(): void {
-        if (this.nodeTemplate) {
-            setTimeout(() => { resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+           resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+           updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
         }
         let eventArgs: DataSourceChangedEventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);

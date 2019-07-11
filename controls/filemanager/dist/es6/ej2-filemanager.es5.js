@@ -158,10 +158,10 @@ var columnArray = [
     {
         field: '_fm_modified', headerText: 'DateModified',
         format: { type: 'date', format: 'MMMM dd, yyyy HH:mm' },
-        minWidth: 50, width: '190'
+        minWidth: 120, width: '190'
     },
     {
-        field: 'size', headerText: 'Size', minWidth: 50, width: '110', template: '<span class="e-fe-size">${size}</span>'
+        field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>'
     }
 ];
 /**
@@ -647,14 +647,19 @@ var dragging = 'dragging';
  * Utility file for common actions
  * @private
  */
-function updatePath(node, text, instance) {
-    instance.setProperties({ path: getPath(node, text) }, true);
+function updatePath(node, data, instance) {
+    var text = getValue('name', data);
+    var id = node.getAttribute('data-id');
+    var newText = isNullOrUndefined(id) ? text : id;
+    instance.setProperties({ path: getPath(node, newText, instance.hasId) }, true);
     instance.pathId = getPathId(node);
+    instance.pathNames = getPathNames(node, text);
 }
-function getPath(element, text) {
-    var matched = getParents(element, text, false);
-    var path = '/';
-    for (var i = matched.length - 2; i >= 0; i--) {
+function getPath(element, text, hasId) {
+    var matched = getParents(element, text, false, hasId);
+    var path = hasId ? '' : '/';
+    var len = matched.length - (hasId ? 1 : 2);
+    for (var i = len; i >= 0; i--) {
         path += matched[i] + '/';
     }
     return path;
@@ -667,17 +672,39 @@ function getPathId(node) {
     }
     return ids;
 }
-function getParents(element, text, isId) {
+function getPathNames(element, text) {
+    var matched = getParents(element, text, false);
+    var names = [];
+    for (var i = matched.length - 1; i >= 0; i--) {
+        names.push(matched[i]);
+    }
+    return names;
+}
+function getParents(element, text, isId, hasId) {
     var matched = [text];
     var el = element.parentNode;
     while (!isNullOrUndefined(el)) {
         if (matches(el, '.' + LIST_ITEM)) {
-            var parentText = isId ? el.getAttribute('data-uid') : select('.' + LIST_TEXT, el).textContent;
+            var parentText = isId ? el.getAttribute('data-uid') : (hasId ? el.getAttribute('data-id') :
+                select('.' + LIST_TEXT, el).textContent);
             matched.push(parentText);
         }
         el = el.parentNode;
+        if (el.classList.contains(TREE_VIEW)) {
+            break;
+        }
     }
     return matched;
+}
+function generatePath(parent) {
+    var key = parent.hasId ? 'id' : 'name';
+    var newPath = parent.hasId ? '' : '/';
+    var i = parent.hasId ? 0 : 1;
+    for (i; i < parent.pathId.length; i++) {
+        var data = getValue(parent.pathId[i], parent.feParent);
+        newPath += getValue(key, data) + '/';
+    }
+    parent.setProperties({ path: newPath }, true);
 }
 function removeActive(parent) {
     if (parent.isCut) {
@@ -703,7 +730,7 @@ function activeElement(action, parent) {
         parent.targetPath = parent.path;
     }
     else {
-        parent.targetPath = getParentPath(parent);
+        parent.targetPath = getParentPath(parent.path);
     }
     var i = 0;
     if (blurEle) {
@@ -835,7 +862,7 @@ function openAction(parent) {
     read(parent, openEnd, parent.path);
 }
 function getPathObject(parent) {
-    return getValue(parent.path, parent.feParent);
+    return getValue(parent.pathId[parent.pathId.length - 1], parent.feParent);
 }
 // Copy files
 function copyFiles(parent) {
@@ -894,23 +921,43 @@ function getImageUrl(parent, item) {
     var baseUrl = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     var imgUrl;
     var fileName = getValue('name', item);
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
-        imgUrl = baseUrl + '?path=' + getValue('filterPath', item).replace(/\\/g, '/') + fileName;
+    var fPath = getValue('filterPath', item);
+    if (parent.hasId) {
+        var imgId = getValue('id', item);
+        imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
+    }
+    else if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNullOrUndefined(fPath)) {
+        imgUrl = baseUrl + '?path=' + fPath.replace(/\\/g, '/') + fileName;
     }
     else {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
     }
-    var imgId = getValue('id', item);
-    if (!isNullOrUndefined(imgId)) {
-        imgUrl = imgUrl + '&id=' + imgId;
-    }
     return imgUrl;
+}
+function getFullPath(parent, data, path) {
+    var filePath = getValue(parent.hasId ? 'id' : 'name', data) + '/';
+    var fPath = getValue(parent.hasId ? 'filterId' : 'filterPath', data);
+    if (!isNullOrUndefined(fPath)) {
+        return fPath.replace(/\\/g, '/') + filePath;
+    }
+    else {
+        return path + filePath;
+    }
 }
 function getFullName(item) {
     var fullName;
     var fileName = getValue('name', item);
     fullName = getValue('filterPath', item).replace(/\\/g, '/') + fileName;
     return fullName;
+}
+function getName(parent, data) {
+    var name = getValue('name', data);
+    var fPath = getValue('filterPath', data);
+    if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNullOrUndefined(fPath)) {
+        fPath = fPath.replace(/\\/g, '/');
+        name = fPath.replace(parent.path, '') + name;
+    }
+    return name;
 }
 function getSortedData(parent, items) {
     if (items.length === 0) {
@@ -920,9 +967,9 @@ function getSortedData(parent, items) {
     var lists = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
 }
-function getObject(parent, name) {
-    var currFiles = getValue(parent.path, parent.feFiles);
-    var query = new Query().where('name', 'equal', name);
+function getObject(parent, key, value) {
+    var currFiles = getValue(parent.pathId[parent.pathId.length - 1], parent.feFiles);
+    var query = new Query().where(key, 'equal', value);
     var lists = new DataManager(currFiles).executeLocal(query);
     return lists[0];
 }
@@ -1007,16 +1054,17 @@ function sortbyClickHandler(parent, args) {
     else {
         parent.sortOrder = getSortField(args.item.id);
     }
+    parent.itemData = [getPathObject(parent)];
     if (parent.view === 'Details') {
         if (parent.isMobile) {
-            read(parent, layoutChange, parent.path);
+            updateLayout(parent, 'Details');
         }
         else {
-            parent.notify(sortColumn, { module: 'gridview' });
+            parent.notify(sortColumn, { module: 'detailsview' });
         }
     }
     if (parent.view === 'LargeIcons') {
-        read(parent, layoutChange, parent.path);
+        updateLayout(parent, 'LargeIcons');
     }
     parent.notify(sortByChange, {});
 }
@@ -1039,30 +1087,31 @@ function getSortField(id) {
 function setNextPath(parent, path) {
     var currfolders = path.split('/');
     var folders = parent.originalPath.split('/');
+    var root = getValue(parent.pathId[0], parent.feParent);
+    var key = isNullOrUndefined(getValue('id', root)) ? 'name' : 'id';
     for (var i = currfolders.length - 1, len = folders.length - 1; i < len; i++) {
         var eventName = (folders[i + 1] === '') ? finalizeEnd : initialEnd;
         var newPath = (folders[i] === '') ? '/' : (parent.path + folders[i] + '/');
-        var data = getObject(parent, folders[i]);
+        var data = getObject(parent, key, folders[i]);
         var id = getValue('_fm_id', data);
         parent.setProperties({ path: newPath }, true);
         parent.pathId.push(id);
         parent.itemData = [data];
+        parent.pathNames.push(getValue('name', data));
         read(parent, eventName, parent.path);
         break;
     }
 }
 function openSearchFolder(parent, data) {
-    var fPath = getValue('filterPath', data) + getValue('name', data) + '/';
-    fPath = fPath.replace(/\\/g, '/');
     parent.notify(clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
-    parent.originalPath = fPath;
+    parent.originalPath = getFullPath(parent, data, parent.path);
     read(parent, (parent.path !== parent.originalPath) ? initialEnd : finalizeEnd, parent.path);
 }
 function pasteHandler(parent) {
     parent.isDragDrop = false;
     if (parent.selectedNodes.length !== 0 && parent.enablePaste) {
-        var path = parent.path + parent.folderPath;
-        var subFolder = validateSubFolder(parent, parent.actionRecords, path);
+        var path = (parent.folderPath === '') ? parent.path : parent.folderPath;
+        var subFolder = validateSubFolder(parent, parent.actionRecords, path, parent.path);
         if (!subFolder) {
             if ((parent.fileAction === 'move' && parent.targetPath !== path) || parent.fileAction === 'copy') {
                 parent.notify(pasteInit, {});
@@ -1076,13 +1125,12 @@ function pasteHandler(parent) {
         }
     }
 }
-function validateSubFolder(parent, data, path) {
+function validateSubFolder(parent, data, dropPath$$1, dragPath) {
     var subFolder = false;
     for (var i = 0; i < data.length; i++) {
         if (!getValue('isFile', data[i])) {
-            var tempTarget = data[i].filterPath + data[i].name + '/';
-            tempTarget = tempTarget.replace(/\\/g, '/');
-            if (path.indexOf(tempTarget) !== -1) {
+            var tempTarget = getFullPath(parent, data[i], dragPath);
+            if (dropPath$$1.indexOf(tempTarget) !== -1) {
                 var result = {
                     files: null,
                     error: {
@@ -1104,7 +1152,7 @@ function dropHandler(parent) {
     if (parent.dragData.length !== 0) {
         parent.dragPath = parent.dragPath.replace(/\\/g, '/');
         parent.dropPath = parent.dropPath.replace(/\\/g, '/');
-        var subFolder = validateSubFolder(parent, parent.dragData, parent.dropPath);
+        var subFolder = validateSubFolder(parent, parent.dragData, parent.dropPath, parent.dragPath);
         if (!subFolder && (parent.dragPath !== parent.dropPath)) {
             parent.itemData = [parent.dropData];
             paste(parent, parent.dragPath, parent.dragNodes, parent.dropPath, 'move', [], parent.dragData);
@@ -1112,23 +1160,25 @@ function dropHandler(parent) {
         }
     }
 }
-function getParentPath(parent) {
-    var path = parent.path.split('/');
-    var newPath = '/';
-    for (var i = 1; i < path.length - 2; i++) {
+function getParentPath(oldPath) {
+    var path = oldPath.split('/');
+    var newPath = '';
+    for (var i = 0; i < path.length - 2; i++) {
         newPath += path[i] + '/';
     }
     return newPath;
 }
-function getDirectoryPath(args) {
-    var path = getValue('filterPath', args.cwd);
-    var newPath = '/';
-    if (path === '') {
-        return newPath;
+function getDirectoryPath(parent, args) {
+    var filePath = getValue(parent.hasId ? 'id' : 'name', args.cwd) + '/';
+    var fPath = getValue(parent.hasId ? 'filterId' : 'filterPath', args.cwd);
+    if (!isNullOrUndefined(fPath)) {
+        if (fPath === '') {
+            return parent.hasId ? filePath : '/';
+        }
+        return fPath.replace(/\\/g, '/') + filePath;
     }
     else {
-        path = path.replace(/\\/g, '/');
-        return (path + getValue('name', args.cwd) + newPath);
+        return parent.path + filePath;
     }
 }
 function doPasteUpdate(parent, operation, result) {
@@ -1171,16 +1221,17 @@ function doPasteUpdate(parent, operation, result) {
     parent.trigger('success', { action: operation, result: result });
 }
 function readDropPath(parent) {
-    var obj = getValue(parent.dropPath, parent.feParent);
-    /* istanbul ignore next */
-    if (obj) {
-        parent.expandedId = getValue('_fm_id', obj);
-    }
+    var pathId = getValue('_fm_id', parent.dropData);
+    parent.expandedId = pathId;
     parent.itemData = [parent.dropData];
     if (parent.isPathDrag) {
         parent.notify(pathDrag, parent.itemData);
     }
     else {
+        if (parent.navigationpaneModule) {
+            var node = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
+            updatePath(node, parent.dropData, parent);
+        }
         read(parent, dropPath, parent.dropPath);
     }
 }
@@ -1411,7 +1462,13 @@ function hasDownloadAccess(data) {
  * @private
  */
 function read(parent, event, path) {
-    var data = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: parent.itemData };
+    var itemData = parent.itemData;
+    for (var i = 0; i < itemData.length; i++) {
+        if (isNullOrUndefined(getValue('hasChild', itemData[i]))) {
+            setValue('hasChild', false, itemData[i]);
+        }
+    }
+    var data = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: itemData };
     createAjax(parent, data, readSuccess, event);
 }
 /**
@@ -1434,9 +1491,16 @@ function rename(parent, path, itemNewName) {
         newName = itemNewName;
     }
     else {
-        var fPath = parent.filterPath.replace(/\\/g, '/');
-        name = fPath.replace(path, '') + parent.currentItemText;
-        newName = fPath.replace(path, '') + itemNewName;
+        var fPath = parent.filterPath;
+        if (parent.hasId) {
+            name = parent.currentItemText;
+            newName = itemNewName;
+        }
+        else {
+            fPath = fPath.replace(/\\/g, '/');
+            name = fPath.replace(path, '') + parent.currentItemText;
+            newName = fPath.replace(path, '') + itemNewName;
+        }
     }
     var data = {
         action: 'rename', path: path, name: name, newName: newName, data: parent.itemData
@@ -1454,6 +1518,7 @@ parent, path, names, targetPath, pasteOperation, renameItems, actionRecords) {
         action: pasteOperation, path: path, targetData: parent.itemData[0],
         targetPath: targetPath, names: names, renameFiles: renameItems, data: actionRecords
     };
+    parent.destinationPath = targetPath;
     createAjax(parent, data, pasteSuccess, path, pasteOperation, targetPath);
 }
 /**
@@ -1509,14 +1574,25 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                             var item = result.files[i];
                             setValue('_fm_iconClass', fileType(item), item);
                         }
-                    }
-                    if (getValue('action', data) === 'read') {
-                        var path = getValue('path', data);
-                        setNodeId(result, parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1]);
-                        setValue(path, result.files, parent.feFiles);
-                        setValue(path, result.cwd, parent.feParent);
+                        if (getValue('action', data) === 'read') {
+                            var id = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
+                            setNodeId(result, id);
+                            setValue(id, result.files, parent.feFiles);
+                            setValue(id, result.cwd, parent.feParent);
+                            if ((event === 'finalize-end' || event === 'initial-end') && parent.pathNames.length === 0) {
+                                var root = getValue(parent.pathId[0], parent.feParent);
+                                parent.pathNames[0] = getValue('name', root);
+                                parent.hasId = !isNullOrUndefined(getValue('id', root));
+                            }
+                            if (event === 'finalize-end') {
+                                generatePath(parent);
+                            }
+                        }
                     }
                     fn(parent, result, event, operation, targetPath);
+                    if (!isNullOrUndefined(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end')) {
+                        parent.notify(searchTextChange, result);
+                    }
                     if (typeof getValue('onSuccess', beforeSendArgs.ajaxSettings) === 'function') {
                         getValue('onSuccess', beforeSendArgs.ajaxSettings)();
                     }
@@ -1599,8 +1675,11 @@ function renameSuccess(parent, result, path) {
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
         if (parent.activeModule === 'navigationpane') {
-            var newPath = getParentPath(parent) + parent.renameText + '/';
-            parent.setProperties({ path: newPath }, true);
+            if (!parent.hasId) {
+                var newPath = getParentPath(parent.path) + parent.renameText + '/';
+                parent.setProperties({ path: newPath }, true);
+            }
+            parent.pathNames[parent.pathNames.length - 1] = parent.renameText;
             parent.itemData = result.files;
         }
         else {
@@ -1749,6 +1828,7 @@ function createDialog(parent, text, e, details, replaceItems) {
             enableRtl: parent.enableRtl,
             locale: parent.locale
         });
+        parent.dialogObj.isStringTemplate = true;
         parent.dialogObj.appendTo('#' + parent.element.id + DIALOG_ID);
     }
     else {
@@ -1774,6 +1854,7 @@ function createExtDialog(parent, text, replaceItems, newPath) {
             close: extOptions.close,
             locale: parent.locale
         });
+        parent.extDialogObj.isStringTemplate = true;
         parent.extDialogObj.appendTo('#' + parent.element.id + EXTN_DIALOG_ID);
     }
     else {
@@ -1843,7 +1924,8 @@ function getExtOptions(parent, text, replaceItems, newPath) {
                         else {
                             parent.extDialogObj.hide();
                             var targetPath = parent.isDragDrop ? parent.dragPath : parent.targetPath;
-                            var path = parent.isDragDrop ? parent.dropPath : parent.path + parent.folderPath;
+                            var path = parent.isDragDrop ? parent.dropPath : ((parent.folderPath === '') ? parent.path :
+                                parent.folderPath);
                             var action = parent.isDragDrop ? 'move' : parent.fileAction;
                             paste(parent, targetPath, parent.duplicateItems, path, action, parent.duplicateItems, parent.duplicateRecords);
                         }
@@ -1865,7 +1947,8 @@ function getExtOptions(parent, text, replaceItems, newPath) {
                             if (parent.duplicateItems.length !== 0) {
                                 var action = parent.isDragDrop ? 'move' : parent.fileAction;
                                 var targetPath = parent.isDragDrop ? parent.dragPath : parent.targetPath;
-                                var path = parent.isDragDrop ? parent.dropPath : parent.path + parent.folderPath;
+                                var path = parent.isDragDrop ? parent.dropPath : ((parent.folderPath === '') ? parent.path :
+                                    parent.folderPath);
                                 paste(parent, targetPath, parent.duplicateItems, path, action, parent.duplicateItems, parent.duplicateRecords);
                             }
                         }
@@ -2129,9 +2212,9 @@ function getOptions(parent, text, e, details, replaceItems) {
             ];
             break;
         case 'MultipleFileDetails':
-            var strArr = details.name.split(', ').map(function (val) {
+            var strArr = details.name.split(',').map(function (val) {
                 var index = val.indexOf('.') + 1;
-                return (index === 0) ? 'Folder' : val.substr(index);
+                return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
             });
             var fileType$$1 = strArr.every(function (val, i, arr) { return val === arr[0]; }) ?
                 ((strArr[0] === 'Folder') ? 'Folder' : strArr[0].toLocaleUpperCase() + ' Type') : 'Multiple Types';
@@ -2228,7 +2311,7 @@ function onReSubmit(parent) {
         parent.dialogObj.hide();
         return;
     }
-    var newPath = (parent.activeModule === 'navigationpane') ? getParentPath(parent) : parent.path;
+    var newPath = (parent.activeModule === 'navigationpane') ? getParentPath(parent.path) : parent.path;
     if (parent.isFile) {
         var oldExtension = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
         var newExtension = text.substr(text.lastIndexOf('.'));
@@ -2241,6 +2324,7 @@ function onReSubmit(parent) {
     }
     else {
         parent.renamedNodeId = getValue('_fm_id', parent.itemData[0]);
+        parent.renamedId = getValue('id', parent.itemData[0]);
         rename(parent, newPath, text);
     }
 }
@@ -2308,6 +2392,7 @@ function createImageDialog(parent, header, imageUrl) {
             resizing: updateImage.bind(this, parent),
             resizeStop: updateImage.bind(this, parent)
         });
+        parent.viewerObj.isStringTemplate = true;
         parent.viewerObj.appendTo('#' + parent.element.id + IMG_DIALOG_ID);
     }
     else {
@@ -2536,15 +2621,15 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     LargeIconsView.prototype.onDropInit = function (args) {
         if (this.parent.targetModule === this.getModuleName()) {
             var dropLi = closest(args.target, '.e-list-item');
+            var cwdData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (dropLi) {
                 var info = this.getItemObject(dropLi);
-                this.parent.dropPath = info.isFile ? this.parent.path :
-                    (info.filterPath.replace(/\\/g, '/') + info.name + '/');
-                this.parent.dropData = info.isFile ? info : this.getItemObject(dropLi);
+                this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
+                this.parent.dropData = info.isFile ? cwdData : info;
             }
             else {
                 this.parent.dropPath = this.parent.path;
-                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+                this.parent.dropData = cwdData;
             }
         }
     };
@@ -2631,7 +2716,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             var name_1 = getValue('name', items[i]);
             /* istanbul ignore next */
             var className = ((this.parent.selectedItems &&
-                this.parent.selectedItems.indexOf(this.getDataName(args.files[i])) !== -1)) ?
+                this.parent.selectedItems.indexOf(getName(this.parent, args.files[i])) !== -1)) ?
                 LARGE_ICON + ' e-active' : LARGE_ICON;
             if (!hasEditAccess(items[i])) {
                 className += ' ' + getAccessClass(items[i]);
@@ -2651,7 +2736,6 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.onFinalizeEnd = function (args) {
         this.render(args);
-        this.parent.notify(searchTextChange, args);
     };
     LargeIconsView.prototype.onCreateEnd = function (args) {
         if (this.parent.view !== 'LargeIcons') {
@@ -2713,7 +2797,6 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             removeBlur(this.parent);
             this.parent.setProperties({ selectedItems: [] }, true);
             this.onLayoutChange(args);
-            this.parent.notify(searchTextChange, args);
         }
     };
     LargeIconsView.prototype.onOpenInit = function (args) {
@@ -2792,6 +2875,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.off(dropInit, this.onDropInit);
         this.parent.off(detailsInit, this.onDetailsInit);
         this.parent.off(layoutRefresh, this.onLayoutRefresh);
+        this.parent.off(dropPath, this.onDropPath);
     };
     LargeIconsView.prototype.addEventListener = function () {
         this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
@@ -2822,6 +2906,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.on(pasteEnd, this.onpasteEnd, this);
         this.parent.on(cutCopyInit, this.oncutCopyInit, this);
         this.parent.on(layoutRefresh, this.onLayoutRefresh, this);
+        this.parent.on(dropPath, this.onDropPath, this);
     };
     LargeIconsView.prototype.onMenuItemData = function (args) {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -2835,7 +2920,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 this.updateSelectedData();
             }
             else {
-                this.parent.itemData = [getValue(this.parent.path, this.parent.feParent)];
+                this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
             }
         }
     };
@@ -2859,9 +2944,15 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     LargeIconsView.prototype.onpasteEnd = function (args) {
         if (this.parent.view === 'LargeIcons') {
             this.isPasteOperation = true;
-            if (this.parent.path === getDirectoryPath(args)) {
+            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args)) {
                 this.onPathChanged(args);
             }
+        }
+    };
+    LargeIconsView.prototype.onDropPath = function (args) {
+        if (this.parent.view === 'LargeIcons') {
+            this.isPasteOperation = true;
+            this.onPathChanged(args);
         }
     };
     LargeIconsView.prototype.onPropertyChanged = function (e) {
@@ -3101,12 +3192,14 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             var eventArgs = { cancel: false, fileDetails: details_1 };
             this.parent.trigger('fileOpen', eventArgs, function (fileOpenArgs) {
                 if (!fileOpenArgs.cancel) {
-                    var text = select('.' + LIST_TEXT, item).textContent;
+                    var text = getValue('name', details_1);
                     if (!_this.parent.isFile) {
                         var val = _this.parent.breadcrumbbarModule.searchObj.element.value;
                         if (val === '') {
-                            var newPath = _this.parent.path + text + '/';
+                            var id = getValue('id', details_1);
+                            var newPath = _this.parent.path + (isNullOrUndefined(id) ? text : id) + '/';
                             _this.parent.setProperties({ path: newPath }, true);
+                            _this.parent.pathNames.push(text);
                             _this.parent.pathId.push(getValue('_fm_id', details_1));
                             _this.parent.itemData = [details_1];
                             openAction(_this.parent);
@@ -3120,7 +3213,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                         var icon = fileType(details_1);
                         if (icon === ICON_IMAGE) {
                             var imgUrl = getImageUrl(_this.parent, details_1);
-                            createImageDialog(_this.parent, getValue('name', details_1), imgUrl);
+                            createImageDialog(_this.parent, text, imgUrl);
                         }
                     }
                 }
@@ -3449,7 +3542,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     LargeIconsView.prototype.addActive = function (nextItem) {
         if (!isNullOrUndefined(nextItem)) {
             if (!nextItem.classList.contains(ACTIVE)) {
-                this.parent.selectedItems.push(this.getName(nextItem));
+                this.parent.selectedItems.push(this.getDataName(nextItem));
                 addClass([nextItem], [ACTIVE]);
                 nextItem.setAttribute('aria-selected', 'true');
                 this.checkState(nextItem, true);
@@ -3467,24 +3560,16 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 preItem.removeAttribute('aria-selected');
             }
             this.checkState(preItem, false);
-            var index = this.parent.selectedItems.indexOf(this.getName(preItem));
+            var index = this.parent.selectedItems.indexOf(this.getDataName(preItem));
             if (index > -1) {
                 this.parent.selectedItems.splice(index, 1);
             }
             this.parent.visitedItem = null;
         }
     };
-    LargeIconsView.prototype.getName = function (item) {
+    LargeIconsView.prototype.getDataName = function (item) {
         var data = this.getItemObject(item);
-        return this.getDataName(data);
-    };
-    LargeIconsView.prototype.getDataName = function (data) {
-        var name = getValue('name', data);
-        if (this.parent.breadcrumbbarModule.searchObj.element.value !== '') {
-            var fPath = getValue('filterPath', data).replace(/\\/g, '/');
-            name = fPath.replace(this.parent.path, '') + name;
-        }
-        return name;
+        return getName(this.parent, data);
     };
     LargeIconsView.prototype.addFocus = function (item) {
         this.element.setAttribute('tabindex', '-1');
@@ -3569,16 +3654,23 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         return this.items[index];
     };
     LargeIconsView.prototype.addSelection = function (data) {
-        var resultData = new DataManager(this.items).
-            executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
-        if (resultData.length > 0) {
-            var data_1 = new DataManager(resultData).
-                executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
-            if (data_1.length > 0) {
-                var index = this.items.indexOf(data_1[0]);
-                var eveArgs = { ctrlKey: true, shiftKey: false };
-                this.doSelection(this.itemList[index], eveArgs);
+        var resultData = [];
+        if (this.parent.hasId) {
+            resultData = new DataManager(this.items).
+                executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+        }
+        else {
+            var newData = new DataManager(this.items).
+                executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
+            if (newData.length > 0) {
+                resultData = new DataManager(newData).
+                    executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
             }
+        }
+        if (resultData.length > 0) {
+            var index = this.items.indexOf(resultData[0]);
+            var eveArgs = { ctrlKey: true, shiftKey: false };
+            this.doSelection(this.itemList[index], eveArgs);
         }
     };
     LargeIconsView.prototype.updateSelectedData = function () {
@@ -3635,38 +3727,25 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     };
     BreadCrumbBar.prototype.onPathChange = function () {
-        var rootName = getValue('name', getValue('/', this.parent.feParent));
-        if (!this.addressBarLink) {
-            this.addressPath = rootName + this.parent.path;
-        }
-        else {
-            this.addressPath = this.addressBarLink;
-        }
-        var addressPath = this.addressPath;
-        var newPath = addressPath.substring(addressPath.indexOf('/'), addressPath.length);
-        this.parent.setProperties({ path: newPath }, true);
-        var arrayOfAddressBar = [];
-        arrayOfAddressBar = addressPath.split('/');
-        var addressbarUL = null;
-        addressbarUL = this.parent.createElement('ul');
-        addressbarUL.setAttribute('class', 'e-addressbar-ul');
+        var pathNames = this.parent.pathNames;
+        var paths = this.parent.path.split('/');
+        var addressbarUL = this.parent.createElement('ul', { className: 'e-addressbar-ul' });
         var addressbarLI = null;
-        var countOfAddressBarPath = arrayOfAddressBar.length - 1;
-        if (arrayOfAddressBar.length > 1) {
+        var pathNamesLen = pathNames.length;
+        if (pathNames.length > 0) {
             var id = '';
-            for (var i = 0; i < countOfAddressBarPath; i++) {
+            for (var i = 0; i < pathNamesLen; i++) {
                 var addressATag = null;
-                addressbarLI = this.parent.createElement('li');
+                addressbarLI = this.parent.createElement('li', { className: 'e-address-list-item' });
                 for (var j = 0; j <= i; j++) {
-                    id = id + arrayOfAddressBar[j] + '/';
+                    id = id + paths[j] + '/';
                 }
                 addressbarLI.setAttribute('data-utext', id);
-                addressbarLI.classList.add('e-address-list-item');
                 if (i !== 0) {
                     var icon = createElement('span', { className: ICONS });
                     addressbarLI.appendChild(icon);
                 }
-                if (countOfAddressBarPath - i !== 1) {
+                if (pathNamesLen - i !== 1) {
                     addressATag = createElement('a', { className: LIST_TEXT });
                     addressbarLI.setAttribute('tabindex', '0');
                 }
@@ -3674,7 +3753,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
                     addressATag = createElement('span', { className: LIST_TEXT });
                 }
                 id = '';
-                addressATag.innerText = arrayOfAddressBar[i];
+                addressATag.innerText = pathNames[i];
                 addressbarLI.appendChild(addressATag);
                 addressbarUL.appendChild(addressbarLI);
             }
@@ -3694,7 +3773,6 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
             }
             this.updateBreadCrumbBar(addressbarUL);
         }
-        this.addressBarLink = '';
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.updateBreadCrumbBar = function (addresBarUL) {
@@ -3771,6 +3849,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
                         beforeItemRender: this.addSubMenuAttributes.bind(this),
                         select: this.subMenuSelectOperations.bind(this)
                     });
+                    this.subMenuObj.isStringTemplate = true;
                     this.subMenuObj.appendTo(subMenuSpan);
                     break;
                 }
@@ -3858,32 +3937,31 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         this.addressBarLink = liElementId;
         var link = this.addressBarLink.split('/');
         var ids = this.parent.pathId;
+        var names = this.parent.pathNames;
         this.parent.pathId = [];
+        this.parent.pathNames = [];
+        var newpath = '';
         for (var i = 0, len = link.length - 1; i < len; i++) {
             this.parent.pathId.push(ids[i]);
+            this.parent.pathNames.push(names[i]);
+            newpath += link[i] + '/';
         }
-        var path = this.addressBarLink.substr(this.addressBarLink.indexOf('/'), this.addressBarLink.length);
-        return path;
+        this.parent.setProperties({ path: newpath }, true);
+        return newpath;
     };
     BreadCrumbBar.prototype.onUpdatePath = function () {
         this.onPathChange();
         this.removeSearchValue();
     };
     BreadCrumbBar.prototype.onCreateEnd = function () {
-        var path = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
-        if (path !== this.parent.path) {
-            this.onPathChange();
-        }
+        this.onPathChange();
     };
     BreadCrumbBar.prototype.onRenameEnd = function () {
         this.onPathChange();
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.onDeleteEnd = function () {
-        var path = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
-        if (path !== this.parent.path) {
-            this.onUpdatePath();
-        }
+        this.onUpdatePath();
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.removeSearchValue = function () {
@@ -3897,12 +3975,10 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         this.onPathChange();
     };
     BreadCrumbBar.prototype.onPasteEnd = function (args) {
-        if (this.parent.isPathDrag) {
-            this.onPathChange();
-        }
+        this.onPathChange();
     };
     BreadCrumbBar.prototype.liClick = function (currentPath) {
-        this.parent.itemData = [getValue(currentPath, this.parent.feParent)];
+        this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
         read(this.parent, pathChanged, currentPath);
     };
     BreadCrumbBar.prototype.addEventListener = function () {
@@ -3927,6 +4003,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         this.parent.on(searchTextChange, this.onSearchTextChange, this);
         this.parent.on(dropInit, this.onDropInit, this);
         this.parent.on(layoutRefresh, this.onResize, this);
+        this.parent.on(dropPath, this.onPathChange, this);
     };
     BreadCrumbBar.prototype.keyActionHandler = function (e) {
         switch (e.action) {
@@ -3951,14 +4028,16 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         this.parent.off(searchTextChange, this.onSearchTextChange);
         this.parent.off(dropInit, this.onDropInit);
         this.parent.off(layoutRefresh, this.onResize);
+        this.parent.off(dropPath, this.onPathChange);
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.onDropInit = function (args) {
         if (this.parent.targetModule === this.getModuleName()) {
             var liEle = args.target.closest('li');
-            var dropLi = liEle.getAttribute('data-utext');
-            this.parent.dropPath = dropLi.substring(dropLi.indexOf('/'));
-            this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+            this.parent.dropPath = this.updatePath((liEle.children[0]));
+            this.parent.dropData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
+            var treeNodeId = this.parent.pathId[this.parent.pathId.length - 1];
+            this.parent.notify(updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
         }
     };
     /**
@@ -4014,6 +4093,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             beforeClose: this.onBeforeClose.bind(this),
             cssClass: getCssClass(this.parent, ROOT_POPUP)
         });
+        this.contextMenu.isStringTemplate = true;
         this.contextMenu.appendTo('#' + this.parent.element.id + CONTEXT_MENU_ID);
         this.addEventListener();
     };
@@ -4175,10 +4255,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             this.enableItems(['Open'], false, true);
         }
         else if (this.parent.selectedItems.length !== 1) {
-            this.enableItems(['Rename'], false, true);
-        }
-        if (this.parent.selectedNodes.length !== 1) {
-            this.enableItems(['Paste'], false, true);
+            this.enableItems(['Rename', 'Paste'], false, true);
         }
     };
     ContextMenu$$1.prototype.setFileItem = function () {
@@ -4251,9 +4328,8 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                         break;
                     case 'paste':
                         if (_this.menuType === 'folder') {
-                            if ((_this.parent.activeModule === 'largeiconsview') ||
-                                (_this.parent.activeModule === 'detailsview')) {
-                                _this.parent.folderPath = _this.parent.selectedItems[0] + '/';
+                            if ((_this.parent.activeModule === 'largeiconsview') || (_this.parent.activeModule === 'detailsview')) {
+                                _this.parent.folderPath = getFullPath(_this.parent, _this.menuItemData, _this.parent.path);
                             }
                             else {
                                 _this.parent.folderPath = '';
@@ -4648,6 +4724,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         _this.nextPath = [];
         _this.layoutSelectedItems = [];
         _this.renamedNodeId = null;
+        _this.renamedId = null;
         _this.uploadItem = [];
         _this.deleteRecords = [];
         _this.isFile = false;
@@ -4790,14 +4867,13 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(currentPath)) {
             currentPath = '/';
         }
-        if (currentPath.indexOf('/') !== 0) {
-            currentPath = '/' + currentPath;
-        }
         if (currentPath.lastIndexOf('/') !== (currentPath.length - 1)) {
             currentPath = currentPath + '/';
         }
         this.originalPath = currentPath;
-        this.setProperties({ path: '/' }, true);
+        var paths = currentPath.split('/');
+        this.setProperties({ path: paths[0] + '/' }, true);
+        this.pathNames = [];
         this.pathId = ['fe_tree'];
         this.itemData = [];
     };
@@ -4869,6 +4945,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
             enableRtl: false,
             resizing: this.splitterResize.bind(this)
         });
+        this.splitterObj.isStringTemplate = true;
         this.splitterObj.appendTo(layoutWrap);
         var dialogWrap = this.createElement('div', { id: this.element.id + DIALOG_ID });
         this.element.appendChild(dialogWrap);
@@ -5003,7 +5080,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        var data = JSON.stringify(getValue(this.path, this.feParent));
+        var data = JSON.stringify(getValue(this.pathId[this.pathId.length - 1], this.feParent));
         args.customFormData = [{ 'path': this.path }, { 'action': action }, { 'data': data }];
         var uploadUrl = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
         var ajaxSettings = {
@@ -5061,6 +5138,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     FileManager.prototype.onUploadSuccess = function (files) {
         var args = { action: 'Upload', result: files };
         this.trigger('success', args);
+        this.itemData = [getValue(this.pathId[this.pathId.length - 1], this.feParent)];
         read(this, pathChanged, this.path);
         if (typeof getValue('onSuccess', this.uploadEventArgs.ajaxSettings) === 'function') {
             getValue('onSuccess', this.uploadEventArgs.ajaxSettings)();
@@ -5107,7 +5185,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     };
     FileManager.prototype.onDetailsInit = function () {
         if (isNullOrUndefined(this.activeModule)) {
-            this.itemData = [getValue(this.path, this.feParent)];
+            this.itemData = [getValue(this.pathId[this.pathId.length - 1], this.feParent)];
         }
     };
     FileManager.prototype.resizeHandler = function () {
@@ -5534,6 +5612,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             clicked: this.onClicked.bind(this),
             enableRtl: this.parent.enableRtl
         });
+        this.toolbarObj.isStringTemplate = true;
         this.toolbarObj.appendTo('#' + this.parent.element.id + TOOLBAR_ID);
     };
     Toolbar$$1.prototype.triggerToolbarCreate = function () {
@@ -5676,6 +5755,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 select: sortbyClickHandler.bind(this, this.parent),
                 enableRtl: this.parent.enableRtl, iconCss: ICON_SHORTBY
             });
+            this.buttonObj.isStringTemplate = true;
             this.buttonObj.appendTo('#' + this.getId('SortBy'));
         }
         if (!isNullOrUndefined(select('#' + this.getId('View'), this.parent.element))) {
@@ -5697,6 +5777,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 items: layoutItems, select: this.layoutChange.bind(this),
                 enableRtl: this.parent.enableRtl
             });
+            this.layoutBtnObj.isStringTemplate = true;
             this.layoutBtnObj.appendTo('#' + this.getId('View'));
         }
         this.hideItems(this.default, true);
@@ -6012,12 +6093,19 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.treeObj)) {
             return;
         }
-        var rootData = getValue('/', this.parent.feParent);
+        var rootData = getValue(this.parent.pathId[0], this.parent.feParent);
         setValue('_fm_icon', 'e-fe-folder', rootData);
-        if (!hasEditAccess(rootData)) {
-            setValue('_fm_htmlAttr', { 'class': getAccessClass(rootData) }, rootData);
+        var attr = {};
+        var id = getValue('id', rootData);
+        if (!isNullOrUndefined(id)) {
+            setValue('data-id', id, attr);
         }
-        this.rootNode = getValue('name', getValue('/', this.parent.feParent));
+        if (!hasEditAccess(rootData)) {
+            setValue('class', getAccessClass(rootData), attr);
+        }
+        if (!isNullOrUndefined(attr)) {
+            setValue('_fm_htmlAttr', attr, rootData);
+        }
         this.treeObj = new TreeView({
             fields: {
                 dataSource: [rootData], id: '_fm_id', parentID: '_fm_pId', expanded: '_fm_expanded', selected: '_fm_selected', text: 'name',
@@ -6032,6 +6120,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             enableRtl: this.parent.enableRtl,
             dataBound: this.addDragDrop.bind(this)
         });
+        this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parent.element.id + TREE_ID);
         this.treeObj.element.style.width = '25%';
         this.wireEvents();
@@ -6072,10 +6161,19 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         this.parent.dragNodes = [];
         getModule(this.parent, dragLi);
         this.parent.dragData = this.getTreeData(dragLi);
-        this.parent.dragPath = this.parent.dragData[0].filterPath;
+        this.parent.dragPath = this.getDragPath(dragLi, this.parent.dragData[0].name);
         this.parent.dragNodes.push(this.parent.dragData[0].name);
         createVirtualDragElement(this.parent);
         return this.parent.virtualDragElement;
+    };
+    NavigationPane.prototype.getDragPath = function (dragLi, text) {
+        var path = this.getDropPath(dragLi, text);
+        return getParentPath(path);
+    };
+    NavigationPane.prototype.getDropPath = function (node, text) {
+        var id = node.getAttribute('data-id');
+        var newText = this.parent.hasId ? id : text;
+        return getPath(node, newText, this.parent.hasId);
     };
     NavigationPane.prototype.onDrowNode = function (args) {
         var eventArgs = {
@@ -6092,8 +6190,16 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             var folders = directories;
             while (length_1 < directories.length) {
                 folders[length_1]._fm_icon = 'e-fe-folder';
+                var attr = {};
+                var id = getValue('id', folders[length_1]);
+                if (!isNullOrUndefined(id)) {
+                    setValue('data-id', id, attr);
+                }
                 if (!hasEditAccess(folders[length_1])) {
-                    setValue('_fm_htmlAttr', { 'class': getAccessClass(folders[length_1]) }, folders[length_1]);
+                    setValue('class', getAccessClass(folders[length_1]), attr);
+                }
+                if (!isNullOrUndefined(attr)) {
+                    setValue('_fm_htmlAttr', attr, folders[length_1]);
                 }
                 length_1++;
             }
@@ -6108,16 +6214,15 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         if (!args.isInteracted && !this.isPathDragged) {
             return;
         }
-        var text = getValue('text', args.nodeData);
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
         this.parent.selectedItems = [];
-        updatePath(args.node, text, this.parent);
+        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
+        updatePath(args.node, this.parent.itemData[0], this.parent);
         this.expandNodeTarget = null;
         if (args.node.querySelector('.' + ICONS) && args.node.querySelector('.' + LIST_ITEM) === null) {
             this.expandNodeTarget = 'add';
         }
-        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
         read(this.parent, this.isPathDragged ? pasteEnd : pathChanged, this.parent.path);
         this.parent.visitedItem = args.node;
         this.isPathDragged = false;
@@ -6132,8 +6237,12 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         if (!args.isInteracted && !this.isDrag) {
             return;
         }
-        var path = getPath(args.node, getValue('text', args.nodeData));
         if (args.node.querySelector('.' + LIST_ITEM) === null) {
+            var text = getValue('text', args.nodeData);
+            var id = args.node.getAttribute('data-id');
+            var isId = isNullOrUndefined(id) ? false : true;
+            var newText = isNullOrUndefined(id) ? text : id;
+            var path = getPath(args.node, newText, isId);
             this.expandNodeTarget = args.node.getAttribute('data-uid');
             this.parent.expandedId = this.expandNodeTarget;
             this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
@@ -6157,7 +6266,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     };
     NavigationPane.prototype.onPathChanged = function (args) {
         this.parent.isCut = false;
-        var currFiles = getValue(this.parent.path, this.parent.feFiles);
+        var currFiles = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feFiles);
         if (this.expandNodeTarget === 'add') {
             var sNode = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
             var ul = select('.' + LIST_PARENT, sNode);
@@ -6167,15 +6276,17 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             this.expandNodeTarget = '';
         }
         if (isNullOrUndefined(currFiles)) {
-            setValue(this.parent.path, args.files, this.parent.feFiles);
+            setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
         }
     };
     NavigationPane.prototype.updateTree = function (args) {
-        var id = this.treeObj.selectedNodes[0];
-        var toExpand = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
-        this.removeChildNodes(id);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
-        this.addChild(args.files, id, !toExpand);
+        if (this.treeObj) {
+            var id = this.treeObj.selectedNodes[0];
+            var toExpand = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
+            this.removeChildNodes(id);
+            setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
+            this.addChild(args.files, id, !toExpand);
+        }
     };
     NavigationPane.prototype.removeChildNodes = function (id) {
         var sNode = select('[data-uid="' + id + '"]', this.treeObj.element);
@@ -6251,14 +6362,21 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             this.parent.renamedNodeId = null;
         }
         else {
-            var resultData = new DataManager(this.treeObj.getTreeData()).
-                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.currentItemText, false));
-            if (resultData.length > 0) {
-                var data = new DataManager(resultData).
-                    executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
-                if (data.length > 0) {
-                    this.treeObj.updateNode(getValue(this.treeObj.fields.id, data[0]), this.parent.renameText);
+            var resultData = [];
+            if (this.parent.hasId) {
+                resultData = new DataManager(this.treeObj.getTreeData()).
+                    executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+            }
+            else {
+                var nData = new DataManager(this.treeObj.getTreeData()).
+                    executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.currentItemText, false));
+                if (nData.length > 0) {
+                    resultData = new DataManager(nData).
+                        executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
                 }
+            }
+            if (resultData.length > 0) {
+                this.treeObj.updateNode(getValue(this.treeObj.fields.id, resultData[0]), this.parent.renameText);
             }
         }
     };
@@ -6303,21 +6421,23 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         var moveNames = [];
         for (var i = 0; i < files.length; i++) {
             if (!files[i].isFile) {
-                var name_2 = (files[i].previousName);
-                if (flag) {
-                    path = path + files[i].previousName;
-                    var index = path.lastIndexOf('/');
-                    name_2 = path.substring(index + 1);
-                    path = path.substring(0, index + 1);
-                }
-                var resultData = new DataManager(this.treeObj.getTreeData()).
-                    executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name_2, false));
-                for (var j = 0; j < resultData.length; j++) {
-                    var fPath = getValue('filterPath', resultData[j]);
-                    fPath = fPath.replace(/\\/g, '/');
-                    if (fPath === path) {
-                        moveNames.push(getValue(this.treeObj.fields.id, resultData[j]));
-                        break;
+                if (!this.parent.hasId) {
+                    var name_2 = (files[i].previousName);
+                    if (flag) {
+                        path = path + files[i].previousName;
+                        var index = path.lastIndexOf('/');
+                        name_2 = path.substring(index + 1);
+                        path = path.substring(0, index + 1);
+                    }
+                    var resultData = new DataManager(this.treeObj.getTreeData()).
+                        executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name_2, false));
+                    for (var j = 0; j < resultData.length; j++) {
+                        var fPath = getValue('filterPath', resultData[j]);
+                        fPath = fPath.replace(/\\/g, '/');
+                        if (fPath === path) {
+                            moveNames.push(getValue(this.treeObj.fields.id, resultData[j]));
+                            break;
+                        }
                     }
                 }
             }
@@ -6335,40 +6455,50 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         this.treeObj.removeNodes(moveNames);
     };
     NavigationPane.prototype.selectResultNode = function (resultObj) {
-        var path = getValue('filterPath', resultObj);
-        var itemname = getValue('name', resultObj);
-        var data = new DataManager(this.treeObj.getTreeData()).
-            executeLocal(new Query().where(this.treeObj.fields.text, 'equal', itemname, false));
-        if (data.length > 0) {
-            var resultData = new DataManager(data).
-                executeLocal(new Query().where('filterPath', 'equal', path, false));
-            if (resultData.length > 0) {
-                var id = getValue(this.treeObj.fields.id, resultData[0]);
-                this.treeObj.selectedNodes = [id];
+        if (!this.parent.hasId) {
+            var path = getValue('filterPath', resultObj);
+            var itemname = getValue('name', resultObj);
+            var data = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', itemname, false));
+            if (data.length > 0) {
+                var resultData = new DataManager(data).
+                    executeLocal(new Query().where('filterPath', 'equal', path, false));
+                if (resultData.length > 0) {
+                    var id = getValue(this.treeObj.fields.id, resultData[0]);
+                    this.treeObj.selectedNodes = [id];
+                    this.treeObj.dataBind();
+                }
             }
+        }
+        else {
+            this.treeObj.selectedNodes = [getValue('_fm_id', resultObj)];
+            this.treeObj.dataBind();
         }
     };
     NavigationPane.prototype.onDropPath = function (args) {
         this.onpasteEnd(args);
-        var pathObj = getValue(this.parent.path, this.parent.feParent);
-        this.selectResultNode(pathObj);
+        this.selectResultNode(this.parent.dropData);
         this.parent.isDropEnd = !this.parent.isPasteError;
     };
     NavigationPane.prototype.onpasteEnd = function (args) {
-        var name = getValue('name', args.cwd);
-        var path = getValue('filterPath', args.cwd);
-        var resultData = new DataManager(this.treeObj.getTreeData()).
-            executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
-        if (resultData.length > 0) {
-            var data = new DataManager(resultData).
-                executeLocal(new Query().where('filterPath', 'equal', path, false));
-            if (data.length > 0) {
-                var id = getValue(this.treeObj.fields.id, data[0]);
-                var toExpand = this.treeObj.expandedNodes.indexOf(id) === -1;
-                this.removeChildNodes(id);
-                setValue(getDirectoryPath(args), args.files, this.parent.feFiles);
-                this.addChild(args.files, id, toExpand);
+        var resultData = [];
+        if (this.parent.hasId) {
+            resultData = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where('id', 'equal', getValue('id', args.cwd), false));
+        }
+        else {
+            var nData = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', getValue('name', args.cwd), false));
+            if (nData.length > 0) {
+                resultData = new DataManager(nData).
+                    executeLocal(new Query().where('filterPath', 'equal', getValue('filterPath', args.cwd), false));
             }
+        }
+        if (resultData.length > 0) {
+            var id = getValue(this.treeObj.fields.id, resultData[0]);
+            var toExpand = this.treeObj.expandedNodes.indexOf(id) === -1;
+            this.removeChildNodes(id);
+            this.addChild(args.files, id, toExpand);
         }
         this.parent.expandedId = null;
         this.onPathChanged(args);
@@ -6377,7 +6507,11 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         }
     };
     NavigationPane.prototype.checkDropPath = function (args) {
-        if ((this.parent.dropPath.indexOf(getDirectoryPath(args)) === -1)) {
+        if (this.parent.hasId) {
+            this.parent.isDropEnd = !this.parent.isPasteError;
+            return;
+        }
+        if ((this.parent.dropPath.indexOf(getDirectoryPath(this.parent, args)) === -1)) {
             this.parent.isDropEnd = false;
             readDropPath(this.parent);
         }
@@ -6491,17 +6625,8 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     NavigationPane.prototype.onDropInit = function (args) {
         if (this.parent.targetModule === this.getModuleName()) {
             var dropLi = closest(args.target, 'li');
-            var uid = dropLi.getAttribute('data-uid');
-            /* istanbul ignore next */
-            if (uid !== this.parent.pathId[0]) {
-                var info = this.getTreeData(dropLi)[0];
-                this.parent.dropPath = (info.filterPath.replace(/\\/g, '/') + info.name + '/');
-                this.parent.dropData = this.getTreeData(uid)[0];
-            }
-            else {
-                this.parent.dropPath = '/';
-                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
-            }
+            this.parent.dropData = this.getTreeData(dropLi)[0];
+            this.parent.dropPath = this.getDropPath(dropLi, getValue('name', this.parent.dropData));
         }
     };
     /**
@@ -6606,12 +6731,14 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     };
     NavigationPane.prototype.updateActionData = function () {
         this.updateItemData();
-        var newPath = getParentPath(this.parent);
+        var newPath = getParentPath(this.parent.path);
         this.parent.setProperties({ path: newPath }, true);
+        this.parent.pathId.pop();
+        this.parent.pathNames.pop();
     };
     /* istanbul ignore next */
     NavigationPane.prototype.doDownload = function () {
-        var newPath = getParentPath(this.parent);
+        var newPath = getParentPath(this.parent.path);
         var itemId = this.treeObj.selectedNodes[0];
         var name = (itemId === this.parent.pathId[0]) ? '' : getValue('name', this.parent.itemData[0]);
         Download(this.parent, newPath, [name]);
@@ -6721,11 +6848,10 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                     this.focusModule.destroy();
                 }
             });
+            this.gridObj.isStringTemplate = true;
             this.gridObj.appendTo('#' + this.parent.element.id + GRID_ID);
             this.wireEvents();
             this.adjustHeight();
-            // tslint:disable-next-line
-            this.gridObj.defaultLocale.EmptyRecord = '';
             this.emptyArgs = args;
         }
     };
@@ -6960,7 +7086,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         var gridRecords = this.gridObj.getCurrentViewRecords();
         var sRecords = [];
         for (var i = 0, len = gridRecords.length; i < len; i++) {
-            var node = byId ? getValue('_fm_id', gridRecords[i]) : this.getName(gridRecords[i]);
+            var node = byId ? getValue('_fm_id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
             if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
@@ -6972,15 +7098,22 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     };
     DetailsView.prototype.addSelection = function (data) {
         var items = this.gridObj.getCurrentViewRecords();
-        var rData = new DataManager(items).
-            executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
-        if (rData.length > 0) {
-            var nData = new DataManager(rData).
-                executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
+        var rData = [];
+        if (this.parent.hasId) {
+            rData = new DataManager(items).
+                executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+        }
+        else {
+            var nData = new DataManager(items).
+                executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
             if (nData.length > 0) {
-                var index = items.indexOf(nData[0]);
-                this.gridObj.selectRows([index]);
+                rData = new DataManager(nData).
+                    executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
             }
+        }
+        if (rData.length > 0) {
+            var index = items.indexOf(rData[0]);
+            this.gridObj.selectRows([index]);
         }
     };
     DetailsView.prototype.onSortColumn = function () {
@@ -7058,7 +7191,6 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.isInteracted = false;
             this.parent.setProperties({ selectedItems: [] }, true);
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
-            this.parent.notify(searchTextChange, args);
         }
         this.emptyArgs = args;
     };
@@ -7100,10 +7232,10 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         var eventArgs = { cancel: false, fileDetails: data };
         this.parent.trigger('fileOpen', eventArgs, function (fileOpenArgs) {
             if (!fileOpenArgs.cancel) {
+                var name_2 = getValue('name', data);
                 if (getValue('isFile', data)) {
                     var icon = fileType(data);
                     if (icon === ICON_IMAGE) {
-                        var name_2 = getValue('name', data);
                         var imgUrl = getImageUrl(_this.parent, data);
                         createImageDialog(_this.parent, name_2, imgUrl);
                     }
@@ -7111,8 +7243,10 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 else {
                     var val = _this.parent.breadcrumbbarModule.searchObj.element.value;
                     if (val === '') {
-                        var newPath = _this.parent.path + getValue('name', data) + '/';
+                        var id = getValue('id', data);
+                        var newPath = _this.parent.path + (isNullOrUndefined(id) ? name_2 : id) + '/';
                         _this.parent.setProperties({ path: newPath }, true);
+                        _this.parent.pathNames.push(name_2);
                         _this.parent.pathId.push(getValue('_fm_id', data));
                         _this.parent.itemData = [data];
                         openAction(_this.parent);
@@ -7182,7 +7316,6 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         }
         if (!this.gridObj) {
             this.render(args);
-            this.parent.notify(searchTextChange, args);
         }
         else {
             this.onPathChanged(args);
@@ -7292,6 +7425,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.on(resizeEnd, this.onDetailsResize, this);
         this.parent.on(splitterResize, this.onDetailsResize, this);
         this.parent.on(layoutRefresh, this.onLayoutRefresh, this);
+        this.parent.on(dropPath, this.onDropPath, this);
     };
     DetailsView.prototype.removeEventListener = function () {
         this.parent.off(finalizeEnd, this.onFinalizeEnd);
@@ -7326,6 +7460,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.off(resizeEnd, this.onDetailsResize);
         this.parent.off(splitterResize, this.onDetailsResize);
         this.parent.off(layoutRefresh, this.onLayoutRefresh);
+        this.parent.off(dropPath, this.onDropPath);
     };
     DetailsView.prototype.onMenuItemData = function (args) {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -7344,7 +7479,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 this.parent.itemData = this.gridObj.getSelectedRecords();
             }
             else {
-                this.parent.itemData = [getValue(this.parent.path, this.parent.feParent)];
+                this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
             }
         }
     };
@@ -7432,16 +7567,16 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     DetailsView.prototype.onDropInit = function (args) {
         if (this.parent.targetModule === this.getModuleName()) {
             /* istanbul ignore next */
+            var cwdData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (!args.target.closest('tr')) {
                 this.parent.dropPath = this.parent.path;
-                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+                this.parent.dropData = cwdData;
             }
             else {
                 var info = null;
                 info = this.gridObj.getRowInfo(args.target).rowData;
-                this.parent.dropPath = info.isFile ? this.parent.path :
-                    (info.filterPath.replace(/\\/g, '/') + info.name + '/');
-                this.parent.dropData = info.isFile ? info : this.gridObj.getRowInfo(args.target).rowData;
+                this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
+                this.parent.dropData = info.isFile ? cwdData : info;
             }
         }
     };
@@ -7454,9 +7589,15 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     DetailsView.prototype.onpasteEnd = function (args) {
         if (this.parent.view === 'Details') {
             this.isPasteOperation = true;
-            if (this.parent.path === getDirectoryPath(args)) {
+            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args)) {
                 this.onPathChanged(args);
             }
+        }
+    };
+    DetailsView.prototype.onDropPath = function (args) {
+        if (this.parent.view === 'Details') {
+            this.isPasteOperation = true;
+            this.onPathChanged(args);
         }
     };
     /**
@@ -7556,17 +7697,9 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         var selectSize = 0;
         while (selectSize < selectedRecords.length) {
             var record = selectedRecords[selectSize];
-            this.parent.selectedItems.push(this.getName(record));
+            this.parent.selectedItems.push(getName(this.parent, record));
             selectSize++;
         }
-    };
-    DetailsView.prototype.getName = function (data) {
-        var name = getValue('name', data);
-        if (this.parent.breadcrumbbarModule.searchObj.element.value !== '') {
-            var path = getValue('filterPath', data).replace(/\\/g, '/');
-            name = path.replace(this.parent.path, '') + name;
-        }
-        return name;
     };
     DetailsView.prototype.onDeSelection = function (args) {
         /* istanbul ignore next */

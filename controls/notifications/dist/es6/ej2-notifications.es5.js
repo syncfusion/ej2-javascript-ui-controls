@@ -298,7 +298,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             templateFn = compile(value);
         }
         if (!isNullOrUndefined(templateFn)) {
-            tmpArray = templateFn({}, this, prob);
+            tmpArray = templateFn({}, this, prob, null, true);
         }
         if (!isNullOrUndefined(tmpArray) && tmpArray.length > 0 && !(isNullOrUndefined(tmpArray[0].tagName) && tmpArray.length === 1)) {
             [].slice.call(tmpArray).forEach(function (el) {
@@ -484,7 +484,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         var ele = this.element;
         if (isNullOrUndefined(this.content) || this.content === '') {
             var isContent = this.element.innerHTML.replace(/\s/g, '') !== '';
-            if ((ele.children.length > 0 || isContent) && !ele.firstElementChild.classList.contains(ROOT)) {
+            if ((ele.children.length > 0 || isContent) && !(ele.firstElementChild && ele.firstElementChild.classList.contains(ROOT))) {
                 this.innerEle = document.createDocumentFragment();
                 var tempEle_1 = this.createElement('div');
                 while (ele.childNodes.length !== 0) {

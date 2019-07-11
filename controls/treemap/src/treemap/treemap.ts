@@ -421,6 +421,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     private drillMouseMove: boolean;
     /** @private */
     public doubleTapTimer: Object;
+    /** @private */
+    public isBlazor: boolean;
 
     /**s
      * Constructor for TreeMap component.
@@ -431,6 +433,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     protected preRender(): void {
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
 
         this.trigger(load, { treemap: this });
 
@@ -508,7 +512,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
         this.elementChange();
 
-        this.trigger(loaded, { treemap: this });
+        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
 
     }
 
@@ -923,7 +927,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     this.refreshing = true;
                     this.wireEVents();
                     args.currentSize = this.availableSize;
-                    this.trigger(resize, args);
+                    this.trigger(resize, this.isBlazor ? {} : args);
                     this.render();
                 },
                 500);
@@ -934,9 +938,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let targetEle: Element = <Element>e.target;
         let targetId: string = targetEle.id;
         let eventArgs: IItemClickEventArgs;
+        let eventBlazorArgs: IItemClickEventArgs;
         let itemIndex: number;
         let clickArgs: IClickEventArgs = { cancel: false, name: click, treemap: this, mouseEvent: e };
-        this.trigger(click, clickArgs);
+        let clickBlazorArgs: IClickEventArgs = { cancel: false, name: click, mouseEvent: e };
+        this.trigger(click, this.isBlazor ? clickBlazorArgs : clickArgs);
         if (targetId.indexOf('_Item_Index') > -1) {
             e.preventDefault();
             itemIndex = parseFloat(targetId.split('_')[6]);
@@ -944,7 +950,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
                 groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
             };
-            this.trigger(itemClick, eventArgs);
+            eventBlazorArgs = {
+                cancel: false, name: itemClick, item: this.layout.renderItems[itemIndex], mouseEvent: e,
+                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
+            };
+            this.trigger(itemClick, this.isBlazor ? eventBlazorArgs : eventArgs);
         }
         let end: number = new Date().getMilliseconds();
         let doubleTapTimer1: number;
@@ -959,13 +969,15 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     public doubleClickOnTreeMap(e: PointerEvent): void {
         let doubleClickArgs: IDoubleClickEventArgs = { cancel: false, name: doubleClick, treemap: this, mouseEvent: e };
-        this.trigger(doubleClick, doubleClickArgs);
+        let doubleClickBlazorArgs: IDoubleClickEventArgs = { cancel: false, name: doubleClick, mouseEvent: e };
+        this.trigger(doubleClick, this.isBlazor ? doubleClickBlazorArgs : doubleClickArgs);
         //this.notify('dblclick', e);
     }
 
     public rightClickOnTreeMap(e: PointerEvent): void {
         let rightClickArgs: IRightClickEventArgs = { cancel: false, name: rightClick, treemap: this, mouseEvent: e };
-        this.trigger(rightClick, rightClickArgs);
+        let rightClickBlazorArgs: IRightClickEventArgs = { cancel: false, name: rightClick, mouseEvent: e };
+        this.trigger(rightClick, this.isBlazor ? rightClickBlazorArgs : rightClickArgs);
     }
 
 
@@ -981,9 +993,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let targetEle: Element = <Element>e.target;
         let targetId: string = targetEle.id;
         let eventArgs: IItemMoveEventArgs;
+        let eventBlazorArgs: IItemMoveEventArgs;
         let item: Object;
         let moveArgs: IMouseMoveEventArgs = { cancel: false, name: mouseMove, treemap: this, mouseEvent: e };
-        this.trigger(mouseMove, moveArgs);
+        let moveBlazorArgs: IMouseMoveEventArgs = { cancel: false, name: mouseMove, mouseEvent: e };
+        this.trigger(mouseMove, this.isBlazor ? moveBlazorArgs : moveArgs);
         let childItems: object[];
         this.drillMouseMove = this.mouseDown;
         if (targetId.indexOf('_Item_Index') > -1) {
@@ -992,7 +1006,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.element.style.cursor = (!item['isLeafItem'] && childItems && childItems.length > 0 && this.enableDrillDown) ?
                 'pointer' : 'auto';
             eventArgs = { cancel: false, name: itemMove, treemap: this, item: item, mouseEvent: e };
-            this.trigger(itemMove, eventArgs);
+            eventBlazorArgs = { cancel: false, name: itemMove, item: item, mouseEvent: e };
+            this.trigger(itemMove, this.isBlazor ? eventBlazorArgs : eventArgs);
         }
         this.notify(Browser.touchMoveEvent, e);
     }
@@ -1064,6 +1079,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let index: number; let newDrillItem: Object = new Object(); let item: Object; let process: boolean = true;
         let layoutID: string = this.element.id + '_TreeMap_' + this.layoutType + '_Layout'; let drillLevel: number;
         let templateID: string = this.element.id + '_Label_Template_Group'; let drillLevelValues: object;
+        let endBlazorEvent: IDrillEndEventArgs;
         if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown && !this.drillMouseMove) {
             e.preventDefault();
             index = parseFloat(targetId.split('_')[6]); item = this.layout.renderItems[index]; let labelText: string = targetEle.innerHTML;
@@ -1153,7 +1169,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 });
                 endEvent = { cancel: false, name: drillEnd, treemap: this, renderItems: this.layout.renderItems };
-                this.trigger(drillEnd, endEvent);
+                endBlazorEvent = { cancel: false, name: drillEnd, renderItems: this.layout.renderItems };
+                this.trigger(drillEnd, this.isBlazor ? endBlazorEvent : endEvent);
                 if (process) {
                     if (!directLevel && isNullOrUndefined(drillLevel)) {
                         this.drilledItems.push({ name: item['levelOrderName'], data: item });

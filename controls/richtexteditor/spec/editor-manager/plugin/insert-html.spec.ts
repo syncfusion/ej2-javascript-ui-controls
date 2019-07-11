@@ -13,6 +13,7 @@ describe('Insert HTML', () => {
         'the displayed content. A rich text editor control provides users with a toolbar' +
         'that helps them to apply rich text formats to the text entered in the text' +
         'area. </p>' +
+        '<p id="imgParagraph"><img style="width: 177px; height: 177px;" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png"></p>' +
         '<p id="paragraph3">Functional' +
         'Specifications/Requirements:</p>' +
         '<ol>'+
@@ -158,4 +159,31 @@ describe('Insert HTML', () => {
         expect(node1.childNodes[1].textContent).toEqual('Text Content');
     });
 
+    it('Insert table next to image cursor position', () => {
+        let editNode: Element = document.getElementById('parentDiv');
+        let node1: Element = document.getElementById('imgParagraph');
+        let table: HTMLElement = document.createElement('table') as HTMLElement;
+        table.id = 'testTable';
+        table.style.height = '10px';
+        table.style.width = '10px';
+        domSelection.setCursorPoint(document, node1, 1);
+        InsertHtml.Insert(document, table, editNode);
+        expect(document.querySelectorAll('#parentDiv > #imgParagraph > img').length).toEqual(1);
+        expect(document.querySelectorAll('#parentDiv > table').length).toEqual(1);
+        expect(document.querySelector('#parentDiv > table').id).toEqual('testTable');
+    });
+
+    it('Insert table next to table cursor position', () => {
+        let editNode: Element = document.getElementById('parentDiv');
+        let table: Element = document.getElementById('testTable');
+        let table1: Element = document.createElement('table');
+        table1.id = 'testTable1';
+        domSelection.setCursorPoint(document, editNode, 0);
+        InsertHtml.Insert(document, table1, editNode);
+        expect(document.querySelectorAll('#parentDiv > #imgParagraph > img').length).toEqual(1);
+        expect(document.querySelectorAll('#parentDiv > table').length).toEqual(2);
+        expect(document.querySelectorAll('#parentDiv > table')[0].id).toEqual('testTable1');
+        expect(document.querySelectorAll('#parentDiv > table')[1].id).toEqual('testTable');
+        expect(document.querySelectorAll('#parentDiv > #inner4').length).toEqual(1);
+    });
 });

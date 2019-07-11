@@ -69,8 +69,8 @@ export class AgendaBase {
                 let templateEle: HTMLElement[];
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
                     addClass([appWrapper], cls.EVENT_TEMPLATE);
-                    let templateId: string = this.parent.element.id + 'eventTemplate';
-                    templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId);
+                    let templateId: string = this.parent.currentView + '_eventTemplate';
+                    templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId, false);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         let iconClass: string = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
                             cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
@@ -324,8 +324,8 @@ export class AgendaBase {
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: cls.AGENDA_HEADER_CLASS });
             let args: CellTemplateArgs = { date: date, type: 'dateHeader' };
-            let templateId: string = this.parent.element.id + 'dateHeaderTemplate';
-            let dateTemplate: NodeList = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId);
+            let templateId: string = this.parent.currentView + '_dateHeaderTemplate';
+            let dateTemplate: NodeList = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false);
             append([].slice.call(dateTemplate), dateHeader);
         } else {
             dateHeader = this.viewBase.getMobileDateElement(date, cls.AGENDA_HEADER_CLASS);

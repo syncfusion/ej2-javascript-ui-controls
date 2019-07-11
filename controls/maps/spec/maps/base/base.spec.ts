@@ -14,6 +14,8 @@ import { LayerSettingsModel } from '../../../src/maps/index';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { Bubble, MapsTooltip, DataLabel, Zoom, Marker, ColorMapping, Highlight, Selection, Legend } from '../../../src/index';
 import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
+import { map } from '../data/mappoint.spec';
+import { data } from '../data/bubblepointdata.spec';
 Maps.Inject(Bubble, MapsTooltip, Zoom, Highlight, Selection, Legend);
 export function getIdElement(id: string): Element {
     return document.getElementById(id);
@@ -646,6 +648,58 @@ describe('Maps Component Base Spec', () => {
             maps.refresh();
         });
     });
+
+    describe('Maps Point Type Data spec', () => {
+        let element: Element;
+        let maps: Maps;
+        let id: string = 'map-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '0px';
+            document.body.appendChild(element);
+            maps = new Maps({
+                titleSettings: {
+                    text: 'World Map'
+                },
+                layers: [{
+                    shapeDataPath: 'name',
+                    shapePropertyPath: 'name',
+                    shapeData: map,
+                    shapeSettings: {
+                        fill: '#E5E5E5'
+                    },
+                    bubbleSettings: [
+                        {
+                            visible: true,
+                            valuePath: 'value',
+                            colorValuePath: 'color',
+                            dataSource: data,
+                            animationDuration:0,
+                            minRadius: 30,
+                            maxRadius: 70,
+                            opacity: 0.8,
+                            tooltipSettings: {
+                                visible: true,
+                                valuePath: 'name'
+                            },
+                        }
+                    ]
+                }]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            maps.destroy();
+            removeElement(id);
+        });
+
+        it('Check point type data', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                let element = document.getElementById(maps.element.id + '_LayerIndex_0_Point_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+        });
+    });
+
 
     it('memory leak', () => {
         profile.sample();

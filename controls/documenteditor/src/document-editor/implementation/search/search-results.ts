@@ -6,18 +6,24 @@ export class SearchResults {
     private searchModule: Search;
     /**
      * Gets the length of search results.
+     * @aspType int
+     * @blazorType int
      */
     get length(): number {
         return this.searchModule.textSearchResults.length;
     }
     /**
      * Gets the index of current search result.
+     * @aspType int
+     * @blazorType int
      */
     get index(): number {
         return this.searchModule.textSearchResults.currentIndex;
     }
     /**
      * Set the index of current search result.
+     * @aspType int
+     * @blazorType int
      */
     set index(value: number) {
         if (this.length === 0 || value < 0 || value > this.searchModule.textSearchResults.length - 1) {

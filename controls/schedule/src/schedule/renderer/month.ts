@@ -242,8 +242,9 @@ export class Month extends ViewBase implements IRenderer {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
                 let cellArgs: CellTemplateArgs = { date: td.date, type: td.type };
-                let templateId: string = this.parent.element.id + 'dateHeaderTemplate';
-                let dateTemplate: NodeList = this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId);
+                let templateId: string = this.parent.currentView + '_dateHeaderTemplate';
+                let dateTemplate: NodeList =
+                    this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false);
                 if (dateTemplate && dateTemplate.length) {
                     append([].slice.call(dateTemplate), tdEle);
                 }
@@ -384,8 +385,8 @@ export class Month extends ViewBase implements IRenderer {
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args: CellTemplateArgs = { date: data.date, type: type, groupIndex: data.groupIndex };
-            let templateId: string = this.parent.element.id + 'cellTemplate';
-            let cellTemplate: NodeList = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId);
+            let templateId: string = this.parent.currentView + '_cellTemplate';
+            let cellTemplate: NodeList = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(cellTemplate), ntd);
         }
         let args: RenderCellEventArgs = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };

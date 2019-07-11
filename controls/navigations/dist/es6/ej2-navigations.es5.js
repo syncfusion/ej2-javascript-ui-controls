@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -1116,13 +1116,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     MenuBase.prototype.render = function () {
         this.initialize();
         this.renderItems();
-        if (this.isMenu && this.template) {
-            var menuTemplateId_1 = this.element.id + TEMPLATE_PROPERTY;
-            resetBlazorTemplate(menuTemplateId_1, TEMPLATE_PROPERTY);
-            setTimeout(function () {
-                updateBlazorTemplate(menuTemplateId_1, TEMPLATE_PROPERTY);
-            }, 500);
-        }
         this.wireEvents();
     };
     MenuBase.prototype.initialize = function () {
@@ -1464,7 +1457,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         _this.closeMenu(0, e);
                     }
                     else {
-                        if (_this.keyType === 'right') {
+                        if (_this.keyType === 'right' || _this.keyType === 'click') {
                             _this.afterCloseMenu(e);
                         }
                         else {
@@ -1937,6 +1930,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             ulId = wrapper.querySelector('ul').id;
         }
         if (ulId !== this.element.id) {
+            this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
             if (this.navIdx.length) {
                 isDifferentElem = true;
             }
@@ -1963,7 +1957,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
             else if (isDifferentElem) {
                 if (this.navIdx.length) {
-                    this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
                     this.isClosed = true;
                     this.closeMenu(null, e);
                 }
@@ -2072,7 +2065,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                                     sli.classList.remove(SELECTED);
                                 }
                                 this.isClosed = true;
-                                this.keyType = 'right';
+                                this.keyType = 'click';
                                 this.closeMenu(culIdx + 1, e);
                             }
                         }
@@ -3322,7 +3315,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.renderControl();
         this.separator();
-        this.refreshTemplate();
+        this.refreshToolbarTemplate();
         this.wireEvents();
     };
     Toolbar.prototype.initialize = function () {
@@ -4364,8 +4357,8 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             }
             var tempArray = void 0;
             if (!isNullOrUndefined(templateFn)) {
-                var toolbarTemplateID = this.element.id + 'template';
-                tempArray = templateFn({}, this, 'template', toolbarTemplateID);
+                var toolbarTemplateID = this.element.id + index + '_template';
+                tempArray = templateFn({}, this, 'template', toolbarTemplateID, this.isStringTemplate);
             }
             if (!isNullOrUndefined(tempArray) && tempArray.length > 0) {
                 [].slice.call(tempArray).forEach(function (ele) {
@@ -4480,13 +4473,13 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         return innerEle;
     };
-    Toolbar.prototype.refreshTemplate = function () {
-        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-            var item = _a[_i];
-            if (item.template && typeof item.template === 'string' &&
-                item.template.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'template', 'Template');
-                updateBlazorTemplate(this.element.id + 'template', 'Template');
+    Toolbar.prototype.refreshToolbarTemplate = function () {
+        var blazorContain = Object.keys(window);
+        for (var a = 0, length_1 = this.items.length; a < length_1; a++) {
+            var item = this.items[a];
+            if (item.template && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && item.template.indexOf('<div>Blazor') === 0) {
+                resetBlazorTemplate(this.element.id + a + '_template', 'Template');
+                updateBlazorTemplate(this.element.id + a + '_template', 'Template', item);
             }
         }
     };
@@ -4952,7 +4945,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.render = function () {
         this.initialize();
         this.renderControl();
-        this.refreshTemplate();
         this.wireEvents();
     };
     Accordion.prototype.initialize = function () {
@@ -5001,7 +4993,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         e.target.parentElement.classList.remove(CLS_ITEMFOCUS);
     };
     Accordion.prototype.ctrlTemplate = function () {
-        var _this = this;
         this.ctrlTem = this.element.cloneNode(true);
         var innerEles;
         var rootEle = select('.' + CLS_CONTAINER, this.element);
@@ -5011,38 +5002,18 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         else {
             innerEles = this.element.children;
         }
-        var content;
-        addClass([].slice.call(innerEles), [CLS_ITEM$1]);
+        var items = [];
         [].slice.call(innerEles).forEach(function (el) {
-            el.id = getUniqueID('acrdn_item');
-            if (el.children.length > 0) {
-                _this.add(el.children[0], CLS_HEADER);
-                var header = el.children[0];
-                attributes(header, { 'tabindex': '0', 'role': 'heading', 'aria-level': innerEles.length.toString() });
-                header.id = getUniqueID('acrdn_header');
-                EventHandler.add(header, 'focus', _this.focusIn, _this);
-                EventHandler.add(header, 'blur', _this.focusOut, _this);
-                var headerEle = header.firstElementChild;
-                if (headerEle) {
-                    headerEle.classList.add(CLS_HEADERCTN);
-                }
-                content = el.children[1];
-                if (content) {
-                    content.id = getUniqueID('acrdn_panel');
-                    header.setAttribute('aria-controls', content.id);
-                    content.style.display = '';
-                    el.classList.add(CLS_SLCT);
-                    el.children[0].appendChild(_this.toggleIconGenerate());
-                    classList(content, [CLS_CONTENT, CLS_CTNHIDE], []);
-                    attributes(content, { 'aria-labelledby': header.id, 'aria-hidden': 'true' });
-                    content = content.firstElementChild;
-                    if (content) {
-                        content.classList.add(CLS_CTENT);
-                        content.style.display = '';
-                    }
-                }
-            }
+            items.push({
+                header: (el.childElementCount > 0 && el.children[0]) ? (el.children[0]).innerHTML : '',
+                content: (el.childElementCount > 1 && el.children[1]) ? (el.children[1]).innerHTML : ''
+            });
+            el.parentNode.removeChild(el);
         });
+        if (rootEle) {
+            this.element.removeChild(rootEle);
+        }
+        this.setProperties({ items: items }, true);
     };
     Accordion.prototype.toggleIconGenerate = function () {
         var tglIcon = this.createElement('div', { className: CLS_TOOGLEICN });
@@ -5071,14 +5042,19 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(this.initExpand)) {
             this.initExpand = [];
         }
-        var items = this.items;
         if (!isNullOrUndefined(this.trgtEle)) {
             this.ctrlTemplate();
         }
-        else if (ele && items.length > 0) {
+        var items = this.items;
+        if (ele && items.length > 0) {
             items.forEach(function (item, index) {
                 innerItem = _this.renderInnerItem(item, index);
                 ele.appendChild(innerItem);
+                var blazorContain = Object.keys(window);
+                if (item.header && blazorContain.indexOf('Blazor') > -1 && !_this.isStringTemplate
+                    && item.header.indexOf('<div>Blazor') === 0) {
+                    updateBlazorTemplate(_this.element.id + index + '_header', 'HeaderTemplate', item);
+                }
                 if (innerItem.childElementCount > 0) {
                     EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', _this.focusIn, _this);
                     EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', _this.focusOut, _this);
@@ -5120,9 +5096,14 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             eventArgs.item = this.items[this.getIndexByItem(acrdnCtnItem)];
         }
         eventArgs.originalEvent = e;
-        var ctnCheck = !isNullOrUndefined(tglIcon) && isNullOrUndefined(this.trgtEle) && acrdnItem.childElementCount <= 1;
+        var ctnCheck = !isNullOrUndefined(tglIcon) && acrdnItem.childElementCount <= 1;
         if (ctnCheck && (isNullOrUndefined(acrdnCtn) || !isNullOrUndefined(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem)))) {
             acrdnItem.appendChild(this.contentRendering(index));
+            var blazorContain = Object.keys(window);
+            if (eventArgs.item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate
+                && eventArgs.item.content.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', eventArgs.item);
+            }
             this.ariaAttrUpdate(acrdnItem);
         }
         this.trigger('clicked', eventArgs);
@@ -5280,21 +5261,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
         return innerEle;
     };
-    Accordion.prototype.refreshTemplate = function () {
-        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-            var item = _a[_i];
-            if (item.header && typeof item.header === 'string' &&
-                item.header.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'header', 'Header');
-                updateBlazorTemplate(this.element.id + 'header', 'Header');
-            }
-            if (item.content && typeof item.content === 'string' &&
-                item.content.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'content', 'Content');
-                updateBlazorTemplate(this.element.id + 'content', 'Content');
-            }
-        }
-    };
     Accordion.prototype.angularnativeCondiCheck = function (item, prop) {
         var property = prop === 'content' ? item.content : item.header;
         var content = property;
@@ -5316,6 +5282,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Accordion.prototype.fetchElement = function (ele, value, index, isHeader) {
+        var blazorContain = Object.keys(window);
         var templateFn;
         var temString;
         try {
@@ -5327,18 +5294,23 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
         catch (e) {
-            templateFn = compile(value);
+            if (typeof (value) === 'string' && blazorContain.indexOf('Blazor') > -1 && value.indexOf('<div>Blazor') !== 0) {
+                ele.innerHTML = value;
+            }
+            else {
+                templateFn = compile(value);
+            }
         }
         var tempArray;
         if (!isNullOrUndefined(templateFn)) {
             var templateProps = void 0;
             if (ele.classList.contains(CLS_HEADERCTN)) {
-                templateProps = this.element.id + 'header';
+                templateProps = this.element.id + index + '_header';
             }
             else if (ele.classList.contains(CLS_CTENT)) {
-                templateProps = this.element.id + 'content';
+                templateProps = this.element.id + index + '_content';
             }
-            tempArray = templateFn({}, null, null, templateProps);
+            tempArray = templateFn({}, null, null, templateProps, this.isStringTemplate);
         }
         if (!isNullOrUndefined(tempArray) && tempArray.length > 0 && !(isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
             [].slice.call(tempArray).forEach(function (el) {
@@ -5463,7 +5435,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Accordion.prototype.getIndexByItem = function (item) {
-        return [].slice.call(this.element.children).indexOf(item);
+        return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).indexOf(item);
     };
     Accordion.prototype.expandedItemsPop = function (item) {
         var index = this.getIndexByItem(item);
@@ -5564,7 +5536,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         return 'accordion';
     };
     Accordion.prototype.itemAttribUpdate = function () {
-        var itemEle = [].slice.call(this.element.children);
+        var itemEle = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
         var itemLen = this.items.length;
         itemEle.forEach(function (ele) {
             select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -5589,7 +5561,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 ele.appendChild(innerItemEle);
             }
             else {
-                ele.insertBefore(innerItemEle, ele.children[index]);
+                ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM$1)[index]);
             }
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -5603,7 +5575,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     };
     Accordion.prototype.expandedItemRefresh = function (ele) {
         var _this = this;
-        [].slice.call(ele.children).forEach(function (el) {
+        [].slice.call(ele.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
             if (el.classList.contains(CLS_SLCTED)) {
                 _this.expandedItemsPush(el);
             }
@@ -5615,7 +5587,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.removeItem = function (index) {
-        var ele = this.element.children[index];
+        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5632,7 +5604,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.select = function (index) {
-        var ele = this.element.children[index];
+        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele) || isNullOrUndefined(select('.' + CLS_HEADER, ele))) {
             return;
         }
@@ -5646,7 +5618,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.hideItem = function (index, isHidden) {
-        var ele = this.element.children[index];
+        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5663,7 +5635,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.enableItem = function (index, isEnable) {
-        var ele = this.element.children[index];
+        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5695,12 +5667,12 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         var root = this.element;
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
-                var ele = root.children[root.childElementCount - 1];
+                var ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.childElementCount - 1];
                 this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
             }
             else {
                 var item = select('#' + this.lastActiveItemId, this.element);
-                [].slice.call(this.element.children).forEach(function (el) {
+                [].slice.call(root.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
                     _this.itemExpand(isExpand, el, _this.getIndexByItem(el));
                     el.classList.remove(CLS_EXPANDSTATE);
                 });
@@ -5714,7 +5686,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            var ele = this.element.children[index];
+            var ele = root.querySelectorAll('.' + CLS_ITEM$1)[index];
             if (isNullOrUndefined(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
                 return;
             }
@@ -5734,6 +5706,11 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(ctn) && isExpand) {
             ctn = this.contentRendering(index);
             ele.appendChild(ctn);
+            var blazorContain = Object.keys(window);
+            var item = this.items[index];
+            if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+            }
             this.ariaAttrUpdate(ele);
         }
         else if (isNullOrUndefined(ctn)) {
@@ -6453,8 +6430,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         });
         this.expTemplateContent();
         if (!this.isTemplate) {
-            while (this.element.firstChild) {
-                remove(this.element.firstChild);
+            while (this.element.firstElementChild) {
+                remove(this.element.firstElementChild);
             }
         }
         else {
@@ -6499,7 +6476,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.render = function () {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title } });
         this.renderContainer();
-        this.refreshTemplate();
+        this.refreshTabTemplate();
         this.wireEvents();
         this.initRender = false;
     };
@@ -6561,7 +6538,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 hdrItems.push(this.hdrEle.children.item(i).innerHTML);
             }
             if (count > 0) {
-                this.hdrEle.innerHTML = '';
+                while (this.hdrEle.firstElementChild) {
+                    detach(this.hdrEle.firstElementChild);
+                }
                 this.hdrEle.appendChild(this.createElement('div', { className: CLS_ITEMS$1 }));
                 hdrItems.forEach(function (item, index) {
                     _this.lastIndex = index;
@@ -6588,6 +6567,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this)
         });
+        this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(this.hdrEle);
         this.updateOrientationAttribute();
@@ -6637,7 +6617,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 txtWrapEle.appendChild(txt);
             }
             else {
-                _this.headerTextCompile(txtWrapEle, txt);
+                _this.headerTextCompile(txtWrapEle, txt, i);
             }
             var tEle;
             var icon = _this.createElement('span', {
@@ -6692,18 +6672,14 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     };
-    Tab.prototype.refreshTemplate = function () {
-        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-            var item = _a[_i];
-            if (item.header.text && typeof item.header.text === 'string' &&
-                item.header.text.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'text', 'Text');
-                updateBlazorTemplate(this.element.id + 'text', 'Text');
-            }
-            if (item.content && typeof item.content === 'string' &&
-                item.content.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'content', 'Content');
-                updateBlazorTemplate(this.element.id + 'content', 'Content');
+    Tab.prototype.refreshTabTemplate = function () {
+        var blazorContain = Object.keys(window);
+        for (var a = 0, length_1 = this.items.length; a < length_1; a++) {
+            var item = this.items[a];
+            if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
+                item.content.indexOf('<div>Blazor') === 0) {
+                resetBlazorTemplate(this.element.id + a + '_content', 'Content');
+                updateBlazorTemplate(this.element.id + a + '_content', 'Content', item);
             }
         }
     };
@@ -6908,18 +6884,23 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             }
         });
     };
-    Tab.prototype.templateCompile = function (ele, cnt) {
+    Tab.prototype.templateCompile = function (ele, cnt, index) {
         var tempEle = this.createElement('div');
-        this.compileElement(tempEle, cnt, 'content');
+        this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
         }
     };
-    Tab.prototype.compileElement = function (ele, val, prop) {
-        if (typeof val === 'string') {
+    Tab.prototype.compileElement = function (ele, val, prop, index) {
+        var blazorContain = Object.keys(window);
+        var templateFn;
+        if (typeof val === 'string' && blazorContain.indexOf('Blazor') > -1 && val.indexOf('<div>Blazor') !== 0) {
             val = val.trim();
+            ele.innerHTML = val;
         }
-        var templateFn = compile(val);
+        else {
+            templateFn = compile(val);
+        }
         var templateFUN;
         if (!isNullOrUndefined(templateFn)) {
             var templateProps = void 0;
@@ -6927,9 +6908,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 templateProps = this.element.id + 'text';
             }
             else if (ele.classList.contains(CLS_CONTENT$1)) {
-                templateProps = this.element.id + 'content';
+                templateProps = this.element.id + index + '_content';
             }
-            templateFUN = templateFn({}, this, prop, templateProps);
+            templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate);
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach(function (el) {
@@ -6937,10 +6918,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             });
         }
     };
-    Tab.prototype.headerTextCompile = function (element, text) {
-        this.compileElement(element, text, 'headerText');
+    Tab.prototype.headerTextCompile = function (element, text, index) {
+        this.compileElement(element, text, 'headerText', index);
     };
-    Tab.prototype.getContent = function (ele, cnt, callType) {
+    Tab.prototype.getContent = function (ele, cnt, callType, index) {
         var eleStr;
         if (typeof cnt === 'string' || isNullOrUndefined(cnt.innerHTML)) {
             if (cnt[0] === '.' || cnt[0] === '#') {
@@ -6956,11 +6937,11 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 else {
-                    this.templateCompile(ele, cnt);
+                    this.templateCompile(ele, cnt, index);
                 }
             }
             else {
-                this.templateCompile(ele, cnt);
+                this.templateCompile(ele, cnt, index);
             }
         }
         else {
@@ -7083,7 +7064,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 }
                 var ele = this.cntEle.children.item(0);
                 for (var i = 0; i < this.items.length; i++) {
-                    this.getContent(ele, this.items[i].content, 'clone');
+                    this.getContent(ele, this.items[i].content, 'clone', i);
                     this.maxHeight = Math.max(this.maxHeight, this.getHeight(ele));
                     while (ele.firstChild) {
                         ele.removeChild(ele.firstChild);
@@ -7091,7 +7072,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.clearTemplate(['content']);
                 this.templateEle = [];
-                this.getContent(ele, this.items[0].content, 'render');
+                this.getContent(ele, this.items[0].content, 'render', 0);
                 ele.classList.remove(CLS_ACTIVE$1);
             }
             setStyleAttribute(this.cntEle, { 'height': this.maxHeight + 'px' });
@@ -7200,7 +7181,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 }));
                 var eleTrg = this.getTrgContent(this.cntEle, this.extIndex(id));
                 var itemIndex = Array.prototype.indexOf.call(this.itemIndexArray, trg.id);
-                this.getContent(eleTrg, this.items[itemIndex].content, 'render');
+                this.getContent(eleTrg, this.items[itemIndex].content, 'render', itemIndex);
             }
             else {
                 item.classList.add(CLS_ACTIVE$1);
@@ -7499,7 +7480,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     this.expTemplateContent();
                 }
                 this.templateEle = [];
-                select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element).innerHTML = '';
+                var selectElement = select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element);
+                while (selectElement.firstElementChild) {
+                    detach(selectElement.firstElementChild);
+                }
                 this.select(this.selectedItem);
             }
         }
@@ -7597,7 +7581,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     });
                     _this.cntEle.insertBefore(ele, _this.cntEle.children[(index + place)]);
                     var eleTrg = _this.getTrgContent(_this.cntEle, no.toString());
-                    _this.getContent(eleTrg, item.content, 'render');
+                    _this.getContent(eleTrg, item.content, 'render', index);
                 }
             });
             this.tbObj.addItems(tabItems, index);
@@ -8171,9 +8155,6 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 _this.beforeNodeCreate(e);
             },
         };
-        if (this.nodeTemplate) {
-            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-        }
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
         this.treeList = [];
@@ -8223,6 +8204,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.element.setAttribute('role', 'tree');
         this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
+        this.isBlazorPlatform = isBlazor();
         this.setCssClass(null, this.cssClass);
         this.setEnableRtl();
         this.setFullRow(this.fullRowSelect);
@@ -8367,6 +8349,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.listBaseOption.ariaAttributes.level = 1;
         this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : this.getSortedData(this.rootData), this.listBaseOption);
         this.element.appendChild(this.ulElement);
+        if (this.nodeTemplate && this.loadOnDemand && this.isBlazorPlatform && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+        }
         if (this.loadOnDemand === false) {
             var rootNodes = this.ulElement.querySelectorAll('.e-list-item');
             var i = 0;
@@ -8377,6 +8362,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.finalizeNode(this.element);
+        }
+        if (this.nodeTemplate && !this.loadOnDemand && this.isBlazorPlatform && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
         }
         this.parentNodeCheck = [];
         this.parentCheckData = [];
@@ -8612,7 +8600,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             var textEle = e.item.querySelector('.' + LISTTEXT);
             textEle.innerHTML = '';
-            var tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate');
+            var tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, textEle);
         }
@@ -9484,10 +9472,6 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.renderChildNodes = function (parentLi, expandChild, callback, loaded) {
         var _this = this;
-        if (this.loadOnDemand && this.nodeTemplate) {
-            setTimeout(function () { resetBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-        }
         var eicon = select('div.' + ICON, parentLi);
         if (isNullOrUndefined(eicon)) {
             return;
@@ -9532,6 +9516,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 this.setSelectionForChildNodes(childItems);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
+                if (this.loadOnDemand && this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+                    resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+                    updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+                }
                 this.disableTreeNodes(childItems);
                 this.renderSubChild(parentLi, expandChild, loaded);
             }
@@ -10475,7 +10463,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var newData = setValue(this.editFields.text, newText, this.editData);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             txtEle.innerHTML = '';
-            var tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate');
+            var tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, txtEle);
         }
@@ -11502,10 +11490,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         return removedData;
     };
     TreeView.prototype.triggerEvent = function () {
-        var _this = this;
-        if (this.nodeTemplate) {
-            setTimeout(function () { resetBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+            resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
         }
         var eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);

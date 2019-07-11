@@ -104,21 +104,18 @@ export interface TextBoxModel extends ComponentModel{
     /**
      * Triggers when the TextBox has focus-out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<FocusOutEventArgs>;
 
     /**
      * Triggers when the TextBox gets focus.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<FocusInEventArgs>;
 
     /**
      * Triggers each time when the value of TextBox has changed.
      * @event
-     * @blazorProperty 'OnInput'
      */
     input?: EmitType<InputEventArgs>;
 

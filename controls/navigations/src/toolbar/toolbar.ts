@@ -739,7 +739,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.initialize();
         this.renderControl();
         this.separator();
-        this.refreshTemplate();
+        this.refreshToolbarTemplate();
         this.wireEvents();
     }
     private initialize(): void {
@@ -1674,8 +1674,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             }
             let tempArray: HTEle[];
             if (!isNOU(templateFn)) {
-                let toolbarTemplateID: string = this.element.id + 'template';
-                tempArray = templateFn({}, this, 'template', toolbarTemplateID);
+                let toolbarTemplateID: string = this.element.id + index + '_template';
+                tempArray = templateFn({}, this, 'template', toolbarTemplateID, this.isStringTemplate);
             }
             if (!isNOU(tempArray) && tempArray.length > 0) {
                 [].slice.call(tempArray).forEach((ele: HTEle): void => {
@@ -1785,12 +1785,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         return innerEle;
     }
 
-    private refreshTemplate(): void {
-        for (let item of this.items) {
-            if (item.template && typeof item.template === 'string' &&
-                (<string>item.template).indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'template', 'Template');
-                updateBlazorTemplate(this.element.id + 'template', 'Template');
+    private refreshToolbarTemplate(): void {
+        let blazorContain: string[] = Object.keys(window) as string[];
+        for (let a: number = 0, length: number = this.items.length; a < length; a++) {
+            let item: ItemModel = this.items[a];
+            if (item.template && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && (<string>item.template).indexOf('<div>Blazor') === 0) {
+                resetBlazorTemplate(this.element.id + a + '_template', 'Template');
+                updateBlazorTemplate(this.element.id + a + '_template', 'Template', item);
             }
         }
     }

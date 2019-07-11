@@ -30,6 +30,7 @@ export function createDialog(parent: IFileManager, text: string, e?: ReadArgs | 
             enableRtl: parent.enableRtl,
             locale: parent.locale
         });
+        parent.dialogObj.isStringTemplate = true;
         parent.dialogObj.appendTo('#' + parent.element.id + CLS.DIALOG_ID);
     } else {
         changeOptions(parent, options);
@@ -54,6 +55,7 @@ export function createExtDialog(parent: IFileManager, text: string, replaceItems
             close: extOptions.close,
             locale: parent.locale
         });
+        parent.extDialogObj.isStringTemplate = true;
         parent.extDialogObj.appendTo('#' + parent.element.id + CLS.EXTN_DIALOG_ID);
     } else {
         parent.extDialogObj.header = extOptions.header;
@@ -121,7 +123,8 @@ function getExtOptions(parent: IFileManager, text: string, replaceItems?: string
                         } else {
                             parent.extDialogObj.hide();
                             let targetPath: string = parent.isDragDrop ? parent.dragPath : parent.targetPath;
-                            let path: string = parent.isDragDrop ? parent.dropPath : parent.path + parent.folderPath;
+                            let path: string = parent.isDragDrop ? parent.dropPath : ((parent.folderPath === '') ? parent.path :
+                                parent.folderPath);
                             let action: string = parent.isDragDrop ? 'move' : parent.fileAction;
                             paste(
                                 parent, targetPath, parent.duplicateItems, path,
@@ -144,7 +147,8 @@ function getExtOptions(parent: IFileManager, text: string, replaceItems?: string
                             if (parent.duplicateItems.length !== 0) {
                                 let action: string = parent.isDragDrop ? 'move' : parent.fileAction;
                                 let targetPath: string = parent.isDragDrop ? parent.dragPath : parent.targetPath;
-                                let path: string = parent.isDragDrop ? parent.dropPath : parent.path + parent.folderPath;
+                                let path: string = parent.isDragDrop ? parent.dropPath : ((parent.folderPath === '') ? parent.path :
+                                    parent.folderPath);
                                 paste(
                                     parent, targetPath, parent.duplicateItems, path,
                                     action, parent.duplicateItems, parent.duplicateRecords);
@@ -402,9 +406,9 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             ];
             break;
         case 'MultipleFileDetails':
-            let strArr: string[] = details.name.split(', ').map((val: string) => {
+            let strArr: string[] = details.name.split(',').map((val: string) => {
                 let index: number = val.indexOf('.') + 1;
-                return (index === 0) ? 'Folder' : val.substr(index);
+                return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
             });
             let fileType: string = strArr.every((val: string, i: number, arr: string[]) => val === arr[0]) ?
                 ((strArr[0] === 'Folder') ? 'Folder' : strArr[0].toLocaleUpperCase() + ' Type') : 'Multiple Types';
@@ -514,7 +518,7 @@ function onReSubmit(parent: IFileManager): void {
         parent.dialogObj.hide();
         return;
     }
-    let newPath: string = (parent.activeModule === 'navigationpane') ? getParentPath(parent) : parent.path;
+    let newPath: string = (parent.activeModule === 'navigationpane') ? getParentPath(parent.path) : parent.path;
     if (parent.isFile) {
         let oldExtension: string = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
         let newExtension: string = text.substr(text.lastIndexOf('.'));
@@ -525,6 +529,7 @@ function onReSubmit(parent: IFileManager): void {
         }
     } else {
         parent.renamedNodeId = getValue('_fm_id', parent.itemData[0]);
+        parent.renamedId = getValue('id', parent.itemData[0]);
         rename(parent, newPath, text);
     }
 }
@@ -594,6 +599,7 @@ export function createImageDialog(parent: IFileManager, header: string, imageUrl
             resizing: updateImage.bind(this, parent),
             resizeStop: updateImage.bind(this, parent)
         });
+        parent.viewerObj.isStringTemplate = true;
         parent.viewerObj.appendTo('#' + parent.element.id + CLS.IMG_DIALOG_ID);
     } else {
         parent.viewerObj.refresh();

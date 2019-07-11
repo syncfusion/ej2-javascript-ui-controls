@@ -692,6 +692,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale
         });
+        this.toolbarObj.isStringTemplate = true;
         this.toolbarObj.appendTo(this.parent.element.querySelector('.' + HEADER_TOOLBAR));
         var prevNavEle = this.toolbarObj.element.querySelector('.e-prev');
         if (prevNavEle) {
@@ -891,6 +892,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
             position: { X: 'left', Y: 'bottom' },
             enableRtl: this.parent.enableRtl
         });
+        this.headerPopup.isStringTemplate = true;
         var calendarView = this.getCalendarView();
         this.headerCalendar = new Calendar({
             value: this.parent.selectedDate,
@@ -902,6 +904,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
             calendarMode: this.parent.calendarMode,
             change: this.calendarChange.bind(this)
         });
+        this.headerCalendar.isStringTemplate = true;
         this.headerCalendar.appendTo(headerCalendarEle);
         this.headerPopup.hide();
     };
@@ -4593,8 +4596,8 @@ var EventBase = /** @__PURE__ @class */ (function () {
         });
         var templateElement;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            var templateId = this.parent.element.id + 'headerTooltipTemplate';
-            templateElement = this.parent.getHeaderTooltipTemplate()(record, this.parent, 'headerTooltipTemplate', templateId);
+            var templateId = this.parent.currentView + '_headerTooltipTemplate';
+            templateElement = this.parent.getHeaderTooltipTemplate()(record, this.parent, 'headerTooltipTemplate', templateId, false);
         }
         else {
             var appointmentSubject = createElement('div', {
@@ -5408,6 +5411,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
             zIndex: (this.parent.isAdaptive ? 1000 : 3)
         });
+        this.quickPopup.isStringTemplate = true;
     };
     QuickPopups.prototype.renderMorePopup = function () {
         var moreEventPopup = "<div class=\"" + MORE_EVENT_POPUP_CLASS + "\"><div class=\"" + MORE_EVENT_HEADER_CLASS + "\">" +
@@ -5430,6 +5434,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             viewPortElement: this.parent.element.querySelector('.' + TABLE_CONTAINER_CLASS),
             zIndex: 2
         });
+        this.morePopup.isStringTemplate = true;
         var closeButton = this.morePopup.element.querySelector('.' + MORE_EVENT_CLOSE_CLASS);
         this.renderButton('e-round', ICON + ' ' + CLOSE_ICON_CLASS, false, closeButton, this.closeClick);
         EventHandler.add(this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DATE_CLASS), 'click', this.navigationClick, this);
@@ -5466,6 +5471,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var dialogElement = createElement('div', { id: this.parent.element.id + 'QuickDialog' });
         this.parent.element.appendChild(dialogElement);
         this.quickDialog.appendTo(dialogElement);
+        this.quickDialog.isStringTemplate = true;
         var okButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.setAttribute('aria-label', this.l10n.getConstant('occurrence'));
@@ -5483,6 +5489,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             iconCss: iconName
         });
         buttonObj.appendTo(element);
+        buttonObj.isStringTemplate = true;
         EventHandler.add(element, 'click', clickEvent, this);
     };
     QuickPopups.prototype.quickDialogClass = function (action) {
@@ -5760,9 +5767,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var cellDetails = this.getFormattedString(temp);
         var quickCellPopup = createElement('div', { className: CELL_POPUP_CLASS });
         var tArgs = extend({}, temp, { elementType: 'cell' }, true);
-        var templateId = this.parent.element.id;
+        var templateId = this.parent.currentView;
         if (this.parent.quickInfoTemplates.header) {
-            var headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'header');
+            var headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
             append(headerTemp, quickCellPopup);
         }
         else {
@@ -5774,7 +5781,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             quickCellPopup.appendChild(headerTemplate);
         }
         if (this.parent.quickInfoTemplates.content) {
-            var contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'content');
+            var contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
             append(contentTemp, quickCellPopup);
         }
         else {
@@ -5790,7 +5797,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             quickCellPopup.appendChild(contentTemplate);
         }
         if (this.parent.quickInfoTemplates.footer) {
-            var footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footer');
+            var footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
             append(footerTemp, quickCellPopup);
         }
         else {
@@ -5864,9 +5871,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             var args = this.getFormattedString(eventData);
             var quickEventPopup = createElement('div', { className: EVENT_POPUP_CLASS });
             var tArgs = extend({}, eventData, { elementType: 'event' }, true);
-            var templateId = this.parent.element.id;
+            var templateId = this.parent.currentView;
             if (this.parent.quickInfoTemplates.header) {
-                var headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'header');
+                var headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
                 append(headerTemp, quickEventPopup);
             }
             else {
@@ -5882,7 +5889,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 quickEventPopup.appendChild(headerTemplate);
             }
             if (this.parent.quickInfoTemplates.content) {
-                var content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'content');
+                var content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
                 append(content, quickEventPopup);
             }
             else {
@@ -5910,7 +5917,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 quickEventPopup.appendChild(contentTemplate);
             }
             if (this.parent.quickInfoTemplates.footer) {
-                var footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footer');
+                var footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
                 append(footerTemp, quickEventPopup);
             }
             else {
@@ -6491,6 +6498,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             enableRtl: this.parent.enableRtl
         });
         this.tooltipObj.appendTo(this.parent.element);
+        this.tooltipObj.isStringTemplate = true;
     }
     EventTooltip.prototype.getTargets = function () {
         var targets = [];
@@ -6522,8 +6530,8 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
                 resourceData: resCollection.resourceData
             };
             var contentContainer = createElement('div');
-            var templateId = this.parent.element.id + 'headerTooltipTemplate';
-            var tooltipTemplate = this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId);
+            var templateId = this.parent.currentView + '_headerTooltipTemplate';
+            var tooltipTemplate = this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
             return;
@@ -6531,8 +6539,8 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
         var record = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             var contentContainer = createElement('div');
-            var templateId = this.parent.element.id + 'tooltipTemplate';
-            var tooltipTemplate = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId);
+            var templateId = this.parent.currentView + '_tooltipTemplate';
+            var tooltipTemplate = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         }
@@ -7710,6 +7718,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             dialogModel.header = '<div class="e-title-text">' + this.l10n.getConstant('newEvent') + '</div>';
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
+        this.dialogObject.isStringTemplate = true;
         addClass([this.element.parentElement], EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -7812,8 +7821,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach(function (node) { return remove(node); });
             }
-            var templateId = this.parent.element.id + 'editorTemplate';
-            var editorTemplate = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId);
+            var templateId = this.parent.currentView + '_editorTemplate';
+            var editorTemplate = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId, false);
             append(editorTemplate, form);
             updateBlazorTemplate(templateId, 'EditorTemplate');
         }
@@ -7850,6 +7859,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.buttonObj = new Button({ iconCss: REPEAT_BUTTON_ICON_CLASS + ' e-icons', cssClass: 'e-medium ' + this.parent.cssClass });
         repeatEditConainer.appendChild(button);
         this.buttonObj.appendTo(button);
+        this.buttonObj.isStringTemplate = true;
         repeatDiv.appendChild(repeatEditConainer);
         repeatParentDiv.appendChild(repeatDiv);
         if (this.parent.isAdaptive) {
@@ -7912,6 +7922,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             step: this.getSlotDuration(),
             value: this.parent.getCurrentTime(), width: '100%'
         });
+        dateTimePicker.isStringTemplate = true;
         dateTimePicker.appendTo(dateTimeInput);
         return dateTimeDiv;
     };
@@ -7967,6 +7978,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 mode: 'Box'
             });
             listObj.appendTo(resourceInput);
+            listObj.isStringTemplate = true;
         }
         else {
             var drowDownList = new DropDownList({
@@ -7986,6 +7998,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 itemTemplate: resourceTemplate
             });
             drowDownList.appendTo(resourceInput);
+            drowDownList.isStringTemplate = true;
         }
         return resourceDiv;
     };
@@ -8013,6 +8026,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             popupHeight: '230px',
         });
         drowDownList.appendTo(timezoneInput);
+        drowDownList.isStringTemplate = true;
         return timezoneDiv;
     };
     EventWindow.prototype.onMultiselectResourceChange = function (args) {
@@ -8089,6 +8103,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             label: this.getFieldLabel(value)
         });
         checkBox.appendTo(checkBoxInput);
+        checkBox.isStringTemplate = true;
         checkBoxInput.setAttribute('name', fieldName);
         if (fieldName === 'Repeat') {
             this.repeatStatus = checkBox;
@@ -8217,6 +8232,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         });
         this.element.appendChild(element);
         this.repeatDialogObject.appendTo(element);
+        this.repeatDialogObject.isStringTemplate = true;
         this.createRecurrenceEditor(this.repeatDialogObject.element.querySelector('.e-rec-editor'));
     };
     EventWindow.prototype.loadRecurrenceEditor = function () {
@@ -9360,6 +9376,7 @@ var Render = /** @__PURE__ @class */ (function () {
         }
     };
     Render.prototype.initializeLayout = function (viewName) {
+        this.resetTemplates();
         if (this.parent.activeView) {
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
@@ -9411,7 +9428,6 @@ var Render = /** @__PURE__ @class */ (function () {
             }
             throw Error('Inject required modules');
         }
-        this.resetTemplates();
         this.updateLabelText(viewName);
         this.parent.activeView.addEventListener();
         this.parent.activeView.getRenderDates();
@@ -9453,72 +9469,73 @@ var Render = /** @__PURE__ @class */ (function () {
     };
     Render.prototype.refreshTemplates = function () {
         if (this.parent.dateHeaderTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'dateHeaderTemplate', 'DateHeaderTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_dateHeaderTemplate', 'DateHeaderTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'majorSlotTemplate', 'MajorSlotTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_majorSlotTemplate', 'MajorSlotTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'minorSlotTemplate', 'MinorSlotTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_minorSlotTemplate', 'MinorSlotTemplate', this.parent);
         }
         if (this.parent.cellTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'cellTemplate', 'CellTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_cellTemplate', 'CellTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.eventTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'eventTemplate', 'EventTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_eventTemplate', 'EventTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'headerTooltipTemplate', 'HeaderTooltipTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_headerTooltipTemplate', 'HeaderTooltipTemplate', this.parent);
         }
         if (this.parent.eventSettings.tooltipTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'tooltipTemplate', 'TooltipTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_tooltipTemplate', 'TooltipTemplate', this.parent);
         }
         if (this.parent.quickInfoTemplates.header) {
-            updateBlazorTemplate(this.parent.element.id + 'header', 'Header');
+            updateBlazorTemplate(this.parent.currentView + '_header', 'Header', this.parent);
         }
         if (this.parent.quickInfoTemplates.content) {
-            updateBlazorTemplate(this.parent.element.id + 'content', 'Content');
+            updateBlazorTemplate(this.parent.currentView + '_content', 'Content', this.parent);
         }
         if (this.parent.quickInfoTemplates.footer) {
-            updateBlazorTemplate(this.parent.element.id + 'footer', 'Footer');
+            updateBlazorTemplate(this.parent.currentView + '_footer', 'Footer', this.parent);
         }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'resourceHeaderTemplate', 'ResourceHeaderTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this.parent);
         }
     };
     Render.prototype.resetTemplates = function () {
+        var viewName = this.parent.viewCollections[this.parent.uiStateValues.viewIndex].option;
         if (this.parent.dateHeaderTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'dateHeaderTemplate', 'DateHeaderTemplate');
+            resetBlazorTemplate(viewName + '_dateHeaderTemplate', 'DateHeaderTemplate');
         }
         if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'majorSlotTemplate', 'MajorSlotTemplate');
+            resetBlazorTemplate(viewName + '_majorSlotTemplate', 'MajorSlotTemplate');
         }
         if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'minorSlotTemplate', 'MinorSlotTemplate');
+            resetBlazorTemplate(viewName + '_minorSlotTemplate', 'MinorSlotTemplate');
         }
         if (this.parent.cellTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'cellTemplate', 'CellTemplate');
+            resetBlazorTemplate(viewName + '_cellTemplate', 'CellTemplate');
         }
         if (this.parent.activeViewOptions.eventTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'eventTemplate', 'EventTemplate');
+            resetBlazorTemplate(viewName + '_eventTemplate', 'EventTemplate');
         }
         if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'headerTooltipTemplate', 'HeaderTooltipTemplate');
+            resetBlazorTemplate(viewName + '_headerTooltipTemplate', 'HeaderTooltipTemplate');
         }
         if (this.parent.eventSettings.tooltipTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'tooltipTemplate', 'TooltipTemplate');
+            resetBlazorTemplate(viewName + '_tooltipTemplate', 'TooltipTemplate');
         }
         if (this.parent.quickInfoTemplates.header) {
-            resetBlazorTemplate(this.parent.element.id + 'header', 'Header');
+            resetBlazorTemplate(viewName + '_header', 'Header');
         }
         if (this.parent.quickInfoTemplates.content) {
-            resetBlazorTemplate(this.parent.element.id + 'content', 'Content');
+            resetBlazorTemplate(viewName + '_content', 'Content');
         }
         if (this.parent.quickInfoTemplates.footer) {
-            resetBlazorTemplate(this.parent.element.id + 'footer', 'Footer');
+            resetBlazorTemplate(viewName + '_footer', 'Footer');
         }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'resourceHeaderTemplate', 'ResourceHeaderTemplate');
+            resetBlazorTemplate(viewName + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
         }
     };
     Render.prototype.refreshDataManager = function () {
@@ -11007,6 +11024,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             var currentIndex = this.getViewIndex(this.currentView);
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
+        this.uiStateValues.viewIndex = this.viewIndex;
     };
     Schedule.prototype.getActiveViewOptions = function () {
         var timeScale = {
@@ -11141,6 +11159,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     Schedule.prototype.changeView = function (view, event, muteOnChange, index) {
         var _this = this;
+        this.uiStateValues.viewIndex = this.viewIndex;
         if (isNullOrUndefined(index)) {
             index = this.getViewIndex(view);
         }
@@ -11266,7 +11285,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.uiStateValues = {
-            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
+            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false, viewIndex: 0,
             isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
         };
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
@@ -12635,7 +12654,8 @@ var ActionBase = /** @__PURE__ @class */ (function () {
         return originalElement;
     };
     ActionBase.prototype.createCloneElement = function (element) {
-        var cloneElement = compile(element.outerHTML)({})[0];
+        var cloneWrapper = createElement('div', { innerHTML: element.outerHTML });
+        var cloneElement = cloneWrapper.childNodes.item(0);
         var cloneClassLists = [CLONE_ELEMENT_CLASS];
         cloneClassLists.push((this.actionObj.action === 'drag') ? DRAG_CLONE_CLASS : RESIZE_CLONE_CLASS);
         if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineMonth') {
@@ -13067,9 +13087,10 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         }
         var templateElement;
         var eventData = record.data;
+        var eventObj = this.getEventData(record);
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            var templateId = this.parent.element.id + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId);
+            var templateId = this.parent.currentView + '_eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             var eventLocation = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
@@ -13272,7 +13293,8 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
     MonthEvent.prototype.renderEventElement = function (event, appointmentElement, cellTd) {
         var _this = this;
         var eventType = appointmentElement.classList.contains(BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
-        var args = { data: event, element: appointmentElement, cancel: false, type: eventType };
+        var eventObj = this.getEventData(event);
+        var args = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
         this.parent.trigger(eventRendered, args, function (eventArgs) {
             if (eventArgs.cancel) {
                 _this.renderedEvents.pop();
@@ -13281,6 +13303,12 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
                 _this.renderElement(cellTd, appointmentElement);
             }
         });
+    };
+    MonthEvent.prototype.getEventData = function (event) {
+        var eventObj = extend({}, event, null, true);
+        eventObj[this.fields.startTime] = event.data[this.fields.startTime];
+        eventObj[this.fields.endTime] = event.data[this.fields.endTime];
+        return eventObj;
     };
     MonthEvent.prototype.renderElement = function (cellTd, element) {
         if (cellTd.querySelector('.' + APPOINTMENT_WRAPPER_CLASS)) {
@@ -13438,6 +13466,9 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
             startTime: this.actionObj.start,
             endTime: this.actionObj.end
         };
+        if (this.parent.group.resources.length > 0) {
+            resizeArgs.groupIndex = this.actionObj.groupIndex;
+        }
         this.parent.trigger(resizing, resizeArgs);
     };
     Resize.prototype.updateResizingDirection = function (e) {
@@ -14363,7 +14394,13 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         this.updateScrollPosition(e);
         this.updateNavigatingPosition(e);
         this.updateDraggingDateTime(e);
-        var dragArgs = { data: eventObj, event: e, element: this.actionObj.element };
+        var dragArgs = {
+            data: eventObj, event: e, element: this.actionObj.element, startTime: this.actionObj.start,
+            endTime: this.actionObj.end
+        };
+        if (this.parent.group.resources.length > 0) {
+            dragArgs.groupIndex = this.actionObj.groupIndex;
+        }
         this.parent.trigger(drag, dragArgs);
     };
     DragAndDrop.prototype.calculateMinutesDiff = function (eventObj) {
@@ -15334,8 +15371,8 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         if (className === void 0) { className = 'e-text-ellipsis'; }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
             var data = { resource: tdData.resource, resourceData: tdData.resourceData };
-            var templateId = this.parent.element.id + 'resourceHeaderTemplate';
-            var quickTemplate = this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId);
+            var templateId = this.parent.currentView + '_resourceHeaderTemplate';
+            var quickTemplate = this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false);
             append(quickTemplate, tdElement);
         }
         else {
@@ -15724,8 +15761,8 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         var templateElement;
         var eventData = data;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            var templateId = this.parent.element.id + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId);
+            var templateId = this.parent.currentView + '_eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             var appointmentSubject = createElement('div', { className: SUBJECT_CLASS, innerHTML: recordSubject });
@@ -16426,12 +16463,14 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         var cntEle;
         var wrapper = createElement('div');
         var templateName = '';
+        var templateId = this.parent.currentView + '_';
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
                     templateName = 'dateHeaderTemplate';
                     var args = { date: date, type: type };
-                    cntEle = this.parent.getDateHeaderTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
+                    cntEle =
+                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
                 else {
                     wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
@@ -16445,7 +16484,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
                 if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
                     templateName = 'majorSlotTemplate';
                     var args = { date: date, type: type };
-                    cntEle = this.parent.getMajorSlotTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
+                    cntEle =
+                        this.parent.getMajorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
                 else {
                     wrapper.innerHTML = "<span>" + ViewHelper.getTime(this.parent, date) + "</span>";
@@ -16456,7 +16496,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
                 if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
                     templateName = 'minorSlotTemplate';
                     var args = { date: date, type: type };
-                    cntEle = this.parent.getMinorSlotTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
+                    cntEle =
+                        this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
                 else {
                     wrapper.innerHTML = '&nbsp;';
@@ -16467,7 +16508,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
                 if (this.parent.activeViewOptions.cellTemplate) {
                     templateName = 'cellTemplate';
                     var args = { date: date, type: type, groupIndex: groupIndex };
-                    cntEle = this.parent.getCellTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
+                    cntEle =
+                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
                 break;
         }
@@ -16712,8 +16754,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
             var args_1 = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
-            var templateId = this.parent.element.id + 'cellTemplate';
-            var tooltipTemplate = this.parent.getCellTemplate()(args_1, this.parent, 'cellTemplate', templateId);
+            var templateId = this.parent.currentView + '_cellTemplate';
+            var tooltipTemplate = this.parent.getCellTemplate()(args_1, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(tooltipTemplate), ntd);
         }
         ntd.setAttribute('data-date', cellDate.getTime().toString());
@@ -17204,8 +17246,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
                 var cellArgs = { date: td.date, type: td.type };
-                var templateId = this.parent.element.id + 'dateHeaderTemplate';
-                var dateTemplate = this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId);
+                var templateId = this.parent.currentView + '_dateHeaderTemplate';
+                var dateTemplate = this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false);
                 if (dateTemplate && dateTemplate.length) {
                     append([].slice.call(dateTemplate), tdEle);
                 }
@@ -17353,8 +17395,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
             var args_1 = { date: data.date, type: type, groupIndex: data.groupIndex };
-            var templateId = this.parent.element.id + 'cellTemplate';
-            var cellTemplate = this.parent.getCellTemplate()(args_1, this.parent, 'cellTemplate', templateId);
+            var templateId = this.parent.currentView + '_cellTemplate';
+            var cellTemplate = this.parent.getCellTemplate()(args_1, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(cellTemplate), ntd);
         }
         var args = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
@@ -17533,8 +17575,8 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                 var templateEle = void 0;
                 if (!isNullOrUndefined(this_1.parent.activeViewOptions.eventTemplate)) {
                     addClass([appWrapper], EVENT_TEMPLATE);
-                    var templateId = this_1.parent.element.id + 'eventTemplate';
-                    templateEle = this_1.parent.getAppointmentTemplate()(listData[li], this_1.parent, 'eventTemplate', templateId);
+                    var templateId = this_1.parent.currentView + '_eventTemplate';
+                    templateEle = this_1.parent.getAppointmentTemplate()(listData[li], this_1.parent, 'eventTemplate', templateId, false);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         var iconClass = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
                             EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
@@ -17794,8 +17836,8 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: AGENDA_HEADER_CLASS });
             var args = { date: date, type: 'dateHeader' };
-            var templateId = this.parent.element.id + 'dateHeaderTemplate';
-            var dateTemplate = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId);
+            var templateId = this.parent.currentView + '_dateHeaderTemplate';
+            var dateTemplate = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false);
             append([].slice.call(dateTemplate), dateHeader);
         }
         else {
@@ -18471,34 +18513,36 @@ var TimelineHeaderRow = /** @__PURE__ @class */ (function () {
         }
         return result;
     };
-    TimelineHeaderRow.prototype.generateSlots = function (data, colspan, template, tempFn, cls, type) {
+    TimelineHeaderRow.prototype.generateSlots = function (data, colspan, row, cls, type) {
         var _this = this;
-        var tdDatas = [];
-        var customHelper = {
-            getYear: function (dt) {
-                return _this.parent.globalize.formatDate(dt, { format: 'y', calendar: _this.parent.getCalendarMode() });
-            },
-            getMonth: function (dt) {
-                return _this.parent.globalize.formatDate(dt, { format: 'MMMM', calendar: _this.parent.getCalendarMode() });
-            },
-            getWeekNumber: function (dt) {
-                return getWeekNumber(dt);
-            }
+        var dateParser = function (date, format) {
+            return _this.parent.globalize.formatDate(date, { format: format, calendar: _this.parent.getCalendarMode() });
         };
+        var tdDatas = [];
         var keys = Object.keys(data);
         for (var i = 0; i < keys.length; i++) {
             var dates = data[keys[i]];
             var htmlCol = void 0;
-            if (!tempFn) {
-                htmlCol = compile(template, customHelper)({ date: dates[0] });
+            if (row.template) {
+                var args = { date: dates[0], type: type };
+                htmlCol = this.parent.templateParser(row.template)(args);
             }
             else {
-                var args = { date: dates[0], type: type };
-                htmlCol = tempFn(args);
+                var viewTemplate = void 0;
+                switch (row.option) {
+                    case 'Year':
+                        viewTemplate = "<span class=\"e-header-year\">" + dateParser(dates[0], 'y') + "</span>";
+                        break;
+                    case 'Month':
+                        viewTemplate = "<span class=\"e-header-month\">" + dateParser(dates[0], 'MMMM') + "</span>";
+                        break;
+                    case 'Week':
+                        viewTemplate = "<span class=\"e-header-week\">" + getWeekNumber(dates[0]) + "</span>";
+                }
+                var headerWrapper = createElement('div', { innerHTML: viewTemplate });
+                htmlCol = headerWrapper.childNodes;
             }
-            tdDatas.push({
-                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol
-            });
+            tdDatas.push({ date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol });
         }
         return tdDatas;
     };
@@ -18510,29 +18554,22 @@ var TimelineHeaderRow = /** @__PURE__ @class */ (function () {
             lastLevelColspan = hourSlots.length / dateSlots.length;
         }
         var tdDatas = [];
-        var templateFn;
         for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
             var row = rows_1[_i];
             switch (row.option) {
                 case 'Year':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    var yearTemplate = '<span class="e-header-year">${getYear(date)}</span>';
                     var byYear = this.groupByYear(this.renderDates);
-                    tdDatas = this.generateSlots(byYear, lastLevelColspan, yearTemplate, templateFn, 'e-header-year-cell', 'yearHeader');
+                    tdDatas = this.generateSlots(byYear, lastLevelColspan, row, 'e-header-year-cell', 'yearHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Month':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    var monthTemp = '<span class="e-header-month">${getMonth(date)}</span>';
                     var byMonth = this.groupByMonth(this.renderDates);
-                    tdDatas = this.generateSlots(byMonth, lastLevelColspan, monthTemp, templateFn, 'e-header-month-cell', 'monthHeader');
+                    tdDatas = this.generateSlots(byMonth, lastLevelColspan, row, 'e-header-month-cell', 'monthHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Week':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    var weekTemplate = '<span class="e-header-week">${getWeekNumber(date)}</span>';
                     var byWeek = this.groupByWeek(this.renderDates);
-                    tdDatas = this.generateSlots(byWeek, lastLevelColspan, weekTemplate, templateFn, 'e-header-week-cell', 'weekHeader');
+                    tdDatas = this.generateSlots(byWeek, lastLevelColspan, row, 'e-header-week-cell', 'weekHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Date':

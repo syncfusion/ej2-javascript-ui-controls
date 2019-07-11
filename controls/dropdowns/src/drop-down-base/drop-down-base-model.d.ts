@@ -125,6 +125,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
      * @default []
+     * @isGenericType true
      */
     dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
 
@@ -156,6 +157,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers before fetching data from the remote server.
      * @event
      * @blazorProperty 'OnActionBegin'
+     * @blazorType ActionBeginEventArgs
      */
     actionBegin?: EmitType<Object>;
 
@@ -163,6 +165,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers after data is fetched successfully from the remote server.
      * @event
      * @blazorProperty 'OnActionComplete'
+     * @blazorType ActionCompleteEventArgs
      */
     actionComplete?: EmitType<Object>;
 
@@ -184,6 +187,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * Triggers when data source is populated in the popup list..
      * @event
      * @blazorProperty 'DataBound'
+     * @blazorType DataBoundEventArgs
      */
     dataBound?: EmitType<Object>;
 

@@ -1,4 +1,4 @@
-import { addClass, createElement, compile, extend, isNullOrUndefined, closest, setStyleAttribute } from '@syncfusion/ej2-base';
+import { addClass, createElement, extend, isNullOrUndefined, closest, setStyleAttribute } from '@syncfusion/ej2-base';
 import { formatUnit, remove, removeClass } from '@syncfusion/ej2-base';
 import { ActionBaseArgs, ResizeEdges, DragEventArgs, ResizeEventArgs, TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
@@ -186,7 +186,8 @@ export class ActionBase {
     }
 
     public createCloneElement(element: HTMLElement): HTMLElement {
-        let cloneElement: HTMLElement = <HTMLElement>compile(element.outerHTML)({})[0];
+        let cloneWrapper: HTMLElement = createElement('div', { innerHTML: element.outerHTML });
+        let cloneElement: HTMLElement = cloneWrapper.childNodes.item(0) as HTMLElement;
         let cloneClassLists: string[] = [cls.CLONE_ELEMENT_CLASS];
         cloneClassLists.push((this.actionObj.action === 'drag') ? cls.DRAG_CLONE_CLASS : cls.RESIZE_CLONE_CLASS);
         if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineMonth') {

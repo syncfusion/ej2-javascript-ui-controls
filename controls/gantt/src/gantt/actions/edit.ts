@@ -140,6 +140,9 @@ export class Edit {
      */
     public updateRecordByID(data: Object): void {
         let tasks: TaskFieldsModel = this.parent.taskFields;
+        if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
+            return;
+        }
         let ganttData: IGanttData = this.parent.getRecordByID(data[tasks.id]);
         if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
             this.parent.isOnEdit = true;
@@ -175,7 +178,7 @@ export class Edit {
         let scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
         for (let key of Object.keys(data)) {
-            if (isNullOrUndefined(key)) {
+            if (isNullOrUndefined(key) || isNullOrUndefined(data[key])) {
                 continue;
             }
             if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
@@ -760,6 +763,9 @@ export class Edit {
         this.taskbarMoved = false;
         this.predecessorUpdated = false;
         if (!isNullOrUndefined(this.dialogModule)) {
+            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                this.dialogModule.dialogObj.hide();
+            }
             this.dialogModule.dialogClose();
         }
         this.parent.hideSpinner();
@@ -909,15 +915,21 @@ export class Edit {
             this.parent.selectionModule.getSelectedRecords();
         if (rowItems.length) {
             this.parent.isOnDelete = true;
+            rowItems.forEach((item: IGanttData): void => {
+                item.isDelete = true;
+            });
             for (let i: number = 0; i < rowItems.length; i++) {
                 let deleteRecord: IGanttData = rowItems[i];
                 if (this.deletedTaskDetails.indexOf(deleteRecord) !== -1) {
                     continue;
                 }
-                deleteRecord.isDelete = true;
                 if (deleteRecord.parentItem) {
-                    let childLength: number = this.parent.getParentTask(deleteRecord.parentItem).childRecords.length;
-                    if (childLength > 1) {
+                    let childRecord: IGanttData[] = this.parent.getParentTask(deleteRecord.parentItem).childRecords;
+                    let filteredRecord: IGanttData[] = childRecord.length === 1 ?
+                        childRecord : childRecord.filter((data: IGanttData): boolean => {
+                            return !data.isDelete;
+                        });
+                    if (filteredRecord.length > 0) {
                         this.parent.dataOperation.updateParentItems(deleteRecord.parentItem);
                     }
                 }
@@ -930,7 +942,7 @@ export class Edit {
                     this.deleteChildRecords(deleteRecord);
                 }
             }
-            if (this.parent.allowSelection) {
+            if (this.parent.selectionModule && this.parent.allowSelection) {
                 // clear selection
                 this.parent.selectionModule.clearSelection();
             }
@@ -1062,7 +1074,7 @@ export class Edit {
             if (isRemoteData(this.parent.dataSource)) {
                 let data: DataManager = this.parent.dataSource as DataManager;
                 let updatedData: object = {
-                    deletedRecords: eventArgs.data, // to check
+                    deletedRecords: getTaskData(eventArgs.data), // to check
                     changedRecords: eventArgs.modifiedTaskData
                 };
                 let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;

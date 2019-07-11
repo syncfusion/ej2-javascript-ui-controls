@@ -52,7 +52,7 @@ export class LinkAnnotation {
                     if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                         return false;
                     } else {
-                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
+                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
                         return true;
                     }
                 };
@@ -62,7 +62,7 @@ export class LinkAnnotation {
                     if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                         return false;
                     } else {
-                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
+                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
                         return true;
                     }
                 };
@@ -71,7 +71,7 @@ export class LinkAnnotation {
                     if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                         return false;
                     } else {
-                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i]);
+                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
                         window.open(hyperlinks[i], '_blank', 'scrollbars=yes,resizable=yes');
                         return false;
                     }
@@ -89,7 +89,7 @@ export class LinkAnnotation {
             // tslint:disable-next-line
             let rect: any = linkAnnotation[i];
             aTag = this.setHyperlinkProperties(aTag, rect);
-            aTag.setAttribute('href', '');
+            aTag.setAttribute('href', 'javascript:void(0)');
             if (linkPage[i] !== undefined && linkPage[i] > 0) {
                 let destPageHeight: number = (this.pdfViewerBase.pageSize[pageIndex].height);
                 let destLocation: number;

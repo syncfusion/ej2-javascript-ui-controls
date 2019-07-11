@@ -397,7 +397,7 @@ describe('Delete and paste with history preservation', () => {
         editor.viewer.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        expect(() => { editor.editorModule.pasteLocal(); }).not.toThrowError();
+        expect(() => { editor.editorModule.paste(); }).not.toThrowError();
     });
     it('paste testing inside paragraph', () => {
         editor.openBlank()
@@ -409,7 +409,7 @@ describe('Delete and paste with history preservation', () => {
         editor.selection.selectAll();
         editor.selection.copy();
         editor.selection.selectAll();
-        expect(() => { editor.editorModule.pasteLocal(); }).not.toThrowError();
+        expect(() => { editor.editorModule.paste(); }).not.toThrowError();
     });
     it('MultiSelection in insert text testing', () => {
         editor.openBlank()

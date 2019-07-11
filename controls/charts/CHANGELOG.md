@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- #240342 - Accumulation chart print not working proper in IE and Edge browsers issue fixed.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Chart

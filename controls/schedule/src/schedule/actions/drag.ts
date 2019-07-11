@@ -219,7 +219,13 @@ export class DragAndDrop extends ActionBase {
         this.updateScrollPosition(e);
         this.updateNavigatingPosition(e);
         this.updateDraggingDateTime(e);
-        let dragArgs: DragEventArgs = { data: eventObj, event: e, element: this.actionObj.element };
+        let dragArgs: DragEventArgs = {
+            data: eventObj, event: e, element: this.actionObj.element, startTime: this.actionObj.start,
+            endTime: this.actionObj.end
+        };
+        if (this.parent.group.resources.length > 0) {
+            dragArgs.groupIndex = this.actionObj.groupIndex;
+        }
         this.parent.trigger(events.drag, dragArgs);
     }
 

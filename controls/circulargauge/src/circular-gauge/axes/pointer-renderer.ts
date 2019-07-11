@@ -336,11 +336,6 @@ export class PointerRenderer {
         let oldStart: number;
         let minRadius: number = (radius * 0.25);
         if (roundRadius) {
-            if (end <= minRadius) {
-                radius = end === 1 || 2 ? 8 : radius;
-                radius /= 2;
-                minRadius = radius * 0.25;
-            }
             minAngle = ((((pointer.currentRadius) * ((minAngle * Math.PI) / 180) +
                 roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
             pointAngle = ((((pointer.currentRadius) * ((pointAngle * Math.PI) / 180) -
@@ -390,7 +385,7 @@ export class PointerRenderer {
             },
             end: (model: AnimationOptions) => {
                 this.setPointerValue(axis, pointer, end);
-                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
             }
         });
     }

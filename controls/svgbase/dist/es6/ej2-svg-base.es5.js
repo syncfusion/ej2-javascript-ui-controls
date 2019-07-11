@@ -1525,8 +1525,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         else {
             this.updateDiv(tooltipDiv, rect.x, rect.y);
         }
-        svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding)).toString());
-        svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding)).toString());
+        svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
+        svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('opacity', '1');
         pathElement.setAttribute('d', findDirection(this.rx, this.ry, pointRect, arrowLocation, this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.tipRadius));
         if (this.enableShadow && this.theme !== 'Bootstrap4') {

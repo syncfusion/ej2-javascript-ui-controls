@@ -1,5 +1,5 @@
 import { extend, isNullOrUndefined, setValue, getValue, Ajax } from '@syncfusion/ej2-base';
-import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption, ParamOption } from '@syncfusion/ej2-data';
+import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption } from '@syncfusion/ej2-data';
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -76,7 +76,7 @@ public isRemote(): boolean {
     return false;
   }
   return true;
-  // let gridData: DataManager = <DataManager>this.parent.dataSource;
+  // let gridData:  DataManager = <DataManager>this.parent.dataSource;
   // return gridData.dataSource.offline !== true && gridData.dataSource.url !== undefined;
 }
 
@@ -94,11 +94,8 @@ public isRemote(): boolean {
         this.parent.query = isNullOrUndefined(this.parent.query) ?
           new Query() : this.parent.query;
         if (this.parent.parentIdMapping) {
-          this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
-          let key: ParamOption[] = !this.parent.query.params.length ? [] : this.parent.query.params.filter((e: ParamOption) => {
-            return e.key === 'IdMapping';
-          });
-          if (!key.length) {
+          if (this.parent.initialRender) {
+            this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
             this.parent.query.addParams('IdMapping', this.parent.idMapping);
           }
         }
@@ -129,7 +126,7 @@ public isRemote(): boolean {
       this.taskIds = [];
       for (let i: number = 0; i < Object.keys(data).length; i++) {
         let tempData: Object = data[i];
-        this.hierarchyData.push(extend({}, tempData, true));
+        this.hierarchyData.push(extend({}, tempData));
         if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
           this.taskIds.push(tempData[this.parent.idMapping]);
         }
@@ -221,15 +218,16 @@ public isRemote(): boolean {
    * @hidden
    */
   private collectExpandingRecs(rowDetails: {record: ITreeData,
-    rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement, detailrows: HTMLTableRowElement}): void {
+    rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement}): void {
     let args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
     if (rowDetails.rows.length > 0) {
       rowDetails.record.expanded = true;
       for (let i: number = 0; i < rowDetails.rows.length; i++) {
         rowDetails.rows[i].style.display = 'table-row';
-        if (!isNullOrUndefined(rowDetails.detailrows[i])) {
-          rowDetails.detailrows[i].style.display = 'table-row';
-          }
+        let expandingTd: Element = rowDetails.rows[i].querySelector('.e-detailrowcollapse');
+        if (!isNullOrUndefined(expandingTd)) {
+          this.parent.grid.detailRowModule.expand(expandingTd);
+        }
       }
       this.parent.trigger(events.expanded, args);
     } else {
@@ -253,6 +251,8 @@ public isRemote(): boolean {
              && !(haveChild && !haveChild[r])) {
             result[r].hasChildRecords = true;
             result[r].expanded = false;
+            result[r].uniqueID = getUid(this.parent.element.id + '_data_');
+            setValue('uniqueIDCollection.' + result[r].uniqueID, result[r], this.parent);
           }
           datas.splice(inx + r + 1, 0, result[r]);
         }

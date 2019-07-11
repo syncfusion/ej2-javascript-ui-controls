@@ -159,6 +159,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Specifies the HTML element ID as a string that can be added as a editable field.
      * @default ''
+     * @blazorType string
      */
     @Property('')
     public template: string | HTMLElement;
@@ -382,8 +383,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private appendValueElement(): void {
         this.valueWrap = this.createElement('div', { id: this.element.id + '_wrap', className: classes.VALUE_WRAPPER });
-        let blazorContain: string[] = Object.keys(window) as string[];
-        if (blazorContain.indexOf('ejsIntrop') === -1) {
+        if (Object.keys(window).indexOf('ejsInterop') === -1) {
             this.element.innerHTML = '';
         }
         this.valueEle = this.createElement('span', { className: classes.VALUE });
@@ -668,7 +668,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.isExtModule ? this.notify(events.setFocus, {}) : this.componentObj.element.focus();
     }
     private removeEditor(): void {
-        resetBlazorTemplate(this.element.id + 'template', 'Template');
+        let blazorContain: string[] = Object.keys(window) as string[];
+        if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate) {
+            resetBlazorTemplate(this.element.id + 'template', 'Template');
+        }
         let tipEle: HTMLElement;
         if (this.tipObj && this.formEle) {
             tipEle = <HTMLElement>closest(this.formEle, '.' + classes.ROOT_TIP);
@@ -768,18 +771,24 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private templateCompile(trgEle: HTMLElement, tempStr: string): void {
         let tempEle: HTMLElement[];
+        let blazorContain: string[] = Object.keys(window) as string[];
         if (typeof tempStr === 'string') {
             tempStr = tempStr.trim();
         }
         let compiler: Function = compile(tempStr);
         if (!isNOU(compiler)) {
-            tempEle = compiler({}, this, 'template', this.element.id + 'template');
+            let isString: boolean = (blazorContain.indexOf('ejsInterop') !== -1 &&
+            !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) ?
+            this.isStringTemplate : true;
+            tempEle = compiler({}, this, 'template', this.element.id + 'template', isString);
         }
         if (!isNOU(compiler) && tempEle.length > 0) {
             [].slice.call(tempEle).forEach((el: HTMLElement): void => {
                 trgEle.appendChild(el);
             });
-            updateBlazorTemplate(this.element.id + 'template', 'Template');
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + 'template', 'Template', this);
+            }
         }
     }
     private appendTemplate(trgEle: HTMLElement, tempStr: string | HTMLElement): void {

@@ -88,16 +88,20 @@ export class Paragraph {
         this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align right (Ctrl+R)'));
         // tslint:disable-next-line:max-line-length
         this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify (Ctrl+J)'));
+        let increaseIndentIconCss: string = 'e-de-ctnr-increaseindent e-icons';
+        let decreaseIndentIconCss: string = 'e-de-ctnr-decreaseindent e-icons';
         let incDecIndentDiv: HTMLElement = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
         indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
             indentClassName = 'e-rtl ' + indentClassName;
+            increaseIndentIconCss += ' e-de-flip';
+            decreaseIndentIconCss += ' e-de-flip';
         }
         incDecIndentDiv.className = indentClassName;
         // tslint:disable-next-line:max-line-length
-        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', 'e-de-ctnr-decreaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
+        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', decreaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
         // tslint:disable-next-line:max-line-length
-        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', 'e-de-ctnr-increaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
+        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', increaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
         let listDiv: HTMLElement = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
         classList(listDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
         if (isRtl) {
@@ -113,8 +117,14 @@ export class Paragraph {
         listDropDown.appendChild(bulletButton);
         let numberingList: HTMLElement = createElement('button', { id: element + '_numberingList', attrs: { type: 'button' } });
         listDropDown.appendChild(numberingList);
-        this.createBulletListDropButton('e-de-ctnr-bullets e-icons', bulletButton);
-        this.createNumberListDropButton('e-de-ctnr-numbering e-icons', numberingList);
+        let bulletIconCss: string = 'e-de-ctnr-bullets e-icons';
+        let numberIconCss: string = 'e-de-ctnr-numbering e-icons';
+        if (isRtl) {
+            bulletIconCss += ' e-de-flip';
+            numberIconCss += ' e-de-flip';
+        }
+        this.createBulletListDropButton(bulletIconCss, bulletButton);
+        this.createNumberListDropButton(numberIconCss, numberingList);
     }
     private createSeperator(parentDiv: HTMLElement): void {
         let seperator: HTMLElement = createElement('div', { className: 'e-de-prop-vline' });
@@ -366,10 +376,9 @@ export class Paragraph {
             className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
         });
         ulTag.appendChild(liTag);
-        let innerHTML: string = '<div class="e-de-list-items-size"><span class="e-de-bullets e-de-list-items-size"' +
-            'style="display:table-cell; text-align: center; vertical-align:middle">None</span></div>';
+        let innerHTML: string = '<div><span class="e-de-bullets">None</span></div>';
         let liInnerDiv: HTMLElement = createElement('div', {
-            className: 'e-de-list-header-presetmenu e-de-list-items-size', styles: 'position:relative;left:11px;top:13px',
+            className: 'e-de-list-header-presetmenu', styles: 'position:relative;left:11px;top:13px',
             id: 'ui-zlist0', innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
@@ -403,6 +412,7 @@ export class Paragraph {
             itemTemplate: '<span style="${Style}">${StyleName}</span>',
             footerTemplate: '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>'
         });
+        this.style.isStringTemplate = true;
         this.style.appendTo(selectElement);
         selectElement.parentElement.setAttribute('title', this.localObj.getConstant('Styles'));
     }

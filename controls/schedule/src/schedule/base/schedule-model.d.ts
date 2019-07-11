@@ -71,6 +71,7 @@ export interface ScheduleModel extends ComponentModel{
      *  Usually, it defaults to the current System date.
      * @default 'new Date()'
      * @aspDefaultValue DateTime.Now
+     * @blazorDefaultValue DateTime.Now
      */
     selectedDate?: Date;
 
@@ -114,6 +115,7 @@ export interface ScheduleModel extends ComponentModel{
      *  view whereas on other views, it will display all the usual days and simply highlights the working days with different shade.
      * @default '[1, 2, 3, 4, 5]'
      * @aspType int[]
+     * @blazorType int[]
      */
     workDays?: number[];
 

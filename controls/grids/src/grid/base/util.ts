@@ -428,11 +428,11 @@ export function isComplexField(field: string): boolean {
 }
 /** @hidden */
 export function getComplexFieldID(field: string = ''): string {
-    return field.replace(/\./g, '_');
+    return field.replace(/\./g, '___');
 }
 /** @hidden */
 export function setComplexFieldID(field: string = ''): string {
-    return field.replace(/_/g, '.');
+    return field.replace(/___/g, '.');
 }
 
 /** @hidden */

@@ -37,7 +37,7 @@ A double enter will end them
 ##### Tabs and shift-tabs work too
 ###### Tabs and shift-tabs work too`;
 
-    let formatPreValue: string = '```\n Lists are a piece of cake \n```';
+    let formatPreValue: string = '```\n Lists are a piece of cake \n ```\n';
     let eleValue: string = '';
     describe(' Lists ', () => {
         beforeAll(() => {
@@ -162,6 +162,16 @@ A double enter will end them
             rteObj.formatter.editorManager.markdownSelection.restore(editNode);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.markdownEditorModule as any).toolbarUpdate.toolbarStatus.formats).toBe('pre');
+        });
+        it("inline code - pre format", function () {
+            editNode.value = '`Lists are a piece of cake `';
+            rteObj.formatter.editorManager.markdownSelection.save(0, editNode.value.length);
+            rteObj.formatter.editorManager.markdownSelection.restore(editNode);
+            rteObj.formatter.editorManager.markdownSelection.save( 1, 3);
+            rteObj.formatter.editorManager.markdownSelection.restore(editNode);
+            (rteObj as any).mouseUp({ target: editNode });
+            expect((rteObj.markdownEditorModule as any).toolbarUpdate.toolbarStatus.formats).toBe('pre');
+    
         });
         afterAll(() => {
             detach(rteEle);

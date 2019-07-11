@@ -311,6 +311,7 @@ export class Lists {
         let isReverse: boolean = true;
         if (this.isRevert(elements, type)) {
             this.revertList(elements);
+            this.removeEmptyListElements();
         } else {
             this.checkLists(elements, type);
             for (let i: number = 0; i < elements.length; i++) {
@@ -335,7 +336,14 @@ export class Lists {
         this.saveSelection = this.domNode.saveMarker(this.saveSelection);
         this.saveSelection.restore();
     }
-
+    private removeEmptyListElements(): void {
+        let listElem: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('ol, ul');
+        for (let i: number = 0; i < listElem.length; i++) {
+            if (listElem[i].textContent.trim() === '') {
+                detach(listElem[i]);
+            }
+         }
+    }
     private isRevert(nodes: Element[], tagName: string): boolean {
         let isRevert: boolean = true;
         for (let i: number = 0; i < nodes.length; i++) {
@@ -367,11 +375,11 @@ export class Lists {
         let liParents: Element[] = <Element[] & NodeListOf<Element>>this.parent.editableElement.querySelectorAll('ol + ol, ul + ul');
         for (let c: number = 0; c < liParents.length; c++) {
             let node: Element = liParents[c];
-            if (this.domNode.isList(node.previousSibling as Element) &&
-                this.domNode.openTagString(node) === this.domNode.openTagString(node.previousSibling as Element)) {
+            if (this.domNode.isList(node.previousElementSibling  as Element) &&
+                this.domNode.openTagString(node) === this.domNode.openTagString(node.previousElementSibling  as Element)) {
                 let contentNodes: Node[] = this.domNode.contents(node);
                 for (let f: number = 0; f < contentNodes.length; f++) {
-                    node.previousSibling.appendChild(contentNodes[f]);
+                    node.previousElementSibling .appendChild(contentNodes[f]);
                 }
                 node.parentNode.removeChild(node);
             }

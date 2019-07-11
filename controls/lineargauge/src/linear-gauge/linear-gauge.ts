@@ -1,5 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { EmitType, INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';
+import { EmitType, INotifyPropertyChanged, setCulture, Browser, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
 import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';
 import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';
@@ -340,6 +340,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     public themeStyle: IThemeStyle;
 
+    /** @private */
+    public isBlazor: boolean;
+
     /**
      * @private
      * Constructor for creating the widget
@@ -355,6 +358,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
 
     protected preRender(): void {
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.trigger(load, { gauge: this });
         this.initPrivateVariable();
@@ -406,6 +411,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
 
     public removeSvg(): void {
+        for (let i: number = 0; i < this.annotations.length; i++) {
+            resetBlazorTemplate(this.element.id + '_ContentTemplate' + i, 'ContentTemplate');
+        }
         removeElement(this.element.id + '_Secondary_Element');
         if (!(isNullOrUndefined(this.svgObject)) && !isNullOrUndefined(this.svgObject.parentNode)) {
             remove(this.svgObject);
@@ -429,7 +437,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.renderGaugeElements();
         this.calculateBounds();
         this.renderAxisElements();
-        this.trigger(loaded, { gauge: this });
+        this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
     }
 
     /**
@@ -598,12 +606,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (this.element.classList.contains('e-lineargauge')) {
             this.resizeTo = window.setTimeout(
                 (): void => {
-                    this.gaugeResized = true;
                     this.createSvg();
-                    this.calculateBounds();
                     this.renderGaugeElements();
+                    this.calculateBounds();
+                    this.renderAxisElements();
                     args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
-                    this.trigger(resized, args);
+                    this.trigger(resized, this.isBlazor ? {} : args);
                     this.render();
                 },
                 500);
@@ -839,7 +847,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let tooltipInterval: number;
         let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
-        this.trigger(gaugeMouseUp, args);
+        let blazorArgs: IMouseEventArgs = {
+            cancel: args.cancel, name: args.name, target: args.target, x: args.x, y: args.y
+        };
+        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (!isNullOrUndefined(this.mouseElement)) {
             parentNode = <HTMLElement>this.element;
             parentNode.style.cursor = '';
@@ -978,7 +989,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             pointer: active.pointer,
             value: value
         };
-        this.trigger(valueChange, dragArgs);
+        let dragBlazorArgs: IValueChangeEventArgs = {
+            name: 'valueChange',
+            element: this.mouseElement,
+            axisIndex: active.axisIndex,
+            pointerIndex: active.pointerIndex,
+            value: value
+        };
+        this.trigger(valueChange, this.isBlazor ? dragBlazorArgs : dragArgs);
     }
 
     /**

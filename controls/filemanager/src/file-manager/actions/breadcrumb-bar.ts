@@ -58,44 +58,32 @@ export class BreadCrumbBar {
         this.addEventListener();
     }
     public onPathChange(): void {
-        let rootName: string = getValue('name', getValue('/', this.parent.feParent));
-        if (!this.addressBarLink) {
-            this.addressPath = rootName + this.parent.path;
-        } else {
-            this.addressPath = this.addressBarLink;
-        }
-        let addressPath: string = this.addressPath;
-        let newPath: string = addressPath.substring(addressPath.indexOf('/'), addressPath.length);
-        this.parent.setProperties({ path: newPath }, true);
-        let arrayOfAddressBar: string[] = [];
-        arrayOfAddressBar = addressPath.split('/');
-        let addressbarUL: HTMLElement = null;
-        addressbarUL = this.parent.createElement('ul');
-        addressbarUL.setAttribute('class', 'e-addressbar-ul');
+        let pathNames: string[] = this.parent.pathNames;
+        let paths: string[] = this.parent.path.split('/');
+        let addressbarUL: HTMLElement = this.parent.createElement('ul', { className: 'e-addressbar-ul' });
         let addressbarLI: HTMLElement = null;
-        let countOfAddressBarPath: number = arrayOfAddressBar.length - 1;
-        if (arrayOfAddressBar.length > 1) {
+        let pathNamesLen: number = pathNames.length;
+        if (pathNames.length > 0) {
             let id: string = '';
-            for (let i: number = 0; i < countOfAddressBarPath; i++) {
+            for (let i: number = 0; i < pathNamesLen; i++) {
                 let addressATag: HTMLElement = null;
-                addressbarLI = this.parent.createElement('li');
+                addressbarLI = this.parent.createElement('li', { className: 'e-address-list-item' });
                 for (let j: number = 0; j <= i; j++) {
-                    id = id + arrayOfAddressBar[j] + '/';
+                    id = id + paths[j] + '/';
                 }
                 addressbarLI.setAttribute('data-utext', id);
-                addressbarLI.classList.add('e-address-list-item');
                 if (i !== 0) {
                     let icon: HTMLElement = createElement('span', { className: CLS.ICONS });
                     addressbarLI.appendChild(icon);
                 }
-                if (countOfAddressBarPath - i !== 1) {
+                if (pathNamesLen - i !== 1) {
                     addressATag = createElement('a', { className: CLS.LIST_TEXT });
                     addressbarLI.setAttribute('tabindex', '0');
                 } else {
                     addressATag = createElement('span', { className: CLS.LIST_TEXT });
                 }
                 id = '';
-                addressATag.innerText = arrayOfAddressBar[i];
+                addressATag.innerText = pathNames[i];
                 addressbarLI.appendChild(addressATag);
                 addressbarUL.appendChild(addressbarLI);
             }
@@ -114,7 +102,6 @@ export class BreadCrumbBar {
             }
             this.updateBreadCrumbBar(addressbarUL);
         }
-        this.addressBarLink = '';
     }
     /* istanbul ignore next */
     private updateBreadCrumbBar(addresBarUL: HTMLElement): void {
@@ -190,6 +177,7 @@ export class BreadCrumbBar {
                         beforeItemRender: this.addSubMenuAttributes.bind(this),
                         select: this.subMenuSelectOperations.bind(this)
                     });
+                    this.subMenuObj.isStringTemplate = true;
                     this.subMenuObj.appendTo(subMenuSpan);
                     break;
                 }
@@ -273,12 +261,17 @@ export class BreadCrumbBar {
         this.addressBarLink = liElementId;
         let link: string[] = this.addressBarLink.split('/');
         let ids: string[] = this.parent.pathId;
+        let names: string[] = this.parent.pathNames;
         this.parent.pathId = [];
+        this.parent.pathNames = [];
+        let newpath: string = '';
         for (let i: number = 0, len: number = link.length - 1; i < len; i++) {
             this.parent.pathId.push(ids[i]);
+            this.parent.pathNames.push(names[i]);
+            newpath += link[i] + '/';
         }
-        let path: string = this.addressBarLink.substr(this.addressBarLink.indexOf('/'), this.addressBarLink.length);
-        return path;
+        this.parent.setProperties({ path: newpath }, true);
+        return newpath;
     }
 
     private onUpdatePath(): void {
@@ -287,10 +280,7 @@ export class BreadCrumbBar {
     }
 
     private onCreateEnd(): void {
-        let path: string = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
-        if (path !== this.parent.path) {
-            this.onPathChange();
-        }
+        this.onPathChange();
     }
 
     private onRenameEnd(): void {
@@ -299,10 +289,7 @@ export class BreadCrumbBar {
 
     /* istanbul ignore next */
     private onDeleteEnd(): void {
-        let path: string = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
-        if (path !== this.parent.path) {
-            this.onUpdatePath();
-        }
+        this.onUpdatePath();
     }
 
     /* istanbul ignore next */
@@ -318,13 +305,11 @@ export class BreadCrumbBar {
         this.onPathChange();
     }
     private onPasteEnd(args: ReadArgs): void {
-        if (this.parent.isPathDrag) {
-            this.onPathChange();
-        }
+        this.onPathChange();
     }
 
     private liClick(currentPath: string): void {
-        this.parent.itemData = [getValue(currentPath, this.parent.feParent)];
+        this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
         read(this.parent, events.pathChanged, currentPath);
     }
     private addEventListener(): void {
@@ -352,6 +337,7 @@ export class BreadCrumbBar {
         this.parent.on(events.searchTextChange, this.onSearchTextChange, this);
         this.parent.on(events.dropInit, this.onDropInit, this);
         this.parent.on(events.layoutRefresh, this.onResize, this);
+        this.parent.on(events.dropPath, this.onPathChange, this);
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {
@@ -377,15 +363,17 @@ export class BreadCrumbBar {
         this.parent.off(events.searchTextChange, this.onSearchTextChange);
         this.parent.off(events.dropInit, this.onDropInit);
         this.parent.off(events.layoutRefresh, this.onResize);
+        this.parent.off(events.dropPath, this.onPathChange);
     }
 
     /* istanbul ignore next */
     private onDropInit(args: DragEventArgs): void {
         if (this.parent.targetModule === this.getModuleName()) {
             let liEle: Element = args.target.closest('li');
-            let dropLi: string = liEle.getAttribute('data-utext');
-            this.parent.dropPath = dropLi.substring(dropLi.indexOf('/'));
-            this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+            this.parent.dropPath = this.updatePath(<HTMLElement>(liEle.children[0]));
+            this.parent.dropData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
+            let treeNodeId: string = this.parent.pathId[this.parent.pathId.length - 1];
+            this.parent.notify(events.updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
         }
     }
 

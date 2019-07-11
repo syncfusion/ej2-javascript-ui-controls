@@ -69,7 +69,8 @@ export const htmlKeyConfig: { [key: string]: string } = {
     'unordered-list': 'ctrl+alt+o',
     'space': '32',
     'enter': '13',
-    'tab': '9'
+    'tab': '9',
+    'delete': '46'
 };
 /**
  * Default  markdown key config for adapter

@@ -505,10 +505,12 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * A function that returns selected chips data.
      */
     public getSelectedChips(): SelectedItem | SelectedItems {
-        let slectedChips: SelectedItem | SelectedItems;
+        let selectedChips: SelectedItem | SelectedItems;
         if (this.type !== 'chip' && this.selection !== 'None') {
             let selectedItems: SelectedItems = { texts: [], Indexes: [], data: [], elements: [] };
-            this.element.querySelectorAll('.' + classNames.active).forEach((chip: HTMLElement) => {
+            const items: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.active);
+            for (let i: number = 0; i < items.length; i++) {
+                const chip: HTMLElement = items[i] as HTMLElement;
                 selectedItems.elements.push(chip);
                 let index: number = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chip);
                 selectedItems.Indexes.push(index);
@@ -516,15 +518,15 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 let text: string = typeof this.chips[index] === 'object' ?
                     (this.chips[index] as ChipModel).text.toString() : this.chips[index].toString();
                 selectedItems.texts.push(text);
-            });
+            }
             let selectedItem: SelectedItem = {
                 text: selectedItems.texts[0], index: selectedItems.Indexes[0],
                 data: selectedItems.data[0], element: selectedItems.elements[0]
             };
-            slectedChips = !isNullOrUndefined(selectedItem.index) ?
+            selectedChips = !isNullOrUndefined(selectedItem.index) ?
                 (this.selection === 'Multiple' ? selectedItems : selectedItem) : undefined;
         }
-        return slectedChips;
+        return selectedChips;
     }
 
     private wireEvent(unWireEvent: boolean): void {

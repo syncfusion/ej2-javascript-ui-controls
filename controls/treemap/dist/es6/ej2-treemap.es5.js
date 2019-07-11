@@ -2390,6 +2390,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     TreeMap.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.trigger(load, { treemap: this });
         this.initPrivateVariable();
         this.unWireEVents();
@@ -2446,7 +2448,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         this.layout.processLayoutPanel();
         this.element.appendChild(this.svgObject);
         this.elementChange();
-        this.trigger(loaded, { treemap: this });
+        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
     };
     TreeMap.prototype.createSvg = function () {
         if (this.svgObject) {
@@ -2845,7 +2847,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 _this.refreshing = true;
                 _this.wireEVents();
                 args.currentSize = _this.availableSize;
-                _this.trigger(resize, args);
+                _this.trigger(resize, _this.isBlazor ? {} : args);
                 _this.render();
             }, 500);
         }
@@ -2854,9 +2856,11 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var targetEle = e.target;
         var targetId = targetEle.id;
         var eventArgs;
+        var eventBlazorArgs;
         var itemIndex;
         var clickArgs = { cancel: false, name: click, treemap: this, mouseEvent: e };
-        this.trigger(click, clickArgs);
+        var clickBlazorArgs = { cancel: false, name: click, mouseEvent: e };
+        this.trigger(click, this.isBlazor ? clickBlazorArgs : clickArgs);
         if (targetId.indexOf('_Item_Index') > -1) {
             e.preventDefault();
             itemIndex = parseFloat(targetId.split('_')[6]);
@@ -2864,7 +2868,11 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
                 groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
             };
-            this.trigger(itemClick, eventArgs);
+            eventBlazorArgs = {
+                cancel: false, name: itemClick, item: this.layout.renderItems[itemIndex], mouseEvent: e,
+                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
+            };
+            this.trigger(itemClick, this.isBlazor ? eventBlazorArgs : eventArgs);
         }
         var end = new Date().getMilliseconds();
         var doubleTapTimer1;
@@ -2877,12 +2885,14 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
     };
     TreeMap.prototype.doubleClickOnTreeMap = function (e) {
         var doubleClickArgs = { cancel: false, name: doubleClick, treemap: this, mouseEvent: e };
-        this.trigger(doubleClick, doubleClickArgs);
+        var doubleClickBlazorArgs = { cancel: false, name: doubleClick, mouseEvent: e };
+        this.trigger(doubleClick, this.isBlazor ? doubleClickBlazorArgs : doubleClickArgs);
         //this.notify('dblclick', e);
     };
     TreeMap.prototype.rightClickOnTreeMap = function (e) {
         var rightClickArgs = { cancel: false, name: rightClick, treemap: this, mouseEvent: e };
-        this.trigger(rightClick, rightClickArgs);
+        var rightClickBlazorArgs = { cancel: false, name: rightClick, mouseEvent: e };
+        this.trigger(rightClick, this.isBlazor ? rightClickBlazorArgs : rightClickArgs);
     };
     /* tslint:disable-next-line:max-func-body-length */
     TreeMap.prototype.mouseDownOnTreeMap = function (e) {
@@ -2895,9 +2905,11 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var targetEle = e.target;
         var targetId = targetEle.id;
         var eventArgs;
+        var eventBlazorArgs;
         var item;
         var moveArgs = { cancel: false, name: mouseMove, treemap: this, mouseEvent: e };
-        this.trigger(mouseMove, moveArgs);
+        var moveBlazorArgs = { cancel: false, name: mouseMove, mouseEvent: e };
+        this.trigger(mouseMove, this.isBlazor ? moveBlazorArgs : moveArgs);
         var childItems;
         this.drillMouseMove = this.mouseDown;
         if (targetId.indexOf('_Item_Index') > -1) {
@@ -2906,7 +2918,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             this.element.style.cursor = (!item['isLeafItem'] && childItems && childItems.length > 0 && this.enableDrillDown) ?
                 'pointer' : 'auto';
             eventArgs = { cancel: false, name: itemMove, treemap: this, item: item, mouseEvent: e };
-            this.trigger(itemMove, eventArgs);
+            eventBlazorArgs = { cancel: false, name: itemMove, item: item, mouseEvent: e };
+            this.trigger(itemMove, this.isBlazor ? eventBlazorArgs : eventArgs);
         }
         this.notify(Browser.touchMoveEvent, e);
     };
@@ -2993,6 +3006,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var drillLevel;
         var templateID = this.element.id + '_Label_Template_Group';
         var drillLevelValues;
+        var endBlazorEvent;
         if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown && !this.drillMouseMove) {
             e.preventDefault();
             index = parseFloat(targetId.split('_')[6]);
@@ -3096,7 +3110,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                     }
                 });
                 endEvent = { cancel: false, name: drillEnd, treemap: this, renderItems: this.layout.renderItems };
-                this.trigger(drillEnd, endEvent);
+                endBlazorEvent = { cancel: false, name: drillEnd, renderItems: this.layout.renderItems };
+                this.trigger(drillEnd, this.isBlazor ? endBlazorEvent : endEvent);
                 if (process) {
                     if (!directLevel && isNullOrUndefined(drillLevel)) {
                         this.drilledItems.push({ name: item['levelOrderName'], data: item });
@@ -4329,6 +4344,7 @@ var TreeMapHighlight = /** @__PURE__ @class */ (function () {
         var targetId = e.target.id;
         var eventArgs;
         var items = [];
+        var eventBlazorArgs;
         var highlight = this.treemap.highlightSettings;
         var item;
         var highLightElements = [];
@@ -4395,7 +4411,8 @@ var TreeMapHighlight = /** @__PURE__ @class */ (function () {
                             this.highLightId = targetId;
                         }
                         eventArgs = { cancel: false, name: itemHighlight, treemap: treemap, items: items, elements: highLightElements };
-                        treemap.trigger(itemHighlight, eventArgs);
+                        eventBlazorArgs = { cancel: false, name: itemHighlight, items: items, elements: highLightElements };
+                        treemap.trigger(itemHighlight, treemap.isBlazor ? eventBlazorArgs : eventArgs);
                     }
                     else {
                         processHighlight = false;
@@ -4514,6 +4531,7 @@ var TreeMapSelection = /** @__PURE__ @class */ (function () {
     TreeMapSelection.prototype.mouseDown = function (e) {
         var targetEle = e.target;
         var eventArgs;
+        var eventBlazorArgs;
         var treemap = this.treemap;
         var items = [];
         var targetId = targetEle.id;
@@ -4580,7 +4598,8 @@ var TreeMapSelection = /** @__PURE__ @class */ (function () {
                         element.classList.add('treeMapSelection');
                     }
                     eventArgs = { cancel: false, name: itemSelected, treemap: treemap, items: items, elements: selectionElements };
-                    treemap.trigger(itemSelected, eventArgs);
+                    eventBlazorArgs = { cancel: false, name: itemSelected, items: items, elements: selectionElements };
+                    treemap.trigger(itemSelected, treemap.isBlazor ? eventBlazorArgs : eventArgs);
                 }
             }
             else {

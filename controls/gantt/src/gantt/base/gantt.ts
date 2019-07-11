@@ -31,7 +31,7 @@ import { Sort } from '../actions/sort';
 import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';
 import { RowDataBoundEventArgs, HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
-import { QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { QueryCellInfoEventArgs, ColumnMenuItemModel } from '@syncfusion/ej2-grids';
 import { Filter } from '../actions/filter';
 import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';
 import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';
@@ -42,7 +42,7 @@ import { Splitter } from './splitter';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
-import { ToolbarItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';
+import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';
 import { Selection } from '../actions/selection';
 import { DayMarkers } from '../actions/day-markers';
 import { ContextMenu } from './../actions/context-menu';
@@ -265,6 +265,19 @@ export class Gantt extends Component<HTMLElement>
     public showColumnMenu: boolean;
 
     /**
+     * `columnMenuItems` defines both built-in and custom column menu items.
+     * <br><br>
+     * The available built-in items are,
+     * * `ColumnChooser` - To show/hide the TreeGrid columns.
+     * * `SortAscending` - Sort the current column in ascending order.
+     * * `SortDescending` - Sort the current column in descending order.
+     * * `Filter` - Filter options will show based on filterSettings property.
+     * @default null
+     */
+    @Property()
+    public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
+
+    /**
      * If `collapseAllParentTasks` set to true, then root tasks are rendered with collapsed state.
      * @default false
      */
@@ -280,6 +293,7 @@ export class Gantt extends Component<HTMLElement>
      * To define expander column index in Grid.
      * @default 0
      * @aspType int
+     * @blazorType int
      */
     @Property(0)
     public treeColumnIndex: number;
@@ -423,12 +437,15 @@ export class Gantt extends Component<HTMLElement>
      * Defines height value for grid rows and chart rows in Gantt.
      * @default 36
      * @aspType int
+     * @blazorType int
      */
     @Property(36)
     public rowHeight: number;
     /**
      * Defines height of taskbar element in Gantt.
      * @aspType int?
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     @Property(null)
     public taskbarHeight: number;
@@ -474,6 +491,7 @@ export class Gantt extends Component<HTMLElement>
      * Defines width of dependency lines.
      * @default 1
      * @aspType int
+     * @blazorType int
      */
     @Property(1)
     public connectorLineWidth: number;
@@ -503,6 +521,7 @@ export class Gantt extends Component<HTMLElement>
      * You can also get the currently selected row index.
      * @default -1
      * @aspType int
+     * @blazorType int
      */
     @Property(-1)
     public selectedRowIndex: number;
@@ -988,6 +1007,15 @@ export class Gantt extends Component<HTMLElement>
                 return;
             }
         }
+        if (this.isAdaptive) {
+            if (e.action === 'addRowDialog' || e.action === 'editRowDialog' || e.action === 'delete'
+                || e.action === 'addRow') {
+                if (this.selectionModule && this.selectionSettings.type === 'Multiple') {
+                    this.selectionModule.hidePopUp();
+                    (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
+                }
+            }
+        }
         switch (e.action) {
             case 'home':
                 if (this.selectionModule && this.selectionSettings.mode !== 'Cell') {
@@ -1024,7 +1052,7 @@ export class Gantt extends Component<HTMLElement>
                 if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
                     this.editModule.cellEditModule.isCellEdit === true) {
                     this.editModule.cellEditModule.isCellEdit = false;
-                    this.treeGrid.grid.editModule.saveCell();
+                    this.treeGrid.endEdit();
                     let focussedElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-treegrid');
                     focussedElement.focus();
                 }
@@ -1054,6 +1082,8 @@ export class Gantt extends Component<HTMLElement>
                 break;
             case 'editRowDialog':
                 e.preventDefault();
+                let focussedTreeElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-treegrid');
+                focussedTreeElement.focus();
                 if (this.editModule && this.editModule.dialogModule && this.editSettings.allowEditing) {
                     if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
                         return;
@@ -1062,7 +1092,8 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'delete':
-                if (this.selectionModule && this.editModule) {
+                if (this.selectionModule && this.editModule && (!this.editSettings.allowTaskbarEditing
+                    || (this.editSettings.allowTaskbarEditing && !this.editModule.taskbarEditModule.touchEdit))) {
                     if ((this.selectionSettings.mode !== 'Cell' && this.selectionModule.selectedRowIndexes.length)
                         || (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length)) {
                         this.editModule.startDeleteAction();
@@ -1086,9 +1117,12 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'focusSearch':
-                let searchElement: HTMLInputElement = <HTMLInputElement>this.element.querySelector('#' + this.element.id + '_searchbar');
-                searchElement.setAttribute('tabIndex', '-1');
-                searchElement.focus();
+                if (<HTMLInputElement>this.element.querySelector('#' + this.element.id + '_searchbar')) {
+                    let searchElement: HTMLInputElement =
+                        <HTMLInputElement>this.element.querySelector('#' + this.element.id + '_searchbar');
+                    searchElement.setAttribute('tabIndex', '-1');
+                    searchElement.focus();
+                }
                 break;
             default:
                 let eventArgs: IKeyPressedEventArgs = {
@@ -1665,6 +1699,28 @@ export class Gantt extends Component<HTMLElement>
                 case 'allowSelection':
                     this.treeGrid.allowSelection = this.allowSelection;
                     this.treeGrid.dataBind();
+                    break;
+                case 'allowFiltering':
+                    this.treeGrid.allowFiltering = this.allowFiltering;
+                    this.treeGrid.dataBind();
+                    break;
+                case 'workWeek':
+                    this.dataOperation.getNonWorkingDayIndex();
+                    this.dataOperation.reUpdateGanttData();
+                    this.chartRowsModule.initiateTemplates();
+                    this.chartRowsModule.refreshGanttRows();
+                    this.treeGrid.refreshColumns();
+                    this.timelineModule.refreshTimeline();
+                    break;
+                case 'toolbar':
+                    this.notify('ui-toolbarupdate', { module: 'toolbar', properties: newProp });
+                    break;
+                case 'showColumnMenu':
+                    this.treeGrid.showColumnMenu = this.showColumnMenu;
+                    this.treeGrid.dataBind();
+                    break;
+                case 'columnMenuItems':
+                    this.treeGrid.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
                     break;
                 case 'eventMarkers':
                     this.notify('ui-update', { module: 'day-markers', properties: newProp });

@@ -81,6 +81,10 @@ export class StampAnnotation {
     /**
      * @private
      */
+    public isStampAddMode: boolean = false;
+    /**
+     * @private
+     */
     public isNewStampAnnot: boolean;
     private isExistingStamp: boolean;
     /**

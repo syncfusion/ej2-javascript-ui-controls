@@ -43,6 +43,7 @@ export class TaskbarEdit {
     /** @private */
     public tapPointOnFocus: boolean;
     private editElement: Element = null;
+    public touchEdit: boolean;
 
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
@@ -81,6 +82,7 @@ export class TaskbarEdit {
         this.isMouseDragged = false;
         this.previousItemProperty = ['left', 'progress', 'duration', 'startDate', 'endDate', 'width', 'progressWidth'];
         this.tapPointOnFocus = false;
+        this.touchEdit = false;
     }
 
     private mouseDownHandler(e: PointerEvent): void {
@@ -122,7 +124,8 @@ export class TaskbarEdit {
             }
             this.showHideActivePredecessors(false);
             this.initPublicProp();
-        } else if (targetElement.classList.contains(cls.connectorPointLeft) || targetElement.classList.contains(cls.connectorPointRight)) {
+        } else if (targetElement.classList.contains(cls.connectorPointLeftHover) ||
+            targetElement.classList.contains(cls.connectorPointRightHover)) {
             this.canDrag = false;
             this.multipleSelectionEnabled();
             this.showHideTaskBarEditingElements(targetElement, this.taskBarEditElement);
@@ -144,12 +147,14 @@ export class TaskbarEdit {
     private showHideActivePredecessors(show: boolean): void {
         let ganttProp: ITaskData = this.taskBarEditRecord.ganttProperties;
         let predecessors: IPredecessor[] = ganttProp.predecessor;
-        for (let i: number = 0; i < predecessors.length; i++) {
-            let predecessor: IPredecessor = predecessors[i];
-            if (ganttProp.taskId.toString() === predecessor.from) {
-                this.applyActiveColor(predecessor.from, predecessor.to, show);
-            } else if (ganttProp.taskId.toString() === predecessor.to) {
-                this.applyActiveColor(predecessor.from, predecessor.to, show);
+        if (predecessors) {
+            for (let i: number = 0; i < predecessors.length; i++) {
+                let predecessor: IPredecessor = predecessors[i];
+                if (ganttProp.taskId.toString() === predecessor.from) {
+                    this.applyActiveColor(predecessor.from, predecessor.to, show);
+                } else if (ganttProp.taskId.toString() === predecessor.to) {
+                    this.applyActiveColor(predecessor.from, predecessor.to, show);
+                }
             }
         }
         let chartContent: Element = this.parent.ganttChartModule.chartBodyContainer;
@@ -159,6 +164,10 @@ export class TaskbarEdit {
         } else {
             removeClass([this.taskBarEditElement], [cls.activeChildTask]);
             removeClass([chartContent], [cls.touchMode]);
+        }
+        this.touchEdit = show;
+        if (!isNullOrUndefined(this.parent.toolbarModule)) {
+            this.parent.toolbarModule.refreshToolbarItems();
         }
     }
     private applyActiveColor(from: string, to: string, enable?: boolean): void {
@@ -170,9 +179,15 @@ export class TaskbarEdit {
             let $taskbar: Element = $tr.querySelector('.' + cls.taskBarMainContainer);
             let $connectorElement: Element = this.parent.element.querySelector('#ConnectorLineparent' + from + 'child' + to);
             if (enable) {
-                addClass([$taskbar, $connectorElement], [cls.activeConnectedTask]);
+                addClass([$taskbar], [cls.activeConnectedTask]);
+                if ($connectorElement) {
+                    addClass([$connectorElement], [cls.activeConnectedTask]);
+                }
             } else {
-                removeClass([$taskbar, $connectorElement], [cls.activeConnectedTask]);
+                removeClass([$taskbar], [cls.activeConnectedTask]);
+                if ($connectorElement) {
+                    removeClass([$connectorElement], [cls.activeConnectedTask]);
+                }
             }
         }
     }
@@ -291,7 +306,7 @@ export class TaskbarEdit {
                     [secondElement.querySelector('.' + cls.connectorPointRight)], [cls.connectorPointRightHover]);
             } else if (this.parent.isAdaptive) {
                 let record: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(secondElement);
-                if (record.hasChildRecords) {
+                if (record && record.hasChildRecords) {
                     removeClass([secondElement], [cls.activeParentTask]);
                 }
             }

@@ -842,6 +842,21 @@ export class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.height)) {
                 rowFormat.height = sourceFormat.height;
             }
+            if (!isNullOrUndefined(sourceFormat.leftMargin)) {
+                rowFormat.leftMargin = sourceFormat.leftMargin;
+            }
+            if (!isNullOrUndefined(sourceFormat.topMargin)) {
+                rowFormat.topMargin = sourceFormat.topMargin;
+            }
+            if (!isNullOrUndefined(sourceFormat.rightMargin)) {
+                rowFormat.rightMargin = sourceFormat.rightMargin;
+            }
+            if (!isNullOrUndefined(sourceFormat.bottomMargin)) {
+                rowFormat.bottomMargin = sourceFormat.bottomMargin;
+            }
+            if (!isNullOrUndefined(sourceFormat.leftIndent)) {
+                rowFormat.leftIndent = sourceFormat.leftIndent;
+            }
             this.parseBorders(sourceFormat.borders, rowFormat.borders);
         }
     }

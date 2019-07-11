@@ -286,7 +286,10 @@ private performAnimation(smithchart: Smithchart, gsEle: Element, seriesIndex: nu
             let event: ISmithchartAnimationCompleteEventArgs = {
                 cancel: false, name: animationComplete, smithchart: smithchart
             };
-            smithchart.trigger(animationComplete, event );
+            let blazorEvent: ISmithchartAnimationCompleteEventArgs = {
+                cancel: false, name: animationComplete, smithchart: smithchart
+            };
+            smithchart.trigger(animationComplete, smithchart.isBlazor ? blazorEvent : event );
         }
     });
   }

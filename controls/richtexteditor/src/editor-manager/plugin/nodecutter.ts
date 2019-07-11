@@ -1,5 +1,5 @@
 import { NodeSelection } from './../../selection/index';
-
+import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
 
 /**
@@ -27,30 +27,38 @@ export class NodeCutter {
             if ( isCollapsed ) {
                 node = parent.childNodes[index] as HTMLElement;
                 fragment = this.spliceEmptyNode(fragment, false) as DocumentFragment;
-                if (fragment && fragment.textContent !== '') {
-                    if (node) {
-                        InsertMethods.AppendBefore(fragment, node);
-                    } else {
-                        parent.appendChild(fragment);
-                        let divNode: HTMLDivElement = document.createElement('div');
-                        divNode.innerHTML = '&#65279;&#65279;';
-                        node = divNode.firstChild as HTMLElement;
-                        parent.appendChild(node);
+                if (fragment && fragment.childNodes.length > 0) {
+                    let isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
+                        && isNOU(fragment.querySelector('img')) && fragment.textContent === '') ? true : false;
+                    if (!isEmpty) {
+                        if (node) {
+                            InsertMethods.AppendBefore(fragment, node);
+                        } else {
+                            parent.appendChild(fragment);
+                            let divNode: HTMLDivElement = document.createElement('div');
+                            divNode.innerHTML = '&#65279;&#65279;';
+                            node = divNode.firstChild as HTMLElement;
+                            parent.appendChild(node);
+                        }
                     }
                 }
             } else {
                 node = parent.childNodes.length > 1 ? parent.childNodes[index] as HTMLElement :
                 parent.childNodes[0] as HTMLElement;
                 fragment = this.spliceEmptyNode(fragment, true) as DocumentFragment;
-                if (fragment && fragment.textContent !== '') {
-                    if (node) {
-                        InsertMethods.AppendBefore(fragment, node, true);
-                    } else {
-                        parent.appendChild(fragment);
-                        let divNode: HTMLDivElement = document.createElement('div');
-                        divNode.innerHTML = '&#65279;&#65279;';
-                        parent.insertBefore(divNode.firstChild, parent.firstChild);
-                        node = parent.firstChild as HTMLElement;
+                if (fragment && fragment.childNodes.length > 0) {
+                    let isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
+                        && isNOU(fragment.querySelector('img')) && fragment.textContent === '') ? true : false;
+                    if (!isEmpty) {
+                        if (node) {
+                            InsertMethods.AppendBefore(fragment, node, true);
+                        } else {
+                            parent.appendChild(fragment);
+                            let divNode: HTMLDivElement = document.createElement('div');
+                            divNode.innerHTML = '&#65279;&#65279;';
+                            parent.insertBefore(divNode.firstChild, parent.firstChild);
+                            node = parent.firstChild as HTMLElement;
+                        }
                     }
                 }
             }

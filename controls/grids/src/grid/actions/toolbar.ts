@@ -110,6 +110,8 @@ export class Toolbar {
             enableRtl: this.parent.enableRtl,
             created: this.bindSearchEvents.bind(this)
         });
+        let isStringTemplate: string = 'isStringTemplate';
+        this.toolbar[isStringTemplate] = true;
         let viewStr: string = 'viewContainerRef';
         let registerTemp: string = 'registeredTemplate';
         if (this.parent[viewStr]) {

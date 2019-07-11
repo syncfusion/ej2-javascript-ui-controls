@@ -28,7 +28,8 @@ export class Renderer {
     private pageIndex: number = -1;
     private pageCanvasIn: HTMLCanvasElement;
     private isFieldCode: boolean = false;
-    private isspellCheckHandled: boolean = false;
+    private leftPosition: number = 0;
+    private topPosition: number = 0;
     /**
      * Gets page canvas.
      * @private    
@@ -128,10 +129,8 @@ export class Renderer {
         if (this.viewer.owner.enableHeaderAndFooter && !this.isPrinting) {
             this.renderHeaderSeparator(page, this.pageLeft, this.pageTop, page.headerWidget);
         }
-        if (!this.isspellCheckHandled) {
-            this.pageLeft = 0;
-            this.pageTop = 0;
-        }
+        this.pageLeft = 0;
+        this.pageTop = 0;
         this.pageContext.restore();
     }
     /**
@@ -407,7 +406,8 @@ export class Renderer {
      * @param {number} top 
      */
     private renderLine(lineWidget: LineWidget, page: Page, left: number, top: number): void {
-        if (!this.isPrinting && page.viewer.owner.selection && page.viewer.owner.selection.selectedWidgets.length > 0) {
+        // tslint:disable-next-line:max-line-length
+        if (!this.isPrinting && page.viewer.owner.selection && !this.viewer.isScrollToSpellCheck && page.viewer.owner.selection.selectedWidgets.length > 0) {
             page.viewer.owner.selection.addSelectionHighlight(this.selectionContext, lineWidget, top);
         }
 
@@ -634,7 +634,8 @@ export class Renderer {
         // tslint:disable-next-line:max-line-length
         if ((this.viewer.owner.enableSpellCheck && !this.spellChecker.removeUnderline) && (this.viewer.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.viewer.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))) {
             elementBox.canTrigger = true;
-            this.isspellCheckHandled = true;
+            this.leftPosition = this.pageLeft;
+            this.topPosition = this.pageTop;
             let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
             if (errorDetails.errorFound) {
                 color = '#FF0000';
@@ -643,7 +644,9 @@ export class Renderer {
                     // tslint:disable-next-line:max-line-length
                     if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
                         // tslint:disable-next-line:max-line-length
-                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y, underlineY, color, 'Single', format.baselineAlignment);
+                        let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
+                        // tslint:disable-next-line:max-line-length
+                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
             } else if (elementBox.ischangeDetected || this.viewer.triggerElementsOnLoading) {
@@ -725,7 +728,7 @@ export class Renderer {
         let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
         /* tslint:disable:no-any */
         // tslint:disable-next-line:max-line-length
-        this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion ).then((data: any) => {
+        this.spellChecker.CallSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
             /* tslint:disable:no-any */
             let jsonObject: any = JSON.parse(data);
             // tslint:disable-next-line:max-line-length
@@ -747,7 +750,7 @@ export class Renderer {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    public renderWavyline(elementBox: TextElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment): void {
+    public renderWavyline(elementBox: TextElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment, backgroundColor?: string): void {
         if (elementBox.text.length > 1) {
             let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
             let topMargin: number = elementBox.margin.top;
@@ -768,14 +771,15 @@ export class Renderer {
             // tslint:disable-next-line:max-line-length
             let whiteSpaceData: SpaceCharacterInfo = this.spellChecker.getWhiteSpaceCharacterInfo(elementBox.text, elementBox.characterFormat);
             // tslint:disable-next-line:max-line-length
-            let x1: number = this.getScaledValue(left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left, 1);
-            let y1: number = this.getScaledValue(y, 2);
+            let x: number = left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left;
+            let x1: number = x * this.viewer.zoomFactor + this.leftPosition;
+            let y1: number = y * this.viewer.zoomFactor + this.topPosition;
             // tslint:disable-next-line:max-line-length
             let x2: number = x1 + this.getScaledValue(elementBox.width - (specialCharacter.beginningWidth + specialCharacter.endWidth) - whiteSpaceData.width);
             let startingPoint: Point = new Point(x1, y1);
             let endingPoint: Point = new Point(x2, y1);
-
-            this.drawWavy(startingPoint, endingPoint, (x2 - x1) * frequencyRange, amplitudeRange, stepToCover, color, elementBox.height);
+            // tslint:disable-next-line:max-line-length
+            this.drawWavy(startingPoint, endingPoint, (x2 - x1) * frequencyRange, amplitudeRange, stepToCover, color, elementBox.height, backgroundColor);
         }
     }
 
@@ -791,9 +795,9 @@ export class Renderer {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    public drawWavy(from: Point, to: Point, frequency: number, amplitude: number, step: number, color: string, height: number, negative?: number): void {
+    public drawWavy(from: Point, to: Point, frequency: number, amplitude: number, step: number, color: string, height: number, backColor: string, negative?: number): void {
         this.pageContext.save();
-        this.pageContext.fillStyle = '#ffffff';
+        this.pageContext.fillStyle = (!isNullOrUndefined(backColor) ? backColor : this.viewer.backgroundColor);
         this.pageContext.fillRect(from.x, from.y - amplitude, (to.x - from.x), amplitude * 3);
         this.pageContext.restore();
         this.pageContext.lineWidth = 1;
@@ -1043,11 +1047,12 @@ export class Renderer {
                 height = cellWidget.height + cellTopMargin + cellBottomMargin;
             }
         }
-        this.renderCellBackground(height, cellWidget);
         let border: WBorder = !isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
         let lineWidth: number = 0;
-        // if (!isNullOrUndefined(border )) {       
+        // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth()); //Renders the cell left border.
+        this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
+        let leftBorderWidth: number = lineWidth;
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
@@ -1055,7 +1060,7 @@ export class Renderer {
         // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
+        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
         // }
 
         let isLastCell: boolean = false;
@@ -1102,7 +1107,7 @@ export class Renderer {
             //Renders the cell bottom border.
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
             // }
         }
         border = layout.getCellDiagonalUpBorder(tableCell);
@@ -1129,7 +1134,7 @@ export class Renderer {
      * @param {number} height 
      * @param {TableCellWidget} cellWidget 
      */
-    private renderCellBackground(height: number, cellWidget: TableCellWidget): void {
+    private renderCellBackground(height: number, cellWidget: TableCellWidget, leftMargin: number, lineWidth: number): void {
         let cellFormat: WCellFormat = cellWidget.cellFormat;
         let bgColor: string = cellFormat.shading.backgroundColor === '#ffffff' ?
             cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
@@ -1137,10 +1142,10 @@ export class Renderer {
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = this.getColor(bgColor);
-            let left: number = cellWidget.x - cellWidget.margin.left + cellWidget.leftBorderWidth;
+            let left: number = cellWidget.x - leftMargin - lineWidth;
             let top: number = cellWidget.y - HelperMethods.convertPointToPixel(cellWidget.topMargin);
             // tslint:disable-next-line:max-line-length
-            let width: number = cellWidget.width + cellWidget.margin.left + cellWidget.margin.right - cellWidget.leftBorderWidth - cellWidget.rightBorderWidth;
+            let width: number = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
 
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));

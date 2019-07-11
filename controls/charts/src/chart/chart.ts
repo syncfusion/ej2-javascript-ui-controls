@@ -1190,6 +1190,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private chartid: number = 57723;
     /** @private */
     public svgId: string;
+    /** @private */
+    public isBlazor: boolean;
     /**
      * Touch object to unwire the touch event from element
      */
@@ -1234,6 +1236,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     protected preRender(): void {
+        // It is used for checking blazor framework or not.
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
+
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -1657,7 +1663,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         if (render && (!this.visibleSeries.length || this.visibleSeriesCount === this.visibleSeries.length && check)) {
             this.refreshBound();
-            this.trigger('loaded', { chart: this });
+            this.trigger('loaded', { chart: this.isBlazor ? {} : this });
         }
     }
 
@@ -2187,11 +2193,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Export method for the chart.
-     * @return {boolean}
-     * @private
      */
-    // tslint:disable-next-line
-    public export(type: ExportType, fileName: string): void { }
+    public export(type: ExportType, fileName: string): void {
+        if (this.exportModule) {
+            this.exportModule.export(type, fileName);
+        }
+     }
 
     /**
      * Handles the chart resize.
@@ -2201,7 +2208,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public chartResize(e: Event): boolean {
         this.animateSeries = false;
         let arg: IResizeEventArgs = {
-            chart: this,
+            chart: this.isBlazor ? {} as Chart : this,
             name: resized,
             currentSize: new Size(0, 0),
             previousSize: new Size(
@@ -2223,7 +2230,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.trigger(resized, arg);
                 this.refreshAxis();
                 this.refreshBound();
-                this.trigger('loaded', { chart: this });
+                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
             },
             500);
         return false;
@@ -2308,7 +2315,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let pointData: PointData = data.getData();
         if (pointData.series && pointData.point) {
             this.trigger(event, {
-                series: pointData.series,
+                series: this.isBlazor ? {} : pointData.series,
                 point: pointData.point,
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
                 x: this.mouseX, y: this.mouseY
@@ -3038,13 +3045,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             if (!refreshBounds && renderer) {
                 this.removeSvg();
                 this.renderElements();
-                this.trigger('loaded', { chart: this });
+                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
                 this.refreshAxis();
                 this.refreshBound();
-                this.trigger('loaded', { chart: this });
+                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
                 this.redraw = false;
                 this.animated = false;
             }

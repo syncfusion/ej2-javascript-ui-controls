@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### Accordion
+
+#### Bug Fixes
+
+- #239739 - An issue with addItem public method for accordion which was rendered using HTML elements has been fixed
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Menu

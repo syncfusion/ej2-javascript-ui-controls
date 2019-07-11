@@ -166,9 +166,11 @@ export class CellEdit {
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
         currentValue = this.parent.dateValidationModule.checkStartDate(currentValue);
         if (isNOU(currentValue)) {
-            this.parent.setRecordValue('startDate', null, ganttProb, true);
-            this.parent.setRecordValue('duration', null, ganttProb, true);
-            this.parent.setRecordValue('isMilestone', false, ganttProb, true);
+            if (!ganttData.hasChildRecords) {
+                this.parent.setRecordValue('startDate', null, ganttProb, true);
+                this.parent.setRecordValue('duration', null, ganttProb, true);
+                this.parent.setRecordValue('isMilestone', false, ganttProb, true);
+            }
         } else if (ganttProb.endDate || !isNOU(ganttProb.duration)) {
             this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);
             this.parent.dateValidationModule.calculateEndDate(ganttData);

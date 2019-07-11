@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- #239623 - Now, TimePicker popup closed properly in Edge/IE browsers when place more number of DateTimePicker in single page.
+
+- `#240491` - Now, you can change the today button visibility dynamically along with min and max datetime.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Calendar

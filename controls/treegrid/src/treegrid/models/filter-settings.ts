@@ -27,6 +27,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * @default Syncfusion.EJ2.Grids.FilterBarMode.OnEnter
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.FilterBarMode
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.FilterBarMode
      */
     @Property()
     public mode: FilterBarMode;

@@ -13,6 +13,7 @@ export function isIDevice(): boolean {
 
 export function setEditFrameFocus(editableElement: Element, selector: string): void {
     if (editableElement.nodeName === 'BODY' && !isNullOrUndefined(selector)) {
-        (<HTMLIFrameElement>top.window.document.querySelector(selector)).contentWindow.focus();
+        let iframe: HTMLIFrameElement = <HTMLIFrameElement>top.window.document.querySelector(selector);
+        if (!isNullOrUndefined(iframe)) { iframe.contentWindow.focus(); }
     }
 }

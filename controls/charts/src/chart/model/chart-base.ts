@@ -183,8 +183,9 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
      * * Without Border
      * * Brace
      * * CurlyBrace
-     * @default ''
+     * @default 'Rectangle'
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     @Property('')
     public type: BorderType;

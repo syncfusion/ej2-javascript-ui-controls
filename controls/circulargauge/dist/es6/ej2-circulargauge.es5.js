@@ -1219,7 +1219,9 @@ var Annotations = /** @__PURE__ @class */ (function () {
         });
         if (parentElement && element.childElementCount) {
             parentElement.appendChild(element);
-            updateBlazorTemplate(element.id + '_ContentTemplate', 'ContentTemplate');
+            for (var i = 0; i < this.gauge.axes[index].annotations.length; i++) {
+                updateBlazorTemplate(this.gauge.element.id + '_Axis' + index + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.axes[index].annotations[i]);
+            }
         }
     };
     /**
@@ -1244,8 +1246,8 @@ var Annotations = /** @__PURE__ @class */ (function () {
             var blazor = 'Blazor';
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!window[blazor] ? templateFn(axis, null, null, element.id + '_ContentTemplate').length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, element.id + '_ContentTemplate'));
+                if (templateFn && (!window[blazor] ? templateFn(axis, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, _this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     var length_1 = templateElement.length;
                     for (var i = 0; i < length_1; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -1259,9 +1261,6 @@ var Annotations = /** @__PURE__ @class */ (function () {
                 }
                 _this.updateLocation(childElement, axis, annotation);
                 element.appendChild(childElement);
-            }
-            else {
-                resetBlazorTemplate(element.id + '_ContentTemplate', '_ContentTemplate');
             }
         });
     };
@@ -1373,7 +1372,8 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 (angle_1 >= 0 && angle_1 <= 45))) ? (location.x + 10) : location.x;
             var tooltipArgs_1 = {
                 name: tooltipRender, cancel: false, content: content_1, location: location, axis: this.currentAxis,
-                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge
+                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge,
+                appendInBodyTag: false
             };
             this.gauge.trigger(tooltipRender, tooltipArgs_1, function (observedArgs) {
                 var template = tooltipArgs_1.tooltip.template;
@@ -1420,6 +1420,23 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                     }
                     if (template && Math.abs(pageY - _this.tooltipEle.getBoundingClientRect().top) <= 0) {
                         _this.tooltipEle.style.top = (parseFloat(_this.tooltipEle.style.top) + 20) + 'px';
+                    }
+                    if (tooltipArgs_1.appendInBodyTag) {
+                        var bodyToolElement = document.getElementsByClassName('EJ2-CircularGauge-Tooltip e-control e-tooltip');
+                        if (!isNullOrUndefined(bodyToolElement)) {
+                            _this.removeTooltip();
+                        }
+                        document.body.appendChild(_this.tooltipEle);
+                        _this.tooltipEle.style.zIndex = '100000000001';
+                        var bounds = _this.tooltipEle.getBoundingClientRect();
+                        if (pageX + bounds['width'] <= window.innerWidth && bounds['x'] <= 0) {
+                            _this.tooltipEle.style.left = pageX + 20 + 'px';
+                            _this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
+                        }
+                        else if (bounds['x'] <= 0 && pageX + bounds['width'] >= window.innerWidth) {
+                            _this.tooltipEle.style.left = pageX - bounds['width'] + 20 + 'px';
+                            _this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
+                        }
                     }
                 }
             });
@@ -2018,11 +2035,6 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
         var oldStart;
         var minRadius = (radius * 0.25);
         if (roundRadius) {
-            if (end <= minRadius) {
-                radius = end === 1 || 2 ? 8 : radius;
-                radius /= 2;
-                minRadius = radius * 0.25;
-            }
             minAngle = ((((pointer.currentRadius) * ((minAngle * Math.PI) / 180) +
                 roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
             pointAngle = ((((pointer.currentRadius) * ((pointAngle * Math.PI) / 180) -
@@ -2058,7 +2070,7 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
             },
             end: function (model) {
                 _this.setPointerValue(axis, pointer, end);
-                _this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                _this.gauge.trigger(animationComplete, _this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
             }
         });
     };
@@ -2491,6 +2503,8 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
      *  To create svg object, renderer and binding events for the container.
      */
     CircularGauge.prototype.preRender = function () {
+        var blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.trigger(load, { gauge: this });
         this.initPrivateVariable();
@@ -2544,6 +2558,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         var args = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
         this.trigger('gaugeMouseMove', args, function (observedArgs) {
             var dragArgs;
+            var dragBlazorArgs;
             var tooltip = _this.tooltipModule;
             if (!args.cancel) {
                 if (_this.enablePointerDrag && _this.activePointer) {
@@ -2554,9 +2569,15 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                         name: dragMove,
                         currentValue: null
                     };
+                    dragBlazorArgs = {
+                        previousValue: _this.activePointer.currentValue,
+                        name: dragMove,
+                        currentValue: null,
+                        pointerIndex: parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10)
+                    };
                     _this.pointerDrag(new GaugeLocation(args.x, args.y));
-                    dragArgs.currentValue = _this.activePointer.currentValue;
-                    _this.trigger(dragMove, dragArgs);
+                    dragArgs.currentValue = dragBlazorArgs.currentValue = _this.activePointer.currentValue;
+                    _this.trigger(dragMove, _this.isBlazor ? dragBlazorArgs : dragArgs);
                 }
             }
         });
@@ -2620,7 +2641,11 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                 if (isNullOrUndefined(_this.activePointer.pathElement)) {
                     _this.activePointer.pathElement = [e.target];
                 }
-                _this.trigger(dragStart, {
+                _this.trigger(dragStart, _this.isBlazor ? {
+                    name: dragStart,
+                    currentValue: _this.activePointer.currentValue,
+                    pointerIndex: parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10)
+                } : {
                     axis: _this.activeAxis,
                     name: dragStart,
                     pointer: _this.activePointer,
@@ -2638,11 +2663,18 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
      */
     CircularGauge.prototype.mouseEnd = function (e) {
         var args = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
+        var blazorArgs = {
+            cancel: args.cancel, target: args.target, name: args.name, x: args.x, y: args.y
+        };
         var isTouch = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         var tooltip = this.tooltipModule;
-        this.trigger(gaugeMouseUp, args);
+        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (this.activeAxis && this.activePointer) {
-            this.trigger(dragEnd, {
+            this.trigger(dragEnd, this.isBlazor ? {
+                name: dragEnd,
+                currentValue: this.activePointer.currentValue,
+                pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+            } : {
                 name: dragEnd,
                 axis: this.activeAxis,
                 pointer: this.activePointer,
@@ -2695,7 +2727,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                 _this.calculateBounds();
                 _this.renderElements();
                 args.currentSize = _this.availableSize;
-                _this.trigger(resized, args);
+                _this.trigger(resized, _this.isBlazor ? {} : args);
             }, 500);
         }
         return false;
@@ -2735,6 +2767,11 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CircularGauge.prototype.removeSvg = function () {
+        for (var i = 0; i < this.axes.length; i++) {
+            for (var j = 0; j < this.axes[i].annotations.length; j++) {
+                resetBlazorTemplate(this.element.id + '_Axis' + i + '_ContentTemplate' + j, '_ContentTemplate');
+            }
+        }
         removeElement(this.element.id + '_Secondary_Element');
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > 0) {
@@ -2811,7 +2848,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         this.renderTitle();
         this.gaugeAxisLayoutPanel.renderAxes(animate);
         this.element.appendChild(this.svgObject);
-        this.trigger(loaded, { gauge: this });
+        this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
     };
     /**
      * Method to render the title for circular gauge.

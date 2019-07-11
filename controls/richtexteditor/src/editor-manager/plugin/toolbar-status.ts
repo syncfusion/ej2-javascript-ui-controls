@@ -37,8 +37,9 @@ export class ToolbarStatus {
         let nodeCollection: IToolbarStatus = JSON.parse(JSON.stringify(statusCollection));
         let nodeSelection: NodeSelection = new NodeSelection();
         let nodes: Node[] = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
+        let nodesLength: number = nodes.length;
         for (let index: number = 0; index < nodes.length; index++) {
-            if (nodes[index].nodeType !== 3) {
+            if (nodes[index].nodeType !== 3 || (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
                 nodes.splice(index, 1);
                 index--;
             }
@@ -104,7 +105,7 @@ export class ToolbarStatus {
         fontSize?: string[],
         fontName?: string[]): IToolbarStatus {
         if (targetNode.contains(node) ||
-        (node.nodeType === 3 && targetNode.nodeType !== 3 && targetNode.contains(node.parentNode) ) ) {
+            (node.nodeType === 3 && targetNode.nodeType !== 3 && targetNode.contains(node.parentNode))) {
             do {
                 formatCollection = this.isFormattedNode(docElement, formatCollection, node, formatNode, fontSize, fontName);
                 node = node.parentNode;

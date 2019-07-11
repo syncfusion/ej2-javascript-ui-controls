@@ -63,7 +63,7 @@ function Search(inputVal, items, searchType, ignoreCase) {
     let listItems = items;
     ignoreCase = ignoreCase !== undefined && ignoreCase !== null ? ignoreCase : true;
     let itemData = { item: null, index: null };
-    if (inputVal.length) {
+    if (inputVal && inputVal.length) {
         let strLength = inputVal.length;
         let queryStr = ignoreCase ? inputVal.toLocaleLowerCase() : inputVal;
         for (let i = 0, itemsData = listItems; i < itemsData.length; i++) {
@@ -240,7 +240,8 @@ let DropDownBase = class DropDownBase extends Component {
         else {
             if (ignoreCase) {
                 dataSource.filter((item) => {
-                    if (this.checkIgnoreCase(getValue(fields.text, item).toString(), text)) {
+                    let itemValue = getValue(fields.value, item);
+                    if (!isNullOrUndefined(itemValue) && this.checkIgnoreCase(getValue(fields.text, item).toString(), text)) {
                         value = getValue(fields.value, item);
                     }
                 });
@@ -249,7 +250,7 @@ let DropDownBase = class DropDownBase extends Component {
                 if (isTextByValue) {
                     dataSource.filter((item) => {
                         let itemValue = getValue(fields.value, item);
-                        if (!isNullOrUndefined(itemValue) && itemValue.toString() === value.toString()) {
+                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) && itemValue.toString() === value.toString()) {
                             value = getValue(fields.text, item);
                         }
                     });
@@ -313,7 +314,7 @@ let DropDownBase = class DropDownBase extends Component {
             let templateId = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             ele.innerHTML = '';
             compiledString = compile(template);
-            for (let item of compiledString({}, null, null, templateId)) {
+            for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
                 ele.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure);
@@ -389,53 +390,53 @@ let DropDownBase = class DropDownBase extends Component {
     }
     ;
     DropDownBaseupdateBlazorTemplates(item, group, noRecord, action, value, header, footer) {
-        if (this.itemTemplate && item) {
-            updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
-        }
-        if (this.groupTemplate && group) {
-            setTimeout(() => {
-                updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
-            }, 0);
-        }
-        if (this.noRecordsTemplate && noRecord) {
-            setTimeout(() => {
-                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
-            }, 0);
-        }
-        if (this.actionFailureTemplate && action) {
-            updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
-        }
-        if (value) {
-            updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
-        }
-        if (header) {
-            updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
-        }
-        if (footer) {
-            updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
+        if (!this.isStringTemplate) {
+            if (this.itemTemplate && item) {
+                updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this);
+            }
+            if (this.groupTemplate && group) {
+                updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY, this);
+            }
+            if (this.noRecordsTemplate && noRecord) {
+                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY, this);
+            }
+            if (this.actionFailureTemplate && action) {
+                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY, this);
+            }
+            if (value) {
+                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this);
+            }
+            if (header) {
+                updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY, this);
+            }
+            if (footer) {
+                updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY, this);
+            }
         }
     }
     DropDownBaseresetBlazorTemplates(item, group, noRecord, action, value, header, footer) {
-        if (this.itemTemplate && item) {
-            resetBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
-        }
-        if (this.groupTemplate && group) {
-            resetBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
-        }
-        if (this.noRecordsTemplate && noRecord) {
-            resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
-        }
-        if (this.actionFailureTemplate && action) {
-            resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
-        }
-        if (value) {
-            resetBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
-        }
-        if (header) {
-            resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
-        }
-        if (footer) {
-            resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
+        if (!this.isStringTemplate) {
+            if (this.itemTemplate && item) {
+                resetBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
+            }
+            if (this.groupTemplate && group) {
+                resetBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
+            }
+            if (this.noRecordsTemplate && noRecord) {
+                resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
+            }
+            if (this.actionFailureTemplate && action) {
+                resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
+            }
+            if (value) {
+                resetBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
+            }
+            if (header) {
+                resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
+            }
+            if (footer) {
+                resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
+            }
         }
     }
     /**
@@ -603,7 +604,11 @@ let DropDownBase = class DropDownBase extends Component {
     }
     raiseDataBound(listItems, e) {
         this.hideSpinner();
-        this.trigger('dataBound', { items: listItems, e: e });
+        let dataBoundEventArgs = {
+            items: listItems,
+            e: e
+        };
+        this.trigger('dataBound', dataBoundEventArgs);
     }
     remainingItems(dataSource, fields) {
         let spliceData = new DataManager(dataSource).executeLocal(new Query().skip(100));
@@ -669,7 +674,7 @@ let DropDownBase = class DropDownBase extends Component {
     renderGroupTemplate(listEle) {
         if (this.fields.groupBy !== null && this.dataSource || this.element.querySelector('.' + dropDownBaseClasses.group)) {
             let dataSource = this.dataSource;
-            let option = { groupTemplateID: this.groupTemplateId };
+            let option = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
             let headerItems = listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             let tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false);
@@ -776,6 +781,7 @@ let DropDownBase = class DropDownBase extends Component {
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         let option = this.listOption(dataSource, fields);
         option.templateID = this.itemTemplateId;
+        option.isStringTemplate = this.isStringTemplate;
         return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option);
     }
     typeOfData(items) {
@@ -997,7 +1003,7 @@ let DropDownBase = class DropDownBase extends Component {
             }
             if (this.itemTemplate && !isHeader) {
                 let compiledString = compile(this.itemTemplate);
-                append(compiledString(item, null, null, this.itemTemplateId), li);
+                append(compiledString(item, null, null, this.itemTemplateId, this.isStringTemplate), li);
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             }
             else if (!isHeader) {
@@ -1058,6 +1064,7 @@ let DropDownBase = class DropDownBase extends Component {
      * Gets the data Object that matches the given value.
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
+     * @isGenericType true
      */
     getDataByValue(value) {
         if (!isNullOrUndefined(this.listData)) {
@@ -1666,7 +1673,6 @@ let DropDownList = class DropDownList extends DropDownBase {
         if (!this.isValidLI(li)) {
             return;
         }
-        this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
         this.setSelection(li, e);
         if (Browser.isDevice && this.isFilterLayout()) {
             history.back();
@@ -1981,7 +1987,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         this.removeHover();
         let value = this.getFormattedValue(li.getAttribute('data-value'));
         let selectedData = this.getDataByValue(value);
-        if (!this.initial && !preventSelect) {
+        if (!this.initial && !preventSelect && !isNullOrUndefined(e)) {
             let items = this.detachChanges(selectedData);
             this.isSelected = true;
             let eventArgs = {
@@ -2038,6 +2044,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             Input.setValue(dataItem.text, this.inputElement, this.floatLabelType, this.showClearButton);
         }
         if (this.valueTemplate && this.itemData !== null) {
+            this.DropDownBaseresetBlazorTemplates(false, false, false, false, true);
             this.setValueTemplate();
         }
         else if (this.inputElement.previousSibling === this.valueTempElement) {
@@ -2098,10 +2105,10 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         this.valueTempElement.innerHTML = '';
         compiledString = compile(this.valueTemplate);
-        for (let item of compiledString(this.itemData, null, null, this.valueTemplateId)) {
+        for (let item of compiledString(this.itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
             this.valueTempElement.appendChild(item);
         }
-        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
+        this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
     }
     removeSelection() {
         let selectedItems = this.list.querySelectorAll('.' + dropDownBaseClasses.selected);
@@ -2133,7 +2140,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     onChangeEvent(eve) {
         let dataItem = this.getItemData();
         let index = this.isSelectCustom ? null : this.activeIndex;
-        this.setProperties({ 'value': dataItem.value, 'index': index, 'text': dataItem.text }, true);
+        this.setProperties({ 'index': index, 'text': dataItem.text, 'value': dataItem.value }, true);
         this.detachChangeEvent(eve);
     }
     ;
@@ -2531,99 +2538,101 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         let args = { cancel: false };
         this.trigger('beforeOpen', args, (args) => {
-            let popupEle = this.createElement('div', {
-                id: this.element.id + '_popup', className: 'e-ddl e-popup ' + (this.cssClass != null ? this.cssClass : '')
-            });
-            let searchBox = this.setSearchBox(popupEle);
-            this.listHeight = formatUnit(this.popupHeight);
-            if (this.headerTemplate) {
-                this.setHeaderTemplate(popupEle);
-            }
-            append([this.list], popupEle);
-            if (this.footerTemplate) {
-                this.setFooterTemplate(popupEle);
-            }
-            document.body.appendChild(popupEle);
-            popupEle.style.visibility = 'hidden';
-            if (this.popupHeight !== 'auto') {
-                this.searchBoxHeight = 0;
-                if (!isNullOrUndefined(searchBox.container)) {
-                    this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
-                    this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
-                }
+            if (!args.cancel) {
+                let popupEle = this.createElement('div', {
+                    id: this.element.id + '_popup', className: 'e-ddl e-popup ' + (this.cssClass != null ? this.cssClass : '')
+                });
+                let searchBox = this.setSearchBox(popupEle);
+                this.listHeight = formatUnit(this.popupHeight);
                 if (this.headerTemplate) {
-                    let height = Math.round(this.header.getBoundingClientRect().height);
-                    this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                    this.setHeaderTemplate(popupEle);
                 }
+                append([this.list], popupEle);
                 if (this.footerTemplate) {
-                    let height = Math.round(this.footer.getBoundingClientRect().height);
-                    this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                    this.setFooterTemplate(popupEle);
                 }
-                this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
-                popupEle.style.maxHeight = formatUnit(this.popupHeight);
-            }
-            else {
-                popupEle.style.height = 'auto';
-            }
-            let offsetValue = 0;
-            let left;
-            if (!isNullOrUndefined(this.selectedLI) && (!isNullOrUndefined(this.activeIndex) && this.activeIndex >= 0)) {
-                this.setScrollPosition();
-            }
-            else {
-                this.list.scrollTop = 0;
-            }
-            if (Browser.isDevice && (!this.allowFiltering && (this.getModuleName() === 'dropdownlist' ||
-                (this.isDropDownClick && this.getModuleName() === 'combobox')))) {
-                offsetValue = this.getOffsetValue(popupEle);
-                let firstItem = this.isEmptyList() ? this.list : this.liCollections[0];
-                left = -(parseInt(getComputedStyle(firstItem).textIndent, 10) -
-                    parseInt(getComputedStyle(this.inputElement).paddingLeft, 10) +
-                    parseInt(getComputedStyle(this.inputElement.parentElement).borderLeftWidth, 10));
-            }
-            this.getFocusElement();
-            this.createPopup(popupEle, offsetValue, left);
-            this.checkCollision(popupEle);
-            if (Browser.isDevice) {
-                this.popupObj.element.classList.add(dropDownListClasses.device);
-                if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
-                    && !this.allowFiltering && this.isDropDownClick)) {
-                    this.popupObj.collision = { X: 'fit', Y: 'fit' };
+                document.body.appendChild(popupEle);
+                popupEle.style.visibility = 'hidden';
+                if (this.popupHeight !== 'auto') {
+                    this.searchBoxHeight = 0;
+                    if (!isNullOrUndefined(searchBox.container)) {
+                        this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
+                        this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
+                    }
+                    if (this.headerTemplate) {
+                        let height = Math.round(this.header.getBoundingClientRect().height);
+                        this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                    }
+                    if (this.footerTemplate) {
+                        let height = Math.round(this.footer.getBoundingClientRect().height);
+                        this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                    }
+                    this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
+                    popupEle.style.maxHeight = formatUnit(this.popupHeight);
                 }
-                if (this.isFilterLayout()) {
-                    this.popupObj.element.classList.add(dropDownListClasses.mobileFilter);
-                    this.popupObj.position = { X: 0, Y: 0 };
-                    this.popupObj.dataBind();
-                    attributes(this.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
-                    addClass([document.body, this.popupObj.element], dropDownListClasses.popupFullScreen);
-                    this.setSearchBoxPosition();
-                    this.backIconElement = searchBox.container.querySelector('.e-back-icon');
-                    this.clearIconElement = searchBox.container.querySelector('.' + dropDownListClasses.clearIcon);
-                    EventHandler.add(this.backIconElement, 'click', this.clickOnBackIcon, this);
-                    EventHandler.add(this.clearIconElement, 'click', this.clearText, this);
+                else {
+                    popupEle.style.height = 'auto';
                 }
-            }
-            popupEle.style.visibility = 'visible';
-            addClass([popupEle], 'e-popup-close');
-            let scrollParentElements = this.popupObj.getScrollableParent(this.inputWrapper.container);
-            for (let element of scrollParentElements) {
-                EventHandler.add(element, 'scroll', this.scrollHandler, this);
-            }
-            if (Browser.isDevice && this.isFilterLayout()) {
-                EventHandler.add(this.list, 'scroll', this.listScroll, this);
-            }
-            attributes(this.targetElement(), { 'aria-expanded': 'true' });
-            let inputParent = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
-            addClass([inputParent], [dropDownListClasses.inputFocus]);
-            let animModel = { name: 'FadeIn', duration: 100 };
-            this.beforePopupOpen = true;
-            let eventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
-            this.trigger('open', eventArgs, (eventArgs) => {
-                if (!eventArgs.cancel) {
-                    addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
-                    this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
+                let offsetValue = 0;
+                let left;
+                if (!isNullOrUndefined(this.selectedLI) && (!isNullOrUndefined(this.activeIndex) && this.activeIndex >= 0)) {
+                    this.setScrollPosition();
                 }
-            });
+                else {
+                    this.list.scrollTop = 0;
+                }
+                if (Browser.isDevice && (!this.allowFiltering && (this.getModuleName() === 'dropdownlist' ||
+                    (this.isDropDownClick && this.getModuleName() === 'combobox')))) {
+                    offsetValue = this.getOffsetValue(popupEle);
+                    let firstItem = this.isEmptyList() ? this.list : this.liCollections[0];
+                    left = -(parseInt(getComputedStyle(firstItem).textIndent, 10) -
+                        parseInt(getComputedStyle(this.inputElement).paddingLeft, 10) +
+                        parseInt(getComputedStyle(this.inputElement.parentElement).borderLeftWidth, 10));
+                }
+                this.getFocusElement();
+                this.createPopup(popupEle, offsetValue, left);
+                this.checkCollision(popupEle);
+                if (Browser.isDevice) {
+                    this.popupObj.element.classList.add(dropDownListClasses.device);
+                    if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
+                        && !this.allowFiltering && this.isDropDownClick)) {
+                        this.popupObj.collision = { X: 'fit', Y: 'fit' };
+                    }
+                    if (this.isFilterLayout()) {
+                        this.popupObj.element.classList.add(dropDownListClasses.mobileFilter);
+                        this.popupObj.position = { X: 0, Y: 0 };
+                        this.popupObj.dataBind();
+                        attributes(this.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
+                        addClass([document.body, this.popupObj.element], dropDownListClasses.popupFullScreen);
+                        this.setSearchBoxPosition();
+                        this.backIconElement = searchBox.container.querySelector('.e-back-icon');
+                        this.clearIconElement = searchBox.container.querySelector('.' + dropDownListClasses.clearIcon);
+                        EventHandler.add(this.backIconElement, 'click', this.clickOnBackIcon, this);
+                        EventHandler.add(this.clearIconElement, 'click', this.clearText, this);
+                    }
+                }
+                popupEle.style.visibility = 'visible';
+                addClass([popupEle], 'e-popup-close');
+                let scrollParentElements = this.popupObj.getScrollableParent(this.inputWrapper.container);
+                for (let element of scrollParentElements) {
+                    EventHandler.add(element, 'scroll', this.scrollHandler, this);
+                }
+                if (Browser.isDevice && this.isFilterLayout()) {
+                    EventHandler.add(this.list, 'scroll', this.listScroll, this);
+                }
+                attributes(this.targetElement(), { 'aria-expanded': 'true' });
+                let inputParent = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
+                addClass([inputParent], [dropDownListClasses.inputFocus]);
+                let animModel = { name: 'FadeIn', duration: 100 };
+                this.beforePopupOpen = true;
+                let eventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+                this.trigger('open', eventArgs, (eventArgs) => {
+                    if (!eventArgs.cancel) {
+                        addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
+                        this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
+                    }
+                });
+            }
         });
     }
     checkCollision(popupEle) {
@@ -2811,6 +2820,8 @@ let DropDownList = class DropDownList extends DropDownBase {
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
         }
+        let isResetItem = (this.getModuleName() === 'autocomplete') ? true : false;
+        this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
         this.filterInputObj = null;
@@ -2971,7 +2982,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             addClass([this.footer], dropDownListClasses.footer);
         }
         compiledString = compile(this.footerTemplate);
-        for (let item of compiledString({}, null, null, this.footerTemplateId)) {
+        for (let item of compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate)) {
             this.footer.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, false, true);
@@ -2987,7 +2998,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             addClass([this.header], dropDownListClasses.header);
         }
         compiledString = compile(this.headerTemplate);
-        for (let item of compiledString({}, null, null, this.headerTemplateId)) {
+        for (let item of compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate)) {
             this.header.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, false, true, false);
@@ -3254,7 +3265,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             return;
         }
         this.beforePopupOpen = true;
-        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0] && !this.itemTemplate) {
+        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
             this.isActive = true;
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         }
@@ -3278,8 +3289,9 @@ let DropDownList = class DropDownList extends DropDownBase {
      * @returns void.
      */
     hidePopup() {
-        let isResetItem = (this.getModuleName() === 'autocomplete') ? true : false;
-        this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
+        let isHeader = (this.headerTemplate) ? true : false;
+        let isFooter = (this.headerTemplate) ? true : false;
+        this.DropDownBaseresetBlazorTemplates(false, false, false, false, false, isHeader, isFooter);
         if (this.isEscapeKey && this.getModuleName() === 'dropdownlist') {
             Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
             this.isEscapeKey = false;
@@ -4369,6 +4381,7 @@ let AutoComplete = class AutoComplete extends ComboBox {
      * @returns void.
      */
     hidePopup() {
+        this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         super.hidePopup();
         this.activeIndex = -1;
     }
@@ -4696,6 +4709,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let modules = [];
         if (this.mode === 'CheckBox') {
             this.isGroupChecking = this.enableGroupCheckBox;
+            if (this.enableGroupCheckBox) {
+                let prevOnChange = this.isProtectedOnChange;
+                this.isProtectedOnChange = true;
+                this.enableSelectionOrder = false;
+                this.isProtectedOnChange = prevOnChange;
+            }
             this.allowCustomValue = false;
             this.hideSelectedItem = false;
             this.closePopupOnSelect = false;
@@ -5366,6 +5385,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.dispatchEvent(this.hiddenElement, 'change');
         this.overAllClear.style.display = 'none';
         if (this.isPopupOpen()) {
+            this.DropDownBaseresetBlazorTemplates(false, false, true, true, false, true, true);
             this.hidePopup();
         }
         this.makeTextBoxEmpty();
@@ -6049,6 +6069,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     removeValue(value, eve, length, isClearAll) {
         let index = this.value.indexOf(this.getFormattedValue(value));
+        let isValueTemp = (this.valueTemplate) ? true : false;
+        this.DropDownBaseresetBlazorTemplates(false, false, false, false, isValueTemp, false, false);
         if (index === -1 && this.allowCustomValue && !isNullOrUndefined(value)) {
             index = this.value.indexOf(value.toString());
         }
@@ -6287,8 +6309,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             itemData = this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
+            this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
             let compiledString = compile(this.valueTemplate);
-            for (let item of compiledString(itemData, null, null, this.valueTemplateId)) {
+            for (let item of compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
                 chipContent.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
@@ -6420,8 +6443,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     this.popupObj = new Popup(this.popupWrapper, {
                         width: this.calcPopupWidth(), targetType: 'relative', position: { X: 'left', Y: 'bottom' },
                         relateTo: this.overAllWrapper, collision: { X: 'flip', Y: 'flip' }, offsetY: 1,
-                        enableRtl: this.enableRtl,
-                        zIndex: this.zIndex,
+                        enableRtl: this.enableRtl, zIndex: this.zIndex,
                         close: () => {
                             if (this.popupObj.element.parentElement) {
                                 this.popupObj.unwireScrollEvents();
@@ -6432,7 +6454,15 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                             if (!this.isFirstClick) {
                                 let ulElement = this.list.querySelector('ul');
                                 if (ulElement) {
-                                    this.mainList = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
+                                    let isBlazor = Object.keys(window).indexOf('Blazor') >= 0;
+                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor) {
+                                        setTimeout(() => {
+                                            this.mainList = this.ulElement;
+                                        }, 0);
+                                    }
+                                    else {
+                                        this.mainList = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
+                                    }
                                 }
                                 this.isFirstClick = true;
                             }
@@ -6440,9 +6470,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                             this.loadTemplate();
                             this.setScrollPosition();
                             if (this.allowFiltering) {
-                                this.notify('inputFocus', { module: 'CheckBoxSelection',
-                                    enable: this.mode === 'CheckBox',
-                                    value: 'focus' });
+                                this.notify('inputFocus', {
+                                    module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus'
+                                });
                             }
                         }
                     });
@@ -6463,7 +6493,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.header = this.createElement('div');
         addClass([this.header], HEADER);
         compiledString = compile(this.headerTemplate);
-        let elements = compiledString({}, null, null, this.headerTemplateId);
+        let elements = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
         for (let temp = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
         }
@@ -6484,7 +6514,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.footer = this.createElement('div');
         addClass([this.footer], FOOTER);
         compiledString = compile(this.footerTemplate);
-        let elements = compiledString({}, null, null, this.footerTemplateId);
+        let elements = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
         for (let temp = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
         }
@@ -6867,7 +6897,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.scrollFocusStatus = false;
         let target = e.target;
         let li = closest(target, '.' + dropDownBaseClasses.li);
-        this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
         if (!li && this.enableGroupCheckBox && this.mode === 'CheckBox' && this.fields.groupBy) {
             target = target.classList.contains('e-list-group-item') ? target.firstElementChild.lastElementChild
                 : e.target;
@@ -7586,7 +7615,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 duration: 100,
                 delay: delay ? delay : 0
             };
-            this.DropDownBaseresetBlazorTemplates(false, false, true, true, false, true, true);
             let eventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
             this.trigger('close', eventArgs, (eventArgs) => {
                 if (!eventArgs.cancel) {
@@ -8135,7 +8163,7 @@ class CheckBoxSelection {
                 }
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
-            if (this.parent.list.classList.contains('e-nodata')) {
+            if (this.parent.list.classList.contains('e-nodata') || this.parent.listData.length <= 1) {
                 this.checkAllParent.style.display = 'none';
             }
             else {
@@ -8546,11 +8574,14 @@ let ListBox = class ListBox extends DropDownBase {
             this.list.insertBefore(this.element, this.list.firstChild);
             this.element.style.display = 'none';
         }
-        let listBoxTemplateId = this.element.id + ITEMTEMPLATE_PROPERTY$1;
-        resetBlazorTemplate(listBoxTemplateId, ITEMTEMPLATE_PROPERTY$1);
-        setTimeout(() => {
-            updateBlazorTemplate(listBoxTemplateId, ITEMTEMPLATE_PROPERTY$1);
-        }, 500);
+        if (this.itemTemplate) {
+            let listBoxProxy = this;
+            resetBlazorTemplate(this.element.id + ITEMTEMPLATE_PROPERTY$1, ITEMTEMPLATE_PROPERTY$1);
+            this.isStringTemplate = true;
+            setTimeout(() => {
+                updateBlazorTemplate(listBoxProxy.element.id + ITEMTEMPLATE_PROPERTY$1, ITEMTEMPLATE_PROPERTY$1, listBoxProxy);
+            }, 500);
+        }
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
         if (this.list.getElementsByClassName(cssClass.li)[0]) {
             this.list.getElementsByClassName(cssClass.li)[0].classList.remove(dropDownBaseClasses.focus);
@@ -8630,6 +8661,7 @@ let ListBox = class ListBox extends DropDownBase {
             title = l10n.getConstant(value);
             ele = this.createElement('button', {
                 attrs: {
+                    'type': 'button',
                     'data-value': value,
                     'title': title,
                     'aria-label': title
@@ -9463,40 +9495,44 @@ let ListBox = class ListBox extends DropDownBase {
     setSelection(values = this.value, isSelect = true, isText = false) {
         let li;
         let liselect;
-        values.forEach((value) => {
-            li = this.list.querySelector('[data-value="' + (isText ? this.getValueByText(value) : value) + '"]');
-            if (li) {
-                if (this.selectionSettings.showCheckbox) {
-                    liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
-                }
-                else {
-                    liselect = li.classList.contains('e-selected');
-                }
-                if (!isSelect && liselect || isSelect && !liselect && li) {
+        if (values) {
+            values.forEach((value) => {
+                li = this.list.querySelector('[data-value="' + (isText ? this.getValueByText(value) : value) + '"]');
+                if (li) {
                     if (this.selectionSettings.showCheckbox) {
-                        this.notify('updatelist', { li: li });
+                        liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
                     }
                     else {
-                        if (isSelect) {
-                            li.classList.add(cssClass.selected);
-                            li.setAttribute('aria-selected', 'true');
+                        liselect = li.classList.contains('e-selected');
+                    }
+                    if (!isSelect && liselect || isSelect && !liselect && li) {
+                        if (this.selectionSettings.showCheckbox) {
+                            this.notify('updatelist', { li: li });
                         }
                         else {
-                            li.classList.remove(cssClass.selected);
-                            li.removeAttribute('aria-selected');
+                            if (isSelect) {
+                                li.classList.add(cssClass.selected);
+                                li.setAttribute('aria-selected', 'true');
+                            }
+                            else {
+                                li.classList.remove(cssClass.selected);
+                                li.removeAttribute('aria-selected');
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
         this.updateSelectTag();
     }
     updateSelectTag() {
         let ele = this.getSelectTag();
         ele.innerHTML = '';
-        Array.prototype.forEach.call(this.value, (value) => {
-            ele.innerHTML += '<option selected value="' + value + '"></option>';
-        });
+        if (this.value) {
+            Array.prototype.forEach.call(this.value, (value) => {
+                ele.innerHTML += '<option selected value="' + value + '"></option>';
+            });
+        }
         this.checkSelectAll();
     }
     updateToolBarState() {
@@ -9513,18 +9549,18 @@ let ListBox = class ListBox extends DropDownBase {
                         btn.disabled = listObj.ulElement.childElementCount ? false : true;
                         break;
                     case 'moveFrom':
-                        btn.disabled = listObj.value.length ? false : true;
+                        btn.disabled = listObj.value && listObj.value.length ? false : true;
                         break;
                     case 'moveUp':
-                        btn.disabled = this.value.length
+                        btn.disabled = this.value && this.value.length
                             && !this.isSelected(this.ulElement.children[0]) ? false : true;
                         break;
                     case 'moveDown':
-                        btn.disabled = this.value.length
+                        btn.disabled = this.value && this.value.length
                             && !this.isSelected(this.ulElement.children[this.ulElement.childElementCount - 1]) ? false : true;
                         break;
                     default:
-                        btn.disabled = this.value.length ? false : true;
+                        btn.disabled = this.value && this.value.length ? false : true;
                         break;
                 }
             });

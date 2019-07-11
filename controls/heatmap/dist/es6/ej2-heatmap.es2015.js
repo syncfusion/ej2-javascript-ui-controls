@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, Touch, createElement, extend, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, Touch, createElement, extend, isBlazor, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
 import { CanvasRenderer, SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 
@@ -3020,7 +3020,7 @@ class Series {
         let yLabels = yAxis.tooltipLabels.slice().reverse();
         let yLabelValue = yAxis.labelValue.slice().reverse();
         let argData = {
-            heatmap: this.heatMap,
+            heatmap: (this.heatMap.isBlazor ? null : this.heatMap),
             cancel: false,
             name: 'cellRender',
             value: rectPosition.value,
@@ -3478,7 +3478,7 @@ class Tooltip$1 {
      * @private
      */
     createTooltipDiv(heatMap) {
-        let position = heatMap.enableCanvasRendering && heatMap.allowSelection ? 'relative' : 'absolute';
+        let position = 'absolute';
         let top = heatMap.enableCanvasRendering && heatMap.allowSelection ? heatMap.availableSize.height : 0;
         let element2 = createElement('div', {
             id: this.heatMap.element.id + 'Celltooltipcontainer',
@@ -3534,6 +3534,9 @@ class Tooltip$1 {
                 currentRect.value.toString() === '') ? false : true;
         if (!showTooltip) {
             this.showHideTooltip(false, false);
+            if (!currentRect.visible) {
+                this.showHideTooltip(false, false);
+            }
         }
         else {
             if (!isNullOrUndefined(this.heatMap.tooltipRender)) {
@@ -3543,7 +3546,7 @@ class Tooltip$1 {
                 //     hetmapSeries.hoverYAxisLabel);
                 let content = this.getTooltipContent(currentRect, hetmapSeries);
                 let argData = {
-                    heatmap: this.heatMap,
+                    heatmap: (this.heatMap.isBlazor ? null : this.heatMap),
                     cancel: false,
                     name: 'tooltipRender',
                     value: currentRect.value,
@@ -3555,43 +3558,50 @@ class Tooltip$1 {
                         this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
                     content: content
                 };
-                this.heatMap.trigger('tooltipRender', argData);
-                if (!argData.cancel) {
-                    tempTooltipText = argData.content;
-                }
-                else {
-                    if (this.tooltipObject) {
-                        this.showHideTooltip(false);
+                this.heatMap.trigger('tooltipRender', argData, (observedArgs) => {
+                    if (!observedArgs.cancel) {
+                        tempTooltipText = observedArgs.content;
+                        this.tooltipCallback(currentRect, tempTooltipText);
                     }
-                    return;
-                }
+                    else {
+                        if (this.tooltipObject) {
+                            this.showHideTooltip(false);
+                        }
+                    }
+                });
             }
             else {
                 //  this.tooltipObject.header = hetmapSeries.hoverYAxisLabel.toString();
                 tempTooltipText = this.getTooltipContent(currentRect, hetmapSeries);
+                this.tooltipCallback(currentRect, tempTooltipText);
             }
-            if (!this.tooltipObject) {
-                this.createTooltip(currentRect, currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
-            }
-            else {
-                this.tooltipObject.content = tempTooltipText;
-                this.tooltipObject.data = {
-                    xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
-                    yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
-                    xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
-                        this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
-                    yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
-                        this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
-                    value: currentRect.value,
-                };
-            }
-            this.showHideTooltip(true);
-            this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;
-            this.isFirst = (this.isFirst) ? false : this.isFirst;
-            this.isFadeout = (this.isFadeout) ? false : this.isFadeout;
-            this.tooltipObject.location.x = currentRect.x + (currentRect.width / 2);
-            this.tooltipObject.location.y = currentRect.y + (currentRect.height / 2);
         }
+    }
+    /**
+     * To render tooltip.
+     */
+    tooltipCallback(currentRect, tempTooltipText) {
+        if (!this.tooltipObject) {
+            this.createTooltip(currentRect, currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
+        }
+        else {
+            this.tooltipObject.content = tempTooltipText;
+            this.tooltipObject.data = {
+                xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+                value: currentRect.value,
+            };
+        }
+        this.showHideTooltip(true);
+        this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;
+        this.isFirst = (this.isFirst) ? false : this.isFirst;
+        this.isFadeout = (this.isFadeout) ? false : this.isFadeout;
+        this.tooltipObject.location.x = currentRect.x + (currentRect.width / 2);
+        this.tooltipObject.location.y = currentRect.y + (currentRect.height / 2);
         if (!currentRect.visible) {
             this.showHideTooltip(false, false);
         }
@@ -5102,6 +5112,8 @@ let HeatMap = class HeatMap extends Component {
          * @private
          */
         this.isCellData = false;
+        /** @private */
+        this.isBlazor = false;
     }
     preRender() {
         this.initPrivateVariable();
@@ -5120,6 +5132,7 @@ let HeatMap = class HeatMap extends Component {
         this.tempRectHoverClass = '';
         this.tempTooltipRectId = '';
         this.setCulture();
+        this.isBlazor = isBlazor();
     }
     /**
      * Method to set culture for heatmap
@@ -5129,7 +5142,7 @@ let HeatMap = class HeatMap extends Component {
     }
     render() {
         this.updateBubbleHelperProperty();
-        this.trigger('load', { heatmap: this });
+        this.trigger('load', { heatmap: (this.isBlazor ? null : this) });
         this.initAxis();
         this.processInitData();
         this.setTheme();
@@ -5613,7 +5626,7 @@ let HeatMap = class HeatMap extends Component {
                 heatmap.currentRect.allowCollection = false;
                 heatmap.setCellOpacity();
                 let argData = {
-                    heatmap: heatmap,
+                    heatmap: (this.isBlazor ? null : heatmap),
                     cancel: false,
                     name: 'cellSelected',
                     data: heatmap.multiCellCollection
@@ -5667,7 +5680,7 @@ let HeatMap = class HeatMap extends Component {
     heatMapResize(e) {
         this.resizing = true;
         let argData = {
-            heatmap: this,
+            heatmap: (this.isBlazor ? null : this),
             cancel: false,
             name: 'resized',
             currentSize: new Size(0, 0),
@@ -5689,7 +5702,7 @@ let HeatMap = class HeatMap extends Component {
             if (this.allowSelection) {
                 this.updateCellSelection();
             }
-            this.trigger('loaded', { heatmap: this });
+            this.trigger('loaded', (this.isBlazor ? null : { heatmap: this }));
             this.resizing = false;
         }, 500);
         return false;
@@ -5827,7 +5840,7 @@ let HeatMap = class HeatMap extends Component {
         if (isheatmapRect) {
             let currentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
             this.trigger('cellClick', {
-                heatmap: this,
+                heatmap: (this.isBlazor ? null : this),
                 value: currentRect.value,
                 x: currentRect.x,
                 y: currentRect.y,
@@ -6325,7 +6338,7 @@ let HeatMap = class HeatMap extends Component {
                         this.currentRect.allowCollection = false;
                         this.setCellOpacity();
                         let argData = {
-                            heatmap: this,
+                            heatmap: (this.isBlazor ? null : this),
                             cancel: false,
                             name: 'cellSelected',
                             data: this.multiCellCollection

@@ -26,6 +26,7 @@ export interface LayerModel {
     /**
      * Defines the collection of the objects that are added to a particular layer
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     objects?: string[];
@@ -63,6 +64,7 @@ export interface LayerModel {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     addInfo?: Object;

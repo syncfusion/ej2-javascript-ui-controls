@@ -265,14 +265,14 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Gets or sets the minimum date that can be selected in the calendar-popup.
      * @default new Date(1900, 00, 01)
-     * @aspDefaultValue new DateTime(1900, 01, 01)
+     * @blazorDefaultValue new DateTime(1900, 01, 01)
      */
     @Property(new Date(1900, 0, 1))
     public min: Date;
     /**
      * Gets or sets the maximum date that can be selected in the calendar-popup.
      * @default new Date(2099, 11, 31)
-     * @aspDefaultValue new DateTime(2099, 12, 31)
+     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public max: Date;
@@ -344,14 +344,14 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Gets or sets the start date of the date range selection.
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     @Property(null)
     public startDate: Date;
     /**
      * Gets or sets the end date of the date range selection.
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     @Property(null)
     public endDate: Date;
@@ -373,6 +373,7 @@ export class DateRangePicker extends CalendarBase {
      * specifies the z-index value of the dateRangePicker popup element.
      * @default 1000
      * @aspType int
+     * @blazorType int
      */
     @Property(1000)
     public zIndex: number;
@@ -424,6 +425,7 @@ export class DateRangePicker extends CalendarBase {
      * [`Range Span`](../../daterangepicker/range-restriction/#range-span) documentation.
      * @default null    
      * @aspType int
+     * @blazorType int
      */
     @Property(null)
     public minDays: number;
@@ -433,6 +435,7 @@ export class DateRangePicker extends CalendarBase {
      * [`Range Span`](../../daterangepicker/range-restriction/#range-span) documentation.
      * @default null
      * @aspType int
+     * @blazorType int
      */
     @Property(null)
     public maxDays: number;
@@ -450,6 +453,7 @@ export class DateRangePicker extends CalendarBase {
      * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
      * @aspType string
      * @default null
+     * @blazorType int
      */
     @Property(null)
     public format: string | RangeFormatObject;
@@ -484,6 +488,7 @@ export class DateRangePicker extends CalendarBase {
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
      */
     @Property('Never')
@@ -506,6 +511,7 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when the DateRangePicker is opened.
      * @event 
      * @blazorProperty 'OnOpen'
+     * @blazorType RangePopupEventArgs
      */
     @Event()
     public open: EmitType<Object>;
@@ -514,6 +520,7 @@ export class DateRangePicker extends CalendarBase {
      * Triggers when the DateRangePicker is closed.
      * @event
      * @blazorProperty 'OnClose'
+     * @blazorType RangePopupEventArgs
      */
     @Event()
     public close: EmitType<Object>;
@@ -521,20 +528,19 @@ export class DateRangePicker extends CalendarBase {
      * Triggers on selecting the start and end date.
      * @event 
      * @blazorProperty 'RangeSelected'
+     * @blazorType RangeEventArgs
      */
     @Event()
     public select: EmitType<Object>;
     /** 
      *  Triggers when the control gets focus.
-     * @event 
-     * @blazorProperty 'OnFocus'
+     * @event
      */
     @Event()
     public focus: EmitType<FocusEventArgs>;
     /** 
      * Triggers when the control loses the focus.
-     * @event 
-     * @blazorProperty 'OnBlur'
+     * @event
      */
     @Event()
     public blur: EmitType<BlurEventArgs>;

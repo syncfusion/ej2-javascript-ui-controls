@@ -947,6 +947,18 @@ describe('Symbol Palette', () => {
             expect(palette.palettes.length === 1).toBe(true);
             done();
         });
+        it('Collapse Palette at run time', (done: Function) => {
+            palette.palettes[0].expanded = false;
+            palette.dataBind();
+            expect(palette.palettes[0].expanded === false).toBe(true);
+            done();
+        });
+        it('Expand Palette at run time', (done: Function) => {
+            palette.palettes[0].expanded = true;
+            palette.dataBind();
+            expect(palette.palettes[0].expanded === true).toBe(true);
+            done();
+        });
         });
     describe('Testing symbol palette', () => {
         let diagram: Diagram;

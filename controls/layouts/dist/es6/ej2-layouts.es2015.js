@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, resetBlazorTemplate, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -447,11 +447,11 @@ let Splitter = class Splitter extends Component {
     }
     getPrevPane(currentBar, order) {
         let elementIndex = (order - 1) / (2);
-        return currentBar.parentElement.children[elementIndex];
+        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
     }
     getNextPane(currentBar, order) {
         let elementIndex = ((order - 1) / 2) + 1;
-        return currentBar.parentElement.children[elementIndex];
+        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
     }
     addResizeHandler(currentBar) {
         let resizeHanlder = this.createElement('div');
@@ -1293,15 +1293,20 @@ let Splitter = class Splitter extends Component {
     }
     // tslint:disable-next-line
     templateCompile(ele, cnt) {
+        let blazorContain = Object.keys(window);
         let tempEle = this.createElement('div');
         this.compileElement(tempEle, cnt, 'content');
         if (tempEle.childNodes.length !== 0) {
             [].slice.call(tempEle.childNodes).forEach((childEle) => {
                 ele.appendChild(childEle);
             });
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && cnt.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + 'content' + this.allPanes.length.toString(), 'ContentTemplate', this.paneSettings[this.allPanes.length - 1]);
+            }
         }
     }
     compileElement(ele, val, prop) {
+        let blazorContain = Object.keys(window);
         if (typeof (val) === 'string') {
             val = (val).trim();
         }
@@ -1314,7 +1319,12 @@ let Splitter = class Splitter extends Component {
         }
         let templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            templateFUN = templateFn({}, this, prop);
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
+                templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), this.isStringTemplate);
+            }
+            else {
+                templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), true);
+            }
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach((el) => {
@@ -1723,7 +1733,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                     this.panelPropertyChange(this.panels[i], { col: colValue < 0 ? 0 : colValue });
                 }
                 this.setXYAttributes(panelElement, this.panels[i]);
-                let panel = this.renderPanels(panelElement, this.panels[i]);
+                let panel = this.renderPanels(panelElement, this.panels[i], this.panels[i].id, false);
                 this.panelCollection.push(panel);
                 this.setHeightAndWidth(panelElement, this.panels[i]);
                 this.tempObject = this;
@@ -1834,15 +1844,15 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
         return undefined;
     }
-    renderTemplate(content, appendElement, type) {
+    renderTemplate(content, appendElement, type, isStringTemplate) {
         let templateFn = this.templateParser(content);
         let templateElements = [];
-        for (let item of templateFn({}, null, null, this.element.id + type)) {
+        for (let item of templateFn({}, null, null, type, isStringTemplate)) {
             templateElements.push(item);
         }
         append([].slice.call(templateElements), appendElement);
     }
-    renderPanels(cellElement, panelModel) {
+    renderPanels(cellElement, panelModel, panelId, isStringTemplate) {
         addClass([cellElement], [panel, panelTransition]);
         this.panelContent = cellElement.querySelector('.e-panel-container') ?
             cellElement.querySelector('.e-panel-container') :
@@ -1856,9 +1866,10 @@ let DashboardLayout = class DashboardLayout extends Component {
                 cellElement.querySelector('.e-panel-header') : this.createSubElement('', cellElement.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             if (!cellElement.querySelector('.e-panel-header')) {
-                this.renderTemplate(panelModel.header, headerTemplateElement, 'header');
+                let id = this.element.id + 'HeaderTemplate' + panelId;
+                this.renderTemplate(panelModel.header, headerTemplateElement, id, isStringTemplate);
                 this.panelContent.appendChild(headerTemplateElement);
-                setTimeout(() => { updateBlazorTemplate(this.element.id + 'header', 'Header'); }, 0);
+                updateBlazorTemplate(id, 'HeaderTemplate', panelModel);
             }
         }
         if (panelModel.content) {
@@ -1869,9 +1880,10 @@ let DashboardLayout = class DashboardLayout extends Component {
             let contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
             setStyleAttribute(this.panelBody, { height: contentHeightValue });
             if (!cellElement.querySelector('.e-panel-content')) {
-                this.renderTemplate(panelModel.content, this.panelBody, 'content');
+                let id = this.element.id + 'ContentTemplate' + panelId;
+                this.renderTemplate(panelModel.content, this.panelBody, id, isStringTemplate);
                 this.panelContent.appendChild(this.panelBody);
-                setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'content'); }, 0);
+                updateBlazorTemplate(id, 'ContentTemplate', panelModel);
             }
         }
         return cellElement;
@@ -2420,7 +2432,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         setStyleAttribute(panelElement, { 'height': formatUnit(this.setXYDimensions(panelModel)[0]) });
         setStyleAttribute(panelElement, { 'width': formatUnit(this.setXYDimensions(panelModel)[1]) });
     }
-    renderCell(panel) {
+    renderCell(panel, isStringTemplate) {
         this.dimensions = this.setXYDimensions(panel);
         if (isUndefined(panel.enabled)) {
             panel.enabled = true;
@@ -2428,7 +2440,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         let cellElement = this.createPanelElement(panel.cssClass, panel.id);
         cellElement.style.zIndex = '' + panel.zIndex;
         this.element.appendChild(cellElement);
-        let dashBoardCell = this.renderPanels(cellElement, panel);
+        let dashBoardCell = this.renderPanels(cellElement, panel, panel.id, isStringTemplate);
         this.panelCollection.push(dashBoardCell);
         this.setXYAttributes(cellElement, panel);
         this.setHeightAndWidth(cellElement, panel);
@@ -2505,7 +2517,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                 if (this.maxColumnValue < cells[j].col || this.maxColumnValue < (cells[j].col + cells[j].sizeX)) {
                     this.panelPropertyChange(cells[j], { col: this.maxColumnValue - cells[j].sizeX });
                 }
-                let cell = this.renderCell(cells[j]);
+                let cell = this.renderCell(cells[j], false);
                 if (this.enableRtl) {
                     addClass([cell], 'e-rtl');
                 }
@@ -3610,7 +3622,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (this.maxColumnValue < panelProp.col || this.maxColumnValue < (panelProp.col + panelProp.sizeX)) {
             this.panelPropertyChange(panelProp, { col: this.maxColumnValue - panelProp.sizeX });
         }
-        let cell = this.renderCell(panelProp);
+        let cell = this.renderCell(panelProp, true);
         this.oldRowCol[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.cloneObject[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.updateOldRowColumn();
@@ -3683,10 +3695,9 @@ let DashboardLayout = class DashboardLayout extends Component {
                 cell.querySelector('.e-panel-header') : this.createSubElement('', cell.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             headerTemplateElement.innerHTML = '';
-            this.renderTemplate(panelInstance.header, headerTemplateElement, 'header');
+            let id = this.element.id + 'HeaderTemplate' + panelInstance.id;
+            this.renderTemplate(panelInstance.header, headerTemplateElement, id, true);
             this.panelContent.appendChild(headerTemplateElement);
-            resetBlazorTemplate(this.element.id + 'header', 'Header');
-            setTimeout(() => { updateBlazorTemplate(this.element.id + 'header', 'Header'); }, 0);
         }
         else {
             if (cell.querySelector('.e-panel-header')) {
@@ -3701,10 +3712,9 @@ let DashboardLayout = class DashboardLayout extends Component {
                 window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
             let contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
             setStyleAttribute(this.panelBody, { height: contentHeightValue });
-            this.renderTemplate(panelInstance.content, this.panelBody, 'content');
+            let id = this.element.id + 'ContentTemplate' + panelInstance.id;
+            this.renderTemplate(panelInstance.content, this.panelBody, id, true);
             this.panelContent.appendChild(this.panelBody);
-            resetBlazorTemplate(this.element.id + 'content', 'Content');
-            setTimeout(() => { updateBlazorTemplate(this.element.id + 'content', 'Content'); }, 0);
         }
         else {
             if (cell.querySelector('.e-panel-content')) {

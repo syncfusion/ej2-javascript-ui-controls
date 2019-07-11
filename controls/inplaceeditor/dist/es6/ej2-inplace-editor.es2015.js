@@ -263,8 +263,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     appendValueElement() {
         this.valueWrap = this.createElement('div', { id: this.element.id + '_wrap', className: VALUE_WRAPPER });
-        let blazorContain = Object.keys(window);
-        if (blazorContain.indexOf('ejsIntrop') === -1) {
+        if (Object.keys(window).indexOf('ejsInterop') === -1) {
             this.element.innerHTML = '';
         }
         this.valueEle = this.createElement('span', { className: VALUE });
@@ -581,7 +580,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.isExtModule ? this.notify(setFocus, {}) : this.componentObj.element.focus();
     }
     removeEditor() {
-        resetBlazorTemplate(this.element.id + 'template', 'Template');
+        let blazorContain = Object.keys(window);
+        if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate) {
+            resetBlazorTemplate(this.element.id + 'template', 'Template');
+        }
         let tipEle;
         if (this.tipObj && this.formEle) {
             tipEle = closest(this.formEle, '.' + ROOT_TIP);
@@ -683,18 +685,24 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     templateCompile(trgEle, tempStr) {
         let tempEle;
+        let blazorContain = Object.keys(window);
         if (typeof tempStr === 'string') {
             tempStr = tempStr.trim();
         }
         let compiler = compile(tempStr);
         if (!isNullOrUndefined(compiler)) {
-            tempEle = compiler({}, this, 'template', this.element.id + 'template');
+            let isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+                !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) ?
+                this.isStringTemplate : true;
+            tempEle = compiler({}, this, 'template', this.element.id + 'template', isString);
         }
         if (!isNullOrUndefined(compiler) && tempEle.length > 0) {
             [].slice.call(tempEle).forEach((el) => {
                 trgEle.appendChild(el);
             });
-            updateBlazorTemplate(this.element.id + 'template', 'Template');
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && (tempStr).indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + 'template', 'Template', this);
+            }
         }
     }
     appendTemplate(trgEle, tempStr) {

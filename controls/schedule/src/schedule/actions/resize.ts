@@ -113,6 +113,9 @@ export class Resize extends ActionBase {
             startTime: this.actionObj.start,
             endTime: this.actionObj.end
         };
+        if (this.parent.group.resources.length > 0) {
+            resizeArgs.groupIndex = this.actionObj.groupIndex;
+        }
         this.parent.trigger(event.resizing, resizeArgs);
     }
 

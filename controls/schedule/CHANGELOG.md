@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### Schedule
+
+#### Bug Fixes
+
+- Start and end time of events in month and timeline views now been correctly acquired in `eventRendered` event and event template.
+- #240585 - Start time, end time and group index of clone element now been tracked in the events `drag` and `resizing`.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Schedule

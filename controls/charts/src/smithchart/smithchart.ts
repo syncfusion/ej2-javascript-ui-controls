@@ -289,9 +289,12 @@ public theme: SmithchartTheme;
     @Event()
     public seriesRender: EmitType<ISmithchartSeriesRenderEventArgs>;
 
-/**
- * Get component name
- */
+    /** @private */
+    public isBlazor: boolean;
+
+    /**
+     * Get component name
+     */
 
     public getModuleName(): string {
         return 'smithchart';
@@ -442,6 +445,8 @@ public theme: SmithchartTheme;
      */
 
     protected preRender(): void {
+        let blazor: string = 'Blazor';
+        this.isBlazor = window[blazor];
         this.trigger('load', {smithchart: this});
         this.unWireEVents();
         this.initPrivateVariable();
@@ -483,7 +488,7 @@ public theme: SmithchartTheme;
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
-        this.trigger('loaded', { smithchart: this });
+        this.trigger('loaded', this.isBlazor ? {} : { smithchart: this });
     }
      private createSecondaryElement(): void {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {

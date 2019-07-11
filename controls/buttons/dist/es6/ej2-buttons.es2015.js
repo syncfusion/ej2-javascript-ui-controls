@@ -1826,10 +1826,12 @@ let ChipList = class ChipList extends Component {
      * A function that returns selected chips data.
      */
     getSelectedChips() {
-        let slectedChips;
+        let selectedChips;
         if (this.type !== 'chip' && this.selection !== 'None') {
             let selectedItems = { texts: [], Indexes: [], data: [], elements: [] };
-            this.element.querySelectorAll('.' + classNames.active).forEach((chip) => {
+            const items = this.element.querySelectorAll('.' + classNames.active);
+            for (let i = 0; i < items.length; i++) {
+                const chip = items[i];
                 selectedItems.elements.push(chip);
                 let index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chip);
                 selectedItems.Indexes.push(index);
@@ -1837,15 +1839,15 @@ let ChipList = class ChipList extends Component {
                 let text = typeof this.chips[index] === 'object' ?
                     this.chips[index].text.toString() : this.chips[index].toString();
                 selectedItems.texts.push(text);
-            });
+            }
             let selectedItem = {
                 text: selectedItems.texts[0], index: selectedItems.Indexes[0],
                 data: selectedItems.data[0], element: selectedItems.elements[0]
             };
-            slectedChips = !isNullOrUndefined(selectedItem.index) ?
+            selectedChips = !isNullOrUndefined(selectedItem.index) ?
                 (this.selection === 'Multiple' ? selectedItems : selectedItem) : undefined;
         }
-        return slectedChips;
+        return selectedChips;
     }
     wireEvent(unWireEvent) {
         if (!unWireEvent) {

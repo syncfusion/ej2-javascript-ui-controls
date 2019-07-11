@@ -257,12 +257,21 @@ describe('Map layer testing', () => {
                 let element: Element = document.getElementById('label_LayerIndex_0_Label_Template_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(51);
             };
-            label.layers[0].dataLabelSettings.visible = true,
-                label.layers[0].dataLabelSettings.labelPath = 'name',
-                label.layers[0].dataLabelSettings.template = '<div id="marker1"><p>{{:name}}</p></div>',
-                label.refresh();
+            label.layers[0].dataLabelSettings.visible = true;
+            label.layers[0].dataLabelSettings.labelPath = 'name';
+            label.layers[0].dataLabelSettings.template = '<div id="marker1"><p>{{:name}}</p></div>';
+            label.refresh();
         });
 
+        it('checking with datalabel template', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById('label_LayerIndex_0_Label_Template_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(51);
+            };
+            label.layers[0].dataLabelSettings.visible = true;
+            label.layers[0].dataLabelSettings.template = 'String';
+            label.refresh();
+        });
 
     });
     describe('testing datalabel from datasource', () => {
@@ -307,10 +316,10 @@ describe('Map layer testing', () => {
     });
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange)
+        let average: any = inMB(profile.averageChange);
         //Check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
+        let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

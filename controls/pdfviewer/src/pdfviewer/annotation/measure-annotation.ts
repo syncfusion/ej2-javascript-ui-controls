@@ -393,7 +393,7 @@ export class MeasureAnnotation {
         let bound: IRectangle;
         let annotationName: string = this.pdfViewer.annotation.createGUID();
         // tslint:disable-next-line:max-line-length
-        let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('measure', (annotationModel.pageIndex + 1));
+        let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('shape_measure', (annotationModel.pageIndex + 1), annotationModel.measureType);
         document.getElementById(commentsDivid).id = annotationName;
         annotationModel.annotName = annotationName;
         this.pdfViewer.annotation.stickyNotesAnnotationModule.addTextToComments(annotationName, annotationModel.notes);

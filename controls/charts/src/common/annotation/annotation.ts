@@ -148,7 +148,7 @@ export class AnnotationBase {
         } else if (this.control.redraw) {
             removeElement(annotationElement.id);
         }
-        setTimeout( () => { updateBlazorTemplate((this.control.element.id + 'Annotation' + index), 'ContentTemplate'); }, 0 );
+        updateBlazorTemplate((this.control.element.id + 'Annotation' + index), 'ContentTemplate', this.control.annotations[index]);
 
     }
 

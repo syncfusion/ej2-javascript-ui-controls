@@ -31,10 +31,10 @@ export interface ITemplateEngine {
 export function compile(templateString: string, helper?: Object): (data: Object | JSON, component?: any, propName?: any) => NodeList {
     let compiler: Function = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data: Object, component?: any, propName?: any, templateId?: any): NodeList => {
+    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean ): NodeList => {
         let result: object = compiler(data, component, propName);
         let blazor: string = 'Blazor'; let blazorTemplateId: string = 'BlazorTemplateId';
-        if (window && window[blazor]) {
+        if (window && window[blazor] && !isStringTemplate) {
             let randomId: string = getRandomId();
             if (!blazorTemplates[templateId]) {
                 blazorTemplates[templateId] = [];
@@ -60,11 +60,11 @@ export function compile(templateString: string, helper?: Object): (data: Object 
     };
 }
 
-export function updateBlazorTemplate(templateId?: string, templateName?: string): void {
+export function updateBlazorTemplate(templateId?: string, templateName?: string, comp?: object): void {
     let blazor: string = 'Blazor';
     if (window && window[blazor]) {
-        let ejsIntrop: string = 'ejsIntrop';
-        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId);
+        let ejsIntrop: string = 'ejsInterop';
+        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp);
         blazorTemplates[templateId] = [];
     }
 }

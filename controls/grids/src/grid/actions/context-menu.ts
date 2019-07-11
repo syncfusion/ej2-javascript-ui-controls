@@ -189,7 +189,10 @@ export class ContextMenu implements IAction {
     private contextMenuOpen(): void {
         this.isOpen = true;
     }
-    private contextMenuItemClick(args: ContextMenuClickEventArgs): void {
+    /**
+     * @hidden
+     */
+    public contextMenuItemClick(args: ContextMenuClickEventArgs): void {
         let item: string = this.getKeyFromId(args.item.id);
         switch (item) {
             case 'AutoFitAll':

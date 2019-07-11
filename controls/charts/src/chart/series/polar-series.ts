@@ -243,7 +243,7 @@ export class PolarSeries extends PolarRadarPanel {
             end: (model: AnimationOptions) => {
                 (<HTMLElement>animateElement).style.visibility = 'visible';
                 animateElement.removeAttribute('transform');
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     }

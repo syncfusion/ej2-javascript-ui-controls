@@ -3,7 +3,6 @@ import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardE
 import { attributes, Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
 import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
@@ -174,6 +173,7 @@ export class MenuAnimationSettings extends ChildProperty<MenuAnimationSettings> 
      * * FadeIn: Specifies the sub menu transform with fade in effect.
      * @default 'SlideDown'
      * @aspType Syncfusion.EJ2.Navigations.MenuEffect
+     * @blazorType Syncfusion.EJ2.Navigations.MenuEffect
      * @isEnumeration true
      */
     @Property('SlideDown')
@@ -415,15 +415,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected render(): void {
         this.initialize();
         this.renderItems();
-        if (this.isMenu && this.template) {
-            let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
-            resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-            setTimeout(
-                () => {
-                    updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-                },
-                500);
-        }
         this.wireEvents();
     }
 
@@ -763,7 +754,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.navIdx.length !== 0 && closest(e.target as Element, '.e-menu-parent.e-control')) {
                         this.closeMenu(0, e);
                     } else {
-                        if (this.keyType === 'right') {
+                        if (this.keyType === 'right' || this.keyType === 'click') {
                             this.afterCloseMenu(e as MouseEvent);
                         } else {
                             let cul: Element = this.getUlByNavIdx();
@@ -1219,6 +1210,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             ulId = wrapper.querySelector('ul').id;
         }
         if (ulId !== this.element.id) {
+            this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
             if (this.navIdx.length) {
                 isDifferentElem = true;
             } else {
@@ -1243,7 +1235,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             } else if (isDifferentElem) {
                 if (this.navIdx.length) {
-                    this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
                     this.isClosed = true;
                     this.closeMenu(null, e);
                 }
@@ -1352,7 +1343,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                                     sli.classList.remove(SELECTED);
                                 }
                                 this.isClosed = true;
-                                this.keyType = 'right';
+                                this.keyType = 'click';
                                 this.closeMenu(culIdx + 1, e);
                             }
                         }

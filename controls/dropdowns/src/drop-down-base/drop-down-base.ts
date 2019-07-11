@@ -91,6 +91,7 @@ export interface SelectEventArgs {
     item: HTMLLIElement;
     /**
      * Returns the selected item as JSON Object from the data source.
+     * @isGenericType true
      */
     itemData: FieldSettingsModel;
     /**
@@ -103,6 +104,81 @@ export interface SelectEventArgs {
     cancel?: boolean;
 
 }
+
+export interface BeforeOpenEventArgs {
+    /**
+     * Illustrates whether the current action needs to be prevented or not.
+     */
+    cancel?: boolean;
+}
+
+export interface ActionBeginEventArgs {
+    /**
+     * Specify the query to begin the data
+     */
+    query: Query;
+    /**
+     *  Set the data source to action begin
+     * @isGenericType true
+     */
+    data: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    /**
+     * Illustrates whether the current action needs to be prevented or not.
+     */
+    cancel?: boolean;
+}
+
+export interface ActionCompleteEventArgs {
+    /**
+     * Illustrates whether the current action needs to be prevented or not.
+     */
+    cancel?: boolean;
+    /**
+     * Returns the selected items as JSON Object from the data source.
+     */
+    result?: ResultData;
+    /**
+     * Return the actual records.
+     */
+    actual?: object;
+    /**
+     * Return the aggregates
+     */
+    aggregates?: object;
+    /**
+     * Return the total number for records.
+     */
+    count?: number;
+    /**
+     * Specify the query to complete the data
+     */
+    query?: Query;
+    /**
+     * Return the request type
+     */
+    request?: string;
+    /**
+     * Return the virtualSelectRecords
+     */
+    virtualSelectRecords?: object;
+    /**
+     * Return XMLHttpRequest
+     */
+    xhr: XMLHttpRequest;
+}
+
+export interface DataBoundEventArgs {
+    /**
+     * Returns the selected items as JSON Object from the data source.
+     * @isGenericType true
+     */
+    items: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    /**
+     * Return the bounded objects
+     */
+    e?: object;
+}
+
 /**
  * DropDownBase component will generate the list items based on given data and act as base class to drop-down related components
  */
@@ -214,6 +290,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
      * @default []
+     * @isGenericType true
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
@@ -245,6 +322,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers before fetching data from the remote server.
      * @event
      * @blazorProperty 'OnActionBegin'
+     * @blazorType ActionBeginEventArgs
      */
     @Event()
     public actionBegin: EmitType<Object>;
@@ -252,6 +330,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers after data is fetched successfully from the remote server.
      * @event
      * @blazorProperty 'OnActionComplete'
+     * @blazorType ActionCompleteEventArgs
      */
     @Event()
     public actionComplete: EmitType<Object>;
@@ -273,6 +352,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Triggers when data source is populated in the popup list..
      * @event
      * @blazorProperty 'DataBound'
+     * @blazorType DataBoundEventArgs
      */
     @Event()
     public dataBound: EmitType<Object>;
@@ -352,7 +432,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             if (ignoreCase) {
                 (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) => {
-                    if (this.checkIgnoreCase(getValue(fields.text, item).toString(), text)) {
+                    let itemValue: string | number = getValue(fields.value, item);
+                    if (!isNullOrUndefined(itemValue) && this.checkIgnoreCase(getValue(fields.text, item).toString(), text)) {
                         value = <string>getValue(fields.value, item);
                     }
                 });
@@ -360,7 +441,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 if (isTextByValue) {
                     dataSource.filter((item: { [key: string]: Object }) => {
                         let itemValue: string | number = getValue(fields.value, item);
-                        if (!isNullOrUndefined(itemValue) && itemValue.toString() === value.toString()) {
+                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) && itemValue.toString() === value.toString()) {
                             value = getValue(fields.text, item) as string;
                         }
                     });
@@ -420,7 +501,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             let templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             ele.innerHTML = '';
             compiledString = compile(template);
-            for (let item of compiledString({}, null, null, templateId)) {
+            for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
                 ele.appendChild(item);
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure);
@@ -492,59 +573,55 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected DropDownBaseupdateBlazorTemplates(
         item: boolean, group: boolean, noRecord: boolean, action: boolean,
         value?: boolean, header?: boolean, footer?: boolean): void {
-        if (this.itemTemplate && item) {
-            updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
-        }
-        if (this.groupTemplate && group) {
-            setTimeout(
-                () => {
-                    updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
-                },
-                0);
-        }
-        if (this.noRecordsTemplate && noRecord) {
-            setTimeout(
-                () => {
-                    updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
-                },
-                0);
-        }
-        if (this.actionFailureTemplate && action) {
-            updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
-        }
-        if (value) {
-            updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
-        }
-        if (header) {
-            updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
-        }
-        if (footer) {
-            updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
+        if (!this.isStringTemplate) {
+            if (this.itemTemplate && item) {
+                updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this);
+            }
+            if (this.groupTemplate && group) {
+                updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY, this);
+            }
+            if (this.noRecordsTemplate && noRecord) {
+                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY, this);
+            }
+            if (this.actionFailureTemplate && action) {
+                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY, this);
+            }
+            if (value) {
+                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this);
+            }
+            if (header) {
+                updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY, this);
+            }
+            if (footer) {
+                updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY, this);
+            }
         }
     }
     protected DropDownBaseresetBlazorTemplates(
         item: boolean, group: boolean, noRecord: boolean, action: boolean,
         value?: boolean, header?: boolean, footer?: boolean): void {
-        if (this.itemTemplate && item) {
-            resetBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
-        }
-        if (this.groupTemplate && group) {
-            resetBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
-        }
-        if (this.noRecordsTemplate && noRecord) {
-            resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
-        }
-        if (this.actionFailureTemplate && action) {
-            resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
-        }
-        if (value) {
-            resetBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
-        }
-        if (header) {
-            resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
-        }
-        if (footer) {
-            resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
+        if (!this.isStringTemplate) {
+            if (this.itemTemplate && item) {
+                resetBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY);
+            }
+            if (this.groupTemplate && group) {
+                resetBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY);
+            }
+            if (this.noRecordsTemplate && noRecord) {
+                resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY);
+            }
+            if (this.actionFailureTemplate && action) {
+                resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY);
+            }
+            if (value) {
+                resetBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY);
+            }
+            if (header) {
+                resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY);
+            }
+            if (footer) {
+                resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY);
+            }
         }
     }
     /**
@@ -636,8 +713,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         fields = fields ? fields : this.fields;
         let ulElement: HTMLElement;
         this.isActive = true;
-        let eventArgs: { [key: string]: Object } = { cancel: false, data: dataSource, query: query };
-        this.trigger('actionBegin', eventArgs, (eventArgs: { [key: string]: object }) => {
+        let eventArgs: ActionBeginEventArgs = { cancel: false, data: dataSource, query: query };
+        this.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginEventArgs) => {
             if (!eventArgs.cancel) {
                 this.showSpinner();
                 if (dataSource instanceof DataManager) {
@@ -720,7 +797,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         listItems: { [key: string]: Object; }[] | string[] | boolean[] | number[],
         e?: object): void {
         this.hideSpinner();
-        this.trigger('dataBound', { items: listItems, e: e });
+        let dataBoundEventArgs: DataBoundEventArgs = {
+            items: listItems,
+            e: e
+        };
+        this.trigger('dataBound', dataBoundEventArgs);
     }
     private remainingItems(
         dataSource: { [key: string]: Object }[] | string[] | number[] | boolean[],
@@ -805,7 +886,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private renderGroupTemplate(listEle: HTMLElement): void {
         if (this.fields.groupBy !== null && this.dataSource || this.element.querySelector('.' + dropDownBaseClasses.group)) {
             let dataSource: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.dataSource;
-            let option: { [key: string]: Object } = { groupTemplateID: this.groupTemplateId };
+            let option: { [key: string]: Object } = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
             let headerItems: Element[] = <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             let tempHeaders: Element[] = ListBase.renderGroupTemplate(
                 this.groupTemplate as string, <{ [key: string]: Object }[]>dataSource,
@@ -916,6 +997,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
         let option: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
         option.templateID = this.itemTemplateId;
+        option.isStringTemplate = this.isStringTemplate;
         return ListBase.renderContentTemplate(
             this.createElement, this.itemTemplate, dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, option);
     }
@@ -1139,7 +1221,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (isHeader) { li.innerText = itemText; }
             if (this.itemTemplate && !isHeader) {
                 let compiledString: Function = compile(this.itemTemplate);
-                append(compiledString(item, null, null, this.itemTemplateId), li);
+                append(compiledString(item, null, null, this.itemTemplateId, this.isStringTemplate), li);
                 this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
             } else if (!isHeader) {
                 li.appendChild(document.createTextNode(itemText));
@@ -1197,6 +1279,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Gets the data Object that matches the given value. 
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
+     * @isGenericType true
      */
     public getDataByValue(value: string | number | boolean)
         : { [key: string]: Object } | string | number | boolean {
@@ -1235,6 +1318,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     };
 }
 export interface ResultData {
+    /**
+     * To return the JSON result.
+     * @isGenericType true
+     */
     result: { [key: string]: Object }[];
 }
 
@@ -1268,6 +1355,7 @@ export interface FilteringEventArgs {
 export interface PopupEventArgs {
     /**
      * Specifies the popup Object.
+     * @deprecated
      */
     popup: Popup;
     /**

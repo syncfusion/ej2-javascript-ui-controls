@@ -98,6 +98,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * Triggers before opening the SplitButton popup.
      * @event
      * @blazorProperty 'OnOpen'
+     * @deprecated
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -106,6 +107,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * Triggers before closing the SplitButton popup.
      * @event
      * @blazorProperty 'OnClose'
+     * @deprecated
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -113,7 +115,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Triggers when the primary button of SplitButton has been clicked.
      * @event
-     * @blazorProperty 'OnClick'
+     * @blazorProperty 'Clicked'
      */
     @Event()
     public click: EmitType<ClickEventArgs>;

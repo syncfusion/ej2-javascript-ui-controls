@@ -104,7 +104,7 @@ describe('Layout Module branches validation', () => {
         expect(() => { layout.shiftNextWidgets({}); }).not.toThrowError();
     });
     it('Get Top margin validation', () => {
-        expect(layout.getMaxTopOrBottomCellMargin({})).toBe(0);
+        expect(layout.getMaxTopCellMargin({})).toBe(0);
     });
     it('Get laine spacing validation', () => {
         expect(layout.getLineSpacing({})).toBe(0);

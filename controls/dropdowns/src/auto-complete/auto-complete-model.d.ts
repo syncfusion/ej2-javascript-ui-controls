@@ -44,6 +44,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Supports the [`specified number`](../../auto-complete/filtering#filter-item-count)
      * of list items on the suggestion popup.
      * @default 20
+     * @blazorType int
      */
     suggestionCount?: number;
 
@@ -74,6 +75,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * (../../auto-complete/filtering#limit-the-minimum-filter-character),
      * the search action will perform after typed minimum characters.
      * @default 1
+     * @blazorType int
      */
     minLength?: number;
 
@@ -125,6 +127,8 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Not applicable to this component.
      * @default null
      * @private
+     * @blazorType int
+     * @isBlazorNullableType true
      */
     index?: number;
 
@@ -142,6 +146,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      */
     floatLabelType?: FloatLabelType;
 

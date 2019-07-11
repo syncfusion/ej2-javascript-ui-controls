@@ -182,6 +182,7 @@ export class Layout extends ChildProperty<Layout> {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -191,6 +192,7 @@ export class Layout extends ChildProperty<Layout> {
     /**
      * Defines whether an object should be at the left/right of the mind map. Applicable only for the direct children of the root node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -200,6 +202,7 @@ export class Layout extends ChildProperty<Layout> {
     /**
      * Aligns the layout within the given bounds
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

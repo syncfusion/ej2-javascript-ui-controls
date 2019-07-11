@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#233488`, `#239802` - Issue with "throws error while set the field value as null" has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#226512` - Now, SelectAll checkbox shows when more than one items present in the filtered list.
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#239351` - Now, Select event triggers when selecting the value through interaction.
+
+- `#F145367` - Issue with "filtering is not working with item template" has been resolved.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### ListBox
@@ -36,7 +58,7 @@
 
 #### New Features
 
-- Now, you can render grouping with checkbox using enableGroupCheckBox property.
+- `#F142089`, `#225476`, `#231094`, `#234377` - Now, you can render grouping with checkbox using enableGroupCheckBox property.
 
 ## 17.1.49 (2019-05-29)
 

@@ -264,7 +264,7 @@ let Toast = class Toast extends Component {
             templateFn = compile(value);
         }
         if (!isNullOrUndefined(templateFn)) {
-            tmpArray = templateFn({}, this, prob);
+            tmpArray = templateFn({}, this, prob, null, true);
         }
         if (!isNullOrUndefined(tmpArray) && tmpArray.length > 0 && !(isNullOrUndefined(tmpArray[0].tagName) && tmpArray.length === 1)) {
             [].slice.call(tmpArray).forEach((el) => {
@@ -448,7 +448,7 @@ let Toast = class Toast extends Component {
         let ele = this.element;
         if (isNullOrUndefined(this.content) || this.content === '') {
             let isContent = this.element.innerHTML.replace(/\s/g, '') !== '';
-            if ((ele.children.length > 0 || isContent) && !ele.firstElementChild.classList.contains(ROOT)) {
+            if ((ele.children.length > 0 || isContent) && !(ele.firstElementChild && ele.firstElementChild.classList.contains(ROOT))) {
                 this.innerEle = document.createDocumentFragment();
                 let tempEle = this.createElement('div');
                 while (ele.childNodes.length !== 0) {

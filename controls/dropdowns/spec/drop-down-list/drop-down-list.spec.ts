@@ -147,6 +147,7 @@ describe('DDList', () => {
     describe('Local data binding with Disable Item', () => {
         let listObj: any;
         let popupObj: any;
+        let e: any = { preventDefault: function () { } };
         let localData: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP',
          htmlAttributes: { class: 'e-disabled', title: 'PHP' } },
          { id: 'id1', text: 'HTML' }, 
@@ -174,7 +175,9 @@ describe('DDList', () => {
                 listObj.select = null;
                 done();
             };
-            listObj.index = 0;
+            listObj.showPopup();
+            let items: HTMLElement[] = listObj.popupObj.element.querySelectorAll('li');
+            listObj.setSelection(items[0], e);
         });
         it('check data attribute', () => {
             expect(listObj.hiddenElement.getAttribute('data-msg-container-id')).not.toBeNull();
@@ -1266,6 +1269,7 @@ describe('DDList', () => {
         let data: string[] = ['Basketball', 'Football', 'Hockey', 'Snooker'];
         let selectAction: EmitType<Object> = jasmine.createSpy('Select');
         let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+        let e: any = { preventDefault: function () { } };
         let originalTimeout: number;
         beforeEach(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
@@ -1292,9 +1296,9 @@ describe('DDList', () => {
             setTimeout(() => {
                 expect(listObj.inputWrapper.container.getAttribute('aria-activedescendant') !== 'null').toBe(true);
                 let items: Element[] = listObj.popupObj.element.querySelectorAll('li');
-                listObj.setSelection(items[0]);
+                listObj.setSelection(items[0], e);
                 expect(selectAction).toHaveBeenCalled();
-                expect(changeAction).not.toHaveBeenCalled();
+                expect(changeAction).toHaveBeenCalled();
                 done()
             }, 450)
         });
@@ -1321,6 +1325,7 @@ describe('DDList', () => {
         let element: HTMLInputElement;
         let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let e: any = { preventDefault: function () { } };
         let originalTimeout: number;
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
@@ -1418,7 +1423,7 @@ describe('DDList', () => {
             setTimeout(() => {
                 expect(openAction).toHaveBeenCalled();
                 let items: Element[] = listObj.popupObj.element.querySelectorAll('li');
-                listObj.setSelection(items[2]);
+                listObj.setSelection(items[2], e);
                 expect(selectAction).toHaveBeenCalled();
                 done()
             }, 450)
@@ -3764,9 +3769,7 @@ describe('DDList', () => {
             });
             listObj.appendTo(element);
             listObj.showPopup();
-            setTimeout(function () {
-                listObj.hidePopup();
-            }, 20);
+            listObj.hidePopup();
             listObj.destroy();
         });
     });
@@ -3792,13 +3795,12 @@ describe('DDList', () => {
             element.remove();
         });
 
-        it('search diacritics data', (done) => {
+        it('search diacritics data', () => {
             dropDowns.showPopup();
             dropDowns.filterInput.value = 'ä';
             keyEventArgs.keyCode = 67;
             dropDowns.onInput();
             dropDowns.onFilterUp(keyEventArgs);
-            setTimeout(() => {
                 let item: HTMLElement[] = dropDowns.popupObj.element.querySelectorAll('li');
                 expect(item.length === 2).toBe(true);
                 mouseEventArgs.target = item[0];
@@ -3806,8 +3808,6 @@ describe('DDList', () => {
                 dropDowns.onMouseClick(mouseEventArgs);
                 expect(dropDowns.value === 'Åland').toBe(true);
                 expect(dropDowns.inputElement.value === 'Åland').toBe(true);
-                done();
-            }, 400);
         });
     });
 
@@ -3828,13 +3828,10 @@ describe('DDList', () => {
             element.remove();
         });
 
-        it(' click on popup button', (done) => {
+        it(' click on popup button', () => {
             mouseEventArgs.target = dropDowns.inputWrapper.container;
             dropDowns.dropDownClick(mouseEventArgs);
-            setTimeout(() => {
                 expect(dropDowns.isPopupOpen).toBe(false);
-                done();
-            }, 400);
         });
     });
 
@@ -4403,6 +4400,7 @@ describe('DDList', () => {
         let listObj: DropDownList;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
         let num: number = 0;
+        let e : any = { preventDefault: (): void => { /** NO Code */ } }
         beforeAll(() => {
             document.body.appendChild(element);
           
@@ -4422,7 +4420,7 @@ describe('DDList', () => {
                fields: { text: "text", value: "id" },
                 open: () => {
                     let items: HTMLLIElement = (<any>listObj).popupObj.element.querySelector('.e-list-parent').firstChild;
-                    (<any>listObj).setSelection(items);
+                    (<any>listObj).setSelection(items, e);
                 },
                 close: () => {
                     listObj.showPopup();

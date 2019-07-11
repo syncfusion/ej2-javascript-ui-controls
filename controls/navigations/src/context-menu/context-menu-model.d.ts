@@ -22,6 +22,7 @@ export interface ContextMenuModel extends MenuBaseModel{
      * Specifies menu items with its properties which will be rendered as ContextMenu.
      * @default []
      * @aspType object
+     * @blazorType object
      */
     items?: MenuItemModel[];
 

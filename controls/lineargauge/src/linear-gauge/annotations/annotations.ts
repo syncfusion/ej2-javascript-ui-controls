@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis } from '../axes/axis';
 import { Annotation } from '../model/base';
@@ -32,9 +32,9 @@ export class Annotations {
         });
         if (annotationGroup.childElementCount > 0 && !(isNullOrUndefined(getElement(secondaryID)))) {
             getElement(secondaryID).appendChild(annotationGroup);
-            updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate', 'ContentTemplate');
-        } else {
-            resetBlazorTemplate(this.gauge.element.id + '_ContentTemplate', 'ContentTemplate');
+            for (let i: number = 0; i < this.gauge.annotations.length; i++) {
+                updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.annotations[i]);
+            }
         }
     }
     /**
@@ -61,8 +61,8 @@ export class Annotations {
             if (!argsData.cancel) {
                 let blazor: string = 'Blazor';
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!window[blazor] ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate').length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate'));
+                if (templateFn && (!window[blazor] ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     let length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -126,12 +126,7 @@ export class Annotations {
                 childElement.style.top = top + 'px';
                 if (renderAnnotation) {
                     element.appendChild(childElement);
-                    setTimeout(() => {
-                        updateBlazorTemplate(element.id + ' content', 'Content');
-                    }, 0);
                 }
-            } else {
-                resetBlazorTemplate(element.id + ' content', 'Content');
             }
         });
 

@@ -42,17 +42,21 @@ export class BookmarkView {
         let proxy: BookmarkView = this;
         // tslint:disable-next-line:max-line-length
         let jsonObject: object = { hashId: this.pdfViewerBase.hashId, action: 'Bookmarks' };
+        if (this.pdfViewerBase.jsonDocumentId) {
+            // tslint:disable-next-line
+            (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+        }
         this.bookmarkRequestHandler = new AjaxHandler(this.pdfViewer);
-        this.bookmarkRequestHandler.url  = proxy.pdfViewer.serviceUrl + '/Bookmarks';
+        this.bookmarkRequestHandler.url = proxy.pdfViewer.serviceUrl + '/Bookmarks';
         this.bookmarkRequestHandler.responseType = 'json';
         this.bookmarkRequestHandler.send(jsonObject);
         // tslint:disable-next-line
-        this.bookmarkRequestHandler.onSuccess = function(result: any) {
+        this.bookmarkRequestHandler.onSuccess = function (result: any) {
             if (proxy.pdfViewerBase.navigationPane) {
                 proxy.pdfViewerBase.navigationPane.disableBookmarkButton();
             }
             // tslint:disable-next-line
-            let data:any = result.data;
+            let data: any = result.data;
             if (data) {
                 if (typeof data !== 'object') {
                     data = JSON.parse(data);
@@ -70,11 +74,11 @@ export class BookmarkView {
             }
         };
         // tslint:disable-next-line
-        this.bookmarkRequestHandler.onFailure = function(result: any) {
+        this.bookmarkRequestHandler.onFailure = function (result: any) {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
         };
         // tslint:disable-next-line
-        this.bookmarkRequestHandler.onError = function(result: any) {
+        this.bookmarkRequestHandler.onError = function (result: any) {
             proxy.pdfViewerBase.openNotificationPopup();
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
         };
@@ -120,12 +124,14 @@ export class BookmarkView {
                 nodeTemplate: bookmarkIconView.outerHTML,
                 nodeSelected: this.nodeClick.bind(this),
             });
+            this.treeObj.isStringTemplate = true;
             if (this.pdfViewer.enableRtl) {
                 this.treeObj.enableRtl = true;
             }
             this.treeObj.appendTo(this.bookmarkView);
-            ['mouseover', 'keydown'].forEach( (evt: string) => this.bookmarkView.addEventListener(evt, (event: Event) => {
-                this.setHeight(event.target); }));
+            ['mouseover', 'keydown'].forEach((evt: string) => this.bookmarkView.addEventListener(evt, (event: Event) => {
+                this.setHeight(event.target);
+            }));
             this.isBookmarkViewDiv = true;
         }
         this.bookmarkView.style.display = 'block';
@@ -151,6 +157,7 @@ export class BookmarkView {
             showHeader: false,
             select: this.bookmarkClick.bind(this)
         });
+        this.bookmarkList.isStringTemplate = true;
         if (this.pdfViewer.enableRtl) {
             this.bookmarkList.enableRtl = true;
         }
@@ -179,18 +186,18 @@ export class BookmarkView {
     }
 
     // tslint:disable-next-line
-    private setHeight(element:any): void {
+    private setHeight(element: any): void {
         if (this.treeObj.fullRowSelect) {
-          if (element.classList.contains('e-treeview')) {
-            element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
-          } else if (element.classList.contains('e-list-parent')) {
-            element = element.querySelector('.e-fullrow');
-          } else if (element.classList.value !== ('e-fullrow') && element.closest('.e-list-item')) {
-            element = element.closest('.e-list-item').querySelector('.e-fullrow');
-          }
-          if (element.nextElementSibling) {
-            element.style.height = element.nextElementSibling.offsetHeight + 'px';
-          }
+            if (element.classList.contains('e-treeview')) {
+                element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
+            } else if (element.classList.contains('e-list-parent')) {
+                element = element.querySelector('.e-fullrow');
+            } else if (element.classList.value !== ('e-fullrow') && element.closest('.e-list-item')) {
+                element = element.closest('.e-list-item').querySelector('.e-fullrow');
+            }
+            if (element.nextElementSibling) {
+                element.style.height = element.nextElementSibling.offsetHeight + 'px';
+            }
         }
     }
 
@@ -201,12 +208,12 @@ export class BookmarkView {
         // tslint:disable-next-line
         let element: any = this.treeObj.element;
         if (this.treeObj.fullRowSelect) {
-          if (element.classList.contains('e-treeview')) {
-            element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
-          }
-          if (element.nextElementSibling) {
-            element.style.height = element.nextElementSibling.offsetHeight + 'px';
-          }
+            if (element.classList.contains('e-treeview')) {
+                element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
+            }
+            if (element.nextElementSibling) {
+                element.style.height = element.nextElementSibling.offsetHeight + 'px';
+            }
         }
     }
 

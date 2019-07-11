@@ -1,7 +1,7 @@
 /**
  * Spec for internationalization.
  */
-import { Internationalization, setCulture, setCurrencyCode, getNumericObject, getDefaultDateObject, loadCldr } from '../src/internationalization';
+import { Internationalization, setCulture, setCurrencyCode, getNumericObject, getDefaultDateObject, getNumberDependable, loadCldr } from '../src/internationalization';
 import { monthDayMatch } from './intl/date-parser.spec';
 import { getTimeZoneString } from './intl/date-formatter.spec';
 import { IntlBase as base } from '../src/intl/intl-base';
@@ -123,6 +123,7 @@ describe('Internationalization', () => {
     });
     describe('getNumericObject', () => {
         it('checkNumericObject for invalid culture returns default culture', () => {
+            getNumberDependable('fe', 'USD');
             expect(getNumericObject('fe')).toEqual({
                 decimal: '.', exponential: 'E', group: ',', infinity: '∞', list: ';', maximumFraction: 3, minimumFraction: 0
                 , minusSign: '-', nan: 'NaN', perMille: '‰', percentSign: '%', plusSign: '+', superscriptingExponent: '×',

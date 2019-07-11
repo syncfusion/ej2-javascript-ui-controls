@@ -314,70 +314,72 @@ export class Render {
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         (<{actionArgs?: NotifyArgs}>e).actionArgs = args;
-        gObj.trigger(events.beforeDataBound, e);
-        if ((<{ cancel?: boolean }>e).cancel) {
-            return;
-        }
-        let len: number = Object.keys(e.result).length;
-        if (this.parent.isDestroyed) { return; }
-        if ((!gObj.getColumns().length && !len) && !(gObj.columns.length && gObj.columns[0] instanceof Column)) {
-            gObj.hideSpinner();
-            return;
-        }
-        this.parent.isEdit = false;
-        this.parent.notify(events.tooltipDestroy, {});
-        gObj.currentViewData = <Object[]>e.result;
-        if (!len && e.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
-            gObj.prevPageMoving = true;
-            gObj.pageSettings.totalRecordsCount = e.count;
-            gObj.pageSettings.currentPage = Math.ceil(e.count / gObj.pageSettings.pageSize);
-            gObj.dataBind();
-            return;
-        }
-        if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj) ) {
-            this.updatesOnInitialRender(e);
-        }
-        if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
-            this.updateColumnType(gObj.getCurrentViewRecords()[0]);
-        }
-        if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
-            !this.parent.groupSettings.columns.length) {
-            e.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
-        }
-        this.parent.notify(events.dataReady, extend({ count: e.count, result: e.result, aggregates: e.aggregates }, args));
-        if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
-        && (args && args.requestType !== 'filtering')) {
-            this.headerRenderer.refreshUI();
-        }
-        if (len) {
-            if (isGroupAdaptive(gObj)) {
-                let content: string = 'content';
-                args.scrollTop = { top: this.contentRenderer[content].scrollTop };
-            }
-            this.contentRenderer.refreshContentRows(args);
-        } else {
-            if (!gObj.getColumns().length) {
-                gObj.element.innerHTML = '';
-                alert(this.l10n.getConstant('EmptyDataSourceError')); //ToDO: change this alert as dialog
+        gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
+            if ((<{ cancel?: boolean }>dataArgs).cancel) {
                 return;
             }
-            this.contentRenderer.setRowElements([]);
-            this.contentRenderer.setRowObjects([]);
-            this.ariaService.setBusy(<HTMLElement>this.parent.getContent().firstChild, false);
-            this.renderEmptyRow();
-            if (args) {
-                let action: string = (args.requestType || '').toLowerCase() + '-complete';
-                this.parent.notify(action, args);
-                if (args.requestType === 'batchsave') {
-                    args.cancel = false;
-                    args.rows = [];
-                    args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
-                    this.parent.trigger(events.actionComplete, args);
-                }
+            let len: number = Object.keys(dataArgs.result).length;
+            if (this.parent.isDestroyed) { return; }
+            if ((!gObj.getColumns().length && !len) && !(gObj.columns.length && gObj.columns[0] instanceof Column)) {
+                gObj.hideSpinner();
+                return;
             }
-            this.parent.hideSpinner();
-        }
-        this.parent.notify(events.toolbarRefresh, {});
+            this.parent.isEdit = false;
+            this.parent.notify(events.tooltipDestroy, {});
+            gObj.currentViewData = <Object[]>dataArgs.result;
+            if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
+                gObj.prevPageMoving = true;
+                gObj.pageSettings.totalRecordsCount = dataArgs.count;
+                gObj.pageSettings.currentPage = Math.ceil(dataArgs.count / gObj.pageSettings.pageSize);
+                gObj.dataBind();
+                return;
+            }
+            if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj) ) {
+                this.updatesOnInitialRender(dataArgs);
+            }
+            if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
+                this.updateColumnType(gObj.getCurrentViewRecords()[0]);
+            }
+            if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
+                !this.parent.groupSettings.columns.length) {
+                dataArgs.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
+            }
+            this.parent.notify(events.dataReady,
+                               extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates }, args));
+            if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
+            && (args && args.requestType !== 'filtering')) {
+                this.headerRenderer.refreshUI();
+            }
+            if (len) {
+                if (isGroupAdaptive(gObj)) {
+                    let content: string = 'content';
+                    args.scrollTop = { top: this.contentRenderer[content].scrollTop };
+                }
+                this.contentRenderer.refreshContentRows(args);
+            } else {
+                if (!gObj.getColumns().length) {
+                    gObj.element.innerHTML = '';
+                    alert(this.l10n.getConstant('EmptyDataSourceError')); //ToDO: change this alert as dialog
+                    return;
+                }
+                this.contentRenderer.setRowElements([]);
+                this.contentRenderer.setRowObjects([]);
+                this.ariaService.setBusy(<HTMLElement>this.parent.getContent().firstChild, false);
+                this.renderEmptyRow();
+                if (args) {
+                    let action: string = (args.requestType || '').toLowerCase() + '-complete';
+                    this.parent.notify(action, args);
+                    if (args.requestType === 'batchsave') {
+                        args.cancel = false;
+                        args.rows = [];
+                        args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+                        this.parent.trigger(events.actionComplete, args);
+                    }
+                }
+                this.parent.hideSpinner();
+            }
+            this.parent.notify(events.toolbarRefresh, {});
+        });
     }
 
     private dataManagerFailure(e: { result: Object[] }, args: NotifyArgs): void {

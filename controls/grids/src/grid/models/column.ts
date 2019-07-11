@@ -2,7 +2,8 @@ import { merge, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter } from '../base/interface';
-import { TextAlign, ClipMode } from '../base/enum';
+import { TextAlign, ClipMode, Action, SortDirection } from '../base/enum';
+import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
 import { ValueAccessor, SortComparer } from '../base/type';
 import { getUid, templateCompiler, getForeignData, getObject } from '../base/util';
@@ -105,6 +106,7 @@ export class Column {
      * and [`date`](../common/internationalization/#number-formatting/) formats.  
      * @default null
      * @aspType string
+     * @blazorType string
      */
 
     public format: string | NumberFormatOptions | DateFormatOptions;
@@ -317,7 +319,8 @@ export class Column {
     /**    
      * Defines default values for the component when adding a new record to the Grid.
      * @default null
-     * @aspType object         
+     * @aspType object   
+     * @blazorType object      
      */
     public defaultValue: string;
 
@@ -666,6 +669,7 @@ export interface ColumnModel {
      * and [`date`](../common/internationalization/#number-formatting/) formats.  
      * @default null
      * @aspType string
+     * @blazorType string
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
 
@@ -917,7 +921,9 @@ export interface ColumnModel {
 
     /**    
      * Defines default values for the component when adding a new record to the Grid.
-     * @default null         
+     * @default null      
+     * @aspType object   
+     * @blazorType object
      */
     defaultValue?: string;
 
@@ -1038,4 +1044,69 @@ export interface ColumnModel {
      * @default true   
      */
     allowSearching?: boolean;
+}
+
+export interface ActionEventArgs {
+    /** Defines the current action. */
+    requestType?: Action;
+    /** Defines the type of event. */
+    type?: string;
+    /** Cancel the print action */
+    cancel?: boolean;
+
+    /** Defines the previous page number. */
+    previousPage?: number;
+    /** Defines the current page number. */
+    currentPage?: number;
+
+    /** Defines the field name of the currently grouped columns. */
+    columnName?: string;
+
+    /** Defines the object that is currently filtered. */
+    currentFilterObject?: PredicateModel;
+    /** Defines the column name that is currently filtered. */
+    currentFilteringColumn?: string;
+    /** Defines the collection of filtered columns. */
+    columns?: PredicateModel[];
+
+    /** Defines the string value to search. */
+    searchString?: string;
+
+    /** Defines the direction of sort column. */
+    direction?: SortDirection;
+
+    /** Defines the record objects. */
+    data?: Object;
+    /** Defines the previous data. */
+    previousData?: Object;
+    /** Defines the added row. */
+    row?: Object;
+    /** Added row index */
+    index?: number;
+    /** Defines the record objects */
+    rowData?: Object;
+    /** Defines the target for dialog */
+    target?: HTMLElement;
+
+    /** Defines the selected row index. */
+    selectedRow?: number;
+    /** Defines the current action. */
+    action?: string;
+
+    /** Defines foreign data object. */
+    foreignKeyData?: Object;
+    /** Define the form element */
+    form?: HTMLFormElement;
+    /** Define the movable table form element */
+    movableForm?: HTMLFormElement;
+
+    /** Defines the selected rows for delete. */
+    tr?: Element[];
+
+    /** Defines the primary keys */
+    primaryKeys?: string[];
+    /** Defines the primary key value */
+    primaryKeyValue?: Object[];
+    /** Defines the edited rowIndex */
+    rowIndex?: number;
 }

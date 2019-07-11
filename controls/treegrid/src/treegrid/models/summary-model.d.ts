@@ -19,6 +19,7 @@ export interface AggregateColumnModel {
    * * custom  
    * > Specify the `type` value as `custom` to use custom aggregation.
    * @aspType string
+   * @blazorType string
    * @default null
    */
     type?: AggregateType | AggregateType[] | string;
@@ -44,6 +45,7 @@ export interface AggregateColumnModel {
    * [`number`](../../../common/internationalization/#supported-format-string)
    * and [`date`](../../../common/internationalization/#supported-format-string-1) formats.
    * @aspType string
+   * @blazorType string
    * @default null    
    */
     format?: string | NumberFormatOptions | DateFormatOptions;

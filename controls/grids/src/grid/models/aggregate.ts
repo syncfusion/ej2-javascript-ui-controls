@@ -55,6 +55,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * [`number`](../../common/internationalization/#number-formatting/)
      * and [`date`](../../common/internationalization/#number-formatting/) formats.
      * @aspType string
+     * @blazorType string
      * @default null    
      */
     @Property()

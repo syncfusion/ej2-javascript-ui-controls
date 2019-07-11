@@ -591,7 +591,8 @@ export class RangeNavigator extends Component<HTMLElement> {
         if (!this.stockChart) {
             this.element.appendChild(this.svgObject);
         }
-        this.trigger('loaded', { rangeNavigator: this });
+        let blazor: string = 'Blazor';
+        this.trigger('loaded', { rangeNavigator: window[blazor] ? {} : this });
         this.rangeSlider.setSlider(
             this.startValue, this.endValue, false,
             this.tooltip.enable && this.tooltip.displayMode === 'Always'

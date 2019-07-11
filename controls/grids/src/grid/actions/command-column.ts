@@ -1,4 +1,4 @@
-import { closest, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { closest, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { initialEnd, click, keyPressed, commandClick } from '../base/constant';
 import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -7,6 +7,7 @@ import { CellRendererFactory } from '../services/cell-render-factory';
 import { CommandColumnRenderer } from '../renderer/command-column-renderer';
 import { ButtonModel } from '@syncfusion/ej2-buttons';
 import { Column } from '../models/column';
+import { Row } from '../models/row';
 
 /**
  * `CommandColumn` used to handle the command column actions.
@@ -40,7 +41,8 @@ export class CommandColumn {
         let buttonObj: ButtonModel = (<EJ2Intance>target).ej2_instances[0];
         let type: string = (<{ commandType?: string }>buttonObj).commandType;
         let commandColumn: Object;
-        (<{columnModel?: Column[]}>this.parent).columnModel.forEach((col: Column) => {
+        let row: Row<Column> = gObj.getRowObjectFromUID(closest(target, '.e-row').getAttribute('data-uid'));
+        (<{ columnModel?: Column[] }>this.parent).columnModel.forEach((col: Column) => {
             if (col.commands) {
                 col.commands.forEach((commandCol: Object) => {
                     let typeInString: string = 'type';
@@ -54,7 +56,7 @@ export class CommandColumn {
             cancel: false,
             target: target,
             commandColumn: commandColumn,
-            rowData: gObj.getRowObjectFromUID(closest(target, '.e-row').getAttribute('data-uid')).data
+            rowData: isNullOrUndefined(row) ? undefined : row.data
         };
         this.parent.trigger(commandClick, args, (commandclickargs: CommandClickEventArgs) => {
             if (buttonObj.disabled || !gObj.editModule || commandclickargs.cancel) {

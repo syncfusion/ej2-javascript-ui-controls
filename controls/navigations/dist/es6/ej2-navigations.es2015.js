@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -1042,13 +1042,6 @@ let MenuBase = class MenuBase extends Component {
     render() {
         this.initialize();
         this.renderItems();
-        if (this.isMenu && this.template) {
-            let menuTemplateId = this.element.id + TEMPLATE_PROPERTY;
-            resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-            setTimeout(() => {
-                updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-            }, 500);
-        }
         this.wireEvents();
     }
     initialize() {
@@ -1385,7 +1378,7 @@ let MenuBase = class MenuBase extends Component {
                         this.closeMenu(0, e);
                     }
                     else {
-                        if (this.keyType === 'right') {
+                        if (this.keyType === 'right' || this.keyType === 'click') {
                             this.afterCloseMenu(e);
                         }
                         else {
@@ -1848,6 +1841,7 @@ let MenuBase = class MenuBase extends Component {
             ulId = wrapper.querySelector('ul').id;
         }
         if (ulId !== this.element.id) {
+            this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
             if (this.navIdx.length) {
                 isDifferentElem = true;
             }
@@ -1874,7 +1868,6 @@ let MenuBase = class MenuBase extends Component {
             }
             else if (isDifferentElem) {
                 if (this.navIdx.length) {
-                    this.removeLIStateByClass([FOCUSED, SELECTED], [this.getWrapper()]);
                     this.isClosed = true;
                     this.closeMenu(null, e);
                 }
@@ -1978,7 +1971,7 @@ let MenuBase = class MenuBase extends Component {
                                     sli.classList.remove(SELECTED);
                                 }
                                 this.isClosed = true;
-                                this.keyType = 'right';
+                                this.keyType = 'click';
                                 this.closeMenu(culIdx + 1, e);
                             }
                         }
@@ -3187,7 +3180,7 @@ let Toolbar = class Toolbar extends Component {
         this.initialize();
         this.renderControl();
         this.separator();
-        this.refreshTemplate();
+        this.refreshToolbarTemplate();
         this.wireEvents();
     }
     initialize() {
@@ -4215,8 +4208,8 @@ let Toolbar = class Toolbar extends Component {
             }
             let tempArray;
             if (!isNullOrUndefined(templateFn)) {
-                let toolbarTemplateID = this.element.id + 'template';
-                tempArray = templateFn({}, this, 'template', toolbarTemplateID);
+                let toolbarTemplateID = this.element.id + index + '_template';
+                tempArray = templateFn({}, this, 'template', toolbarTemplateID, this.isStringTemplate);
             }
             if (!isNullOrUndefined(tempArray) && tempArray.length > 0) {
                 [].slice.call(tempArray).forEach((ele) => {
@@ -4331,12 +4324,13 @@ let Toolbar = class Toolbar extends Component {
         }
         return innerEle;
     }
-    refreshTemplate() {
-        for (let item of this.items) {
-            if (item.template && typeof item.template === 'string' &&
-                item.template.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'template', 'Template');
-                updateBlazorTemplate(this.element.id + 'template', 'Template');
+    refreshToolbarTemplate() {
+        let blazorContain = Object.keys(window);
+        for (let a = 0, length = this.items.length; a < length; a++) {
+            let item = this.items[a];
+            if (item.template && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && item.template.indexOf('<div>Blazor') === 0) {
+                resetBlazorTemplate(this.element.id + a + '_template', 'Template');
+                updateBlazorTemplate(this.element.id + a + '_template', 'Template', item);
             }
         }
     }
@@ -4769,7 +4763,6 @@ let Accordion = class Accordion extends Component {
     render() {
         this.initialize();
         this.renderControl();
-        this.refreshTemplate();
         this.wireEvents();
     }
     initialize() {
@@ -4827,38 +4820,18 @@ let Accordion = class Accordion extends Component {
         else {
             innerEles = this.element.children;
         }
-        let content;
-        addClass([].slice.call(innerEles), [CLS_ITEM$1]);
+        let items = [];
         [].slice.call(innerEles).forEach((el) => {
-            el.id = getUniqueID('acrdn_item');
-            if (el.children.length > 0) {
-                this.add(el.children[0], CLS_HEADER);
-                let header = el.children[0];
-                attributes(header, { 'tabindex': '0', 'role': 'heading', 'aria-level': innerEles.length.toString() });
-                header.id = getUniqueID('acrdn_header');
-                EventHandler.add(header, 'focus', this.focusIn, this);
-                EventHandler.add(header, 'blur', this.focusOut, this);
-                let headerEle = header.firstElementChild;
-                if (headerEle) {
-                    headerEle.classList.add(CLS_HEADERCTN);
-                }
-                content = el.children[1];
-                if (content) {
-                    content.id = getUniqueID('acrdn_panel');
-                    header.setAttribute('aria-controls', content.id);
-                    content.style.display = '';
-                    el.classList.add(CLS_SLCT);
-                    el.children[0].appendChild(this.toggleIconGenerate());
-                    classList(content, [CLS_CONTENT, CLS_CTNHIDE], []);
-                    attributes(content, { 'aria-labelledby': header.id, 'aria-hidden': 'true' });
-                    content = content.firstElementChild;
-                    if (content) {
-                        content.classList.add(CLS_CTENT);
-                        content.style.display = '';
-                    }
-                }
-            }
+            items.push({
+                header: (el.childElementCount > 0 && el.children[0]) ? (el.children[0]).innerHTML : '',
+                content: (el.childElementCount > 1 && el.children[1]) ? (el.children[1]).innerHTML : ''
+            });
+            el.parentNode.removeChild(el);
         });
+        if (rootEle) {
+            this.element.removeChild(rootEle);
+        }
+        this.setProperties({ items: items }, true);
     }
     toggleIconGenerate() {
         let tglIcon = this.createElement('div', { className: CLS_TOOGLEICN });
@@ -4886,14 +4859,19 @@ let Accordion = class Accordion extends Component {
         if (isNullOrUndefined(this.initExpand)) {
             this.initExpand = [];
         }
-        let items = this.items;
         if (!isNullOrUndefined(this.trgtEle)) {
             this.ctrlTemplate();
         }
-        else if (ele && items.length > 0) {
+        let items = this.items;
+        if (ele && items.length > 0) {
             items.forEach((item, index) => {
                 innerItem = this.renderInnerItem(item, index);
                 ele.appendChild(innerItem);
+                let blazorContain = Object.keys(window);
+                if (item.header && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate
+                    && item.header.indexOf('<div>Blazor') === 0) {
+                    updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
+                }
                 if (innerItem.childElementCount > 0) {
                     EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
                     EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -4934,9 +4912,14 @@ let Accordion = class Accordion extends Component {
             eventArgs.item = this.items[this.getIndexByItem(acrdnCtnItem)];
         }
         eventArgs.originalEvent = e;
-        let ctnCheck = !isNullOrUndefined(tglIcon) && isNullOrUndefined(this.trgtEle) && acrdnItem.childElementCount <= 1;
+        let ctnCheck = !isNullOrUndefined(tglIcon) && acrdnItem.childElementCount <= 1;
         if (ctnCheck && (isNullOrUndefined(acrdnCtn) || !isNullOrUndefined(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem)))) {
             acrdnItem.appendChild(this.contentRendering(index));
+            let blazorContain = Object.keys(window);
+            if (eventArgs.item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate
+                && eventArgs.item.content.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', eventArgs.item);
+            }
             this.ariaAttrUpdate(acrdnItem);
         }
         this.trigger('clicked', eventArgs);
@@ -5093,20 +5076,6 @@ let Accordion = class Accordion extends Component {
         }
         return innerEle;
     }
-    refreshTemplate() {
-        for (let item of this.items) {
-            if (item.header && typeof item.header === 'string' &&
-                item.header.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'header', 'Header');
-                updateBlazorTemplate(this.element.id + 'header', 'Header');
-            }
-            if (item.content && typeof item.content === 'string' &&
-                item.content.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'content', 'Content');
-                updateBlazorTemplate(this.element.id + 'content', 'Content');
-            }
-        }
-    }
     angularnativeCondiCheck(item, prop) {
         let property = prop === 'content' ? item.content : item.header;
         let content = property;
@@ -5128,6 +5097,7 @@ let Accordion = class Accordion extends Component {
         }
     }
     fetchElement(ele, value, index, isHeader) {
+        let blazorContain = Object.keys(window);
         let templateFn;
         let temString;
         try {
@@ -5139,18 +5109,23 @@ let Accordion = class Accordion extends Component {
             }
         }
         catch (e) {
-            templateFn = compile(value);
+            if (typeof (value) === 'string' && blazorContain.indexOf('Blazor') > -1 && value.indexOf('<div>Blazor') !== 0) {
+                ele.innerHTML = value;
+            }
+            else {
+                templateFn = compile(value);
+            }
         }
         let tempArray;
         if (!isNullOrUndefined(templateFn)) {
             let templateProps;
             if (ele.classList.contains(CLS_HEADERCTN)) {
-                templateProps = this.element.id + 'header';
+                templateProps = this.element.id + index + '_header';
             }
             else if (ele.classList.contains(CLS_CTENT)) {
-                templateProps = this.element.id + 'content';
+                templateProps = this.element.id + index + '_content';
             }
-            tempArray = templateFn({}, null, null, templateProps);
+            tempArray = templateFn({}, null, null, templateProps, this.isStringTemplate);
         }
         if (!isNullOrUndefined(tempArray) && tempArray.length > 0 && !(isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
             [].slice.call(tempArray).forEach((el) => {
@@ -5273,7 +5248,7 @@ let Accordion = class Accordion extends Component {
         }
     }
     getIndexByItem(item) {
-        return [].slice.call(this.element.children).indexOf(item);
+        return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).indexOf(item);
     }
     expandedItemsPop(item) {
         let index = this.getIndexByItem(item);
@@ -5372,7 +5347,7 @@ let Accordion = class Accordion extends Component {
         return 'accordion';
     }
     itemAttribUpdate() {
-        let itemEle = [].slice.call(this.element.children);
+        let itemEle = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
         let itemLen = this.items.length;
         itemEle.forEach((ele) => {
             select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -5397,7 +5372,7 @@ let Accordion = class Accordion extends Component {
                 ele.appendChild(innerItemEle);
             }
             else {
-                ele.insertBefore(innerItemEle, ele.children[index]);
+                ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM$1)[index]);
             }
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -5410,7 +5385,7 @@ let Accordion = class Accordion extends Component {
         }
     }
     expandedItemRefresh(ele) {
-        [].slice.call(ele.children).forEach((el) => {
+        [].slice.call(ele.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => {
             if (el.classList.contains(CLS_SLCTED)) {
                 this.expandedItemsPush(el);
             }
@@ -5422,7 +5397,7 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     removeItem(index) {
-        let ele = this.element.children[index];
+        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5439,7 +5414,7 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     select(index) {
-        let ele = this.element.children[index];
+        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele) || isNullOrUndefined(select('.' + CLS_HEADER, ele))) {
             return;
         }
@@ -5453,7 +5428,7 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     hideItem(index, isHidden) {
-        let ele = this.element.children[index];
+        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5470,7 +5445,7 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     enableItem(index, isEnable) {
-        let ele = this.element.children[index];
+        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5501,12 +5476,12 @@ let Accordion = class Accordion extends Component {
         let root = this.element;
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
-                let ele = root.children[root.childElementCount - 1];
+                let ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.childElementCount - 1];
                 this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
             }
             else {
                 let item = select('#' + this.lastActiveItemId, this.element);
-                [].slice.call(this.element.children).forEach((el) => {
+                [].slice.call(root.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => {
                     this.itemExpand(isExpand, el, this.getIndexByItem(el));
                     el.classList.remove(CLS_EXPANDSTATE);
                 });
@@ -5520,7 +5495,7 @@ let Accordion = class Accordion extends Component {
             }
         }
         else {
-            let ele = this.element.children[index];
+            let ele = root.querySelectorAll('.' + CLS_ITEM$1)[index];
             if (isNullOrUndefined(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
                 return;
             }
@@ -5540,6 +5515,11 @@ let Accordion = class Accordion extends Component {
         if (isNullOrUndefined(ctn) && isExpand) {
             ctn = this.contentRendering(index);
             ele.appendChild(ctn);
+            let blazorContain = Object.keys(window);
+            let item = this.items[index];
+            if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+            }
             this.ariaAttrUpdate(ele);
         }
         else if (isNullOrUndefined(ctn)) {
@@ -6188,8 +6168,8 @@ let Tab = class Tab extends Component {
         });
         this.expTemplateContent();
         if (!this.isTemplate) {
-            while (this.element.firstChild) {
-                remove(this.element.firstChild);
+            while (this.element.firstElementChild) {
+                remove(this.element.firstElementChild);
             }
         }
         else {
@@ -6234,7 +6214,7 @@ let Tab = class Tab extends Component {
     render() {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title } });
         this.renderContainer();
-        this.refreshTemplate();
+        this.refreshTabTemplate();
         this.wireEvents();
         this.initRender = false;
     }
@@ -6295,7 +6275,9 @@ let Tab = class Tab extends Component {
                 hdrItems.push(this.hdrEle.children.item(i).innerHTML);
             }
             if (count > 0) {
-                this.hdrEle.innerHTML = '';
+                while (this.hdrEle.firstElementChild) {
+                    detach(this.hdrEle.firstElementChild);
+                }
                 this.hdrEle.appendChild(this.createElement('div', { className: CLS_ITEMS$1 }));
                 hdrItems.forEach((item, index) => {
                     this.lastIndex = index;
@@ -6322,6 +6304,7 @@ let Tab = class Tab extends Component {
             items: (tabItems.length !== 0) ? tabItems : [],
             clicked: this.clickHandler.bind(this)
         });
+        this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(this.hdrEle);
         this.updateOrientationAttribute();
@@ -6370,7 +6353,7 @@ let Tab = class Tab extends Component {
                 txtWrapEle.appendChild(txt);
             }
             else {
-                this.headerTextCompile(txtWrapEle, txt);
+                this.headerTextCompile(txtWrapEle, txt, i);
             }
             let tEle;
             let icon = this.createElement('span', {
@@ -6425,17 +6408,14 @@ let Tab = class Tab extends Component {
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     }
-    refreshTemplate() {
-        for (let item of this.items) {
-            if (item.header.text && typeof item.header.text === 'string' &&
-                item.header.text.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'text', 'Text');
-                updateBlazorTemplate(this.element.id + 'text', 'Text');
-            }
-            if (item.content && typeof item.content === 'string' &&
-                item.content.indexOf('BlazorTemplate')) {
-                resetBlazorTemplate(this.element.id + 'content', 'Content');
-                updateBlazorTemplate(this.element.id + 'content', 'Content');
+    refreshTabTemplate() {
+        let blazorContain = Object.keys(window);
+        for (let a = 0, length = this.items.length; a < length; a++) {
+            let item = this.items[a];
+            if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
+                item.content.indexOf('<div>Blazor') === 0) {
+                resetBlazorTemplate(this.element.id + a + '_content', 'Content');
+                updateBlazorTemplate(this.element.id + a + '_content', 'Content', item);
             }
         }
     }
@@ -6637,18 +6617,23 @@ let Tab = class Tab extends Component {
             }
         });
     }
-    templateCompile(ele, cnt) {
+    templateCompile(ele, cnt, index) {
         let tempEle = this.createElement('div');
-        this.compileElement(tempEle, cnt, 'content');
+        this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
         }
     }
-    compileElement(ele, val, prop) {
-        if (typeof val === 'string') {
+    compileElement(ele, val, prop, index) {
+        let blazorContain = Object.keys(window);
+        let templateFn;
+        if (typeof val === 'string' && blazorContain.indexOf('Blazor') > -1 && val.indexOf('<div>Blazor') !== 0) {
             val = val.trim();
+            ele.innerHTML = val;
         }
-        let templateFn = compile(val);
+        else {
+            templateFn = compile(val);
+        }
         let templateFUN;
         if (!isNullOrUndefined(templateFn)) {
             let templateProps;
@@ -6656,9 +6641,9 @@ let Tab = class Tab extends Component {
                 templateProps = this.element.id + 'text';
             }
             else if (ele.classList.contains(CLS_CONTENT$1)) {
-                templateProps = this.element.id + 'content';
+                templateProps = this.element.id + index + '_content';
             }
-            templateFUN = templateFn({}, this, prop, templateProps);
+            templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate);
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach((el) => {
@@ -6666,10 +6651,10 @@ let Tab = class Tab extends Component {
             });
         }
     }
-    headerTextCompile(element, text) {
-        this.compileElement(element, text, 'headerText');
+    headerTextCompile(element, text, index) {
+        this.compileElement(element, text, 'headerText', index);
     }
-    getContent(ele, cnt, callType) {
+    getContent(ele, cnt, callType, index) {
         let eleStr;
         if (typeof cnt === 'string' || isNullOrUndefined(cnt.innerHTML)) {
             if (cnt[0] === '.' || cnt[0] === '#') {
@@ -6685,11 +6670,11 @@ let Tab = class Tab extends Component {
                     }
                 }
                 else {
-                    this.templateCompile(ele, cnt);
+                    this.templateCompile(ele, cnt, index);
                 }
             }
             else {
-                this.templateCompile(ele, cnt);
+                this.templateCompile(ele, cnt, index);
             }
         }
         else {
@@ -6812,7 +6797,7 @@ let Tab = class Tab extends Component {
                 }
                 let ele = this.cntEle.children.item(0);
                 for (let i = 0; i < this.items.length; i++) {
-                    this.getContent(ele, this.items[i].content, 'clone');
+                    this.getContent(ele, this.items[i].content, 'clone', i);
                     this.maxHeight = Math.max(this.maxHeight, this.getHeight(ele));
                     while (ele.firstChild) {
                         ele.removeChild(ele.firstChild);
@@ -6820,7 +6805,7 @@ let Tab = class Tab extends Component {
                 }
                 this.clearTemplate(['content']);
                 this.templateEle = [];
-                this.getContent(ele, this.items[0].content, 'render');
+                this.getContent(ele, this.items[0].content, 'render', 0);
                 ele.classList.remove(CLS_ACTIVE$1);
             }
             setStyleAttribute(this.cntEle, { 'height': this.maxHeight + 'px' });
@@ -6929,7 +6914,7 @@ let Tab = class Tab extends Component {
                 }));
                 let eleTrg = this.getTrgContent(this.cntEle, this.extIndex(id));
                 let itemIndex = Array.prototype.indexOf.call(this.itemIndexArray, trg.id);
-                this.getContent(eleTrg, this.items[itemIndex].content, 'render');
+                this.getContent(eleTrg, this.items[itemIndex].content, 'render', itemIndex);
             }
             else {
                 item.classList.add(CLS_ACTIVE$1);
@@ -7228,7 +7213,10 @@ let Tab = class Tab extends Component {
                     this.expTemplateContent();
                 }
                 this.templateEle = [];
-                select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element).innerHTML = '';
+                let selectElement = select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element);
+                while (selectElement.firstElementChild) {
+                    detach(selectElement.firstElementChild);
+                }
                 this.select(this.selectedItem);
             }
         }
@@ -7324,7 +7312,7 @@ let Tab = class Tab extends Component {
                     });
                     this.cntEle.insertBefore(ele, this.cntEle.children[(index + place)]);
                     let eleTrg = this.getTrgContent(this.cntEle, no.toString());
-                    this.getContent(eleTrg, item.content, 'render');
+                    this.getContent(eleTrg, item.content, 'render', index);
                 }
             });
             this.tbObj.addItems(tabItems, index);
@@ -7863,9 +7851,6 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 this.beforeNodeCreate(e);
             },
         };
-        if (this.nodeTemplate) {
-            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-        }
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
         this.treeList = [];
@@ -7915,6 +7900,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.element.setAttribute('role', 'tree');
         this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-activedescendant', this.element.id + '_active');
+        this.isBlazorPlatform = isBlazor();
         this.setCssClass(null, this.cssClass);
         this.setEnableRtl();
         this.setFullRow(this.fullRowSelect);
@@ -8056,6 +8042,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.listBaseOption.ariaAttributes.level = 1;
         this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : this.getSortedData(this.rootData), this.listBaseOption);
         this.element.appendChild(this.ulElement);
+        if (this.nodeTemplate && this.loadOnDemand && this.isBlazorPlatform && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+        }
         if (this.loadOnDemand === false) {
             let rootNodes = this.ulElement.querySelectorAll('.e-list-item');
             let i = 0;
@@ -8066,6 +8055,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         else {
             this.finalizeNode(this.element);
+        }
+        if (this.nodeTemplate && !this.loadOnDemand && this.isBlazorPlatform && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
         }
         this.parentNodeCheck = [];
         this.parentCheckData = [];
@@ -8301,7 +8293,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             let textEle = e.item.querySelector('.' + LISTTEXT);
             textEle.innerHTML = '';
-            let tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate');
+            let tempArr = this.nodeTemplateFn(e.curData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, textEle);
         }
@@ -9170,10 +9162,6 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         args.element.parentElement.style.height = currentHeight + 'px';
     }
     renderChildNodes(parentLi, expandChild, callback, loaded) {
-        if (this.loadOnDemand && this.nodeTemplate) {
-            setTimeout(() => { resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-        }
         let eicon = select('div.' + ICON, parentLi);
         if (isNullOrUndefined(eicon)) {
             return;
@@ -9218,6 +9206,10 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 this.setSelectionForChildNodes(childItems);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
+                if (this.loadOnDemand && this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+                    resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+                    updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+                }
                 this.disableTreeNodes(childItems);
                 this.renderSubChild(parentLi, expandChild, loaded);
             }
@@ -10157,7 +10149,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let newData = setValue(this.editFields.text, newText, this.editData);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             txtEle.innerHTML = '';
-            let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate');
+            let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, txtEle);
         }
@@ -11181,9 +11173,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         return removedData;
     }
     triggerEvent() {
-        if (this.nodeTemplate) {
-            setTimeout(() => { resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
-            setTimeout(() => { updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate'); }, 0);
+        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+            resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
+            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
         }
         let eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);

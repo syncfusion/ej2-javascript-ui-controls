@@ -11,6 +11,7 @@ export interface TabActionSettingsModel {
      * Specifies the animation effect for displaying Tab content.
      * @default 'SlideLeftIn'
      * @aspType string
+     * @blazorType string
      */
     effect?: 'None' | Effect;
 

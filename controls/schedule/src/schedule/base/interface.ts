@@ -135,10 +135,12 @@ export interface ResizeEventArgs extends BaseEventArgs {
     event: MouseEvent;
     /** Defines the cancel option. */
     cancel?: boolean;
-    /** Returns the start time. */
+    /** Returns the start time of the clone element. */
     startTime?: Date;
-    /** Returns the end time. */
+    /** Returns the end time of the clone element. */
     endTime?: Date;
+    /** Returns the group index of the clone element. */
+    groupIndex?: number;
     /** Allows to define the interval in minutes for resizing the appointments. */
     interval?: number;
     /** Allows to define the scroll related actions while resizing to the edges of scheduler. */
@@ -154,12 +156,14 @@ export interface DragEventArgs extends BaseEventArgs {
     event: MouseEvent;
     /** Defines the cancel option. */
     cancel?: boolean;
+    /** Returns the start time of the clone element. */
+    startTime?: Date;
+    /** Returns the end time of the clone element. */
+    endTime?: Date;
+    /** Returns the group index of the clone element. */
+    groupIndex?: number;
     /** Defines the selectors to cancel the drop on selector target. */
     excludeSelectors?: string;
-    /** Returns the start time. */
-    startTime?: Date;
-    /** Returns the end time. */
-    endTime?: Date;
     /** Allows to define the interval in minutes for dragging the appointments. */
     interval?: number;
     /** Allows to define the scroll related actions while dragging to the edges of scheduler. */
@@ -361,6 +365,7 @@ export interface UIStateArgs {
     groupIndex?: number;
     action?: boolean;
     isBlock?: boolean;
+    viewIndex?: number;
 }
 
 /** @hidden */

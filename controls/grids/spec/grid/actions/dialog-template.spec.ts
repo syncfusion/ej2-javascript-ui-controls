@@ -48,7 +48,7 @@ describe('Dialog Template Editing module', () => {
                         <td style="text-align: right;">Customer ID
                         </td>
                         <td style="text-align: left">
-                            <input id="CustomerID" name="CustomerID_CustomerID" value="\${CustomerID.CustomerID}" style="height: 28px" />
+                            <input id="CustomerID" name="CustomerID___CustomerID" value="\${CustomerID.CustomerID}" style="height: 28px" />
                         </td>
                     </tr>
                     <tr>
@@ -177,7 +177,7 @@ describe('Dialog Template Editing module', () => {
                     expect(element.value).not.toBeNull();
                 });
                 // Complex data Check.
-                expect(args.form.elements['CustomerID_CustomerID']).not.toBeNull();
+                expect(args.form.elements['CustomerID___CustomerID']).not.toBeNull();
                 expect((<Column>gridObj.columns[4]).edit.write).toHaveBeenCalled();
                 done();
             };
@@ -189,7 +189,7 @@ describe('Dialog Template Editing module', () => {
             gridObj.actionBegin = (args: any) => {
                 expect(args.requestType).toBe('save');
                 //expect(JSON.stringify(args.rowData)).toBe(JSON.stringify(gridObj.getSelectedRecords()[0]));
-                expect(args.form.elements['CustomerID_CustomerID'].value).toBe('WELLI');
+                expect(args.form.elements['CustomerID___CustomerID'].value).toBe('WELLI');
             };
             gridObj.actionComplete = (args: any) => {
                 expect(args.requestType).toBe('save');
@@ -211,8 +211,8 @@ describe('Dialog Template Editing module', () => {
             };
             gridObj.actionComplete = (args: any) => {
                 expect(args.dialog).not.toBeUndefined();
-                expect(args.form.elements['CustomerID_CustomerID']).not.toBeNull();
-                args.form.elements['CustomerID_CustomerID'].value = 'UPDATED';
+                expect(args.form.elements['CustomerID___CustomerID']).not.toBeNull();
+                args.form.elements['CustomerID___CustomerID'].value = 'UPDATED';
                 args.form.elements['Verified'].checked = true;
                 let data: Object = extend({}, {}, args.rowData, true);
                 gridObj.editModule.getCurrentEditedData(args.form, data);
@@ -312,7 +312,7 @@ describe('Inline Template Editing module', () => {
                         <td style="text-align: right;">Customer ID
                         </td>
                         <td style="text-align: left">
-                            <input id="CustomerID" name="CustomerID_CustomerID" value="\${CustomerID.CustomerID}" style="height: 28px" />
+                            <input id="CustomerID" name="CustomerID___CustomerID" value="\${CustomerID.CustomerID}" style="height: 28px" />
                         </td>
                     </tr>
                     <tr>
@@ -433,7 +433,7 @@ describe('Inline Template Editing module', () => {
                     expect(element.value).not.toBeNull();
                 });
                 // Complex data Check.
-                expect(args.form.elements['CustomerID_CustomerID']).not.toBeNull();
+                expect(args.form.elements['CustomerID___CustomerID']).not.toBeNull();
                 expect((<Column>gridObj.columns[4]).edit.write).toHaveBeenCalled();
                 done();
             };
@@ -445,7 +445,7 @@ describe('Inline Template Editing module', () => {
             gridObj.actionBegin = (args: any) => {
                 expect(args.requestType).toBe('save');
                 //expect(JSON.stringify(args.rowData)).toBe(JSON.stringify(args.data));
-                expect(args.form.elements['CustomerID_CustomerID'].value).toBe('WELLI');
+                expect(args.form.elements['CustomerID___CustomerID'].value).toBe('WELLI');
             };
             gridObj.actionComplete = (args: any) => {
                 expect(args.requestType).toBe('save');
@@ -465,8 +465,8 @@ describe('Inline Template Editing module', () => {
                 expect(args.requestType).toBe('beginEdit');
             };
             gridObj.actionComplete = (args: any) => {
-                expect(args.form.elements['CustomerID_CustomerID']).not.toBeNull();
-                args.form.elements['CustomerID_CustomerID'].value = 'UPDATED';
+                expect(args.form.elements['CustomerID___CustomerID']).not.toBeNull();
+                args.form.elements['CustomerID___CustomerID'].value = 'UPDATED';
                 args.form.elements['Verified'].checked = true;
                 let data: Object = extend({}, {}, args.rowData, true);
                 gridObj.editModule.getCurrentEditedData(args.form, data);
@@ -546,7 +546,7 @@ describe('Edit Template Editing module', () => {
     };
     let dialogData: Object[] = dataSource();
     // tslint:disable-next-line:no-multiline-string
-    let template: string = `<input id="CustomerID" class='e-field' name="CustomerID_CustomerID" value="\${CustomerID.CustomerID}" style="height: 28px" />`;
+    let template: string = `<input id="CustomerID" class='e-field' name="CustomerID___CustomerID" value="\${CustomerID.CustomerID}" style="height: 28px" />`;
     let template1: string = `<input id="ShipName" class='e-field' name="ShipName" value="\${ShipName}"  style="height: 28px" />`;
     describe('Dialog Template editing render => ', () => {
         let gridObj: Grid;
@@ -606,7 +606,7 @@ describe('Edit Template Editing module', () => {
                     expect(element.value).not.toBeNull();
                 });
                 // Complex data Check.
-                expect(args.form.elements['CustomerID_CustomerID']).not.toBeNull();
+                expect(args.form.elements['CustomerID___CustomerID']).not.toBeNull();
                 expect((<Column>gridObj.columns[4]).edit.write).toHaveBeenCalled();
                 done();
             };
@@ -618,7 +618,7 @@ describe('Edit Template Editing module', () => {
             gridObj.actionBegin = (args: any) => {
                 expect(args.requestType).toBe('save');
                 //expect(JSON.stringify(args.rowData)).toBe(JSON.stringify(args.data));
-                expect(args.form.elements['CustomerID_CustomerID'].value).toBe('WELLI');
+                expect(args.form.elements['CustomerID___CustomerID'].value).toBe('WELLI');
             };
             gridObj.actionComplete = (args: any) => {
                 expect(args.requestType).toBe('save');
@@ -636,8 +636,8 @@ describe('Edit Template Editing module', () => {
                 expect(args.requestType).toBe('beginEdit');
             };
             gridObj.actionComplete = (args: any) => {
-                expect(args.form.elements['CustomerID_CustomerID']).not.toBeNull();
-                args.form.elements['CustomerID_CustomerID'].value = 'UPDATED';
+                expect(args.form.elements['CustomerID___CustomerID']).not.toBeNull();
+                args.form.elements['CustomerID___CustomerID'].value = 'UPDATED';
                 args.form.elements['Verified'].checked = true;
                 let data: Object = extend({}, {}, args.rowData, true);
                 gridObj.editModule.getCurrentEditedData(args.form, data);
@@ -694,7 +694,7 @@ describe('Edit Template Editing module', () => {
             };
             spyOn((<Column>gridObj.columns[4]).edit, 'read');
             (<HTMLInputElement>document.querySelector('[name=OrderID]')).value = '10333';
-            (<HTMLInputElement>document.querySelector('[name=CustomerID_CustomerID]')).value = 'hello';
+            (<HTMLInputElement>document.querySelector('[name=CustomerID___CustomerID]')).value = 'hello';
             gridObj.endEdit();
         });
         it('memory leak', () => {     

@@ -3,7 +3,7 @@
  */
 import { Gantt } from '../base/gantt';
 import { Toolbar as NavToolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { createElement, extend, isNullOrUndefined, remove, getValue, EventHandler, Browser, closest } from '@syncfusion/ej2-base';
+import { createElement, extend, isNullOrUndefined, remove, getValue, EventHandler, addClass } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import * as events from '../base/constant';
 import { ToolbarItem } from '../base/enum';
@@ -21,6 +21,7 @@ export class Toolbar {
     constructor(parent: Gantt) {
         this.parent = parent;
         this.id = this.parent.element.id;
+        this.parent.on('ui-toolbarupdate', this.propertyChanged, this);
     }
     private getModuleName(): string {
         return 'toolbar';
@@ -31,8 +32,14 @@ export class Toolbar {
     public renderToolbar(): void {
         let toolbarItems: (ToolbarItem | string | ItemModel)[] = this.parent.toolbar || [];
         if (toolbarItems.length > 0) {
-            this.element = createElement('div', { id: this.parent.controlId + '_Gantt_Toolbar', className: cls.toolbar });
-            this.parent.element.appendChild(this.element);
+            this.element = createElement(
+                'div', { id: this.parent.controlId + '_Gantt_Toolbar', className: cls.toolbar }
+            );
+            if (this.parent.treeGrid.grid.headerModule) {
+                this.parent.element.insertBefore(this.element, this.parent.treeGridPane.offsetParent);
+            } else {
+                this.parent.element.appendChild(this.element);
+            }
             let preItems: ToolbarItem[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
                 'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit'];
             for (let item of preItems) {
@@ -80,7 +87,16 @@ export class Toolbar {
             clicked: this.toolbarClickHandler.bind(this),
             height: this.parent.isAdaptive ? 48 : 'auto'
         });
+        this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo(this.element);
+        let cancelItem: Element = this.element.querySelector('#' + this.parent.element.id + '_cancel');
+        let updateItem: Element = this.element.querySelector('#' + this.parent.element.id + '_update');
+        if (cancelItem) {
+            addClass([cancelItem], cls.focusCell);
+        }
+        if (updateItem) {
+            addClass([updateItem], cls.focusCell);
+        }
         if (this.parent.isAdaptive) {
             this.element.insertBefore(this.getSearchBarElement(), this.element.childNodes[0]);
             this.searchElement = this.element.querySelector('#' + this.parent.element.id + '_searchbar');
@@ -119,10 +135,17 @@ export class Toolbar {
             EventHandler.add(this.searchElement, 'focus', this.focusHandler, this);
             EventHandler.add(this.searchElement, 'blur', this.blurHandler, this);
         }
-        if (this.toolbar) {
-            let mouseDown: string = Browser.touchStartEvent;
-            EventHandler.add(this.toolbar.element, mouseDown, this.mouseDownHandler, this);
+    }
+    private propertyChanged(property: object): void {
+        let module: string = getValue('module', property);
+        if (module !== this.getModuleName() || !this.parent.toolbar) {
+            return;
         }
+        if (this.element && this.element.parentNode) {
+            remove(this.element);
+        }
+        this.renderToolbar();
+        this.refreshToolbarItems();
     }
     private unWireEvent(): void {
         if (this.searchElement) {
@@ -131,24 +154,12 @@ export class Toolbar {
             EventHandler.remove(this.searchElement, 'blur', this.blurHandler);
             this.searchElement = null;
         }
-        if (this.toolbar) {
-            let mouseDown: string = Browser.touchStartEvent;
-            EventHandler.remove(this.toolbar.element, mouseDown, this.mouseDownHandler);
-        }
+        this.parent.off('ui-toolbarupdate', this.propertyChanged);
     }
     private keyUpHandler(e: { keyCode: number }): void {
         if (e.keyCode === 13 && this.parent.searchSettings.key !== this.searchElement.value) {
             this.parent.searchSettings.key = this.searchElement.value;
             this.parent.dataBind();
-        }
-    }
-    private mouseDownHandler(e: PointerEvent): void {
-        if (e.target) {
-            let element: Element = closest(e.target as HTMLElement, '.e-toolbar-item');
-            if (!isNullOrUndefined(element) && !isNullOrUndefined(element.querySelector('.e-cancel'))) {
-                this.parent.editModule.cellEditModule.isCellEdit = false;
-                this.parent.treeGrid.closeEdit();
-            }
         }
     }
     private focusHandler(e: FocusEvent): void {
@@ -197,6 +208,15 @@ export class Toolbar {
         if (args.cancel) {
             return;
         }
+        if (this.parent.isAdaptive === true) {
+            if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
+                || args.item.id === gID + '_searchbutton' || args.item.id === gID + '_expandall' || args.item.id === gID + '_collapseall') {
+                if (this.parent.selectionModule && this.parent.selectionSettings.type === 'Multiple') {
+                    this.parent.selectionModule.hidePopUp();
+                    (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
+                }
+            }
+        }
         switch (!isNullOrUndefined(args.item) && args.item.id) {
             case gID + '_edit':
                 if (gObj.editModule && gObj.editSettings.allowEditing) {
@@ -208,10 +228,7 @@ export class Toolbar {
                 gObj.treeGrid.endEdit();
                 break;
             case gID + '_cancel':
-                // gObj.editModule.cellEditModule.isCellEdit = false;
-                // gObj.treeGrid.closeEdit();
-                // console.log('Cancel editing');
-                event.stopPropagation();
+                gObj.cancelEdit();
                 break;
             case gID + '_add':
                 if (gObj.editModule && gObj.editSettings.allowAdding) {
@@ -301,16 +318,20 @@ export class Toolbar {
         let gID: string = this.id;
         let isSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
             gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-        let toolbarItems: ItemModel[] = this.toolbar.items;
+        let toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
         let toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
         gID + '_update', gID + '_cancel'];
         if (!isNullOrUndefined(this.parent.editModule)) {
+            let touchEdit: boolean = gObj.editModule.taskbarEditModule ?
+                gObj.editModule.taskbarEditModule.touchEdit : false;
             let hasData: number = gObj.currentViewData && gObj.currentViewData.length;
-            edit.allowAdding ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
-            edit.allowEditing && hasData && isSelected ? enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
+            edit.allowAdding && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            edit.allowEditing && hasData && isSelected && !touchEdit ?
+                enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
             let isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
-            edit.allowDeleting && hasData && isDeleteSelected ? enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
+            edit.allowDeleting && hasData && isDeleteSelected && !touchEdit ?
+                enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
             if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
                 && gObj.editModule.cellEditModule.isCellEdit) {
                 // New initialization for enableItems and disableItems during isCellEdit
@@ -346,7 +367,9 @@ export class Toolbar {
                     break;
                 }
             }
-            this.toolbar.hideItem(index, false);
+            if (toolbarItems.length > 0) {
+                this.toolbar.hideItem(index, false);
+            }
         }
         for (let d: number = 0; d < disableItems.length; d++) {
             let index: number;
@@ -356,7 +379,9 @@ export class Toolbar {
                     break;
                 }
             }
-            this.toolbar.hideItem(index, true);
+            if (toolbarItems.length > 0) {
+                this.toolbar.hideItem(index, true);
+            }
         }
     }
 

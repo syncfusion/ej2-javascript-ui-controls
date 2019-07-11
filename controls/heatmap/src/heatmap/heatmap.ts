@@ -4,7 +4,7 @@
 
 import { Component, Property, NotifyPropertyChanges, Internationalization, Complex, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, EmitType, remove, Event, EventHandler, Touch } from '@syncfusion/ej2-base';
-import { INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, setCulture, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, stringToNumber, RectOption, Rect, TextBasic, measureText, CurrentRect, LegendRange, ToggleVisibility } from './utils/helper';
 import { DrawSvgCanvas, TextOption, titlePositionX, getTitle, showTooltip, getElement, SelectedCellDetails } from './utils/helper';
@@ -374,7 +374,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public mouseY: number;
-
+    /** @private */
+    public isBlazor: boolean = false;
     /**
      * The `legendModule` is used to display the legend.
      * @private
@@ -410,6 +411,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.tempRectHoverClass = '';
         this.tempTooltipRectId = '';
         this.setCulture();
+        this.isBlazor = isBlazor();
     }
 
     /**
@@ -420,7 +422,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
     protected render(): void {
         this.updateBubbleHelperProperty();
-        this.trigger('load', { heatmap: this });
+        this.trigger('load', { heatmap: (this.isBlazor ? null : this) });
         this.initAxis();
         this.processInitData();
         this.setTheme();
@@ -937,7 +939,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 heatmap.currentRect.allowCollection = false;
                 heatmap.setCellOpacity();
                 let argData: ISelectedEventArgs = {
-                    heatmap: heatmap,
+                    heatmap: (this.isBlazor ? null : heatmap),
                     cancel: false,
                     name: 'cellSelected',
                     data: heatmap.multiCellCollection
@@ -997,7 +999,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public heatMapResize(e: Event): boolean {
         this.resizing = true;
         let argData: IResizeEventArgs = {
-            heatmap: this,
+            heatmap: (this.isBlazor ? null : this),
             cancel: false,
             name: 'resized',
             currentSize: new Size(0, 0),
@@ -1023,7 +1025,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.allowSelection) {
                 this.updateCellSelection();
                 }
-                this.trigger('loaded', { heatmap: this });
+                this.trigger('loaded', (this.isBlazor ? null : { heatmap: this }));
                 this.resizing = false;
             },
             500);
@@ -1169,7 +1171,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (isheatmapRect) {
             let currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
             this.trigger('cellClick', {
-                heatmap: this,
+                heatmap: (this.isBlazor ? null : this),
                 value: currentRect.value,
                 x: currentRect.x,
                 y: currentRect.y,
@@ -1677,7 +1679,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     this.currentRect.allowCollection = false;
                     this.setCellOpacity();
                     let argData: ISelectedEventArgs = {
-                        heatmap: this,
+                        heatmap: (this.isBlazor ? null : this),
                         cancel: false,
                         name: 'cellSelected',
                         data: this.multiCellCollection

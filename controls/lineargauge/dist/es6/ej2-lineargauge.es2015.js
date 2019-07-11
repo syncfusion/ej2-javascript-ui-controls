@@ -1741,10 +1741,9 @@ class Annotations {
         });
         if (annotationGroup.childElementCount > 0 && !(isNullOrUndefined(getElement(secondaryID)))) {
             getElement(secondaryID).appendChild(annotationGroup);
-            updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate', 'ContentTemplate');
-        }
-        else {
-            resetBlazorTemplate(this.gauge.element.id + '_ContentTemplate', 'ContentTemplate');
+            for (let i = 0; i < this.gauge.annotations.length; i++) {
+                updateBlazorTemplate(this.gauge.element.id + '_ContentTemplate' + i, 'ContentTemplate', this.gauge.annotations[i]);
+            }
         }
     }
     /**
@@ -1774,8 +1773,8 @@ class Annotations {
             if (!argsData.cancel) {
                 let blazor = 'Blazor';
                 templateFn = getTemplateFunction(argsData.content);
-                if (templateFn && (!window[blazor] ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate').length : {})) {
-                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate'));
+                if (templateFn && (!window[blazor] ? templateFn(this.gauge, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex).length : {})) {
+                    templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.gauge : {}, null, null, this.gauge.element.id + '_ContentTemplate' + annotationIndex));
                     let length = templateElement.length;
                     for (let i = 0; i < length; i++) {
                         childElement.appendChild(templateElement[i]);
@@ -1842,13 +1841,7 @@ class Annotations {
                 childElement.style.top = top + 'px';
                 if (renderAnnotation) {
                     element.appendChild(childElement);
-                    setTimeout(() => {
-                        updateBlazorTemplate(element.id + ' content', 'Content');
-                    }, 0);
                 }
-            }
-            else {
-                resetBlazorTemplate(element.id + ' content', 'Content');
             }
         });
     }
@@ -2184,6 +2177,8 @@ let LinearGauge = class LinearGauge extends Component {
      * Initialize the preRender method.
      */
     preRender() {
+        let blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.trigger(load, { gauge: this });
         this.initPrivateVariable();
@@ -2227,6 +2222,9 @@ let LinearGauge = class LinearGauge extends Component {
      * @private
      */
     removeSvg() {
+        for (let i = 0; i < this.annotations.length; i++) {
+            resetBlazorTemplate(this.element.id + '_ContentTemplate' + i, 'ContentTemplate');
+        }
         removeElement(this.element.id + '_Secondary_Element');
         if (!(isNullOrUndefined(this.svgObject)) && !isNullOrUndefined(this.svgObject.parentNode)) {
             remove(this.svgObject);
@@ -2248,7 +2246,7 @@ let LinearGauge = class LinearGauge extends Component {
         this.renderGaugeElements();
         this.calculateBounds();
         this.renderAxisElements();
-        this.trigger(loaded, { gauge: this });
+        this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
     }
     /**
      * @private
@@ -2379,12 +2377,12 @@ let LinearGauge = class LinearGauge extends Component {
         }
         if (this.element.classList.contains('e-lineargauge')) {
             this.resizeTo = window.setTimeout(() => {
-                this.gaugeResized = true;
                 this.createSvg();
-                this.calculateBounds();
                 this.renderGaugeElements();
+                this.calculateBounds();
+                this.renderAxisElements();
                 args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
-                this.trigger(resized, args);
+                this.trigger(resized, this.isBlazor ? {} : args);
                 this.render();
             }, 500);
         }
@@ -2603,7 +2601,10 @@ let LinearGauge = class LinearGauge extends Component {
         let parentNode;
         let isTouch = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         let args = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
-        this.trigger(gaugeMouseUp, args);
+        let blazorArgs = {
+            cancel: args.cancel, name: args.name, target: args.target, x: args.x, y: args.y
+        };
+        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (!isNullOrUndefined(this.mouseElement)) {
             parentNode = this.element;
             parentNode.style.cursor = '';
@@ -2733,7 +2734,14 @@ let LinearGauge = class LinearGauge extends Component {
             pointer: active.pointer,
             value: value
         };
-        this.trigger(valueChange, dragArgs);
+        let dragBlazorArgs = {
+            name: 'valueChange',
+            element: this.mouseElement,
+            axisIndex: active.axisIndex,
+            pointerIndex: active.pointerIndex,
+            value: value
+        };
+        this.trigger(valueChange, this.isBlazor ? dragBlazorArgs : dragArgs);
     }
     /**
      * To set the pointer value using this method

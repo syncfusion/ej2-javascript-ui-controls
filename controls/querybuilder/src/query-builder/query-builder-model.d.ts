@@ -164,7 +164,7 @@ export interface QueryBuilderModel extends ComponentModel{
     /**
      * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
-     * @blazorProperty 'OnChange'
+     * @blazorProperty 'OnValueChange'
      */
     beforeChange?: EmitType<ChangeEventArgs>;
 

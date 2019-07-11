@@ -945,7 +945,7 @@ export class WordExport {
     // Serialize Document Protection
     //<w:permStart w:id="627587516" w:edGrp="everyone" />
     private serializeEditRange(writer: XmlWriter, editElement: any): void {
-        if (editElement.hasOwnProperty('editRangeStart')) {
+        if (editElement.hasOwnProperty('editableRangeStart')) {
             writer.writeStartElement('w', 'permEnd', this.wNamespace);
         } else {
             writer.writeStartElement('w', 'permStart', this.wNamespace);

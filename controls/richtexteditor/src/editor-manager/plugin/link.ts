@@ -52,6 +52,7 @@ export class LinkCommand {
                 anchorEle.removeAttribute('target');
             }
             e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
+            e.item.selection.restore();
         } else {
             let anchor: HTMLElement = createElement('a', {
                 className: 'e-rte-anchor', attrs: {
@@ -65,9 +66,10 @@ export class LinkCommand {
             anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
             e.item.selection.restore();
             InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
-            if (e.event && (e.event as KeyboardEvent).type === 'keydown' && (e.event as KeyboardEvent).keyCode === 32) {
+            if (e.event && (e.event as KeyboardEvent).type === 'keydown' && ((e.event as KeyboardEvent).keyCode === 32
+            || (e.event as KeyboardEvent).keyCode === 13)) {
                 let startContainer: Node = e.item.selection.range.startContainer;
-                startContainer.textContent = this.removeText(startContainer.textContent, e.item.url);
+                startContainer.textContent = this.removeText(startContainer.textContent, e.item.text);
             } else {
                 let startIndex: number = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
                 e.item.selection.setSelectionText(

@@ -155,6 +155,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
      * Sets the start date on recurrence editor.
      * @default new Date()
      * @aspDefaultValue DateTime.Now
+     * @blazorDefaultValue DateTime.Now
      */
     @Property(new Date())
     public startDate: Date;
@@ -186,6 +187,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
      * Sets the minimum date on recurrence editor.
      * @default new Date(1900, 1, 1)
      * @aspDefaultValue new DateTime(1900, 0, 1)
+     * @blazorDefaultValue new DateTime(1900, 0, 1)
      */
     @Property(new Date(1900, 1, 1))
     public minDate: Date;
@@ -193,6 +195,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
      * Sets the maximum date on recurrence editor.
      * @default new Date(2099, 12, 31)
      * @aspDefaultValue new DateTime(2099, 11, 31)
+     * @blazorDefaultValue new DateTime(2099, 11, 31)
      */
     @Property(new Date(2099, 12, 31))
     public maxDate: Date;
@@ -205,6 +208,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     /**
      * Triggers for value changes on every sub-controls rendered within the recurrence editor.
      * @event
+     * @blazorproperty 'OnChange'
      */
     @Event()
     public change: EmitType<RecurrenceEditorChangeEventArgs>;

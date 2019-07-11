@@ -1155,9 +1155,11 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                         this.createContentFooter();
                     }
                     else {
-                        detach(this.todayElement);
-                        detach(this.footer);
-                        this.todayElement = this.footer = undefined;
+                        if (!isNullOrUndefined(this.todayElement) && !isNullOrUndefined(this.footer)) {
+                            detach(this.todayElement);
+                            detach(this.footer);
+                            this.todayElement = this.footer = undefined;
+                        }
                     }
                     this.setProperties({ showTodayButton: newProp.showTodayButton }, true);
                     break;
@@ -11211,7 +11213,8 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
-                this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge'));
+                this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
+                    && target === this.popupObject.element);
                 event.preventDefault();
             }
         }

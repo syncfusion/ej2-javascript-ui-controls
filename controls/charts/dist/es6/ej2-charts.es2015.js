@@ -2334,7 +2334,7 @@ function markerAnimate(element, delay, duration, series, pointIndex, point, isLa
             element.style.visibility = '';
             element.removeAttribute('transform');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         }
     });
@@ -4426,13 +4426,17 @@ class CartesianAxisLayoutPanel {
                         if (startX < axisRect.x) {
                             labelBorder += ('M' + ' ' + axisRect.x + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
                         }
-                        else if (Math.floor(endX) > axisRect.width + axisRect.x) {
+                        else if (Math.floor(endX) > axisRect.width + axisRect.x && !(axis.visibleLabels.length === 1)) {
                             labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
                                 'L' + ' ' + (axisRect.width + axisRect.x) + ' ' + endY + ' ');
                         }
                         else {
                             labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' +
                                 endY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ');
+                            if (i === 0) {
+                                labelBorder += ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
+                                    'M ' + startX + ' ' + endY + ' L ' + (axisRect.x) + ' ' + endY);
+                            }
                             if (i === axis.visibleLabels.length - 1) {
                                 labelBorder += ('M' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + endY + ' ' +
                                     'M ' + endX + ' ' + endY + ' L ' + (axisRect.width + axisRect.x) + ' ' + endY);
@@ -7174,6 +7178,9 @@ let Chart = class Chart extends Component {
      * Initialize the event handler.
      */
     preRender() {
+        // It is used for checking blazor framework or not.
+        let blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -7533,7 +7540,7 @@ let Chart = class Chart extends Component {
         }
         if (render && (!this.visibleSeries.length || this.visibleSeriesCount === this.visibleSeries.length && check)) {
             this.refreshBound();
-            this.trigger('loaded', { chart: this });
+            this.trigger('loaded', { chart: this.isBlazor ? {} : this });
         }
     }
     initializeDataModule(series) {
@@ -7993,11 +8000,12 @@ let Chart = class Chart extends Component {
     }
     /**
      * Export method for the chart.
-     * @return {boolean}
-     * @private
      */
-    // tslint:disable-next-line
-    export(type, fileName) { }
+    export(type, fileName) {
+        if (this.exportModule) {
+            this.exportModule.export(type, fileName);
+        }
+    }
     /**
      * Handles the chart resize.
      * @return {boolean}
@@ -8006,7 +8014,7 @@ let Chart = class Chart extends Component {
     chartResize(e) {
         this.animateSeries = false;
         let arg = {
-            chart: this,
+            chart: this.isBlazor ? {} : this,
             name: resized,
             currentSize: new Size(0, 0),
             previousSize: new Size(this.availableSize.width, this.availableSize.height),
@@ -8024,7 +8032,7 @@ let Chart = class Chart extends Component {
             this.trigger(resized, arg);
             this.refreshAxis();
             this.refreshBound();
-            this.trigger('loaded', { chart: this });
+            this.trigger('loaded', { chart: this.isBlazor ? {} : this });
         }, 500);
         return false;
     }
@@ -8108,7 +8116,7 @@ let Chart = class Chart extends Component {
         let pointData = data.getData();
         if (pointData.series && pointData.point) {
             this.trigger(event, {
-                series: pointData.series,
+                series: this.isBlazor ? {} : pointData.series,
                 point: pointData.point,
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
                 x: this.mouseX, y: this.mouseY
@@ -8815,13 +8823,13 @@ let Chart = class Chart extends Component {
             if (!refreshBounds && renderer) {
                 this.removeSvg();
                 this.renderElements();
-                this.trigger('loaded', { chart: this });
+                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
             }
             if (refreshBounds) {
                 this.enableCanvas ? this.createChartSvg() : this.removeSvg();
                 this.refreshAxis();
                 this.refreshBound();
-                this.trigger('loaded', { chart: this });
+                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
                 this.redraw = false;
                 this.animated = false;
             }
@@ -10337,7 +10345,7 @@ class LineBase {
             },
             end: (model) => {
                 path.setAttribute('stroke-dasharray', strokeDashArray);
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     }
@@ -10390,7 +10398,7 @@ class LineBase {
             },
             end: (model) => {
                 clipRect.setAttribute('transform', 'translate(0,0)');
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     }
@@ -10759,7 +10767,7 @@ class ColumnBase {
                 let seriesElement = series.seriesElement;
                 if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
                     (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
-                    series.chart.trigger('animationComplete', { series: series });
+                    series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
                     if (series.type === 'Waterfall') {
                         let rectElements = seriesElement.childNodes;
                         for (let i = 0; i < rectElements.length; i++) {
@@ -11811,7 +11819,7 @@ class PolarSeries extends PolarRadarPanel {
             end: (model) => {
                 animateElement.style.visibility = 'visible';
                 animateElement.removeAttribute('transform');
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     }
@@ -19918,7 +19926,7 @@ class AnnotationBase {
         else if (this.control.redraw) {
             removeElement$1(annotationElement.id);
         }
-        setTimeout(() => { updateBlazorTemplate((this.control.element.id + 'Annotation' + index), 'ContentTemplate'); }, 0);
+        updateBlazorTemplate((this.control.element.id + 'Annotation' + index), 'ContentTemplate', this.control.annotations[index]);
     }
     /**
      * Method to calculate the location for annotation - coordinate unit as point in accumulation chart.
@@ -21351,7 +21359,7 @@ class ScrollBar {
         let currentZPWidth = circleRadius + (circleWidth / 2);
         this.zoomPosition = (currentX - (currentX - currentZPWidth <= 0 ? currentZPWidth : 0)) / (this.isVertical
             ? axis.rect.height : this.width);
-        this.zoomFactor = (currentWidth + (currentScrollWidth === this.width ? circleRadius + circleWidth : 0)) / (this.isVertical
+        this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / (this.isVertical
             ? axis.rect.height : this.width);
         axis.zoomPosition = this.zoomPosition;
         axis.zoomFactor = this.zoomFactor;
@@ -21374,9 +21382,14 @@ class ScrollBar {
         let zoomFactor = this.zoomFactor;
         if (this.isThumbDrag) {
             this.component.isScrolling = this.isThumbDrag;
-            this.svgObject.style.cursor = '-webkit-grabbing';
             mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
             let currentX = elem.thumbRectX + (mouseXY - this.previousXY);
+            if (mouseXY >= currentX + elem.thumbRectWidth) {
+                this.setCursor(target);
+            }
+            else {
+                this.svgObject.style.cursor = '-webkit-grabbing';
+            }
             if (mouseXY >= 0 && mouseXY <= currentX + elem.thumbRectWidth) {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
                 this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
@@ -21544,7 +21557,8 @@ class ScrollBar {
             currentEnd = currentStart + zoomFactor * range.delta;
         }
         if (currentEnd) {
-            args = { axis: this.axis, currentRange: this.getStartEnd(currentStart, currentEnd, true), previousAxisRange: previousRange };
+            args = { axis: (this.component.isBlazor ? {} : this.axis), currentRange: this.getStartEnd(currentStart, currentEnd, true),
+                previousAxisRange: previousRange };
         }
         return args;
     }
@@ -21830,7 +21844,7 @@ class ScrollBar {
     }
     getArgs(eventName, range, zoomPosition, zoomFactor) {
         let scrollArgs = {
-            axis: this.axis,
+            axis: (this.component.isBlazor ? {} : this.axis),
             name: eventName,
             range: this.axis.visibleRange,
             zoomFactor: this.axis.zoomFactor,
@@ -22161,7 +22175,8 @@ class AccumulationSeries extends ChildProperty {
         accumulation.trigger(seriesRender, argsData);
         this.resultData = e.result !== '' ? e.result : [];
         this.getPoints(this.resultData, accumulation);
-        if (++accumulation.seriesCounts === accumulation.visibleSeries.length && render) {
+        // tslint:disable
+        if ((++accumulation.seriesCounts === accumulation.visibleSeries.length && render) || (window['Blazor'] && !render && accumulation.seriesCounts === 1)) {
             accumulation.refreshChart();
         }
     }
@@ -22986,7 +23001,8 @@ class PieBase extends AccumulationBase {
             end: (args) => {
                 this.center.x -= 1;
                 slice.setAttribute('d', this.getPathArc(this.center, 0, 359.99999, radius, 0));
-                this.accumulation.trigger(animationComplete, { series: series, accumulation: this.accumulation, chart: this.accumulation });
+                this.accumulation.trigger(animationComplete, this.accumulation.isBlazor ? {} :
+                    { series: series, accumulation: this.accumulation, chart: this.accumulation });
                 let datalabelGroup = getElement(this.accumulation.element.id + '_datalabel_Series_' + series.index);
                 datalabelGroup.style.visibility = this.accumulation.isDestroyed ? 'hidden' : 'visible';
             }
@@ -23201,6 +23217,8 @@ let AccumulationChart = class AccumulationChart extends Component {
      *  To create svg object, renderer and binding events for the container.
      */
     preRender() {
+        let blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.setCulture();
         this.animateSeries = true;
@@ -23335,11 +23353,11 @@ let AccumulationChart = class AccumulationChart extends Component {
     accumulationResize(e) {
         this.animateSeries = false;
         let args = {
-            accumulation: this,
+            accumulation: this.isBlazor ? {} : this,
             previousSize: new Size(this.availableSize.width, this.availableSize.height),
             name: resized,
             currentSize: new Size(0, 0),
-            chart: this,
+            chart: this.isBlazor ? {} : this,
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -23361,8 +23379,20 @@ let AccumulationChart = class AccumulationChart extends Component {
      * Handles the print method for accumulation chart control.
      */
     print(id) {
+        // To handle the print funtion in IE and Edge browsers
+        let clippath = document.getElementById(this.element.id + '_Series_0').style.clipPath;
+        document.getElementById(this.element.id + '_Series_0').style.clipPath = '';
         let exportChart = new ExportUtils(this);
         exportChart.print(id);
+        document.getElementById(this.element.id + '_Series_0').style.clipPath = clippath;
+    }
+    /**
+     * Export method for the chart.
+     */
+    export(type, fileName) {
+        if (this.exportModule) {
+            this.exportModule.export(type, fileName);
+        }
     }
     /**
      * Applying styles for accumulation chart element
@@ -23455,7 +23485,7 @@ let AccumulationChart = class AccumulationChart extends Component {
     triggerPointEvent(event, element) {
         let indexes = indexFinder(element.id, true);
         if (indexes.series >= 0 && indexes.point >= 0) {
-            this.trigger(event, { series: this.series[indexes.series],
+            this.trigger(event, { series: this.isBlazor ? {} : this.series[indexes.series],
                 point: this.series[indexes.series].points[indexes.point],
                 seriesIndex: indexes.series, pointIndex: indexes.point,
                 x: this.mouseX, y: this.mouseY });
@@ -23624,7 +23654,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         this.processExplode();
         this.renderAnnotation();
         this.setSecondaryElementPosition();
-        this.trigger('loaded', { accumulation: this, chart: this });
+        this.trigger('loaded', { accumulation: this.isBlazor ? {} : this, chart: this.isBlazor ? {} : this });
         this.animateSeries = false;
     }
     /**
@@ -27377,7 +27407,8 @@ let RangeNavigator = class RangeNavigator extends Component {
         if (!this.stockChart) {
             this.element.appendChild(this.svgObject);
         }
-        this.trigger('loaded', { rangeNavigator: this });
+        let blazor = 'Blazor';
+        this.trigger('loaded', { rangeNavigator: window[blazor] ? {} : this });
         this.rangeSlider.setSlider(this.startValue, this.endValue, false, this.tooltip.enable && this.tooltip.displayMode === 'Always');
     }
     /**
@@ -27996,6 +28027,8 @@ class PeriodSelector {
                 this.setSelectedStyle(this.selectedIndex);
             }
         });
+        let isStringTemplate = 'isStringTemplate';
+        this.toolbar[isStringTemplate] = true;
         this.toolbar.appendTo(selectorElement);
         this.triggerChange = true;
         this.datePicker = new DateRangePicker({
@@ -33452,7 +33485,10 @@ class SeriesRender {
                 let event = {
                     cancel: false, name: animationComplete$1, smithchart: smithchart
                 };
-                smithchart.trigger(animationComplete$1, event);
+                let blazorEvent = {
+                    cancel: false, name: animationComplete$1, smithchart: smithchart
+                };
+                smithchart.trigger(animationComplete$1, smithchart.isBlazor ? blazorEvent : event);
             }
         });
     }
@@ -33742,6 +33778,8 @@ let Smithchart = class Smithchart extends Component {
      * Initialize the event handler.
      */
     preRender() {
+        let blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.trigger('load', { smithchart: this });
         this.unWireEVents();
         this.initPrivateVariable();
@@ -33781,7 +33819,7 @@ let Smithchart = class Smithchart extends Component {
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
-        this.trigger('loaded', { smithchart: this });
+        this.trigger('loaded', this.isBlazor ? {} : { smithchart: this });
     }
     createSecondaryElement() {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
@@ -35876,7 +35914,10 @@ class SparklineRenderer {
         let args = {
             name: name, cancel: false, border: border, fill: fill, sparkline: this.sparkline, pointIndex: i
         };
-        this.sparkline.trigger(name, args);
+        let blazorArgs = {
+            name: name, cancel: false, border: border, fill: fill, pointIndex: i
+        };
+        this.sparkline.trigger(name, this.sparkline.isBlazor ? blazorArgs : args);
         return args;
     }
 }
@@ -35912,6 +35953,8 @@ let Sparkline = class Sparkline extends Component {
      * Initializing pre-required values for sparkline.
      */
     preRender() {
+        let blazor = 'Blazor';
+        this.isBlazor = window[blazor];
         this.unWireEvents();
         this.trigger('load', { sparkline: this });
         this.sparkTheme = getThemeColor$2(this.theme);
@@ -35930,7 +35973,7 @@ let Sparkline = class Sparkline extends Component {
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
-        this.trigger('loaded', { sparkline: this });
+        this.trigger('loaded', this.isBlazor ? {} : { sparkline: this });
     }
     /**
      * To render sparkline elements
@@ -36078,7 +36121,7 @@ let Sparkline = class Sparkline extends Component {
             this.refreshing = true;
             this.wireEvents();
             args.currentSize = this.availableSize;
-            this.trigger('resize', args);
+            this.trigger('resize', this.isBlazor ? {} : args);
             this.render();
         }, 500);
         return false;
@@ -36094,13 +36137,19 @@ let Sparkline = class Sparkline extends Component {
         let args = {
             name: 'sparklineMouseMove', cancel: false, sparkline: this, event: e
         };
-        this.trigger(args.name, args);
+        let blazorArgs = {
+            name: 'sparklineMouseMove', cancel: false, event: e
+        };
+        this.trigger(args.name, this.isBlazor ? blazorArgs : args);
         let pointClick = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             let pointArgs = {
                 name: 'pointRegionMouseMove', cancel: false, event: e, sparkline: this, pointIndex: pointClick.pointIndex
             };
-            this.trigger(pointArgs.name, pointArgs);
+            let pointBlazorArgs = {
+                name: 'pointRegionMouseMove', cancel: false, event: e, pointIndex: pointClick.pointIndex
+            };
+            this.trigger(pointArgs.name, this.isBlazor ? pointBlazorArgs : pointArgs);
         }
         return false;
     }
@@ -36114,13 +36163,19 @@ let Sparkline = class Sparkline extends Component {
         let args = {
             name: 'sparklineMouseClick', cancel: false, sparkline: this, event: e
         };
-        this.trigger(args.name, args);
+        let blazorArgs = {
+            name: 'sparklineMouseClick', cancel: false, event: e
+        };
+        this.trigger(args.name, this.isBlazor ? blazorArgs : args);
         let pointClick = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             let pointArgs = {
                 name: 'pointRegionMouseClick', cancel: false, event: e, sparkline: this, pointIndex: pointClick.pointIndex
             };
-            this.trigger(pointArgs.name, pointArgs);
+            let pointBlazorArgs = {
+                name: 'pointRegionMouseClick', cancel: false, event: e, pointIndex: pointClick.pointIndex
+            };
+            this.trigger(pointArgs.name, this.isBlazor ? pointBlazorArgs : pointArgs);
         }
         return false;
     }

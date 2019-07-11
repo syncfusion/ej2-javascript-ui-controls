@@ -30,6 +30,7 @@ export namespace Input {
         buttons: [],
         clearButton: null
     };
+    let floatType: string;
 
    /**
     * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
@@ -41,6 +42,7 @@ export namespace Input {
     export function createInput(args: InputArgs, internalCreateElement ?: createElementParams): InputObject {
         let makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         let inputObject: InputObject = { container: null, buttons: [], clearButton: null };
+        floatType = args.floatLabelType;
         if (isNullOrUndefined(args.floatLabelType ) || args.floatLabelType === 'Never' ) {
          inputObject.container = createInputContainer(args, CLASSNAMES.INPUTGROUP, CLASSNAMES.INPUTCUSTOMTAG, 'span', makeElement);
          args.element.parentNode.insertBefore(inputObject.container, args.element);
@@ -49,17 +51,23 @@ export namespace Input {
         } else {
             createFloatingInput(args, inputObject, makeElement);
         }
+        checkInputValue(args.floatLabelType, args.element as HTMLInputElement);
         args.element.addEventListener('focus', function() : void {
           let parent: HTMLElement = getParentNode(this);
-          if (parent.classList.contains('e-input-group')) {
+          if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+             || parent.classList.contains('e-filled')) {
            parent.classList.add('e-input-focus');
           }
         });
         args.element.addEventListener('blur', function() : void {
           let parent: HTMLElement = getParentNode(this);
-          if (parent.classList.contains('e-input-group')) {
+          if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+             || parent.classList.contains('e-filled')) {
            parent.classList.remove('e-input-focus');
           }
+        });
+        args.element.addEventListener('input', () : void => {
+            checkInputValue(floatType, args.element as HTMLInputElement);
         });
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
             args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
@@ -77,6 +85,15 @@ export namespace Input {
         inputObject = setPropertyValue(args, inputObject);
         privateInputObj = inputObject;
         return inputObject;
+    }
+
+    function checkInputValue(floatLabelType: string, inputElement: HTMLInputElement): void {
+        let inputValue: string = inputElement.value;
+        if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
+            inputElement.parentElement.classList.add('e-valid-input');
+        } else if (floatLabelType !== 'Always') {
+            inputElement.parentElement.classList.remove('e-valid-input');
+        }
     }
 
     function _focusFn (): void {
@@ -157,12 +174,20 @@ export namespace Input {
             floatLabelElement.setAttribute('for', args.element.getAttribute('id'));
         }
     }
+
+    function checkFloatLabelType(type: string , container: HTMLElement): void {
+        if (type === 'Always' && container.classList.contains('e-outline')) {
+            container.classList.add('e-valid-input');
+        }
+    }
+
     function setPropertyValue(args: InputArgs, inputObject: InputObject): InputObject {
       if (!isNullOrUndefined(args.properties)) {
         for (let prop of Object.keys(args.properties)) {
           switch (prop) {
             case 'cssClass':
               setCssClass(args.properties.cssClass, [inputObject.container]);
+              checkFloatLabelType(args.floatLabelType, inputObject.container);
               break;
             case 'enabled':
               setEnabled(args.properties.enabled, args.element, args.floatLabelType, inputObject.container);
@@ -310,6 +335,7 @@ export namespace Input {
                 addClass([button], CLASSNAMES.CLEARICONHIDE);
             }
         }
+        checkInputValue(floatLabelType, element as HTMLInputElement);
     }
 
    /**
@@ -512,6 +538,7 @@ export namespace Input {
                                 internalCreateElement ?: createElementParams): void {
       let makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
       let container: HTMLElement = <HTMLElement>closest(input, '.' + CLASSNAMES.INPUTGROUP);
+      floatType = type;
       if (type !== 'Never') {
       let customTag: string = container.tagName;
       customTag = customTag !== 'DIV' && customTag !== 'SPAN' ? customTag : null;
@@ -532,6 +559,7 @@ export namespace Input {
          container.insertBefore(floatText, iconEle);
         }
       }
+      checkFloatLabelType(type, input.parentElement);
     }
 
    /**

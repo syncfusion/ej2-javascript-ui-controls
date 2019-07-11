@@ -69,6 +69,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     private keyConfigs: { [key: string]: string };
     public originalPath: string;
     public filterPath: string;
+    public filterId: string;
+    public hasId: boolean;
+    public pathNames: string[];
     public pathId: string[];
     public expandedId: string;
     public itemData: Object[];
@@ -98,6 +101,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public layoutSelectedItems: string[] = [];
     public renamedItem: { [key: string]: Object; };
     public renamedNodeId: string = null;
+    public renamedId: string = null;
     public uploadItem: string[] = [];
     public fileLength: number;
     public deleteRecords: string[] = [];
@@ -145,6 +149,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public dragCursorPosition: PositionModel = { left: 44, top: 18 };
     public isDropEnd: boolean = false;
     public droppedObjects: Object[] = [];
+    public destinationPath: string;
+
     /**
      * Specifies the AJAX settings of the file manager.
      * @default {
@@ -194,11 +200,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Specifies the details view settings of the file manager.
      * @default {     
      * columns: [{
-     * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', customAttributes: { class: 'e-fe-grid-name' },
-     * template: '<span class="e-fe-text">${name}</span>'},{field: 'size', headerText: 'Size', 
-     * minWidth: 50, width: '110', template: '<span class="e-fe-size">${size}</span>'},
-     * { field: '_fm_modified', headerText: 'DateModified',
-     * minWidth: 50, width: '190'}
+     * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', template: '<span class="e-fe-text">${name}</span>',
+     * customAttributes: { class: 'e-fe-grid-name'}}, { field: '_fm_modified', headerText: 'DateModified',
+     * minWidth: 120, width: '190' }, { field: 'size', headerText: 'Size', minWidth: 90, width: '110',
+     * template: '<span class="e-fe-size">${size}</span>' }
      * ]
      * }
      */
@@ -574,14 +579,13 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (isNOU(currentPath)) {
             currentPath = '/';
         }
-        if (currentPath.indexOf('/') !== 0) {
-            currentPath = '/' + currentPath;
-        }
         if (currentPath.lastIndexOf('/') !== (currentPath.length - 1)) {
             currentPath = currentPath + '/';
         }
         this.originalPath = currentPath;
-        this.setProperties({ path: '/' }, true);
+        let paths: string[] = currentPath.split('/');
+        this.setProperties({ path: paths[0] + '/' }, true);
+        this.pathNames = [];
         this.pathId = ['fe_tree'];
         this.itemData = [];
     }
@@ -650,6 +654,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             enableRtl: false,
             resizing: this.splitterResize.bind(this)
         });
+        this.splitterObj.isStringTemplate = true;
         this.splitterObj.appendTo(layoutWrap);
         let dialogWrap: HTMLElement = this.createElement('div', { id: this.element.id + CLS.DIALOG_ID });
         this.element.appendChild(dialogWrap);
@@ -795,7 +800,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 }
             }
         }
-        let data: string = JSON.stringify(getValue(this.path, this.feParent));
+        let data: string = JSON.stringify(getValue(this.pathId[this.pathId.length - 1], this.feParent));
         args.customFormData = [{ 'path': this.path }, { 'action': action }, { 'data': data }];
         let uploadUrl: string = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
         let ajaxSettings: Object = {
@@ -853,6 +858,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     private onUploadSuccess(files: Object): void {
         let args: SuccessEventArgs = { action: 'Upload', result: files };
         this.trigger('success', args);
+        this.itemData = [getValue(this.pathId[this.pathId.length - 1], this.feParent)];
         read(this, events.pathChanged, this.path);
         if (typeof getValue('onSuccess', this.uploadEventArgs.ajaxSettings) === 'function') {
             getValue('onSuccess', this.uploadEventArgs.ajaxSettings)();
@@ -896,7 +902,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     private onDetailsInit(): void {
         if (isNOU(this.activeModule)) {
-            this.itemData = [getValue(this.path, this.feParent)];
+            this.itemData = [getValue(this.pathId[this.pathId.length - 1], this.feParent)];
         }
     }
 

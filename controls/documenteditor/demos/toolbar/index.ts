@@ -280,7 +280,7 @@ L10n.load({
             'Format restrictions': 'قيود التنسيق',
             'Allow Formatting': 'السماح بالتنسيق',
             'Editing restrictions': 'قيود التحرير',
-            'Read Only': 'للقراءة فقط',
+            'Read only': 'للقراءة فقط',
             'User permissions': 'أذونات المستخدم',
             'Everyone': 'الجميع',
             'Add Users': 'أضافه مستخدمين',
@@ -295,6 +295,9 @@ L10n.load({
             'Stop Protection': 'إيقاف الحماية',
             'Unprotect Document': 'إلغاء حماية المستند',
             'Password': 'كلمه المرور',
+            /* tslint:disable */
+            "Don't add space between the paragraphs of the same styles": 'عدم إضافة مسافة بين فقرات نفس الأنماط'
+            /* tslint:enable */
         },
         'documenteditorcontainer': {
             'New': 'الجديد',
@@ -431,7 +434,7 @@ L10n.load({
             'Format restrictions': 'قيود التنسيق',
             'Allow Formatting': 'السماح بالتنسيق',
             'Editing restrictions': 'قيود التحرير',
-            'Read Only': 'للقراءة فقط',
+            'Read only': 'للقراءة فقط',
             'User permissions': 'أذونات المستخدم',
             'Everyone': 'الجميع',
             'Add Users': 'أضافه مستخدمين',

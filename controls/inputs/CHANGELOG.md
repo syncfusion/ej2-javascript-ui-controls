@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#238077` - Now, numeric textbox model value post to the server instead of a formatted numeric string when submitting the form.
+
+### TextBox
+
+#### New Features
+
+- `#226404`, `#F141814` - Provided `Material2 outline layout` for textbox.
+
+- `#226950` - Provided `Material2 filled layout` for textbox.
+
+#### Bug Fixes
+
+- Now, changed the bottom padding of input to meet the Material theme standard.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### TextBox

@@ -12,7 +12,7 @@ import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
-import { dispatchEvent, parseHtml } from '../base/util';
+import { dispatchEvent, parseHtml, hasClass } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
 /**
@@ -692,6 +692,7 @@ export class Image {
                     }
                 }
             });
+            this.checkBoxObj.isStringTemplate = true;
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
             let target: string = this.checkBoxObj.checked ? '_blank' : null;
@@ -1089,6 +1090,10 @@ export class Image {
                 proxy.parent, (this as IImageNotifyArgs).args,
                 ((this as IImageNotifyArgs).args as ClickEventArgs).originalEvent, proxy.uploadUrl);
             proxy.uploadUrl.url = '';
+            if (proxy.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+                (proxy.imgEle as HTMLElement).style.outline = '';
+                proxy.remvoeResizEle();
+            }
         } else if (url !== '') {
             if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
                 closest(
@@ -1143,6 +1148,7 @@ export class Image {
             max: this.parent.insertImageSettings.maxWidth as number,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        widthNum.isStringTemplate = true;
         widthNum.createElement = this.parent.createElement;
         widthNum.appendTo(imgSizeWrap.querySelector('#imgwidth') as HTMLElement);
         let heightNum: NumericTextBox = new NumericTextBox({
@@ -1150,6 +1156,7 @@ export class Image {
             max: this.parent.insertImageSettings.maxHeight as number,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
+        heightNum.isStringTemplate = true;
         heightNum.createElement = this.parent.createElement;
         heightNum.appendTo(imgSizeWrap.querySelector('#imgheight') as HTMLElement);
         return imgSizeWrap;
@@ -1211,10 +1218,11 @@ export class Image {
 
     private imgUpload(e: IImageNotifyArgs): HTMLElement {
         let save: NodeSelection;
-        let selectParent: Node[];
-        let proxy: this = this;
+        let selectParent: Node[]; let proxy: this = this;
+        let iframe: boolean = proxy.parent.iframeSettings.enable;
         if (proxy.parent.editorMode === 'HTML' &&
-            isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))) {
+            (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))
+            || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
             (this.contentModule.getEditPanel() as HTMLElement).focus();
             let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             save = this.parent.formatter.editorManager.nodeSelection.save(
@@ -1241,6 +1249,7 @@ export class Image {
         uploadParentEle.appendChild(span);
         let browserMsg: string = this.i10n.getConstant('browse');
         let button: Button = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
+        button.isStringTemplate = true;
         button.createElement = this.parent.createElement;
         button.appendTo(btnEle);
         let btnClick: HTMLElement = (Browser.isDevice) ? span : btnEle;
@@ -1303,6 +1312,7 @@ export class Image {
                 proxy.uploadUrl.url = '';
             }
         });
+        this.uploadObj.isStringTemplate = true;
         this.uploadObj.createElement = this.parent.createElement;
         this.uploadObj.appendTo(uploadEle);
         return uploadParentEle;

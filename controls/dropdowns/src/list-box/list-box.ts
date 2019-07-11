@@ -125,6 +125,7 @@ export class ListBox extends DropDownBase {
      * Sets the specified item to the selected state or gets the selected item in the ListBox.
      * @default []
      * @aspType object
+     * @blazorType object
      */
     @Property([])
     public value: string[] | number[] | boolean[];
@@ -196,7 +197,7 @@ export class ListBox extends DropDownBase {
     /**
      * Triggers after dragging the list item.
      * @event
-     * @blazorProperty 'OnDragStart'
+     * @blazorProperty 'DragStart'
      */
     @Event()
     public dragStart: EmitType<DragEventArgs>;
@@ -313,13 +314,16 @@ export class ListBox extends DropDownBase {
             this.list.insertBefore(this.element, this.list.firstChild);
             this.element.style.display = 'none';
         }
-        let listBoxTemplateId: string = this.element.id + ITEMTEMPLATE_PROPERTY;
-        resetBlazorTemplate(listBoxTemplateId, ITEMTEMPLATE_PROPERTY);
-        setTimeout(
-            () => {
-                updateBlazorTemplate(listBoxTemplateId, ITEMTEMPLATE_PROPERTY);
-            },
-            500);
+        if (this.itemTemplate) {
+            let listBoxProxy: ListBox = this;
+            resetBlazorTemplate(this.element.id + ITEMTEMPLATE_PROPERTY, ITEMTEMPLATE_PROPERTY);
+            this.isStringTemplate = true;
+            setTimeout(
+                () => {
+                    updateBlazorTemplate(listBoxProxy.element.id + ITEMTEMPLATE_PROPERTY, ITEMTEMPLATE_PROPERTY, listBoxProxy);
+                },
+                500);
+        }
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
         if (this.list.getElementsByClassName(cssClass.li)[0]) {
             this.list.getElementsByClassName(cssClass.li)[0].classList.remove(dropDownBaseClasses.focus);
@@ -406,6 +410,7 @@ export class ListBox extends DropDownBase {
             title = l10n.getConstant(value);
             ele = this.createElement('button', {
                 attrs: {
+                    'type': 'button',
                     'data-value': value,
                     'title': title,
                     'aria-label': title
@@ -1282,38 +1287,42 @@ export class ListBox extends DropDownBase {
     private setSelection(values: (string | boolean | number)[] = this.value, isSelect: boolean = true, isText: boolean = false): void {
         let li: Element;
         let liselect: boolean;
-        values.forEach((value: string) => {
-            li = this.list.querySelector('[data-value="' + (isText ? this.getValueByText(value) : value) + '"]');
-            if (li) {
-                if (this.selectionSettings.showCheckbox) {
-                    liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
-                } else {
-                    liselect = li.classList.contains('e-selected');
-                }
-                if (!isSelect && liselect || isSelect && !liselect && li) {
+        if (values) {
+            values.forEach((value: string) => {
+                li = this.list.querySelector('[data-value="' + (isText ? this.getValueByText(value) : value) + '"]');
+                if (li) {
                     if (this.selectionSettings.showCheckbox) {
-                        this.notify('updatelist', { li: li });
+                        liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
                     } else {
-                        if (isSelect) {
-                            li.classList.add(cssClass.selected);
-                            li.setAttribute('aria-selected', 'true');
+                        liselect = li.classList.contains('e-selected');
+                    }
+                    if (!isSelect && liselect || isSelect && !liselect && li) {
+                        if (this.selectionSettings.showCheckbox) {
+                            this.notify('updatelist', { li: li });
                         } else {
-                            li.classList.remove(cssClass.selected);
-                            li.removeAttribute('aria-selected');
+                            if (isSelect) {
+                                li.classList.add(cssClass.selected);
+                                li.setAttribute('aria-selected', 'true');
+                            } else {
+                                li.classList.remove(cssClass.selected);
+                                li.removeAttribute('aria-selected');
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
         this.updateSelectTag();
     }
 
     private updateSelectTag(): void {
         let ele: Element = this.getSelectTag();
         ele.innerHTML = '';
-        Array.prototype.forEach.call(this.value, (value: string) => {
-            ele.innerHTML += '<option selected value="' + value + '"></option>';
-        });
+        if (this.value) {
+            Array.prototype.forEach.call(this.value, (value: string) => {
+                ele.innerHTML += '<option selected value="' + value + '"></option>';
+            });
+        }
         this.checkSelectAll();
     }
 
@@ -1331,18 +1340,18 @@ export class ListBox extends DropDownBase {
                         btn.disabled = listObj.ulElement.childElementCount ? false : true;
                         break;
                     case 'moveFrom':
-                        btn.disabled = listObj.value.length ? false : true;
+                        btn.disabled = listObj.value && listObj.value.length ? false : true;
                         break;
                     case 'moveUp':
-                        btn.disabled = this.value.length
+                        btn.disabled = this.value && this.value.length
                             && !this.isSelected(this.ulElement.children[0]) ? false : true;
                         break;
                     case 'moveDown':
-                        btn.disabled = this.value.length
+                        btn.disabled = this.value && this.value.length
                             && !this.isSelected(this.ulElement.children[this.ulElement.childElementCount - 1]) ? false : true;
                         break;
                     default:
-                        btn.disabled = this.value.length ? false : true;
+                        btn.disabled = this.value && this.value.length ? false : true;
                         break;
                 }
             });

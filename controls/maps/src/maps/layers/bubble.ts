@@ -3,7 +3,7 @@ import { BubbleSettingsModel, ColorMapping, IBubbleRenderingEventArgs, bubbleRen
 import { IBubbleClickEventArgs, bubbleClick, LayerSettings, IBubbleMoveEventArgs, bubbleMouseMove } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircleOption, MapLocation, findMidPointOfPolygon, Point, drawCircle, elementAnimate, getTranslate } from '../utils/helper';
-import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate } from '../utils/helper';
+import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate, getRatioOfBubble } from '../utils/helper';
 
 /**
  * Bubble module class
@@ -36,7 +36,7 @@ export class Bubble {
         if (isNaN(bubbleValue) && isNaN(colorValue) && isNullOrUndefined(equalValue)) {
             return null;
         }
-        let radius: number = this.getRatioOfBubble(bubbleSettings.minRadius, bubbleSettings.maxRadius, bubbleValue, range.min, range.max);
+        let radius: number = getRatioOfBubble(bubbleSettings.minRadius, bubbleSettings.maxRadius, bubbleValue, range.min, range.max);
         let colorMapping: ColorMapping = new ColorMapping(this.maps);
         let shapeColor: Object = colorMapping.getColorByValue(bubbleSettings.colorMapping, colorValue, equalValue);
         bubbleColor = (Object.prototype.toString.call(shapeColor) === '[object Object]' &&
@@ -135,19 +135,16 @@ export class Bubble {
         }
     }
     private getPoints(shape: object[], points: MapLocation[]): MapLocation[] {
-        shape.map((current: object, index: number) => {
-            points.push(new Point(current['point']['x'], current['point']['y']));
-        });
+        if (isNullOrUndefined(shape.map)) {
+            points = shape['point'];
+        } else {
+            shape.map((current: object, index: number) => {
+                points.push(new Point(current['point']['x'], current['point']['y']));
+            });
+        }
         return points;
     }
-    private getRatioOfBubble(min: number, max: number, value: number, minValue: number, maxValue: number): number {
-        let percent: number = (100 / (maxValue - minValue)) * (value - minValue);
-        let bubbleRadius: number = (((max - min) / 100) * percent) + min;
-        if (maxValue === minValue) {
-            bubbleRadius = (((max - min) / 100)) + min;
-        }
-        return bubbleRadius;
-    }
+
 
     /**
      * To check and trigger bubble click event
@@ -165,7 +162,10 @@ export class Bubble {
             cancel: false, name: bubbleClick, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        this.maps.trigger(bubbleClick, eventArgs);
+        let eventBlazorArgs: IBubbleClickEventArgs = {
+            cancel: false, name: bubbleClick, data: data, target: target, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(bubbleClick, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
     }
     /**
      * To get bubble from target id
@@ -200,7 +200,10 @@ export class Bubble {
             cancel: false, name: bubbleMouseMove, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        this.maps.trigger(bubbleMouseMove, eventArgs);
+        let eventBlazorArgs: IBubbleMoveEventArgs = {
+            cancel: false, name: bubbleMouseMove, data: data, target: target, x: e.clientX, y: e.clientY
+        };
+        this.maps.trigger(bubbleMouseMove, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
     }
     /**
      * Get module name.

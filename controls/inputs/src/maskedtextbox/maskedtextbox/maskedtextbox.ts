@@ -209,14 +209,12 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     /**
      * Triggers when the MaskedTextBox got focus in.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<MaskFocusEventArgs>;
     /**
      * Triggers when the MaskedTextBox got focus out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<MaskBlurEventArgs>;

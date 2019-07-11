@@ -28,6 +28,7 @@ export class Layer extends ChildProperty<Layer> {
     /**
      * Defines the collection of the objects that are added to a particular layer
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -66,6 +67,7 @@ export class Layer extends ChildProperty<Layer> {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

@@ -120,6 +120,11 @@ export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
      * event argument pointer
      */
     pointer: Pointer;
+    /**
+     * event tooltip argument as append to body
+     */
+    appendInBodyTag: Boolean;
+
 }
 
 /**
@@ -156,11 +161,11 @@ export interface IPointerDragEventArgs {
     /**
      * axis event argument 
      */
-    axis: Axis;
+    axis?: Axis;
     /**
      * pointer event argument 
      */
-    pointer: Pointer;
+    pointer?: Pointer;
     /**
      * currentValue event argument 
      */
@@ -169,6 +174,10 @@ export interface IPointerDragEventArgs {
      * previousValue event argument 
      */
     previousValue?: number;
+    /**
+     * index of the current pointer argument 
+     */
+    pointerIndex?: number;
 }
 
 /**

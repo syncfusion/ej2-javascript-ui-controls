@@ -514,7 +514,7 @@ export class Axis extends ChildProperty<Axis> {
      * * Category: Renders a category axis.
      * * Logarithmic: Renders a log axis.
      * @default 'Double'
-     * @aspType Syncfusion.EJ2.Charts.ValueType
+     * @blazorType Syncfusion.EJ2.Blazor.Charts.ValueType
      * @isEnumeration true
      */
 
@@ -762,7 +762,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * Specifies the multi level labels collection for the axis
      */
-    @Collection<MultiLevelLabels>([], MultiLevelLabels)
+    @Collection<MultiLevelLabelsModel>([], MultiLevelLabels)
     public multiLevelLabels: MultiLevelLabelsModel[];
 
     /**

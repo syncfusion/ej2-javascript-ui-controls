@@ -470,8 +470,10 @@ class PivotEngine {
         let isRangeAvail;
         if (group.type === 'Date') {
             let cDate = new Date(cValue);
-            if (group.startingAt && cDate.getTime() < group.startingAt.getTime() ||
-                group.endingAt && cDate.getTime() > group.endingAt.getTime()) {
+            let startDate = typeof (group.startingAt) === 'string' ? new Date(group.startingAt) : group.startingAt;
+            let endDate = typeof (group.endingAt) === 'string' ? new Date(group.endingAt) : group.endingAt;
+            if (startDate && cDate.getTime() < startDate.getTime() ||
+                endDate && cDate.getTime() > endDate.getTime()) {
                 isRangeAvail = true;
             }
             else {
@@ -479,8 +481,9 @@ class PivotEngine {
             }
         }
         else {
-            if (group.startingAt && cValue < group.startingAt ||
-                group.endingAt && cValue > group.endingAt) {
+            let startValue = typeof (group.startingAt) === 'string' ? parseInt(group.startingAt, 10) : group.startingAt;
+            let endValue = typeof (group.endingAt) === 'string' ? parseInt(group.endingAt, 10) : group.endingAt;
+            if (startValue && cValue < startValue || endValue && cValue > endValue) {
                 isRangeAvail = true;
             }
             else {
@@ -881,8 +884,10 @@ class PivotEngine {
             }
             else if (filterElement.type === 'Date') {
                 filterElement.showDateFilter = true;
+                let date1 = typeof (filterElement.value1) === 'string' ? new Date(filterElement.value1) : filterElement.value1;
+                let date2 = typeof (filterElement.value2) === 'string' ? new Date(filterElement.value2) : filterElement.value2;
                 /* tslint:disable-next-line:max-line-length */
-                filterElement.items = this.getDateFilterMembers(members, filterElement.name, filterElement.condition, filterElement.value1, filterElement.value2);
+                filterElement.items = this.getDateFilterMembers(members, filterElement.name, filterElement.condition, date1, date2);
             }
             else {
                 filterElement.showNumberFilter = true;
@@ -4320,6 +4325,7 @@ class AggregateMenu {
         });
         this.parent.element.appendChild(contextMenu);
         this.menuInfo = new ContextMenu$1(menuOptions);
+        this.menuInfo.isStringTemplate = true;
         this.menuInfo.appendTo(contextMenu);
     }
     beforeMenuOpen(args) {
@@ -4362,6 +4368,7 @@ class AggregateMenu {
             overlayClick: () => { this.removeDialog(); },
             close: this.removeDialog.bind(this)
         });
+        this.valueDialog.isStringTemplate = true;
         this.valueDialog.appendTo(valueDialog);
         this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
     }
@@ -4478,6 +4485,7 @@ class AggregateMenu {
                 }
             }
         });
+        optionWrapper1.isStringTemplate = true;
         optionWrapper1.appendTo(dropOptionDiv1);
         let optionWrapper2 = new DropDownList({
             dataSource: fieldDataSource, enableRtl: this.parent.enableRtl,
@@ -4494,6 +4502,7 @@ class AggregateMenu {
                 optionWrapper3.dataBind();
             }
         });
+        optionWrapper2.isStringTemplate = true;
         optionWrapper2.appendTo(dropOptionDiv2);
         let optionWrapper3 = new DropDownList({
             dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl,
@@ -4504,6 +4513,7 @@ class AggregateMenu {
             enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
             cssClass: FILTER_OPERATOR_CLASS, width: '100%',
         });
+        optionWrapper3.isStringTemplate = true;
         optionWrapper3.appendTo(dropOptionDiv3);
         let inputObj1 = new MaskedTextBox({
             placeholder: 'Enter field caption',
@@ -4511,6 +4521,7 @@ class AggregateMenu {
             enableRtl: this.parent.enableRtl,
             value: fieldCaption, width: '100%'
         });
+        inputObj1.isStringTemplate = true;
         inputObj1.appendTo(inputField1);
         return mainDiv;
     }
@@ -4685,6 +4696,7 @@ class Render {
             this.parent.element.innerHTML = '';
             this.bindGrid(this.parent, (this.engine.isEmptyData ? true : false));
             this.parent.element.appendChild(createElement('div', { id: this.parent.element.id + '_grid' }));
+            this.parent.grid.isStringTemplate = true;
             this.parent.grid.appendTo('#' + this.parent.element.id + '_grid');
         }
         /* tslint:disable */
@@ -7140,6 +7152,7 @@ class PivotContextMenu {
         });
         this.parent.element.appendChild(cMenu);
         this.menuObj = new ContextMenu$1(menuOptions);
+        this.menuObj.isStringTemplate = true;
         this.menuObj.appendTo(cMenu);
     }
     onBeforeMenuOpen(args) {
@@ -7591,6 +7604,7 @@ class DrillThroughDialog {
             target: document.body,
             close: this.removeDrillThroughDialog.bind(this)
         });
+        this.dialogPopUp.isStringTemplate = true;
         this.dialogPopUp.appendTo(drillThroughDialog);
         this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
         setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
@@ -7712,6 +7726,7 @@ class DrillThroughDialog {
             Grid.Inject(VirtualScroll);
         }
         document.body.appendChild(drillThroughGrid);
+        this.drillThroughGrid.isStringTemplate = true;
         this.drillThroughGrid.appendTo(drillThroughGrid);
         drillThroughBody.appendChild(drillThroughBodyHeader);
         drillThroughBody.appendChild(drillThroughGrid);
@@ -8093,7 +8108,9 @@ class PivotChart {
                 resized: this.resized.bind(this),
                 axisLabelRender: this.axisLabelRender.bind(this),
                 multiLevelLabelClick: this.multiLevelLabelClick.bind(this),
-            }, '#' + this.parent.element.id + '_chart');
+            });
+            this.parent.chart.isStringTemplate = true;
+            this.parent.chart.appendTo('#' + this.parent.element.id + '_chart');
         }
         else {
             this.parent.chart.series = this.chartSeries;
@@ -9759,6 +9776,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 beforeRender: this.setToolTip.bind(this),
                 beforeOpen: this.onBeforeTooltipOpen
             });
+            this.tooltip.isStringTemplate = true;
             this.tooltip.appendTo(this.element);
         }
         else if (this.tooltip) {
@@ -10144,6 +10162,12 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      * @hidden
      */
     renderPivotGrid() {
+        if (this.currentView === 'Table') {
+            /* tslint:disable-next-line */
+            if (this.cellTemplate && (window && window.Blazor)) {
+                resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+            }
+        }
         if (this.chartModule) {
             this.chartModule.engineModule = this.engineModule;
             this.chartModule.loadChart(this, this.chartSettings);
@@ -10429,13 +10453,15 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             this.engineModule.generateGridData(this.dataSourceSettings);
         }
         this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
-        /* tslint:disable-next-line */
-        if (this.cellTemplate && (window && window.Blazor)) {
-            resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
-        }
         this.renderPivotGrid();
     }
     onContentReady() {
+        if (this.currentView !== 'Table') {
+            /* tslint:disable-next-line */
+            if (this.cellTemplate && (window && window.Blazor)) {
+                resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+            }
+        }
         this.isPopupClicked = false;
         if (this.showFieldList) {
             hideSpinner(this.pivotFieldListModule.fieldListSpinnerElement);
@@ -10524,16 +10550,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 for (let cell of gridCells) {
                     let tCell = this.gridCellCollection[cell];
                     /* tslint:disable-next-line */
-                    let dataObj = this.engineModule.pivotValues[Number(cell.split('_')[0])][Number(cell.split('_')[1])];
-                    let dummyData = {
-                        name: dataObj.actualText,
-                        caption: dataObj.formattedText,
-                        axis: dataObj.axis
-                    };
-                    /* tslint:disable-next-line */
-                    append([].slice.call(this.getCellTemplate()(extend({ targetCell: tCell }, dummyData), this, 'cellTemplate', this.element.id + '_cellTemplate')), tCell);
+                    append([].slice.call(this.getCellTemplate()({ targetCell: tCell }, this, 'cellTemplate', this.element.id + '_cellTemplate')), tCell);
                 }
-                updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+                updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
             }
         }
     }
@@ -10928,9 +10947,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             if (!this.showGroupingBar) {
                 this.setGridColumns(this.grid.columns);
             }
-            /* tslint:disable-next-line */
-            if (this.cellTemplate && (window && window.Blazor)) {
-                resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+            if (this.currentView === 'Table') {
+                /* tslint:disable-next-line */
+                if (this.cellTemplate && (window && window.Blazor)) {
+                    resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+                }
             }
             this.grid.refreshColumns();
             if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + GROUPING_BAR_CLASS)) {
@@ -11190,6 +11211,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             this.grid.hideSpinner = () => { };
             /* tslint:enable:no-empty */
             this.element.appendChild(createElement('div', { id: this.element.id + '_grid' }));
+            this.grid.isStringTemplate = true;
             this.grid.appendTo('#' + this.element.id + '_grid');
             /* tslint:disable-next-line:no-any */
             this.grid.off('data-ready', this.grid.dataReady);
@@ -12270,6 +12292,7 @@ class ErrorDialog {
             target: document.body,
             close: this.removeErrorDialog.bind(this)
         });
+        this.errorPopUp.isStringTemplate = true;
         this.errorPopUp.appendTo(errorDialog);
         this.errorPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
@@ -12354,6 +12377,7 @@ class FilterDialog {
             /* tslint:disable-next-line:typedef */
             open: this.dialogOpen.bind(this)
         });
+        this.dialogPopUp.isStringTemplate = true;
         this.dialogPopUp.appendTo(editorDialog);
         this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = (this.allowExcelLikeFilter ? headerTemplate : filterCaption);
         if (this.allowExcelLikeFilter) {
@@ -12436,6 +12460,7 @@ class FilterDialog {
                 this.updateCheckedState(fieldCaption);
             }
         });
+        this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
         let data = [{ id: 'all', name: 'All', checkedStatus: true }];
         this.allMemberSelect = new TreeView({
@@ -12445,6 +12470,7 @@ class FilterDialog {
             nodeClicked: this.nodeCheck.bind(this),
             keyPress: this.nodeCheck.bind(this)
         });
+        this.allMemberSelect.isStringTemplate = true;
         this.allMemberSelect.appendTo(selectAllContainer);
         editorTreeWrapper.appendChild(treeViewContainer);
         this.memberTreeView = new TreeView({
@@ -12455,6 +12481,7 @@ class FilterDialog {
             nodeClicked: this.nodeCheck.bind(this),
             keyPress: this.nodeCheck.bind(this)
         });
+        this.memberTreeView.isStringTemplate = true;
         this.memberTreeView.appendTo(treeViewContainer);
         editorTreeWrapper.appendChild(labelWrapper);
         return editorTreeWrapper;
@@ -12521,6 +12548,7 @@ class FilterDialog {
             selectedItem: selectedIndex,
             enableRtl: this.parent.enableRtl
         });
+        this.tabObj.isStringTemplate = true;
         this.tabObj.appendTo(wrapper);
         if (selectedIndex > 0) {
             /* tslint:disable-next-line:max-line-length */
@@ -12564,8 +12592,10 @@ class FilterDialog {
                 'data-type': type, 'data-fieldName': fieldName, 'data-operator': selectedOption,
                 'data-measure': (this.parent.dataSourceSettings.values.length > 0 ?
                     this.parent.dataSourceSettings.values[selectedValueIndex].name : ''),
-                'data-value1': (filterObject && selectedOption === filterObject.condition ? filterObject.value1.toString() : ''),
-                'data-value2': (filterObject && selectedOption === filterObject.condition ? filterObject.value1.toString() : '')
+                'data-value1': (filterObject && selectedOption === filterObject.condition ?
+                    filterObject.value1 ? filterObject.value1.toString() : '' : ''),
+                'data-value2': (filterObject && selectedOption === filterObject.condition ?
+                    filterObject.value2 ? filterObject.value2.toString() : '' : '')
             }
         });
         let textContentdiv = createElement('div', {
@@ -12632,6 +12662,7 @@ class FilterDialog {
                 }
             }
         });
+        optionWrapper1.isStringTemplate = true;
         optionWrapper1.appendTo(optionDiv1);
         let optionWrapper = new DropDownList({
             dataSource: oDataSource, enableRtl: this.parent.enableRtl,
@@ -12657,6 +12688,7 @@ class FilterDialog {
                 }
             }
         });
+        optionWrapper.isStringTemplate = true;
         optionWrapper.appendTo(optionDiv2);
         if (type === 'date') {
             let inputObj1 = new DateTimePicker({
@@ -12664,7 +12696,7 @@ class FilterDialog {
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
-                value: (filterObj && option === filterObj.condition ? filterObj.value1 : null),
+                value: (filterObj && option === filterObj.condition ? (typeof (filterObj.value1) === 'string' ? new Date(filterObj.value1) : filterObj.value1) : null),
                 change: (e) => {
                     let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                     if (!isNullOrUndefined(element)) {
@@ -12681,7 +12713,7 @@ class FilterDialog {
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
-                value: (filterObj && option === filterObj.condition ? filterObj.value2 : null),
+                value: (filterObj && option === filterObj.condition ? (typeof (filterObj.value2) === 'string' ? new Date(filterObj.value2) : filterObj.value2) : null),
                 change: (e) => {
                     let element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                     if (!isNullOrUndefined(element)) {
@@ -12693,7 +12725,9 @@ class FilterDialog {
                 },
                 width: '100%',
             });
+            inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
             inputObj2.appendTo(inputDiv2);
         }
         else if (type === 'value') {
@@ -12735,7 +12769,9 @@ class FilterDialog {
                     }
                 }, width: '100%'
             });
+            inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
             inputObj2.appendTo(inputDiv2);
         }
         else {
@@ -12769,7 +12805,9 @@ class FilterDialog {
                     }
                 }, width: '100%'
             });
+            inputObj1.isStringTemplate = true;
             inputObj1.appendTo(inputDiv1);
+            inputObj2.isStringTemplate = true;
             inputObj2.appendTo(inputDiv2);
         }
     }
@@ -13030,6 +13068,7 @@ class DialogRenderer {
                 enableRtl: this.parent.enableRtl,
                 change: this.onCheckChange.bind(this)
             });
+            this.deferUpdateCheckBox.isStringTemplate = true;
             this.deferUpdateCheckBox.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
             this.deferUpdateApplyButton = new Button({
                 cssClass: DEFER_APPLY_BUTTON + ' ' + DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
@@ -13038,6 +13077,7 @@ class DialogRenderer {
                 enableRtl: this.parent.enableRtl,
                 isPrimary: true
             });
+            this.deferUpdateApplyButton.isStringTemplate = true;
             this.deferUpdateApplyButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton1');
             this.deferUpdateApplyButton.element.onclick = this.parent.renderMode === 'Fixed' ? this.applyButtonClick.bind(this) :
                 this.onDeferUpdateClick.bind(this);
@@ -13049,6 +13089,7 @@ class DialogRenderer {
                 this.parent.localeObj.getConstant('close'),
             enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate
         });
+        this.deferUpdateCancelButton.isStringTemplate = true;
         this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
         this.deferUpdateCancelButton.element.onclick = this.parent.renderMode === 'Fixed' ? this.cancelButtonClick.bind(this) :
             this.onCloseFieldList.bind(this);
@@ -13170,6 +13211,7 @@ class DialogRenderer {
                 target: document.body,
                 close: this.removeFieldListIcon.bind(this)
             });
+            this.fieldListDialog.isStringTemplate = true;
             this.fieldListDialog.appendTo(fieldListWrappper);
             this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             setStyleAttribute(fieldListWrappper.querySelector('#' + fieldListWrappper.id + '_dialog-content'), {
@@ -13203,6 +13245,7 @@ class DialogRenderer {
                     document.querySelector(this.parent.target) : this.parent.target : document.body,
                 close: this.removeFieldListIcon.bind(this)
             });
+            this.fieldListDialog.isStringTemplate = true;
             this.fieldListDialog.appendTo(fieldListWrappper);
             this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             this.fieldListDialog.element.querySelector('.e-footer-content').innerHTML = template;
@@ -13277,10 +13320,12 @@ class DialogRenderer {
         if (this.parent.renderMode === 'Fixed') {
             layoutFooter.appendChild(this.createAddButton());
             addClass([fieldListWrappper], STATIC_FIELD_LIST_CLASS);
+            this.adaptiveElement.isStringTemplate = true;
             this.adaptiveElement.appendTo(this.parentElement);
             this.parentElement.appendChild(layoutFooter);
         }
         else {
+            this.adaptiveElement.isStringTemplate = true;
             this.adaptiveElement.appendTo(this.parentElement);
         }
     }
@@ -13313,6 +13358,7 @@ class DialogRenderer {
             content: this.parent.localeObj.getConstant('calculatedField'),
             enableRtl: this.parent.enableRtl
         });
+        calculateField.isStringTemplate = true;
         calculateField.appendTo(calculatedButton);
         if (this.parent.calculatedFieldModule) {
             removeClass([calculatedButton], ICON_DISABLE);
@@ -13337,7 +13383,9 @@ class DialogRenderer {
             iconCss: ICON + ' ' + ADD_ICON_CLASS,
             enableRtl: this.parent.enableRtl
         });
+        fieldList.isStringTemplate = true;
         fieldList.appendTo(fieldListButton);
+        calculateField.isStringTemplate = true;
         calculateField.appendTo(calculatedButton);
         footerContainer.appendChild(fieldListButton);
         footerContainer.appendChild(calculatedButton);
@@ -13483,6 +13531,7 @@ class TreeViewRenderer {
             nodeDragStop: this.dragStop.bind(this)
         });
         this.treeViewElement.innerHTML = '';
+        this.fieldTable.isStringTemplate = true;
         this.fieldTable.appendTo(this.treeViewElement);
         this.getTreeUpdate();
     }
@@ -13520,6 +13569,7 @@ class TreeViewRenderer {
             target: this.parentElement.parentElement,
             close: this.dialogClose.bind(this)
         });
+        this.fieldDialog.isStringTemplate = true;
         this.fieldDialog.appendTo(fieldListDialog);
         this.fieldDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('adaptiveFieldHeader');
     }
@@ -13547,6 +13597,7 @@ class TreeViewRenderer {
             cssClass: EDITOR_SEARCH_CLASS,
             change: this.textChange.bind(this)
         });
+        this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
         editorTreeWrapper.appendChild(treeViewContainer);
         this.fieldTable = new TreeView({
@@ -13556,6 +13607,7 @@ class TreeViewRenderer {
             enableRtl: this.parent.enableRtl,
             nodeChecked: this.addNode.bind(this),
         });
+        this.fieldTable.isStringTemplate = true;
         this.fieldTable.appendTo(treeViewContainer);
         return editorTreeWrapper;
     }
@@ -14035,6 +14087,7 @@ class PivotButton {
                             buttonWrapper.appendChild(dropLastIndicatorElement);
                             element.appendChild(buttonWrapper);
                             let pivotButton = new Button({ enableRtl: this.parent.enableRtl });
+                            pivotButton.isStringTemplate = true;
                             pivotButton.appendTo(buttonElement);
                             this.unWireEvent(buttonWrapper, i === valuePos ? 'values' : axis);
                             this.wireEvent(buttonWrapper, i === valuePos ? 'values' : axis);
@@ -14072,6 +14125,7 @@ class PivotButton {
                                         }
                                     }
                                 });
+                                this.valueFiedDropDownList.isStringTemplate = true;
                                 this.valueFiedDropDownList.appendTo(ddlDiv);
                             }
                         }
@@ -15656,6 +15710,7 @@ class CalculatedField {
         });
         this.parent.element.appendChild(contextMenu);
         this.menuObj = new ContextMenu$1(menuOptions);
+        this.menuObj.isStringTemplate = true;
         this.menuObj.appendTo(contextMenu);
     }
     /**
@@ -15886,6 +15941,7 @@ class CalculatedField {
             header: this.parent.localeObj.getConstant('createCalculatedField'),
             target: document.body
         });
+        this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parentID + 'calculateddialog');
     }
     cancelClick() {
@@ -16008,6 +16064,7 @@ class CalculatedField {
             drawNode: this.drawTreeNode.bind(this),
             sortOrder: 'Ascending'
         });
+        this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parentID + 'tree');
     }
     nodeCollapsing(args) {
@@ -16098,6 +16155,7 @@ class CalculatedField {
         tabObj.items[4].content = this.renderDialogElements().outerHTML;
         tabObj.dataBind();
         let cancelBtn = new Button({ cssClass: FLAT, isPrimary: true });
+        cancelBtn.isStringTemplate = true;
         cancelBtn.appendTo('#' + this.parentID + 'cancelBtn');
         if (cancelBtn.element) {
             cancelBtn.element.onclick = this.cancelBtnClick.bind(this);
@@ -16105,10 +16163,12 @@ class CalculatedField {
         if (this.parent.
             dialogRenderer.parentElement.querySelector('.' + FORMULA) !== null && this.parent.isAdaptive) {
             let okBtn = new Button({ cssClass: FLAT + ' ' + OUTLINE_CLASS, isPrimary: true });
+            okBtn.isStringTemplate = true;
             okBtn.appendTo('#' + this.parentID + 'okBtn');
             this.inputObj = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('fieldName')
             });
+            this.inputObj.isStringTemplate = true;
             this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
             if (this.formulaText !== null && this.parent.
                 dialogRenderer.parentElement.querySelector('#' + this.parentID + 'droppable') !== null) {
@@ -16133,7 +16193,9 @@ class CalculatedField {
                 expanding: this.accordionExpand.bind(this),
             });
             let addBtn = new Button({ cssClass: FLAT, isPrimary: true });
+            addBtn.isStringTemplate = true;
             addBtn.appendTo('#' + this.parentID + 'addBtn');
+            accordion.isStringTemplate = true;
             accordion.appendTo('#' + this.parentID + 'accordDiv');
             Object.keys(this.parent.engineModule.fieldList).forEach(this.updateType.bind(this));
             if (addBtn.element) {
@@ -16153,6 +16215,7 @@ class CalculatedField {
                             name: AGRTYPE + key,
                             change: this.onChange.bind(this),
                         });
+                        radiobutton.isStringTemplate = true;
                         radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
                     }
                 }
@@ -16184,6 +16247,7 @@ class CalculatedField {
         let checkbox = new CheckBox({
             label: this.parent.engineModule.fieldList[key].caption + ' (' + type + ')'
         });
+        checkbox.isStringTemplate = true;
         checkbox.appendTo('#' + this.parentID + '_' + index);
         document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
         document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
@@ -16249,6 +16313,7 @@ class CalculatedField {
         this.inputObj = new MaskedTextBox({
             placeholder: this.parent.localeObj.getConstant('fieldName')
         });
+        this.inputObj.isStringTemplate = true;
         this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
         this.createTreeView();
         this.createMenu();
@@ -16303,6 +16368,7 @@ class CalculatedField {
             target: document.body,
             close: this.removeErrorDialog.bind(this)
         });
+        this.confirmPopUp.isStringTemplate = true;
         this.confirmPopUp.appendTo(errorDialog);
         this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
@@ -16380,7 +16446,8 @@ class FieldList {
     initiateModule() {
         this.element = createElement('div', {
             id: this.parent.element.id + '_PivotFieldList',
-            styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width
+            styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
+                ';display:none'
         });
         this.parent.element.parentElement.setAttribute('id', 'ContainerWrapper');
         this.parent.element.parentElement.appendChild(this.element);
@@ -16404,6 +16471,7 @@ class FieldList {
     }
     updateControl() {
         if (this.element) {
+            this.element.style.display = 'block';
             prepend([this.element], this.parent.element);
             if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
                 clearTimeout(this.timeOutObj);
@@ -17111,6 +17179,7 @@ class ConditionalFormatting {
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
         }
+        this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parentID + 'conditionalformatting');
         this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('conditionalFormating');
     }
@@ -17332,6 +17401,7 @@ class ConditionalFormatting {
             popupHeight: '200px', popupWidth: 'auto',
             change: this.measureChange.bind(this, i)
         });
+        this.fieldsDropDown[i].isStringTemplate = true;
         this.fieldsDropDown[i].appendTo('#' + this.parentID + 'measureinput' + i);
         let conditions = [
             { value: 'LessThan', name: this.parent.localeObj.getConstant('LessThan') },
@@ -17350,6 +17420,7 @@ class ConditionalFormatting {
             popupHeight: '200px', popupWidth: 'auto',
             change: this.conditionChange.bind(this, i)
         });
+        this.conditionsDropDown[i].isStringTemplate = true;
         this.conditionsDropDown[i].appendTo('#' + this.parentID + 'conditioninput' + i);
         let fontNames = [
             { index: 0, name: 'Arial' }, { index: 1, name: 'San Serif' }, { index: 2, name: 'Impact' },
@@ -17364,6 +17435,7 @@ class ConditionalFormatting {
             popupWidth: '150px', popupHeight: '200px',
             change: this.fontNameChange.bind(this, i)
         });
+        this.fontNameDropDown[i].isStringTemplate = true;
         this.fontNameDropDown[i].appendTo('#' + this.parentID + 'fontnameinput' + i);
         let fontSize = [
             { index: 0, name: '9px' }, { index: 1, name: '10px' }, { index: 2, name: '11px' }, { index: 3, name: '12px' },
@@ -17375,6 +17447,7 @@ class ConditionalFormatting {
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             change: this.fontSizeChange.bind(this, i)
         });
+        this.fontSizeDropDown[i].isStringTemplate = true;
         this.fontSizeDropDown[i].appendTo('#' + this.parentID + 'fontsizeinput' + i);
     }
     conditionChange(i, args) {
@@ -17417,6 +17490,7 @@ class ConditionalFormatting {
             cssClass: FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
             change: this.fontColorChange.bind(this, i)
         });
+        this.fontColor[i].isStringTemplate = true;
         this.fontColor[i].appendTo('#' + this.parentID + 'fontcolor' + i);
         addClass([this.fontColor[i].element.nextElementSibling.querySelector('.' + SELECTED_COLOR)], ICON);
         value = isNullOrUndefined(format.style.backgroundColor) ? 'white' : format.style.backgroundColor;
@@ -17428,12 +17502,14 @@ class ConditionalFormatting {
             cssClass: FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
             change: this.backColorChange.bind(this, i)
         });
+        this.backgroundColor[i].isStringTemplate = true;
         this.backgroundColor[i].appendTo('#' + this.parentID + 'backgroundcolor' + i);
         addClass([this.backgroundColor[i].element.nextElementSibling.querySelector('.e-selected-color')], ICON);
         let toggleBtn = new Button({
             iconCss: ICON + ' ' + FORMAT_DELETE_ICON,
             cssClass: FLAT
         });
+        toggleBtn.isStringTemplate = true;
         toggleBtn.appendTo('#' + this.parentID + 'removeButton' + i);
         toggleBtn.element.onclick = this.toggleButtonClick.bind(this, i);
     }
@@ -17594,8 +17670,7 @@ class Toolbar$2 {
             id: this.parent.element.id + 'pivot-toolbar',
             className: GRID_TOOLBAR
         });
-        if (this.parent.showFieldList &&
-            this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList')) {
+        if (this.parent.showFieldList && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList')) {
             this.parent.element.insertBefore(element, this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList'));
         }
         else if (this.parent.showGroupingBar &&
@@ -17611,6 +17686,7 @@ class Toolbar$2 {
             width: this.parent.width ? (Number(this.parent.width) - 2) : (Number(this.parent.element.offsetWidth) - 2),
             items: this.getItems()
         });
+        this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
     }
     fetchReports() {
@@ -17666,31 +17742,31 @@ class Toolbar$2 {
                     items.push({
                         prefixIcon: TOOLBAR_GRID + ' ' + ICON, tooltipText: this.parent.localeObj.getConstant('grid'),
                         id: this.parent.element.id + 'grid', cssClass: toDisable ? MENU_DISABLE : '',
-                        click: this.gridClick.bind(this),
+                        click: this.menuItemClick.bind(this)
                     });
                     break;
                 case 'Chart':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_pivotchart"></ul>',
-                        id: this.parent.element.id + 'chart'
+                        template: '<ul id="' + this.parent.element.id + 'chart_menu"></ul>',
+                        id: this.parent.element.id + 'chartmenu'
                     });
                     break;
                 case 'Export':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_menu"></ul>',
-                        id: this.parent.element.id + 'export'
+                        template: '<ul id="' + this.parent.element.id + 'export_menu"></ul>',
+                        id: this.parent.element.id + 'exportmenu'
                     });
                     break;
                 case 'SubTotal':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_summary"></ul>',
-                        id: this.parent.element.id + 'sub-total'
+                        template: '<ul id="' + this.parent.element.id + 'subtotal_menu"></ul>',
+                        id: this.parent.element.id + 'subtotalmenu'
                     });
                     break;
                 case 'GrandTotal':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_grandtotal"></ul>',
-                        id: this.parent.element.id + 'grand-total'
+                        template: '<ul id="' + this.parent.element.id + 'grandtotal_menu"></ul>',
+                        id: this.parent.element.id + 'grandtotalmenu'
                     });
                     break;
                 case 'ConditionalFormatting':
@@ -17861,6 +17937,7 @@ class Toolbar$2 {
             closeOnEscape: true,
             target: document.body
         });
+        this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
     }
     okBtnClick() {
@@ -17953,6 +18030,7 @@ class Toolbar$2 {
                 }
             ]
         });
+        this.confirmPopUp.isStringTemplate = true;
         this.confirmPopUp.appendTo(errorDialog);
         this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
@@ -17992,7 +18070,7 @@ class Toolbar$2 {
         if (this.action === 'New') {
             this.createNewReport();
         }
-        else {
+        else if (this.dropArgs) {
             this.reportLoad(this.dropArgs);
         }
         this.confirmPopUp.hide();
@@ -18000,132 +18078,152 @@ class Toolbar$2 {
     /* tslint:disable */
     create() {
         let toDisable = this.parent.displayOption.view === 'Table';
-        let menuChartTypes = [
-            {
-                iconCss: TOOLBAR_CHART + ' ' + ICON,
-                items: toDisable ? [] : [
-                    {
-                        text: this.parent.localeObj.getConstant('column'),
-                        id: this.parent.element.id + '_' + 'Column',
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('bar'),
-                        id: this.parent.element.id + '_' + 'Bar'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('line'),
-                        id: this.parent.element.id + '_' + 'Line'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('area'),
-                        id: this.parent.element.id + '_' + 'Area'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('scatter'),
-                        id: this.parent.element.id + '_' + 'Scatter'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('polar'),
-                        id: this.parent.element.id + '_' + 'Polar'
-                    }
-                ]
-            }
-        ];
-        new Menu({
-            items: menuChartTypes, cssClass: toDisable ? MENU_DISABLE : '', enableRtl: this.parent.enableRtl,
-            select: this.chartClick.bind(this)
-        }, '#' + this.parent.element.id + '_pivotchart');
-        let menuData = [
-            {
-                iconCss: GRID_EXPORT + ' ' + ICON,
-                items: [
-                    {
-                        text: this.parent.localeObj.getConstant('pdf'),
-                        iconCss: GRID_PDF_EXPORT + ' ' + ICON,
-                        id: this.parent.element.id + 'pdf'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('excel'),
-                        iconCss: GRID_EXCEL_EXPORT + ' ' + ICON,
-                        id: this.parent.element.id + 'excel'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('csv'),
-                        iconCss: GRID_CSV_EXPORT + ' ' + ICON,
-                        id: this.parent.element.id + 'csv'
-                    }
-                ]
-            }
-        ];
-        this.exportMenu = new Menu({ items: menuData, enableRtl: this.parent.enableRtl, select: this.export.bind(this) }, '#' + this.parent.element.id + '_menu');
-        let menu = [
-            {
-                iconCss: GRID_SUB_TOTAL + ' ' + ICON,
-                items: [
-                    {
-                        text: this.parent.localeObj.getConstant('showSubTotals'),
-                        id: this.parent.element.id + 'subtotal',
-                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('doNotShowSubTotals'),
-                        id: this.parent.element.id + 'notsubtotal',
-                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('showSubTotalsRowsOnly'),
-                        id: this.parent.element.id + 'subtotalrow',
-                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('showSubTotalsColumnsOnly'),
-                        id: this.parent.element.id + 'subtotalcolumn',
-                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
-                    },
-                ]
-            }
-        ];
-        this.subTotalMenu = new Menu({ items: menu, enableRtl: this.parent.enableRtl, select: this.subTotalClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this) }, '#' + this.parent.element.id + '_summary');
-        let menuTotal = [
-            {
-                iconCss: GRID_GRAND_TOTAL + ' ' + ICON,
-                items: [
-                    {
-                        text: this.parent.localeObj.getConstant('showGrandTotals'),
-                        id: this.parent.element.id + 'grandtotal',
-                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('doNotShowGrandTotals'),
-                        id: this.parent.element.id + 'notgrandtotal',
-                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('showGrandTotalsRowsOnly'),
-                        id: this.parent.element.id + 'grandtotalrow',
-                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('showGrandTotalsColumnsOnly'),
-                        id: this.parent.element.id + 'grandtotalcolumn',
-                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
-                    },
-                ]
-            }
-        ];
-        this.grandTotalMenu = new Menu({ items: menuTotal, enableRtl: this.parent.enableRtl, select: this.grandTotalClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this) }, '#' + this.parent.element.id + '_grandtotal');
-        let reports = this.fetchReports();
-        this.reportList = new DropDownList({
-            dataSource: reports.reportName,
-            width: '150px',
-            popupHeight: '200px',
-            placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
-            enableRtl: this.parent.enableRtl,
-            cssClass: REPORT_LIST_DROP,
-            select: this.reportChange.bind(this),
-            value: this.currentReport
-        });
-        this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'chart_menu')) {
+            let menu = [{
+                    iconCss: TOOLBAR_CHART + ' ' + ICON,
+                    items: toDisable ? [] : [
+                        {
+                            text: this.parent.localeObj.getConstant('column'),
+                            id: this.parent.element.id + '_' + 'Column',
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('bar'),
+                            id: this.parent.element.id + '_' + 'Bar'
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('line'),
+                            id: this.parent.element.id + '_' + 'Line'
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('area'),
+                            id: this.parent.element.id + '_' + 'Area'
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('scatter'),
+                            id: this.parent.element.id + '_' + 'Scatter'
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('polar'),
+                            id: this.parent.element.id + '_' + 'Polar'
+                        }
+                    ]
+                }];
+            this.chartMenu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                select: this.menuItemClick.bind(this)
+            });
+            this.chartMenu.isStringTemplate = true;
+            this.chartMenu.appendTo('#' + this.parent.element.id + 'chart_menu');
+        }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'export_menu')) {
+            let menu = [{
+                    iconCss: GRID_EXPORT + ' ' + ICON,
+                    items: [
+                        {
+                            text: this.parent.localeObj.getConstant('pdf'),
+                            iconCss: GRID_PDF_EXPORT + ' ' + ICON,
+                            id: this.parent.element.id + 'pdf'
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('excel'),
+                            iconCss: GRID_EXCEL_EXPORT + ' ' + ICON,
+                            id: this.parent.element.id + 'excel'
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('csv'),
+                            iconCss: GRID_CSV_EXPORT + ' ' + ICON,
+                            id: this.parent.element.id + 'csv'
+                        }
+                    ]
+                }];
+            this.exportMenu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                select: this.menuItemClick.bind(this)
+            });
+            this.exportMenu.isStringTemplate = true;
+            this.exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
+        }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'subtotal_menu')) {
+            let menu = [{
+                    iconCss: GRID_SUB_TOTAL + ' ' + ICON,
+                    items: [
+                        {
+                            text: this.parent.localeObj.getConstant('showSubTotals'),
+                            id: this.parent.element.id + 'subtotal',
+                            iconCss: PIVOT_SELECT_ICON + ' ' + ICON
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('doNotShowSubTotals'),
+                            id: this.parent.element.id + 'notsubtotal',
+                            iconCss: PIVOT_SELECT_ICON + ' ' + ICON
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('showSubTotalsRowsOnly'),
+                            id: this.parent.element.id + 'subtotalrow',
+                            iconCss: PIVOT_SELECT_ICON + ' ' + ICON
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('showSubTotalsColumnsOnly'),
+                            id: this.parent.element.id + 'subtotalcolumn',
+                            iconCss: PIVOT_SELECT_ICON + ' ' + ICON
+                        },
+                    ]
+                }];
+            this.subTotalMenu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this)
+            });
+            this.subTotalMenu.isStringTemplate = true;
+            this.subTotalMenu.appendTo('#' + this.parent.element.id + 'subtotal_menu');
+        }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'grandtotal_menu')) {
+            let menu = [{
+                    iconCss: GRID_GRAND_TOTAL + ' ' + ICON,
+                    items: [
+                        {
+                            text: this.parent.localeObj.getConstant('showGrandTotals'),
+                            id: this.parent.element.id + 'grandtotal',
+                            iconCss: PIVOT_SELECT_ICON + ' ' + ICON
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('doNotShowGrandTotals'),
+                            id: this.parent.element.id + 'notgrandtotal',
+                            iconCss: PIVOT_SELECT_ICON + ' ' + ICON
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('showGrandTotalsRowsOnly'),
+                            id: this.parent.element.id + 'grandtotalrow',
+                            iconCss: PIVOT_SELECT_ICON + ' ' + ICON
+                        },
+                        {
+                            text: this.parent.localeObj.getConstant('showGrandTotalsColumnsOnly'),
+                            id: this.parent.element.id + 'grandtotalcolumn',
+                            iconCss: PIVOT_SELECT_ICON + ' ' + ICON
+                        },
+                    ]
+                }];
+            this.grandTotalMenu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this)
+            });
+            this.grandTotalMenu.isStringTemplate = true;
+            this.grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
+        }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + '_reportlist')) {
+            let reports = this.fetchReports();
+            this.reportList = new DropDownList({
+                dataSource: reports.reportName,
+                width: '150px',
+                popupHeight: '200px',
+                placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
+                enableRtl: this.parent.enableRtl,
+                cssClass: REPORT_LIST_DROP,
+                select: this.reportChange.bind(this),
+                value: this.currentReport
+            });
+            this.reportList.isStringTemplate = true;
+            this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+        }
     }
     updateSubtotalSelection(args) {
         if (!args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
@@ -18149,7 +18247,7 @@ class Toolbar$2 {
         else if (this.parent.dataSourceSettings.showSubTotals && this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
         }
-        else if (!this.parent.dataSourceSettings.showSubTotals && !this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals) {
+        else if (!this.parent.dataSourceSettings.showSubTotals || (!this.parent.dataSourceSettings.showRowSubTotals && !this.parent.dataSourceSettings.showColumnSubTotals)) {
             args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
         }
     }
@@ -18175,7 +18273,7 @@ class Toolbar$2 {
         else if (this.parent.dataSourceSettings.showGrandTotals && this.parent.dataSourceSettings.showRowGrandTotals && this.parent.dataSourceSettings.showColumnGrandTotals) {
             args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
         }
-        else if (!this.parent.dataSourceSettings.showGrandTotals && !this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals) {
+        else if (!this.parent.dataSourceSettings.showGrandTotals || (!this.parent.dataSourceSettings.showRowGrandTotals && !this.parent.dataSourceSettings.showColumnGrandTotals)) {
             args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
         }
     }
@@ -18193,82 +18291,39 @@ class Toolbar$2 {
         }
         this.reportList.refresh();
     }
-    grandTotalClick(args) {
+    menuItemClick(args) {
         switch (args.item.id) {
-            case (this.parent.element.id + 'notgrandtotal'):
-                this.parent.dataSourceSettings.showGrandTotals = false;
-                this.parent.dataSourceSettings.showColumnGrandTotals = false;
-                this.parent.dataSourceSettings.showRowGrandTotals = false;
-                break;
-            case (this.parent.element.id + 'grandtotalrow'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = false;
-                this.parent.dataSourceSettings.showRowGrandTotals = true;
-                break;
-            case (this.parent.element.id + 'grandtotalcolumn'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = true;
-                this.parent.dataSourceSettings.showRowGrandTotals = false;
-                break;
-            case (this.parent.element.id + 'grandtotal'):
-                this.parent.dataSourceSettings.showGrandTotals = true;
-                this.parent.dataSourceSettings.showColumnGrandTotals = true;
-                this.parent.dataSourceSettings.showRowGrandTotals = true;
-                break;
-        }
-    }
-    subTotalClick(args) {
-        switch (args.item.id) {
-            case (this.parent.element.id + 'notsubtotal'):
-                this.parent.dataSourceSettings.showSubTotals = false;
-                this.parent.dataSourceSettings.showColumnSubTotals = false;
-                this.parent.dataSourceSettings.showRowSubTotals = false;
-                break;
-            case (this.parent.element.id + 'subtotalrow'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = false;
-                this.parent.dataSourceSettings.showRowSubTotals = true;
-                break;
-            case (this.parent.element.id + 'subtotalcolumn'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = true;
-                this.parent.dataSourceSettings.showRowSubTotals = false;
-                break;
-            case (this.parent.element.id + 'subtotal'):
-                this.parent.dataSourceSettings.showSubTotals = true;
-                this.parent.dataSourceSettings.showColumnSubTotals = true;
-                this.parent.dataSourceSettings.showRowSubTotals = true;
-                break;
-        }
-    }
-    gridClick(args) {
-        if (this.parent.grid && this.parent.chart) {
-            this.parent.grid.element.style.display = '';
-            this.parent.chart.element.style.display = 'none';
-            this.parent.currentView = 'Table';
-            if (this.parent.showGroupingBar) {
-                this.parent.element.querySelector('.e-pivot-grouping-bar').style.display = "";
-                this.parent.element.querySelector('.e-chart-grouping-bar').style.display = "none";
-            }
-            this.parent.layoutRefresh();
-        }
-    }
-    chartClick(args) {
-        if (args.item && args.item.text) {
-            this.parent.chartSettings.chartSeries.type = args.item.id.split('_')[args.item.id.split('_').length - 1];
-            if (this.parent.grid && this.parent.chart) {
-                this.parent.grid.element.style.display = 'none';
-                this.parent.chart.element.style.display = '';
-                this.parent.currentView = 'Chart';
-                if (this.parent.showGroupingBar) {
-                    this.parent.element.querySelector('.e-pivot-grouping-bar').style.display = "none";
-                    this.parent.element.querySelector('.e-chart-grouping-bar').style.display = "";
+            case (this.parent.element.id + 'grid'):
+                if (this.parent.grid && this.parent.chart) {
+                    this.parent.grid.element.style.display = '';
+                    this.parent.chart.element.style.display = 'none';
+                    this.parent.currentView = 'Table';
+                    if (this.parent.showGroupingBar) {
+                        this.parent.element.querySelector('.e-pivot-grouping-bar').style.display = "";
+                        this.parent.element.querySelector('.e-chart-grouping-bar').style.display = "none";
+                    }
+                    this.parent.layoutRefresh();
                 }
-            }
-        }
-    }
-    export(args) {
-        switch (args.item.id) {
+                break;
+            case (this.parent.element.id + '_' + 'Column'):
+            case (this.parent.element.id + '_' + 'Bar'):
+            case (this.parent.element.id + '_' + 'Line'):
+            case (this.parent.element.id + '_' + 'Area'):
+            case (this.parent.element.id + '_' + 'Scatter'):
+            case (this.parent.element.id + '_' + 'Polar'):
+                if (args.item && args.item.text) {
+                    this.parent.chartSettings.chartSeries.type = args.item.id.split('_')[args.item.id.split('_').length - 1];
+                    if (this.parent.grid && this.parent.chart) {
+                        this.parent.grid.element.style.display = 'none';
+                        this.parent.chart.element.style.display = '';
+                        this.parent.currentView = 'Chart';
+                        if (this.parent.showGroupingBar) {
+                            this.parent.element.querySelector('.e-pivot-grouping-bar').style.display = "none";
+                            this.parent.element.querySelector('.e-chart-grouping-bar').style.display = "";
+                        }
+                    }
+                }
+                break;
             case (this.parent.element.id + 'pdf'):
                 if (this.parent.pdfExportModule) {
                     this.parent.pdfExportModule.exportToPDF();
@@ -18292,6 +18347,46 @@ class Toolbar$2 {
                 else {
                     this.parent.csvExport();
                 }
+                break;
+            case (this.parent.element.id + 'notsubtotal'):
+                this.parent.dataSourceSettings.showSubTotals = false;
+                this.parent.dataSourceSettings.showColumnSubTotals = false;
+                this.parent.dataSourceSettings.showRowSubTotals = false;
+                break;
+            case (this.parent.element.id + 'subtotalrow'):
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = false;
+                this.parent.dataSourceSettings.showRowSubTotals = true;
+                break;
+            case (this.parent.element.id + 'subtotalcolumn'):
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = true;
+                this.parent.dataSourceSettings.showRowSubTotals = false;
+                break;
+            case (this.parent.element.id + 'subtotal'):
+                this.parent.dataSourceSettings.showSubTotals = true;
+                this.parent.dataSourceSettings.showColumnSubTotals = true;
+                this.parent.dataSourceSettings.showRowSubTotals = true;
+                break;
+            case (this.parent.element.id + 'notgrandtotal'):
+                this.parent.dataSourceSettings.showGrandTotals = false;
+                this.parent.dataSourceSettings.showColumnGrandTotals = false;
+                this.parent.dataSourceSettings.showRowGrandTotals = false;
+                break;
+            case (this.parent.element.id + 'grandtotalrow'):
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = false;
+                this.parent.dataSourceSettings.showRowGrandTotals = true;
+                break;
+            case (this.parent.element.id + 'grandtotalcolumn'):
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = true;
+                this.parent.dataSourceSettings.showRowGrandTotals = false;
+                break;
+            case (this.parent.element.id + 'grandtotal'):
+                this.parent.dataSourceSettings.showGrandTotals = true;
+                this.parent.dataSourceSettings.showColumnGrandTotals = true;
+                this.parent.dataSourceSettings.showRowGrandTotals = true;
                 break;
         }
     }
@@ -18333,6 +18428,9 @@ class Toolbar$2 {
         }
         if (this.dialog && !this.dialog.isDestroyed) {
             this.dialog.destroy();
+        }
+        if (this.chartMenu && !this.chartMenu.isDestroyed) {
+            this.chartMenu.destroy();
         }
         if (this.exportMenu && !this.exportMenu.isDestroyed) {
             this.exportMenu.destroy();

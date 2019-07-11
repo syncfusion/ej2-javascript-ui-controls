@@ -15,7 +15,9 @@ export interface SortDescriptorModel {
      * Defines the direction of sort column. 
      * @default ''
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @isEnumeration true
+     * 
      */
     direction?: SortDirection;
 

@@ -10,6 +10,7 @@ export interface SelectionSettingsModel {
      * @default Syncfusion.EJ2.Grids.SelectionMode.Row
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionMode
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionMode
      */
     mode?: SelectionMode;
 
@@ -21,6 +22,7 @@ export interface SelectionSettingsModel {
      * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CellSelectionMode
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectionMode
      */
     cellSelectionMode?: CellSelectionMode;
 
@@ -31,6 +33,7 @@ export interface SelectionSettingsModel {
      * @default Syncfusion.EJ2.Grids.SelectionType.Single
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionType
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionType
      */
     type?: SelectionType;
 

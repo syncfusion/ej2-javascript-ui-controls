@@ -142,7 +142,7 @@ export class ButtonModelProps extends ChildProperty<ButtonModelProps> {
   /**
    * Specifies the click event binding of action buttons created within Toast.
    * @event
-   * @blazorProperty 'OnClick'
+   * @blazorProperty 'Clicked'
    */
   @Property(null)
   public click: EmitType<Event>;
@@ -250,6 +250,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Specifies the content to be displayed on the Toast.
      * @default null
+     * @blazorType string
      */
     @Property(null)
     public content: string | HTMLElement;
@@ -569,7 +570,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         templateFn = templateCompiler(value);
       }
       if (!isNOU(templateFn)) {
-        tmpArray = templateFn({}, this, prob);
+        tmpArray = templateFn({}, this, prob, null, true);
       }
       if (!isNOU(tmpArray) && tmpArray.length > 0 && !(isNOU(tmpArray[0].tagName) && tmpArray.length === 1) ) {
         [].slice.call(tmpArray).forEach((el: HTEle): void => {
@@ -748,7 +749,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       let ele: HTEle = this.element;
       if (isNOU(this.content) || this.content === '') {
         let isContent: boolean = this.element.innerHTML.replace(/\s/g, '') !== '';
-        if ((ele.children.length > 0 || isContent) && !ele.firstElementChild.classList.contains(ROOT) ) {
+        if ((ele.children.length > 0 || isContent) && !(ele.firstElementChild && ele.firstElementChild.classList.contains(ROOT)) ) {
           this.innerEle = document.createDocumentFragment();
           let tempEle: HTEle = this.createElement('div');
           while ( ele.childNodes.length !== 0 ) {

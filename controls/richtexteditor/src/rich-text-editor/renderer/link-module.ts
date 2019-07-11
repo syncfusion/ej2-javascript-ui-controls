@@ -182,8 +182,7 @@ export class Link {
     }
     private linkDialog(e?: NotifyArgs, inputDetails?: { [key: string]: string }): void {
         if (this.dialogObj) {
-            this.dialogObj.hide({ returnValue: true } as Event);
-            return;
+            this.dialogObj.hide({ returnValue: true } as Event); return;
         }
         if (this.parent.editorMode === 'HTML' && (e.selectParent.length > 0 &&
             !isNullOrUndefined((e.selectParent[0] as HTMLElement).classList) &&
@@ -219,6 +218,7 @@ export class Link {
         let linkTitle: HTMLInputElement = linkContent.querySelector('.e-rte-linkTitle') as HTMLInputElement;
         let linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
         this.checkBoxObj = new CheckBox({ label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl });
+        this.checkBoxObj.isStringTemplate = true;
         this.checkBoxObj.createElement = this.parent.createElement;
         this.checkBoxObj.appendTo(linkTarget);
         selectText = (this.parent.editorMode === 'HTML') ? e.selection.getRange(this.parent.contentModule.getDocument()).toString() :
@@ -294,7 +294,7 @@ export class Link {
         if (linkUrl === '') { (this as NotifyArgs).selfLink.checkUrl(true); return; }
         if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
             linkText = (linkText === '') ? linkUrl : linkText;
-            linkUrl = 'http://' + linkUrl;
+            linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
         } else {
             (this as NotifyArgs).selfLink.checkUrl(false);
         }
@@ -356,7 +356,7 @@ export class Link {
         if (isIDevice() && this.parent.iframeSettings.enable) {
             (<HTMLIFrameElement>select('iframe', this.parent.element)).contentWindow.focus();
         } else {
-            (this.contentModule.getEditPanel() as HTMLElement).focus();
+            (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
         }
         this.hideLinkQuickToolbar();
     }

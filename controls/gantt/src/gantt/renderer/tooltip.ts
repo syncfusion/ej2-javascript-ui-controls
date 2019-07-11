@@ -2,8 +2,8 @@ import { Gantt } from '../base/gantt';
 import { Tooltip as TooltipComponent, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { parentsUntil } from '../base/utils';
 import * as cls from '../base/css-constants';
-import { extend, isNullOrUndefined, getValue, EventHandler, updateBlazorTemplate, resetBlazorTemplate, } from '@syncfusion/ej2-base';
-import { ITaskData, IGanttData, BeforeTooltipRenderEventArgs, PredecessorTooltip, IPredecessor } from '../base/interface';
+import { extend, isNullOrUndefined, getValue, EventHandler, } from '@syncfusion/ej2-base';
+import { ITaskData, IGanttData, BeforeTooltipRenderEventArgs, PredecessorTooltip, IPredecessor, ITemplateData } from '../base/interface';
 import { EventMarkerModel } from '../models/models';
 import { TemplateName } from '../base/enum';
 
@@ -16,7 +16,6 @@ export class Tooltip {
     private predecessorTooltipData: PredecessorTooltip;
     private currentTarget: HTMLElement;
     private tooltipMouseEvent: PointerEvent;
-    private blazorTemplateName: string;
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.createTooltip();
@@ -44,14 +43,10 @@ export class Tooltip {
         this.toolTipObj.showTipPointer = false;
         this.toolTipObj.beforeRender = this.tooltipBeforeRender.bind(this);
         this.toolTipObj.afterClose = this.tooltipCloseHandler.bind(this);
-        this.toolTipObj.created = this.tooltipCreated.bind(this);
+        this.toolTipObj.isStringTemplate = true;
         this.toolTipObj.appendTo(this.parent.element);
     }
-    private tooltipCreated(): void {
-        if (!isNullOrUndefined(this.blazorTemplateName)) {
-            this.updateBlazorTooltipTemplate(true, this.blazorTemplateName);
-        }
-    }
+
     private tooltipBeforeRender(args: TooltipEventArgs): void {
         let parent: Gantt = this.parent;
         if (parent.isOnEdit) {
@@ -85,8 +80,6 @@ export class Tooltip {
                     (<HTMLElement>args.target).classList.contains('e-taskbar-right-resizer')) {
                     let taskbarTemplateNode: NodeList;
                     if (parent.tooltipSettings.taskbar) {
-                        this.blazorTemplateName = TemplateName.TaskbarTooltip;
-                        this.updateBlazorTooltipTemplate(false, this.blazorTemplateName);
                         taskbarTemplateNode = parent.tooltipModule.templateCompiler(
                             parent.tooltipSettings.taskbar, parent, data, TemplateName.TaskbarTooltip);
                     }
@@ -96,8 +89,6 @@ export class Tooltip {
                 } else if (args.target.classList.contains('e-baseline-bar')) {
                     let baseLineTemplateNode: NodeList;
                     if ((parent.tooltipSettings.baseline)) {
-                        this.blazorTemplateName = TemplateName.BaselineTooltip;
-                        this.updateBlazorTooltipTemplate(false, this.blazorTemplateName);
                         baseLineTemplateNode = parent.tooltipModule.templateCompiler(
                             parent.tooltipSettings.baseline, parent, data, TemplateName.BaselineTooltip);
                     }
@@ -110,11 +101,9 @@ export class Tooltip {
                     parent.tooltipModule.predecessorTooltipData = parent.tooltipModule.getPredecessorTooltipData(args);
                     argsData.data = this.predecessorTooltipData;
                     if ((parent.tooltipSettings.connectorLine)) {
-                        this.blazorTemplateName = TemplateName.ConnectorLineTooltip;
-                        this.updateBlazorTooltipTemplate(false, this.blazorTemplateName);
                         dependencyLineTemplateNode = parent.tooltipModule.templateCompiler(
-                            parent.tooltipSettings.connectorLine, parent,
-                            parent.tooltipModule.predecessorTooltipData, TemplateName.ConnectorLineTooltip);
+                            parent.tooltipSettings.connectorLine, parent, parent.tooltipModule.predecessorTooltipData,
+                            TemplateName.ConnectorLineTooltip);
                     }
                     argsData.content = this.toolTipObj.content = dependencyLineTemplateNode ?
                         (dependencyLineTemplateNode[0] as HTMLElement) :
@@ -232,7 +221,7 @@ export class Tooltip {
                 content = '<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">' +
                     data.taskName + '</td></tr>' + startDate + endDate + duration
                     + '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('progress') +
-                    '</td><td>:</td><td>' + data.progress + '</td></tr></tbody></table>';
+                     '</td><td>:</td><td>' + data.progress + '</td></tr></tbody></table>';
                 break;
             case 'baseline':
                 content = '<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">' +
@@ -306,7 +295,7 @@ export class Tooltip {
             linkText: this.parent.getPredecessorTextValue(predecessor[0].type),
             offset: predecessor[0].offset,
             offsetUnit: predecessor[0].offsetUnit,
-            offsetString: this.parent.getDurationString(predecessor[0].offset, fromTask.ganttProperties.durationUnit)
+            offsetString: this.parent.getDurationString(predecessor[0].offset, predecessor[0].offsetUnit)
         };
         return predecessorTooltipData;
     }
@@ -315,77 +304,18 @@ export class Tooltip {
      * @private
      * To compile template string.
      */
-    public templateCompiler(
-        template: string, parent: Gantt, data: IGanttData | PredecessorTooltip,
-        templateName: string): NodeList {
+    public templateCompiler(template: string, parent: Gantt, data: IGanttData | PredecessorTooltip, propName: string): NodeList {
         let tooltipFunction: Function = parent.chartRowsModule.templateCompiler(template);
-        if (templateName === TemplateName.TaskbarTooltip) {
-            parent.chartRowsModule.taskbarTooltipTemplateFunction = tooltipFunction;
-        } else if (templateName === TemplateName.BaselineTooltip) {
-            parent.chartRowsModule.baselineTooltipTemplateFunction = tooltipFunction;
-        } else if (template === TemplateName.ConnectorLineTooltip) {
-            parent.chartRowsModule.connectorLineTooltipTemplateFunction = tooltipFunction;
-        } else if (templateName === TemplateName.EditingTooltip) {
-            parent.chartRowsModule.editingTooltipTemplateFunction = tooltipFunction;
+        let ganttData: IGanttData = data as IGanttData;
+        let templateData: ITemplateData = {};
+        let templateID: string = parent.chartRowsModule.getTemplateID(propName);
+        if (!isNullOrUndefined(ganttData.ganttProperties)) {
+            templateData = parent.chartRowsModule.getTemplateData(ganttData);
+        } else {
+            templateData = data as ITemplateData;
         }
-        let templateNode: NodeList = tooltipFunction(
-            extend({ index: 0 }, data), parent, templateName,
-            parent.chartRowsModule.getTemplateID(templateName));
+        let templateNode: NodeList = tooltipFunction(extend({ index: 0 }, templateData), parent, propName, templateID, true);
         return templateNode;
-    }
-    /** @private */
-    public updateBlazorTooltipTemplate(isUpdate: boolean, templateName: string): void {
-        switch (templateName) {
-            case TemplateName.TaskbarTooltip:
-                if (this.parent.chartRowsModule.taskbarTooltipTemplateFunction) {
-                    if (isUpdate) {
-                        updateBlazorTemplate(
-                            this.parent.chartRowsModule.getTemplateID(TemplateName.TaskbarTooltip), TemplateName.TaskbarTooltip);
-                    } else {
-                        resetBlazorTemplate(
-                            this.parent.chartRowsModule.getTemplateID(TemplateName.TaskbarTooltip), TemplateName.TaskbarTooltip);
-                    }
-                }
-                break;
-            case TemplateName.BaselineTooltip:
-                if (this.parent.chartRowsModule.baselineTooltipTemplateFunction) {
-                    if (isUpdate) {
-                        updateBlazorTemplate(
-                            this.parent.chartRowsModule.getTemplateID(TemplateName.BaselineTooltip), TemplateName.BaselineTooltip);
-                    } else {
-                        resetBlazorTemplate(
-                            this.parent.chartRowsModule.getTemplateID(TemplateName.BaselineTooltip), TemplateName.BaselineTooltip);
-                    }
-                }
-                break;
-
-            case TemplateName.ConnectorLineTooltip:
-                if (this.parent.chartRowsModule.connectorLineTooltipTemplateFunction) {
-                    if (isUpdate) {
-                        updateBlazorTemplate(
-                            this.parent.chartRowsModule.getTemplateID(
-                                TemplateName.ConnectorLineTooltip),
-                            TemplateName.ConnectorLineTooltip);
-                    } else {
-                        resetBlazorTemplate(
-                            this.parent.chartRowsModule.getTemplateID(
-                                TemplateName.ConnectorLineTooltip),
-                            TemplateName.ConnectorLineTooltip);
-                    }
-                }
-                break;
-            case TemplateName.EditingTooltip:
-                if (this.parent.chartRowsModule.editingTooltipTemplateFunction) {
-                    if (isUpdate) {
-                        updateBlazorTemplate(
-                            this.parent.chartRowsModule.getTemplateID(TemplateName.EditingTooltip), TemplateName.EditingTooltip);
-                    } else {
-                        resetBlazorTemplate(
-                            this.parent.chartRowsModule.getTemplateID(TemplateName.EditingTooltip), TemplateName.EditingTooltip);
-                    }
-                }
-                break;
-        }
     }
     private destroy(): void {
         this.toolTipObj.destroy();

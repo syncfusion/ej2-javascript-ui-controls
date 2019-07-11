@@ -476,7 +476,7 @@ describe('Delete and paste with history preservation', () => {
         editor.viewer.onKeyDownInternal(event);
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        editor.editorModule.pasteLocal();
+        editor.editorModule.paste();
         editor.selection.selectAll();
         expect(editor.selection.text).toBe('AAdventure\rAdventure\rdventure\rAdventure\r\r');
     });
@@ -525,7 +525,7 @@ describe('Paste undo and redo validation ', () => {
         editor.enableLocalPaste = true;
         editor.selection.handleDownKey();
         editor.selection.handleRightKey();
-        editor.editorModule.pasteLocal();
+        editor.editorModule.paste();
         editor.editorHistory.undo();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
@@ -935,7 +935,7 @@ describe('Paste and replace else part validation ', () => {
         editor.openBlank();
         editor.editorModule.copiedData = '';
         viewer = editor.viewer as PageLayoutViewer;
-        editor.editorModule.pasteLocal();
+        editor.editorModule.paste();
         expect(editor.editorModule.copiedData).toBe('');
     });
     it('paste with selection containing table and paragraph', () => {
@@ -950,7 +950,7 @@ describe('Paste and replace else part validation ', () => {
         editor.editorModule.insertTable(2, 2);
         editor.selection.handleUpKey();
         editor.selection.handleShiftDownKey();
-        editor.editorModule.pasteLocal();
+        editor.editorModule.paste();
         (editor.editorModule as any).insertHyperlinkInternal(editor.selection, 'www.google.com', editor.selection.text);
         expect(editor.editorModule.copiedData).not.toBe('');
     });

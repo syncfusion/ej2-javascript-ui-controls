@@ -82,6 +82,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * Sets the value of the NumericTextBox.
      * @default null
      * @aspType object
+     * @blazorType object
      */
     @Property(null)
     public value: number;
@@ -92,6 +93,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * [min](../../numerictextbox/getting-started/#range-validation).
      * @default null
      * @aspType object
+     * @blazorType object
      */
     @Property(-(Number.MAX_VALUE))
     public min: number;
@@ -102,6 +104,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * [max](../../numerictextbox/getting-started/#range-validation).
      * @default null
      * @aspType object
+     * @blazorType object
      */
     @Property(Number.MAX_VALUE)
     public max: number;
@@ -285,7 +288,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Triggers when the NumericTextBox got focus in.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<NumericFocusEventArgs>;
@@ -293,7 +295,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Triggers when the NumericTextBox got focus out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<NumericBlurEventArgs>;

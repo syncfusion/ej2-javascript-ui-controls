@@ -5,7 +5,7 @@ import { getValue, select } from '@syncfusion/ej2-base';
 import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Download, GetDetails } from './../common/operations';
 import { createDialog } from './dialog';
-import { cutFiles, copyFiles, refresh, getPathObject, getLocaleText, updateLayout } from './../common/utility';
+import { cutFiles, copyFiles, refresh, getPathObject, getLocaleText, updateLayout, getFullPath } from './../common/utility';
 import { getCssClass, sortbyClickHandler, pasteHandler } from './../common/utility';
 import { createDeniedDialog, hasContentAccess, hasUploadAccess, hasEditAccess, hasDownloadAccess } from './../common/utility';
 import * as events from './../base/constant';
@@ -47,6 +47,7 @@ export class ContextMenu {
             beforeClose: this.onBeforeClose.bind(this),
             cssClass: getCssClass(this.parent, CLS.ROOT_POPUP)
         });
+        this.contextMenu.isStringTemplate = true;
         this.contextMenu.appendTo('#' + this.parent.element.id + CLS.CONTEXT_MENU_ID);
         this.addEventListener();
     }
@@ -205,10 +206,7 @@ export class ContextMenu {
         if (isTree) {
             this.enableItems(['Open'], false, true);
         } else if (this.parent.selectedItems.length !== 1) {
-            this.enableItems(['Rename'], false, true);
-        }
-        if (this.parent.selectedNodes.length !== 1) {
-            this.enableItems(['Paste'], false, true);
+            this.enableItems(['Rename', 'Paste'], false, true);
         }
     }
 
@@ -281,9 +279,8 @@ export class ContextMenu {
                         break;
                     case 'paste':
                         if (this.menuType === 'folder') {
-                            if ((this.parent.activeModule === 'largeiconsview') ||
-                                (this.parent.activeModule === 'detailsview')) {
-                                this.parent.folderPath = this.parent.selectedItems[0] + '/';
+                            if ((this.parent.activeModule === 'largeiconsview') || (this.parent.activeModule === 'detailsview')) {
+                                this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
                             } else {
                                 this.parent.folderPath = '';
                             }

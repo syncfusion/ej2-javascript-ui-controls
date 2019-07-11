@@ -91,7 +91,8 @@ export interface PortModel {
      * * Hover - Shows the port when the mouse hovers over a node
      * * Connect - Shows the port when a connection end point is dragged over a node
      * @default 'Connect'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     visibility?: PortVisibility;
 
@@ -104,13 +105,15 @@ export interface PortModel {
     /**
      * Defines the constraints of port
      * @default 'Default'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     constraints?: PortConstraints;
 
     /**
      * Allows the user to save custom information/data about a port
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     addInfo?: Object;

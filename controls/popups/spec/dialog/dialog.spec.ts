@@ -1657,6 +1657,40 @@ describe('Isprimary Button Action while focus on form element', () => {
             document.body.innerHTML = '';
         });
     });
+
+    describe('focus action in modal dialog overlayclick', () => {
+        let events: any;
+        let eventArgs: any;
+        beforeAll(() => {
+            let clickFn: Function = jasmine.createSpy('click');
+            let ele: HTMLElement = createElement('div', { id: 'dialog', innerHTML: 'This is a dialog content' });
+            document.body.appendChild(ele);
+            events = new Dialog({
+                closeOnEscape: true,
+                animationSettings: { effect: 'None' },
+                buttons: [{
+                    buttonModel: { isPrimary: true, content: "confirm" }, click: function () {
+                        this.hide();
+                    }
+                }],
+                isModal: true
+            });
+            events.appendTo(ele);                        
+        });
+
+        it('Focus the primary button if overlayclicked', () => {
+            let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-dlg-overlay'))[0];
+            ele1.click();
+            expect(document.activeElement.classList.contains("e-primary")).toBe(true);
+        });
+
+        afterAll((): void => {
+            if (events) {
+                events.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+    });
 });
 
 

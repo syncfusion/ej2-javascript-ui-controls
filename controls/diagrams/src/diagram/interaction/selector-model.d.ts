@@ -84,6 +84,7 @@ export interface UserHandleModel {
     /**
      * Defines the offset of user Handle 
      * @default 0
+     * @isBlazorNullableType true
      */
     offset?: number;
 
@@ -141,6 +142,7 @@ export interface SelectorModel {
     /**
      * Sets/Gets the width of the container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -148,6 +150,7 @@ export interface SelectorModel {
     /**
      * Sets/Gets the height of the container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -155,18 +158,21 @@ export interface SelectorModel {
     /**
      * Sets the rotate angle of the container
      * @default 0
+     * @isBlazorNullableType true
      */
     rotateAngle?: number;
 
     /**
      * Sets the positionX of the container
      * @default 0
+     * @isBlazorNullableType true
      */
     offsetX?: number;
 
     /**
      * Sets the positionY of the container
      * @default 0
+     * @isBlazorNullableType true
      */
     offsetY?: number;
 
@@ -242,13 +248,15 @@ export interface SelectorModel {
      * * UserHandles - Shows/hides the user handles of the selector
      * * Resize - Shows/hides all resize handles of the selector
      * @default 'All'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     constraints?: SelectorConstraints;
 
     /**
      * setTooltipTemplate helps to customize the content of a tooltip
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */

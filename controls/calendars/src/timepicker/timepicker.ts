@@ -212,6 +212,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * [`Format`](../../timepicker/getting-started#setting-the-time-format) documentation.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     @Property(null)
     public format: string | TimeFormatObject;
@@ -242,6 +243,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
      */
     @Property('Never')
@@ -256,6 +258,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * specifies the z-index value of the timePicker popup element.
      * @default 1000
      * @aspType int
+     * @blazorType int
      */
     @Property(1000)
     public zIndex: number;
@@ -287,14 +290,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * > For more details refer to 
      * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     @Property(null)
     public scrollTo: Date;
     /**
      * Gets or sets the value of the component. The value is parsed based on the culture specific time format.
      * @default null
-     * @blazorType nullable
+     * @isBlazorNullableType true
      */
     @Property(null)
     public value: Date;
@@ -303,7 +306,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
      * @default 00:00
-     * @aspDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
+     * @blazorDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
      */
     @Property(null)
     public min: Date;
@@ -312,7 +315,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
      * @default 00:00
-     * @aspDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
+     * @blazorDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
      */
     @Property(null)
     public max: Date;
@@ -373,14 +376,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Triggers when the control loses the focus.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<BlurEventArgs>;
     /**
      * Triggers when the control gets focused.
      * @event
-     * @blazorProperty 'OnFocus'
      */
     @Event()
     public focus: EmitType<FocusEventArgs>;

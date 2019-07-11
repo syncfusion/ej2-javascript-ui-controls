@@ -155,7 +155,9 @@ export class Toolbar {
         let isFloat: boolean = false;
         let scrollParent: HTMLElement;
         let floatOffset: number = this.parent.floatingToolbarOffset;
-        if (e && e.target !== document) {
+        if (e && this.parent.iframeSettings.enable && this.parent.inputElement.ownerDocument === e.target) {
+            scrollParent = (e.target as Document).body as HTMLElement;
+        } else if (e && e.target !== document) {
             scrollParent = e.target as HTMLElement;
         } else {
             isBody = true;
@@ -246,6 +248,16 @@ export class Toolbar {
                 items: this.parent.toolbarSettings.items
             } as IColorPickerRenderArgs);
             this.refreshToolbarOverflow();
+        }
+        let divEle: HTMLElement = this.parent.element.querySelector('.e-rte-srctextarea') as HTMLElement;
+        let iframeEle: HTMLElement = this.parent.element.querySelector('.e-source-content') as HTMLElement;
+        if ((!this.parent.iframeSettings.enable && (!isNOU(divEle) && divEle.style.display === 'block')) ||
+          (this.parent.iframeSettings.enable && (!isNOU(iframeEle) && iframeEle.style.display === 'block'))) {
+            this.parent.notify(events.updateToolbarItem, {
+                targetItem: 'SourceCode', updateItem: 'Preview',
+                baseToolbar: this.parent.getBaseToolbarObject()
+            });
+            this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
         }
     }
 

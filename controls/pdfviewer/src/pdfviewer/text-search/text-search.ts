@@ -806,6 +806,10 @@ export class TextSearch {
         let jsonObject: object;
         // tslint:disable-next-line:max-line-length
         jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), action: 'RenderPdfPages' };
+        if (this.pdfViewerBase.jsonDocumentId) {
+            // tslint:disable-next-line
+            (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+        }
         this.searchRequestHandler = new AjaxHandler(this.pdfViewer);
         this.searchRequestHandler.url = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.renderPages;
         this.searchRequestHandler.responseType = 'json';

@@ -311,4 +311,8 @@
   .e-de-ctnr-cellbg-clr-picker::before {
     content: '\ebca';
   }
+
+  .e-de-flip {
+    transform: scaleX(-1);
+  }
 }

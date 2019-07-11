@@ -311,13 +311,13 @@ export class GroupSettings extends ChildProperty<GroupSettings> implements IGrou
      * It allows to set the start time of group field.
      */
     @Property()
-    public startingAt: Date | number;
+    public startingAt: string | Date | number;
 
     /**
      * It allows to set the end time of group field.
      */
     @Property()
-    public endingAt: Date | number;
+    public endingAt: string | Date | number;
 
     /**
      * It allows to set the type of field.

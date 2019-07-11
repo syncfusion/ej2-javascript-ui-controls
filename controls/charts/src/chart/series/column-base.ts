@@ -304,7 +304,7 @@ export class ColumnBase {
                 let seriesElement: Element = series.seriesElement;
                 if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
                     (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
-                    series.chart.trigger('animationComplete', { series: series });
+                    series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
                     if (series.type === 'Waterfall') {
                         let rectElements: NodeList = seriesElement.childNodes;
                         for (let i: number = 0; i < rectElements.length; i++) {

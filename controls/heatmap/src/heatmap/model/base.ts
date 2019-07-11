@@ -261,6 +261,7 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
      * Start value of the multi level labels
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     @Property(null)
     public start: number | Date | string;
@@ -268,6 +269,7 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
      * End value of the multi level labels
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     @Property(null)
     public end: number | Date | string;
@@ -282,6 +284,7 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
      * Maximum width of the text for multi level labels.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     @Property(null)
     public maximumTextWidth: number;

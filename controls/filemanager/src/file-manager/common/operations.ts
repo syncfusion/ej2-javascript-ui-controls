@@ -5,13 +5,18 @@ import * as events from '../base/constant';
 import { createDialog, createExtDialog } from '../pop-up/dialog';
 import { FileDetails, FileDragEventArgs, FailureEventArgs, SuccessEventArgs } from '../../index';
 import { fileType, setNodeId, getLocaleText, setDateObject, doPasteUpdate, getParentPath, getPathObject } from '../common/utility';
+import { generatePath } from '../common/utility';
 
 /**
  * Function to read the content from given path in File Manager.
  * @private
  */
 export function read(parent: IFileManager, event: string, path: string): void {
-    let data: Object = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: parent.itemData };
+    let itemData: Object[] = parent.itemData;
+    for (let i: number = 0; i < itemData.length; i++) {
+        if (isNOU(getValue('hasChild', itemData[i]))) { setValue('hasChild', false, itemData[i]); }
+    }
+    let data: Object = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: itemData };
     createAjax(parent, data, readSuccess, event);
 }
 
@@ -35,9 +40,15 @@ export function rename(parent: IFileManager, path: string, itemNewName: string):
         name = parent.currentItemText;
         newName = itemNewName;
     } else {
-        let fPath: string = parent.filterPath.replace(/\\/g, '/');
-        name = fPath.replace(path, '') + parent.currentItemText;
-        newName = fPath.replace(path, '') + itemNewName;
+        let fPath: string = parent.filterPath;
+        if (parent.hasId) {
+            name = parent.currentItemText;
+            newName = itemNewName;
+        } else {
+            fPath = fPath.replace(/\\/g, '/');
+            name = fPath.replace(path, '') + parent.currentItemText;
+            newName = fPath.replace(path, '') + itemNewName;
+        }
     }
     let data: Object = {
         action: 'rename', path: path, name: name, newName: newName, data: parent.itemData
@@ -58,6 +69,7 @@ export function paste(
         action: pasteOperation, path: path, targetData: parent.itemData[0],
         targetPath: targetPath, names: names, renameFiles: renameItems, data: actionRecords
     };
+    parent.destinationPath = targetPath;
     createAjax(parent, data, pasteSuccess, path, pasteOperation, targetPath);
 }
 
@@ -118,14 +130,25 @@ function createAjax(
                             let item: Object = result.files[i];
                             setValue('_fm_iconClass', fileType(item), item);
                         }
-                    }
-                    if (getValue('action', data) === 'read') {
-                        let path: string = getValue('path', data);
-                        setNodeId(result, parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1]);
-                        setValue(path, result.files, parent.feFiles);
-                        setValue(path, result.cwd, parent.feParent);
+                        if (getValue('action', data) === 'read') {
+                            let id: string = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
+                            setNodeId(result, id);
+                            setValue(id, result.files, parent.feFiles);
+                            setValue(id, result.cwd, parent.feParent);
+                            if ((event === 'finalize-end' || event === 'initial-end') && parent.pathNames.length === 0) {
+                                let root: Object = getValue(parent.pathId[0], parent.feParent);
+                                parent.pathNames[0] = getValue('name', root);
+                                parent.hasId = !isNOU(getValue('id', root));
+                            }
+                            if (event === 'finalize-end') {
+                                generatePath(parent);
+                            }
+                        }
                     }
                     fn(parent, result, event, operation, targetPath);
+                    if (!isNOU(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end')) {
+                        parent.notify(events.searchTextChange, result);
+                    }
                     if (typeof getValue('onSuccess', beforeSendArgs.ajaxSettings) === 'function') {
                         getValue('onSuccess', beforeSendArgs.ajaxSettings)();
                     }
@@ -207,8 +230,11 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
         if (parent.activeModule === 'navigationpane') {
-            let newPath: string = getParentPath(parent) + parent.renameText + '/';
-            parent.setProperties({ path: newPath }, true);
+            if (!parent.hasId) {
+                let newPath: string = getParentPath(parent.path) + parent.renameText + '/';
+                parent.setProperties({ path: newPath }, true);
+            }
+            parent.pathNames[parent.pathNames.length - 1] = parent.renameText;
             parent.itemData = result.files;
         } else {
             parent.itemData = [getPathObject(parent)];

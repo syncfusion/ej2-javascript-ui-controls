@@ -541,7 +541,7 @@ export namespace ListBase {
                 li.innerText = fieldData[curFields.text] as string;
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
-                append(compiledString(curItem, null, null, currentID), li);
+                append(compiledString(curItem, null, null, currentID, !!curOpt.isStringTemplate), li);
                 li.setAttribute('data-value', value);
                 li.setAttribute('role', 'option');
             }
@@ -581,7 +581,14 @@ export namespace ListBase {
             let headerData: { [key: string]: string; } = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            append(compiledString(headerData, null, null, curOpt.groupTemplateID), header);
+            append(
+                compiledString(
+                    headerData,
+                    null,
+                    null,
+                    curOpt.groupTemplateID,
+                    !!curOpt.isStringTemplate),
+                header);
         }
         return headerItems;
     }
@@ -740,10 +747,10 @@ export namespace ListBase {
 
         if (grpLI && options && options.groupTemplate) {
             let compiledString: Function = compile(options.groupTemplate);
-            append(compiledString(item, null, null, curOpt.groupTemplateID), li);
+            append(compiledString(item, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         } else if (!grpLI && options && options.template) {
             let compiledString: Function = compile(options.template);
-            append(compiledString(item, null, null, curOpt.templateID), li);
+            append(compiledString(item, null, null, curOpt.templateID, !!curOpt.isStringTemplate), li);
         } else {
             let innerDiv: HTMLElement = createElement('div', {
                 className: cssClass.textContent,
@@ -924,6 +931,10 @@ export interface ListBaseOptions {
      * Specifies the groupTemplate ID
      */
     groupTemplateID?: string;
+    /**
+     * Force template compiler to compile as string template
+     */
+    isStringTemplate?: string;
 }
 
 /**

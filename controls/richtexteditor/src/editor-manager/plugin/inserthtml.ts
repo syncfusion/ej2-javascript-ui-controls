@@ -2,7 +2,7 @@ import { NodeSelection } from './../../selection/index';
 
 import { NodeCutter } from './nodecutter';
 import * as CONSTANT from './../base/constant';
-import { detach, Browser } from '@syncfusion/ej2-base';
+import { detach, Browser, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
 
 /**
@@ -25,10 +25,10 @@ export class InsertHtml {
         let isCollapsed: boolean = range.collapsed;
         let nodes: Node[] = nodeSelection.getInsertNodeCollection(range);
         let closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
-        if ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
+        if (editNode !== range.startContainer && ((!isCollapsed && !(closestParentNode.nodeType === Node.ELEMENT_NODE &&
             CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) !== -1))
             || (node.nodeName.toLowerCase() === 'table' && closestParentNode &&
-                CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) === -1)) {
+                CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) === -1))) {
             let preNode: Node = nodeCutter.GetSpliceNode(range, closestParentNode as HTMLElement);
             let sibNode: Node = preNode.previousSibling;
             let parentNode: Node = preNode.parentNode;
@@ -44,6 +44,7 @@ export class InsertHtml {
             range.extractContents();
             for (let index: number = 0; index < nodes.length; index++) {
                 if (nodes[index].nodeType !== 3 && nodes[index].parentNode != null) {
+                    if (nodes[index].nodeName === 'IMG') { continue; }
                     nodes[index].parentNode.removeChild(nodes[index]);
                 }
             }
@@ -99,7 +100,8 @@ export class InsertHtml {
         let el: Element = <Element>element;
         while (el && el.nodeType === 1) {
             if (el.parentNode === editNode ||
-                CONSTANT.IGNORE_BLOCK_TAGS.indexOf((el.parentNode as Element).tagName.toLocaleLowerCase()) !== -1) {
+                (!isNOU((el.parentNode as Element).tagName) &&
+                CONSTANT.IGNORE_BLOCK_TAGS.indexOf((el.parentNode as Element).tagName.toLocaleLowerCase()) !== -1)) {
                 return el;
             }
             el = <Element>el.parentNode;

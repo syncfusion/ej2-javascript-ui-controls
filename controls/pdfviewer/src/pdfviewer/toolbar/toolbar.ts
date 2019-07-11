@@ -584,6 +584,7 @@ export class Toolbar {
                     this.toolbar.refreshOverflow();
                 }
             });
+            this.toolbar.isStringTemplate = true;
             if (this.pdfViewer.enableRtl) {
                 this.toolbar.enableRtl = true;
             }
@@ -645,7 +646,7 @@ export class Toolbar {
         items.push({ prefixIcon: 'e-pv-redo-icon e-pv-icon', cssClass: 'e-pv-redo-container', id: this.pdfViewer.element.id + '_redo', text: this.pdfViewer.localeObj.getConstant('Redo'), align: 'Left' });
         items.push({ type: 'Separator', align: 'Left' });
         // tslint:disable-next-line:max-line-length
-        items.push({ prefixIcon: 'e-pv-comment-icon e-pv-icon', cssClass: 'e-pv-comment-container', id: this.pdfViewer.element.id + '_comment', text: this.pdfViewer.localeObj.getConstant('Add Comments'), align: 'Left'});
+        items.push({ prefixIcon: 'e-pv-comment-icon e-pv-icon', cssClass: 'e-pv-comment-container', id: this.pdfViewer.element.id + '_comment', text: this.pdfViewer.localeObj.getConstant('Add Comments'), align: 'Left' });
         // tslint:disable-next-line:max-line-length
         items.push({ prefixIcon: 'e-pv-text-search-icon e-pv-icon', cssClass: 'e-pv-text-search-container', id: this.pdfViewer.element.id + '_search', text: this.pdfViewer.localeObj.getConstant('Search text'), align: 'Right' });
         items.push({ prefixIcon: 'e-pv-annotation-icon e-pv-icon', cssClass: 'e-pv-annotation-container', id: this.pdfViewer.element.id + '_annotation', text: this.pdfViewer.localeObj.getConstant('Annotation Edit text'), align: 'Right' });
@@ -801,6 +802,7 @@ export class Toolbar {
             { template: template, align: 'Right' }
             ], clicked: this.toolbarClickHandler, width: '', height: '', overflowMode: 'Popup'
         });
+        this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo(this.toolbarElement);
         this.openDocumentItem = this.pdfViewerBase.getElement('_open');
         this.openDocumentItem.classList.add('e-pv-open-document');
@@ -1063,7 +1065,7 @@ export class Toolbar {
             case this.pdfViewer.element.id + '_handTool':
             case this.pdfViewer.element.id + '_handToolIcon':
             case this.pdfViewer.element.id + '_handToolText':
-                if (!this.isScrollingToolDisabled) {
+                if (!(this.isScrollingToolDisabled || this.getStampMode())) {
                     this.pdfViewerBase.initiatePanning();
                     this.updateInteractionTools(false);
                 }
@@ -1088,7 +1090,7 @@ export class Toolbar {
     }
 
     // tslint:disable-next-line
-    private addComments(targetElement : any): void {
+    private addComments(targetElement: any): void {
         if (targetElement.id === this.pdfViewer.element.id + '_comment') {
             targetElement.classList.add('e-pv-select');
         } else {
@@ -1099,7 +1101,7 @@ export class Toolbar {
             }
         }
         document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).addEventListener
-        ('mousedown', this.pdfViewer.annotationModule.stickyNotesAnnotationModule.drawIcons.bind(this));
+            ('mousedown', this.pdfViewer.annotationModule.stickyNotesAnnotationModule.drawIcons.bind(this));
     }
 
     // tslint:disable-next-line
@@ -1415,6 +1417,14 @@ export class Toolbar {
                 this.showCommentOption(false);
             }
             this.showSeparator(toolbarSettingsItems);
+        }
+    }
+
+    private getStampMode(): boolean {
+        if (this.pdfViewer.annotation && this.pdfViewer.annotation.stampAnnotationModule) {
+            return this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode;
+        } else {
+            return false;
         }
     }
 

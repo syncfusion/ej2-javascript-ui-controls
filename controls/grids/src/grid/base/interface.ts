@@ -832,7 +832,7 @@ export interface RowInfo {
     column?: Object;
 }
 
-export interface ActionEventArgs {
+export interface GridActionEventArgs {
     /** Defines the current action. */
     requestType?: Action;
     /** Defines the type of event. */
@@ -847,7 +847,7 @@ export interface FailureEventArgs {
     error?: Error;
 }
 
-export interface FilterEventArgs extends ActionEventArgs {
+export interface FilterEventArgs extends GridActionEventArgs {
     /** Defines the object that is currently filtered. */
     currentFilterObject?: PredicateModel;
     /** Defines the column name that is currently filtered. */
@@ -856,31 +856,31 @@ export interface FilterEventArgs extends ActionEventArgs {
     columns?: PredicateModel[];
 }
 
-export interface GroupEventArgs extends ActionEventArgs {
+export interface GroupEventArgs extends GridActionEventArgs {
     /** Defines the field name of the currently grouped columns. */
     columnName?: string;
 }
 
-export interface PageEventArgs extends ActionEventArgs {
+export interface PageEventArgs extends GridActionEventArgs {
     /** Defines the previous page number. */
     previousPage?: string;
     /** Defines the current page number. */
     currentPage?: string;
 }
 
-export interface SortEventArgs extends ActionEventArgs {
+export interface SortEventArgs extends GridActionEventArgs {
     /** Defines the field name of currently sorted column. */
     columnName?: string;
     /** Defines the direction of sort column. */
     direction?: SortDirection;
 }
 
-export interface SearchEventArgs extends ActionEventArgs {
+export interface SearchEventArgs extends GridActionEventArgs {
     /** Defines the string value to search. */
     searchString?: string;
 }
 
-export interface PrintEventArgs extends ActionEventArgs {
+export interface PrintEventArgs extends GridActionEventArgs {
     /** Defines the Grid element. */
     element?: Element;
     /** Defines the currently selected rows. */

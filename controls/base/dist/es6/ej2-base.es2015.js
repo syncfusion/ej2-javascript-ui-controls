@@ -328,6 +328,27 @@ function formatUnit(value) {
     return result + 'px';
 }
 /**
+ * Function to check whether the platform is blazor or not.
+ * @return {boolean} result
+ * @private
+ */
+function isBlazor() {
+    return window && Object.keys(window).indexOf('Blazor') >= 0;
+}
+/**
+ * Function to convert xPath to DOM element in blazor platform
+ * @return {HTMLElement} result
+ * @param {HTMLElement | object} element
+ * @private
+ */
+function getElement(element) {
+    let xPath = 'xPath';
+    if (!(element instanceof Node) && isBlazor() && !isNullOrUndefined(element[xPath])) {
+        return document.evaluate(element[xPath], document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    }
+    return element;
+}
+/**
  * Function to fetch the Instances of a HTML element for the given component.
  * @param {string | HTMLElement} element
  * @param {any} component
@@ -5021,6 +5042,17 @@ function getNumericObject(locale, type) {
     return extend(symbPattern, IntlBase.getFormatData(pattern, true, '', true), { 'dateSeparator': IntlBase.getDateSeparator(dateObject) });
 }
 /**
+ * To get the numeric CLDR  number base object for given culture
+ * @param {string} locale - Specifies the locale for which numericObject to be returned.
+ * @param {string} currency - Specifies the currency for which numericObject to be returned.
+ * @ignore
+ * @private
+ */
+function getNumberDependable(locale, currency) {
+    let numObject = IntlBase.getDependables(cldrData, locale, '', true);
+    return IntlBase.getCurrencySymbol(numObject.numericObject, currency);
+}
+/**
  * To get the default date CLDR object.
  * @ignore
  * @private
@@ -5048,6 +5080,11 @@ let Component = class Component extends Base {
     constructor(options, selector) {
         super(options, selector);
         this.randomId = uniqueID();
+        /**
+         * string template option for Blazor template rendering
+         * @private
+         */
+        this.isStringTemplate = false;
         this.needsID = false;
         /**
          * This is a instance method to create an element.
@@ -6734,11 +6771,11 @@ function getRandomId() {
 function compile$$1(templateString, helper) {
     let compiler = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data, component, propName, templateId) => {
+    return (data, component, propName, templateId, isStringTemplate) => {
         let result = compiler(data, component, propName);
         let blazor = 'Blazor';
         let blazorTemplateId = 'BlazorTemplateId';
-        if (window && window[blazor]) {
+        if (window && window[blazor] && !isStringTemplate) {
             let randomId = getRandomId();
             if (!blazorTemplates[templateId]) {
                 blazorTemplates[templateId] = [];
@@ -6765,11 +6802,11 @@ function compile$$1(templateString, helper) {
         }
     };
 }
-function updateBlazorTemplate(templateId, templateName) {
+function updateBlazorTemplate(templateId, templateName, comp) {
     let blazor = 'Blazor';
     if (window && window[blazor]) {
-        let ejsIntrop = 'ejsIntrop';
-        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId);
+        let ejsIntrop = 'ejsInterop';
+        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp);
         blazorTemplates[templateId] = [];
     }
 }
@@ -6819,5 +6856,5 @@ let engineObj = { compile: new Engine().compile };
  * Base modules
  */
 
-export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
+export { Ajax, Animation, rippleEffect, isRippleEnabled, enableRipple, Base, getComponent, Browser, Component, ChildProperty, Position, Draggable, Droppable, EventHandler, onIntlChange, rightToLeft, cldrData, defaultCulture, defaultCurrencyCode, Internationalization, setCulture, setCurrencyCode, loadCldr, enableRtl, getNumericObject, getNumberDependable, getDefaultDateObject, KeyboardEvents, L10n, ModuleLoader, Property, Complex, ComplexFactory, Collection, CollectionFactory, Event, NotifyPropertyChanges, CreateBuilder, SwipeSettings, Touch, HijriParser, blazorTemplates, getRandomId, compile$$1 as compile, updateBlazorTemplate, resetBlazorTemplate, setTemplateEngine, getTemplateEngine, createInstance, setImmediate, getValue, setValue, deleteObject, isObject, getEnumValue, merge, extend, isNullOrUndefined, isUndefined, getUniqueID, debounce, queryParams, isObjectArray, compareElementParent, throwError, print, formatUnit, isBlazor, getElement, getInstance, addInstance, uniqueID, createElement, addClass, removeClass, isVisible, prepend, append, detach, remove, attributes, select, selectAll, closest, siblings, getAttributeOrDefault, setStyleAttribute, classList, matches, Observer };
 //# sourceMappingURL=ej2-base.es2015.js.map

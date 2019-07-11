@@ -1181,7 +1181,7 @@ describe('MaskedTextBox Component', () => {
             expect(maskBox.element.hasAttribute('disabled')).toBe(true);
             expect(maskBox.element.getAttribute('placeholder')).toBe('Number of states');
             expect(maskBox.inputObj.container.getAttribute('title')).toBe('sample');
-            expect(maskBox.inputObj.container.getAttribute('class')).toBe('test');
+            expect(maskBox.inputObj.container.classList.contains('test')).toBe(true);
             expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:yellow');
         });
     });
@@ -1206,7 +1206,7 @@ describe('MaskedTextBox Component', () => {
             expect(maskBox.element.hasAttribute('disabled')).toBe(true);
             expect(maskBox.element.getAttribute('value')).toBe('100');
             expect(maskBox.inputObj.container.getAttribute('title')).toBe('sample');
-            expect(maskBox.inputObj.container.getAttribute('class')).toBe('test');
+            expect(maskBox.inputObj.container.classList.contains('test')).toBe(true);
             expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:yellow');
             maskBox.htmlAttributes = { placeholder:"Enter a number", readonly: "false", disabled: "false", value: "50", class: "multiple", title:"heading", style: 'background-color:red'};
             maskBox.dataBind();
@@ -1214,7 +1214,7 @@ describe('MaskedTextBox Component', () => {
             expect(maskBox.element.hasAttribute('disabled')).toBe(false);
             expect(maskBox.element.getAttribute('value')).toBe('50');
             expect(maskBox.inputObj.container.getAttribute('title')).toBe('heading');
-            expect(maskBox.inputObj.container.getAttribute('class')).toBe('multiple');
+            expect(maskBox.inputObj.container.classList.contains('multiple')).toBe(true);
             expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:red');
         });
         it('Placeholder testing in auto case', () => {

@@ -15,24 +15,28 @@ export interface MarginModel {
     /**
      * Sets the space to be left from the left side of the immediate parent of an element
      * @default 0
+     * @isBlazorNullableType true
      */
     left?: number;
 
     /**
      * Sets the space to be left from the right side of the immediate parent of an element
      * @default 0
+     * @isBlazorNullableType true
      */
     right?: number;
 
     /**
      * Sets the space to be left from the top side of the immediate parent of an element
      * @default 0
+     * @isBlazorNullableType true
      */
     top?: number;
 
     /**
      * Sets the space to be left from the bottom side of the immediate parent of an element
      * @default 0
+     * @isBlazorNullableType true
      */
     bottom?: number;
 
@@ -83,6 +87,7 @@ export interface StopModel {
     /**
      * Sets the position where the previous color transition ends and a new color transition starts
      * @default 0
+     * @isBlazorNullableType true
      */
     offset?: number;
 

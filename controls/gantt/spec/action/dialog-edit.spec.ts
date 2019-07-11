@@ -145,6 +145,25 @@ describe('Gantt dialog module', () => {
             let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');
         });
+        it('Schedule validation- Null values', () => {
+            ganttObj.dataBind();
+            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
+            ganttObj.dataSource[1].StartDate = null;
+            ganttObj.dataSource[1].EndDate = null;
+            ganttObj.dataSource[1].Duration = null;
+            ganttObj.dataBind();
+            ganttObj.refresh();
+            ganttObj.openEditDialog(5);
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            SD.value = new Date('04/09/2019');
+            SD.dataBind();
+            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            expect(ED.value).toBe(null);
+            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            expect(textObj.value).toBe('');
+            triggerMouseEvent(cancelRecord, 'click');
+        });
     });
     describe('Dialog editing - predecessor Tab', () => {
         let ganttObj: Gantt;

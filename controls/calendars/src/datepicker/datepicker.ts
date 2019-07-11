@@ -136,6 +136,7 @@ export class DatePicker extends Calendar implements IInput {
      * Specifies the format of the value that to be displayed in component. By default, the format is based on the culture.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     @Property(null)
     public format: string | FormatObject;
@@ -193,6 +194,7 @@ export class DatePicker extends Calendar implements IInput {
      * specifies the z-index value of the datePicker popup element.
      * @default 1000
      * @aspType int
+     * @blazorType int
      */
     @Property(1000)
     public zIndex: number;
@@ -216,6 +218,7 @@ export class DatePicker extends Calendar implements IInput {
      * Auto: The floating label will float above the input after focusing or entering a value in the input.
      * @default Syncfusion.EJ2.Inputs.FloatLabelType.Never
      * @aspType Syncfusion.EJ2.Inputs.FloatLabelType
+     * @blazorType Syncfusion.EJ2.Inputs.FloatLabelType
      * @isEnumeration true
      */
     @Property('Never')
@@ -225,6 +228,7 @@ export class DatePicker extends Calendar implements IInput {
      * Triggers when the popup is opened.
      * @event
      * @blazorProperty 'OnOpen'
+     * @blazorType PopupObjectArgs
      */
     @Event()
     public open: EmitType<PreventableEventArgs | PopupObjectArgs>;
@@ -232,20 +236,19 @@ export class DatePicker extends Calendar implements IInput {
      * Triggers when the popup is closed.
      * @event
      * @blazorProperty 'OnClose'
+     * @blazorType PopupObjectArgs
      */
     @Event()
     public close: EmitType<PreventableEventArgs | PopupObjectArgs>;
     /** 
      * Triggers when the input loses the focus.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     @Event()
     public blur: EmitType<BlurEventArgs>;
     /** 
      *  Triggers when the input gets focus.
-     * @event 
-     * @blazorProperty 'OnFocus'
+     * @event
      */
     @Event()
     public focus: EmitType<FocusEventArgs>;

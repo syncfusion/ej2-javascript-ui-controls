@@ -1,4 +1,4 @@
-import { Ajax, Browser, ChildProperty, Collection, CollectionFactory, Complex, ComplexFactory, Component, Draggable, Droppable, Event, EventHandler, L10n, Property, compile, createElement, getValue, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Collection, CollectionFactory, Complex, ComplexFactory, Component, Draggable, Droppable, Event, EventHandler, L10n, Property, compile, createElement, getValue, isBlazor, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Accordion, ContextMenu } from '@syncfusion/ej2-navigations';
@@ -1675,6 +1675,7 @@ var TextStyle = /** @__PURE__ @class */ (function (_super) {
  * Connect - Shows the port when a connection end point is dragged over a node
  * Default - By default the ports will be visible when a node is hovered and being tried to connect
  * @aspNumberEnum
+ * @blazorNumberEnum
  */
 var PortVisibility;
 (function (PortVisibility) {
@@ -1699,6 +1700,7 @@ var PortVisibility;
  * snapToObject - Enables the object to snap with the other objects in the diagram.
  * @IgnoreSingular
  * @aspNumberEnum
+ * @blazorNumberEnum
  */
 var SnapConstraints;
 (function (SnapConstraints) {
@@ -1738,6 +1740,7 @@ var SnapConstraints;
  * UserHandles - Shows/hides the user handles of the selector
  * Resize - Shows/hides all resize handles of the selector
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var SelectorConstraints;
@@ -1795,6 +1798,7 @@ var SelectorConstraints;
  * * ReadOnly - Enables ReadOnly
  * * Default - Default features of the connector.
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var ConnectorConstraints;
@@ -1845,6 +1849,7 @@ var ConnectorConstraints;
  * Interaction - Enables annotation to inherit the interaction option
  * None - Disable all annotation constraints
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var AnnotationConstraints;
@@ -1897,6 +1902,7 @@ var AnnotationConstraints;
  * ReadOnly - Enables the  ReadOnly support for Annotation
  * Default - Enables all constraints
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var NodeConstraints;
@@ -2032,6 +2038,7 @@ var ThumbsConstraints;
  * Virtualization - Enables/Disable Virtualization support the diagram
  * Default - Enables/Disable all constraints
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var DiagramConstraints;
@@ -2075,6 +2082,7 @@ var DiagramConstraints;
  * ContinuousDraw - Enables/Disable continuousDraw support for the diagram
  * Default - Enables/Disable all constraints
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var DiagramTools;
@@ -2126,6 +2134,7 @@ var RenderMode;
  * * Alt - alt key
  * * Shift - shift key
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var KeyModifiers;
@@ -2211,6 +2220,7 @@ var KeyModifiers;
  * * The Plus
  * * The Star
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var Keys;
@@ -2453,6 +2463,7 @@ var DiagramEvent;
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
+ * @blazorNumberEnum
  * @IgnoreSingular
  */
 var PortConstraints;
@@ -20962,8 +20973,6 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
     __extends$27(ConnectTool, _super);
     function ConnectTool(commandHandler, endPoint) {
         var _this = _super.call(this, commandHandler, true) || this;
-        /**   @private  */
-        _this.pointChangeParameter = {};
         _this.endPoint = endPoint;
         return _this;
     }
@@ -21082,8 +21091,12 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
         }
         this.currentPosition = args.position;
         if (this.currentPosition && this.prevPosition) {
+            var diffX = this.currentPosition.x - this.prevPosition.x;
+            var diffY = this.currentPosition.y - this.prevPosition.y;
             var newValue = void 0;
             var oldValue = void 0;
+            var inPort = void 0;
+            var outPort = void 0;
             this.currentPosition = this.commandHandler.snapConnectorEnd(this.currentPosition);
             var connector = void 0;
             if (args.source && args.source.connectors) {
@@ -21105,66 +21118,50 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
                 connector: connector, state: 'Progress', targetNode: targetNodeId,
                 oldValue: oldValue, newValue: newValue, cancel: false, targetPort: targetPortId
             };
-            this.pointChangeParameter = { args: args, targetPortId: targetPortId, targetNodeId: targetNodeId };
             if (!(this instanceof ConnectorDrawingTool)) {
                 var trigger = this.endPoint === 'ConnectorSourceEnd' ?
                     DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
-                this.commandHandler.triggerEvent(trigger, arg, this.onSuccessPointChange.bind(this));
+                this.commandHandler.triggerEvent(trigger, arg);
             }
-            else {
-                this.onSuccessPointChange(arg);
+            if (args.target) {
+                inPort = getInOutConnectPorts(args.target, true);
+                outPort = getInOutConnectPorts(args.target, false);
+            }
+            if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
+                this.blocked = !this.commandHandler.dragConnectorEnds(this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
+                this.commandHandler.updateSelector();
+                if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
+                    || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
+                    if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
+                        this.commandHandler.disConnect(args.source, this.endPoint);
+                    }
+                    var target = this.commandHandler.findTarget(args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true);
+                    if (target instanceof Node) {
+                        if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
+                            || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
+                            this.commandHandler.connect(this.endPoint, args);
+                        }
+                    }
+                    else {
+                        var isConnect = this.checkConnect(target);
+                        if (isConnect) {
+                            this.commandHandler.connect(this.endPoint, args);
+                        }
+                    }
+                }
+                else if (this.endPoint.indexOf('Bezier') === -1) {
+                    this.commandHandler.disConnect(args.source, this.endPoint);
+                    this.commandHandler.updateSelector();
+                }
+            }
+            if (this.commandHandler.canEnableDefaultTooltip()) {
+                var content = this.getTooltipContent(args.position);
+                this.commandHandler.showTooltip(args.source, args.position, content, 'ConnectTool', this.isTooltipVisible);
+                this.isTooltipVisible = false;
             }
         }
         this.prevPosition = this.currentPosition;
         return !this.blocked;
-    };
-    ConnectTool.prototype.onSuccessPointChange = function (arg) {
-        var argsChar = 'args';
-        var args = this.pointChangeParameter[argsChar];
-        var targetPortIdChar = 'targetPortId';
-        var targetPortId = this.pointChangeParameter[targetPortIdChar];
-        var targetNodeIdChar = 'targetNodeId';
-        var targetNodeId = this.pointChangeParameter[targetNodeIdChar];
-        var diffX = this.currentPosition.x - this.prevPosition.x;
-        var diffY = this.currentPosition.y - this.prevPosition.y;
-        var inPort;
-        var outPort;
-        if (args.target) {
-            inPort = getInOutConnectPorts(args.target, true);
-            outPort = getInOutConnectPorts(args.target, false);
-        }
-        if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
-            this.blocked = !this.commandHandler.dragConnectorEnds(this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
-            this.commandHandler.updateSelector();
-            if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
-                || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
-                if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
-                    this.commandHandler.disConnect(args.source, this.endPoint);
-                }
-                var target = this.commandHandler.findTarget(args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true);
-                if (target instanceof Node) {
-                    if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
-                        || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
-                        this.commandHandler.connect(this.endPoint, args);
-                    }
-                }
-                else {
-                    var isConnect = this.checkConnect(target);
-                    if (isConnect) {
-                        this.commandHandler.connect(this.endPoint, args);
-                    }
-                }
-            }
-            else if (this.endPoint.indexOf('Bezier') === -1) {
-                this.commandHandler.disConnect(args.source, this.endPoint);
-                this.commandHandler.updateSelector();
-            }
-        }
-        if (this.commandHandler.canEnableDefaultTooltip()) {
-            var content = this.getTooltipContent(args.position);
-            this.commandHandler.showTooltip(args.source, args.position, content, 'ConnectTool', this.isTooltipVisible);
-            this.isTooltipVisible = false;
-        }
     };
     /**   @private  */
     ConnectTool.prototype.mouseLeave = function (args) {
@@ -21458,10 +21455,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
 var RotateTool = /** @__PURE__ @class */ (function (_super) {
     __extends$27(RotateTool, _super);
     function RotateTool(commandHandler) {
-        var _this = _super.call(this, commandHandler, true) || this;
-        /**   @private  */
-        _this.rotateEventArgs = {};
-        return _this;
+        return _super.call(this, commandHandler, true) || this;
     }
     /**   @private  */
     RotateTool.prototype.mouseDown = function (args) {
@@ -21523,8 +21517,10 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
             source: args.source, state: 'Progress', oldValue: oldValue,
             newValue: newValue, cancel: false
         };
-        this.rotateEventArgs = { angle: angle, object: object };
-        this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg, this.successRotateEvent.bind(this));
+        this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
+        if (!arg.cancel) {
+            this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
+        }
         if (this.commandHandler.canEnableDefaultTooltip()) {
             var content = this.getTooltipContent(args.source);
             this.commandHandler.showTooltip(args.source, args.position, content, 'RotateTool', this.isTooltipVisible);
@@ -21534,14 +21530,6 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
     };
     RotateTool.prototype.getTooltipContent = function (node) {
         return Math.round((node.rotateAngle % 360)).toString() + '\xB0';
-    };
-    RotateTool.prototype.successRotateEvent = function (arg) {
-        if (!arg.cancel) {
-            var angleChar = 'angle';
-            var objectChar = 'object';
-            this.blocked = !(this.commandHandler.rotateSelectedItems(this.rotateEventArgs[angleChar] - this.rotateEventArgs[objectChar].wrapper.rotateAngle));
-        }
-        return null;
     };
     /**   @private  */
     RotateTool.prototype.mouseLeave = function (args) {
@@ -21562,8 +21550,6 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, commandHandler, true) || this;
         /**   @private  */
         _this.initialBounds = new Rect();
-        /**   @private  */
-        _this.sizeChangeParameters = {};
         _this.corner = corner;
         return _this;
     }
@@ -21712,7 +21698,6 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
             offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
-        this.sizeChangeParameters = { 'deltaWidth': deltaWidth, 'deltaHeight': deltaHeight };
         this.blocked = this.commandHandler.scaleSelectedItems(deltaWidth, deltaHeight, this.getPivot(this.corner));
         var newValue = {
             offsetX: source.offsetX, offsetY: source.offsetY,
@@ -21720,17 +21705,11 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
         };
         var arg;
         arg = { source: source, state: 'Progress', oldValue: oldValue, newValue: newValue, cancel: false };
-        this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg, this.sizeChangeSuccessCallback.bind(this));
-        return this.blocked;
-    };
-    ResizeTool.prototype.sizeChangeSuccessCallback = function (arg) {
+        this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
         if (arg.cancel) {
-            var deltaHeight = 'deltaHeight';
-            var deltaWidth = 'deltaWidth';
-            this.commandHandler.scaleSelectedItems(1 / this.sizeChangeParameters[deltaWidth], 1 / this.sizeChangeParameters[deltaHeight], this.getPivot(this.corner));
+            this.commandHandler.scaleSelectedItems(1 / deltaWidth, 1 / deltaHeight, this.getPivot(this.corner));
         }
-        this.sizeChangeParameters = {};
-        return null;
+        return this.blocked;
     };
     return ResizeTool;
 }(ToolBase));
@@ -25004,14 +24983,6 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         this.isContainer = false;
         this.childTable = {};
         this.parentTable = {};
-        this.connectionChangeEvent = {};
-        this.connectionChange = {};
-        this.connectionChangeConnect = {};
-        /**
-         * @private
-         */
-        this.selectObjectParameters = {};
-        this.onClearSelectionParameters = {};
         this.diagram = diagram;
     }
     Object.defineProperty(CommandHandler.prototype, "snappingModule", {
@@ -25108,7 +25079,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    CommandHandler.prototype.triggerEvent = function (event, args, onSuccessCallBack, onFailureCallback) {
+    CommandHandler.prototype.triggerEvent = function (event, args) {
         if (event === DiagramEvent.drop || event === DiagramEvent.positionChange ||
             event === DiagramEvent.connectionChange) {
             if (this.diagram.currentSymbol) {
@@ -25121,7 +25092,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 return;
             }
         }
-        this.diagram.triggerEvent(event, args, onSuccessCallBack, onFailureCallback);
+        this.diagram.triggerEvent(event, args);
     };
     /**
      * @private
@@ -25182,34 +25153,23 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     connector: connector, oldValue: oldChanges,
                     newValue: newChanges, cancel: false, state: 'Changing', connectorEnd: endPoint
                 };
-                this.connectionChangeEvent = { connector: connector, oldChanges: oldChanges, newChanges: newChanges, endPoint: endPoint };
-                this.triggerEvent(DiagramEvent.connectionChange, arg, this.successDisconnect.bind(this));
+                this.triggerEvent(DiagramEvent.connectionChange, arg);
+                if (arg.cancel) {
+                    connector.sourceID = oldChanges.sourceID;
+                    connector.sourcePortID = oldChanges.sourcePortID;
+                    connector.targetID = oldChanges.targetID;
+                    connector.targetPortID = oldChanges.targetPortID;
+                }
+                else {
+                    this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
+                    this.diagram.updateDiagramObject(connector);
+                    arg = {
+                        connector: connector, oldValue: oldChanges,
+                        newValue: newChanges, cancel: false, state: 'Changed', connectorEnd: endPoint
+                    };
+                    this.triggerEvent(DiagramEvent.connectionChange, arg);
+                }
             }
-        }
-    };
-    CommandHandler.prototype.successDisconnect = function (arg) {
-        var conn = 'connector';
-        var old = 'oldChanges';
-        var char = 'newChanges';
-        var end = 'endPoint';
-        var connector = this.connectionChangeEvent[conn];
-        var oldChanges = this.connectionChangeEvent[old];
-        var newChanges = this.connectionChangeEvent[char];
-        var endPoint = this.connectionChangeEvent[end];
-        if (arg.cancel) {
-            connector.sourceID = oldChanges.sourceID;
-            connector.sourcePortID = oldChanges.sourcePortID;
-            connector.targetID = oldChanges.targetID;
-            connector.targetPortID = oldChanges.targetPortID;
-        }
-        else {
-            this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
-            this.diagram.updateDiagramObject(connector);
-            arg = {
-                connector: connector, oldValue: oldChanges,
-                newValue: newChanges, cancel: false, state: 'Changed', connectorEnd: endPoint
-            };
-            this.triggerEvent(DiagramEvent.connectionChange, arg);
         }
     };
     CommandHandler.prototype.connectionEventChange = function (connector, oldChanges, newChanges, endPoint) {
@@ -25220,25 +25180,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] },
             cancel: false, state: 'Changing', connectorEnd: endPoint
         };
-        this.connectionChange = {
-            connector: connector, oldChanges: oldChanges, newChanges: newChanges,
-            endPoint: endPoint, nodeEndId: nodeEndId, portEndId: portEndId
-        };
-        this.triggerEvent(DiagramEvent.connectionChange, arg, this.successConnectionChange.bind(this));
-    };
-    CommandHandler.prototype.successConnectionChange = function (arg) {
-        var connChar = 'connector';
-        var oldChar = 'oldChanges';
-        var newChar = 'newChanges';
-        var endChar = 'endPoint';
-        var nodeChar = 'nodeEndId';
-        var portChar = 'portEndId';
-        var connector = this.connectionChange[connChar];
-        var oldChanges = this.connectionChange[oldChar];
-        var newChanges = this.connectionChange[newChar];
-        var endPoint = this.connectionChange[endChar];
-        var nodeEndId = this.connectionChange[nodeChar];
-        var portEndId = this.connectionChange[portChar];
+        this.triggerEvent(DiagramEvent.connectionChange, arg);
         if (arg.cancel) {
             connector[nodeEndId] = oldChanges[nodeEndId];
             connector[portEndId] = oldChanges[portEndId];
@@ -25400,48 +25342,25 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] },
                 cancel: false, state: 'Changing', connectorEnd: endPoint
             };
-            this.connectionChangeConnect = {
-                connector: connector, oldChanges: oldChanges, newChanges: newChanges,
-                endPoint: endPoint, oldNodeId: oldNodeId, oldPortId: oldPortId,
-                nodeEndId: nodeEndId, portEndId: portEndId
-            };
-            this.triggerEvent(DiagramEvent.connectionChange, arg, this.successConnect.bind(this));
+            this.triggerEvent(DiagramEvent.connectionChange, arg);
+            if (arg.cancel) {
+                connector[nodeEndId] = oldNodeId;
+                connector[portEndId] = oldPortId;
+                newChanges[nodeEndId] = oldNodeId;
+                newChanges[portEndId] = oldPortId;
+            }
+            else {
+                this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
+                this.diagram.updateDiagramObject(connector);
+                arg = {
+                    connector: connector, oldValue: { nodeId: oldNodeId, portId: oldPortId },
+                    newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }, cancel: false,
+                    state: 'Changed', connectorEnd: endPoint
+                };
+                this.triggerEvent(DiagramEvent.connectionChange, arg);
+            }
         }
         this.renderHighlighter(args, undefined, endPoint === 'ConnectorSourceEnd');
-    };
-    CommandHandler.prototype.successConnect = function (arg) {
-        var connSuccess = 'connector';
-        var oldSuccess = 'oldChanges';
-        var charSuccess = 'newChanges';
-        var endSuccess = 'endPoint';
-        var nodeEndSuccess = 'nodeEndId';
-        var portEndSuccess = 'portEndId';
-        var oldNodeSuccess = 'oldNodeId';
-        var oldPortSuccess = 'oldPortId';
-        var connector = this.connectionChangeConnect[connSuccess];
-        var oldChanges = this.connectionChangeConnect[oldSuccess];
-        var newChanges = this.connectionChangeConnect[charSuccess];
-        var endPoint = this.connectionChangeConnect[endSuccess];
-        var nodeEndId = this.connectionChangeConnect[nodeEndSuccess];
-        var portEndId = this.connectionChangeConnect[portEndSuccess];
-        var oldNodeId = this.connectionChangeConnect[oldNodeSuccess];
-        var oldPortId = this.connectionChangeConnect[oldPortSuccess];
-        if (arg.cancel) {
-            connector[nodeEndId] = oldNodeId;
-            connector[portEndId] = oldPortId;
-            newChanges[nodeEndId] = oldNodeId;
-            newChanges[portEndId] = oldPortId;
-        }
-        else {
-            this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
-            this.diagram.updateDiagramObject(connector);
-            arg = {
-                connector: connector, oldValue: { nodeId: oldNodeId, portId: oldPortId },
-                newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }, cancel: false,
-                state: 'Changed', connectorEnd: endPoint
-            };
-            this.triggerEvent(DiagramEvent.connectionChange, arg);
-        }
     };
     /** @private */
     CommandHandler.prototype.cut = function () {
@@ -26097,18 +26016,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
         };
-        this.selectObjectParameters = { oldValue: oldValue, multipleSelection: multipleSelection, obj: obj };
-        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg, this.selectObjectSuccess.bind(this));
-    };
-    CommandHandler.prototype.selectObjectSuccess = function (arg) {
-        var canDoMultipleSelection = canMultiSelect(this.diagram);
         var select = true;
-        var objChar = 'obj';
-        var multipleSelectionChar = 'multipleSelection';
-        var oldValueChar = 'oldValue';
-        var obj = this.selectObjectParameters[objChar];
-        var multipleSelection = this.selectObjectParameters[multipleSelectionChar];
-        var oldValue = this.selectObjectParameters[oldValueChar];
+        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+        var canDoMultipleSelection = canMultiSelect(this.diagram);
         var canDoSingleSelection = canSingleSelect(this.diagram);
         if (canDoSingleSelection || canDoMultipleSelection) {
             if (!canDoMultipleSelection && ((obj.length > 1) || (multipleSelection && obj.length === 1))) {
@@ -26685,7 +26595,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     /** @private */
     CommandHandler.prototype.clearSelection = function (triggerAction) {
         if (hasSelection(this.diagram)) {
-            this.onClearSelectionParameters = {};
+            var selectormodel = this.diagram.selectedItems;
             var arrayNodes = this.getSelectedObject();
             if (this.diagram.currentSymbol) {
                 this.diagram.previousSelectedObject = arrayNodes;
@@ -26694,39 +26604,27 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
                 state: 'Changing', type: 'Removal', cancel: false
             };
-            this.onClearSelectionParameters = { arrayNodes: arrayNodes, triggerAction: triggerAction };
             if (triggerAction) {
-                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg, this.onClearSelectionSuccess.bind(this));
-            }
-            else {
-                this.onClearSelectionSuccess(arg);
-            }
-        }
-    };
-    /** @private */
-    CommandHandler.prototype.onClearSelectionSuccess = function (arg) {
-        var selectormodel = this.diagram.selectedItems;
-        var triggerActionChar = 'triggerAction';
-        var triggerAction = this.onClearSelectionParameters[triggerActionChar];
-        var arrayNodesChar = 'arrayNodes';
-        var arrayNodes = this.onClearSelectionParameters[arrayNodesChar];
-        if (!arg.cancel) {
-            selectormodel.offsetX = 0;
-            selectormodel.offsetY = 0;
-            selectormodel.width = 0;
-            selectormodel.height = 0;
-            selectormodel.rotateAngle = 0;
-            selectormodel.nodes = [];
-            selectormodel.connectors = [];
-            selectormodel.wrapper = null;
-            selectormodel.annotation = undefined;
-            this.diagram.clearSelectorLayer();
-            if (triggerAction) {
-                arg = {
-                    oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
-                    state: 'Changed', type: 'Removal', cancel: false
-                };
                 this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+            }
+            if (!arg.cancel) {
+                selectormodel.offsetX = 0;
+                selectormodel.offsetY = 0;
+                selectormodel.width = 0;
+                selectormodel.height = 0;
+                selectormodel.rotateAngle = 0;
+                selectormodel.nodes = [];
+                selectormodel.connectors = [];
+                selectormodel.wrapper = null;
+                selectormodel.annotation = undefined;
+                this.diagram.clearSelectorLayer();
+                if (triggerAction) {
+                    arg = {
+                        oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
+                        state: 'Changed', type: 'Removal', cancel: false
+                    };
+                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                }
             }
         }
     };
@@ -29877,12 +29775,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         _this.crudDeleteNodes = [];
         /** @private */
         _this.selectedObject = { helperObject: undefined, actualObject: undefined };
-        /** @private */
-        _this.removeCollectionParameters = {};
         _this.renderTimer = null;
-        _this.textEditEvent = {};
-        /** @private */
-        _this.dragEnterEvent = {};
         var child;
         var node;
         for (var i = 0; options && options.nodes && i < options.nodes.length; i++) {
@@ -30159,7 +30052,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             window[measureElement] = null;
         }
         this.initDiagram();
-        this.updateTemplate();
         this.initViews();
         this.unWireEvents();
         this.wireEvents();
@@ -30260,10 +30152,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.initCommands();
+        this.updateTemplate();
         this.isLoading = false;
+        if (isBlazor()) {
+            this.tool = DiagramTools.ZoomPan;
+        }
     };
     Diagram.prototype.updateTemplate = function () {
-        var _this = this;
         var node;
         var annotation;
         var pathAnnotation;
@@ -30271,33 +30166,20 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             node = this.nodes[i];
             annotation = node.annotations[0];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
-                setTimeout(function () {
-                    // tslint:disable-next-line:curly
-                    updateBlazorTemplate(_this.element.id + 'content_diagram', 'Content');
-                    // tslint:disable-next-line:align
-                }, 5);
+                updateBlazorTemplate(this.element.id + 'content_diagram', 'Content', this.nodes[i].shape);
             }
             else if (annotation && annotation.template instanceof HTMLElement) {
-                setTimeout(function () {
-                    // tslint:disable-next-line:curly
-                    updateBlazorTemplate(_this.element.id + 'template_diagram', 'Template');
-                    // tslint:disable-next-line:align
-                }, 5);
+                updateBlazorTemplate(this.element.id + 'template_diagram', 'Template', annotation);
             }
         }
         for (var i = 0; i < this.connectors.length; i++) {
             pathAnnotation = this.connectors[i].annotations[0];
             if (pathAnnotation && pathAnnotation.template instanceof HTMLElement) {
-                setTimeout(function () {
-                    // tslint:disable-next-line:curly
-                    updateBlazorTemplate(_this.element.id + 'template_diagram', 'Template');
-                    // tslint:disable-next-line:align
-                }, 5);
+                updateBlazorTemplate(this.element.id + 'template_diagram', 'Template', pathAnnotation);
             }
         }
     };
     Diagram.prototype.resetTemplate = function () {
-        var _this = this;
         var htmlNode;
         var templateAnnotation;
         var path;
@@ -30305,28 +30187,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             htmlNode = this.nodes[i];
             templateAnnotation = htmlNode.annotations[0];
             if (htmlNode.shape.type === 'HTML' && htmlNode.shape.content instanceof HTMLElement) {
-                setTimeout(function () {
-                    // tslint:disable-next-line:curly
-                    resetBlazorTemplate(_this.element.id + 'content', 'Content');
-                    // tslint:disable-next-line:align
-                }, 5);
+                resetBlazorTemplate(this.element.id + 'content', 'Content');
             }
             else if (templateAnnotation && templateAnnotation.template instanceof HTMLElement) {
-                setTimeout(function () {
-                    // tslint:disable-next-line:curly
-                    resetBlazorTemplate(_this.element.id + 'template', 'Template');
-                    // tslint:disable-next-line:align
-                }, 5);
+                resetBlazorTemplate(this.element.id + 'template', 'Template');
             }
         }
         for (var i = 0; i < this.connectors.length; i++) {
             path = this.connectors[i].annotations[0];
             if (path && path.template instanceof HTMLElement) {
-                setTimeout(function () {
-                    // tslint:disable-next-line:curly
-                    resetBlazorTemplate(_this.element.id + 'template', 'Template');
-                    // tslint:disable-next-line:align
-                }, 5);
+                resetBlazorTemplate(this.element.id + 'template', 'Template');
             }
         }
     };
@@ -31159,11 +31029,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.scroller.zoom(1 / this.scroller.currentZoom, -this.scroller.horizontalOffset, -this.scroller.verticalOffset, { x: 0, y: 0 });
     };
     /** @private */
-    Diagram.prototype.triggerEvent = function (eventName, args, onSuccessCallBack, onFailureCallback) {
+    Diagram.prototype.triggerEvent = function (eventName, args) {
         if (args) {
             this.updateEventValue(args);
         }
-        this.trigger(DiagramEvent[eventName], args, onSuccessCallBack, onFailureCallback);
+        this.trigger(DiagramEvent[eventName], args);
     };
     Diagram.prototype.updateEventValue = function (args) {
         var element = args.element;
@@ -31471,12 +31341,119 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     element: obj, cause: this.diagramActions,
                     state: 'Changing', type: 'Removal', cancel: false
                 };
-                this.removeCollectionParameters = { groupAction: groupAction, obj: obj, selectedItems: selectedItems };
                 if (!(this.diagramActions & DiagramAction.Clear) && (obj.id !== 'helper')) {
-                    this.triggerEvent(DiagramEvent.collectionChange, args, this.onRemoveCollectionChangeSuccess.bind(this));
+                    this.triggerEvent(DiagramEvent.collectionChange, args);
                 }
-                else
-                    this.onRemoveCollectionChangeSuccess(args);
+                if (!args.cancel) {
+                    if (this.bpmnModule) {
+                        if (this.bpmnModule.checkAndRemoveAnnotations(obj, this)) {
+                            this.refreshCanvasLayers();
+                            return;
+                        }
+                    }
+                    if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
+                        (obj instanceof Node || obj instanceof Connector)) {
+                        var entry = {
+                            type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
+                            redoObject: cloneObject(obj), category: 'Internal'
+                        };
+                        if (!(this.diagramActions & DiagramAction.Clear)) {
+                            if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
+                                this.historyManager.startGroupAction();
+                                groupAction = true;
+                            }
+                        }
+                        if (obj instanceof Node) {
+                            this.removeDependentConnector(obj);
+                        }
+                        if (!obj.isLane && !obj.isPhase) {
+                            if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj)) {
+                                this.addHistoryEntry(entry);
+                            }
+                        }
+                    }
+                    if (obj.children && !obj.isLane && !obj.isPhase) {
+                        this.deleteGroup(obj);
+                    }
+                    if (obj.parentId) {
+                        this.deleteChild(obj);
+                        if (this.nameTable[obj.parentId] && this.nameTable[obj.parentId].shape.type === 'UmlClassifier') {
+                            this.updateDiagramObject(this.nameTable[obj.parentId]);
+                            this.updateConnectorEdges(this.nameTable[obj.parentId]);
+                        }
+                    }
+                    var index = void 0;
+                    this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
+                    var currentObj = this.nameTable[obj.id];
+                    if (currentObj instanceof Node) {
+                        if (currentObj.shape.type === 'Bpmn' && this.bpmnModule) {
+                            this.bpmnModule.removeBpmnProcesses(currentObj, this);
+                        }
+                        if (currentObj.isLane || currentObj.isPhase || currentObj.shape.type === 'SwimLane') {
+                            var swimLaneNode = (currentObj.isLane || currentObj.isPhase) ?
+                                this.nameTable[currentObj.parentId] : this.nameTable[currentObj.id];
+                            var grid = swimLaneNode.wrapper.children[0];
+                            if (currentObj.isLane) {
+                                removeLane(this, currentObj, swimLaneNode);
+                            }
+                            else if (currentObj.isPhase) {
+                                removePhase(this, currentObj, swimLaneNode);
+                            }
+                        }
+                        index = this.nodes.indexOf(currentObj);
+                        if (index !== -1) {
+                            this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
+                            this.nodes.splice(index, 1);
+                            this.updateNodeEdges(currentObj);
+                        }
+                    }
+                    else {
+                        index = this.connectors.indexOf(currentObj);
+                        if (index !== -1) {
+                            this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
+                            this.connectors.splice(index, 1);
+                        }
+                        this.updateEdges(currentObj);
+                        this.spliceConnectorEdges(obj, true);
+                        this.spliceConnectorEdges(obj, false);
+                    }
+                    if (groupAction) {
+                        this.historyManager.endGroupAction();
+                    }
+                    if (isSelected(this, currentObj)) {
+                        this.unSelect(currentObj);
+                    }
+                    if (!currentObj.isPhase) {
+                        this.removeObjectsFromLayer(obj);
+                        if (this.currentDrawingObject) {
+                            this.currentDrawingObject.wrapper = undefined;
+                        }
+                        delete this.nameTable[obj.id];
+                        if (selectedItems.length > 0 && selectedItems[0].id === currentObj.id && currentObj.parentId) {
+                            var parentnode = this.nameTable[currentObj.parentId];
+                            if (parentnode && parentnode.isLane && this.nameTable[parentnode.parentId].shape.type === 'SwimLane') {
+                                var swimLaneNode = this.nameTable[parentnode.parentId];
+                                removeLaneChildNode(this, swimLaneNode, parentnode, currentObj);
+                            }
+                        }
+                        this.removeElements(currentObj);
+                        this.updateBridging();
+                        if (this.mode !== 'SVG') {
+                            this.refreshDiagramLayer();
+                        }
+                        if (!(this.diagramActions & DiagramAction.Clear)) {
+                            this.removeFromAQuad(currentObj);
+                            args = {
+                                element: obj, cause: this.diagramActions,
+                                state: 'Changed', type: 'Removal', cancel: false
+                            };
+                            if (obj.id !== 'helper') {
+                                this.triggerEvent(DiagramEvent.collectionChange, args);
+                            }
+                            this.resetTool();
+                        }
+                    }
+                }
             }
         }
         else if (selectedItems.length > 0) {
@@ -31501,129 +31478,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.clearSelection();
         }
         this.tooltipObject.close();
-    };
-    /* tslint:enable */
-    /* tslint:disable */
-    Diagram.prototype.onRemoveCollectionChangeSuccess = function (args) {
-        if (!args.cancel) {
-            var objChart = 'obj';
-            var groupActionChar = 'groupAction';
-            var selectedItemsChar = 'selectedItems';
-            var groupAction = this.removeCollectionParameters[groupActionChar];
-            var obj = this.removeCollectionParameters[objChart];
-            var selectedItems = this.removeCollectionParameters[selectedItemsChar];
-            if (this.bpmnModule) {
-                if (this.bpmnModule.checkAndRemoveAnnotations(obj, this)) {
-                    this.refreshCanvasLayers();
-                    return;
-                }
-            }
-            if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
-                (obj instanceof Node || obj instanceof Connector)) {
-                var entry = {
-                    type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
-                    redoObject: cloneObject(obj), category: 'Internal'
-                };
-                if (!(this.diagramActions & DiagramAction.Clear)) {
-                    if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
-                        this.historyManager.startGroupAction();
-                        groupAction = true;
-                    }
-                }
-                if (obj instanceof Node) {
-                    this.removeDependentConnector(obj);
-                }
-                if (!obj.isLane && !obj.isPhase) {
-                    if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj)) {
-                        this.addHistoryEntry(entry);
-                    }
-                }
-            }
-            if (obj.children && !obj.isLane && !obj.isPhase) {
-                this.deleteGroup(obj);
-            }
-            if (obj.parentId) {
-                this.deleteChild(obj);
-                if (this.nameTable[obj.parentId] &&
-                    this.nameTable[obj.parentId].shape.type === 'UmlClassifier') {
-                    this.updateDiagramObject(this.nameTable[obj.parentId]);
-                    this.updateConnectorEdges(this.nameTable[obj.parentId]);
-                }
-            }
-            var index = void 0;
-            this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
-            var currentObj = this.nameTable[obj.id];
-            if (currentObj instanceof Node) {
-                if (currentObj.shape.type === 'Bpmn' && this.bpmnModule) {
-                    this.bpmnModule.removeBpmnProcesses(currentObj, this);
-                }
-                if (currentObj.isLane || currentObj.isPhase || currentObj.shape.type === 'SwimLane') {
-                    var swimLaneNode = (currentObj.isLane || currentObj.isPhase) ?
-                        this.nameTable[currentObj.parentId] : this.nameTable[currentObj.id];
-                    var grid = swimLaneNode.wrapper.children[0];
-                    if (currentObj.isLane) {
-                        removeLane(this, currentObj, swimLaneNode);
-                    }
-                    else if (currentObj.isPhase) {
-                        removePhase(this, currentObj, swimLaneNode);
-                    }
-                }
-                index = this.nodes.indexOf(currentObj);
-                if (index !== -1) {
-                    this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
-                    this.nodes.splice(index, 1);
-                    this.updateNodeEdges(currentObj);
-                }
-            }
-            else {
-                index = this.connectors.indexOf(currentObj);
-                if (index !== -1) {
-                    this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
-                    this.connectors.splice(index, 1);
-                }
-                this.updateEdges(currentObj);
-                this.spliceConnectorEdges(obj, true);
-                this.spliceConnectorEdges(obj, false);
-            }
-            if (groupAction) {
-                this.historyManager.endGroupAction();
-            }
-            if (isSelected(this, currentObj)) {
-                this.unSelect(currentObj);
-            }
-            if (!currentObj.isPhase) {
-                this.removeObjectsFromLayer(obj);
-                if (this.currentDrawingObject) {
-                    this.currentDrawingObject.wrapper = undefined;
-                }
-                delete this.nameTable[obj.id];
-                if (selectedItems.length > 0 && selectedItems[0].id === currentObj.id && currentObj.parentId) {
-                    var parentnode = this.nameTable[currentObj.parentId];
-                    if (parentnode && parentnode.isLane && this.nameTable[parentnode.parentId].shape.type === 'SwimLane') {
-                        var swimLaneNode = this.nameTable[parentnode.parentId];
-                        removeLaneChildNode(this, swimLaneNode, parentnode, currentObj);
-                    }
-                }
-                this.removeElements(currentObj);
-                this.updateBridging();
-                if (this.mode !== 'SVG') {
-                    this.refreshDiagramLayer();
-                }
-                if (!(this.diagramActions & DiagramAction.Clear)) {
-                    this.removeFromAQuad(currentObj);
-                    args = {
-                        element: obj, cause: this.diagramActions,
-                        state: 'Changed', type: 'Removal', cancel: false
-                    };
-                    if (obj.id !== 'helper') {
-                        this.triggerEvent(DiagramEvent.collectionChange, args);
-                    }
-                    this.resetTool();
-                }
-            }
-        }
-        this.removeCollectionParameters = {};
-        return null;
     };
     /* tslint:enable */
     Diagram.prototype.isStackChild = function (obj) {
@@ -34245,8 +34099,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 bpmnAnnotation = node ? true : false;
                 if (bpmnAnnotation) {
                     if (element.textContent !== text || text !== this.activeLabel.text) {
-                        this.textEditEvent = { node: node, text: text };
-                        this.triggerEvent(DiagramEvent.textEdit, args, this.successTextEdit.bind(this));
+                        this.triggerEvent(DiagramEvent.textEdit, args);
+                        if (!args.cancel) {
+                            this.bpmnModule.updateTextAnnotationContent(node, this.activeLabel, text, this);
+                        }
                     }
                 }
             }
@@ -34321,13 +34177,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 this.endGroupAction();
             }
             this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
-        }
-    };
-    Diagram.prototype.successTextEdit = function (args) {
-        var node = 'node';
-        var text = 'text';
-        if (!args.cancel) {
-            this.bpmnModule.updateTextAnnotationContent(this.textEditEvent[node], this.activeLabel, this.textEditEvent[text], this);
         }
     };
     /** @private */
@@ -35600,160 +35449,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             node.margin.right = changes.margin.right;
         }
     };
-    Diagram.prototype.successDragEnter = function (arg) {
-        var newObj = arg.element;
-        var headerChar = 'header';
-        var argsChar = 'args';
-        var laneChar = 'lane';
-        var entryTableChar = 'entryTable';
-        var selectedSymbolChar = 'selectedSymbol';
-        var header = this.dragEnterEvent[headerChar];
-        var isHorizontal;
-        var position = this.eventHandler.getMousePosition(this.dragEnterEvent[argsChar].event);
-        var lane = this.dragEnterEvent[laneChar];
-        if ((newObj instanceof Node) && newObj.shape.type === 'SwimLane' && newObj.shape.isLane) {
-            var swimLaneObj = arg.element;
-            var laneObj = swimLaneObj.shape.lanes[0];
-            var child1 = void 0;
-            var child2 = void 0;
-            isHorizontal = (swimLaneObj.shape.orientation === 'Horizontal') ? true : false;
-            child1 = this.nameTable[newObj.children[0]];
-            child2 = this.nameTable[newObj.children[1]];
-            if (isHorizontal) {
-                header.width = laneObj.header.width;
-                header.height = laneObj.height;
-                lane.width = laneObj.width - header.width;
-                lane.height = laneObj.height;
-                lane.offsetX = position.x + 5 + (laneObj.header.width + (child2.width / 2));
-                lane.offsetY = position.y + child2.height / 2;
-            }
-            else {
-                header.width = laneObj.width;
-                header.height = laneObj.header.height;
-                lane.width = laneObj.width;
-                lane.height = laneObj.height - header.height;
-                lane.offsetX = position.x + 5 + child2.width / 2;
-                lane.offsetY = position.y + (laneObj.header.height + (child2.height / 2));
-            }
-            header.offsetX = position.x + 5 + child1.width / 2;
-            header.offsetY = position.y + child1.height / 2;
-            newObj.width = laneObj.width;
-            newObj.height = laneObj.height;
-        }
-        if ((newObj instanceof Node) && newObj.shape.isPhase) {
-            if (isHorizontal) {
-                newObj.height = 1;
-            }
-            else {
-                newObj.width = 1;
-            }
-        }
-        if (!this.activeLayer.lock && !arg.cancel) {
-            this.preventUpdate = true;
-            if (newObj.children) {
-                this.findChild(newObj, this.dragEnterEvent[entryTableChar]);
-            }
-            this.preventUpdate = true;
-            if (newObj.zIndex !== -1) {
-                newObj.zIndex = -1;
-            }
-            this.initObject(newObj, undefined, undefined, true);
-            this.currentSymbol = newObj;
-            if (this.mode !== 'SVG') {
-                this.refreshDiagramLayer();
-            }
-            this.commandHandler.select(newObj);
-            this.eventHandler.mouseDown(this.dragEnterEvent[argsChar].event);
-            this.eventHandler.mouseMove(this.dragEnterEvent[argsChar].event, this.dragEnterEvent[argsChar]);
-            this.preventUpdate = false;
-            this.updatePage();
-            this.dragEnterEvent[selectedSymbolChar].style.opacity = '0';
-        }
-        return null;
-    };
-    // /** @private */
-    // dropEventParameters: object = {};
-    Diagram.prototype.onDropEventSuccess = function (arg) {
-        var value;
-        var isPhase = false;
-        var orientation;
-        var isConnector;
-        var source = 'sourceElement';
-        var newObj;
-        isConnector = (this.currentSymbol instanceof Connector) ? true : false;
-        var clonedObject;
-        var id = 'id';
-        var hasTargetArgs = 'hasTarget';
-        clonedObject = cloneObject(this.currentSymbol);
-        clonedObject[hasTargetArgs] = this.currentSymbol[hasTargetArgs];
-        this.removeFromAQuad(this.currentSymbol);
-        this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
-        this.removeElements(this.currentSymbol);
-        if (this.currentSymbol.shape.isLane ||
-            this.currentSymbol.shape.isPhase) {
-            this.removeChildInNodes(this.currentSymbol);
-        }
-        if (arg.cancel) {
-            removeChildNodes(this.currentSymbol, this);
-        }
-        if (this.currentSymbol.shape.isPhase) {
-            isPhase = true;
-            orientation = this.currentSymbol.shape.orientation;
-        }
-        delete this.nameTable[this.currentSymbol.id];
-        this.currentSymbol = null;
-        this.protectPropertyChange(true);
-        if (!arg.cancel) {
-            this.startGroupAction();
-            if (clonedObject && (clonedObject.shape.isLane || isPhase)) {
-                if (isPhase) {
-                    clonedObject.shape.isPhase = isPhase;
-                    clonedObject.shape.orientation = orientation;
-                }
-                this.eventHandler.addSwimLaneObject(clonedObject);
-            }
-            var hasTargetArgs_1 = 'hasTarget';
-            if (clonedObject.shape.type === 'Bpmn' && clonedObject.shape.annotation
-                && clonedObject[hasTargetArgs_1]) {
-                var nodeId = clonedObject.shape.annotation.nodeId;
-                clonedObject.shape.annotation.id = clonedObject.id;
-                this.addTextAnnotation(clonedObject.shape.annotation, this.nameTable[nodeId]);
-                clonedObject.nodeId = '';
-            }
-            if (!clonedObject.shape.isLane && !isPhase) {
-                if (clonedObject.children) {
-                    this.addChildNodes(clonedObject);
-                }
-                if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(this, arg.target)
-                    && canAllowDrop(arg.target)) {
-                    addChildToContainer(this, arg.target, clonedObject);
-                }
-                else {
-                    value = this.add(clonedObject, true);
-                }
-                if ((clonedObject || value) && canSingleSelect(this)) {
-                    this.select([this.nameTable[clonedObject[id]]]);
-                }
-            }
-        }
-        this.protectPropertyChange(false);
-        newObj = this.nameTable[clonedObject[id]];
-        if (clonedObject[hasTargetArgs]) {
-            clonedObject.nodeId = clonedObject[hasTargetArgs];
-            this.remove(clonedObject);
-        }
-        if (this.bpmnModule && newObj instanceof Node && clonedObject.processId) {
-            newObj.processId = clonedObject.processId;
-            this.bpmnModule.dropBPMNchild(this.nameTable[newObj.processId], newObj, this);
-        }
-        this.endGroupAction();
-        if (this.mode !== 'SVG') {
-            this.refreshDiagramLayer();
-        }
-        delete this.droppable[source];
-        var selectedSymbols = 'selectedSymbols';
-        remove(this.droppable[selectedSymbols]);
-    };
     //property changes - end region
     /* tslint:disable */
     Diagram.prototype.initDroppables = function () {
@@ -35889,8 +35584,64 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             _this['enterObject'] = newObj;
                             _this['enterTable'] = entryTable;
                             _this.triggerEvent(DiagramEvent.dragEnter, arg);
-                            _this.dragEnterEvent = { args: args, entryTable: entryTable, selectedSymbol: selectedSymbol, header: header, lane: lane };
-                            _this.triggerEvent(DiagramEvent.dragEnter, arg, _this.successDragEnter.bind(_this));
+                            if ((newObj instanceof Node) && newObj.shape.type === 'SwimLane' && newObj.shape.isLane) {
+                                var swimLaneObj = arg.element;
+                                var laneObj = swimLaneObj.shape.lanes[0];
+                                var child1 = void 0;
+                                var child2 = void 0;
+                                isHorizontal = (swimLaneObj.shape.orientation === 'Horizontal') ? true : false;
+                                child1 = _this.nameTable[newObj.children[0]];
+                                child2 = _this.nameTable[newObj.children[1]];
+                                if (isHorizontal) {
+                                    header.width = laneObj.header.width;
+                                    header.height = laneObj.height;
+                                    lane.width = laneObj.width - header.width;
+                                    lane.height = laneObj.height;
+                                    lane.offsetX = position.x + 5 + (laneObj.header.width + (child2.width / 2));
+                                    lane.offsetY = position.y + child2.height / 2;
+                                }
+                                else {
+                                    header.width = laneObj.width;
+                                    header.height = laneObj.header.height;
+                                    lane.width = laneObj.width;
+                                    lane.height = laneObj.height - header.height;
+                                    lane.offsetX = position.x + 5 + child2.width / 2;
+                                    lane.offsetY = position.y + (laneObj.header.height + (child2.height / 2));
+                                }
+                                header.offsetX = position.x + 5 + child1.width / 2;
+                                header.offsetY = position.y + child1.height / 2;
+                                newObj.width = laneObj.width;
+                                newObj.height = laneObj.height;
+                            }
+                            if ((newObj instanceof Node) && newObj.shape.isPhase) {
+                                if (isHorizontal) {
+                                    newObj.height = 1;
+                                }
+                                else {
+                                    newObj.width = 1;
+                                }
+                            }
+                            if (!_this.activeLayer.lock && !arg.cancel) {
+                                _this.preventUpdate = true;
+                                if (newObj.children) {
+                                    _this.findChild(newObj, entryTable);
+                                }
+                                _this.preventUpdate = true;
+                                if (newObj.zIndex !== -1) {
+                                    newObj.zIndex = -1;
+                                }
+                                _this.initObject(newObj, undefined, undefined, true);
+                                _this.currentSymbol = newObj;
+                                if (_this.mode !== 'SVG') {
+                                    _this.refreshDiagramLayer();
+                                }
+                                _this.commandHandler.select(newObj);
+                                _this.eventHandler.mouseDown(args.event);
+                                _this.eventHandler.mouseMove(args.event, args);
+                                _this.preventUpdate = false;
+                                _this.updatePage();
+                                selectedSymbol.style.opacity = '0';
+                            }
                             delete _this['enterObject'];
                             delete _this['enterTable'];
                         }
@@ -35907,17 +35658,93 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         // tslint:disable-next-line:no-any
         this.droppable.drop = function (args) {
             var source = 'sourceElement';
+            var value;
             if (_this.currentSymbol) {
+                var isPhase = false;
+                var orientation_2;
+                var isConnector = void 0;
+                isConnector = (_this.currentSymbol instanceof Connector) ? true : false;
                 if (args.event.touches) {
                     _this.eventHandler.mouseUp(args.event);
                 }
+                var newObj = void 0;
                 var arg = {
                     source: _this.droppable[source],
                     element: _this.currentSymbol,
                     target: _this.eventHandler['hoverNode'] || _this.eventHandler['lastObjectUnderMouse'] || _this, cancel: false,
                     position: { x: _this.currentSymbol.wrapper.offsetX, y: _this.currentSymbol.wrapper.offsetY }
                 };
-                _this.triggerEvent(DiagramEvent.drop, arg, _this.onDropEventSuccess.bind(_this));
+                _this.triggerEvent(DiagramEvent.drop, arg);
+                var clonedObject = void 0;
+                var id = 'id';
+                clonedObject = cloneObject(_this.currentSymbol);
+                clonedObject['hasTarget'] = _this.currentSymbol['hasTarget'];
+                _this.removeFromAQuad(_this.currentSymbol);
+                _this.removeObjectsFromLayer(_this.nameTable[_this.currentSymbol.id]);
+                _this.removeElements(_this.currentSymbol);
+                if (_this.currentSymbol.shape.isLane ||
+                    _this.currentSymbol.shape.isPhase) {
+                    _this.removeChildInNodes(_this.currentSymbol);
+                }
+                if (arg.cancel) {
+                    removeChildNodes(_this.currentSymbol, _this);
+                }
+                if (_this.currentSymbol.shape.isPhase) {
+                    isPhase = true;
+                    orientation_2 = _this.currentSymbol.shape.orientation;
+                }
+                delete _this.nameTable[_this.currentSymbol.id];
+                _this.currentSymbol = null;
+                _this.protectPropertyChange(true);
+                if (!arg.cancel) {
+                    _this.startGroupAction();
+                    if (clonedObject && (clonedObject.shape.isLane || isPhase)) {
+                        if (isPhase) {
+                            clonedObject.shape.isPhase = isPhase;
+                            clonedObject.shape.orientation = orientation_2;
+                        }
+                        _this.eventHandler.addSwimLaneObject(clonedObject);
+                    }
+                    if (clonedObject.shape.type === 'Bpmn' && clonedObject.shape.annotation
+                        && clonedObject['hasTarget']) {
+                        var nodeId = clonedObject.shape.annotation.nodeId;
+                        clonedObject.shape.annotation.id = clonedObject.id;
+                        _this.addTextAnnotation(clonedObject.shape.annotation, _this.nameTable[nodeId]);
+                        clonedObject.nodeId = '';
+                    }
+                    if (!clonedObject.shape.isLane && !isPhase) {
+                        if (clonedObject.children) {
+                            _this.addChildNodes(clonedObject);
+                        }
+                        if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(_this, arg.target)
+                            && canAllowDrop(arg.target)) {
+                            addChildToContainer(_this, arg.target, clonedObject);
+                        }
+                        else {
+                            value = _this.add(clonedObject, true);
+                        }
+                        if ((clonedObject || value) && canSingleSelect(_this)) {
+                            _this.select([_this.nameTable[clonedObject[id]]]);
+                        }
+                    }
+                }
+                _this.protectPropertyChange(false);
+                newObj = _this.nameTable[clonedObject[id]];
+                if (clonedObject['hasTarget']) {
+                    clonedObject.nodeId = clonedObject['hasTarget'];
+                    _this.remove(clonedObject);
+                }
+                if (_this.bpmnModule && newObj instanceof Node && clonedObject.processId) {
+                    newObj.processId = clonedObject.processId;
+                    _this.bpmnModule.dropBPMNchild(_this.nameTable[newObj.processId], newObj, _this);
+                }
+                _this.endGroupAction();
+                if (_this.mode !== 'SVG') {
+                    _this.refreshDiagramLayer();
+                }
+                delete _this.droppable[source];
+                var selectedSymbols = 'selectedSymbols';
+                remove(_this.droppable[selectedSymbols]);
             }
             else {
                 var arg = {
@@ -35927,7 +35754,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     position: undefined
                 };
                 _this.triggerEvent(DiagramEvent.drop, arg);
-                
+                var clonedObject = void 0;
+                var id = 'id';
             }
         };
         this.droppable.out = function (args) {
@@ -47529,6 +47357,8 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         _this.childTable = {};
         _this.info = 'info';
         _this.laneTable = {};
+        _this.isExpand = false;
+        _this.isCollapsed = false;
         /**
          * helper method for draggable
          * @return {void}
@@ -47616,6 +47446,14 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                             else {
                                 this.palettes[index].isInteraction = false;
                             }
+                            this.isExpand = true;
+                            this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
+                            if (index === 0) {
+                                this.isCollapsed = true;
+                            }
+                            else {
+                                this.isCollapsed = false;
+                            }
                         }
                     }
                     break;
@@ -47646,6 +47484,18 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         }
         if (refresh) {
             this.refreshPalettes();
+        }
+        if (this.isExpand && !refresh && this.isCollapsed) {
+            this.refresh();
+            for (var p = 0; p < this.palettes.length; p++) {
+                var paletteElement = this.palettes[p].id;
+                if (window[paletteElement]) {
+                    if (window[paletteElement].length > 1) {
+                        window[paletteElement][1].parentNode.removeChild(window[paletteElement][1]);
+                        window[paletteElement][1] = null;
+                    }
+                }
+            }
         }
     };
     /**

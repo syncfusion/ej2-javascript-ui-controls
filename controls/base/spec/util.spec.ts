@@ -247,4 +247,55 @@ describe('Util', () => {
         expect((<any>result).columns[0].b).toBe(3);
     });
 
+    it('isBlazor false', () => {
+       expect(Util.isBlazor()).toBe(false);
+    });
+
+    it('isBlazor true', () => {
+        window['Blazor'] = {};
+        expect(Util.isBlazor()).toBe(true);
+    });
+
+    it('GetElement with element', () => {
+        window['Blazor'] = {};
+        var element = document.createElement('span');
+        expect(Util.getElement(element)).toBe(element);
+    });
+    it('GetElement with xpath', () => {
+        window['Blazor'] = {};
+        var element = document.createElement('span');
+        element.id = "xpathelement";
+        document.body.appendChild(element);
+        var eleObj = {
+            'xPath': createXPathFromElement(element)
+        }
+        expect(Util.getElement(eleObj)).toBe(element);
+        document.body.innerHTML = "";
+    });
+    function createXPathFromElement (elm: any): any {
+        var allNodes = document.getElementsByTagName('*');
+        for (var segs = []; elm && elm.nodeType === 1; elm = elm.parentNode) {
+            if (elm.hasAttribute('id')) {
+                var uniqueIdCount = 0;
+                for (var n = 0; n < allNodes.length; n++) {
+                    if (allNodes[n].hasAttribute('id') && allNodes[n].id === elm.id) uniqueIdCount++;
+                    if (uniqueIdCount > 1) break;
+                };
+                if (uniqueIdCount === 1) {
+                    segs.unshift('id("' + elm.getAttribute('id') + '")');
+                    return segs.join('/');
+                } else {
+                    segs.unshift(elm.localName.toLowerCase() + '[@id="' + elm.getAttribute('id') + '"]');
+                }
+            } else if (elm.hasAttribute('class')) {
+                segs.unshift(elm.localName.toLowerCase() + '[@class="' + elm.getAttribute('class') + '"]');
+            } else {
+                for (var i = 1, sib = elm.previousSibling; sib; sib = sib.previousSibling) {
+                    if (sib.localName === elm.localName) i++;
+                }
+                segs.unshift(elm.localName.toLowerCase() + '[' + i + ']');
+            }
+        }
+        return segs.length ? '/' + segs.join('/') : null;
+    }
 });

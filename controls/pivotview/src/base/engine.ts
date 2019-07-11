@@ -489,15 +489,18 @@ export class PivotEngine {
         let isRangeAvail: boolean;
         if (group.type === 'Date') {
             let cDate: Date = new Date(cValue);
-            if (group.startingAt && cDate.getTime() < (group.startingAt as Date).getTime() ||
-                group.endingAt && cDate.getTime() > (group.endingAt as Date).getTime()) {
+            let startDate: Date = typeof (group.startingAt) === 'string' ? new Date(group.startingAt) : group.startingAt as Date;
+            let endDate: Date = typeof (group.endingAt) === 'string' ? new Date(group.endingAt) : group.endingAt as Date;
+            if (startDate && cDate.getTime() < startDate.getTime() ||
+                endDate && cDate.getTime() > endDate.getTime()) {
                 isRangeAvail = true;
             } else {
                 isRangeAvail = false;
             }
         } else {
-            if (group.startingAt && cValue < (group.startingAt as number) ||
-                group.endingAt && cValue > (group.endingAt as number)) {
+            let startValue: number = typeof (group.startingAt) === 'string' ? parseInt(group.startingAt, 10) : group.startingAt as number;
+            let endValue: number = typeof (group.endingAt) === 'string' ? parseInt(group.endingAt, 10) : group.endingAt as number;
+            if (startValue && cValue < startValue || endValue && cValue > endValue) {
                 isRangeAvail = true;
             } else {
                 isRangeAvail = false;
@@ -889,8 +892,10 @@ export class PivotEngine {
                 filterElement.items = this.getLabelFilterMembers(members, filterElement.condition as LabelOperators, filterElement.value1 as string, filterElement.value2 as string);
             } else if (filterElement.type === 'Date') {
                 filterElement.showDateFilter = true;
+                let date1: Date = typeof (filterElement.value1) === 'string' ? new Date(filterElement.value1) : filterElement.value1;
+                let date2: Date = typeof (filterElement.value2) === 'string' ? new Date(filterElement.value2) : filterElement.value2;
                 /* tslint:disable-next-line:max-line-length */
-                filterElement.items = this.getDateFilterMembers(members, filterElement.name, filterElement.condition as DateOperators, filterElement.value1 as Date, filterElement.value2 as Date);
+                filterElement.items = this.getDateFilterMembers(members, filterElement.name, filterElement.condition as DateOperators, date1, date2);
             } else {
                 filterElement.showNumberFilter = true;
                 filterElement.items = [];
@@ -3883,8 +3888,8 @@ interface IValueFields {
 export interface IGroupSettings {
     name?: string;
     groupInterval?: DateGroup[];
-    startingAt?: Date | number;
-    endingAt?: Date | number;
+    startingAt?: string | Date | number;
+    endingAt?: string | Date | number;
     rangeInterval?: number;
     type?: GroupType;
 }

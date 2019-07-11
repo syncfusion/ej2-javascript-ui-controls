@@ -4,14 +4,15 @@ import { Rect } from '@syncfusion/ej2-drawings';
 import { DrawingElement } from '@syncfusion/ej2-drawings';
 import { Container } from '@syncfusion/ej2-drawings';
 import { PdfViewerBase, PdfViewer } from '../pdfviewer';
-import { PdfAnnotationBaseModel } from './pdf-annotation-model';
+import { PdfAnnotationBaseModel, PdfBoundsModel } from './pdf-annotation-model';
 import { ZOrderPageTable } from './pdf-annotation';
+import { isPointOverConnector } from './connector-util';
 
 /** @private */
 export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfViewerBase, pdfViewer: PdfViewer): IElement {
     if (pdfViewer && pdfBase.activeElements.activePageID > -1) {
         let objects: IElement[] = findObjectsUnderMouse(pdfBase, pdfViewer, event as MouseEvent);
-        let object: IElement = findObjectUnderMouse(objects);
+        let object: IElement = findObjectUnderMouse(objects, event, pdfBase);
         return object;
     }
     return undefined;
@@ -32,10 +33,33 @@ export function findObjectsUnderMouse(
 
 /** @private */
 export function findObjectUnderMouse(
-    objects: (PdfAnnotationBaseModel)[]
+    // tslint:disable-next-line
+    objects: (PdfAnnotationBaseModel)[], event: any, pdfBase: PdfViewerBase
 ): IElement {
     let actualTarget: PdfAnnotationBaseModel = null;
-    actualTarget = objects[objects.length - 1];
+    let offsetX: number = !isNaN(event.offsetX) ? event.offsetX : event.position.x;
+    let offsetY: number = !isNaN(event.offsetY) ? event.offsetY : event.position.y;
+    let offsetForSelector: number = 5;
+    for (let i: number = 0; i < objects.length; i++) {
+        // tslint:disable-next-line:max-line-length
+        if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead')) {
+            let bounds: PdfBoundsModel = objects[i].wrapper.bounds;
+            // tslint:disable-next-line:max-line-length
+            if ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < offsetX) && (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > offsetX) &&
+                (((bounds.y - offsetForSelector) * pdfBase.getZoomFactor()) < offsetY) && (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
+                actualTarget = objects[i];
+                break;
+            }
+        } else {
+            let pt: PointModel = { x: offsetX / pdfBase.getZoomFactor(), y: offsetY / pdfBase.getZoomFactor() };
+            let obj: DrawingElement = findElementUnderMouse(objects[i] as IElement, pt, offsetForSelector);
+            let isOver: boolean = isPointOverConnector(objects[i], pt);
+            if (obj && isOver) {
+                actualTarget = objects[i];
+                break;
+            }
+        }
+    }
     return actualTarget as IElement;
 }
 /** @private */

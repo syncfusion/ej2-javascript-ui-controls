@@ -1,4 +1,4 @@
-﻿import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { SidebarModel } from './sidebar-model';
@@ -74,6 +74,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     @Property(null)
     public mediaQuery: string | MediaQueryList;
@@ -188,6 +189,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Specifies the z-index of the Sidebar. It is applicable only when sidebar act as overlay type.
      * @default 1000
      * @aspType double
+     * @blazorType double
      */
     @Property(1000)
     public zIndex: string | number;

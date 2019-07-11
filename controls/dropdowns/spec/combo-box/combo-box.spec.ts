@@ -542,6 +542,29 @@ describe('ComboBox', () => {
 
     });
 
+    describe('Setting fields value as null', () => {
+        let comboBoxObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combobox' });
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'tab', keyCode: 72 };
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            comboBoxObj.destroy();
+            element.remove();
+        });
+        /**
+        * read only property
+        */
+        it('Checking null value ', () => {
+            comboBoxObj = new ComboBox({ fields: { text: null, value: null } });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.onBlur(keyEventArgs);
+            expect(comboBoxObj.inputElement.value).toBe('');
+        });
+    });
+
     // Method testing
     describe('method testing ', () => {
         let comboBoxObj: any;

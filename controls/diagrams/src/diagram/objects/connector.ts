@@ -680,7 +680,8 @@ export class Connector extends NodeBase implements IElement {
      * * Interaction - Features of the connector used for interaction.
      * * ReadOnly - Enables ReadOnly
      * @default 'None'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     @Property(ConnectorConstraints.Default)
     public constraints: ConnectorConstraints;
@@ -694,6 +695,7 @@ export class Connector extends NodeBase implements IElement {
     /**
      * Defines the collection of textual annotations of connectors
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -817,6 +819,7 @@ export class Connector extends NodeBase implements IElement {
     /**
      * Sets the source padding of the connector
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public sourcePadding: number;
@@ -824,6 +827,7 @@ export class Connector extends NodeBase implements IElement {
     /**
      * Sets the target padding of the connector
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public targetPadding: number;

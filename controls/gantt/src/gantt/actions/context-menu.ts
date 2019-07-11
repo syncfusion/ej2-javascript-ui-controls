@@ -58,7 +58,9 @@ export class ContextMenu {
     }
 
     private render(): void {
-        this.element = this.parent.createElement('ul', { id: this.ganttID + '_contextmenu' }) as HTMLUListElement;
+        this.element = this.parent.createElement('ul', {
+            id: this.ganttID + '_contextmenu', className: cons.focusCell
+        }) as HTMLUListElement;
         this.parent.element.appendChild(this.element);
         let target: string = '#' + this.ganttID;
 
@@ -85,6 +87,15 @@ export class ContextMenu {
         if (parentItem && !isNullOrUndefined(parentItem.id) && this.getKeyFromId(parentItem.id) === 'DeleteDependency') {
             index = parentItem.items.indexOf(args.item);
         }
+        if (this.parent.isAdaptive) {
+            if (item === 'TaskInformation' || item === 'Above' || item === 'Below'
+                || item === 'Child' || item === 'DeleteTask') {
+                if (this.parent.selectionModule && this.parent.selectionSettings.type === 'Multiple') {
+                    this.parent.selectionModule.hidePopUp();
+                    (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
+                }
+            }
+        }
         switch (item) {
             case 'TaskInformation':
                 this.parent.openEditDialog(this.rowData);
@@ -99,7 +110,7 @@ export class ContextMenu {
                     data[taskfields.dependency] = null;
                 }
                 if (!isNullOrUndefined(taskfields.child) && data[taskfields.child]) {
-                    data[taskfields.child] = [];
+                    delete data[taskfields.child];
                 }
                 if (!isNullOrUndefined(taskfields.parentID) && data[taskfields.parentID]) {
                     data[taskfields.parentID] = null;
@@ -189,6 +200,12 @@ export class ContextMenu {
         args.gridRow = closest(args.event.target as Element, '.e-row');
         args.chartRow = closest(args.event.target as Element, '.e-chart-row');
         let menuElement: Element = closest(args.event.target as Element, '.e-gantt');
+        let editForm: Element = closest(args.event.target as Element, cons.editForm);
+        if (!editForm && this.parent.editModule && this.parent.editModule.cellEditModule
+            && this.parent.editModule.cellEditModule.isCellEdit) {
+            this.parent.treeGrid.endEdit();
+            this.parent.editModule.cellEditModule.isCellEdit = false;
+        }
         if ((isNullOrUndefined(args.gridRow) && isNullOrUndefined(args.chartRow)) || this.contentMenuItems.length === 0) {
             if (!isNullOrUndefined(args.parentItem) && !isNullOrUndefined(menuElement)) {
                 args.cancel = false;
@@ -203,7 +220,7 @@ export class ContextMenu {
             } else if (args.chartRow) {
                 rowIndex = parseInt(getValue('rowIndex', args.chartRow), 0);
             }
-            if (this.parent.allowSelection) {
+            if (this.parent.selectionModule && this.parent.allowSelection) {
                 this.parent.selectionModule.selectRow(rowIndex);
             }
             if (!args.parentItem) {
@@ -222,6 +239,10 @@ export class ContextMenu {
             this.parent.trigger('contextMenuOpen', args);
             this.hideItems = args.hideItems;
             this.disableItems = args.disableItems;
+            if (!args.parentItem && args.hideItems.length === args.items.length) {
+                this.revertItemStatus();
+                args.cancel = true;
+            }
             if (this.hideItems.length > 0) {
                 this.contextMenu.hideItems(this.hideItems);
             }
@@ -233,7 +254,7 @@ export class ContextMenu {
 
     private updateItemStatus(item: ContextMenuItemModel, target: EventTarget): void {
         let key: string = this.getKeyFromId(item.id);
-        let editForm: Element = closest(target as Element, cons.editIcon);
+        let editForm: Element = closest(target as Element, cons.editForm);
         if (editForm) {
             if (!(key === 'Save' || key === 'Cancel')) {
                 this.hideItems.push(item.text);
@@ -241,12 +262,12 @@ export class ContextMenu {
         } else {
             switch (key) {
                 case 'TaskInformation':
-                    if (!this.parent.editSettings.allowEditing) {
+                    if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     }
                     break;
                 case 'Add':
-                    if (!this.parent.editSettings.allowAdding) {
+                    if (!this.parent.editSettings.allowAdding || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     }
                     break;
@@ -257,7 +278,7 @@ export class ContextMenu {
                 case 'Convert':
                     if (this.rowData.hasChildRecords) {
                         this.hideItems.push(item.text);
-                    } else if (!this.parent.editSettings.allowEditing) {
+                    } else if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     } else {
                         let subMenu: ContextMenuItemModel[] = [];
@@ -275,14 +296,14 @@ export class ContextMenu {
                     let items: ContextMenuItemModel[] = this.getPredecessorsItems();
                     if (this.rowData.hasChildRecords) {
                         this.hideItems.push(item.text);
-                    } else if (!this.parent.editSettings.allowDeleting || items.length === 0) {
+                    } else if (!this.parent.editSettings.allowDeleting || items.length === 0 || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     } else if (items.length > 0) {
                         item.items = items;
                     }
                     break;
                 case 'DeleteTask':
-                    if (!this.parent.editSettings.allowDeleting) {
+                    if (!this.parent.editSettings.allowDeleting || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     }
                     break;

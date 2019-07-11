@@ -283,6 +283,8 @@ export class CheckBoxFilter {
             created: this.dialogCreated.bind(this),
             open: this.dialogOpen.bind(this)
         });
+        let isStringTemplate: string = 'isStringTemplate';
+        this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dlg as HTMLElement);
         this.dialogObj.element.style.maxHeight = '800px';
         this.dialogObj.show();

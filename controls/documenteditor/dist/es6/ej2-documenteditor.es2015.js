@@ -268,6 +268,21 @@ class WUniqueFormat {
         if (property === 'gridAfterWidthType') {
             return 10;
         }
+        if (property === 'leftMargin') {
+            return 11;
+        }
+        if (property === 'topMargin') {
+            return 12;
+        }
+        if (property === 'bottomMargin') {
+            return 13;
+        }
+        if (property === 'rightMargin') {
+            return 14;
+        }
+        if (property === 'leftIndent') {
+            return 15;
+        }
         return 0;
     }
     static getListFormatType(property) {
@@ -716,6 +731,21 @@ class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('gridAfterWidthType', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('leftMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('topMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('bottomMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('rightMargin', source, modifiedProperty, modifiedValue, 6)) {
+            return false;
+        }
+        if (this.isNotEqual('leftIndent', source, modifiedProperty, modifiedValue, 6)) {
             return false;
         }
         return true;
@@ -4185,6 +4215,12 @@ class WRowFormat {
     set isHeader(value) {
         this.setPropertyValue('isHeader', value);
     }
+    get rightMargin() {
+        return this.getPropertyValue('rightMargin');
+    }
+    set rightMargin(value) {
+        this.setPropertyValue('rightMargin', value);
+    }
     get height() {
         return this.getPropertyValue('height');
     }
@@ -4208,6 +4244,30 @@ class WRowFormat {
             this.height = 0;
         }
         this.setPropertyValue('heightType', value);
+    }
+    get bottomMargin() {
+        return this.getPropertyValue('bottomMargin');
+    }
+    set bottomMargin(value) {
+        this.setPropertyValue('bottomMargin', value);
+    }
+    get leftIndent() {
+        return this.getPropertyValue('leftIndent');
+    }
+    set leftIndent(value) {
+        this.setPropertyValue('leftIndent', value);
+    }
+    get topMargin() {
+        return this.getPropertyValue('topMargin');
+    }
+    set topMargin(value) {
+        this.setPropertyValue('topMargin', value);
+    }
+    get leftMargin() {
+        return this.getPropertyValue('leftMargin');
+    }
+    set leftMargin(value) {
+        this.setPropertyValue('leftMargin', value);
     }
     getPropertyValue(property) {
         let hasValue = this.hasValue(property);
@@ -4249,6 +4309,11 @@ class WRowFormat {
         this.addUniqueRowFormat('gridAfterWidth', property, propValue, uniqueRowFormatTemp);
         this.addUniqueRowFormat('gridgridAfterWidth', property, propValue, uniqueRowFormatTemp);
         this.addUniqueRowFormat('gridBeforeWidthType', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('leftMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('rightMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('topMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('bottomMargin', property, propValue, uniqueRowFormatTemp);
+        this.addUniqueRowFormat('leftIndent', property, propValue, uniqueRowFormatTemp);
         this.uniqueRowFormat = WRowFormat.uniqueRowFormats.addUniqueFormat(uniqueRowFormatTemp, WRowFormat.uniqueFormatType);
     }
     // tslint:disable-next-line:max-line-length
@@ -4292,8 +4357,29 @@ class WRowFormat {
             case 'gridAfterWidthType':
                 value = 'Point';
                 break;
+            case 'leftMargin':
+                value = undefined;
+                break;
+            case 'topMargin':
+                value = undefined;
+                break;
+            case 'bottomMargin':
+                value = undefined;
+                break;
+            case 'rightMargin':
+                value = undefined;
+                break;
+            case 'leftIndent':
+                value = 0;
+                break;
         }
         return value;
+    }
+    containsMargins() {
+        return (!isNullOrUndefined(this.leftMargin)
+            || !isNullOrUndefined(this.rightMargin)
+            || !isNullOrUndefined(this.bottomMargin)
+            || !isNullOrUndefined(this.topMargin));
     }
     cloneFormat() {
         let format = new WRowFormat();
@@ -4307,6 +4393,11 @@ class WRowFormat {
         format.gridAfter = this.gridAfter;
         format.gridAfterWidth = this.gridAfterWidth;
         format.gridAfterWidthType = this.gridAfterWidthType;
+        format.leftMargin = this.leftMargin;
+        format.rightMargin = this.rightMargin;
+        format.topMargin = this.topMargin;
+        format.bottomMargin = this.bottomMargin;
+        format.leftIndent = this.leftIndent;
         return format;
     }
     hasValue(property) {
@@ -4329,6 +4420,11 @@ class WRowFormat {
                 this.gridAfter = format.gridAfter;
                 this.gridAfterWidth = format.gridAfterWidth;
                 this.gridAfterWidthType = format.gridAfterWidthType;
+                this.leftMargin = format.leftMargin;
+                this.topMargin = format.topMargin;
+                this.rightMargin = format.rightMargin;
+                this.bottomMargin = format.bottomMargin;
+                this.leftIndent = format.leftIndent;
             }
             if (!isNullOrUndefined(format.borders)) {
                 this.borders = new WBorders(this);
@@ -6837,6 +6933,9 @@ class TableCellWidget extends BlockWidget {
         if (this.cellFormat && this.cellFormat.containsMargins()) {
             return this.cellFormat.leftMargin;
         }
+        else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('leftMargin')) {
+            return this.ownerRow.rowFormat.leftMargin;
+        }
         else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
             return this.ownerTable.tableFormat.leftMargin;
         }
@@ -6850,6 +6949,9 @@ class TableCellWidget extends BlockWidget {
     get topMargin() {
         if (this.cellFormat && this.cellFormat.containsMargins()) {
             return this.cellFormat.topMargin;
+        }
+        else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('topMargin')) {
+            return this.ownerRow.rowFormat.topMargin;
         }
         else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
             return this.ownerTable.tableFormat.topMargin;
@@ -6865,6 +6967,9 @@ class TableCellWidget extends BlockWidget {
         if (this.cellFormat && this.cellFormat.containsMargins()) {
             return this.cellFormat.rightMargin;
         }
+        else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('rightMargin')) {
+            return this.ownerRow.rowFormat.rightMargin;
+        }
         else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
             return this.ownerTable.tableFormat.rightMargin;
         }
@@ -6878,6 +6983,9 @@ class TableCellWidget extends BlockWidget {
     get bottomMargin() {
         if (this.cellFormat && this.cellFormat.containsMargins()) {
             return this.cellFormat.bottomMargin;
+        }
+        else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('bottomMargin')) {
+            return this.ownerRow.rowFormat.bottomMargin;
         }
         else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
             return this.ownerTable.tableFormat.bottomMargin;
@@ -11057,7 +11165,9 @@ class SpellChecker {
     handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, isSamePage) {
         if (jsonObject.HasSpellingError && isSamePage) {
             this.addErrorCollection(elementBox.text, elementBox, jsonObject.Suggestions);
-            this.viewer.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment);
+            // tslint:disable-next-line:max-line-length
+            let backgroundColor = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? elementBox.line.paragraph.containerWidget.cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
+            this.viewer.render.renderWavyline(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
             elementBox.isSpellChecked = true;
         }
         else {
@@ -11156,7 +11266,7 @@ class SpellChecker {
     }
     /**
      * Method to handle splitted and combined words for spell check.
-     * @param {any} jsonObject M
+     * @param {any} jsonObject
      * @param {string} currentText
      * @param {ElementBox} elementBox
      * @param {boolean} isSamePage
@@ -11198,7 +11308,8 @@ class SpellChecker {
             }
             this.addErrorCollection(span.text, span, suggestions);
             // tslint:disable-next-line:max-line-length
-            this.viewer.render.renderWavyline(span, span.start.location.x, span.start.location.y, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment);
+            let backgroundColor = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? elementBox.paragraph.containerWidget.cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
+            this.viewer.render.renderWavyline(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
             if (isLastItem) {
                 elementBox.isSpellChecked = true;
             }
@@ -12085,7 +12196,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      *  Gets the selection object of the document editor.
-     * @asptype Selection
+     * @aspType Selection
+     * @blazorType Selection
      * @returns {Selection}
      * @default undefined
      */
@@ -12094,7 +12206,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      *  Gets the editor object of the document editor.
-     * @asptype Editor
+     * @aspType Editor
+     * @blazorType Editor
      * @returns {Editor}
      * @default undefined
      */
@@ -12103,7 +12216,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the editor history object of the document editor.
-     * @asptype EditorHistory
+     * @aspType EditorHistory
+     * @blazorType EditorHistory
      * @returns {EditorHistory}
      */
     get editorHistory() {
@@ -12111,7 +12225,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the search object of the document editor.
-     * @asptype Search
+     * @aspType Search
+     * @blazorType Search
      * @returns { Search }
      */
     get search() {
@@ -12119,7 +12234,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the context menu object of the document editor.
-     * @asptype ContextMenu
+     * @aspType ContextMenu
+     * @blazorType ContextMenu
      * @returns {ContextMenu}
      */
     get contextMenu() {
@@ -13410,6 +13526,8 @@ class ContextMenu$1 {
          * @private
          */
         this.ids = [];
+        this.spellContextItems = [];
+        this.customItems = [];
         /**
          * Handles on context menu key pressed.
          * @param  {PointerEvent} event
@@ -13435,8 +13553,7 @@ class ContextMenu$1 {
                     }
                 }
                 else {
-                    this.destroy();
-                    this.initContextMenu(this.locale);
+                    this.hideSpellContextItems();
                     if (this.showHideElements(this.viewer.selection)) {
                         this.contextMenuInstance.open(event.y, event.x);
                         event.preventDefault();
@@ -13444,8 +13561,7 @@ class ContextMenu$1 {
                 }
             }
             else {
-                this.destroy();
-                this.initContextMenu(this.locale);
+                this.hideSpellContextItems();
                 if (this.showHideElements(this.viewer.selection)) {
                     this.contextMenuInstance.open(event.y, event.x);
                     event.preventDefault();
@@ -13841,6 +13957,9 @@ class ContextMenu$1 {
     addCustomMenu(items, isEnable, isBottom) {
         let menuItems = JSON.parse(JSON.stringify(items));
         this.destroy();
+        if (this.spellContextItems.length === 0) {
+            this.customItems = items;
+        }
         for (let index = 0; index < menuItems.length; index++) {
             this.customMenuItems.push(menuItems[index]);
             this.customMenuItems[index].id = this.viewer.owner.element.id + this.customMenuItems[index].id;
@@ -13863,6 +13982,19 @@ class ContextMenu$1 {
         }
     }
     /**
+     * Method to hide spell context items
+     */
+    hideSpellContextItems() {
+        if (this.spellContextItems.length > 0) {
+            for (let i = 0; i < this.spellContextItems.length; i++) {
+                let item = document.getElementById(this.viewer.owner.element.id + this.spellContextItems[i].id);
+                if (!isNullOrUndefined(item)) {
+                    item.style.display = 'none';
+                }
+            }
+        }
+    }
+    /**
      * Method to process suggestions to add in context menu
      * @param {any} allSuggestions
      * @param {string[]} splittedSuggestion
@@ -13871,7 +14003,8 @@ class ContextMenu$1 {
      */
     /* tslint:disable:no-any */
     processSuggestions(allSuggestions, splittedSuggestion, event) {
-        this.addCustomMenu(this.constructContextmenu(allSuggestions, splittedSuggestion));
+        this.spellContextItems = this.constructContextmenu(allSuggestions, splittedSuggestion);
+        this.addCustomMenu(this.spellContextItems);
         this.noSuggestion = document.getElementById(this.viewer.owner.element.id + CONTEXTMENU_NO_SUGGESTION);
         if (!isNullOrUndefined(this.noSuggestion)) {
             this.noSuggestion.style.display = 'block';
@@ -13888,7 +14021,7 @@ class ContextMenu$1 {
      */
     /* tslint:disable:no-any */
     constructContextmenu(allSuggestion, splittedSuggestion) {
-        let contextMenuItems = [];
+        let contextMenuItems = this.customItems.length > 0 ? this.customItems.slice() : [];
         // classList(this.noSuggestion,['e-disabled'],[]);
         if (isNullOrUndefined(allSuggestion) || allSuggestion.length === 0) {
             contextMenuItems.push({ text: 'no suggestions', id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
@@ -13899,10 +14032,10 @@ class ContextMenu$1 {
                 contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
             }
         }
-        contextMenuItems.push({ separator: true });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_seperator' });
         if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
             contextMenuItems.push({ text: 'More Suggestion', items: splittedSuggestion });
-            contextMenuItems.push({ separator: true });
+            contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_seperator' });
         }
         else {
             // tslint:disable-next-line:max-line-length
@@ -13910,10 +14043,10 @@ class ContextMenu$1 {
         }
         contextMenuItems.push({ text: 'Ignore Once', id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
         contextMenuItems.push({ text: 'Ignore All', id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
-        contextMenuItems.push({ separator: true });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_change_seperator' });
         // tslint:disable-next-line:max-line-length
         contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
-        contextMenuItems.push({ separator: true });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_seperator' });
         return contextMenuItems;
     }
     showHideElements(selection) {
@@ -16473,8 +16606,19 @@ class Layout {
                 right = isNullOrUndefined(cell.cellFormat.rightMargin) ? HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.rightMargin) : HelperMethods.convertPointToPixel(cell.cellFormat.rightMargin);
             }
             else {
-                left = HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.leftMargin);
-                right = HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.rightMargin);
+                if (cell.columnIndex === 0 && cell.ownerRow.rowFormat.hasValue('leftMargin')) {
+                    left = HelperMethods.convertPointToPixel(cell.ownerRow.rowFormat.leftMargin);
+                }
+                else {
+                    left = HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.leftMargin);
+                }
+                if (cell.columnIndex === cell.ownerTable.tableHolder.columns.length - 1 &&
+                    cell.ownerRow.rowFormat.hasValue('rightMargin')) {
+                    right = HelperMethods.convertPointToPixel(cell.ownerRow.rowFormat.rightMargin);
+                }
+                else {
+                    right = HelperMethods.convertPointToPixel(cell.ownerTable.tableFormat.rightMargin);
+                }
             }
         }
         cell.margin = new Margin(left, top, right, bottom);
@@ -18401,10 +18545,12 @@ class Layout {
         let rowWidgets = [row];
         let widget = this.addTableRowWidget(viewer.clientActiveArea, rowWidgets);
         viewer.updateClientAreaForRow(row, true);
+        let topMargin = this.getMaxTopCellMargin(row);
+        let bottomMargin = this.getMaxBottomCellMargin(row);
         for (let i = 0; i < row.childWidgets.length; i++) {
             let cell = row.childWidgets[i];
             // tslint:disable-next-line:max-line-length
-            this.layoutCell(cell, this.getMaxTopOrBottomCellMargin(row, 0) + row.topBorderWidth, this.getMaxTopOrBottomCellMargin(row, 1) + row.bottomBorderWidth, widget);
+            this.layoutCell(cell, topMargin + row.topBorderWidth, bottomMargin + row.bottomBorderWidth, widget);
         }
         viewer.updateClientAreaForRow(row, false);
         let rows = [row];
@@ -18486,43 +18632,57 @@ class Layout {
         return rowWidget;
     }
     /**
-     * Gets maximum top or bottom cell margin.
+     * Gets maximum top cell margin.
      * @param row
      * @param topOrBottom
      */
-    getMaxTopOrBottomCellMargin(row, topOrBottom) {
+    getMaxTopCellMargin(row) {
         if (isNullOrUndefined(row.childWidgets)) {
             return 0;
         }
         let value = 0;
         for (let i = 0; i < row.childWidgets.length; i++) {
-            if (row.childWidgets.length > 0) {
-                let cell = row.childWidgets[i];
-                let cellFormat = cell.cellFormat;
-                if (cellFormat.containsMargins()) {
-                    let leftMargin = HelperMethods.convertPointToPixel(cellFormat.topMargin);
-                    let bottomMargin;
-                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) && leftMargin > value) {
-                        value = leftMargin;
-                    }
-                    else if (topOrBottom === 1 && !isNullOrUndefined(cellFormat.bottomMargin) &&
-                        // tslint:disable-next-line:no-conditional-assignment 
-                        (bottomMargin = HelperMethods.convertPointToPixel(cellFormat.bottomMargin)) > value) {
-                        value = bottomMargin;
-                    }
-                }
-                else {
-                    let tableFormat = cell.ownerTable.tableFormat;
-                    let topMargin = HelperMethods.convertPointToPixel(tableFormat.topMargin);
-                    let bottomMargin;
-                    if (topOrBottom === 0 && topMargin > value) {
-                        value = topMargin;
-                        // tslint:disable-next-line:no-conditional-assignment 
-                    }
-                    else if (topOrBottom === 1 && (bottomMargin = HelperMethods.convertPointToPixel(tableFormat.bottomMargin)) > value) {
-                        value = bottomMargin;
-                    }
-                }
+            let cell = row.childWidgets[i];
+            let topMargin = 0;
+            if (cell.cellFormat.hasValue('topMargin')) {
+                topMargin = HelperMethods.convertPointToPixel(cell.cellFormat.topMargin);
+            }
+            else if (row.rowFormat.hasValue('topMargin')) {
+                topMargin = HelperMethods.convertPointToPixel(row.rowFormat.topMargin);
+            }
+            else {
+                topMargin = HelperMethods.convertPointToPixel(row.ownerTable.topMargin);
+            }
+            if (topMargin > value) {
+                value = topMargin;
+            }
+        }
+        return value;
+    }
+    /**
+     * Gets maximum bottom cell margin.
+     * @param row
+     * @param topOrBottom
+     */
+    getMaxBottomCellMargin(row) {
+        if (isNullOrUndefined(row.childWidgets)) {
+            return 0;
+        }
+        let value = 0;
+        for (let i = 0; i < row.childWidgets.length; i++) {
+            let cell = row.childWidgets[i];
+            let bottomMargin = 0;
+            if (cell.cellFormat.hasValue('bottomMargin')) {
+                bottomMargin = HelperMethods.convertPointToPixel(cell.cellFormat.bottomMargin);
+            }
+            else if (row.rowFormat.hasValue('bottomMargin')) {
+                bottomMargin = HelperMethods.convertPointToPixel(row.rowFormat.bottomMargin);
+            }
+            else {
+                bottomMargin = HelperMethods.convertPointToPixel(row.ownerTable.bottomMargin);
+            }
+            if (bottomMargin > value) {
+                value = bottomMargin;
             }
         }
         return value;
@@ -18752,7 +18912,7 @@ class Layout {
         for (let i = 0; i < row.childWidgets.length; i++) {
             let cell = row.childWidgets[i];
             // tslint:disable-next-line:max-line-length
-            this.shiftCellWidget(cell, this.getMaxTopOrBottomCellMargin(row, 0) + row.topBorderWidth, this.getMaxTopOrBottomCellMargin(row, 1) + row.bottomBorderWidth);
+            this.shiftCellWidget(cell, this.getMaxTopCellMargin(row) + row.topBorderWidth, this.getMaxBottomCellMargin(row) + row.bottomBorderWidth);
         }
         viewer.updateClientAreaForRow(row, false);
         this.updateWidgetsToTable(tables, rows, row);
@@ -19292,7 +19452,8 @@ class Renderer {
         this.pageTop = 0;
         this.pageIndex = -1;
         this.isFieldCode = false;
-        this.isspellCheckHandled = false;
+        this.leftPosition = 0;
+        this.topPosition = 0;
         this.viewer = viewer;
     }
     /**
@@ -19391,10 +19552,8 @@ class Renderer {
         if (this.viewer.owner.enableHeaderAndFooter && !this.isPrinting) {
             this.renderHeaderSeparator(page, this.pageLeft, this.pageTop, page.headerWidget);
         }
-        if (!this.isspellCheckHandled) {
-            this.pageLeft = 0;
-            this.pageTop = 0;
-        }
+        this.pageLeft = 0;
+        this.pageTop = 0;
         this.pageContext.restore();
     }
     /**
@@ -19670,7 +19829,8 @@ class Renderer {
      * @param {number} top
      */
     renderLine(lineWidget, page, left, top) {
-        if (!this.isPrinting && page.viewer.owner.selection && page.viewer.owner.selection.selectedWidgets.length > 0) {
+        // tslint:disable-next-line:max-line-length
+        if (!this.isPrinting && page.viewer.owner.selection && !this.viewer.isScrollToSpellCheck && page.viewer.owner.selection.selectedWidgets.length > 0) {
             page.viewer.owner.selection.addSelectionHighlight(this.selectionContext, lineWidget, top);
         }
         let paraFormat = lineWidget.paragraph.paragraphFormat;
@@ -19894,7 +20054,8 @@ class Renderer {
         // tslint:disable-next-line:max-line-length
         if ((this.viewer.owner.enableSpellCheck && !this.spellChecker.removeUnderline) && (this.viewer.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.viewer.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))) {
             elementBox.canTrigger = true;
-            this.isspellCheckHandled = true;
+            this.leftPosition = this.pageLeft;
+            this.topPosition = this.pageTop;
             let errorDetails = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
             if (errorDetails.errorFound) {
                 color = '#FF0000';
@@ -19903,7 +20064,9 @@ class Renderer {
                     // tslint:disable-next-line:max-line-length
                     if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
                         // tslint:disable-next-line:max-line-length
-                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y, underlineY, color, 'Single', format.baselineAlignment);
+                        let backgroundColor = (containerWidget instanceof TableCellWidget) ? containerWidget.cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
+                        // tslint:disable-next-line:max-line-length
+                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
             }
@@ -20006,7 +20169,7 @@ class Renderer {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    renderWavyline(elementBox, left, top, underlineY, color, underline, baselineAlignment) {
+    renderWavyline(elementBox, left, top, underlineY, color, underline, baselineAlignment, backgroundColor) {
         if (elementBox.text.length > 1) {
             let renderedHeight = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
             let topMargin = elementBox.margin.top;
@@ -20028,13 +20191,15 @@ class Renderer {
             // tslint:disable-next-line:max-line-length
             let whiteSpaceData = this.spellChecker.getWhiteSpaceCharacterInfo(elementBox.text, elementBox.characterFormat);
             // tslint:disable-next-line:max-line-length
-            let x1 = this.getScaledValue(left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left, 1);
-            let y1 = this.getScaledValue(y, 2);
+            let x = left + specialCharacter.beginningWidth + ((whiteSpaceData.isBeginning) ? whiteSpaceData.width : 0) + elementBox.margin.left;
+            let x1 = x * this.viewer.zoomFactor + this.leftPosition;
+            let y1 = y * this.viewer.zoomFactor + this.topPosition;
             // tslint:disable-next-line:max-line-length
             let x2 = x1 + this.getScaledValue(elementBox.width - (specialCharacter.beginningWidth + specialCharacter.endWidth) - whiteSpaceData.width);
             let startingPoint = new Point(x1, y1);
             let endingPoint = new Point(x2, y1);
-            this.drawWavy(startingPoint, endingPoint, (x2 - x1) * frequencyRange, amplitudeRange, stepToCover, color, elementBox.height);
+            // tslint:disable-next-line:max-line-length
+            this.drawWavy(startingPoint, endingPoint, (x2 - x1) * frequencyRange, amplitudeRange, stepToCover, color, elementBox.height, backgroundColor);
         }
     }
     /**
@@ -20049,9 +20214,9 @@ class Renderer {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    drawWavy(from, to, frequency, amplitude, step, color, height, negative) {
+    drawWavy(from, to, frequency, amplitude, step, color, height, backColor, negative) {
         this.pageContext.save();
-        this.pageContext.fillStyle = '#ffffff';
+        this.pageContext.fillStyle = (!isNullOrUndefined(backColor) ? backColor : this.viewer.backgroundColor);
         this.pageContext.fillRect(from.x, from.y - amplitude, (to.x - from.x), amplitude * 3);
         this.pageContext.restore();
         this.pageContext.lineWidth = 1;
@@ -20299,11 +20464,12 @@ class Renderer {
                 height = cellWidget.height + cellTopMargin + cellBottomMargin;
             }
         }
-        this.renderCellBackground(height, cellWidget);
         let border = !isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
         let lineWidth = 0;
-        // if (!isNullOrUndefined(border )) {       
+        // if (!isNullOrUndefined(border )) {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth()); //Renders the cell left border.
+        this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
+        let leftBorderWidth = lineWidth;
         // tslint:disable-next-line:max-line-length
         this.renderSingleBorder(border, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         // }
@@ -20311,7 +20477,7 @@ class Renderer {
         // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
         // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
+        this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
         // }
         let isLastCell = false;
         if (!isBidiTable) {
@@ -20358,7 +20524,7 @@ class Renderer {
             //Renders the cell bottom border.
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length
-            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
+            this.renderSingleBorder(border, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
             // }
         }
         border = layout.getCellDiagonalUpBorder(tableCell);
@@ -20385,17 +20551,17 @@ class Renderer {
      * @param {number} height
      * @param {TableCellWidget} cellWidget
      */
-    renderCellBackground(height, cellWidget) {
+    renderCellBackground(height, cellWidget, leftMargin, lineWidth) {
         let cellFormat = cellWidget.cellFormat;
         let bgColor = cellFormat.shading.backgroundColor === '#ffffff' ?
             cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = this.getColor(bgColor);
-            let left = cellWidget.x - cellWidget.margin.left + cellWidget.leftBorderWidth;
+            let left = cellWidget.x - leftMargin - lineWidth;
             let top = cellWidget.y - HelperMethods.convertPointToPixel(cellWidget.topMargin);
             // tslint:disable-next-line:max-line-length
-            let width = cellWidget.width + cellWidget.margin.left + cellWidget.margin.right - cellWidget.leftBorderWidth - cellWidget.rightBorderWidth;
+            let width = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
             this.pageContext.closePath();
@@ -21884,7 +22050,8 @@ class LayoutViewer {
             }
             this.isScrollHandler = false;
             this.scrollTimer = setTimeout(() => {
-                if (!this.isScrollHandler) {
+                if (!this.isScrollHandler && this.owner.enableSpellCheck) {
+                    this.isScrollToSpellCheck = true;
                     this.updateScrollBars();
                 }
             }, 200);
@@ -23688,17 +23855,18 @@ class LayoutViewer {
         if (!isNullOrUndefined(page) && !isNullOrUndefined(this.selection)) {
             let fieldCode = this.selection.getFieldCode(fieldBegin);
             let fieldCodes = fieldCode.split('\*');
+            let fieldCategory = fieldCodes[0].replace(/[^\w\s]/gi, '').trim().toLowerCase();
+            let fieldPattern = '';
             if (fieldCodes.length > 1) {
-                let fieldCategory = fieldCodes[0].replace(/[^\w\s]/gi, '').trim().toLowerCase();
-                let fieldPattern = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
-                switch (fieldCategory) {
-                    case 'page':
-                        return this.getFieldText(fieldPattern, (page.index + 1));
-                    case 'numpages':
-                        return this.getFieldText(fieldPattern, page.viewer.pages.length);
-                    default:
-                        break;
-                }
+                fieldPattern = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
+            }
+            switch (fieldCategory) {
+                case 'page':
+                    return this.getFieldText(fieldPattern, (page.index + 1));
+                case 'numpages':
+                    return this.getFieldText(fieldPattern, page.viewer.pages.length);
+                default:
+                    break;
             }
         }
         return '';
@@ -24301,6 +24469,7 @@ class PageLayoutViewer extends LayoutViewer {
             }
         }
         this.updateScrollBarPosition(containerWidth, containerHeight, viewerWidth, viewerHeight, width, height);
+        this.isScrollToSpellCheck = false;
     }
     // tslint:disable-next-line:max-line-length
     updateScrollBarPosition(containerWidth, containerHeight, viewerWidth, viewerHeight, width, height) {
@@ -25220,6 +25389,21 @@ class SfdtReader {
             if (!isNullOrUndefined(sourceFormat.height)) {
                 rowFormat.height = sourceFormat.height;
             }
+            if (!isNullOrUndefined(sourceFormat.leftMargin)) {
+                rowFormat.leftMargin = sourceFormat.leftMargin;
+            }
+            if (!isNullOrUndefined(sourceFormat.topMargin)) {
+                rowFormat.topMargin = sourceFormat.topMargin;
+            }
+            if (!isNullOrUndefined(sourceFormat.rightMargin)) {
+                rowFormat.rightMargin = sourceFormat.rightMargin;
+            }
+            if (!isNullOrUndefined(sourceFormat.bottomMargin)) {
+                rowFormat.bottomMargin = sourceFormat.bottomMargin;
+            }
+            if (!isNullOrUndefined(sourceFormat.leftIndent)) {
+                rowFormat.leftIndent = sourceFormat.leftIndent;
+            }
             this.parseBorders(sourceFormat.borders, rowFormat.borders);
         }
     }
@@ -25497,14 +25681,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets the font size of selected contents.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get fontSize() {
         return this.fontSizeIn;
     }
     /**
      * Sets the font size of selected contents.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set fontSize(value) {
         if (value === this.fontSizeIn) {
@@ -25515,14 +25701,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font family of selected contents.
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     get fontFamily() {
         return this.fontFamilyIn;
     }
     /**
      * Sets the font family of selected contents.
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     set fontFamily(value) {
         if (value === this.fontFamilyIn) {
@@ -25533,14 +25721,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the font color of selected contents.
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     get fontColor() {
         return this.fontColorIn;
     }
     /**
      * Sets the font color of selected contents.
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     set fontColor(value) {
         if (value === this.fontColorIn) {
@@ -25551,14 +25741,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the bold formatting of selected contents.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get bold() {
         return this.boldIn;
     }
     /**
      * Sets the bold formatting of selected contents.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set bold(value) {
         if (value === this.boldIn) {
@@ -25569,14 +25761,16 @@ class SelectionCharacterFormat {
     }
     /**
      * Gets or sets the italic formatting of selected contents.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get italic() {
         return this.italicIn;
     }
     /**
      * Sets the italic formatting of selected contents.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set italic(value) {
         if (value === this.italic) {
@@ -25883,7 +26077,8 @@ class SelectionParagraphFormat {
     /**
      * Gets or Sets the left indent for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get leftIndent() {
         return this.leftIndentIn;
@@ -25891,7 +26086,8 @@ class SelectionParagraphFormat {
     /**
      * Sets the left indent for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set leftIndent(value) {
         if (value === this.leftIndentIn) {
@@ -25903,7 +26099,8 @@ class SelectionParagraphFormat {
     /**
      * Gets or Sets the right indent for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get rightIndent() {
         return this.rightIndentIn;
@@ -25911,7 +26108,8 @@ class SelectionParagraphFormat {
     /**
      * Sets the right indent for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set rightIndent(value) {
         if (value === this.rightIndentIn) {
@@ -25923,7 +26121,8 @@ class SelectionParagraphFormat {
     /**
      * Gets or Sets the first line indent for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get firstLineIndent() {
         return this.firstLineIndentIn;
@@ -25931,7 +26130,8 @@ class SelectionParagraphFormat {
     /**
      * Sets the first line indent for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set firstLineIndent(value) {
         if (value === this.firstLineIndentIn) {
@@ -25961,7 +26161,8 @@ class SelectionParagraphFormat {
     /**
      * Sets the after spacing for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get afterSpacing() {
         return this.afterSpacingIn;
@@ -25969,7 +26170,8 @@ class SelectionParagraphFormat {
     /**
      * Gets or Sets the after spacing for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set afterSpacing(value) {
         if (value === this.afterSpacingIn) {
@@ -25981,7 +26183,8 @@ class SelectionParagraphFormat {
     /**
      * Gets or Sets the before spacing for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get beforeSpacing() {
         return this.beforeSpacingIn;
@@ -25989,7 +26192,8 @@ class SelectionParagraphFormat {
     /**
      * Sets the before spacing for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set beforeSpacing(value) {
         if (value === this.beforeSpacingIn) {
@@ -26001,7 +26205,8 @@ class SelectionParagraphFormat {
     /**
      * Gets or Sets the line spacing for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get lineSpacing() {
         return this.lineSpacingIn;
@@ -26009,7 +26214,8 @@ class SelectionParagraphFormat {
     /**
      * Sets the line spacing for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set lineSpacing(value) {
         if (value === this.lineSpacingIn) {
@@ -26039,7 +26245,8 @@ class SelectionParagraphFormat {
     /**
      * Sets the list level number for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get listLevelNumber() {
         return this.listLevelNumberIn;
@@ -26047,7 +26254,8 @@ class SelectionParagraphFormat {
     /**
      * Gets or Sets the list level number for selected paragraphs.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set listLevelNumber(value) {
         if (value === this.listLevelNumberIn) {
@@ -26058,14 +26266,16 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or Sets the bidirectional property for selected paragraphs
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get bidi() {
         return this.bidiIn;
     }
     /**
      * Sets the bidirectional property for selected paragraphs
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set bidi(value) {
         this.bidiIn = value;
@@ -26073,14 +26283,16 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets or sets a value indicating whether to add space between the paragraphs of same style.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get contextualSpacing() {
         return this.contextualSpacingIn;
     }
     /**
      * Sets a value indicating whether to add space between the paragraphs of same style.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set contextualSpacing(value) {
         this.contextualSpacingIn = value;
@@ -26088,7 +26300,8 @@ class SelectionParagraphFormat {
     }
     /**
      * Gets the list text for selected paragraphs.
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     get listText() {
         let listFormat = undefined;
@@ -26428,14 +26641,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page height.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get pageHeight() {
         return this.pageHeightIn;
     }
     /**
      * Gets or sets the page height.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set pageHeight(value) {
         this.pageHeightIn = value;
@@ -26443,14 +26658,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page width.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get pageWidth() {
         return this.pageWidthIn;
     }
     /**
      * Gets or sets the page width.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set pageWidth(value) {
         this.pageWidthIn = value;
@@ -26458,14 +26675,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page left margin.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get leftMargin() {
         return this.leftMarginIn;
     }
     /**
      * Gets or sets the page left margin.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set leftMargin(value) {
         this.leftMarginIn = value;
@@ -26473,14 +26692,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page bottom margin.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get bottomMargin() {
         return this.bottomMarginIn;
     }
     /**
      * Gets or sets the page bottom margin.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set bottomMargin(value) {
         this.bottomMarginIn = value;
@@ -26488,14 +26709,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page top margin.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get topMargin() {
         return this.topMarginIn;
     }
     /**
      * Gets or sets the page top margin.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set topMargin(value) {
         this.topMarginIn = value;
@@ -26503,14 +26726,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the page right margin.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get rightMargin() {
         return this.rightMarginIn;
     }
     /**
      * Gets or sets the page right margin.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set rightMargin(value) {
         this.rightMarginIn = value;
@@ -26518,14 +26743,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the header distance.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get headerDistance() {
         return this.headerDistanceIn;
     }
     /**
      * Gets or sets the header distance.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set headerDistance(value) {
         this.headerDistanceIn = value;
@@ -26533,14 +26760,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets the footer distance.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get footerDistance() {
         return this.footerDistanceIn;
     }
     /**
      * Gets or sets the footer distance.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set footerDistance(value) {
         this.footerDistanceIn = value;
@@ -26548,14 +26777,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get differentFirstPage() {
         return this.differentFirstPageIn;
     }
     /**
      * Gets or sets a value indicating whether the section has different first page.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set differentFirstPage(value) {
         this.differentFirstPageIn = value;
@@ -26563,14 +26794,16 @@ class SelectionSectionFormat {
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get differentOddAndEvenPages() {
         return this.differentOddAndEvenPagesIn;
     }
     /**
      * Gets or sets a value indicating whether the section has different odd and even page.
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set differentOddAndEvenPages(value) {
         this.differentOddAndEvenPagesIn = value;
@@ -26769,14 +27002,16 @@ class SelectionTableFormat {
     }
     /**
      * Gets or Sets the left indent for selected table.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get leftIndent() {
         return this.leftIndentIn;
     }
     /**
      * Gets or Sets the left indent for selected table.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set leftIndent(value) {
         if (value === this.leftIndentIn) {
@@ -26788,7 +27023,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the default top margin of cell for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get topMargin() {
         return this.topMarginIn;
@@ -26796,7 +27032,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the default top margin of cell for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set topMargin(value) {
         if (value === this.topMarginIn) {
@@ -26808,7 +27045,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the background for selected table.
      * @default undefined
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     get background() {
         return this.backgroundIn;
@@ -26816,7 +27054,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the background for selected table.
      * @default undefined
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     set background(value) {
         if (value === this.backgroundIn) {
@@ -26846,7 +27085,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the default left margin of cell for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get leftMargin() {
         return this.leftMarginIn;
@@ -26854,7 +27094,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the default left margin of cell for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set leftMargin(value) {
         if (value === this.leftMarginIn) {
@@ -26866,7 +27107,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get bottomMargin() {
         return this.bottomMarginIn;
@@ -26874,7 +27116,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the default bottom margin of cell for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set bottomMargin(value) {
         if (value === this.bottomMarginIn) {
@@ -26886,7 +27129,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the cell spacing for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get cellSpacing() {
         return this.cellSpacingIn;
@@ -26894,7 +27138,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the cell spacing for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set cellSpacing(value) {
         if (value === this.cellSpacingIn) {
@@ -26906,7 +27151,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the default right margin of cell for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get rightMargin() {
         return this.rightMarginIn;
@@ -26914,7 +27160,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the default right margin of cell for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set rightMargin(value) {
         if (value === this.rightMarginIn) {
@@ -26926,7 +27173,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the preferred width for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get preferredWidth() {
         return this.preferredWidthIn;
@@ -26934,7 +27182,8 @@ class SelectionTableFormat {
     /**
      * Gets or Sets the preferred width for selected table.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set preferredWidth(value) {
         if (value === this.preferredWidthIn) {
@@ -26963,14 +27212,16 @@ class SelectionTableFormat {
     }
     /**
      * Gets or sets the bidi property
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get bidi() {
         return this.bidiIn;
     }
     /**
      * Gets or sets the bidi property
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set bidi(value) {
         this.bidiIn = value;
@@ -27117,7 +27368,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the left margin for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     /* tslint:disable */
     get leftMargin() {
@@ -27126,7 +27378,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the left margin for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set leftMargin(value) {
         if (value === this.leftMarginIn) {
@@ -27138,7 +27391,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the right margin for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get rightMargin() {
         return this.rightMarginIn;
@@ -27146,7 +27400,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the right margin for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set rightMargin(value) {
         if (value === this.rightMarginIn) {
@@ -27158,7 +27413,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the top margin for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get topMargin() {
         return this.topMarginIn;
@@ -27166,7 +27422,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the top margin for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set topMargin(value) {
         if (value === this.topMarginIn) {
@@ -27178,7 +27435,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the bottom margin for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get bottomMargin() {
         return this.bottomMarginIn;
@@ -27186,7 +27444,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the bottom margin for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set bottomMargin(value) {
         if (value === this.bottomMarginIn) {
@@ -27198,7 +27457,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the background for selected cells.
      * @default undefined
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     get background() {
         return this.backgroundIn;
@@ -27206,7 +27466,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the background for selected cells.
      * @default undefined
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      */
     /* tslint:enable */
     set background(value) {
@@ -27238,7 +27499,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the preferred width  for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get preferredWidth() {
         return this.preferredWidthIn;
@@ -27246,7 +27508,8 @@ class SelectionCellFormat {
     /**
      * Gets or Sets the preferred width  for selected cells.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set preferredWidth(value) {
         if (value === this.preferredWidthIn) {
@@ -27403,7 +27666,8 @@ class SelectionRowFormat {
     /**
      * Gets or Sets the height for selected rows.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get height() {
         return this.heightIn;
@@ -27411,7 +27675,8 @@ class SelectionRowFormat {
     /**
      * Gets or Sets the height for selected rows.
      * @default undefined
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set height(value) {
         if (value === this.heightIn) {
@@ -27441,7 +27706,8 @@ class SelectionRowFormat {
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
      * @default undefined
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get isHeader() {
         return this.isHeaderIn;
@@ -27449,7 +27715,8 @@ class SelectionRowFormat {
     /**
      * Gets or Sets a value indicating whether the selected rows are header rows or not.
      * @default undefined
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set isHeader(value) {
         if (value === this.isHeaderIn) {
@@ -27461,7 +27728,8 @@ class SelectionRowFormat {
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
      * @default undefined
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     get allowBreakAcrossPages() {
         return this.allowRowBreakAcrossPagesIn;
@@ -27469,7 +27737,8 @@ class SelectionRowFormat {
     /**
      * Gets or Sets a value indicating whether to allow break across pages for selected rows.
      * @default undefined
-     * @asptype bool
+     * @aspType bool
+     * @blazorType bool
      */
     set allowBreakAcrossPages(value) {
         if (value === this.allowRowBreakAcrossPagesIn) {
@@ -27577,7 +27846,8 @@ class SelectionRowFormat {
 class SelectionImageFormat {
     /**
      * Gets the width of the image.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get width() {
         if (this.image) {
@@ -27587,7 +27857,8 @@ class SelectionImageFormat {
     }
     /**
      * Gets the height of the image.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get height() {
         if (this.image) {
@@ -30671,7 +30942,8 @@ class Selection {
     /**
      * Gets the instance of selection character format.
      * @default undefined
-     * @asptype SelectionCharacterFormat
+     * @aspType SelectionCharacterFormat
+     * @blazorType SelectionCharacterFormat
      * @return {SelectionCharacterFormat}
      */
     get characterFormat() {
@@ -30680,7 +30952,8 @@ class Selection {
     /**
      * Gets the instance of selection paragraph format.
      * @default undefined
-     * @asptype SelectionParagraphFormat
+     * @aspType SelectionParagraphFormat
+     * @blazorType SelectionParagraphFormat
      * @return {SelectionParagraphFormat}
      */
     get paragraphFormat() {
@@ -30689,7 +30962,8 @@ class Selection {
     /**
      * Gets the instance of selection section format.
      * @default undefined
-     * @asptype SelectionSectionFormat
+     * @aspType SelectionSectionFormat
+     * @blazorType SelectionSectionFormat
      * @return {SelectionSectionFormat}
      */
     get sectionFormat() {
@@ -30698,7 +30972,8 @@ class Selection {
     /**
      * Gets the instance of selection table format.
      * @default undefined
-     * @asptype SelectionTableFormat
+     * @aspType SelectionTableFormat
+     * @blazorType SelectionTableFormat
      * @return {SelectionTableFormat}
      */
     get tableFormat() {
@@ -30707,7 +30982,8 @@ class Selection {
     /**
      * Gets the instance of selection cell format.
      * @default undefined
-     * @asptype SelectionCellFormat
+     * @aspType SelectionCellFormat
+     * @blazorType SelectionCellFormat
      * @return {SelectionCellFormat}
      */
     get cellFormat() {
@@ -30716,7 +30992,8 @@ class Selection {
     /**
      * Gets the instance of selection row format.
      * @default undefined
-     * @asptype SelectionRowFormat
+     * @aspType SelectionRowFormat
+     * @blazorType SelectionRowFormat
      * @returns {SelectionRowFormat}
      */
     get rowFormat() {
@@ -30725,7 +31002,8 @@ class Selection {
     /**
      * Gets the instance of selection image format.
      * @default undefined
-     * @asptype SelectionImageFormat
+     * @aspType SelectionImageFormat
+     * @blazorType SelectionImageFormat
      * @returns {SelectionImageFormat}
      */
     get imageFormat() {
@@ -30789,7 +31067,8 @@ class Selection {
     /**
      * Gets the text within selection.
      * @default ''
-     * @asptype string
+     * @aspType string
+     * @blazorType string
      * @returns {string}
      */
     get text() {
@@ -38711,18 +38990,24 @@ class TextSearchResults {
 class SearchResults {
     /**
      * Gets the length of search results.
+     * @aspType int
+     * @blazorType int
      */
     get length() {
         return this.searchModule.textSearchResults.length;
     }
     /**
      * Gets the index of current search result.
+     * @aspType int
+     * @blazorType int
      */
     get index() {
         return this.searchModule.textSearchResults.currentIndex;
     }
     /**
      * Set the index of current search result.
+     * @aspType int
+     * @blazorType int
      */
     set index(value) {
         if (this.length === 0 || value < 0 || value > this.searchModule.textSearchResults.length - 1) {
@@ -38805,6 +39090,8 @@ class Search {
     }
     /**
      * Gets the search results object.
+     * @aspType SearchResults
+     * @blazorType SearchResults
      */
     get searchResults() {
         return this.searchResultsInternal;
@@ -41544,6 +41831,7 @@ class Editor {
         this.editHyperlinkInternal = false;
         this.startParagraph = undefined;
         this.endParagraph = undefined;
+        this.removeEditRange = false;
         /**
          * @private
          */
@@ -41742,6 +42030,11 @@ class Editor {
     getModuleName() {
         return 'Editor';
     }
+    /**
+     * Inserts the specified field at cursor position
+     * @param code
+     * @param result
+     */
     insertField(code, result) {
         let fieldCode = code;
         if (isNullOrUndefined(result)) {
@@ -43516,7 +43809,7 @@ class Editor {
     pasteInternal(event, pasteWindow) {
         this.currentPasteOptions = 'KeepSourceFormatting';
         if (this.viewer.owner.enableLocalPaste) {
-            this.pasteLocal();
+            this.paste();
         }
         else {
             this.selection.isViewPasteOptions = true;
@@ -43581,12 +43874,16 @@ class Editor {
         hideSpinner(this.owner.element);
     }
     /**
-     * Pastes the data present in local clipboard if any.
+     * Pastes provided sfdt content or the data present in local clipboard if any .
+     * @param {string} sfdt? insert the specified sfdt content at current position
      */
-    pasteLocal() {
+    paste(sfdt) {
+        if (isNullOrUndefined(sfdt)) {
+            sfdt = this.owner.enableLocalPaste ? this.copiedData : undefined;
+        }
         /* tslint:disable:no-any */
-        if (this.copiedData && this.owner.enableLocalPaste) {
-            let document = JSON.parse(this.copiedData);
+        if (sfdt) {
+            let document = JSON.parse(sfdt);
             this.pasteContents(document);
         }
     }
@@ -43664,12 +43961,12 @@ class Editor {
                 for (let k = 0; k < lineWidget.children.length; k++) {
                     let inlineCharacterFormat = lineWidget.children[k].characterFormat;
                     let characterFormat = inlineCharacterFormat.cloneFormat();
-                    inlineCharacterFormat.copyFormat(insertFormat);
+                    lineWidget.children[k].characterFormat = insertFormat;
                     if (characterFormat.bold) {
-                        inlineCharacterFormat.bold = characterFormat.bold;
+                        lineWidget.children[k].characterFormat.bold = characterFormat.bold;
                     }
                     if (characterFormat.italic) {
-                        inlineCharacterFormat.italic = characterFormat.italic;
+                        lineWidget.children[k].characterFormat.italic = characterFormat.italic;
                     }
                 }
             }
@@ -49247,6 +49544,7 @@ class Editor {
      * @private
      */
     onBackSpace() {
+        this.removeEditRange = true;
         let selection = this.viewer.selection;
         this.viewer.triggerSpellCheck = true;
         if (selection.isEmpty) {
@@ -49268,6 +49566,7 @@ class Editor {
             }
             this.viewer.triggerSpellCheck = false;
         }
+        this.removeEditRange = false;
     }
     /**
      * @private
@@ -49323,6 +49622,14 @@ class Editor {
         textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
         selection.selectContent(textPosition, true);
         return skipBackSpace;
+    }
+    removeWholeElement(selection) {
+        this.initHistory('BackSpace');
+        this.deleteSelectedContents(selection, true);
+        if (this.checkEndPosition(selection)) {
+            this.updateHistoryPosition(selection.end, false);
+        }
+        this.reLayout(selection);
     }
     /**
      * @private
@@ -49380,6 +49687,27 @@ class Editor {
                 offset = inline.line.getOffset(inline, inline.length);
             }
         }
+        if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
+            if ((inline.nextNode instanceof EditRangeEndElementBox && inline.editRangeEnd === inline.nextNode)
+                || (inline.previousNode instanceof EditRangeStartElementBox
+                    && inline.editRangeStart === inline.previousNode)) {
+                return;
+            }
+            if (inline instanceof EditRangeEndElementBox) {
+                inline = inline.previousNode;
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, inline.length);
+            }
+            if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
+                && inline.previousNode instanceof EditRangeStartElementBox) {
+                let start = inline.previousNode;
+                let end = inline.nextNode;
+                selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
+                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
+                this.removeWholeElement(selection);
+                return;
+            }
+        }
         if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 1
             || inline.previousNode instanceof BookmarkElementBox)) {
             if (inline instanceof BookmarkElementBox) {
@@ -49392,12 +49720,7 @@ class Editor {
                 let end = inline.nextNode;
                 selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
-                this.initHistory('BackSpace');
-                this.deleteSelectedContents(selection, true);
-                if (this.checkEndPosition(selection)) {
-                    this.updateHistoryPosition(selection.end, false);
-                }
-                this.reLayout(selection);
+                this.removeWholeElement(selection);
                 return;
             }
         }
@@ -49535,6 +49858,7 @@ class Editor {
      * @private
      */
     onDelete() {
+        this.removeEditRange = true;
         let selection = this.viewer.selection;
         if (selection.isEmpty) {
             this.singleDelete(selection, false);
@@ -49562,6 +49886,15 @@ class Editor {
             //     this.updateComplexWithoutHistory();
             // }
         }
+        this.removeEditRange = false;
+    }
+    deleteEditElement(selection) {
+        this.initHistory('Delete');
+        this.deleteSelectedContentInternal(selection, false, selection.start, selection.end);
+        let textPosition = new TextPosition(selection.owner);
+        this.setPositionForCurrentIndex(textPosition, selection.editPosition);
+        selection.selectContent(textPosition, true);
+        this.reLayout(selection);
     }
     /**
      * Remove single character on right of cursor position
@@ -49610,6 +49943,27 @@ class Editor {
                 }
             }
         }
+        if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
+            if ((inline.nextNode instanceof EditRangeEndElementBox && inline.editRangeEnd === inline.nextNode)
+                || (inline.previousNode instanceof EditRangeStartElementBox
+                    && inline.editRangeStart === inline.previousNode)) {
+                return;
+            }
+            if (inline instanceof EditRangeStartElementBox) {
+                inline = inline.nextNode;
+                offset = inline.line.getOffset(inline, 0);
+                paragraph = inline.line.paragraph;
+            }
+            if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
+                && inline.previousNode instanceof EditRangeStartElementBox) {
+                let editStart = inline.previousNode;
+                let editEnd = inline.nextNode;
+                selection.start.setPositionParagraph(editStart.line, editStart.line.getOffset(editStart, 0));
+                selection.end.setPositionParagraph(editEnd.line, editEnd.line.getOffset(editEnd, 0) + 1);
+                this.deleteEditElement(selection);
+                return;
+            }
+        }
         if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 0
             || inline.nextNode instanceof BookmarkElementBox)) {
             if (inline instanceof BookmarkElementBox) {
@@ -49623,12 +49977,7 @@ class Editor {
                 let bookMarkEnd = inline.nextNode;
                 selection.start.setPositionParagraph(bookMarkBegin.line, bookMarkBegin.line.getOffset(bookMarkBegin, 0));
                 selection.end.setPositionParagraph(bookMarkEnd.line, bookMarkEnd.line.getOffset(bookMarkEnd, 0) + 1);
-                this.initHistory('Delete');
-                this.deleteSelectedContentInternal(selection, false, selection.start, selection.end);
-                let textPosition = new TextPosition(selection.owner);
-                this.setPositionForCurrentIndex(textPosition, selection.editPosition);
-                selection.selectContent(textPosition, true);
-                this.reLayout(selection);
+                this.deleteEditElement(selection);
                 return;
             }
         }
@@ -55183,10 +55532,17 @@ class EditorHistory {
     get redoStack() { return this.redoStackIn; }
     /**
      * Gets or Sets the limit of undo operations can be done.
+     * @aspType int
+     * @blazorType int
      */
     get undoLimit() {
         return isNullOrUndefined(this.undoLimitIn) ? 0 : this.undoLimitIn;
     }
+    /**
+     * Sets the limit of undo operations can be done.
+     * @aspType int
+     * @blazorType int
+     */
     set undoLimit(value) {
         if (value < 0) {
             throw new Error('The limit should be greater than or equal to zero.');
@@ -55195,14 +55551,16 @@ class EditorHistory {
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     get redoLimit() {
         return isNullOrUndefined(this.redoLimitIn) ? 0 : this.redoLimitIn;
     }
     /**
      * Gets or Sets the limit of redo operations can be done.
-     * @asptype int
+     * @aspType int
+     * @blazorType int
      */
     set redoLimit(value) {
         if (value < 0) {
@@ -56506,7 +56864,7 @@ class WordExport {
     // Serialize Document Protection
     //<w:permStart w:id="627587516" w:edGrp="everyone" />
     serializeEditRange(writer, editElement) {
-        if (editElement.hasOwnProperty('editRangeStart')) {
+        if (editElement.hasOwnProperty('editableRangeStart')) {
             writer.writeStartElement('w', 'permEnd', this.wNamespace);
         }
         else {
@@ -60853,7 +61211,7 @@ class SfdtExport {
             inline.editRangeId = element.editRangeId.toString();
         }
         else if (element instanceof EditRangeEndElementBox) {
-            inline.editRangeStart = {
+            inline.editableRangeStart = {
                 'user': element.editRangeStart.user,
                 'group': element.editRangeStart.group,
                 'columnFirst': element.editRangeStart.columnFirst,
@@ -61316,6 +61674,11 @@ class SfdtExport {
         rowFormat.gridAfter = wRowFormat.gridAfter;
         rowFormat.gridAfterWidth = wRowFormat.gridAfterWidth;
         rowFormat.gridAfterWidthType = wRowFormat.gridAfterWidthType;
+        rowFormat.leftMargin = wRowFormat.leftMargin;
+        rowFormat.topMargin = wRowFormat.topMargin;
+        rowFormat.rightMargin = wRowFormat.rightMargin;
+        rowFormat.bottomMargin = wRowFormat.bottomMargin;
+        rowFormat.leftIndent = wRowFormat.leftIndent;
         return rowFormat;
     }
     writeTableFormat(wTableFormat) {
@@ -63762,7 +64125,11 @@ class ParagraphDialog {
         let spacingDiv = createElement('div', { id: 'spacing_div' });
         let leftSpacingDiv = createElement('div', { id: 'left_spacing', styles: 'float:left;position:relative;' });
         spacingDiv.appendChild(leftSpacingDiv);
-        let contextSpacingDiv = createElement('div', { id: 'context_spacing', styles: 'float:left;position:relative;' });
+        let contextSpacingStyles = 'float:left';
+        if (isRtl) {
+            contextSpacingStyles = 'float:right;';
+        }
+        let contextSpacingDiv = createElement('div', { id: 'context_spacing', styles: contextSpacingStyles + 'position:relative;' });
         spacingDiv.appendChild(contextSpacingDiv);
         // tslint:disable-next-line:max-line-length
         let rightSpacingDiv = createElement('div', { styles: 'display:inline-flex;' });
@@ -63889,6 +64256,10 @@ class ParagraphDialog {
         });
         this.contextSpacing.appendTo(contextInputEle);
         this.target.addEventListener('keyup', instance.keyUpParagraphSettings);
+        if (isRtl) {
+            afterSpacingWholeDiv.classList.add('e-de-rtl');
+            lineTypeDiv.classList.add('e-de-rtl');
+        }
     }
     changeAlignmentByBidi() {
         if (this.textAlignment === 'Left') {
@@ -69720,12 +70091,14 @@ class Toolbar$1 {
         let buttonElement = createElement('button', { attrs: { type: 'button' } });
         propertiesPaneDiv.appendChild(buttonElement);
         let cssClassName = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
+        let iconCss = 'e-icons e-de-ctnr-showhide';
         if (this.container.enableRtl) {
             cssClassName += '-rtl';
+            iconCss = 'e-icons e-de-ctnr-showhide e-de-flip';
         }
         this.propertiesPaneButton = new Button({
             cssClass: cssClassName,
-            iconCss: 'e-icons e-de-ctnr-showhide'
+            iconCss: iconCss
         });
         this.propertiesPaneButton.appendTo(buttonElement);
         EventHandler.add(buttonElement, 'click', this.showHidePropertiesPane, this);
@@ -70563,7 +70936,7 @@ class Text {
             showClearButton: false,
             enableRtl: this.isRtl
         });
-        this.fontSize.focus = () => { this.isRetrieving = false; };
+        this.fontSize.focus = () => { this.isRetrieving = false; this.fontSize.element.select(); };
         this.fontSize.value = this.documentEditor.selection.characterFormat.fontSize.toString();
         this.fontSize.appendTo(fontSelectElement);
         this.fontSize.element.parentElement.setAttribute('title', this.localObj.getConstant('Font Size'));
@@ -70586,7 +70959,8 @@ class Text {
             showClearButton: false,
             enableRtl: this.isRtl
         });
-        this.fontFamily.focus = () => { this.isRetrieving = false; };
+        this.fontFamily.isStringTemplate = true;
+        this.fontFamily.focus = () => { this.isRetrieving = false; this.fontFamily.element.select(); };
         this.fontFamily.appendTo(fontSelectElement);
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
     }
@@ -71102,16 +71476,20 @@ class Paragraph {
         this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align right (Ctrl+R)'));
         // tslint:disable-next-line:max-line-length
         this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify (Ctrl+J)'));
+        let increaseIndentIconCss = 'e-de-ctnr-increaseindent e-icons';
+        let decreaseIndentIconCss = 'e-de-ctnr-decreaseindent e-icons';
         let incDecIndentDiv = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
         indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
             indentClassName = 'e-rtl ' + indentClassName;
+            increaseIndentIconCss += ' e-de-flip';
+            decreaseIndentIconCss += ' e-de-flip';
         }
         incDecIndentDiv.className = indentClassName;
         // tslint:disable-next-line:max-line-length
-        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', 'e-de-ctnr-decreaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
+        this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', decreaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
         // tslint:disable-next-line:max-line-length
-        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', 'e-de-ctnr-increaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
+        this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', increaseIndentIconCss, incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
         let listDiv = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
         classList(listDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
         if (isRtl) {
@@ -71126,8 +71504,14 @@ class Paragraph {
         listDropDown.appendChild(bulletButton);
         let numberingList = createElement('button', { id: element + '_numberingList', attrs: { type: 'button' } });
         listDropDown.appendChild(numberingList);
-        this.createBulletListDropButton('e-de-ctnr-bullets e-icons', bulletButton);
-        this.createNumberListDropButton('e-de-ctnr-numbering e-icons', numberingList);
+        let bulletIconCss = 'e-de-ctnr-bullets e-icons';
+        let numberIconCss = 'e-de-ctnr-numbering e-icons';
+        if (isRtl) {
+            bulletIconCss += ' e-de-flip';
+            numberIconCss += ' e-de-flip';
+        }
+        this.createBulletListDropButton(bulletIconCss, bulletButton);
+        this.createNumberListDropButton(numberIconCss, numberingList);
     }
     createSeperator(parentDiv) {
         let seperator = createElement('div', { className: 'e-de-prop-vline' });
@@ -71295,10 +71679,9 @@ class Paragraph {
             className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
         });
         ulTag.appendChild(liTag);
-        let innerHTML = '<div class="e-de-list-items-size"><span class="e-de-bullets e-de-list-items-size"' +
-            'style="display:table-cell; text-align: center; vertical-align:middle">None</span></div>';
+        let innerHTML = '<div><span class="e-de-bullets">None</span></div>';
         let liInnerDiv = createElement('div', {
-            className: 'e-de-list-header-presetmenu e-de-list-items-size', styles: 'position:relative;left:11px;top:13px',
+            className: 'e-de-list-header-presetmenu', styles: 'position:relative;left:11px;top:13px',
             id: 'ui-zlist0', innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
@@ -71332,6 +71715,7 @@ class Paragraph {
             itemTemplate: '<span style="${Style}">${StyleName}</span>',
             footerTemplate: '<span class="e-de-ctnr-dropdown-ftr">' + this.localObj.getConstant('Manage Styles') + '</span>'
         });
+        this.style.isStringTemplate = true;
         this.style.appendTo(selectElement);
         selectElement.parentElement.setAttribute('title', this.localObj.getConstant('Styles'));
     }
@@ -72376,7 +72760,9 @@ class TableProperties {
             this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
             // tslint:disable-next-line:max-line-length
             let items = [{ header: { text: this.localObj.getConstant('Table') }, content: this.tableProperties }, { header: { text: this.localObj.getConstant('Text') }, content: this.tableTextProperties.element }];
-            this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection }, this.element);
+            this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection });
+            this.propertiesTab.isStringTemplate = true;
+            this.propertiesTab.appendTo(this.element);
             this.parentElement.appendChild(this.element);
             this.container.propertiesPaneContainer.appendChild(this.parentElement);
         };
@@ -73406,7 +73792,8 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
     }
     /**
      * Gets DocumentEditor instance.
-     * @asptype DocumentEditor
+     * @aspType DocumentEditor
+     * @blazorType DocumentEditor
      */
     get documentEditor() {
         return this.documentEditorInternal;

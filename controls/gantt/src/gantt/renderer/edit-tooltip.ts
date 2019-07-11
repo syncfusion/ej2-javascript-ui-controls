@@ -1,10 +1,10 @@
-import { TemplateName } from './../base/enum';
 import { Gantt } from '../base/gantt';
 import { Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { BeforeTooltipRenderEventArgs, ITaskData } from '../base/interface';
 import { TaskbarEdit } from '../actions/taskbar-edit';
 import * as cls from '../base/css-constants';
+import { TemplateName } from '../base/enum';
 /**
  * File for handling taskbar editing tooltip in Gantt. 
  */
@@ -33,11 +33,9 @@ export class EditTooltip {
                 mouseTrail: mouseTrail,
                 cssClass: cls.ganttTooltip,
                 target: target ? target : null,
-                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
-                created: this.toolTipObjCreated.bind(this)
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } }
             }
         );
-
         this.toolTipObj.beforeRender = (args: TooltipEventArgs) => {
             let argsData: BeforeTooltipRenderEventArgs = {
                 data: this.taskbarEdit.taskBarEditRecord,
@@ -46,11 +44,8 @@ export class EditTooltip {
             };
             this.parent.trigger('beforeTooltipRender', argsData);
         };
+        this.toolTipObj.isStringTemplate = true;
         this.toolTipObj.appendTo(this.parent.chartPane);
-    }
-
-    private toolTipObjCreated(): void {
-        this.parent.tooltipModule.updateBlazorTooltipTemplate(true, TemplateName.EditingTooltip);
     }
 
     /**
@@ -120,7 +115,6 @@ export class EditTooltip {
         let instance: Internationalization = this.parent.globalize;
         let editRecord: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties;
         if (this.parent.tooltipSettings.editing) {
-            this.parent.tooltipModule.updateBlazorTooltipTemplate(false, TemplateName.EditingTooltip);
             let templateNode: NodeList = this.parent.tooltipModule.templateCompiler(
                 this.parent.tooltipSettings.editing, this.parent, editRecord, TemplateName.EditingTooltip);
             tooltipString = (templateNode[0] as HTMLElement);

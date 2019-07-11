@@ -482,10 +482,48 @@ describe('RTE base module', () => {
             expect(actionBegin).toBe(false);
             actionBegin = false;
         });
+        it('Enter key', function () {
+            rteObj.contentModule.getEditPanel().innerHTML = 'datamanager https://www.google.com';
+            let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0];
+            let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, nodetext.textContent.length, nodetext.textContent.length);
+            keyboardEventArgs.action = 'enter';
+            keyboardEventArgs.keyCode = 13;
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(actionBegin).toBe(true);
+            expect(actionComplete).toBe(true);
+            actionBegin = false;
+            actionComplete = false;
+            expect(rteObj.contentModule.getEditPanel().querySelector('a')).not.toBe(null);
+            var node = rteObj.contentModule.getEditPanel().innerHTML = 'data';
+            keyboardEventArgs.action = 'enter';
+            keyboardEventArgs.keyCode = 13;
+            (<any>rteObj.htmlEditorModule).onKeyDown({ args: keyboardEventArgs });
+            expect(actionBegin).toBe(false);
+            actionBegin = false;
+        });
         it('space key', function () {
             rteObj.contentModule.getEditPanel().innerHTML = 'datamanager https://www.google.com';
             let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0];
             let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, nodetext.textContent.length, nodetext.textContent.length);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(actionBegin).toBe(true);
+            expect(actionComplete).toBe(true);
+            actionBegin = false;
+            actionComplete = false;
+            expect(rteObj.contentModule.getEditPanel().querySelector('a')).not.toBe(null);
+            var node = rteObj.contentModule.getEditPanel().innerHTML = 'data';
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (<any>rteObj.htmlEditorModule).onKeyDown({ args: keyboardEventArgs });
+            expect(actionBegin).toBe(false);
+            actionBegin = false;
+        });
+        it('space key with content', function () {
+            rteObj.contentModule.getEditPanel().innerHTML = 'datamanager https://www.google.comlinkis created';
+            let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0];
+            let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, 34, 34);
             keyboardEventArgs.action = 'space';
             keyboardEventArgs.keyCode = 32;
             (<any>rteObj).keyDown(keyboardEventArgs);
@@ -509,8 +547,20 @@ describe('RTE base module', () => {
             keyboardEventArgs.action = 'space';
             keyboardEventArgs.keyCode = 32;
             (<any>rteObj).keyDown(keyboardEventArgs);
-            let expectedElement: string = `datamanager <a class="e-rte-anchor" href="https://www.google.com" title="https://www.google.com" target="">https://www.google.com</a>`;
+            let expectedElement: string = `datamanager <a class="e-rte-anchor" href="https://www.google.com" title="https://www.google.com" target="_blank">https://www.google.com</a>`;
             let expectedString: string = `datamanager https://www.google.com`;
+            expect(rteObj.contentModule.getEditPanel().innerHTML === expectedElement).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().textContent === expectedString).toBe(true);
+        });
+        it('Link Spacing', function () {
+            rteObj.contentModule.getEditPanel().innerHTML = 'datamanager www.google.com';
+            let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0];
+            let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, nodetext.textContent.length, nodetext.textContent.length);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            let expectedElement: string = `datamanager <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a>`;
+            let expectedString: string = `datamanager www.google.com`;
             expect(rteObj.contentModule.getEditPanel().innerHTML === expectedElement).toBe(true);
             expect(rteObj.contentModule.getEditPanel().textContent === expectedString).toBe(true);
         });
@@ -536,11 +586,21 @@ describe('RTE base module', () => {
     describe('RTE Events', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
+        let actionBeginTiggered: boolean = false;
+        let actionCompleteTiggered: boolean = false;
         let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
         beforeAll(() => {
             rteObj = renderRTE({
-                value: ''
+                value: '',
+                actionBegin: onActionBeginfun,
+                actionComplete: onActionCompletefun
             });
+            function onActionBeginfun(): void {
+                actionBeginTiggered = true; 
+            }
+            function onActionCompletefun(): void {
+                actionCompleteTiggered = true; 
+            }
             elem = rteObj.element;
         });
 
@@ -605,6 +665,23 @@ describe('RTE base module', () => {
             (rteObj as any).keyUp(keyBoardEvent);
             expect(rteObj.contentModule.getEditPanel().innerHTML === '<p><br></p>').toBe(true);
             expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+        });
+
+        it('delete key press while <p> with text content and image elemnt in editable element - Firefox', () => {
+            let keyBoardEvent: any = { preventDefault: () => { }, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+            rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test</p><img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250"><p>test2</p></div>`;
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            let selectNode: Element = editNode.querySelector('.actiondiv');
+            let curDocument: Document = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, selectNode, 0);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, selectNode.childNodes[0], selectNode.childNodes[2].childNodes[0], 0, 2);
+            keyBoardEvent.which = 46;
+            keyBoardEvent.action = 'delete';
+            keyBoardEvent.type = 'keydown';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(actionBeginTiggered).toBe(true);
+            expect(actionCompleteTiggered).toBe(true);
         });
 
         afterAll(() => {

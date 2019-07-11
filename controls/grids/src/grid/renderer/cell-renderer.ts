@@ -55,8 +55,9 @@ export class CellRenderer implements ICellRenderer<Column> {
             let literals: string[] = ['index'];
             let dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData });
             let templateID: string = this.parent.element.id + cell.column.uid;
+            let str: string = 'isStringTemplate';
             result = cell.column.getColumnTemplate()(
-                extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID);
+                extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });
             result = null;

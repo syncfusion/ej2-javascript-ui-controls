@@ -64,6 +64,7 @@ export class CrudAction extends ChildProperty<CrudAction> {
     /**
      * Add custom fields to node
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -130,6 +131,7 @@ export class ConnectionDataSource extends ChildProperty<ConnectionDataSource> {
     /**
      * Add CrudAction to connector data source
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<CrudActionModel>({}, CrudAction)
@@ -180,6 +182,7 @@ export class DataSource extends ChildProperty<DataSource> {
     /**
      * Binds the custom data with node model
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -189,6 +192,7 @@ export class DataSource extends ChildProperty<DataSource> {
     /**
      * Add CrudAction to data source
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<CrudActionModel>({}, CrudAction)
@@ -197,6 +201,7 @@ export class DataSource extends ChildProperty<DataSource> {
     /**
      * define connectorDataSource collection
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<ConnectionDataSourceModel>({}, ConnectionDataSource)

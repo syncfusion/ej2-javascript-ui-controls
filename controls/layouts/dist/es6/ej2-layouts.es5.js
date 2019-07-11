@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, resetBlazorTemplate, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -468,11 +468,11 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.getPrevPane = function (currentBar, order) {
         var elementIndex = (order - 1) / (2);
-        return currentBar.parentElement.children[elementIndex];
+        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
     };
     Splitter.prototype.getNextPane = function (currentBar, order) {
         var elementIndex = ((order - 1) / 2) + 1;
-        return currentBar.parentElement.children[elementIndex];
+        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
     };
     Splitter.prototype.addResizeHandler = function (currentBar) {
         var resizeHanlder = this.createElement('div');
@@ -1318,15 +1318,20 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     // tslint:disable-next-line
     Splitter.prototype.templateCompile = function (ele, cnt) {
+        var blazorContain = Object.keys(window);
         var tempEle = this.createElement('div');
         this.compileElement(tempEle, cnt, 'content');
         if (tempEle.childNodes.length !== 0) {
             [].slice.call(tempEle.childNodes).forEach(function (childEle) {
                 ele.appendChild(childEle);
             });
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && cnt.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + 'content' + this.allPanes.length.toString(), 'ContentTemplate', this.paneSettings[this.allPanes.length - 1]);
+            }
         }
     };
     Splitter.prototype.compileElement = function (ele, val, prop) {
+        var blazorContain = Object.keys(window);
         if (typeof (val) === 'string') {
             val = (val).trim();
         }
@@ -1339,7 +1344,12 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
         var templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            templateFUN = templateFn({}, this, prop);
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
+                templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), this.isStringTemplate);
+            }
+            else {
+                templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), true);
+            }
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach(function (el) {
@@ -1769,7 +1779,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     this.panelPropertyChange(this.panels[i], { col: colValue < 0 ? 0 : colValue });
                 }
                 this.setXYAttributes(panelElement, this.panels[i]);
-                var panel_1 = this.renderPanels(panelElement, this.panels[i]);
+                var panel_1 = this.renderPanels(panelElement, this.panels[i], this.panels[i].id, false);
                 this.panelCollection.push(panel_1);
                 this.setHeightAndWidth(panelElement, this.panels[i]);
                 this.tempObject = this;
@@ -1880,17 +1890,16 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         return undefined;
     };
-    DashboardLayout.prototype.renderTemplate = function (content, appendElement, type) {
+    DashboardLayout.prototype.renderTemplate = function (content, appendElement, type, isStringTemplate) {
         var templateFn = this.templateParser(content);
         var templateElements = [];
-        for (var _i = 0, _a = templateFn({}, null, null, this.element.id + type); _i < _a.length; _i++) {
+        for (var _i = 0, _a = templateFn({}, null, null, type, isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             templateElements.push(item);
         }
         append([].slice.call(templateElements), appendElement);
     };
-    DashboardLayout.prototype.renderPanels = function (cellElement, panelModel) {
-        var _this = this;
+    DashboardLayout.prototype.renderPanels = function (cellElement, panelModel, panelId, isStringTemplate) {
         addClass([cellElement], [panel, panelTransition]);
         this.panelContent = cellElement.querySelector('.e-panel-container') ?
             cellElement.querySelector('.e-panel-container') :
@@ -1904,9 +1913,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 cellElement.querySelector('.e-panel-header') : this.createSubElement('', cellElement.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             if (!cellElement.querySelector('.e-panel-header')) {
-                this.renderTemplate(panelModel.header, headerTemplateElement, 'header');
+                var id = this.element.id + 'HeaderTemplate' + panelId;
+                this.renderTemplate(panelModel.header, headerTemplateElement, id, isStringTemplate);
                 this.panelContent.appendChild(headerTemplateElement);
-                setTimeout(function () { updateBlazorTemplate(_this.element.id + 'header', 'Header'); }, 0);
+                updateBlazorTemplate(id, 'HeaderTemplate', panelModel);
             }
         }
         if (panelModel.content) {
@@ -1917,9 +1927,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             var contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
             setStyleAttribute(this.panelBody, { height: contentHeightValue });
             if (!cellElement.querySelector('.e-panel-content')) {
-                this.renderTemplate(panelModel.content, this.panelBody, 'content');
+                var id = this.element.id + 'ContentTemplate' + panelId;
+                this.renderTemplate(panelModel.content, this.panelBody, id, isStringTemplate);
                 this.panelContent.appendChild(this.panelBody);
-                setTimeout(function () { updateBlazorTemplate(_this.element.id + 'content', 'content'); }, 0);
+                updateBlazorTemplate(id, 'ContentTemplate', panelModel);
             }
         }
         return cellElement;
@@ -2475,7 +2486,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         setStyleAttribute(panelElement, { 'height': formatUnit(this.setXYDimensions(panelModel)[0]) });
         setStyleAttribute(panelElement, { 'width': formatUnit(this.setXYDimensions(panelModel)[1]) });
     };
-    DashboardLayout.prototype.renderCell = function (panel) {
+    DashboardLayout.prototype.renderCell = function (panel, isStringTemplate) {
         this.dimensions = this.setXYDimensions(panel);
         if (isUndefined(panel.enabled)) {
             panel.enabled = true;
@@ -2483,7 +2494,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         var cellElement = this.createPanelElement(panel.cssClass, panel.id);
         cellElement.style.zIndex = '' + panel.zIndex;
         this.element.appendChild(cellElement);
-        var dashBoardCell = this.renderPanels(cellElement, panel);
+        var dashBoardCell = this.renderPanels(cellElement, panel, panel.id, isStringTemplate);
         this.panelCollection.push(dashBoardCell);
         this.setXYAttributes(cellElement, panel);
         this.setHeightAndWidth(cellElement, panel);
@@ -2560,7 +2571,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 if (this.maxColumnValue < cells[j].col || this.maxColumnValue < (cells[j].col + cells[j].sizeX)) {
                     this.panelPropertyChange(cells[j], { col: this.maxColumnValue - cells[j].sizeX });
                 }
-                var cell = this.renderCell(cells[j]);
+                var cell = this.renderCell(cells[j], false);
                 if (this.enableRtl) {
                     addClass([cell], 'e-rtl');
                 }
@@ -3681,7 +3692,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         if (this.maxColumnValue < panelProp.col || this.maxColumnValue < (panelProp.col + panelProp.sizeX)) {
             this.panelPropertyChange(panelProp, { col: this.maxColumnValue - panelProp.sizeX });
         }
-        var cell = this.renderCell(panelProp);
+        var cell = this.renderCell(panelProp, true);
         this.oldRowCol[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.cloneObject[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.updateOldRowColumn();
@@ -3729,7 +3740,6 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      * Allows to update a panel in the DashboardLayout.
      */
     DashboardLayout.prototype.updatePanel = function (panel) {
-        var _this = this;
         if (!panel.id) {
             return;
         }
@@ -3755,10 +3765,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 cell.querySelector('.e-panel-header') : this.createSubElement('', cell.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             headerTemplateElement.innerHTML = '';
-            this.renderTemplate(panelInstance.header, headerTemplateElement, 'header');
+            var id = this.element.id + 'HeaderTemplate' + panelInstance.id;
+            this.renderTemplate(panelInstance.header, headerTemplateElement, id, true);
             this.panelContent.appendChild(headerTemplateElement);
-            resetBlazorTemplate(this.element.id + 'header', 'Header');
-            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'header', 'Header'); }, 0);
         }
         else {
             if (cell.querySelector('.e-panel-header')) {
@@ -3773,10 +3782,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
             var contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
             setStyleAttribute(this.panelBody, { height: contentHeightValue });
-            this.renderTemplate(panelInstance.content, this.panelBody, 'content');
+            var id = this.element.id + 'ContentTemplate' + panelInstance.id;
+            this.renderTemplate(panelInstance.content, this.panelBody, id, true);
             this.panelContent.appendChild(this.panelBody);
-            resetBlazorTemplate(this.element.id + 'content', 'Content');
-            setTimeout(function () { updateBlazorTemplate(_this.element.id + 'content', 'Content'); }, 0);
         }
         else {
             if (cell.querySelector('.e-panel-content')) {

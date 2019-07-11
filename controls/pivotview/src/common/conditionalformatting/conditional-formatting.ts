@@ -101,6 +101,7 @@ export class ConditionalFormatting {
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
         }
+        this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parentID + 'conditionalformatting');
         this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('conditionalFormating');
     }
@@ -300,6 +301,7 @@ export class ConditionalFormatting {
             popupHeight: '200px', popupWidth: 'auto',
             change: this.measureChange.bind(this, i)
         });
+        this.fieldsDropDown[i].isStringTemplate = true;
         this.fieldsDropDown[i].appendTo('#' + this.parentID + 'measureinput' + i);
         let conditions: { [key: string]: Object }[] = [
             { value: 'LessThan', name: this.parent.localeObj.getConstant('LessThan') },
@@ -318,6 +320,7 @@ export class ConditionalFormatting {
             popupHeight: '200px', popupWidth: 'auto',
             change: this.conditionChange.bind(this, i)
         });
+        this.conditionsDropDown[i].isStringTemplate = true;
         this.conditionsDropDown[i].appendTo('#' + this.parentID + 'conditioninput' + i);
         let fontNames: { [key: string]: Object }[] = [
             { index: 0, name: 'Arial' }, { index: 1, name: 'San Serif' }, { index: 2, name: 'Impact' },
@@ -332,6 +335,7 @@ export class ConditionalFormatting {
             popupWidth: '150px', popupHeight: '200px',
             change: this.fontNameChange.bind(this, i)
         });
+        this.fontNameDropDown[i].isStringTemplate = true;
         this.fontNameDropDown[i].appendTo('#' + this.parentID + 'fontnameinput' + i);
         let fontSize: { [key: string]: Object }[] = [
             { index: 0, name: '9px' }, { index: 1, name: '10px' }, { index: 2, name: '11px' }, { index: 3, name: '12px' },
@@ -343,6 +347,7 @@ export class ConditionalFormatting {
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             change: this.fontSizeChange.bind(this, i)
         });
+        this.fontSizeDropDown[i].isStringTemplate = true;
         this.fontSizeDropDown[i].appendTo('#' + this.parentID + 'fontsizeinput' + i);
     }
 
@@ -389,6 +394,7 @@ export class ConditionalFormatting {
             cssClass: cls.FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
             change: this.fontColorChange.bind(this, i)
         });
+        this.fontColor[i].isStringTemplate = true;
         this.fontColor[i].appendTo('#' + this.parentID + 'fontcolor' + i);
         addClass([this.fontColor[i].element.nextElementSibling.querySelector('.' + cls.SELECTED_COLOR)], cls.ICON);
         value = isNaN(format.style.backgroundColor) ? 'white' : format.style.backgroundColor;
@@ -400,12 +406,14 @@ export class ConditionalFormatting {
             cssClass: cls.FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
             change: this.backColorChange.bind(this, i)
         });
+        this.backgroundColor[i].isStringTemplate = true;
         this.backgroundColor[i].appendTo('#' + this.parentID + 'backgroundcolor' + i);
         addClass([this.backgroundColor[i].element.nextElementSibling.querySelector('.e-selected-color')], cls.ICON);
         let toggleBtn: Button = new Button({
             iconCss: cls.ICON + ' ' + cls.FORMAT_DELETE_ICON,
             cssClass: cls.FLAT
         });
+        toggleBtn.isStringTemplate = true;
         toggleBtn.appendTo('#' + this.parentID + 'removeButton' + i);
         toggleBtn.element.onclick = this.toggleButtonClick.bind(this, i);
     }

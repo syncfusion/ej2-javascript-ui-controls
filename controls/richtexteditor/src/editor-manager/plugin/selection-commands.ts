@@ -6,7 +6,7 @@ import { NodeCutter } from './nodecutter';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 
 export class SelectionCommands {
     public static applyFormat(docElement: Document, format: string, endNode: Node, value?: string, selector?: string): void {
@@ -28,7 +28,8 @@ export class SelectionCommands {
                     isCollapsed = true;
                     range = nodeCutter.GetCursorRange(docElement, range, nodes[0]);
                 } else if (range.startContainer.nodeName.toLowerCase() !== 'td') {
-                    let cursorNode: Node = this.insertCursorNode(domSelection, range, isFormatted, nodeCutter, format, value, endNode);
+                    let cursorNode: Node = this.insertCursorNode(
+                        docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode);
                     domSelection.endContainer = domSelection.startContainer = domSelection.getNodeArray(
                         cursorNode,
                         true);
@@ -56,6 +57,7 @@ export class SelectionCommands {
                         domSelection);
                 } else {
                     nodes[index] = this.insertFormat(
+                        docElement,
                         nodes,
                         index,
                         formatNode,
@@ -75,6 +77,7 @@ export class SelectionCommands {
     }
 
     private static insertCursorNode(
+        docElement: Document,
         domSelection: NodeSelection,
         range: Range,
         isFormatted: IsFormatted,
@@ -89,7 +92,7 @@ export class SelectionCommands {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
         } else {
-            cursorNode = this.getInsertNode(range, format, value).firstChild;
+            cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
         }
         return cursorNode;
     }
@@ -150,11 +153,24 @@ export class SelectionCommands {
             for (let num: number = 0; num < child.length; num++) {
                 child[num] = InsertMethods.Wrap(child[num] as HTMLElement, this.GetFormatNode(format, value));
             }
+            if (format === 'fontsize') {
+                let liElement: HTMLElement = nodes[index].parentElement;
+                let parentElement: HTMLElement = nodes[index].parentElement;
+                while (!isNullOrUndefined(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                    parentElement = parentElement.parentElement;
+                    liElement = parentElement;
+                }
+                if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                    liElement.textContent === nodes[index].textContent) {
+                    liElement.style.fontSize = value;
+                }
+            }
         }
         return nodes[index];
     }
 
     private static insertFormat(
+        docElement: Document,
         nodes: Node[],
         index: number,
         formatNode: Node,
@@ -184,9 +200,8 @@ export class SelectionCommands {
                         if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                             liElement.textContent === nodes[index].textContent) {
                             liElement.style.fontSize = value;
-                        } else {
-                            nodes[index] = this.applyStyles(nodes, index, element);
                         }
+                        nodes[index] = this.applyStyles(nodes, index, element);
                     } else {
                         nodes[index] = this.applyStyles(nodes, index, element);
                     }
@@ -196,7 +211,7 @@ export class SelectionCommands {
             }
         } else {
             if (format !== 'uppercase' && format !== 'lowercase') {
-                let element: HTMLElement = this.getInsertNode(range, format, value);
+                let element: HTMLElement = this.getInsertNode(docElement, range, format, value);
                 nodes[index] = element.firstChild;
                 nodeCutter.position = 1;
             } else {
@@ -212,10 +227,16 @@ export class SelectionCommands {
         return nodes[index];
     }
 
-    private static getInsertNode(range: Range, format: string, value: string): HTMLElement {
+    private static getInsertNode(docElement: Document, range: Range, format: string, value: string): HTMLElement {
         let element: HTMLElement = this.GetFormatNode(format, value);
         element.innerHTML = '&#65279;&#65279;';
-        range.insertNode(element);
+        if (Browser.isIE) {
+            let frag: DocumentFragment = docElement.createDocumentFragment();
+            frag.appendChild(element);
+            range.insertNode(frag);
+        } else {
+            range.insertNode(element);
+        }
         return element;
     }
 

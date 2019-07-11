@@ -65,6 +65,7 @@ export class HeaderRenderer {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale
         });
+        this.toolbarObj.isStringTemplate = true;
         this.toolbarObj.appendTo(this.parent.element.querySelector('.' + cls.HEADER_TOOLBAR) as HTMLElement);
         let prevNavEle: HTMLElement = this.toolbarObj.element.querySelector('.e-prev') as HTMLElement;
         if (prevNavEle) {
@@ -262,6 +263,7 @@ export class HeaderRenderer {
             position: { X: 'left', Y: 'bottom' },
             enableRtl: this.parent.enableRtl
         });
+        this.headerPopup.isStringTemplate = true;
         let calendarView: CalendarView = this.getCalendarView();
         this.headerCalendar = new Calendar({
             value: this.parent.selectedDate,
@@ -273,6 +275,7 @@ export class HeaderRenderer {
             calendarMode: this.parent.calendarMode,
             change: this.calendarChange.bind(this)
         });
+        this.headerCalendar.isStringTemplate = true;
         this.headerCalendar.appendTo(headerCalendarEle);
         this.headerPopup.hide();
     }

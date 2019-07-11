@@ -78,6 +78,7 @@ export class AggregateMenu {
         });
         this.parent.element.appendChild(contextMenu);
         this.menuInfo = new Menu(menuOptions);
+        this.menuInfo.isStringTemplate = true;
         this.menuInfo.appendTo(contextMenu);
     }
     private beforeMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
@@ -120,6 +121,7 @@ export class AggregateMenu {
             overlayClick: () => { this.removeDialog(); },
             close: this.removeDialog.bind(this)
         });
+        this.valueDialog.isStringTemplate = true;
         this.valueDialog.appendTo(valueDialog);
         this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
     }
@@ -236,6 +238,7 @@ export class AggregateMenu {
                 }
             }
         });
+        optionWrapper1.isStringTemplate = true;
         optionWrapper1.appendTo(dropOptionDiv1);
         let optionWrapper2: DropDownList = new DropDownList({
             dataSource: fieldDataSource, enableRtl: this.parent.enableRtl,
@@ -252,6 +255,7 @@ export class AggregateMenu {
                 optionWrapper3.dataBind();
             }
         });
+        optionWrapper2.isStringTemplate = true;
         optionWrapper2.appendTo(dropOptionDiv2);
         let optionWrapper3: DropDownList = new DropDownList({
             dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl,
@@ -262,6 +266,7 @@ export class AggregateMenu {
             enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
             cssClass: cls.FILTER_OPERATOR_CLASS, width: '100%',
         });
+        optionWrapper3.isStringTemplate = true;
         optionWrapper3.appendTo(dropOptionDiv3);
 
         let inputObj1: MaskedTextBox = new MaskedTextBox({
@@ -270,6 +275,7 @@ export class AggregateMenu {
             enableRtl: this.parent.enableRtl,
             value: fieldCaption, width: '100%'
         });
+        inputObj1.isStringTemplate = true;
         inputObj1.appendTo(inputField1);
         return mainDiv;
     }

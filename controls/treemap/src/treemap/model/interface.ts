@@ -92,7 +92,7 @@ export interface IDrillStartEventArgs extends ITreeMapEventArgs {
 
 export interface IDrillEndEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the rendering all items.
      */
@@ -101,7 +101,7 @@ export interface IDrillEndEventArgs extends ITreeMapEventArgs {
 
 export interface IItemClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the current item click.
      */
@@ -122,7 +122,7 @@ export interface IItemClickEventArgs extends ITreeMapEventArgs {
 
 export interface IItemMoveEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the current item move.
      */
@@ -135,7 +135,7 @@ export interface IItemMoveEventArgs extends ITreeMapEventArgs {
 
 export interface IClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the mouse event.
      */
@@ -144,7 +144,7 @@ export interface IClickEventArgs extends ITreeMapEventArgs {
 
 export interface IDoubleClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the mouse event.
      */
@@ -153,7 +153,7 @@ export interface IDoubleClickEventArgs extends ITreeMapEventArgs {
 
 export interface IRightClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the mouse event.
      */
@@ -162,7 +162,7 @@ export interface IRightClickEventArgs extends ITreeMapEventArgs {
 
 export interface IMouseMoveEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the mouse event.
      */
@@ -171,7 +171,7 @@ export interface IMouseMoveEventArgs extends ITreeMapEventArgs {
 
 export interface IItemSelectedEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the current item selected.
      */
@@ -184,7 +184,7 @@ export interface IItemSelectedEventArgs extends ITreeMapEventArgs {
 
 export interface IItemHighlightEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
-    treemap: TreeMap;
+    treemap?: TreeMap;
     /**
      * Define the current item highlight.
      */

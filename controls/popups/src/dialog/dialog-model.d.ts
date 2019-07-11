@@ -86,6 +86,7 @@ export interface DialogModel extends ComponentModel{
      * 
      * {% codeBlock src="dialog/content-api/index.html" %}{% endcodeBlock %}
      * @default ''
+     * @blazorType string
      */
     content?: string | HTMLElement;
 
@@ -108,6 +109,7 @@ export interface DialogModel extends ComponentModel{
      * Specifies the value that can be displayed in the dialog's title area that can be configured with plain text or HTML elements.
      * This is optional property and the dialog can be displayed without header, if the header property is null.
      * @default ''
+     * @blazorType string
      */
     header?: string | HTMLElement;
 
@@ -153,6 +155,7 @@ export interface DialogModel extends ComponentModel{
      * Specifies the target element in which to display the dialog.
      * The default value is null, which refers the `document.body` element.
      * @default null
+     * @blazorType string
      */
     target?: HTMLElement | string;
 
@@ -165,6 +168,7 @@ export interface DialogModel extends ComponentModel{
      * > More information on the footer template configuration can be found on this [documentation](../../dialog/template/#footer) section.
      * 
      * @default ''
+     * @blazorType string
      */
     footerTemplate?: HTMLElement | string;
 

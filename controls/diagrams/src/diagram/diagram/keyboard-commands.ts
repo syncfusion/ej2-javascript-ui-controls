@@ -77,7 +77,9 @@ export class KeyGesture extends ChildProperty<KeyGesture> {
      * * The Plus
      * * The Star
      * @aspDefaultValueIgnore
-     * @aspNumberEnum 
+     * @blazorDefaultValueIgnore
+     * @aspNumberEnum
+     * @blazorNumberEnum
      * @default undefined
      */
     @Property()
@@ -90,7 +92,9 @@ export class KeyGesture extends ChildProperty<KeyGesture> {
      * * Alt - alt key
      * * Shift - shift key
      * @aspDefaultValueIgnore
-     * @aspNumberEnum 
+     * @blazorDefaultValueIgnore
+     * @aspNumberEnum
+     * @blazorNumberEnum
      * @default undefined
      */
     @Property()
@@ -112,6 +116,7 @@ export class Command extends ChildProperty<Command> {
     /**
      * Check the command is executable at the moment or not
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -120,6 +125,7 @@ export class Command extends ChildProperty<Command> {
     /**
      * Defines what to be executed when the key combination is recognized
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -208,6 +214,7 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
      * Enables/Disables the context menu items
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -216,6 +223,7 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
      * Shows only the custom context menu items
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -239,6 +247,7 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

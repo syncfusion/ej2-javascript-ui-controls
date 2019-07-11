@@ -124,6 +124,7 @@ export interface ViewsModel {
      *  shade.
      * @default '[1, 2, 3, 4, 5]'
      * @aspType int[]
+     * @blazorType int[]
      */
     workDays?: number[];
 

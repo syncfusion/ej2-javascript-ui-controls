@@ -537,7 +537,7 @@ export function markerAnimate(
             (<HTMLElement>element).style.visibility = '';
             element.removeAttribute('transform');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
 
         }

@@ -149,6 +149,7 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
     /**
      * Defines horizontal offset of the scroller
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public horizontalOffset: number;
@@ -156,6 +157,7 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
     /**
      * Defines vertical offset of the scroller
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public verticalOffset: number;
@@ -169,6 +171,7 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
     /**
      * Allows to read the viewport width of the diagram
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public viewPortWidth: number;
@@ -176,6 +179,7 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
     /**
      * Allows to read the viewport height of the diagram
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public viewPortHeight: number;
@@ -219,6 +223,7 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
     /**
      * Defines the scrollable area of diagram. Applicable, if the scroll limit is “limited”.
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

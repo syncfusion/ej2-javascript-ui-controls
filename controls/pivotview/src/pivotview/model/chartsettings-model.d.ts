@@ -92,6 +92,7 @@ export interface PivotChartSeriesMarkerSettingsModel {
      * * Pentagon
      * * InvertedTriangle
      * * Image
+     * @blazorType PivotChartShape
      * @default 'Circle'
      */
     shape?: ChartShape;
@@ -156,6 +157,7 @@ export interface PivotChartSeriesErrorSettingsModel {
      * * StandardDeviation - Renders a standard deviation type error bar.
      * * StandardError -Renders a standard error type error bar.
      * * Custom -Renders a custom type error bar.
+     * @blazorType PivotChartErrorBarType
      * @default 'Fixed'
      */
     type?: ErrorBarType;
@@ -165,6 +167,7 @@ export interface PivotChartSeriesErrorSettingsModel {
      * * both -  Renders both direction of error bar.
      * * minus - Renders minus direction of error bar.
      * * plus - Renders plus direction error bar.
+     * @blazorType PivotChartErrorBarDirection
      * @default 'Both'
      */
     direction?: ErrorBarDirection;
@@ -174,6 +177,7 @@ export interface PivotChartSeriesErrorSettingsModel {
      * * Vertical -  Renders a vertical error bar.
      * * Horizontal - Renders a horizontal error bar.
      * * Both - Renders both side error bar.
+     * @blazorType PivotChartErrorBarMode
      * @default 'Vertical'
      */
     mode?: ErrorBarMode;
@@ -246,6 +250,7 @@ export interface PivotChartSeriesTrendlineModel {
 
     /**
      * Defines the type of the trendline
+     * @blazorType PivotChartTrendlineTypes
      * @default 'Linear'
      */
     type?: TrendlineTypes;
@@ -294,6 +299,7 @@ export interface PivotChartSeriesTrendlineModel {
      * Defines the intercept of the trendline
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     intercept?: number;
 
@@ -311,6 +317,7 @@ export interface PivotChartSeriesTrendlineModel {
 
     /**
      * Sets the legend shape of the trendline
+     * @blazorType PivotChartLegendShape
      * @default 'SeriesType'
      */
     legendShape?: LegendShape;
@@ -336,6 +343,7 @@ export interface PivotChartSeriesEmptyPointSettingsModel {
 
     /**
      * To customize the mode of empty points.
+     * @blazorType PivotChartEmptyPointMode
      * @default Gap
      */
     mode?: EmptyPointMode | AccEmptyPointMode;
@@ -404,6 +412,7 @@ export interface PivotChartAxisFontModel {
 
     /**
      * text alignment
+     * @blazorType PivotChartAlignment
      * @default 'Center'
      */
     textAlignment?: Alignment;
@@ -421,6 +430,7 @@ export interface PivotChartAxisFontModel {
 
     /**
      * Specifies the chart title text overflow
+     * @blazorType PivotChartTextOverflow
      * @default 'Trim'
      */
     textOverflow?: TextOverflow;
@@ -597,6 +607,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * Start value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     start?: number | Date;
 
@@ -604,6 +615,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * End value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     end?: number | Date;
 
@@ -611,6 +623,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * Size of the strip line, when it starts from the origin.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     size?: number;
 
@@ -624,11 +637,13 @@ export interface PivotChartAxisStripLineSettingsModel {
      * Dash Array of the strip line.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     dashArray?: string;
 
     /**
      * Size type of the strip line
+     * @blazorType PivotChartSizeType
      * @default Auto
      */
     sizeType?: SizeType;
@@ -637,6 +652,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * isRepeat value of the strip line.
      * @default false
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     isRepeat?: boolean;
 
@@ -644,6 +660,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * repeatEvery value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     repeatEvery?: number | Date;
 
@@ -651,6 +668,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * repeatUntil value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     repeatUntil?: number | Date;
 
@@ -658,6 +676,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * isSegmented value of the strip line
      * @default false
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     isSegmented?: boolean;
 
@@ -665,6 +684,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * segmentStart value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     segmentStart?: number | Date;
 
@@ -672,6 +692,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * segmentEnd value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     segmentEnd?: number | Date;
 
@@ -679,6 +700,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * segmentAxisName of the strip line.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     segmentAxisName?: string;
 
@@ -697,6 +719,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * The angle to which the strip line text gets rotated.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     rotation?: number;
 
@@ -705,6 +728,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
+     * @blazorType PivotChartAnchor
      * @default 'Middle'
      */
     horizontalAlignment?: Anchor;
@@ -714,6 +738,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
+     * @blazorType PivotChartAnchor
      * @default 'Middle'
      */
     verticalAlignment?: Anchor;
@@ -727,6 +752,7 @@ export interface PivotChartAxisStripLineSettingsModel {
      * Specifies the order of the strip line. They are,
      * * Behind: Places the strip line behind the series elements.
      * * Over: Places the strip line over the series elements.
+     * @blazorType PivotChartZIndex
      * @default 'Behind'
      */
     zIndex?: ZIndex;
@@ -764,6 +790,7 @@ export interface PivotChartAxisLabelBorderModel {
      * * Without Border
      * * Brace
      * * CurlyBrace
+     * @blazorType PivotChartBorderType
      * @default 'Rectangle'
      */
     type?: BorderType;
@@ -822,6 +849,7 @@ export interface PivotChartSettingsCrosshairSettingsModel {
      * * Both: Shows both vertical and horizontal crosshair lines.
      * * Vertical: Shows the vertical line.
      * * Horizontal: Shows the horizontal line.
+     * @blazorType PivotChartLineType
      * @default Both
      */
     lineType?: LineType;
@@ -880,6 +908,7 @@ export interface PivotChartSettingsLegendSettingsModel {
      * * Bottom: Displays the legend at the bottom of the chart.
      * * Right: Displays the legend at the right of the chart.
      * * Custom: Displays the legend  based on the given x and y values.
+     * @blazorType PivotChartLegendPosition
      * @default 'Auto'
      */
     position?: LegendPosition;
@@ -895,6 +924,7 @@ export interface PivotChartSettingsLegendSettingsModel {
      * * Near: Aligns the legend to the left of the chart.
      * * Center: Aligns the legend to the center of the chart.
      * * Far: Aligns the legend to the right of the chart.
+     * @blazorType PivotChartAlignment
      * @default 'Center'
      */
     alignment?: Alignment;
@@ -973,6 +1003,7 @@ export interface PivotChartSettingsIndexesModel {
      * Specifies the series index
      * @default 0
      * @aspType int
+     * @blazorType int
      */
     series?: number;
 
@@ -980,6 +1011,7 @@ export interface PivotChartSettingsIndexesModel {
      * Specifies the point index
      * @default 0
      * @aspType int
+     * @blazorType int
      */
     point?: number;
 
@@ -1061,6 +1093,7 @@ export interface PivotSeriesModel {
      *  'StackingArea'
      *  'RangeColumn'
      *  'SplineArea'
+     * @blazorType PivotChartDrawType
      * @default 'Line'
      */
     drawType?: ChartDrawType;
@@ -1166,6 +1199,7 @@ export interface PivotSeriesModel {
      * * Diamond
      * * Cross
      * * HorizontalLine
+     * @blazorType PivotChartLegendShape
      * @default 'SeriesType'
      */
 
@@ -1185,6 +1219,7 @@ export interface PivotSeriesModel {
 
     /**
      * Defines type of spline to be rendered.
+     * @blazorType PivotChartSplineType
      * @default 'Natural'
      */
     splineType?: SplineType;
@@ -1205,6 +1240,7 @@ export interface PivotSeriesModel {
      * To render the column series points with particular column width.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     columnWidth?: number;
 
@@ -1237,6 +1273,7 @@ export interface PivotAxisModel {
      * * Rotate90: Rotates the label to 90 degree when it intersects.     
      * * None: Shows all the labels.
      * * Hide: Hides the label when it intersects.
+     * @blazorType PivotChartLabelIntersectAction
      * @default Rotate45
      */
     labelIntersectAction?: LabelIntersectAction;
@@ -1286,6 +1323,7 @@ export interface PivotAxisModel {
      * * Shift: Shifts the edge labels.
      * * None: No action will be performed.
      * * Hide: Edge label will be hidden.     
+     * @blazorType PivotChartEdgeLabelPlacement
      * @default 'None'
      */
     edgeLabelPlacement?: EdgeLabelPlacement;
@@ -1294,6 +1332,7 @@ export interface PivotAxisModel {
      * Specifies the placement of a label for category axis. They are,
      * * onTicks: Renders the label on the ticks.     
      * * betweenTicks: Renders the label between the ticks.
+     * @blazorType PivotChartLabelPlacement
      * @default 'BetweenTicks'
      */
     labelPlacement?: LabelPlacement;
@@ -1302,6 +1341,7 @@ export interface PivotAxisModel {
      * Specifies the placement of a ticks to the axis line. They are,
      * * outside: Renders the ticks outside to the axis line.     
      * * inside: Renders the ticks inside to the axis line.
+     * @blazorType PivotChartAxisPosition
      * @default 'Outside'
      */
     tickPosition?: AxisPosition;
@@ -1322,6 +1362,7 @@ export interface PivotAxisModel {
      * Specifies the placement of a labels to the axis line. They are,
      * * outside: Renders the labels outside to the axis line.     
      * * inside: Renders the labels inside to the axis line.
+     * @blazorType PivotChartAxisPosition
      * @default 'Outside'
      */
     labelPosition?: AxisPosition;
@@ -1360,6 +1401,7 @@ export interface PivotAxisModel {
      * Specifies the interval for an axis.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     interval?: number;
 
@@ -1557,6 +1599,7 @@ export interface PivotZoomSettingsModel {
      *      mode: 'XY'
      *    }
      * ...
+     * @blazorType PivotChartZoomMode
      * @default 'XY'
      */
     mode?: ZoomMode;
@@ -1568,6 +1611,7 @@ export interface PivotZoomSettingsModel {
      * * Pan     
      * * Zoom
      * * Reset
+     * @blazorType List<PivotChartToolbarItems>
      * @default '["Zoom", "ZoomIn", "ZoomOut", "Pan", "Reset"]'
      */
 
@@ -1664,6 +1708,7 @@ export interface ChartSettingsModel {
 
     /**
      * Specifies the theme for the chart.
+     * @blazorType PivotChartTheme
      * @default 'Material'
      */
     theme?: ChartTheme;

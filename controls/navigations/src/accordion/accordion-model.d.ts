@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';import { addClass, isVisible, closest, attributes, classList, detach, select } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate, resetBlazorTemplate  } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';import { isVisible, closest, attributes, detach, select } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
 import {ExpandMode,AccordionClickArgs,ExpandEventArgs} from "./accordion";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -11,6 +11,7 @@ export interface AccordionActionSettingsModel {
    * Specifies the type of animation.
    * @default 'SlideDown'
    * @aspType string
+   * @blazorType string
    */
     effect?: 'None' | Effect;
 

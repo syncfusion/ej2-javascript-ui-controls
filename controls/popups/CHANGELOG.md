@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.34 (2019-07-11)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#F145500`- Resolved the navigation issue while navigating through keyboard in modal dialog.
+
 ## 17.1.50 (2019-06-04)
 
 ### Dialog

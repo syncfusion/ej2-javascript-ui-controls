@@ -13,15 +13,20 @@ import { createDialog } from '../pop-up/dialog';
  * @private
  */
 
-export function updatePath(node: HTMLLIElement, text: string, instance: IFileManager): void {
-    instance.setProperties({ path: getPath(node, text) }, true);
+export function updatePath(node: HTMLLIElement, data: Object, instance: IFileManager): void {
+    let text: string = getValue('name', data);
+    let id: string = node.getAttribute('data-id');
+    let newText: string = isNOU(id) ? text : id;
+    instance.setProperties({ path: getPath(node, newText, instance.hasId) }, true);
     instance.pathId = getPathId(node);
+    instance.pathNames = getPathNames(node, text);
 }
 
-export function getPath(element: Element | Node, text: string): string {
-    let matched: string[] = getParents(<Element>element, text, false);
-    let path: string = '/';
-    for (let i: number = matched.length - 2; i >= 0; i--) {
+export function getPath(element: Element | Node, text: string, hasId: boolean): string {
+    let matched: string[] = getParents(<Element>element, text, false, hasId);
+    let path: string = hasId ? '' : '/';
+    let len: number = matched.length - (hasId ? 1 : 2);
+    for (let i: number = len; i >= 0; i--) {
         path += matched[i] + '/';
     }
     return path;
@@ -36,17 +41,41 @@ export function getPathId(node: Element): string[] {
     return ids;
 }
 
-export function getParents(element: Element, text: string, isId: boolean): string[] {
+export function getPathNames(element: Element, text: string): string[] {
+    let matched: string[] = getParents(element, text, false);
+    let names: string[] = [];
+    for (let i: number = matched.length - 1; i >= 0; i--) {
+        names.push(matched[i]);
+    }
+    return names;
+}
+
+export function getParents(element: Element, text: string, isId: boolean, hasId?: boolean): string[] {
     let matched: string[] = [text];
     let el: Element = <Element>element.parentNode;
     while (!isNOU(el)) {
         if (matches(el, '.' + CLS.LIST_ITEM)) {
-            let parentText: string = isId ? el.getAttribute('data-uid') : select('.' + CLS.LIST_TEXT, el).textContent;
+            let parentText: string = isId ? el.getAttribute('data-uid') : (hasId ? el.getAttribute('data-id') :
+                select('.' + CLS.LIST_TEXT, el).textContent);
             matched.push(parentText);
         }
         el = <Element>el.parentNode;
+        if (el.classList.contains(CLS.TREE_VIEW)) {
+            break;
+        }
     }
     return matched;
+}
+
+export function generatePath(parent: IFileManager): void {
+    let key: string = parent.hasId ? 'id' : 'name';
+    let newPath: string = parent.hasId ? '' : '/';
+    let i: number = parent.hasId ? 0 : 1;
+    for (i; i < parent.pathId.length; i++) {
+        let data: Object = getValue(parent.pathId[i], parent.feParent);
+        newPath += getValue(key, data) + '/';
+    }
+    parent.setProperties({ path: newPath }, true);
 }
 
 export function removeActive(parent: IFileManager): void {
@@ -71,7 +100,7 @@ export function activeElement(action: string, parent: IFileManager): boolean {
     if (parent.activeModule !== 'navigationpane') {
         parent.targetPath = parent.path;
     } else {
-        parent.targetPath = getParentPath(parent);
+        parent.targetPath = getParentPath(parent.path);
     }
     let i: number = 0;
     if (blurEle) {
@@ -201,7 +230,7 @@ export function openAction(parent: IFileManager): void {
 }
 
 export function getPathObject(parent: IFileManager): Object {
-    return getValue(parent.path, parent.feParent);
+    return getValue(parent.pathId[parent.pathId.length - 1], parent.feParent);
 }
 
 // Copy files
@@ -257,14 +286,26 @@ export function getImageUrl(parent: IFileManager, item: Object): string {
     let baseUrl: string = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     let imgUrl: string;
     let fileName: string = getValue('name', item);
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
-        imgUrl = baseUrl + '?path=' + getValue('filterPath', item).replace(/\\/g, '/') + fileName;
+    let fPath: string = getValue('filterPath', item);
+    if (parent.hasId) {
+        let imgId: string = getValue('id', item);
+        imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
+    } else if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNOU(fPath)) {
+        imgUrl = baseUrl + '?path=' + fPath.replace(/\\/g, '/') + fileName;
     } else {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
     }
-    let imgId: string = getValue('id', item);
-    if (!isNOU(imgId)) { imgUrl = imgUrl + '&id=' + imgId; }
     return imgUrl;
+}
+
+export function getFullPath(parent: IFileManager, data: Object, path: string): string {
+    let filePath: string = getValue(parent.hasId ? 'id' : 'name', data) + '/';
+    let fPath: string = getValue(parent.hasId ? 'filterId' : 'filterPath', data);
+    if (!isNOU(fPath)) {
+        return fPath.replace(/\\/g, '/') + filePath;
+    } else {
+        return path + filePath;
+    }
 }
 
 export function getFullName(item: Object): string {
@@ -274,6 +315,16 @@ export function getFullName(item: Object): string {
     return fullName;
 }
 
+export function getName(parent: IFileManager, data: Object): string {
+    let name: string = getValue('name', data);
+    let fPath: string = getValue('filterPath', data);
+    if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNOU(fPath)) {
+        fPath = fPath.replace(/\\/g, '/');
+        name = fPath.replace(parent.path, '') + name;
+    }
+    return name;
+}
+
 export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
     if (items.length === 0) { return items; }
     let query: Query = new Query().sortBy(parent.sortBy, parent.sortOrder.toLowerCase(), true).group('isFile');
@@ -281,9 +332,9 @@ export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
     return getValue('records', lists);
 }
 
-export function getObject(parent: IFileManager, name: string): Object {
-    let currFiles: Object[] = getValue(parent.path, parent.feFiles);
-    let query: Query = new Query().where('name', 'equal', name);
+export function getObject(parent: IFileManager, key: string, value: string): Object {
+    let currFiles: Object[] = getValue(parent.pathId[parent.pathId.length - 1], parent.feFiles);
+    let query: Query = new Query().where(key, 'equal', value);
     let lists: Object[] = new DataManager(currFiles).executeLocal(query);
     return lists[0];
 }
@@ -370,15 +421,16 @@ export function sortbyClickHandler(parent: IFileManager, args: MenuEventArgs): v
     } else {
         parent.sortOrder = <SortOrder>getSortField(args.item.id);
     }
+    parent.itemData = [getPathObject(parent)];
     if (parent.view === 'Details') {
         if (parent.isMobile) {
-            read(parent, events.layoutChange, parent.path);
+            updateLayout(parent, 'Details');
         } else {
-            parent.notify(events.sortColumn, { module: 'gridview' });
+            parent.notify(events.sortColumn, { module: 'detailsview' });
         }
     }
     if (parent.view === 'LargeIcons') {
-        read(parent, events.layoutChange, parent.path);
+        updateLayout(parent, 'LargeIcons');
     }
     parent.notify(events.sortByChange, {});
 }
@@ -403,32 +455,33 @@ export function getSortField(id: string): string {
 export function setNextPath(parent: IFileManager, path: string): void {
     let currfolders: string[] = path.split('/');
     let folders: string[] = parent.originalPath.split('/');
+    let root: Object = getValue(parent.pathId[0], parent.feParent);
+    let key: string = isNOU(getValue('id', root)) ? 'name' : 'id';
     for (let i: number = currfolders.length - 1, len: number = folders.length - 1; i < len; i++) {
         let eventName: string = (folders[i + 1] === '') ? events.finalizeEnd : events.initialEnd;
         let newPath: string = (folders[i] === '') ? '/' : (parent.path + folders[i] + '/');
-        let data: Object = getObject(parent, folders[i]);
+        let data: Object = getObject(parent, key, folders[i]);
         let id: string = getValue('_fm_id', data);
         parent.setProperties({ path: newPath }, true);
         parent.pathId.push(id);
         parent.itemData = [data];
+        parent.pathNames.push(getValue('name', data));
         read(parent, eventName, parent.path);
         break;
     }
 }
 
 export function openSearchFolder(parent: IFileManager, data: Object): void {
-    let fPath: string = getValue('filterPath', data) + getValue('name', data) + '/';
-    fPath = fPath.replace(/\\/g, '/');
     parent.notify(events.clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
-    parent.originalPath = fPath;
+    parent.originalPath = getFullPath(parent, data, parent.path);
     read(parent, (parent.path !== parent.originalPath) ? events.initialEnd : events.finalizeEnd, parent.path);
 }
 
 export function pasteHandler(parent: IFileManager): void {
     parent.isDragDrop = false;
     if (parent.selectedNodes.length !== 0 && parent.enablePaste) {
-        let path: string = parent.path + parent.folderPath;
-        let subFolder: boolean = validateSubFolder(parent, <{ [key: string]: Object; }[]>parent.actionRecords, path);
+        let path: string = (parent.folderPath === '') ? parent.path : parent.folderPath;
+        let subFolder: boolean = validateSubFolder(parent, <{ [key: string]: Object; }[]>parent.actionRecords, path, parent.path);
         if (!subFolder) {
             if ((parent.fileAction === 'move' && parent.targetPath !== path) || parent.fileAction === 'copy') {
                 parent.notify(events.pasteInit, {});
@@ -442,13 +495,12 @@ export function pasteHandler(parent: IFileManager): void {
         }
     }
 }
-export function validateSubFolder(parent: IFileManager, data: { [key: string]: Object; }[], path: string): boolean {
+export function validateSubFolder(parent: IFileManager, data: { [key: string]: Object; }[], dropPath: string, dragPath: string): boolean {
     let subFolder: boolean = false;
     for (let i: number = 0; i < data.length; i++) {
         if (!getValue('isFile', data[i])) {
-            let tempTarget: string = <string>data[i].filterPath + <string>data[i].name + '/';
-            tempTarget = tempTarget.replace(/\\/g, '/');
-            if (path.indexOf(tempTarget) !== -1) {
+            let tempTarget: string = getFullPath(parent, data[i], dragPath);
+            if (dropPath.indexOf(tempTarget) !== -1) {
                 let result: ReadArgs = {
                     files: null,
                     error: {
@@ -470,7 +522,7 @@ export function dropHandler(parent: IFileManager): void {
     if (parent.dragData.length !== 0) {
         parent.dragPath = parent.dragPath.replace(/\\/g, '/');
         parent.dropPath = parent.dropPath.replace(/\\/g, '/');
-        let subFolder: boolean = validateSubFolder(parent, parent.dragData, parent.dropPath);
+        let subFolder: boolean = validateSubFolder(parent, parent.dragData, parent.dropPath, parent.dragPath);
         if (!subFolder && (parent.dragPath !== parent.dropPath)) {
             parent.itemData = [parent.dropData];
             paste(
@@ -480,23 +532,25 @@ export function dropHandler(parent: IFileManager): void {
     }
 }
 
-export function getParentPath(parent: IFileManager): string {
-    let path: string[] = parent.path.split('/');
-    let newPath: string = '/';
-    for (let i: number = 1; i < path.length - 2; i++) {
+export function getParentPath(oldPath: string): string {
+    let path: string[] = oldPath.split('/');
+    let newPath: string = '';
+    for (let i: number = 0; i < path.length - 2; i++) {
         newPath += path[i] + '/';
     }
     return newPath;
 }
 
-export function getDirectoryPath(args: ReadArgs): string {
-    let path: string = getValue('filterPath', args.cwd);
-    let newPath: string = '/';
-    if (path === '') {
-        return newPath;
+export function getDirectoryPath(parent: IFileManager, args: ReadArgs): string {
+    let filePath: string = getValue(parent.hasId ? 'id' : 'name', args.cwd) + '/';
+    let fPath: string = getValue(parent.hasId ? 'filterId' : 'filterPath', args.cwd);
+    if (!isNOU(fPath)) {
+        if (fPath === '') {
+            return parent.hasId ? filePath : '/';
+        }
+        return fPath.replace(/\\/g, '/') + filePath;
     } else {
-        path = path.replace(/\\/g, '/');
-        return (path + getValue('name', args.cwd) + newPath);
+        return parent.path + filePath;
     }
 }
 
@@ -537,15 +591,16 @@ export function doPasteUpdate(parent: IFileManager, operation: string, result: R
     parent.trigger('success', { action: operation, result: result });
 }
 export function readDropPath(parent: IFileManager): void {
-    let obj: Object = getValue(parent.dropPath, parent.feParent);
-    /* istanbul ignore next */
-    if (obj) {
-        parent.expandedId = getValue('_fm_id', obj);
-    }
+    let pathId: string = getValue('_fm_id', parent.dropData);
+    parent.expandedId = pathId;
     parent.itemData = [parent.dropData];
     if (parent.isPathDrag) {
         parent.notify(events.pathDrag, parent.itemData);
     } else {
+        if (parent.navigationpaneModule) {
+            let node: Element = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
+            updatePath(<HTMLLIElement>node, parent.dropData, parent);
+        }
         read(parent, events.dropPath, parent.dropPath);
     }
 }

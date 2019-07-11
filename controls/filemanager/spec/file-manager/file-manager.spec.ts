@@ -589,7 +589,7 @@ describe('FileManager control', () => {
             demo.remove();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
-        fit('page having active class', (done: Function) => {
+        it('page having active class', (done: Function) => {
             feObj = new FileManager({
                 view: 'LargeIcons',
                 ajaxSettings: {

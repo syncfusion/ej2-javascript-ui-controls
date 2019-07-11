@@ -8,6 +8,7 @@ import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
 import { data1, folderRename, dataSortbySize, data4, data5, data6, rename, dataDelete, accessData1, accessDetails1, accessDetails2, accessData5, accessData4, accessData6, accessData7, getMultipleDetails, data5rename } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -1377,6 +1378,68 @@ describe('FileManager control LargeIcons view', () => {
                     done();
                 }, 500);
             }, 500);
+        });
+    });
+    describe('Large icons sorting testing', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        let mouseEventArgs: any, tapEvent: any, count: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            count = 0;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('mouse click on sortby', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                beforeSend: (args: any) => {
+                    if (!isNullOrUndefined(args.ajaxSettings.data)) {
+                        count++;
+                    }
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let items: any = document.getElementById('file_tb_sortby');
+                items.click();
+                let size: any = document.getElementById('file_ddl_size');
+                size.click();
+                expect(count).toBe(2);
+                done();
+            }, 400);
         });
     });
 });

@@ -79,6 +79,8 @@ export class ContextMenu {
 
     private currentContextInfo: ContextElementInfo;
     private noSuggestion: HTMLElement;
+    private spellContextItems: MenuItemModel[] = [];
+    private customItems: MenuItemModel[] = [];
     /**
      * @private
      */
@@ -468,6 +470,9 @@ export class ContextMenu {
     public addCustomMenu(items: MenuItemModel[], isEnable?: boolean, isBottom?: boolean): void {
         let menuItems: MenuItemModel[] = JSON.parse(JSON.stringify(items));
         this.destroy();
+        if (this.spellContextItems.length === 0) {
+            this.customItems = items;
+        }
         for (let index: number = 0; index < menuItems.length; index++) {
             this.customMenuItems.push(menuItems[index]);
             this.customMenuItems[index].id = this.viewer.owner.element.id + this.customMenuItems[index].id;
@@ -511,19 +516,30 @@ export class ContextMenu {
                     this.processSuggestions(allSuggestions, splittedSuggestion, event);
                 }
             } else {
-                this.destroy();
-                this.initContextMenu(this.locale);
+                this.hideSpellContextItems();
                 if (this.showHideElements(this.viewer.selection)) {
                     this.contextMenuInstance.open(event.y, event.x);
                     event.preventDefault();
                 }
             }
         } else {
-            this.destroy();
-            this.initContextMenu(this.locale);
+            this.hideSpellContextItems();
             if (this.showHideElements(this.viewer.selection)) {
                 this.contextMenuInstance.open(event.y, event.x);
                 event.preventDefault();
+            }
+        }
+    }
+    /**
+     * Method to hide spell context items
+     */
+    public hideSpellContextItems(): void {
+        if (this.spellContextItems.length > 0) {
+            for (let i: number = 0; i < this.spellContextItems.length; i++) {
+                let item: HTMLElement = document.getElementById(this.viewer.owner.element.id + this.spellContextItems[i].id);
+                if (!isNullOrUndefined(item)) {
+                    item.style.display = 'none';
+                }
             }
         }
     }
@@ -536,7 +552,8 @@ export class ContextMenu {
      */
     /* tslint:disable:no-any */
     public processSuggestions(allSuggestions: any, splittedSuggestion: string[], event: PointerEvent): void {
-        this.addCustomMenu(this.constructContextmenu(allSuggestions, splittedSuggestion));
+        this.spellContextItems = this.constructContextmenu(allSuggestions, splittedSuggestion);
+        this.addCustomMenu(this.spellContextItems);
         this.noSuggestion = document.getElementById(this.viewer.owner.element.id + CONTEXTMENU_NO_SUGGESTION);
         if (!isNullOrUndefined(this.noSuggestion)) {
             this.noSuggestion.style.display = 'block';
@@ -553,30 +570,30 @@ export class ContextMenu {
      */
     /* tslint:disable:no-any */
     public constructContextmenu(allSuggestion: any[], splittedSuggestion: any): any[] {
-        let contextMenuItems: any[] = [];
+        let contextMenuItems: any[] = this.customItems.length > 0 ? this.customItems.slice() : [];
         // classList(this.noSuggestion,['e-disabled'],[]);
         if (isNullOrUndefined(allSuggestion) || allSuggestion.length === 0) {
             contextMenuItems.push({ text: 'no suggestions', id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
         } else {
             for (let i: number = 0; i < allSuggestion.length; i++) {
-                 // tslint:disable-next-line:max-line-length
+                // tslint:disable-next-line:max-line-length
                 contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
             }
         }
-        contextMenuItems.push({ separator: true });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_seperator' });
         if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
             contextMenuItems.push({ text: 'More Suggestion', items: splittedSuggestion });
-            contextMenuItems.push({ separator: true });
+            contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_seperator' });
         } else {
             // tslint:disable-next-line:max-line-length
             contextMenuItems.push({ text: 'Add To Dictionary ', id: '_contextmenu_otherSuggestions_spellcheck_Add To Dictionary', iconCss: '' });
         }
         contextMenuItems.push({ text: 'Ignore Once', id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
         contextMenuItems.push({ text: 'Ignore All', id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
-        contextMenuItems.push({ separator: true });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_change_seperator' });
         // tslint:disable-next-line:max-line-length
         contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
-        contextMenuItems.push({ separator: true });
+        contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_seperator' });
         return contextMenuItems;
     }
 

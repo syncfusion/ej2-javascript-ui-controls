@@ -48,6 +48,7 @@ export class Toolbar {
             clicked: this.onClicked.bind(this),
             enableRtl: this.parent.enableRtl
         });
+        this.toolbarObj.isStringTemplate = true;
         this.toolbarObj.appendTo('#' + this.parent.element.id + CLS.TOOLBAR_ID);
     }
 
@@ -183,6 +184,7 @@ export class Toolbar {
                 select: sortbyClickHandler.bind(this, this.parent as IFileManager),
                 enableRtl: this.parent.enableRtl, iconCss: CLS.ICON_SHORTBY
             });
+            this.buttonObj.isStringTemplate = true;
             this.buttonObj.appendTo('#' + this.getId('SortBy'));
         }
         if (!isNOU(select('#' + this.getId('View'), this.parent.element))) {
@@ -204,6 +206,7 @@ export class Toolbar {
                 items: layoutItems, select: this.layoutChange.bind(this),
                 enableRtl: this.parent.enableRtl
             });
+            this.layoutBtnObj.isStringTemplate = true;
             this.layoutBtnObj.appendTo('#' + this.getId('View'));
         }
         this.hideItems(this.default, true);

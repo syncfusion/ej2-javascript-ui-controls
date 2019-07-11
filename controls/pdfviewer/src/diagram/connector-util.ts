@@ -1,6 +1,6 @@
 import { PdfAnnotationBaseModel } from './pdf-annotation-model';
 // tslint:disable-next-line:max-line-length
-import { PointModel, PathElement, Rect, DrawingElement, Point, Size, RotateTransform, TextElement, randomId, Matrix, identityMatrix, rotateMatrix, transformPointByMatrix, DecoratorShapes } from '@syncfusion/ej2-drawings';
+import { PointModel, PathElement, Rect, DrawingElement, Point, Size, RotateTransform, TextElement, randomId, Matrix, identityMatrix, rotateMatrix, transformPointByMatrix, DecoratorShapes, Intersection, Segment, intersect3 } from '@syncfusion/ej2-drawings';
 import { setElementStype, findPointsLength, findPerimeterLength } from './drawing-util';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { MeasureAnnotation } from '../pdfviewer';
@@ -310,6 +310,59 @@ export function initLeader(
     element.height = size.height;
     return element;
 }
+/** @private */
+export function isPointOverConnector(connector: PdfAnnotationBaseModel, reference: PointModel): boolean {
+    let vertexPoints: PointModel[] = connector.vertexPoints;
+    for (let i: number = 0; i < vertexPoints.length - 1; i++) {
+        let start: PointModel = vertexPoints[i];
+        let end: PointModel = vertexPoints[i + 1];
+        let rect: Rect = Rect.toBounds([start, end]);
+        rect.Inflate(10);
+        if (rect.containsPoint(reference)) {
+            let intersectinPt: PointModel = findNearestPoint(reference, start, end);
+            let segment1: Segment = { x1: start.x, x2: end.x, y1: start.y, y2: end.y };
+            let segment2: Segment = { x1: reference.x, x2: intersectinPt.x, y1: reference.y, y2: intersectinPt.y };
+            let intersectDetails: Intersection = intersect3(segment1, segment2);
+            if (intersectDetails.enabled) {
+                let distance: number = Point.findLength(reference, intersectDetails.intersectPt);
+                if (Math.abs(distance) < 10) {
+                    return true;
+                }
+            } else {
+                let rect: Rect = Rect.toBounds([reference, reference]);
+                rect.Inflate(3);
+                if (rect.containsPoint(start) || rect.containsPoint(end)) {
+                    return true;
+                }
+            }
+            if (Point.equals(reference, intersectinPt)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/** @private */
+export function findNearestPoint(reference: PointModel, start: PointModel, end: PointModel): PointModel {
+    let shortestPoint: PointModel;
+    let shortest: number = Point.findLength(start, reference);
+    let shortest1: number = Point.findLength(end, reference);
+    if (shortest > shortest1) {
+        shortestPoint = end;
+    } else {
+        shortestPoint = start;
+    }
+    let angleBWStAndEnd: number = Point.findAngle(start, end);
+    let angleBWStAndRef: number = Point.findAngle(shortestPoint, reference);
+    let r: number = Point.findLength(shortestPoint, reference);
+    let vaAngle: number = angleBWStAndRef + ((angleBWStAndEnd - angleBWStAndRef) * 2);
+    return {
+        x: (shortestPoint.x + r * Math.cos(vaAngle * Math.PI / 180)),
+        y: (shortestPoint.y + r * Math.sin(vaAngle * Math.PI / 180))
+    };
+}
+
 /**
  * @hidden
  */

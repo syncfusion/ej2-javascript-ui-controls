@@ -31,6 +31,7 @@ export class SpinSettings extends ChildProperty<SpinSettings> {
      * * Center: The spinner will be positioned at the center of the progress button.
      * @default 'Left'
      * @aspType Syncfusion.EJ2.SplitButtons.SpinPosition
+     * @blazorType Syncfusion.EJ2.SplitButtons.SpinPosition
      * @isEnumeration true
      */
     @Property('Left')
@@ -48,6 +49,7 @@ export class AnimationSettings extends ChildProperty<AnimationSettings> {
      * Specifies the effect of animation.
      * @default 'None'
      * @aspType Syncfusion.EJ2.SplitButtons.AnimationEffect
+     * @blazorType Syncfusion.EJ2.SplitButtons.AnimationEffect
      * @isEnumeration true
      */
     @Property('None')

@@ -3,8 +3,8 @@ import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
 import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption, getElementByID } from '../utils/helper';
 import { MapLocation, RectOption, getTranslate, convertTileLatLongToPoint, checkShapeDataFields, CircleOption } from '../utils/helper';
-import { getZoomTranslate } from '../utils/helper';
-import { LayerSettings, ShapeSettings, Tile } from '../model/base';
+import { getZoomTranslate, getRatioOfBubble } from '../utils/helper';
+import { LayerSettings, ShapeSettings, Tile, BubbleSettings } from '../model/base';
 import { LayerSettingsModel } from '../model/base-model';
 import { BingMap } from './bing-map';
 import { ColorMapping } from './color-mapping';
@@ -204,6 +204,8 @@ export class LayerPanel {
         }
         this.rectBounds = null;
         let shapeSettings: ShapeSettings = <ShapeSettings>this.currentLayer.shapeSettings;
+        let bubbleSettings: BubbleSettings[] = <BubbleSettings[]>this.currentLayer.bubbleSettings;
+
         renderData.forEach((geometryData: Object, index: number) => {
             if (!isNullOrUndefined(geometryData['geometry']) || !isNullOrUndefined(geometryData['coordinates'])) {
                 let type: string = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['type'] : geometryData['type'];
@@ -259,6 +261,7 @@ export class LayerPanel {
                 data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null, maps: this.mapObject,
                 shape: shapeSettings, fill: fill, border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
             };
+             // tslint:disable-next-line:max-func-body-length
             this.mapObject.trigger('shapeRendering', eventArgs, (shapeArgs: IShapeRenderingEventArgs) => {
                 let drawingType: string = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
                 ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
@@ -314,11 +317,43 @@ export class LayerPanel {
                         break;
                     case 'Point':
                         let pointData: Object = <Object>currentShapeData['point'];
-                        circleOptions = new CircleOption(
-                            shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'],
-                            pointData['y'], shapeSettings.circleRadius, null
-                        );
-                        pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
+                        if (fill !== eventArgs.fill) {
+                            eventArgs.fill = eventArgs.fill;
+                        } else {
+                            if (bubbleSettings.length > 0) {
+                                for (let k: number = 0; k < bubbleSettings.length; k++) {
+                                    let bubbleColor: string = bubbleSettings[k].colorValuePath;
+                                    let shapePath: string = <string>this.currentLayer.shapePropertyPath;
+                                    let bubbleData: Object[] = bubbleSettings[k].dataSource; let radius: number;
+                                    let bubbleValue: number | string = bubbleSettings[k].valuePath; let indexValue: number;
+                                    let bubbleFill: string; let range: { min: number, max: number };
+                                    bubbleData.forEach((bubble: Object, index: number) => {
+                                        if (currentShapeData['property'][shapePath] === bubbleData[index][shapePath]) {
+                                            bubbleFill = bubble[bubbleColor];
+                                            indexValue = index;
+                                        }
+                                    });
+                                    if (!isNullOrUndefined(indexValue)) {
+                                        range = { min: 0, max: 0 };
+                                        this.bubbleCalculation(bubbleSettings[k], range);
+                                        radius = getRatioOfBubble(bubbleSettings[k]['minRadius'],
+                                                                  bubbleSettings[k]['maxRadius'],
+                                                                  bubbleData[k][bubbleValue], range.min, range.max);
+                                    }
+                                    if (isNullOrUndefined(bubbleFill) || isNullOrUndefined(radius)) {
+                                        bubbleFill = eventArgs.fill;
+                                        radius = shapeSettings.circleRadius;
+                                    }
+                                    circleOptions = new CircleOption(shapeID, bubbleFill, eventArgs.border, opacity,
+                                                                     pointData['x'], pointData['y'], radius, null);
+                                    pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
+                                }
+                            } else {
+                                circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity,
+                                                                 pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                                pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
+                            }
+                        }
                         break;
                     case 'Path':
                         path = <string>currentShapeData['point'];
@@ -486,14 +521,26 @@ export class LayerPanel {
                 this.currentLayer.layerData.push(newData);
                 break;
             case 'point':
-                latitude = <number>coordinates[1];
-                longitude = <number>coordinates[0];
-                let point: Point = convertGeoToPoint(
-                    latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject
-                );
-                this.currentLayer.layerData.push({
-                    point: point, type: type, lat: latitude, lng: longitude, property: properties
+                let arrayCollections: boolean = false;
+                coordinates.map((points: Object, index: number) => {
+                    if (Object.prototype.toString.call(points) === '[object Array]') {
+                        latitude = points[1];
+                        longitude = points[0];
+                        arrayCollections = true;
+                        let point: Point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
+                        this.currentLayer.layerData.push({
+                            point: point, type: type, lat: latitude, lng: longitude, property: properties
+                        });
+                    }
                 });
+                if (!arrayCollections) {
+                    latitude = <number>coordinates[1];
+                    longitude = <number>coordinates[0];
+                    let point: Point = convertGeoToPoint(latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
+                    this.currentLayer.layerData.push({
+                        point: point, type: type, lat: latitude, lng: longitude, property: properties
+                    });
+                }
                 break;
             case 'path':
                 this.currentLayer.layerData.push({

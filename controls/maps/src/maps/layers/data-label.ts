@@ -5,7 +5,7 @@ import {
     getTranslate, RectOption, convertElementFromLabel, checkPropertyPath,
     Point, TextOption, renderTextElement, MapLocation, textTrim, Size, measureText, Internalize
 } from '../utils/helper';
-import { isNullOrUndefined, extend, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { FontModel, DataLabelSettingsModel, ILabelRenderingEventArgs, LayerSettings } from '../index';
 import { dataLabelRendering } from '../model/constants';
 
@@ -158,15 +158,15 @@ export class DataLabel {
                 let transPoint: Point = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'] as Point;
                 let labelElement: HTMLElement;
                 if (eventargs.template !== '') {
+                    let blazor: string = 'Blazor';
                     templateFn = getTemplateFunction(eventargs.template);
-                    let templateElement: Element = templateFn({}, null, null, labelId + '_DatalabelTemplate');
+                    let templateElement: Element = templateFn ? templateFn(!window[blazor] ? this.maps : {}, null, null, this.maps.element.id) : document.createElement('div');
+                    templateElement.innerHTML =  !templateFn ? eventargs.template : ''; 
                     labelElement = <HTMLElement>convertElementFromLabel(
                         templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
                     labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
                     labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + 'px';
                     labelTemplateElement.appendChild(labelElement);
-                    let labelWidth: number = labelElement.offsetWidth;
-                    let labelHeight: number = labelElement.offsetHeight;
                 } else {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {
                         options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
@@ -261,7 +261,6 @@ export class DataLabel {
             });
             if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
-                updateBlazorTemplate(labelId + '_DatalabelTemplate', 'DatalabelTemplate');
             }
         }
     }

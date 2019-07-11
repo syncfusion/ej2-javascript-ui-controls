@@ -84,6 +84,10 @@
     font-size: 16px;
   }
 
+  .e-de-flip {
+    transform: scaleX(-1);
+  }
+
   .e-de-ctnr-print::before {
     content: '\eb5e';
   }

@@ -479,6 +479,9 @@
         }
       }
     }
+    .e-grid .e-icons {
+      color: $gantt-header-color !important;
+    }
   }
   .e-gantt.e-device {
     .e-left-resize-gripper,

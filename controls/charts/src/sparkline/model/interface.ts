@@ -97,7 +97,7 @@ export interface ISeriesRenderingEventArgs extends ISparklineEventArgs {
  */
 export interface ISparklinePointEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
-    sparkline: Sparkline;
+    sparkline?: Sparkline;
     /** Defines the current sparkline point index */
     pointIndex: number;
     /** Defines the current sparkline point fill color */
@@ -110,7 +110,7 @@ export interface ISparklinePointEventArgs extends ISparklineEventArgs {
  */
 export interface ISparklineMouseEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
-    sparkline: Sparkline;
+    sparkline?: Sparkline;
     /** Defines the current sparkline mouse event */
     event: PointerEvent | MouseEvent;
 }
@@ -119,7 +119,7 @@ export interface ISparklineMouseEventArgs extends ISparklineEventArgs {
  */
 export interface IPointRegionEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */
-    sparkline: Sparkline;
+    sparkline?: Sparkline;
     /** Defines the sparkline point index region event  */
     pointIndex: number;
     /** Defines the current sparkline mouse event */

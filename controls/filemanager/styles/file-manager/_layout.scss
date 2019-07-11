@@ -320,7 +320,7 @@
           }
 
           .e-rcursor {
-            border-right: 0;
+            border: 0;
           }
         }
 
@@ -403,6 +403,10 @@
       .e-gridheader,
       .e-gridcontent {
 
+        .e-emptyrow {
+          display: none;
+        }
+
         .e-fe-checkbox {
           overflow: inherit;
           padding-left: $fe-grid-header-cb-padding-left;
@@ -425,6 +429,22 @@
 
       .e-row {
         @include visibility(hidden);
+
+        &.e-focused {
+          box-shadow: none;
+
+          td {
+            box-shadow: $fe-grid-row-ie-box-shadow;
+          }
+
+          td:first-child {
+            box-shadow: $fe-grid-row-fc-ie-box-shadow;
+          }
+
+          td:last-child {
+            box-shadow: $fe-grid-row-lc-ie-box-shadow;
+          }
+        }
 
         &:hover,
         .e-active {

@@ -403,6 +403,7 @@ export interface RichTextEditorModel extends ComponentModel{
      * Set the cancel argument to true to cancel the open of a dialog.
      * @event
      * @blazorProperty 'OnDialogOpen'
+     * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
      */
 
     beforeDialogOpen?: EmitType<BeforeOpenEventArgs>;
@@ -473,7 +474,6 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers when RichTextEditor is focused out.
      * @event
-     * @blazorProperty 'OnBlur'
      */
     blur?: EmitType<Object>;
 
@@ -487,7 +487,6 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Triggers when RichTextEditor is focused in
      * @event
-     * @blazorProperty 'OnFocus'
      */
     focus?: EmitType<Object>;
 

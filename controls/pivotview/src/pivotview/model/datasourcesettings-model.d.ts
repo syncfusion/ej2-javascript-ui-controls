@@ -274,12 +274,12 @@ export interface GroupSettingsModel {
     /**
      * It allows to set the start time of group field.
      */
-    startingAt?: Date | number;
+    startingAt?: string | Date | number;
 
     /**
      * It allows to set the end time of group field.
      */
-    endingAt?: Date | number;
+    endingAt?: string | Date | number;
 
     /**
      * It allows to set the type of field.

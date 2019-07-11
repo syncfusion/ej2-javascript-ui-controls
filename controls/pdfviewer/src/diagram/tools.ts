@@ -949,7 +949,8 @@ export class PolygonDrawingTool extends ToolBase {
                 bounds: {
                     x: this.currentPosition.x,
                     y: this.currentPosition.y, width: 5, height: 5
-                }, vertexPoints: [{ x: this.startPoint.x, y: this.startPoint.y }, { x: this.currentPosition.x, y: this.currentPosition.y }],
+                    // tslint:disable-next-line:max-line-length
+                }, vertexPoints: [{ x: this.startPoint.x / this.pdfViewerBase.getZoomFactor(), y: this.startPoint.y / this.pdfViewerBase.getZoomFactor() }, { x: this.currentPosition.x / this.pdfViewerBase.getZoomFactor(), y: this.currentPosition.y / this.pdfViewerBase.getZoomFactor() }],
                 shapeAnnotationType: 'Line', fillColor: this.commandHandler.drawingObject.fillColor,
                 strokeColor: this.commandHandler.drawingObject.strokeColor, pageIndex: this.pdfViewerBase.activeElements.activePageID,
                 // tslint:disable-next-line:max-line-length
@@ -981,8 +982,8 @@ export class PolygonDrawingTool extends ToolBase {
             this.dragging = true;
             let obj: PdfAnnotationBaseModel = (this.drawingObject);
             if (this.drawingObject && this.currentPosition) {
-                obj.vertexPoints[obj.vertexPoints.length - 1].x = this.currentPosition.x;
-                obj.vertexPoints[obj.vertexPoints.length - 1].y = this.currentPosition.y;
+                obj.vertexPoints[obj.vertexPoints.length - 1].x = this.currentPosition.x / this.pdfViewerBase.getZoomFactor();
+                obj.vertexPoints[obj.vertexPoints.length - 1].y = this.currentPosition.y / this.pdfViewerBase.getZoomFactor();
                 this.commandHandler.nodePropertyChange(obj, { vertexPoints: obj.vertexPoints });
             }
             if (obj.measureType === 'Perimeter') {
@@ -1147,7 +1148,7 @@ export class LineTool extends ToolBase {
             let measureModule: MeasureAnnotation = this.commandHandler.annotation.measureAnnotationModule;
             let annotationNode: PdfAnnotationBaseModel = {
                 // tslint:disable-next-line:max-line-length
-                vertexPoints: [{ x: this.startPosition.x, y: this.startPosition.y }, { x: this.currentPosition.x, y: this.currentPosition.y }],
+                vertexPoints: [{ x: this.startPosition.x / this.pdfViewerBase.getZoomFactor(), y: this.startPosition.y / this.pdfViewerBase.getZoomFactor() }, { x: this.currentPosition.x / this.pdfViewerBase.getZoomFactor(), y: this.currentPosition.y / this.pdfViewerBase.getZoomFactor() }],
                 bounds: {
                     x: this.currentPosition.x,
                     y: this.currentPosition.y, width: 5, height: 5
@@ -1168,7 +1169,7 @@ export class LineTool extends ToolBase {
                     x: this.currentPosition.x,
                     y: this.currentPosition.y, width: 5, height: 5
                     // tslint:disable-next-line:max-line-length
-                }, vertexPoints: [{ x: this.startPosition.x, y: this.startPosition.y }, { x: this.currentPosition.x, y: this.currentPosition.y }],
+                }, vertexPoints: [{ x: this.startPosition.x / this.pdfViewerBase.getZoomFactor(), y: this.startPosition.y / this.pdfViewerBase.getZoomFactor() }, { x: this.currentPosition.x / this.pdfViewerBase.getZoomFactor(), y: this.currentPosition.y / this.pdfViewerBase.getZoomFactor() }],
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: this.drawingObject.shapeAnnotationType, sourceDecoraterShapes: this.drawingObject.sourceDecoraterShapes,
                 taregetDecoraterShapes: this.drawingObject.taregetDecoraterShapes, fillColor: this.drawingObject.fillColor,

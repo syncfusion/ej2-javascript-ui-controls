@@ -83,9 +83,12 @@ export class DetailRow {
                     let detailTemplateID: string = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
                     resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
-                    updateBlazorTemplate(detailTemplateID, 'DetailTemplate');
+                    updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj);
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
+                    if (childGrid.query) {
+                        childGrid.query = childGrid.query.clone();
+                    }
                     childGrid[parent] = {
                         parentID: gObj.element.id,
                         parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),

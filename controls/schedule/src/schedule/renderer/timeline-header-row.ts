@@ -1,4 +1,4 @@
-import { compile } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { MS_PER_DAY, getWeekNumber } from '../base/util';
 import { TdData, CellTemplateArgs } from '../base/interface';
@@ -47,33 +47,34 @@ export class TimelineHeaderRow {
         return result;
     }
 
-    private generateSlots(data: { [key: string]: Date[] }, colspan: number, template: string, tempFn: Function, cls: string, type: string)
-        : TdData[] {
-        let tdDatas: TdData[] = [];
-        let customHelper: Object = {
-            getYear: (dt: Date) => {
-                return this.parent.globalize.formatDate(dt, { format: 'y', calendar: this.parent.getCalendarMode() });
-            },
-            getMonth: (dt: Date) => {
-                return this.parent.globalize.formatDate(dt, { format: 'MMMM', calendar: this.parent.getCalendarMode() });
-            },
-            getWeekNumber: (dt: Date) => {
-                return getWeekNumber(dt);
-            }
+    private generateSlots(data: { [key: string]: Date[] }, colspan: number, row: HeaderRowsModel, cls: string, type: string): TdData[] {
+        let dateParser: Function = (date: Date, format: string): string => {
+            return this.parent.globalize.formatDate(date, { format: format, calendar: this.parent.getCalendarMode() });
         };
+        let tdDatas: TdData[] = [];
         let keys: string[] = Object.keys(data);
         for (let i: number = 0; i < keys.length; i++) {
             let dates: Date[] = data[keys[i]];
             let htmlCol: NodeList;
-            if (!tempFn) {
-                htmlCol = compile(template, customHelper)({ date: dates[0] });
-            } else {
+            if (row.template) {
                 let args: CellTemplateArgs = { date: dates[0], type: type };
-                htmlCol = tempFn(args);
+                htmlCol = this.parent.templateParser(row.template)(args);
+            } else {
+                let viewTemplate: string;
+                switch (row.option) {
+                    case 'Year':
+                        viewTemplate = `<span class="e-header-year">${dateParser(dates[0], 'y')}</span>`;
+                        break;
+                    case 'Month':
+                        viewTemplate = `<span class="e-header-month">${dateParser(dates[0], 'MMMM')}</span>`;
+                        break;
+                    case 'Week':
+                        viewTemplate = `<span class="e-header-week">${getWeekNumber(dates[0])}</span>`;
+                }
+                let headerWrapper: HTMLElement = createElement('div', { innerHTML: viewTemplate });
+                htmlCol = headerWrapper.childNodes;
             }
-            tdDatas.push({
-                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol
-            });
+            tdDatas.push({ date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol });
         }
         return tdDatas;
     }
@@ -86,28 +87,21 @@ export class TimelineHeaderRow {
             lastLevelColspan = hourSlots.length / dateSlots.length;
         }
         let tdDatas: TdData[] = [];
-        let templateFn: Function;
         for (let row of rows) {
             switch (row.option) {
                 case 'Year':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    let yearTemplate: string = '<span class="e-header-year">${getYear(date)}</span>';
                     let byYear: { [key: number]: Date[] } = this.groupByYear(this.renderDates);
-                    tdDatas = this.generateSlots(byYear, lastLevelColspan, yearTemplate, templateFn, 'e-header-year-cell', 'yearHeader');
+                    tdDatas = this.generateSlots(byYear, lastLevelColspan, row, 'e-header-year-cell', 'yearHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Month':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    let monthTemp: string = '<span class="e-header-month">${getMonth(date)}</span>';
                     let byMonth: { [key: number]: Date[] } = this.groupByMonth(this.renderDates);
-                    tdDatas = this.generateSlots(byMonth, lastLevelColspan, monthTemp, templateFn, 'e-header-month-cell', 'monthHeader');
+                    tdDatas = this.generateSlots(byMonth, lastLevelColspan, row, 'e-header-month-cell', 'monthHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Week':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    let weekTemplate: string = '<span class="e-header-week">${getWeekNumber(date)}</span>';
                     let byWeek: { [key: number]: Date[] } = this.groupByWeek(this.renderDates);
-                    tdDatas = this.generateSlots(byWeek, lastLevelColspan, weekTemplate, templateFn, 'e-header-week-cell', 'weekHeader');
+                    tdDatas = this.generateSlots(byWeek, lastLevelColspan, row, 'e-header-week-cell', 'weekHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Date':

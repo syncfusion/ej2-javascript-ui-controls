@@ -131,7 +131,7 @@ export class LineBase {
             },
             end: (model: AnimationOptions) => {
                 path.setAttribute('stroke-dasharray', strokeDashArray);
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     }
@@ -196,7 +196,7 @@ export class LineBase {
             },
             end: (model: AnimationOptions) => {
                 clipRect.setAttribute('transform', 'translate(0,0)');
-                series.chart.trigger('animationComplete', { series: series });
+                series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });
     }

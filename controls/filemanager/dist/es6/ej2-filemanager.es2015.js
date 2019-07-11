@@ -91,10 +91,10 @@ const columnArray = [
     {
         field: '_fm_modified', headerText: 'DateModified',
         format: { type: 'date', format: 'MMMM dd, yyyy HH:mm' },
-        minWidth: 50, width: '190'
+        minWidth: 120, width: '190'
     },
     {
-        field: 'size', headerText: 'Size', minWidth: 50, width: '110', template: '<span class="e-fe-size">${size}</span>'
+        field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>'
     }
 ];
 /**
@@ -521,14 +521,19 @@ const dragging = 'dragging';
  * Utility file for common actions
  * @private
  */
-function updatePath(node, text, instance) {
-    instance.setProperties({ path: getPath(node, text) }, true);
+function updatePath(node, data, instance) {
+    let text = getValue('name', data);
+    let id = node.getAttribute('data-id');
+    let newText = isNullOrUndefined(id) ? text : id;
+    instance.setProperties({ path: getPath(node, newText, instance.hasId) }, true);
     instance.pathId = getPathId(node);
+    instance.pathNames = getPathNames(node, text);
 }
-function getPath(element, text) {
-    let matched = getParents(element, text, false);
-    let path = '/';
-    for (let i = matched.length - 2; i >= 0; i--) {
+function getPath(element, text, hasId) {
+    let matched = getParents(element, text, false, hasId);
+    let path = hasId ? '' : '/';
+    let len = matched.length - (hasId ? 1 : 2);
+    for (let i = len; i >= 0; i--) {
         path += matched[i] + '/';
     }
     return path;
@@ -541,17 +546,39 @@ function getPathId(node) {
     }
     return ids;
 }
-function getParents(element, text, isId) {
+function getPathNames(element, text) {
+    let matched = getParents(element, text, false);
+    let names = [];
+    for (let i = matched.length - 1; i >= 0; i--) {
+        names.push(matched[i]);
+    }
+    return names;
+}
+function getParents(element, text, isId, hasId) {
     let matched = [text];
     let el = element.parentNode;
     while (!isNullOrUndefined(el)) {
         if (matches(el, '.' + LIST_ITEM)) {
-            let parentText = isId ? el.getAttribute('data-uid') : select('.' + LIST_TEXT, el).textContent;
+            let parentText = isId ? el.getAttribute('data-uid') : (hasId ? el.getAttribute('data-id') :
+                select('.' + LIST_TEXT, el).textContent);
             matched.push(parentText);
         }
         el = el.parentNode;
+        if (el.classList.contains(TREE_VIEW)) {
+            break;
+        }
     }
     return matched;
+}
+function generatePath(parent) {
+    let key = parent.hasId ? 'id' : 'name';
+    let newPath = parent.hasId ? '' : '/';
+    let i = parent.hasId ? 0 : 1;
+    for (i; i < parent.pathId.length; i++) {
+        let data = getValue(parent.pathId[i], parent.feParent);
+        newPath += getValue(key, data) + '/';
+    }
+    parent.setProperties({ path: newPath }, true);
 }
 function removeActive(parent) {
     if (parent.isCut) {
@@ -577,7 +604,7 @@ function activeElement(action, parent) {
         parent.targetPath = parent.path;
     }
     else {
-        parent.targetPath = getParentPath(parent);
+        parent.targetPath = getParentPath(parent.path);
     }
     let i = 0;
     if (blurEle) {
@@ -709,7 +736,7 @@ function openAction(parent) {
     read(parent, openEnd, parent.path);
 }
 function getPathObject(parent) {
-    return getValue(parent.path, parent.feParent);
+    return getValue(parent.pathId[parent.pathId.length - 1], parent.feParent);
 }
 // Copy files
 function copyFiles(parent) {
@@ -768,23 +795,43 @@ function getImageUrl(parent, item) {
     let baseUrl = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     let imgUrl;
     let fileName = getValue('name', item);
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
-        imgUrl = baseUrl + '?path=' + getValue('filterPath', item).replace(/\\/g, '/') + fileName;
+    let fPath = getValue('filterPath', item);
+    if (parent.hasId) {
+        let imgId = getValue('id', item);
+        imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
+    }
+    else if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNullOrUndefined(fPath)) {
+        imgUrl = baseUrl + '?path=' + fPath.replace(/\\/g, '/') + fileName;
     }
     else {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
     }
-    let imgId = getValue('id', item);
-    if (!isNullOrUndefined(imgId)) {
-        imgUrl = imgUrl + '&id=' + imgId;
-    }
     return imgUrl;
+}
+function getFullPath(parent, data, path) {
+    let filePath = getValue(parent.hasId ? 'id' : 'name', data) + '/';
+    let fPath = getValue(parent.hasId ? 'filterId' : 'filterPath', data);
+    if (!isNullOrUndefined(fPath)) {
+        return fPath.replace(/\\/g, '/') + filePath;
+    }
+    else {
+        return path + filePath;
+    }
 }
 function getFullName(item) {
     let fullName;
     let fileName = getValue('name', item);
     fullName = getValue('filterPath', item).replace(/\\/g, '/') + fileName;
     return fullName;
+}
+function getName(parent, data) {
+    let name = getValue('name', data);
+    let fPath = getValue('filterPath', data);
+    if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNullOrUndefined(fPath)) {
+        fPath = fPath.replace(/\\/g, '/');
+        name = fPath.replace(parent.path, '') + name;
+    }
+    return name;
 }
 function getSortedData(parent, items) {
     if (items.length === 0) {
@@ -794,9 +841,9 @@ function getSortedData(parent, items) {
     let lists = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
 }
-function getObject(parent, name) {
-    let currFiles = getValue(parent.path, parent.feFiles);
-    let query = new Query().where('name', 'equal', name);
+function getObject(parent, key, value) {
+    let currFiles = getValue(parent.pathId[parent.pathId.length - 1], parent.feFiles);
+    let query = new Query().where(key, 'equal', value);
     let lists = new DataManager(currFiles).executeLocal(query);
     return lists[0];
 }
@@ -881,16 +928,17 @@ function sortbyClickHandler(parent, args) {
     else {
         parent.sortOrder = getSortField(args.item.id);
     }
+    parent.itemData = [getPathObject(parent)];
     if (parent.view === 'Details') {
         if (parent.isMobile) {
-            read(parent, layoutChange, parent.path);
+            updateLayout(parent, 'Details');
         }
         else {
-            parent.notify(sortColumn, { module: 'gridview' });
+            parent.notify(sortColumn, { module: 'detailsview' });
         }
     }
     if (parent.view === 'LargeIcons') {
-        read(parent, layoutChange, parent.path);
+        updateLayout(parent, 'LargeIcons');
     }
     parent.notify(sortByChange, {});
 }
@@ -913,30 +961,31 @@ function getSortField(id) {
 function setNextPath(parent, path) {
     let currfolders = path.split('/');
     let folders = parent.originalPath.split('/');
+    let root = getValue(parent.pathId[0], parent.feParent);
+    let key = isNullOrUndefined(getValue('id', root)) ? 'name' : 'id';
     for (let i = currfolders.length - 1, len = folders.length - 1; i < len; i++) {
         let eventName = (folders[i + 1] === '') ? finalizeEnd : initialEnd;
         let newPath = (folders[i] === '') ? '/' : (parent.path + folders[i] + '/');
-        let data = getObject(parent, folders[i]);
+        let data = getObject(parent, key, folders[i]);
         let id = getValue('_fm_id', data);
         parent.setProperties({ path: newPath }, true);
         parent.pathId.push(id);
         parent.itemData = [data];
+        parent.pathNames.push(getValue('name', data));
         read(parent, eventName, parent.path);
         break;
     }
 }
 function openSearchFolder(parent, data) {
-    let fPath = getValue('filterPath', data) + getValue('name', data) + '/';
-    fPath = fPath.replace(/\\/g, '/');
     parent.notify(clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
-    parent.originalPath = fPath;
+    parent.originalPath = getFullPath(parent, data, parent.path);
     read(parent, (parent.path !== parent.originalPath) ? initialEnd : finalizeEnd, parent.path);
 }
 function pasteHandler(parent) {
     parent.isDragDrop = false;
     if (parent.selectedNodes.length !== 0 && parent.enablePaste) {
-        let path = parent.path + parent.folderPath;
-        let subFolder = validateSubFolder(parent, parent.actionRecords, path);
+        let path = (parent.folderPath === '') ? parent.path : parent.folderPath;
+        let subFolder = validateSubFolder(parent, parent.actionRecords, path, parent.path);
         if (!subFolder) {
             if ((parent.fileAction === 'move' && parent.targetPath !== path) || parent.fileAction === 'copy') {
                 parent.notify(pasteInit, {});
@@ -950,13 +999,12 @@ function pasteHandler(parent) {
         }
     }
 }
-function validateSubFolder(parent, data, path) {
+function validateSubFolder(parent, data, dropPath$$1, dragPath) {
     let subFolder = false;
     for (let i = 0; i < data.length; i++) {
         if (!getValue('isFile', data[i])) {
-            let tempTarget = data[i].filterPath + data[i].name + '/';
-            tempTarget = tempTarget.replace(/\\/g, '/');
-            if (path.indexOf(tempTarget) !== -1) {
+            let tempTarget = getFullPath(parent, data[i], dragPath);
+            if (dropPath$$1.indexOf(tempTarget) !== -1) {
                 let result = {
                     files: null,
                     error: {
@@ -978,7 +1026,7 @@ function dropHandler(parent) {
     if (parent.dragData.length !== 0) {
         parent.dragPath = parent.dragPath.replace(/\\/g, '/');
         parent.dropPath = parent.dropPath.replace(/\\/g, '/');
-        let subFolder = validateSubFolder(parent, parent.dragData, parent.dropPath);
+        let subFolder = validateSubFolder(parent, parent.dragData, parent.dropPath, parent.dragPath);
         if (!subFolder && (parent.dragPath !== parent.dropPath)) {
             parent.itemData = [parent.dropData];
             paste(parent, parent.dragPath, parent.dragNodes, parent.dropPath, 'move', [], parent.dragData);
@@ -986,23 +1034,25 @@ function dropHandler(parent) {
         }
     }
 }
-function getParentPath(parent) {
-    let path = parent.path.split('/');
-    let newPath = '/';
-    for (let i = 1; i < path.length - 2; i++) {
+function getParentPath(oldPath) {
+    let path = oldPath.split('/');
+    let newPath = '';
+    for (let i = 0; i < path.length - 2; i++) {
         newPath += path[i] + '/';
     }
     return newPath;
 }
-function getDirectoryPath(args) {
-    let path = getValue('filterPath', args.cwd);
-    let newPath = '/';
-    if (path === '') {
-        return newPath;
+function getDirectoryPath(parent, args) {
+    let filePath = getValue(parent.hasId ? 'id' : 'name', args.cwd) + '/';
+    let fPath = getValue(parent.hasId ? 'filterId' : 'filterPath', args.cwd);
+    if (!isNullOrUndefined(fPath)) {
+        if (fPath === '') {
+            return parent.hasId ? filePath : '/';
+        }
+        return fPath.replace(/\\/g, '/') + filePath;
     }
     else {
-        path = path.replace(/\\/g, '/');
-        return (path + getValue('name', args.cwd) + newPath);
+        return parent.path + filePath;
     }
 }
 function doPasteUpdate(parent, operation, result) {
@@ -1045,16 +1095,17 @@ function doPasteUpdate(parent, operation, result) {
     parent.trigger('success', { action: operation, result: result });
 }
 function readDropPath(parent) {
-    let obj = getValue(parent.dropPath, parent.feParent);
-    /* istanbul ignore next */
-    if (obj) {
-        parent.expandedId = getValue('_fm_id', obj);
-    }
+    let pathId = getValue('_fm_id', parent.dropData);
+    parent.expandedId = pathId;
     parent.itemData = [parent.dropData];
     if (parent.isPathDrag) {
         parent.notify(pathDrag, parent.itemData);
     }
     else {
+        if (parent.navigationpaneModule) {
+            let node = select('[data-uid="' + pathId + '"]', parent.navigationpaneModule.treeObj.element);
+            updatePath(node, parent.dropData, parent);
+        }
         read(parent, dropPath, parent.dropPath);
     }
 }
@@ -1285,7 +1336,13 @@ function hasDownloadAccess(data) {
  * @private
  */
 function read(parent, event, path) {
-    let data = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: parent.itemData };
+    let itemData = parent.itemData;
+    for (let i = 0; i < itemData.length; i++) {
+        if (isNullOrUndefined(getValue('hasChild', itemData[i]))) {
+            setValue('hasChild', false, itemData[i]);
+        }
+    }
+    let data = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: itemData };
     createAjax(parent, data, readSuccess, event);
 }
 /**
@@ -1308,9 +1365,16 @@ function rename(parent, path, itemNewName) {
         newName = itemNewName;
     }
     else {
-        let fPath = parent.filterPath.replace(/\\/g, '/');
-        name = fPath.replace(path, '') + parent.currentItemText;
-        newName = fPath.replace(path, '') + itemNewName;
+        let fPath = parent.filterPath;
+        if (parent.hasId) {
+            name = parent.currentItemText;
+            newName = itemNewName;
+        }
+        else {
+            fPath = fPath.replace(/\\/g, '/');
+            name = fPath.replace(path, '') + parent.currentItemText;
+            newName = fPath.replace(path, '') + itemNewName;
+        }
     }
     let data = {
         action: 'rename', path: path, name: name, newName: newName, data: parent.itemData
@@ -1328,6 +1392,7 @@ parent, path, names, targetPath, pasteOperation, renameItems, actionRecords) {
         action: pasteOperation, path: path, targetData: parent.itemData[0],
         targetPath: targetPath, names: names, renameFiles: renameItems, data: actionRecords
     };
+    parent.destinationPath = targetPath;
     createAjax(parent, data, pasteSuccess, path, pasteOperation, targetPath);
 }
 /**
@@ -1383,14 +1448,25 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                             let item = result.files[i];
                             setValue('_fm_iconClass', fileType(item), item);
                         }
-                    }
-                    if (getValue('action', data) === 'read') {
-                        let path = getValue('path', data);
-                        setNodeId(result, parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1]);
-                        setValue(path, result.files, parent.feFiles);
-                        setValue(path, result.cwd, parent.feParent);
+                        if (getValue('action', data) === 'read') {
+                            let id = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
+                            setNodeId(result, id);
+                            setValue(id, result.files, parent.feFiles);
+                            setValue(id, result.cwd, parent.feParent);
+                            if ((event === 'finalize-end' || event === 'initial-end') && parent.pathNames.length === 0) {
+                                let root = getValue(parent.pathId[0], parent.feParent);
+                                parent.pathNames[0] = getValue('name', root);
+                                parent.hasId = !isNullOrUndefined(getValue('id', root));
+                            }
+                            if (event === 'finalize-end') {
+                                generatePath(parent);
+                            }
+                        }
                     }
                     fn(parent, result, event, operation, targetPath);
+                    if (!isNullOrUndefined(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end')) {
+                        parent.notify(searchTextChange, result);
+                    }
                     if (typeof getValue('onSuccess', beforeSendArgs.ajaxSettings) === 'function') {
                         getValue('onSuccess', beforeSendArgs.ajaxSettings)();
                     }
@@ -1473,8 +1549,11 @@ function renameSuccess(parent, result, path) {
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
         if (parent.activeModule === 'navigationpane') {
-            let newPath = getParentPath(parent) + parent.renameText + '/';
-            parent.setProperties({ path: newPath }, true);
+            if (!parent.hasId) {
+                let newPath = getParentPath(parent.path) + parent.renameText + '/';
+                parent.setProperties({ path: newPath }, true);
+            }
+            parent.pathNames[parent.pathNames.length - 1] = parent.renameText;
             parent.itemData = result.files;
         }
         else {
@@ -1623,6 +1702,7 @@ function createDialog(parent, text, e, details, replaceItems) {
             enableRtl: parent.enableRtl,
             locale: parent.locale
         });
+        parent.dialogObj.isStringTemplate = true;
         parent.dialogObj.appendTo('#' + parent.element.id + DIALOG_ID);
     }
     else {
@@ -1648,6 +1728,7 @@ function createExtDialog(parent, text, replaceItems, newPath) {
             close: extOptions.close,
             locale: parent.locale
         });
+        parent.extDialogObj.isStringTemplate = true;
         parent.extDialogObj.appendTo('#' + parent.element.id + EXTN_DIALOG_ID);
     }
     else {
@@ -1717,7 +1798,8 @@ function getExtOptions(parent, text, replaceItems, newPath) {
                         else {
                             parent.extDialogObj.hide();
                             let targetPath = parent.isDragDrop ? parent.dragPath : parent.targetPath;
-                            let path = parent.isDragDrop ? parent.dropPath : parent.path + parent.folderPath;
+                            let path = parent.isDragDrop ? parent.dropPath : ((parent.folderPath === '') ? parent.path :
+                                parent.folderPath);
                             let action = parent.isDragDrop ? 'move' : parent.fileAction;
                             paste(parent, targetPath, parent.duplicateItems, path, action, parent.duplicateItems, parent.duplicateRecords);
                         }
@@ -1739,7 +1821,8 @@ function getExtOptions(parent, text, replaceItems, newPath) {
                             if (parent.duplicateItems.length !== 0) {
                                 let action = parent.isDragDrop ? 'move' : parent.fileAction;
                                 let targetPath = parent.isDragDrop ? parent.dragPath : parent.targetPath;
-                                let path = parent.isDragDrop ? parent.dropPath : parent.path + parent.folderPath;
+                                let path = parent.isDragDrop ? parent.dropPath : ((parent.folderPath === '') ? parent.path :
+                                    parent.folderPath);
                                 paste(parent, targetPath, parent.duplicateItems, path, action, parent.duplicateItems, parent.duplicateRecords);
                             }
                         }
@@ -2003,9 +2086,9 @@ function getOptions(parent, text, e, details, replaceItems) {
             ];
             break;
         case 'MultipleFileDetails':
-            let strArr = details.name.split(', ').map((val) => {
+            let strArr = details.name.split(',').map((val) => {
                 let index = val.indexOf('.') + 1;
-                return (index === 0) ? 'Folder' : val.substr(index);
+                return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
             });
             let fileType$$1 = strArr.every((val, i, arr) => val === arr[0]) ?
                 ((strArr[0] === 'Folder') ? 'Folder' : strArr[0].toLocaleUpperCase() + ' Type') : 'Multiple Types';
@@ -2099,7 +2182,7 @@ function onReSubmit(parent) {
         parent.dialogObj.hide();
         return;
     }
-    let newPath = (parent.activeModule === 'navigationpane') ? getParentPath(parent) : parent.path;
+    let newPath = (parent.activeModule === 'navigationpane') ? getParentPath(parent.path) : parent.path;
     if (parent.isFile) {
         let oldExtension = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
         let newExtension = text.substr(text.lastIndexOf('.'));
@@ -2112,6 +2195,7 @@ function onReSubmit(parent) {
     }
     else {
         parent.renamedNodeId = getValue('_fm_id', parent.itemData[0]);
+        parent.renamedId = getValue('id', parent.itemData[0]);
         rename(parent, newPath, text);
     }
 }
@@ -2179,6 +2263,7 @@ function createImageDialog(parent, header, imageUrl) {
             resizing: updateImage.bind(this, parent),
             resizeStop: updateImage.bind(this, parent)
         });
+        parent.viewerObj.isStringTemplate = true;
         parent.viewerObj.appendTo('#' + parent.element.id + IMG_DIALOG_ID);
     }
     else {
@@ -2407,15 +2492,15 @@ class LargeIconsView {
     onDropInit(args) {
         if (this.parent.targetModule === this.getModuleName()) {
             let dropLi = closest(args.target, '.e-list-item');
+            let cwdData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (dropLi) {
                 let info = this.getItemObject(dropLi);
-                this.parent.dropPath = info.isFile ? this.parent.path :
-                    (info.filterPath.replace(/\\/g, '/') + info.name + '/');
-                this.parent.dropData = info.isFile ? info : this.getItemObject(dropLi);
+                this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
+                this.parent.dropData = info.isFile ? cwdData : info;
             }
             else {
                 this.parent.dropPath = this.parent.path;
-                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+                this.parent.dropData = cwdData;
             }
         }
     }
@@ -2502,7 +2587,7 @@ class LargeIconsView {
             let name = getValue('name', items[i]);
             /* istanbul ignore next */
             let className = ((this.parent.selectedItems &&
-                this.parent.selectedItems.indexOf(this.getDataName(args.files[i])) !== -1)) ?
+                this.parent.selectedItems.indexOf(getName(this.parent, args.files[i])) !== -1)) ?
                 LARGE_ICON + ' e-active' : LARGE_ICON;
             if (!hasEditAccess(items[i])) {
                 className += ' ' + getAccessClass(items[i]);
@@ -2522,7 +2607,6 @@ class LargeIconsView {
     }
     onFinalizeEnd(args) {
         this.render(args);
-        this.parent.notify(searchTextChange, args);
     }
     onCreateEnd(args) {
         if (this.parent.view !== 'LargeIcons') {
@@ -2584,7 +2668,6 @@ class LargeIconsView {
             removeBlur(this.parent);
             this.parent.setProperties({ selectedItems: [] }, true);
             this.onLayoutChange(args);
-            this.parent.notify(searchTextChange, args);
         }
     }
     onOpenInit(args) {
@@ -2663,6 +2746,7 @@ class LargeIconsView {
         this.parent.off(dropInit, this.onDropInit);
         this.parent.off(detailsInit, this.onDetailsInit);
         this.parent.off(layoutRefresh, this.onLayoutRefresh);
+        this.parent.off(dropPath, this.onDropPath);
     }
     addEventListener() {
         this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
@@ -2693,6 +2777,7 @@ class LargeIconsView {
         this.parent.on(pasteEnd, this.onpasteEnd, this);
         this.parent.on(cutCopyInit, this.oncutCopyInit, this);
         this.parent.on(layoutRefresh, this.onLayoutRefresh, this);
+        this.parent.on(dropPath, this.onDropPath, this);
     }
     onMenuItemData(args) {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -2706,7 +2791,7 @@ class LargeIconsView {
                 this.updateSelectedData();
             }
             else {
-                this.parent.itemData = [getValue(this.parent.path, this.parent.feParent)];
+                this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
             }
         }
     }
@@ -2730,9 +2815,15 @@ class LargeIconsView {
     onpasteEnd(args) {
         if (this.parent.view === 'LargeIcons') {
             this.isPasteOperation = true;
-            if (this.parent.path === getDirectoryPath(args)) {
+            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args)) {
                 this.onPathChanged(args);
             }
+        }
+    }
+    onDropPath(args) {
+        if (this.parent.view === 'LargeIcons') {
+            this.isPasteOperation = true;
+            this.onPathChanged(args);
         }
     }
     onPropertyChanged(e) {
@@ -2970,12 +3061,14 @@ class LargeIconsView {
             let eventArgs = { cancel: false, fileDetails: details };
             this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs) => {
                 if (!fileOpenArgs.cancel) {
-                    let text = select('.' + LIST_TEXT, item).textContent;
+                    let text = getValue('name', details);
                     if (!this.parent.isFile) {
                         let val = this.parent.breadcrumbbarModule.searchObj.element.value;
                         if (val === '') {
-                            let newPath = this.parent.path + text + '/';
+                            let id = getValue('id', details);
+                            let newPath = this.parent.path + (isNullOrUndefined(id) ? text : id) + '/';
                             this.parent.setProperties({ path: newPath }, true);
+                            this.parent.pathNames.push(text);
                             this.parent.pathId.push(getValue('_fm_id', details));
                             this.parent.itemData = [details];
                             openAction(this.parent);
@@ -2989,7 +3082,7 @@ class LargeIconsView {
                         let icon = fileType(details);
                         if (icon === ICON_IMAGE) {
                             let imgUrl = getImageUrl(this.parent, details);
-                            createImageDialog(this.parent, getValue('name', details), imgUrl);
+                            createImageDialog(this.parent, text, imgUrl);
                         }
                     }
                 }
@@ -3318,7 +3411,7 @@ class LargeIconsView {
     addActive(nextItem) {
         if (!isNullOrUndefined(nextItem)) {
             if (!nextItem.classList.contains(ACTIVE)) {
-                this.parent.selectedItems.push(this.getName(nextItem));
+                this.parent.selectedItems.push(this.getDataName(nextItem));
                 addClass([nextItem], [ACTIVE]);
                 nextItem.setAttribute('aria-selected', 'true');
                 this.checkState(nextItem, true);
@@ -3336,24 +3429,16 @@ class LargeIconsView {
                 preItem.removeAttribute('aria-selected');
             }
             this.checkState(preItem, false);
-            let index = this.parent.selectedItems.indexOf(this.getName(preItem));
+            let index = this.parent.selectedItems.indexOf(this.getDataName(preItem));
             if (index > -1) {
                 this.parent.selectedItems.splice(index, 1);
             }
             this.parent.visitedItem = null;
         }
     }
-    getName(item) {
+    getDataName(item) {
         let data = this.getItemObject(item);
-        return this.getDataName(data);
-    }
-    getDataName(data) {
-        let name = getValue('name', data);
-        if (this.parent.breadcrumbbarModule.searchObj.element.value !== '') {
-            let fPath = getValue('filterPath', data).replace(/\\/g, '/');
-            name = fPath.replace(this.parent.path, '') + name;
-        }
-        return name;
+        return getName(this.parent, data);
     }
     addFocus(item) {
         this.element.setAttribute('tabindex', '-1');
@@ -3438,16 +3523,23 @@ class LargeIconsView {
         return this.items[index];
     }
     addSelection(data) {
-        let resultData = new DataManager(this.items).
-            executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
-        if (resultData.length > 0) {
-            let data = new DataManager(resultData).
-                executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
-            if (data.length > 0) {
-                let index = this.items.indexOf(data[0]);
-                let eveArgs = { ctrlKey: true, shiftKey: false };
-                this.doSelection(this.itemList[index], eveArgs);
+        let resultData = [];
+        if (this.parent.hasId) {
+            resultData = new DataManager(this.items).
+                executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+        }
+        else {
+            let newData = new DataManager(this.items).
+                executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
+            if (newData.length > 0) {
+                resultData = new DataManager(newData).
+                    executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
             }
+        }
+        if (resultData.length > 0) {
+            let index = this.items.indexOf(resultData[0]);
+            let eveArgs = { ctrlKey: true, shiftKey: false };
+            this.doSelection(this.itemList[index], eveArgs);
         }
     }
     updateSelectedData() {
@@ -3502,38 +3594,25 @@ class BreadCrumbBar {
         this.addEventListener();
     }
     onPathChange() {
-        let rootName = getValue('name', getValue('/', this.parent.feParent));
-        if (!this.addressBarLink) {
-            this.addressPath = rootName + this.parent.path;
-        }
-        else {
-            this.addressPath = this.addressBarLink;
-        }
-        let addressPath = this.addressPath;
-        let newPath = addressPath.substring(addressPath.indexOf('/'), addressPath.length);
-        this.parent.setProperties({ path: newPath }, true);
-        let arrayOfAddressBar = [];
-        arrayOfAddressBar = addressPath.split('/');
-        let addressbarUL = null;
-        addressbarUL = this.parent.createElement('ul');
-        addressbarUL.setAttribute('class', 'e-addressbar-ul');
+        let pathNames = this.parent.pathNames;
+        let paths = this.parent.path.split('/');
+        let addressbarUL = this.parent.createElement('ul', { className: 'e-addressbar-ul' });
         let addressbarLI = null;
-        let countOfAddressBarPath = arrayOfAddressBar.length - 1;
-        if (arrayOfAddressBar.length > 1) {
+        let pathNamesLen = pathNames.length;
+        if (pathNames.length > 0) {
             let id = '';
-            for (let i = 0; i < countOfAddressBarPath; i++) {
+            for (let i = 0; i < pathNamesLen; i++) {
                 let addressATag = null;
-                addressbarLI = this.parent.createElement('li');
+                addressbarLI = this.parent.createElement('li', { className: 'e-address-list-item' });
                 for (let j = 0; j <= i; j++) {
-                    id = id + arrayOfAddressBar[j] + '/';
+                    id = id + paths[j] + '/';
                 }
                 addressbarLI.setAttribute('data-utext', id);
-                addressbarLI.classList.add('e-address-list-item');
                 if (i !== 0) {
                     let icon = createElement('span', { className: ICONS });
                     addressbarLI.appendChild(icon);
                 }
-                if (countOfAddressBarPath - i !== 1) {
+                if (pathNamesLen - i !== 1) {
                     addressATag = createElement('a', { className: LIST_TEXT });
                     addressbarLI.setAttribute('tabindex', '0');
                 }
@@ -3541,7 +3620,7 @@ class BreadCrumbBar {
                     addressATag = createElement('span', { className: LIST_TEXT });
                 }
                 id = '';
-                addressATag.innerText = arrayOfAddressBar[i];
+                addressATag.innerText = pathNames[i];
                 addressbarLI.appendChild(addressATag);
                 addressbarUL.appendChild(addressbarLI);
             }
@@ -3561,7 +3640,6 @@ class BreadCrumbBar {
             }
             this.updateBreadCrumbBar(addressbarUL);
         }
-        this.addressBarLink = '';
     }
     /* istanbul ignore next */
     updateBreadCrumbBar(addresBarUL) {
@@ -3638,6 +3716,7 @@ class BreadCrumbBar {
                         beforeItemRender: this.addSubMenuAttributes.bind(this),
                         select: this.subMenuSelectOperations.bind(this)
                     });
+                    this.subMenuObj.isStringTemplate = true;
                     this.subMenuObj.appendTo(subMenuSpan);
                     break;
                 }
@@ -3724,32 +3803,31 @@ class BreadCrumbBar {
         this.addressBarLink = liElementId;
         let link = this.addressBarLink.split('/');
         let ids = this.parent.pathId;
+        let names = this.parent.pathNames;
         this.parent.pathId = [];
+        this.parent.pathNames = [];
+        let newpath = '';
         for (let i = 0, len = link.length - 1; i < len; i++) {
             this.parent.pathId.push(ids[i]);
+            this.parent.pathNames.push(names[i]);
+            newpath += link[i] + '/';
         }
-        let path = this.addressBarLink.substr(this.addressBarLink.indexOf('/'), this.addressBarLink.length);
-        return path;
+        this.parent.setProperties({ path: newpath }, true);
+        return newpath;
     }
     onUpdatePath() {
         this.onPathChange();
         this.removeSearchValue();
     }
     onCreateEnd() {
-        let path = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
-        if (path !== this.parent.path) {
-            this.onPathChange();
-        }
+        this.onPathChange();
     }
     onRenameEnd() {
         this.onPathChange();
     }
     /* istanbul ignore next */
     onDeleteEnd() {
-        let path = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
-        if (path !== this.parent.path) {
-            this.onUpdatePath();
-        }
+        this.onUpdatePath();
     }
     /* istanbul ignore next */
     removeSearchValue() {
@@ -3763,12 +3841,10 @@ class BreadCrumbBar {
         this.onPathChange();
     }
     onPasteEnd(args) {
-        if (this.parent.isPathDrag) {
-            this.onPathChange();
-        }
+        this.onPathChange();
     }
     liClick(currentPath) {
-        this.parent.itemData = [getValue(currentPath, this.parent.feParent)];
+        this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
         read(this.parent, pathChanged, currentPath);
     }
     addEventListener() {
@@ -3793,6 +3869,7 @@ class BreadCrumbBar {
         this.parent.on(searchTextChange, this.onSearchTextChange, this);
         this.parent.on(dropInit, this.onDropInit, this);
         this.parent.on(layoutRefresh, this.onResize, this);
+        this.parent.on(dropPath, this.onPathChange, this);
     }
     keyActionHandler(e) {
         switch (e.action) {
@@ -3817,14 +3894,16 @@ class BreadCrumbBar {
         this.parent.off(searchTextChange, this.onSearchTextChange);
         this.parent.off(dropInit, this.onDropInit);
         this.parent.off(layoutRefresh, this.onResize);
+        this.parent.off(dropPath, this.onPathChange);
     }
     /* istanbul ignore next */
     onDropInit(args) {
         if (this.parent.targetModule === this.getModuleName()) {
             let liEle = args.target.closest('li');
-            let dropLi = liEle.getAttribute('data-utext');
-            this.parent.dropPath = dropLi.substring(dropLi.indexOf('/'));
-            this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+            this.parent.dropPath = this.updatePath((liEle.children[0]));
+            this.parent.dropData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
+            let treeNodeId = this.parent.pathId[this.parent.pathId.length - 1];
+            this.parent.notify(updateTreeSelection, { module: 'treeview', selectedNode: treeNodeId });
         }
     }
     /**
@@ -3879,6 +3958,7 @@ class ContextMenu$2 {
             beforeClose: this.onBeforeClose.bind(this),
             cssClass: getCssClass(this.parent, ROOT_POPUP)
         });
+        this.contextMenu.isStringTemplate = true;
         this.contextMenu.appendTo('#' + this.parent.element.id + CONTEXT_MENU_ID);
         this.addEventListener();
     }
@@ -4040,10 +4120,7 @@ class ContextMenu$2 {
             this.enableItems(['Open'], false, true);
         }
         else if (this.parent.selectedItems.length !== 1) {
-            this.enableItems(['Rename'], false, true);
-        }
-        if (this.parent.selectedNodes.length !== 1) {
-            this.enableItems(['Paste'], false, true);
+            this.enableItems(['Rename', 'Paste'], false, true);
         }
     }
     setFileItem() {
@@ -4115,9 +4192,8 @@ class ContextMenu$2 {
                         break;
                     case 'paste':
                         if (this.menuType === 'folder') {
-                            if ((this.parent.activeModule === 'largeiconsview') ||
-                                (this.parent.activeModule === 'detailsview')) {
-                                this.parent.folderPath = this.parent.selectedItems[0] + '/';
+                            if ((this.parent.activeModule === 'largeiconsview') || (this.parent.activeModule === 'detailsview')) {
+                                this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
                             }
                             else {
                                 this.parent.folderPath = '';
@@ -4497,6 +4573,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         this.nextPath = [];
         this.layoutSelectedItems = [];
         this.renamedNodeId = null;
+        this.renamedId = null;
         this.uploadItem = [];
         this.deleteRecords = [];
         this.isFile = false;
@@ -4637,14 +4714,13 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         if (isNullOrUndefined(currentPath)) {
             currentPath = '/';
         }
-        if (currentPath.indexOf('/') !== 0) {
-            currentPath = '/' + currentPath;
-        }
         if (currentPath.lastIndexOf('/') !== (currentPath.length - 1)) {
             currentPath = currentPath + '/';
         }
         this.originalPath = currentPath;
-        this.setProperties({ path: '/' }, true);
+        let paths = currentPath.split('/');
+        this.setProperties({ path: paths[0] + '/' }, true);
+        this.pathNames = [];
         this.pathId = ['fe_tree'];
         this.itemData = [];
     }
@@ -4716,6 +4792,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             enableRtl: false,
             resizing: this.splitterResize.bind(this)
         });
+        this.splitterObj.isStringTemplate = true;
         this.splitterObj.appendTo(layoutWrap);
         let dialogWrap = this.createElement('div', { id: this.element.id + DIALOG_ID });
         this.element.appendChild(dialogWrap);
@@ -4850,7 +4927,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
                 }
             }
         }
-        let data = JSON.stringify(getValue(this.path, this.feParent));
+        let data = JSON.stringify(getValue(this.pathId[this.pathId.length - 1], this.feParent));
         args.customFormData = [{ 'path': this.path }, { 'action': action }, { 'data': data }];
         let uploadUrl = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
         let ajaxSettings = {
@@ -4908,6 +4985,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     onUploadSuccess(files) {
         let args = { action: 'Upload', result: files };
         this.trigger('success', args);
+        this.itemData = [getValue(this.pathId[this.pathId.length - 1], this.feParent)];
         read(this, pathChanged, this.path);
         if (typeof getValue('onSuccess', this.uploadEventArgs.ajaxSettings) === 'function') {
             getValue('onSuccess', this.uploadEventArgs.ajaxSettings)();
@@ -4954,7 +5032,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     }
     onDetailsInit() {
         if (isNullOrUndefined(this.activeModule)) {
-            this.itemData = [getValue(this.path, this.feParent)];
+            this.itemData = [getValue(this.pathId[this.pathId.length - 1], this.feParent)];
         }
     }
     resizeHandler() {
@@ -5378,6 +5456,7 @@ class Toolbar$1 {
             clicked: this.onClicked.bind(this),
             enableRtl: this.parent.enableRtl
         });
+        this.toolbarObj.isStringTemplate = true;
         this.toolbarObj.appendTo('#' + this.parent.element.id + TOOLBAR_ID);
     }
     triggerToolbarCreate() {
@@ -5518,6 +5597,7 @@ class Toolbar$1 {
                 select: sortbyClickHandler.bind(this, this.parent),
                 enableRtl: this.parent.enableRtl, iconCss: ICON_SHORTBY
             });
+            this.buttonObj.isStringTemplate = true;
             this.buttonObj.appendTo('#' + this.getId('SortBy'));
         }
         if (!isNullOrUndefined(select('#' + this.getId('View'), this.parent.element))) {
@@ -5539,6 +5619,7 @@ class Toolbar$1 {
                 items: layoutItems, select: this.layoutChange.bind(this),
                 enableRtl: this.parent.enableRtl
             });
+            this.layoutBtnObj.isStringTemplate = true;
             this.layoutBtnObj.appendTo('#' + this.getId('View'));
         }
         this.hideItems(this.default, true);
@@ -5849,12 +5930,19 @@ class NavigationPane {
         if (!isNullOrUndefined(this.treeObj)) {
             return;
         }
-        let rootData = getValue('/', this.parent.feParent);
+        let rootData = getValue(this.parent.pathId[0], this.parent.feParent);
         setValue('_fm_icon', 'e-fe-folder', rootData);
-        if (!hasEditAccess(rootData)) {
-            setValue('_fm_htmlAttr', { 'class': getAccessClass(rootData) }, rootData);
+        let attr = {};
+        let id = getValue('id', rootData);
+        if (!isNullOrUndefined(id)) {
+            setValue('data-id', id, attr);
         }
-        this.rootNode = getValue('name', getValue('/', this.parent.feParent));
+        if (!hasEditAccess(rootData)) {
+            setValue('class', getAccessClass(rootData), attr);
+        }
+        if (!isNullOrUndefined(attr)) {
+            setValue('_fm_htmlAttr', attr, rootData);
+        }
         this.treeObj = new TreeView({
             fields: {
                 dataSource: [rootData], id: '_fm_id', parentID: '_fm_pId', expanded: '_fm_expanded', selected: '_fm_selected', text: 'name',
@@ -5869,6 +5957,7 @@ class NavigationPane {
             enableRtl: this.parent.enableRtl,
             dataBound: this.addDragDrop.bind(this)
         });
+        this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parent.element.id + TREE_ID);
         this.treeObj.element.style.width = '25%';
         this.wireEvents();
@@ -5909,10 +5998,19 @@ class NavigationPane {
         this.parent.dragNodes = [];
         getModule(this.parent, dragLi);
         this.parent.dragData = this.getTreeData(dragLi);
-        this.parent.dragPath = this.parent.dragData[0].filterPath;
+        this.parent.dragPath = this.getDragPath(dragLi, this.parent.dragData[0].name);
         this.parent.dragNodes.push(this.parent.dragData[0].name);
         createVirtualDragElement(this.parent);
         return this.parent.virtualDragElement;
+    }
+    getDragPath(dragLi, text) {
+        let path = this.getDropPath(dragLi, text);
+        return getParentPath(path);
+    }
+    getDropPath(node, text) {
+        let id = node.getAttribute('data-id');
+        let newText = this.parent.hasId ? id : text;
+        return getPath(node, newText, this.parent.hasId);
     }
     onDrowNode(args) {
         let eventArgs = {
@@ -5929,8 +6027,16 @@ class NavigationPane {
             let folders = directories;
             while (length < directories.length) {
                 folders[length]._fm_icon = 'e-fe-folder';
+                let attr = {};
+                let id = getValue('id', folders[length]);
+                if (!isNullOrUndefined(id)) {
+                    setValue('data-id', id, attr);
+                }
                 if (!hasEditAccess(folders[length])) {
-                    setValue('_fm_htmlAttr', { 'class': getAccessClass(folders[length]) }, folders[length]);
+                    setValue('class', getAccessClass(folders[length]), attr);
+                }
+                if (!isNullOrUndefined(attr)) {
+                    setValue('_fm_htmlAttr', attr, folders[length]);
                 }
                 length++;
             }
@@ -5945,16 +6051,15 @@ class NavigationPane {
         if (!args.isInteracted && !this.isPathDragged) {
             return;
         }
-        let text = getValue('text', args.nodeData);
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
         this.parent.selectedItems = [];
-        updatePath(args.node, text, this.parent);
+        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
+        updatePath(args.node, this.parent.itemData[0], this.parent);
         this.expandNodeTarget = null;
         if (args.node.querySelector('.' + ICONS) && args.node.querySelector('.' + LIST_ITEM) === null) {
             this.expandNodeTarget = 'add';
         }
-        this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
         read(this.parent, this.isPathDragged ? pasteEnd : pathChanged, this.parent.path);
         this.parent.visitedItem = args.node;
         this.isPathDragged = false;
@@ -5969,8 +6074,12 @@ class NavigationPane {
         if (!args.isInteracted && !this.isDrag) {
             return;
         }
-        let path = getPath(args.node, getValue('text', args.nodeData));
         if (args.node.querySelector('.' + LIST_ITEM) === null) {
+            let text = getValue('text', args.nodeData);
+            let id = args.node.getAttribute('data-id');
+            let isId = isNullOrUndefined(id) ? false : true;
+            let newText = isNullOrUndefined(id) ? text : id;
+            let path = getPath(args.node, newText, isId);
             this.expandNodeTarget = args.node.getAttribute('data-uid');
             this.parent.expandedId = this.expandNodeTarget;
             this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
@@ -5994,7 +6103,7 @@ class NavigationPane {
     }
     onPathChanged(args) {
         this.parent.isCut = false;
-        let currFiles = getValue(this.parent.path, this.parent.feFiles);
+        let currFiles = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feFiles);
         if (this.expandNodeTarget === 'add') {
             let sNode = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
             let ul = select('.' + LIST_PARENT, sNode);
@@ -6004,15 +6113,17 @@ class NavigationPane {
             this.expandNodeTarget = '';
         }
         if (isNullOrUndefined(currFiles)) {
-            setValue(this.parent.path, args.files, this.parent.feFiles);
+            setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
         }
     }
     updateTree(args) {
-        let id = this.treeObj.selectedNodes[0];
-        let toExpand = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
-        this.removeChildNodes(id);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
-        this.addChild(args.files, id, !toExpand);
+        if (this.treeObj) {
+            let id = this.treeObj.selectedNodes[0];
+            let toExpand = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
+            this.removeChildNodes(id);
+            setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
+            this.addChild(args.files, id, !toExpand);
+        }
     }
     removeChildNodes(id) {
         let sNode = select('[data-uid="' + id + '"]', this.treeObj.element);
@@ -6088,14 +6199,21 @@ class NavigationPane {
             this.parent.renamedNodeId = null;
         }
         else {
-            let resultData = new DataManager(this.treeObj.getTreeData()).
-                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.currentItemText, false));
-            if (resultData.length > 0) {
-                let data = new DataManager(resultData).
-                    executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
-                if (data.length > 0) {
-                    this.treeObj.updateNode(getValue(this.treeObj.fields.id, data[0]), this.parent.renameText);
+            let resultData = [];
+            if (this.parent.hasId) {
+                resultData = new DataManager(this.treeObj.getTreeData()).
+                    executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+            }
+            else {
+                let nData = new DataManager(this.treeObj.getTreeData()).
+                    executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.currentItemText, false));
+                if (nData.length > 0) {
+                    resultData = new DataManager(nData).
+                        executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
                 }
+            }
+            if (resultData.length > 0) {
+                this.treeObj.updateNode(getValue(this.treeObj.fields.id, resultData[0]), this.parent.renameText);
             }
         }
     }
@@ -6139,21 +6257,23 @@ class NavigationPane {
         let moveNames = [];
         for (let i = 0; i < files.length; i++) {
             if (!files[i].isFile) {
-                let name = (files[i].previousName);
-                if (flag) {
-                    path = path + files[i].previousName;
-                    let index = path.lastIndexOf('/');
-                    name = path.substring(index + 1);
-                    path = path.substring(0, index + 1);
-                }
-                let resultData = new DataManager(this.treeObj.getTreeData()).
-                    executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
-                for (let j = 0; j < resultData.length; j++) {
-                    let fPath = getValue('filterPath', resultData[j]);
-                    fPath = fPath.replace(/\\/g, '/');
-                    if (fPath === path) {
-                        moveNames.push(getValue(this.treeObj.fields.id, resultData[j]));
-                        break;
+                if (!this.parent.hasId) {
+                    let name = (files[i].previousName);
+                    if (flag) {
+                        path = path + files[i].previousName;
+                        let index = path.lastIndexOf('/');
+                        name = path.substring(index + 1);
+                        path = path.substring(0, index + 1);
+                    }
+                    let resultData = new DataManager(this.treeObj.getTreeData()).
+                        executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
+                    for (let j = 0; j < resultData.length; j++) {
+                        let fPath = getValue('filterPath', resultData[j]);
+                        fPath = fPath.replace(/\\/g, '/');
+                        if (fPath === path) {
+                            moveNames.push(getValue(this.treeObj.fields.id, resultData[j]));
+                            break;
+                        }
                     }
                 }
             }
@@ -6171,40 +6291,50 @@ class NavigationPane {
         this.treeObj.removeNodes(moveNames);
     }
     selectResultNode(resultObj) {
-        let path = getValue('filterPath', resultObj);
-        let itemname = getValue('name', resultObj);
-        let data = new DataManager(this.treeObj.getTreeData()).
-            executeLocal(new Query().where(this.treeObj.fields.text, 'equal', itemname, false));
-        if (data.length > 0) {
-            let resultData = new DataManager(data).
-                executeLocal(new Query().where('filterPath', 'equal', path, false));
-            if (resultData.length > 0) {
-                let id = getValue(this.treeObj.fields.id, resultData[0]);
-                this.treeObj.selectedNodes = [id];
+        if (!this.parent.hasId) {
+            let path = getValue('filterPath', resultObj);
+            let itemname = getValue('name', resultObj);
+            let data = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', itemname, false));
+            if (data.length > 0) {
+                let resultData = new DataManager(data).
+                    executeLocal(new Query().where('filterPath', 'equal', path, false));
+                if (resultData.length > 0) {
+                    let id = getValue(this.treeObj.fields.id, resultData[0]);
+                    this.treeObj.selectedNodes = [id];
+                    this.treeObj.dataBind();
+                }
             }
+        }
+        else {
+            this.treeObj.selectedNodes = [getValue('_fm_id', resultObj)];
+            this.treeObj.dataBind();
         }
     }
     onDropPath(args) {
         this.onpasteEnd(args);
-        let pathObj = getValue(this.parent.path, this.parent.feParent);
-        this.selectResultNode(pathObj);
+        this.selectResultNode(this.parent.dropData);
         this.parent.isDropEnd = !this.parent.isPasteError;
     }
     onpasteEnd(args) {
-        let name = getValue('name', args.cwd);
-        let path = getValue('filterPath', args.cwd);
-        let resultData = new DataManager(this.treeObj.getTreeData()).
-            executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
-        if (resultData.length > 0) {
-            let data = new DataManager(resultData).
-                executeLocal(new Query().where('filterPath', 'equal', path, false));
-            if (data.length > 0) {
-                let id = getValue(this.treeObj.fields.id, data[0]);
-                let toExpand = this.treeObj.expandedNodes.indexOf(id) === -1;
-                this.removeChildNodes(id);
-                setValue(getDirectoryPath(args), args.files, this.parent.feFiles);
-                this.addChild(args.files, id, toExpand);
+        let resultData = [];
+        if (this.parent.hasId) {
+            resultData = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where('id', 'equal', getValue('id', args.cwd), false));
+        }
+        else {
+            let nData = new DataManager(this.treeObj.getTreeData()).
+                executeLocal(new Query().where(this.treeObj.fields.text, 'equal', getValue('name', args.cwd), false));
+            if (nData.length > 0) {
+                resultData = new DataManager(nData).
+                    executeLocal(new Query().where('filterPath', 'equal', getValue('filterPath', args.cwd), false));
             }
+        }
+        if (resultData.length > 0) {
+            let id = getValue(this.treeObj.fields.id, resultData[0]);
+            let toExpand = this.treeObj.expandedNodes.indexOf(id) === -1;
+            this.removeChildNodes(id);
+            this.addChild(args.files, id, toExpand);
         }
         this.parent.expandedId = null;
         this.onPathChanged(args);
@@ -6213,7 +6343,11 @@ class NavigationPane {
         }
     }
     checkDropPath(args) {
-        if ((this.parent.dropPath.indexOf(getDirectoryPath(args)) === -1)) {
+        if (this.parent.hasId) {
+            this.parent.isDropEnd = !this.parent.isPasteError;
+            return;
+        }
+        if ((this.parent.dropPath.indexOf(getDirectoryPath(this.parent, args)) === -1)) {
             this.parent.isDropEnd = false;
             readDropPath(this.parent);
         }
@@ -6327,17 +6461,8 @@ class NavigationPane {
     onDropInit(args) {
         if (this.parent.targetModule === this.getModuleName()) {
             let dropLi = closest(args.target, 'li');
-            let uid = dropLi.getAttribute('data-uid');
-            /* istanbul ignore next */
-            if (uid !== this.parent.pathId[0]) {
-                let info = this.getTreeData(dropLi)[0];
-                this.parent.dropPath = (info.filterPath.replace(/\\/g, '/') + info.name + '/');
-                this.parent.dropData = this.getTreeData(uid)[0];
-            }
-            else {
-                this.parent.dropPath = '/';
-                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
-            }
+            this.parent.dropData = this.getTreeData(dropLi)[0];
+            this.parent.dropPath = this.getDropPath(dropLi, getValue('name', this.parent.dropData));
         }
     }
     /**
@@ -6442,12 +6567,14 @@ class NavigationPane {
     }
     updateActionData() {
         this.updateItemData();
-        let newPath = getParentPath(this.parent);
+        let newPath = getParentPath(this.parent.path);
         this.parent.setProperties({ path: newPath }, true);
+        this.parent.pathId.pop();
+        this.parent.pathNames.pop();
     }
     /* istanbul ignore next */
     doDownload() {
-        let newPath = getParentPath(this.parent);
+        let newPath = getParentPath(this.parent.path);
         let itemId = this.treeObj.selectedNodes[0];
         let name = (itemId === this.parent.pathId[0]) ? '' : getValue('name', this.parent.itemData[0]);
         Download(this.parent, newPath, [name]);
@@ -6556,11 +6683,10 @@ class DetailsView {
                     this.focusModule.destroy();
                 }
             });
+            this.gridObj.isStringTemplate = true;
             this.gridObj.appendTo('#' + this.parent.element.id + GRID_ID);
             this.wireEvents();
             this.adjustHeight();
-            // tslint:disable-next-line
-            this.gridObj.defaultLocale.EmptyRecord = '';
             this.emptyArgs = args;
         }
     }
@@ -6795,7 +6921,7 @@ class DetailsView {
         let gridRecords = this.gridObj.getCurrentViewRecords();
         let sRecords = [];
         for (let i = 0, len = gridRecords.length; i < len; i++) {
-            let node = byId ? getValue('_fm_id', gridRecords[i]) : this.getName(gridRecords[i]);
+            let node = byId ? getValue('_fm_id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
             if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
@@ -6807,15 +6933,22 @@ class DetailsView {
     }
     addSelection(data) {
         let items = this.gridObj.getCurrentViewRecords();
-        let rData = new DataManager(items).
-            executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
-        if (rData.length > 0) {
-            let nData = new DataManager(rData).
-                executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
+        let rData = [];
+        if (this.parent.hasId) {
+            rData = new DataManager(items).
+                executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+        }
+        else {
+            let nData = new DataManager(items).
+                executeLocal(new Query().where('name', 'equal', getValue('name', data), false));
             if (nData.length > 0) {
-                let index = items.indexOf(nData[0]);
-                this.gridObj.selectRows([index]);
+                rData = new DataManager(nData).
+                    executeLocal(new Query().where('filterPath', 'equal', this.parent.filterPath, false));
             }
+        }
+        if (rData.length > 0) {
+            let index = items.indexOf(rData[0]);
+            this.gridObj.selectRows([index]);
         }
     }
     onSortColumn() {
@@ -6892,7 +7025,6 @@ class DetailsView {
             this.isInteracted = false;
             this.parent.setProperties({ selectedItems: [] }, true);
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
-            this.parent.notify(searchTextChange, args);
         }
         this.emptyArgs = args;
     }
@@ -6933,10 +7065,10 @@ class DetailsView {
         let eventArgs = { cancel: false, fileDetails: data };
         this.parent.trigger('fileOpen', eventArgs, (fileOpenArgs) => {
             if (!fileOpenArgs.cancel) {
+                let name = getValue('name', data);
                 if (getValue('isFile', data)) {
                     let icon = fileType(data);
                     if (icon === ICON_IMAGE) {
-                        let name = getValue('name', data);
                         let imgUrl = getImageUrl(this.parent, data);
                         createImageDialog(this.parent, name, imgUrl);
                     }
@@ -6944,8 +7076,10 @@ class DetailsView {
                 else {
                     let val = this.parent.breadcrumbbarModule.searchObj.element.value;
                     if (val === '') {
-                        let newPath = this.parent.path + getValue('name', data) + '/';
+                        let id = getValue('id', data);
+                        let newPath = this.parent.path + (isNullOrUndefined(id) ? name : id) + '/';
                         this.parent.setProperties({ path: newPath }, true);
+                        this.parent.pathNames.push(name);
                         this.parent.pathId.push(getValue('_fm_id', data));
                         this.parent.itemData = [data];
                         openAction(this.parent);
@@ -7015,7 +7149,6 @@ class DetailsView {
         }
         if (!this.gridObj) {
             this.render(args);
-            this.parent.notify(searchTextChange, args);
         }
         else {
             this.onPathChanged(args);
@@ -7125,6 +7258,7 @@ class DetailsView {
         this.parent.on(resizeEnd, this.onDetailsResize, this);
         this.parent.on(splitterResize, this.onDetailsResize, this);
         this.parent.on(layoutRefresh, this.onLayoutRefresh, this);
+        this.parent.on(dropPath, this.onDropPath, this);
     }
     removeEventListener() {
         this.parent.off(finalizeEnd, this.onFinalizeEnd);
@@ -7159,6 +7293,7 @@ class DetailsView {
         this.parent.off(resizeEnd, this.onDetailsResize);
         this.parent.off(splitterResize, this.onDetailsResize);
         this.parent.off(layoutRefresh, this.onLayoutRefresh);
+        this.parent.off(dropPath, this.onDropPath);
     }
     onMenuItemData(args) {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -7177,7 +7312,7 @@ class DetailsView {
                 this.parent.itemData = this.gridObj.getSelectedRecords();
             }
             else {
-                this.parent.itemData = [getValue(this.parent.path, this.parent.feParent)];
+                this.parent.itemData = [getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent)];
             }
         }
     }
@@ -7265,16 +7400,16 @@ class DetailsView {
     onDropInit(args) {
         if (this.parent.targetModule === this.getModuleName()) {
             /* istanbul ignore next */
+            let cwdData = getValue(this.parent.pathId[this.parent.pathId.length - 1], this.parent.feParent);
             if (!args.target.closest('tr')) {
                 this.parent.dropPath = this.parent.path;
-                this.parent.dropData = getValue(this.parent.dropPath, this.parent.feParent);
+                this.parent.dropData = cwdData;
             }
             else {
                 let info = null;
                 info = this.gridObj.getRowInfo(args.target).rowData;
-                this.parent.dropPath = info.isFile ? this.parent.path :
-                    (info.filterPath.replace(/\\/g, '/') + info.name + '/');
-                this.parent.dropData = info.isFile ? info : this.gridObj.getRowInfo(args.target).rowData;
+                this.parent.dropPath = info.isFile ? this.parent.path : getFullPath(this.parent, info, this.parent.path);
+                this.parent.dropData = info.isFile ? cwdData : info;
             }
         }
     }
@@ -7287,9 +7422,15 @@ class DetailsView {
     onpasteEnd(args) {
         if (this.parent.view === 'Details') {
             this.isPasteOperation = true;
-            if (this.parent.path === getDirectoryPath(args)) {
+            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args)) {
                 this.onPathChanged(args);
             }
+        }
+    }
+    onDropPath(args) {
+        if (this.parent.view === 'Details') {
+            this.isPasteOperation = true;
+            this.onPathChanged(args);
         }
     }
     /**
@@ -7389,17 +7530,9 @@ class DetailsView {
         let selectSize = 0;
         while (selectSize < selectedRecords.length) {
             let record = selectedRecords[selectSize];
-            this.parent.selectedItems.push(this.getName(record));
+            this.parent.selectedItems.push(getName(this.parent, record));
             selectSize++;
         }
-    }
-    getName(data) {
-        let name = getValue('name', data);
-        if (this.parent.breadcrumbbarModule.searchObj.element.value !== '') {
-            let path = getValue('filterPath', data).replace(/\\/g, '/');
-            name = path.replace(this.parent.path, '') + name;
-        }
-        return name;
     }
     onDeSelection(args) {
         /* istanbul ignore next */

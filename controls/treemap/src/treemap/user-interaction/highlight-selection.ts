@@ -35,6 +35,7 @@ export class TreeMapHighlight {
         let processHighlight: boolean;
         let targetId: string = (<Element>e.target).id;
         let eventArgs: IItemHighlightEventArgs; let items: Object[] = [];
+        let eventBlazorArgs: IItemHighlightEventArgs;
         let highlight: HighlightSettingsModel = this.treemap.highlightSettings;
         let item: Object; let highLightElements: Element[] = []; let process: boolean;
         let treeMapElement: Element; let element: Element; let orders: string[];
@@ -100,7 +101,8 @@ export class TreeMapHighlight {
                     this.highLightId = targetId;
                 }
                 eventArgs = { cancel: false, name: itemHighlight, treemap: treemap, items: items, elements: highLightElements };
-                treemap.trigger(itemHighlight, eventArgs);
+                eventBlazorArgs = { cancel: false, name: itemHighlight, items: items, elements: highLightElements };
+                treemap.trigger(itemHighlight, treemap.isBlazor ? eventBlazorArgs : eventArgs);
             } else {
                 processHighlight = false;
             }
@@ -229,6 +231,7 @@ export class TreeMapSelection {
     public mouseDown(e: PointerEvent): void {
         let targetEle: Element = <Element>e.target;
         let eventArgs: IItemSelectedEventArgs;
+        let eventBlazorArgs: IItemSelectedEventArgs;
         let treemap: TreeMap = this.treemap;
         let items: Object[] = []; let targetId: string = targetEle.id;
         let item: Object; let selectionElements: Element[] = []; let opacity: string;
@@ -298,7 +301,8 @@ export class TreeMapSelection {
                         element.classList.add('treeMapSelection');
                     }
                     eventArgs = { cancel: false, name: itemSelected, treemap: treemap, items: items, elements: selectionElements };
-                    treemap.trigger(itemSelected, eventArgs);
+                    eventBlazorArgs = { cancel: false, name: itemSelected, items: items, elements: selectionElements };
+                    treemap.trigger(itemSelected, treemap.isBlazor ? eventBlazorArgs : eventArgs);
                 }
             } else {
                 removeShape(this.shapeSelectionCollection, 'selection');

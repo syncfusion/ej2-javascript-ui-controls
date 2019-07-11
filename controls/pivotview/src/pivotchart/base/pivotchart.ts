@@ -290,8 +290,9 @@ export class PivotChart {
                     resized: this.resized.bind(this),
                     axisLabelRender: this.axisLabelRender.bind(this),
                     multiLevelLabelClick: this.multiLevelLabelClick.bind(this),
-                },
-                '#' + this.parent.element.id + '_chart');
+                });
+                this.parent.chart.isStringTemplate = true;
+                this.parent.chart.appendTo('#' + this.parent.element.id + '_chart');
         } else {
             this.parent.chart.series = this.chartSeries;
             this.parent.chart.primaryXAxis = currentXAxis;

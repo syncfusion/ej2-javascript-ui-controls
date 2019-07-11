@@ -123,8 +123,8 @@ describe('Diagram Control', () => {
             diagram.sizeChange = (args: ISizeChangeEventArgs) => {
                 args.cancel = true;
                 if (args.state === 'Completed') {
-                    expect((args.newValue.offsetX == offsetX || args.newValue.offsetX === 385) &&
-                        (args.newValue.offsetY == offsetY || args.newValue.offsetY == 415)).toBe(true);
+                    expect(args.newValue.offsetX == offsetX &&
+                        args.newValue.offsetY == offsetY).toBe(true);
 
                 }
             };
@@ -623,8 +623,7 @@ describe('Diagram Control', () => {
         it('Checking node Position Change', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
-                if (args.newValue && (args.newValue as NodeModel).offsetX) {
-                    console.log("Checking node Position Change" + (args.newValue as NodeModel).offsetX);
+                if (args.newValue) {
                     expect((args.newValue as NodeModel).offsetX === 430).toBe(true);
                     done();
                 }
@@ -693,10 +692,8 @@ describe('Diagram Control', () => {
         it('Target Point Change-Straight Connector', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
-                if (args.newValue && (args.newValue as ConnectorModel).targetPoint && (args.newValue as ConnectorModel).targetPoint.x && (args.newValue as ConnectorModel).targetPoint.y) {
-                    console.log("Target Point Change-Straight Connector" + (args.newValue as ConnectorModel).targetPoint.x);
-                    console.log("Target Point Change-Straight Connector" + (args.newValue as ConnectorModel).targetPoint.y);
-                    expect((args.newValue as ConnectorModel).targetPoint.x >= 500 || (args.newValue as ConnectorModel).targetPoint.x <= 522).toBe(true);
+                if (args.newValue) {
+                    expect((args.newValue as ConnectorModel).targetPoint.x !== 500).toBe(true);
                     expect((args.newValue as ConnectorModel).targetPoint.y === 200).toBe(true);
                     done();
                 }

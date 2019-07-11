@@ -75,7 +75,7 @@ describe('Template Engine', () => {
         let templateStr: string = '<div class="   class1">blazor</div>';
         let result: any = [];
         let blazor: string = 'Blazor';
-        let ejsIntrop: string = 'ejsIntrop';
+        let ejsIntrop: string = 'ejsInterop';
         window[blazor] = 'Template';
         window[ejsIntrop] = { updateTemplate: function () { } };
         result = (template.updateBlazorTemplate('template', 'Template'));
@@ -88,7 +88,7 @@ describe('Template Engine', () => {
         let templateStr: string = '<div class="   class1">blazor</div>';
         let result: any = [];
         let blazor: string = 'Blazor';
-        let ejsIntrop: string = 'ejsIntrop';
+        let ejsIntrop: string = 'ejsInterop';
         window[blazor] = 'Template';
         window[ejsIntrop] = { updateTemplate: function () { } };
         result = (template.updateBlazorTemplate('rowtemplate', 'RowTemplate'));

@@ -70,6 +70,7 @@ export class QuickPopups {
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
             zIndex: (this.parent.isAdaptive ? 1000 : 3)
         });
+        this.quickPopup.isStringTemplate = true;
     }
 
     private renderMorePopup(): void {
@@ -93,6 +94,7 @@ export class QuickPopups {
             viewPortElement: this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS) as HTMLElement,
             zIndex: 2
         });
+        this.morePopup.isStringTemplate = true;
         let closeButton: HTMLButtonElement = this.morePopup.element.querySelector('.' + cls.MORE_EVENT_CLOSE_CLASS) as HTMLButtonElement;
         this.renderButton('e-round', cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeButton, this.closeClick);
         EventHandler.add(this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS), 'click', this.navigationClick, this);
@@ -129,6 +131,7 @@ export class QuickPopups {
         let dialogElement: HTMLElement = createElement('div', { id: this.parent.element.id + 'QuickDialog' });
         this.parent.element.appendChild(dialogElement);
         this.quickDialog.appendTo(dialogElement);
+        this.quickDialog.isStringTemplate = true;
         let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.setAttribute('aria-label', this.l10n.getConstant('occurrence'));
@@ -147,6 +150,7 @@ export class QuickPopups {
             iconCss: iconName
         });
         buttonObj.appendTo(element);
+        buttonObj.isStringTemplate = true;
         EventHandler.add(element, 'click', clickEvent, this);
     }
 
@@ -427,9 +431,10 @@ export class QuickPopups {
         let cellDetails: { [key: string]: Object } = this.getFormattedString(temp);
         let quickCellPopup: HTMLElement = createElement('div', { className: cls.CELL_POPUP_CLASS });
         let tArgs: Object = extend({}, temp, { elementType: 'cell' }, true);
-        let templateId: string = this.parent.element.id;
+        let templateId: string = this.parent.currentView;
         if (this.parent.quickInfoTemplates.header) {
-            let headerTemp: NodeList = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'header');
+            let headerTemp: NodeList =
+                this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
             append(headerTemp, quickCellPopup);
         } else {
             let headerTemplate: HTMLElement = createElement('div', {
@@ -440,7 +445,8 @@ export class QuickPopups {
             quickCellPopup.appendChild(headerTemplate);
         }
         if (this.parent.quickInfoTemplates.content) {
-            let contentTemp: NodeList = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'content');
+            let contentTemp: NodeList =
+                this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
             append(contentTemp, quickCellPopup);
         } else {
             let tempStr: string = `<table class="${cls.POPUP_TABLE_CLASS}"><tbody><tr><td>` +
@@ -455,7 +461,8 @@ export class QuickPopups {
             quickCellPopup.appendChild(contentTemplate);
         }
         if (this.parent.quickInfoTemplates.footer) {
-            let footerTemp: NodeList = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footer');
+            let footerTemp: NodeList =
+                this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
             append(footerTemp, quickCellPopup);
         } else {
             let footerTemplate: HTMLElement = createElement('div', {
@@ -525,9 +532,10 @@ export class QuickPopups {
             let args: { [key: string]: Object } = this.getFormattedString(eventData);
             let quickEventPopup: HTMLElement = createElement('div', { className: cls.EVENT_POPUP_CLASS });
             let tArgs: Object = extend({}, eventData, { elementType: 'event' }, true);
-            let templateId: string = this.parent.element.id;
+            let templateId: string = this.parent.currentView;
             if (this.parent.quickInfoTemplates.header) {
-                let headerTemp: NodeList = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'header');
+                let headerTemp: NodeList =
+                    this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
                 append(headerTemp, quickEventPopup);
             } else {
                 let headerTemplate: HTMLElement = createElement('div', {
@@ -542,7 +550,8 @@ export class QuickPopups {
                 quickEventPopup.appendChild(headerTemplate);
             }
             if (this.parent.quickInfoTemplates.content) {
-                let content: NodeList = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'content');
+                let content: NodeList =
+                    this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
                 append(content, quickEventPopup);
             } else {
                 let tempStr: string = `<div class="${cls.DATE_TIME_CLASS}">` +
@@ -569,7 +578,8 @@ export class QuickPopups {
                 quickEventPopup.appendChild(contentTemplate);
             }
             if (this.parent.quickInfoTemplates.footer) {
-                let footerTemp: NodeList = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footer');
+                let footerTemp: NodeList =
+                    this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
                 append(footerTemp, quickEventPopup);
             } else {
                 let footerTemplate: HTMLElement = createElement('div', {

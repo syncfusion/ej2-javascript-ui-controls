@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile, closest, resetBlazorTemplate } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile, closest } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser } from '@syncfusion/ej2-base';
 import {ChangeEventArgs,DragStartArgs,DraggedEventArgs,DragStopArgs,ResizeArgs} from "./dashboard-layout";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -39,6 +39,7 @@ export interface PanelModel {
      * Defines a row value where the panel should be placed.
      * @default 0
      * @aspType int
+     * @blazorType int
      */
     row?: number;
 
@@ -46,6 +47,7 @@ export interface PanelModel {
      * Defines the column value where the panel to be placed.
      * @default 0
      * @aspType int
+     * @blazorType int
      */
     col?: number;
 
@@ -82,6 +84,7 @@ export interface PanelModel {
      * *
      * @default null
      * @aspType int
+     * @blazorType int
      *
      */
     maxSizeY?: number;
@@ -91,6 +94,7 @@ export interface PanelModel {
      * *
      * @default null
      * @aspType int
+     * @blazorType int
      */
     maxSizeX?: number;
 
@@ -98,7 +102,8 @@ export interface PanelModel {
      * Specifies the z-index of the panel
      * *
      * @default 1000
-     * @aspType int
+     * @aspType double
+     * @blazorType double
      */
     zIndex?: number;
 

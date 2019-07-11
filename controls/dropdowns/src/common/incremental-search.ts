@@ -56,7 +56,7 @@ export function Search(
     let listItems: Element[] = items;
     ignoreCase = ignoreCase !== undefined && ignoreCase !== null ? ignoreCase : true;
     let itemData: { [key: string]: Element | number } = { item: null, index: null };
-    if (inputVal.length) {
+    if (inputVal && inputVal.length) {
         let strLength: number = inputVal.length;
         let queryStr: string = ignoreCase ? inputVal.toLocaleLowerCase() : inputVal;
         for (let i: number = 0, itemsData: Element[] = listItems; i < itemsData.length; i++) {

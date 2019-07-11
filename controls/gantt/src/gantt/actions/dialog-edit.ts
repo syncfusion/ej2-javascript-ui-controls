@@ -357,6 +357,7 @@ export class DialogEdit {
         if (!this.beforeOpenArgs.cancel) {
             dialogModel.content = tabElement;
             this.dialogObj = new Dialog(dialogModel);
+            this.dialogObj.isStringTemplate = true;
             this.dialogObj.appendTo(this.dialog);
             let args: CObject = {
                 requestType: this.isEdit ? 'openEditDialog' : 'openAddDialog',
@@ -549,6 +550,7 @@ export class DialogEdit {
         tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';
         tabModel.overflowMode = 'Scrollable';
         this.tabObj = new Tab(tabModel);
+        this.tabObj.isStringTemplate = true;
         tabElement = this.parent.createElement('div', { id: ganttObj.element.id + '_Tab' });
         this.tabObj.appendTo(tabElement);
         return tabElement;
@@ -641,6 +643,7 @@ export class DialogEdit {
             case EditType.DatePicker:
                 let datePickerObj: DatePickerModel = common as DatePickerModel;
                 datePickerObj.format = this.parent.dateFormat;
+                datePickerObj.strictMode = true;
                 datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate) {
@@ -654,6 +657,7 @@ export class DialogEdit {
             case EditType.DateTimePicker:
                 let dateTimePickerObj: DatePickerModel = common as DatePickerModel;
                 dateTimePickerObj.format = this.parent.dateFormat;
+                dateTimePickerObj.strictMode = true;
                 dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping[taskSettings.startDate] ||
                     column.field === ganttObj.columnMapping[taskSettings.endDate]) {
@@ -727,7 +731,8 @@ export class DialogEdit {
             tempValue = ganttProp[ganttField];
             if (((isNullOrUndefined(picker.value)) && !isNullOrUndefined(tempValue)) ||
                 (isNullOrUndefined(tempValue) && !isNullOrUndefined(picker.value)) ||
-                (picker.value !== tempValue && picker.value.toString() !== tempValue.toString())) {
+                (picker.value !== tempValue && !isNullOrUndefined(picker.value) && !isNullOrUndefined(tempValue)
+                    && picker.value.toString() !== tempValue.toString())) {
                 picker.value = tempValue as Date;
                 picker.dataBind();
             }
@@ -830,7 +835,7 @@ export class DialogEdit {
                 startDate = this.parent.dateValidationModule.checkStartDate(startDate);
                 this.parent.setRecordValue('startDate', startDate, ganttProp, true);
             } else {
-                if (ganttObj.allowUnscheduledTasks) {
+                if (ganttObj.allowUnscheduledTasks && !(currentData.hasChildRecords)) {
                     this.parent.setRecordValue('startDate', null, ganttProp, true);
                 }
             }
@@ -843,7 +848,9 @@ export class DialogEdit {
                     this.parent.dateValidationModule.setTime(ganttObj.defaultEndTime, endDate);
                 }
                 endDate = this.parent.dateValidationModule.checkEndDate(endDate, ganttProp);
-                this.parent.setRecordValue('endDate', endDate, ganttProp, true);
+                if (endDate.getTime() > (ganttProp.startDate).getTime()) {
+                    this.parent.setRecordValue('endDate', endDate, ganttProp, true);
+                }
             } else {
                 if (ganttObj.allowUnscheduledTasks) {
                     this.parent.setRecordValue('endDate', null, ganttProp, true);

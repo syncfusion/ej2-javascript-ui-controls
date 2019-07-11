@@ -1914,27 +1914,28 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      * A function that returns selected chips data.
      */
     ChipList.prototype.getSelectedChips = function () {
-        var _this = this;
-        var slectedChips;
+        var selectedChips;
         if (this.type !== 'chip' && this.selection !== 'None') {
-            var selectedItems_1 = { texts: [], Indexes: [], data: [], elements: [] };
-            this.element.querySelectorAll('.' + classNames.active).forEach(function (chip) {
-                selectedItems_1.elements.push(chip);
-                var index = Array.prototype.slice.call(_this.element.querySelectorAll('.' + classNames.chip)).indexOf(chip);
-                selectedItems_1.Indexes.push(index);
-                selectedItems_1.data.push(_this.chips[index]);
-                var text = typeof _this.chips[index] === 'object' ?
-                    _this.chips[index].text.toString() : _this.chips[index].toString();
-                selectedItems_1.texts.push(text);
-            });
+            var selectedItems = { texts: [], Indexes: [], data: [], elements: [] };
+            var items = this.element.querySelectorAll('.' + classNames.active);
+            for (var i = 0; i < items.length; i++) {
+                var chip = items[i];
+                selectedItems.elements.push(chip);
+                var index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chip);
+                selectedItems.Indexes.push(index);
+                selectedItems.data.push(this.chips[index]);
+                var text = typeof this.chips[index] === 'object' ?
+                    this.chips[index].text.toString() : this.chips[index].toString();
+                selectedItems.texts.push(text);
+            }
             var selectedItem = {
-                text: selectedItems_1.texts[0], index: selectedItems_1.Indexes[0],
-                data: selectedItems_1.data[0], element: selectedItems_1.elements[0]
+                text: selectedItems.texts[0], index: selectedItems.Indexes[0],
+                data: selectedItems.data[0], element: selectedItems.elements[0]
             };
-            slectedChips = !isNullOrUndefined(selectedItem.index) ?
-                (this.selection === 'Multiple' ? selectedItems_1 : selectedItem) : undefined;
+            selectedChips = !isNullOrUndefined(selectedItem.index) ?
+                (this.selection === 'Multiple' ? selectedItems : selectedItem) : undefined;
         }
-        return slectedChips;
+        return selectedChips;
     };
     ChipList.prototype.wireEvent = function (unWireEvent) {
         if (!unWireEvent) {

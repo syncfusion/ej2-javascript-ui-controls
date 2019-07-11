@@ -2,6 +2,7 @@
 
 The `File Manager` is a graphical user interface component used to manage the file system. It enables the user to perform common file operations such as accessing, editing, uploading, downloading, and sorting files and folders. This component also allows easy navigation for browsing or selecting a file or folder from the file system.
 
+![ej2-file-manager](https://ej2.syncfusion.com/products/images/file-manager/readme.gif)
 
 > This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at [https://www.syncfusion.com/sales/products](https://www.syncfusion.com/sales/products) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials).
 

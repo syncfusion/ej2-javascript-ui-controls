@@ -104,7 +104,8 @@ export abstract class Port extends ChildProperty<Port> {
      * * Hover - Shows the port when the mouse hovers over a node
      * * Connect - Shows the port when a connection end point is dragged over a node
      * @default 'Connect'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     @Property(PortVisibility.Connect)
     public visibility: PortVisibility;
@@ -119,7 +120,8 @@ export abstract class Port extends ChildProperty<Port> {
     /**
      * Defines the constraints of port
      * @default 'Default'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     @Property(PortConstraints.Default)
     public constraints: PortConstraints;
@@ -127,6 +129,7 @@ export abstract class Port extends ChildProperty<Port> {
     /**
      * Allows the user to save custom information/data about a port
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

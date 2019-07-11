@@ -148,6 +148,7 @@ export class UserHandle extends ChildProperty<UserHandle> {
     /**
      * Defines the offset of user Handle 
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public offset: number;
@@ -222,6 +223,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Sets/Gets the width of the container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -230,6 +232,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Sets/Gets the height of the container
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -238,6 +241,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Sets the rotate angle of the container
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public rotateAngle: number;
@@ -245,6 +249,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Sets the positionX of the container
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public offsetX: number;
@@ -252,6 +257,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Sets the positionY of the container
      * @default 0
+     * @isBlazorNullableType true
      */
     @Property(0)
     public offsetY: number;
@@ -331,7 +337,8 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * * UserHandles - Shows/hides the user handles of the selector
      * * Resize - Shows/hides all resize handles of the selector
      * @default 'All'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     @Property(SelectorConstraints.All)
     public constraints: SelectorConstraints;
@@ -352,12 +359,14 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * * ResizeNorth - Enable ResizeNorth Resize
      * @private
      * @aspNumberEnum
+     * @blazorNumberEnum
      */
     public thumbsConstraints: ThumbsConstraints;
 
     /**
      * setTooltipTemplate helps to customize the content of a tooltip
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */

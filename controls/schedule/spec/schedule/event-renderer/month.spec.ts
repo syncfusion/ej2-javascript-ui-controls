@@ -1,7 +1,7 @@
 /**
  * Month view appointment rendering spec 
  */
-import { closest, Browser } from '@syncfusion/ej2-base';
+import { closest, Browser, Internationalization } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
 import { testData } from '../base/datasource.spec';
 import * as util from '../util.spec';
@@ -188,6 +188,35 @@ describe('Month Event Render Module', () => {
         });
         it('appointment element present in DOM', () => {
             expect(schObj.element.querySelectorAll('.e-content-wrap .e-appointment').length).toEqual(6);
+        });
+    });
+
+    describe('Start and end time in event template', () => {
+        let schObj: Schedule;
+        let eventData: Object[] = [{
+            Id: 1,
+            Subject: 'Normal event',
+            StartTime: new Date(2017, 10, 2, 10),
+            EndTime: new Date(2017, 10, 2, 11)
+        }];
+        beforeAll((done: Function) => {
+            let instance: Internationalization = new Internationalization();
+            (window as TemplateFunction).getTimeString = (value: Date) => {
+                return instance.formatDate(value, { skeleton: 'hm' });
+            };
+            interface TemplateFunction extends Window {
+                getTimeString?: Function;
+            }
+            let model: ScheduleModel = { currentView: 'Month', height: '550px', selectedDate: new Date(2017, 10, 2),
+             eventSettings: { template: '<div class="time">${getTimeString(data.StartTime)}</div>' }};
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('check event start time in template', () => {
+            expect(schObj.element.querySelector('.e-appointment .time').innerHTML).toEqual('10:00 AM');
         });
     });
 

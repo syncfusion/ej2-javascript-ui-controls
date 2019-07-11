@@ -1706,8 +1706,15 @@ export class Drawing {
                         copy.bounds.y += 10;
                     }
                     let newNode: PdfAnnotationBaseModel = cloneObject(copy);
-                    newNode.id += randomId();
-
+                    if (this.pdfViewer.viewerBase.contextMenuModule.previousAction !== 'Cut') {
+                        newNode.id += randomId();
+                        if (this.pdfViewer.annotationModule) {
+                            newNode.annotName = newNode.id;
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationCollection(newNode, copiedItems[0]);
+                        }
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.annotation.addAction(newNode.pageIndex, null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
+                    }
                     this.add(newNode);
                     this.pdfViewer.select([newNode.id]);
 

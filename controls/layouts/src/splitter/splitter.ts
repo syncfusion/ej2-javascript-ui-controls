@@ -1,5 +1,5 @@
 import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';
-import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
 import { SplitterModel, PanePropertiesModel } from './splitter-model';
 
@@ -86,6 +86,7 @@ export class PaneProperties extends ChildProperty<PaneProperties> {
     /**
      * Specifies the content of split pane as plain text, HTML markup, or any other JavaScript controls.
      * @default ''
+     * @blazorType string
      */
     @Property()
     public content: string | HTMLElement;
@@ -657,12 +658,12 @@ export class Splitter extends Component<HTMLElement> {
 
     private getPrevPane(currentBar: Element, order: number): HTMLElement {
         let elementIndex: number = (order - 1) / (2);
-        return currentBar.parentElement.children[elementIndex] as HTMLElement;
+        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex] as HTMLElement;
     }
 
     private getNextPane(currentBar: Element, order: number): HTMLElement {
         let elementIndex: number = ((order - 1) / 2) + 1;
-        return currentBar.parentElement.children[elementIndex] as HTMLElement;
+        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex] as HTMLElement;
     }
 
     private addResizeHandler(currentBar: HTMLElement): void {
@@ -1524,16 +1525,25 @@ export class Splitter extends Component<HTMLElement> {
 
     // tslint:disable-next-line
     private templateCompile(ele: HTMLElement, cnt: any): void {
+        let blazorContain: string[] = Object.keys(window) as string[];
         let tempEle: HTMLElement = this.createElement('div');
         this.compileElement(tempEle, cnt, 'content');
         if (tempEle.childNodes.length !== 0) {
             [].slice.call(tempEle.childNodes).forEach((childEle: HTMLElement): void => {
                 ele.appendChild(childEle);
             });
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && cnt.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(
+                    this.element.id + 'content' + this.allPanes.length.toString(),
+                    'ContentTemplate',
+                    this.paneSettings[this.allPanes.length - 1]
+                );
+            }
         }
     }
 
     private compileElement(ele: HTMLElement, val: string | HTMLElement, prop: string): void {
+        let blazorContain: string[] = Object.keys(window) as string[];
         if (typeof(val) === 'string') {
             val = (val).trim();
         }
@@ -1545,7 +1555,15 @@ export class Splitter extends Component<HTMLElement> {
         }
         let templateFUN: HTMLElement[];
         if (!isNullOrUndefined(templateFn)) {
-            templateFUN = templateFn({}, this, prop);
+            if (blazorContain.indexOf('ejsInterop') !== -1  && !this.isStringTemplate && (val as string).indexOf('<div>Blazor') === 0) {
+                templateFUN = templateFn(
+                    {}, this, prop,
+                    this.element.id + 'content' + this.allPanes.length.toString(),
+                    this.isStringTemplate
+                );
+            } else {
+                templateFUN = templateFn({}, this, prop, this.element.id + 'content' + this.allPanes.length.toString(), true);
+            }
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach((el: HTMLElement): void => {

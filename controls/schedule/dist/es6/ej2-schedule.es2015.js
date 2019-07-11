@@ -692,6 +692,7 @@ class HeaderRenderer {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale
         });
+        this.toolbarObj.isStringTemplate = true;
         this.toolbarObj.appendTo(this.parent.element.querySelector('.' + HEADER_TOOLBAR));
         let prevNavEle = this.toolbarObj.element.querySelector('.e-prev');
         if (prevNavEle) {
@@ -890,6 +891,7 @@ class HeaderRenderer {
             position: { X: 'left', Y: 'bottom' },
             enableRtl: this.parent.enableRtl
         });
+        this.headerPopup.isStringTemplate = true;
         let calendarView = this.getCalendarView();
         this.headerCalendar = new Calendar({
             value: this.parent.selectedDate,
@@ -901,6 +903,7 @@ class HeaderRenderer {
             calendarMode: this.parent.calendarMode,
             change: this.calendarChange.bind(this)
         });
+        this.headerCalendar.isStringTemplate = true;
         this.headerCalendar.appendTo(headerCalendarEle);
         this.headerPopup.hide();
     }
@@ -4544,8 +4547,8 @@ class EventBase {
         });
         let templateElement;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId = this.parent.element.id + 'headerTooltipTemplate';
-            templateElement = this.parent.getHeaderTooltipTemplate()(record, this.parent, 'headerTooltipTemplate', templateId);
+            let templateId = this.parent.currentView + '_headerTooltipTemplate';
+            templateElement = this.parent.getHeaderTooltipTemplate()(record, this.parent, 'headerTooltipTemplate', templateId, false);
         }
         else {
             let appointmentSubject = createElement('div', {
@@ -5335,6 +5338,7 @@ class QuickPopups {
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
             zIndex: (this.parent.isAdaptive ? 1000 : 3)
         });
+        this.quickPopup.isStringTemplate = true;
     }
     renderMorePopup() {
         let moreEventPopup = `<div class="${MORE_EVENT_POPUP_CLASS}"><div class="${MORE_EVENT_HEADER_CLASS}">` +
@@ -5357,6 +5361,7 @@ class QuickPopups {
             viewPortElement: this.parent.element.querySelector('.' + TABLE_CONTAINER_CLASS),
             zIndex: 2
         });
+        this.morePopup.isStringTemplate = true;
         let closeButton = this.morePopup.element.querySelector('.' + MORE_EVENT_CLOSE_CLASS);
         this.renderButton('e-round', ICON + ' ' + CLOSE_ICON_CLASS, false, closeButton, this.closeClick);
         EventHandler.add(this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DATE_CLASS), 'click', this.navigationClick, this);
@@ -5393,6 +5398,7 @@ class QuickPopups {
         let dialogElement = createElement('div', { id: this.parent.element.id + 'QuickDialog' });
         this.parent.element.appendChild(dialogElement);
         this.quickDialog.appendTo(dialogElement);
+        this.quickDialog.isStringTemplate = true;
         let okButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.setAttribute('aria-label', this.l10n.getConstant('occurrence'));
@@ -5410,6 +5416,7 @@ class QuickPopups {
             iconCss: iconName
         });
         buttonObj.appendTo(element);
+        buttonObj.isStringTemplate = true;
         EventHandler.add(element, 'click', clickEvent, this);
     }
     quickDialogClass(action) {
@@ -5680,9 +5687,9 @@ class QuickPopups {
         let cellDetails = this.getFormattedString(temp);
         let quickCellPopup = createElement('div', { className: CELL_POPUP_CLASS });
         let tArgs = extend({}, temp, { elementType: 'cell' }, true);
-        let templateId = this.parent.element.id;
+        let templateId = this.parent.currentView;
         if (this.parent.quickInfoTemplates.header) {
-            let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'header');
+            let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
             append(headerTemp, quickCellPopup);
         }
         else {
@@ -5694,7 +5701,7 @@ class QuickPopups {
             quickCellPopup.appendChild(headerTemplate);
         }
         if (this.parent.quickInfoTemplates.content) {
-            let contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'content');
+            let contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
             append(contentTemp, quickCellPopup);
         }
         else {
@@ -5710,7 +5717,7 @@ class QuickPopups {
             quickCellPopup.appendChild(contentTemplate);
         }
         if (this.parent.quickInfoTemplates.footer) {
-            let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footer');
+            let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
             append(footerTemp, quickCellPopup);
         }
         else {
@@ -5784,9 +5791,9 @@ class QuickPopups {
             let args = this.getFormattedString(eventData);
             let quickEventPopup = createElement('div', { className: EVENT_POPUP_CLASS });
             let tArgs = extend({}, eventData, { elementType: 'event' }, true);
-            let templateId = this.parent.element.id;
+            let templateId = this.parent.currentView;
             if (this.parent.quickInfoTemplates.header) {
-                let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'header');
+                let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
                 append(headerTemp, quickEventPopup);
             }
             else {
@@ -5802,7 +5809,7 @@ class QuickPopups {
                 quickEventPopup.appendChild(headerTemplate);
             }
             if (this.parent.quickInfoTemplates.content) {
-                let content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'content');
+                let content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
                 append(content, quickEventPopup);
             }
             else {
@@ -5830,7 +5837,7 @@ class QuickPopups {
                 quickEventPopup.appendChild(contentTemplate);
             }
             if (this.parent.quickInfoTemplates.footer) {
-                let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footer');
+                let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
                 append(footerTemp, quickEventPopup);
             }
             else {
@@ -6408,6 +6415,7 @@ class EventTooltip {
             enableRtl: this.parent.enableRtl
         });
         this.tooltipObj.appendTo(this.parent.element);
+        this.tooltipObj.isStringTemplate = true;
     }
     getTargets() {
         let targets = [];
@@ -6439,8 +6447,8 @@ class EventTooltip {
                 resourceData: resCollection.resourceData
             };
             let contentContainer = createElement('div');
-            let templateId = this.parent.element.id + 'headerTooltipTemplate';
-            let tooltipTemplate = this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId);
+            let templateId = this.parent.currentView + '_headerTooltipTemplate';
+            let tooltipTemplate = this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
             return;
@@ -6448,8 +6456,8 @@ class EventTooltip {
         let record = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             let contentContainer = createElement('div');
-            let templateId = this.parent.element.id + 'tooltipTemplate';
-            let tooltipTemplate = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId);
+            let templateId = this.parent.currentView + '_tooltipTemplate';
+            let tooltipTemplate = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         }
@@ -7593,6 +7601,7 @@ class EventWindow {
             dialogModel.header = '<div class="e-title-text">' + this.l10n.getConstant('newEvent') + '</div>';
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
+        this.dialogObject.isStringTemplate = true;
         addClass([this.element.parentElement], EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -7694,8 +7703,8 @@ class EventWindow {
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node) => remove(node));
             }
-            let templateId = this.parent.element.id + 'editorTemplate';
-            let editorTemplate = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId);
+            let templateId = this.parent.currentView + '_editorTemplate';
+            let editorTemplate = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId, false);
             append(editorTemplate, form);
             updateBlazorTemplate(templateId, 'EditorTemplate');
         }
@@ -7732,6 +7741,7 @@ class EventWindow {
         this.buttonObj = new Button({ iconCss: REPEAT_BUTTON_ICON_CLASS + ' e-icons', cssClass: 'e-medium ' + this.parent.cssClass });
         repeatEditConainer.appendChild(button);
         this.buttonObj.appendTo(button);
+        this.buttonObj.isStringTemplate = true;
         repeatDiv.appendChild(repeatEditConainer);
         repeatParentDiv.appendChild(repeatDiv);
         if (this.parent.isAdaptive) {
@@ -7793,6 +7803,7 @@ class EventWindow {
             step: this.getSlotDuration(),
             value: this.parent.getCurrentTime(), width: '100%'
         });
+        dateTimePicker.isStringTemplate = true;
         dateTimePicker.appendTo(dateTimeInput);
         return dateTimeDiv;
     }
@@ -7847,6 +7858,7 @@ class EventWindow {
                 mode: 'Box'
             });
             listObj.appendTo(resourceInput);
+            listObj.isStringTemplate = true;
         }
         else {
             let drowDownList = new DropDownList({
@@ -7866,6 +7878,7 @@ class EventWindow {
                 itemTemplate: resourceTemplate
             });
             drowDownList.appendTo(resourceInput);
+            drowDownList.isStringTemplate = true;
         }
         return resourceDiv;
     }
@@ -7893,6 +7906,7 @@ class EventWindow {
             popupHeight: '230px',
         });
         drowDownList.appendTo(timezoneInput);
+        drowDownList.isStringTemplate = true;
         return timezoneDiv;
     }
     onMultiselectResourceChange(args) {
@@ -7969,6 +7983,7 @@ class EventWindow {
             label: this.getFieldLabel(value)
         });
         checkBox.appendTo(checkBoxInput);
+        checkBox.isStringTemplate = true;
         checkBoxInput.setAttribute('name', fieldName);
         if (fieldName === 'Repeat') {
             this.repeatStatus = checkBox;
@@ -8097,6 +8112,7 @@ class EventWindow {
         });
         this.element.appendChild(element);
         this.repeatDialogObject.appendTo(element);
+        this.repeatDialogObject.isStringTemplate = true;
         this.createRecurrenceEditor(this.repeatDialogObject.element.querySelector('.e-rec-editor'));
     }
     loadRecurrenceEditor() {
@@ -9223,6 +9239,7 @@ class Render {
         }
     }
     initializeLayout(viewName) {
+        this.resetTemplates();
         if (this.parent.activeView) {
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
@@ -9274,7 +9291,6 @@ class Render {
             }
             throw Error('Inject required modules');
         }
-        this.resetTemplates();
         this.updateLabelText(viewName);
         this.parent.activeView.addEventListener();
         this.parent.activeView.getRenderDates();
@@ -9316,72 +9332,73 @@ class Render {
     }
     refreshTemplates() {
         if (this.parent.dateHeaderTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'dateHeaderTemplate', 'DateHeaderTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_dateHeaderTemplate', 'DateHeaderTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'majorSlotTemplate', 'MajorSlotTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_majorSlotTemplate', 'MajorSlotTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'minorSlotTemplate', 'MinorSlotTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_minorSlotTemplate', 'MinorSlotTemplate', this.parent);
         }
         if (this.parent.cellTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'cellTemplate', 'CellTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_cellTemplate', 'CellTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.eventTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'eventTemplate', 'EventTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_eventTemplate', 'EventTemplate', this.parent);
         }
         if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'headerTooltipTemplate', 'HeaderTooltipTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_headerTooltipTemplate', 'HeaderTooltipTemplate', this.parent);
         }
         if (this.parent.eventSettings.tooltipTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'tooltipTemplate', 'TooltipTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_tooltipTemplate', 'TooltipTemplate', this.parent);
         }
         if (this.parent.quickInfoTemplates.header) {
-            updateBlazorTemplate(this.parent.element.id + 'header', 'Header');
+            updateBlazorTemplate(this.parent.currentView + '_header', 'Header', this.parent);
         }
         if (this.parent.quickInfoTemplates.content) {
-            updateBlazorTemplate(this.parent.element.id + 'content', 'Content');
+            updateBlazorTemplate(this.parent.currentView + '_content', 'Content', this.parent);
         }
         if (this.parent.quickInfoTemplates.footer) {
-            updateBlazorTemplate(this.parent.element.id + 'footer', 'Footer');
+            updateBlazorTemplate(this.parent.currentView + '_footer', 'Footer', this.parent);
         }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            updateBlazorTemplate(this.parent.element.id + 'resourceHeaderTemplate', 'ResourceHeaderTemplate');
+            updateBlazorTemplate(this.parent.currentView + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this.parent);
         }
     }
     resetTemplates() {
+        let viewName = this.parent.viewCollections[this.parent.uiStateValues.viewIndex].option;
         if (this.parent.dateHeaderTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'dateHeaderTemplate', 'DateHeaderTemplate');
+            resetBlazorTemplate(viewName + '_dateHeaderTemplate', 'DateHeaderTemplate');
         }
         if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'majorSlotTemplate', 'MajorSlotTemplate');
+            resetBlazorTemplate(viewName + '_majorSlotTemplate', 'MajorSlotTemplate');
         }
         if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'minorSlotTemplate', 'MinorSlotTemplate');
+            resetBlazorTemplate(viewName + '_minorSlotTemplate', 'MinorSlotTemplate');
         }
         if (this.parent.cellTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'cellTemplate', 'CellTemplate');
+            resetBlazorTemplate(viewName + '_cellTemplate', 'CellTemplate');
         }
         if (this.parent.activeViewOptions.eventTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'eventTemplate', 'EventTemplate');
+            resetBlazorTemplate(viewName + '_eventTemplate', 'EventTemplate');
         }
         if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'headerTooltipTemplate', 'HeaderTooltipTemplate');
+            resetBlazorTemplate(viewName + '_headerTooltipTemplate', 'HeaderTooltipTemplate');
         }
         if (this.parent.eventSettings.tooltipTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'tooltipTemplate', 'TooltipTemplate');
+            resetBlazorTemplate(viewName + '_tooltipTemplate', 'TooltipTemplate');
         }
         if (this.parent.quickInfoTemplates.header) {
-            resetBlazorTemplate(this.parent.element.id + 'header', 'Header');
+            resetBlazorTemplate(viewName + '_header', 'Header');
         }
         if (this.parent.quickInfoTemplates.content) {
-            resetBlazorTemplate(this.parent.element.id + 'content', 'Content');
+            resetBlazorTemplate(viewName + '_content', 'Content');
         }
         if (this.parent.quickInfoTemplates.footer) {
-            resetBlazorTemplate(this.parent.element.id + 'footer', 'Footer');
+            resetBlazorTemplate(viewName + '_footer', 'Footer');
         }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'resourceHeaderTemplate', 'ResourceHeaderTemplate');
+            resetBlazorTemplate(viewName + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
         }
     }
     refreshDataManager() {
@@ -10649,6 +10666,7 @@ let Schedule = class Schedule extends Component {
             let currentIndex = this.getViewIndex(this.currentView);
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
+        this.uiStateValues.viewIndex = this.viewIndex;
     }
     getActiveViewOptions() {
         let timeScale = {
@@ -10781,6 +10799,7 @@ let Schedule = class Schedule extends Component {
         }
     }
     changeView(view, event, muteOnChange, index) {
+        this.uiStateValues.viewIndex = this.viewIndex;
         if (isNullOrUndefined(index)) {
             index = this.getViewIndex(view);
         }
@@ -10904,7 +10923,7 @@ let Schedule = class Schedule extends Component {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.uiStateValues = {
-            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
+            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false, viewIndex: 0,
             isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
         };
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
@@ -12258,7 +12277,8 @@ class ActionBase {
         return originalElement;
     }
     createCloneElement(element) {
-        let cloneElement = compile(element.outerHTML)({})[0];
+        let cloneWrapper = createElement('div', { innerHTML: element.outerHTML });
+        let cloneElement = cloneWrapper.childNodes.item(0);
         let cloneClassLists = [CLONE_ELEMENT_CLASS];
         cloneClassLists.push((this.actionObj.action === 'drag') ? DRAG_CLONE_CLASS : RESIZE_CLONE_CLASS);
         if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineMonth') {
@@ -12663,9 +12683,10 @@ class MonthEvent extends EventBase {
         }
         let templateElement;
         let eventData = record.data;
+        let eventObj = this.getEventData(record);
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId = this.parent.element.id + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId);
+            let templateId = this.parent.currentView + '_eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             let eventLocation = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
@@ -12865,7 +12886,8 @@ class MonthEvent extends EventBase {
     }
     renderEventElement(event, appointmentElement, cellTd) {
         let eventType = appointmentElement.classList.contains(BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
-        let args = { data: event, element: appointmentElement, cancel: false, type: eventType };
+        let eventObj = this.getEventData(event);
+        let args = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
         this.parent.trigger(eventRendered, args, (eventArgs) => {
             if (eventArgs.cancel) {
                 this.renderedEvents.pop();
@@ -12874,6 +12896,12 @@ class MonthEvent extends EventBase {
                 this.renderElement(cellTd, appointmentElement);
             }
         });
+    }
+    getEventData(event) {
+        let eventObj = extend({}, event, null, true);
+        eventObj[this.fields.startTime] = event.data[this.fields.startTime];
+        eventObj[this.fields.endTime] = event.data[this.fields.endTime];
+        return eventObj;
     }
     renderElement(cellTd, element) {
         if (cellTd.querySelector('.' + APPOINTMENT_WRAPPER_CLASS)) {
@@ -13008,6 +13036,9 @@ class Resize extends ActionBase {
             startTime: this.actionObj.start,
             endTime: this.actionObj.end
         };
+        if (this.parent.group.resources.length > 0) {
+            resizeArgs.groupIndex = this.actionObj.groupIndex;
+        }
         this.parent.trigger(resizing, resizeArgs);
     }
     updateResizingDirection(e) {
@@ -13893,7 +13924,13 @@ class DragAndDrop extends ActionBase {
         this.updateScrollPosition(e);
         this.updateNavigatingPosition(e);
         this.updateDraggingDateTime(e);
-        let dragArgs = { data: eventObj, event: e, element: this.actionObj.element };
+        let dragArgs = {
+            data: eventObj, event: e, element: this.actionObj.element, startTime: this.actionObj.start,
+            endTime: this.actionObj.end
+        };
+        if (this.parent.group.resources.length > 0) {
+            dragArgs.groupIndex = this.actionObj.groupIndex;
+        }
         this.parent.trigger(drag, dragArgs);
     }
     calculateMinutesDiff(eventObj) {
@@ -14857,8 +14894,8 @@ class ViewBase {
     setResourceHeaderContent(tdElement, tdData, className = 'e-text-ellipsis') {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
             let data = { resource: tdData.resource, resourceData: tdData.resourceData };
-            let templateId = this.parent.element.id + 'resourceHeaderTemplate';
-            let quickTemplate = this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId);
+            let templateId = this.parent.currentView + '_resourceHeaderTemplate';
+            let quickTemplate = this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false);
             append(quickTemplate, tdElement);
         }
         else {
@@ -15223,8 +15260,8 @@ class VerticalEvent extends EventBase {
         let templateElement;
         let eventData = data;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId = this.parent.element.id + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId);
+            let templateId = this.parent.currentView + '_eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             let appointmentSubject = createElement('div', { className: SUBJECT_CLASS, innerHTML: recordSubject });
@@ -15892,12 +15929,14 @@ class VerticalView extends ViewBase {
         let cntEle;
         let wrapper = createElement('div');
         let templateName = '';
+        let templateId = this.parent.currentView + '_';
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
                     templateName = 'dateHeaderTemplate';
                     let args = { date: date, type: type };
-                    cntEle = this.parent.getDateHeaderTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
+                    cntEle =
+                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
                 else {
                     wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
@@ -15911,7 +15950,8 @@ class VerticalView extends ViewBase {
                 if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
                     templateName = 'majorSlotTemplate';
                     let args = { date: date, type: type };
-                    cntEle = this.parent.getMajorSlotTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
+                    cntEle =
+                        this.parent.getMajorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
                 else {
                     wrapper.innerHTML = `<span>${ViewHelper.getTime(this.parent, date)}</span>`;
@@ -15922,7 +15962,8 @@ class VerticalView extends ViewBase {
                 if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
                     templateName = 'minorSlotTemplate';
                     let args = { date: date, type: type };
-                    cntEle = this.parent.getMinorSlotTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
+                    cntEle =
+                        this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
                 else {
                     wrapper.innerHTML = '&nbsp;';
@@ -15933,7 +15974,8 @@ class VerticalView extends ViewBase {
                 if (this.parent.activeViewOptions.cellTemplate) {
                     templateName = 'cellTemplate';
                     let args = { date: date, type: type, groupIndex: groupIndex };
-                    cntEle = this.parent.getCellTemplate()(args, this.parent, templateName, this.parent.element.id + templateName);
+                    cntEle =
+                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + templateName, false);
                 }
                 break;
         }
@@ -16175,8 +16217,8 @@ class VerticalView extends ViewBase {
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
-            let templateId = this.parent.element.id + 'cellTemplate';
-            let tooltipTemplate = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId);
+            let templateId = this.parent.currentView + '_cellTemplate';
+            let tooltipTemplate = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(tooltipTemplate), ntd);
         }
         ntd.setAttribute('data-date', cellDate.getTime().toString());
@@ -16602,8 +16644,8 @@ class Month extends ViewBase {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
                 let cellArgs = { date: td.date, type: td.type };
-                let templateId = this.parent.element.id + 'dateHeaderTemplate';
-                let dateTemplate = this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId);
+                let templateId = this.parent.currentView + '_dateHeaderTemplate';
+                let dateTemplate = this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false);
                 if (dateTemplate && dateTemplate.length) {
                     append([].slice.call(dateTemplate), tdEle);
                 }
@@ -16748,8 +16790,8 @@ class Month extends ViewBase {
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args = { date: data.date, type: type, groupIndex: data.groupIndex };
-            let templateId = this.parent.element.id + 'cellTemplate';
-            let cellTemplate = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId);
+            let templateId = this.parent.currentView + '_cellTemplate';
+            let cellTemplate = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(cellTemplate), ntd);
         }
         let args = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
@@ -16927,8 +16969,8 @@ class AgendaBase {
                 let templateEle;
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
                     addClass([appWrapper], EVENT_TEMPLATE);
-                    let templateId = this.parent.element.id + 'eventTemplate';
-                    templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId);
+                    let templateId = this.parent.currentView + '_eventTemplate';
+                    templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId, false);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         let iconClass = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
                             EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
@@ -17181,8 +17223,8 @@ class AgendaBase {
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: AGENDA_HEADER_CLASS });
             let args = { date: date, type: 'dateHeader' };
-            let templateId = this.parent.element.id + 'dateHeaderTemplate';
-            let dateTemplate = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId);
+            let templateId = this.parent.currentView + '_dateHeaderTemplate';
+            let dateTemplate = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false);
             append([].slice.call(dateTemplate), dateHeader);
         }
         else {
@@ -17817,33 +17859,35 @@ class TimelineHeaderRow {
         }
         return result;
     }
-    generateSlots(data, colspan, template, tempFn, cls, type) {
-        let tdDatas = [];
-        let customHelper = {
-            getYear: (dt) => {
-                return this.parent.globalize.formatDate(dt, { format: 'y', calendar: this.parent.getCalendarMode() });
-            },
-            getMonth: (dt) => {
-                return this.parent.globalize.formatDate(dt, { format: 'MMMM', calendar: this.parent.getCalendarMode() });
-            },
-            getWeekNumber: (dt) => {
-                return getWeekNumber(dt);
-            }
+    generateSlots(data, colspan, row, cls, type) {
+        let dateParser = (date, format) => {
+            return this.parent.globalize.formatDate(date, { format: format, calendar: this.parent.getCalendarMode() });
         };
+        let tdDatas = [];
         let keys = Object.keys(data);
         for (let i = 0; i < keys.length; i++) {
             let dates = data[keys[i]];
             let htmlCol;
-            if (!tempFn) {
-                htmlCol = compile(template, customHelper)({ date: dates[0] });
+            if (row.template) {
+                let args = { date: dates[0], type: type };
+                htmlCol = this.parent.templateParser(row.template)(args);
             }
             else {
-                let args = { date: dates[0], type: type };
-                htmlCol = tempFn(args);
+                let viewTemplate;
+                switch (row.option) {
+                    case 'Year':
+                        viewTemplate = `<span class="e-header-year">${dateParser(dates[0], 'y')}</span>`;
+                        break;
+                    case 'Month':
+                        viewTemplate = `<span class="e-header-month">${dateParser(dates[0], 'MMMM')}</span>`;
+                        break;
+                    case 'Week':
+                        viewTemplate = `<span class="e-header-week">${getWeekNumber(dates[0])}</span>`;
+                }
+                let headerWrapper = createElement('div', { innerHTML: viewTemplate });
+                htmlCol = headerWrapper.childNodes;
             }
-            tdDatas.push({
-                date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol
-            });
+            tdDatas.push({ date: dates[0], type: type, className: [cls], colSpan: dates.length * colspan, template: htmlCol });
         }
         return tdDatas;
     }
@@ -17855,28 +17899,21 @@ class TimelineHeaderRow {
             lastLevelColspan = hourSlots.length / dateSlots.length;
         }
         let tdDatas = [];
-        let templateFn;
         for (let row of rows) {
             switch (row.option) {
                 case 'Year':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    let yearTemplate = '<span class="e-header-year">${getYear(date)}</span>';
                     let byYear = this.groupByYear(this.renderDates);
-                    tdDatas = this.generateSlots(byYear, lastLevelColspan, yearTemplate, templateFn, 'e-header-year-cell', 'yearHeader');
+                    tdDatas = this.generateSlots(byYear, lastLevelColspan, row, 'e-header-year-cell', 'yearHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Month':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    let monthTemp = '<span class="e-header-month">${getMonth(date)}</span>';
                     let byMonth = this.groupByMonth(this.renderDates);
-                    tdDatas = this.generateSlots(byMonth, lastLevelColspan, monthTemp, templateFn, 'e-header-month-cell', 'monthHeader');
+                    tdDatas = this.generateSlots(byMonth, lastLevelColspan, row, 'e-header-month-cell', 'monthHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Week':
-                    templateFn = row.template ? this.parent.templateParser(row.template) : undefined;
-                    let weekTemplate = '<span class="e-header-week">${getWeekNumber(date)}</span>';
                     let byWeek = this.groupByWeek(this.renderDates);
-                    tdDatas = this.generateSlots(byWeek, lastLevelColspan, weekTemplate, templateFn, 'e-header-week-cell', 'weekHeader');
+                    tdDatas = this.generateSlots(byWeek, lastLevelColspan, row, 'e-header-week-cell', 'weekHeader');
                     levels.push(tdDatas);
                     break;
                 case 'Date':

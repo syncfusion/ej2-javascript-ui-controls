@@ -48,6 +48,7 @@ export class PivotContextMenu {
         });
         this.parent.element.appendChild(cMenu);
         this.menuObj = new ContextMenu(menuOptions);
+        this.menuObj.isStringTemplate = true;
         this.menuObj.appendTo(cMenu);
     }
     private onBeforeMenuOpen(args: MenuEventArgs): void {

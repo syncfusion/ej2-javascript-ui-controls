@@ -124,8 +124,10 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         let colIndex: number = gridObj.getColumnIndexByField(column.field);
         if (!isNullOrUndefined(column.headerTemplate)) {
             //need to pass the template id for blazor headertemplate
-            let headerTempID: string = gridObj.element.id + column.field + 'headerTemplate';
-            result = column.getHeaderTemplate()(extend({ 'index': colIndex }, column), gridObj, 'headerTemplate', headerTempID);
+            let headerTempID: string = gridObj.element.id + column.uid + 'headerTemplate';
+            let str: string = 'isStringTemplate';
+            result = column.getHeaderTemplate()(
+                extend({ 'index': colIndex }, column), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
             node.firstElementChild.innerHTML = '';
             appendChildren(node.firstElementChild, result);
 

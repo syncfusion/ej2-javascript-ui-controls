@@ -57,6 +57,9 @@ export class MarkdownToolbarStatus {
             superscript: args.documentNode ? false : this.parent.formatter.editorManager.mdSelectionFormats.isAppliedCommand('SuperScript'),
             uppercase: args.documentNode ? false : this.parent.formatter.editorManager.mdSelectionFormats.isAppliedCommand('UpperCase')
         };
+        if (this.parent.formatter.editorManager.mdSelectionFormats.isAppliedCommand('InlineCode')) {
+            this.toolbarStatus.formats = 'pre';
+        }
         this.parent.notify(events.toolbarUpdated, this.toolbarStatus);
     }
     private isListsApplied(lines: { [key: string]: string | number }[], type: string): boolean {
@@ -89,17 +92,47 @@ export class MarkdownToolbarStatus {
                 format = keys[i];
                 break;
             } else if (keys[i] === 'pre') {
-                let parentLines: string[] = this.selection.getAllParents(this.element.value);
-                let firstPrevText: string = parentLines[(lines[0].line as number) - 1];
-                let lastNextText: string = parentLines[lines.length + 1];
-                if (this.selection.isStartWith(firstPrevText, this.parent.formatter.formatTags[keys[i]].split('\n')[0]) &&
-                    this.selection.isStartWith(lastNextText, this.parent.formatter.formatTags[keys[i]].split('\n')[0])) {
+                if (this.codeFormat()) {
                     format = keys[i];
                     break;
                 }
             }
         }
         return format;
+    }
+    private codeFormat(): boolean {
+        let isFormat: boolean = false;
+        let textArea: HTMLTextAreaElement = this.parent.inputElement as HTMLTextAreaElement;
+        let start: number = textArea.selectionStart;
+        let splitAt: Function = (index: number) => (x: string) => [x.slice(0, index), x.slice(index)];
+        let splitText: string[] = splitAt(start)(textArea.value);
+        let cmdPre: string = this.parent.formatter.formatTags.pre;
+        let selectedText: string = this.getSelectedText(textArea);
+        if (selectedText !== '' && selectedText === selectedText.toLocaleUpperCase()) {
+            return true;
+        } else if (selectedText === '') {
+            let beforeText: string = textArea.value.substr(splitText[0].length - 1, 1);
+            let afterText: string = splitText[1].substr(0, 1);
+            if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
+                beforeText === beforeText.toLocaleUpperCase() && afterText === afterText.toLocaleUpperCase()) {
+                return true;
+            }
+        }
+        if ((this.isCode(splitText[0], cmdPre) && this.isCode(splitText[1], cmdPre)) &&
+            (splitText[0].match(this.multiCharRegx(cmdPre)).length % 2 === 1 &&
+                splitText[1].match(this.multiCharRegx(cmdPre)).length % 2 === 1)) {
+            isFormat = true;
+        }
+        return isFormat;
+    }
+    private getSelectedText(textarea: HTMLTextAreaElement): string {
+        return textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+    }
+    private isCode(text: string, cmd: string): boolean {
+        return text.search('\\' + cmd + '') !== -1;
+    }
+    private multiCharRegx(cmd: string): RegExp {
+        return new RegExp('(\\' + cmd + ')', 'g');
     }
 }
 export interface ITextAreaElement extends HTMLTextAreaElement {

@@ -7,17 +7,21 @@ export interface SelectionSettingsModel {
 
     /**
      * Gantt supports row, cell, and both (row and cell) selection mode. 
-     * @default Row
+     * @default Syncfusion.EJ2.Grids.SelectionMode.Row
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionMode
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionMode
      */
     mode?: SelectionMode;
 
     /**
      * To define selection mode of cell.
+     * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CellSelectionMode
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectionMode
      */
     cellSelectionMode?: CellSelectionMode;
 
@@ -25,10 +29,12 @@ export interface SelectionSettingsModel {
      * Defines options for selection type. They are
      * * `Single`: Allows selection of only a row or a cell.
      * * `Multiple`: Allows selection of multiple rows or cells.
-     * @default Single
+     * @default Syncfusion.EJ2.Grids.SelectionType.Single
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionType
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionType
      */
     type?: SelectionType;
 

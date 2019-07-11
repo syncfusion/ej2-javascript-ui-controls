@@ -346,6 +346,30 @@ export function formatUnit(value: number | string): string {
 }
 
 /**
+ * Function to check whether the platform is blazor or not.
+ * @return {boolean} result
+ * @private
+ */
+export function isBlazor(): boolean {
+    return window && Object.keys(window).indexOf('Blazor') >= 0;
+}
+
+/**
+ * Function to convert xPath to DOM element in blazor platform
+ * @return {HTMLElement} result
+ * @param {HTMLElement | object} element 
+ * @private
+ */
+export function getElement(element: object): HTMLElement {
+    let xPath: string = 'xPath';
+    if (!(element instanceof Node) && isBlazor() && !isNullOrUndefined(element[xPath])) {
+        return document.evaluate(element[xPath], document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
+    }
+    return element as HTMLElement;
+}
+
+
+/**
  * Function to fetch the Instances of a HTML element for the given component.
  * @param {string | HTMLElement} element 
  * @param {any} component 

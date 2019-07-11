@@ -1037,6 +1037,14 @@ export function filter(points: MapLocation[], start: number, end: number): MapLo
     }
     return pointObject;
 }
+export function getRatioOfBubble(min: number, max: number, value: number, minValue: number, maxValue: number): number {
+    let percent: number = (100 / (maxValue - minValue)) * (value - minValue);
+    let bubbleRadius: number = (((max - min) / 100) * percent) + min;
+    if (maxValue === minValue) {
+        bubbleRadius = (((max - min) / 100)) + min;
+    }
+    return bubbleRadius;
+}
 /**
  * To find the midpoint of the polygon from points
  */

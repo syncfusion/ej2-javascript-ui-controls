@@ -73,7 +73,8 @@ export class Annotation extends ChildProperty<Annotation> {
      * * ReadOnly - Enables/Disables the ReadOnly Constraints
      * * InheritReadOnly - Enables/Disables the InheritReadOnly Constraints
      * @default 'InheritReadOnly'
-     * @aspNumberEnum 
+     * @aspNumberEnum
+     * @blazorNumberEnum
      */
     @Property(AnnotationConstraints.InheritReadOnly)
     public constraints: AnnotationConstraints;
@@ -100,6 +101,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<HyperlinkModel>(undefined, Hyperlink)
@@ -115,6 +117,7 @@ export class Annotation extends ChildProperty<Annotation> {
     /**
      * Sets the width of the text
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -123,6 +126,7 @@ export class Annotation extends ChildProperty<Annotation> {
     /**
      * Sets the height of the text
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -210,6 +214,7 @@ export class Annotation extends ChildProperty<Annotation> {
      * diagram.appendTo('#diagram');
      * ```
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -266,6 +271,7 @@ export class PathAnnotation extends Annotation {
     /**
      * Sets the displacement of an annotation from its actual position
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)

@@ -1121,4 +1121,45 @@ describe('insert Link', () => {
             done();
         });
     });
+    describe('EJ2-27228 - Remove link not working', () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateLink']
+                },
+                value: '<p>test</p>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('insert link, editlink, openlink', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            (rteObj.contentModule.getEditPanel() as HTMLElement).dispatchEvent(clickEvent);
+            rteObj.selectAll();
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (rteEle.querySelector('.e-rte-link-dialog .e-rte-linkurl') as HTMLInputElement).value = 'https://www.test.com';
+            (rteEle.querySelector('.e-rte-link-dialog .e-insertLink.e-primary') as HTMLButtonElement).click();
+            expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(1);
+            expect((rteEle.querySelector('.e-rte-content .e-content a') as HTMLAnchorElement).href).toBe('https://www.test.com/');
+            let quickPop: any = document.querySelector('.e-rte-quick-popup');
+            expect(isNullOrUndefined(quickPop)).toBe(false);
+            (quickPop.querySelectorAll('.e-toolbar-item button')[1] as HTMLElement).click();
+            (rteEle.querySelector('.e-rte-link-dialog .e-rte-linkurl') as HTMLInputElement).value = 'https://www.testing.com';
+            (rteEle.querySelector('.e-rte-link-dialog .e-insertLink.e-primary') as HTMLButtonElement).click();
+            expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(1);
+            expect((rteEle.querySelector('.e-rte-content .e-content a') as HTMLAnchorElement).href).toBe('https://www.testing.com/');
+            quickPop = document.querySelector('.e-rte-quick-popup');
+            expect(isNullOrUndefined(quickPop)).toBe(false);
+            (quickPop.querySelectorAll('.e-toolbar-item button')[2] as HTMLElement).click();
+            quickPop = document.querySelector('.e-rte-quick-popup');
+            expect(isNullOrUndefined(quickPop)).toBe(true);
+            expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(0);
+        });
+    });
 });

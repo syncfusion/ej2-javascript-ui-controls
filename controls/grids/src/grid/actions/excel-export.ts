@@ -363,7 +363,9 @@ export class ExcelExport {
             if (!isNullOrUndefined(currentViewRecords)) {
                 this.processAggregates(gObj, (returnType as ReturnType).result, excelRow, currentViewRecords);
             } else {
-                this.processAggregates(gObj, (returnType as ReturnType).result, excelRow);
+                let result: Object[] = ((returnType as ReturnType).result as Group).GroupGuid ?
+                                       ((returnType as ReturnType).result as Group).records : (returnType as ReturnType).result;
+                this.processAggregates(gObj, result, excelRow );
             }
         }
         return excelRow;

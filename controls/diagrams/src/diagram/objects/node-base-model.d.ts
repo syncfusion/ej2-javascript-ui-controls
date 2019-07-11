@@ -32,6 +32,7 @@ export interface NodeBaseModel {
     /**
      * Defines the collection of connection points of nodes/connectors
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     ports?: PointPortModel[];
@@ -69,6 +70,7 @@ export interface NodeBaseModel {
     /**
      * Allows the user to save custom information/data about a node/connector
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default undefined
      */
     addInfo?: Object;
@@ -76,6 +78,7 @@ export interface NodeBaseModel {
     /**
      * Flip the element in Horizontal/Vertical directions
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      * @default None
      */
     flip?: FlipDirection;

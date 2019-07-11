@@ -54,6 +54,7 @@ export class ErrorDialog {
             target: document.body,
             close: this.removeErrorDialog.bind(this)
         });
+        this.errorPopUp.isStringTemplate = true;
         this.errorPopUp.appendTo(errorDialog);
         this.errorPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }

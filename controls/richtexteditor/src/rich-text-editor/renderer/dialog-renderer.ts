@@ -12,6 +12,7 @@ export class DialogRenderer {
         this.parent = parent;
     }
     public render(e: DialogModel): Dialog {
+        let dlgObj: Dialog;
         if (isNOU(e.beforeOpen)) {
             e.beforeOpen = this.beforeOpen.bind(this);
         }
@@ -21,7 +22,9 @@ export class DialogRenderer {
         if (isNOU(e.close)) {
             e.close = this.close.bind(this);
         }
-        return new Dialog(e);
+        dlgObj = new Dialog(e);
+        dlgObj.isStringTemplate = true;
+        return dlgObj;
     }
     private beforeOpen(args: BeforeOpenEventArgs): void {
         this.parent.trigger(events.beforeDialogOpen, args);

@@ -13,6 +13,7 @@ export const chartScrollElement: string = 'e-chart-scroll-container';
 export const chartBodyContent: string = 'e-chart-rows-container';
 export const scrollContent: string = 'e-content';
 export const adaptive: string = 'e-device';
+export const focusCell: string = 'e-grid';
 // Timeline-Class
 export const taskTable: string = 'e-task-table';
 export const zeroSpacing: string = 'e-zero-spacing';
@@ -109,6 +110,7 @@ export const ganttTooltip: string = 'e-gantt-tooltip';
 // Context Menu
 export const columnHeader: string = '.e-gridheader';
 export const content: string = '.e-content';
+export const editForm: string = '.e-gridform';
 export const deleteIcon: string = 'e-delete';
 export const saveIcon: string = 'e-save';
 export const cancelIcon: string = 'e-cancel';

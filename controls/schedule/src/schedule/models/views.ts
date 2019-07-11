@@ -142,6 +142,7 @@ export class Views extends ChildProperty<Views> {
      *  shade.
      * @default '[1, 2, 3, 4, 5]'
      * @aspType int[]
+     * @blazorType int[]
      */
     @Property([1, 2, 3, 4, 5])
     public workDays: number[];

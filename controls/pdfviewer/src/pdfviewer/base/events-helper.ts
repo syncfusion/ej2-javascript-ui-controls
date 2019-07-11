@@ -125,6 +125,10 @@ export interface HyperlinkClickEventArgs extends BaseEventArgs {
      * Defines the current clicked hyperlink
      */
     hyperlink: string;
+    /**
+     * Defines the current hyperlink element.
+     */
+    hyperlinkElement: HTMLAnchorElement;
 }
 
 /**

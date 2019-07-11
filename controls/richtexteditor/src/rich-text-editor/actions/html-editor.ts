@@ -177,7 +177,7 @@ export class HtmlEditor {
     private spaceLink(e?: KeyboardEvent): void {
         let range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
         let selectNodeEle: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
-        let text: string = range.startContainer.textContent;
+        let text: string = range.startContainer.textContent.substr(0, range.endOffset);
         let splitText: string[] = text.split(' ');
         let urlText: string = splitText[splitText.length - 1];
         let urlTextRange: number = range.startOffset - (text.length - splitText[splitText.length - 1].length);
@@ -186,13 +186,14 @@ export class HtmlEditor {
         if (selectNodeEle[0].nodeName !== 'A' && urlText.match(regex)) {
             let selection: NodeSelection = this.nodeSelectionObj.save(
                 range, this.parent.contentModule.getDocument());
+            let url: string = urlText.indexOf('http') > -1 ? urlText : 'http://' + urlText;
             let selectParent: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             let value: NotifyArgs = {
-                url: urlText,
+                url: url,
                 selection: selection, selectParent: selectParent,
-                text: '',
+                text: urlText,
                 title: '',
-                target: ''
+                target: '_blank'
             };
             this.parent.formatter.process(
                 this.parent, {

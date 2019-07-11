@@ -833,7 +833,10 @@ export class SparklineRenderer {
         let args: ISparklinePointEventArgs = {
             name: name, cancel: false, border: border, fill: fill, sparkline: this.sparkline, pointIndex: i
         };
-        this.sparkline.trigger(name, args);
+        let blazorArgs: ISparklinePointEventArgs = {
+            name: name, cancel: false, border: border, fill: fill, pointIndex: i
+        };
+        this.sparkline.trigger(name, this.sparkline.isBlazor ? blazorArgs : args);
         return args;
     }
 }
