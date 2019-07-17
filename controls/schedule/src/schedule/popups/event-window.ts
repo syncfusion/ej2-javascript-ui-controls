@@ -78,8 +78,7 @@ export class EventWindow {
             visible: false,
             width: '500px',
             beforeOpen: this.onBeforeOpen.bind(this),
-            beforeClose: this.onBeforeClose.bind(this),
-            close: this.onDialogClose.bind(this)
+            beforeClose: this.onBeforeClose.bind(this)
         };
         if (this.parent.isAdaptive) {
             dialogModel.cssClass = cls.EVENT_WINDOW_DIALOG_CLASS + ' ' + cls.DEVICE_CLASS;
@@ -103,6 +102,7 @@ export class EventWindow {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
+        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         addClass([this.element.parentElement], cls.EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -129,6 +129,7 @@ export class EventWindow {
         this.parent.quickPopup.quickPopupHide(true);
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
+            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
@@ -153,8 +154,10 @@ export class EventWindow {
     }
 
     public setDialogContent(): void {
+        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
+        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
     }
 
     private onBeforeOpen(args: BeforeOpenEventArgs): void {
@@ -189,12 +192,6 @@ export class EventWindow {
         this.parent.eventBase.focusElement();
     }
 
-    private onDialogClose(): void {
-        if (this.parent.editorTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'editorTemplate', 'EditorTemplate');
-        }
-    }
-
     private getEventWindowContent(): HTMLElement {
         let container: HTMLElement = createElement('div', { className: cls.FORM_CONTAINER_CLASS });
         let form: HTMLFormElement = createElement('form', {
@@ -210,13 +207,13 @@ export class EventWindow {
     private renderFormElements(form: HTMLFormElement, args?: Object): void {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
+                resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
             }
-            let templateId: string = this.parent.currentView + '_editorTemplate';
-            let editorTemplate: NodeList = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId, false);
+            let templateId: string = this.parent.element.id + '_editorTemplate';
+            let editorTemplate: NodeList = this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false);
             append(editorTemplate, form);
-            updateBlazorTemplate(templateId, 'EditorTemplate');
         } else {
             form.appendChild(this.getDefaultEventWindowContent());
         }
@@ -1530,6 +1527,7 @@ export class EventWindow {
      * @private
      */
     public destroy(): void {
+        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
         }

@@ -96,6 +96,7 @@ export class DateTimePicker extends DatePicker {
     /**
      * Specifies the time interval between the two adjacent time values in the time popup list . 
      * @default 30
+     * @blazorType int
      */
     @Property(30)
     public step: number;
@@ -1363,9 +1364,9 @@ export class DateTimePicker extends DatePicker {
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.dateTimeWrapper) {
-                        this.dateTimeWrapper.className += ' ' + newProp.cssClass;
+                        Input.setCssClass(newProp.cssClass, [this.dateTimeWrapper], oldProp.cssClass);
                     }
                     break;
                 case 'locale':

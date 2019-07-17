@@ -70,7 +70,7 @@ export class Sort implements IAction {
                         sortedCols.push(sortedColumn);
                     } else {
                         let sCol: SortDescriptorModel = this.getSortColumnFromField(gCols[i]);
-                        sortedCols.push({ field: sCol.field, direction: sCol.direction });
+                        sortedCols.push({ field: sCol.field, direction: sCol.direction, isFromGroup: sCol.isFromGroup });
                     }
                 }
                 if (!flag) {
@@ -194,9 +194,11 @@ export class Sort implements IAction {
     }
 
     private refreshSortSettings(): void {
-        this.sortedColumns = [];
-        this.sortSettings.columns.forEach((e: Column) => {
-            this.sortedColumns.push(e.field);
+        this.sortedColumns.length = 0;
+        this.sortSettings.columns.forEach((e: SortDescriptorModel) => {
+            if (!e.isFromGroup) {
+                this.sortedColumns.push(e.field);
+            }
         });
     }
 

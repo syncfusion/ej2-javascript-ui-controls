@@ -413,7 +413,34 @@ export class PdfViewerBase {
         if (!Browser.isDevice) {
             element.style.minHeight = '500px';
         }
+        if (this.pdfViewer.width.toString() !== 'auto') {
+            element.style.width = this.pdfViewer.width;
+        }
+        if (this.pdfViewer.height.toString() !== 'auto') {
+            element.style.height = this.pdfViewer.height;
+        }
     }
+
+    /**
+     * @private
+     */
+    public updateViewerContainer(): void {
+        let sideBarContentContainer: HTMLElement = this.getElement('_sideBarContentContainer');
+        if (sideBarContentContainer) {
+            this.navigationPane.updateViewerContainerOnClose();
+        } else {
+            this.updateViewerContainerSize();
+        }
+    }
+
+    private updateViewerContainerSize(): void {
+        // tslint:disable-next-line:max-line-length
+        this.viewerContainer.style.width = this.pdfViewer.element.clientWidth + 'px';
+        // tslint:disable-next-line:max-line-length
+        this.pageContainer.style.width = this.viewerContainer.offsetWidth + 'px';
+        this.updateZoomValue();
+    }
+
     // tslint:disable-next-line
     private mobileScrollContainerEnd(event: any) {
         if (!this.ispageMoved) {
@@ -1445,7 +1472,9 @@ export class PdfViewerBase {
                 this.diagramMouseUp(event);
                 this.pdfViewer.annotation.onAnnotationMouseUp();
             }
-            if (document.getElementById(this.pdfViewer.element.id + '_commantPanel').style.display === 'block') {
+            // tslint:disable-next-line:max-line-length
+            let commentElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+            if (commentElement && commentElement.style.display === 'block') {
                 if (this.pdfViewer.selectedItems) {
                     if (this.pdfViewer.selectedItems.annotations.length !== 0) {
                         // tslint:disable-next-line

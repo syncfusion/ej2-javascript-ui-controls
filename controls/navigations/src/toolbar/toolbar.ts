@@ -356,8 +356,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (!isNOU(this.element.querySelector(ele))) {
               (<HTEle>document.body.appendChild(this.element.querySelector(ele))).style.display = 'none'; }
           });
-        while (ele.firstChild) {
-            ele.removeChild(ele.firstChild);
+        while (ele.firstElementChild) {
+            ele.removeChild(ele.firstElementChild);
         }
         if (this.trgtEle) {
             ele.appendChild(this.ctrlTem);

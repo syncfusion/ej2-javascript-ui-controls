@@ -17,7 +17,6 @@ import { SortOrder } from '@syncfusion/ej2-lists';
 export interface ChangeEventArgs extends SelectEventArgs {
     /**
      * Returns the selected value
-     * @isGenericType true
      */
     value: number | string | boolean;
     /**
@@ -134,7 +133,6 @@ export class DropDownList extends DropDownBase implements IInput {
     protected keyConfigure: { [key: string]: string };
     protected isCustomFilter: boolean;
     private isSecondClick: boolean;
-    private filterVal: boolean;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -264,7 +262,6 @@ export class DropDownList extends DropDownBase implements IInput {
     /**
      * Gets or sets the value of the selected item in the component.
      * @default null
-     * @isGenericType true
      */
     @Property(null)
     public value: number | string | boolean;
@@ -406,7 +403,6 @@ export class DropDownList extends DropDownBase implements IInput {
         this.preventAltUp = false;
         this.isCustomFilter = false;
         this.isSecondClick = false;
-        this.filterVal = false;
         this.keyConfigure = {
             tab: 'tab',
             enter: '13',
@@ -604,22 +600,12 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected getElementByText(text: string): Element {
-        let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
-        if (formElement && this.filterVal) {
-            this.listData = this.actionCompleteData.list;
-        }
         return this.getElementByValue(this.getValueByText(text));
     }
 
     protected getElementByValue(value: string | number | boolean): Element {
         let item: Element;
-        let listItems: Element[];
-        let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
-        if (formElement && this.filterVal) {
-            listItems = <NodeListOf<Element> & Element[]>this.actionCompleteData.ulElement.childNodes;
-        } else {
-            listItems = this.getItems();
-        }
+        let listItems: Element[] = this.getItems();
         for (let liItem of listItems) {
             if (this.getFormattedValue(liItem.getAttribute('data-value')) === value) {
                 item = liItem;
@@ -1481,9 +1467,6 @@ export class DropDownList extends DropDownBase implements IInput {
         query?: Query, fields?: FieldSettingsModel): void {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
-            if (this.filterInput.value.trim() !== '') {
-                this.filterVal = true;
-            }
             if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
@@ -1816,6 +1799,11 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
+                let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
+                if (this.isFiltering() && formElement && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
+                    this.isActive = true;
+                    this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
+                }
             },
             open: () => {
                 EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
@@ -2245,9 +2233,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.renderList();
                     }
                     if (!this.initRemoteRender) {
-                        let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
                         let li: Element = this.getElementByText(newProp.text);
-                        if (formElement && this.filterVal) { li.classList.remove('e-active'); }
                         if (!this.checkValidLi(li)) {
                             if (this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
@@ -2370,7 +2356,6 @@ export class DropDownList extends DropDownBase implements IInput {
      * @returns void.
      */
     public showPopup(): void {
-        this.filterVal = false;
         if (!this.enabled) {
             return;
         }

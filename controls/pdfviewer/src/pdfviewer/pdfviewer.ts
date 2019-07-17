@@ -19,7 +19,7 @@ import { TextSearch } from './index';
 import { Print } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';
-import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs  } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
 import { Drawing, ClipBoardObject } from '../diagram/drawing';
@@ -1496,6 +1496,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public annotationResize: EmitType<AnnotationResizeEventArgs>;
 
     /**
+     * Triggers when an annotation is selected over the page of the PDF document.
+     * @event
+     * @blazorProperty 'AnnotationSelected'
+     */
+    @Event()
+    public annotationSelect: EmitType<AnnotationSelectEventArgs>;
+
+    /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
      */
@@ -1779,6 +1787,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * updates the PDF Viewer container width and height from externally.
+     * @returns void
+     */
+    public updateViewerContainer(): void {
+        this.viewerBase.updateViewerContainer();
+    }
+
+    /**
      * Perform undo action for the edited annotations
      * @returns void
      */
@@ -1919,6 +1935,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged, isTextChanged: isTextChanged, isCommentsChanged: isCommentsChanged };
         this.trigger('annotationPropertiesChange', eventArgs);
     }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any): void {
+        let eventArgs: AnnotationSelectEventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+        this.trigger('annotationSelect', eventArgs);
+    }
+
     /**
      * @private
      */

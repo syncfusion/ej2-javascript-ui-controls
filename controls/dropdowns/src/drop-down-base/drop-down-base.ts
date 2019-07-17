@@ -91,7 +91,7 @@ export interface SelectEventArgs {
     item: HTMLLIElement;
     /**
      * Returns the selected item as JSON Object from the data source.
-     * @isGenericType true
+     * @blazorType object
      */
     itemData: FieldSettingsModel;
     /**
@@ -119,7 +119,6 @@ export interface ActionBeginEventArgs {
     query: Query;
     /**
      *  Set the data source to action begin
-     * @isGenericType true
      */
     data: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     /**
@@ -170,7 +169,6 @@ export interface ActionCompleteEventArgs {
 export interface DataBoundEventArgs {
     /**
      * Returns the selected items as JSON Object from the data source.
-     * @isGenericType true
      */
     items: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     /**
@@ -290,7 +288,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
      * @default []
-     * @isGenericType true
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
@@ -1279,7 +1276,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Gets the data Object that matches the given value. 
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
-     * @isGenericType true
      */
     public getDataByValue(value: string | number | boolean)
         : { [key: string]: Object } | string | number | boolean {
@@ -1320,7 +1316,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 export interface ResultData {
     /**
      * To return the JSON result.
-     * @isGenericType true
      */
     result: { [key: string]: Object }[];
 }

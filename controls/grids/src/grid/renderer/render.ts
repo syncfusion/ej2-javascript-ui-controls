@@ -1,5 +1,5 @@
 import { L10n, NumberFormatOptions } from '@syncfusion/ej2-base';
-import { remove, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { remove, resetBlazorTemplate, blazorTemplates, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Group, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
 import { IGrid, NotifyArgs, IValueFormatter } from '../base/interface';
@@ -89,7 +89,9 @@ export class Render {
     public refresh(e: NotifyArgs = { requestType: 'refresh' }): void {
         let gObj: IGrid = this.parent;
         gObj.notify(`${e.requestType}-begin`, e);
-        this.resetTemplates();
+        if (isBlazor()) {
+            this.resetTemplates();
+        }
         gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
             if (args.cancel) {
                 gObj.notify(events.cancelBegin, args);
@@ -115,10 +117,17 @@ export class Render {
         let gObj: IGrid = this.parent;
         if (gObj.detailTemplate) {
             let detailTemplateID: string = gObj.element.id + 'detailTemplate';
+            blazorTemplates[detailTemplateID] = [];
             resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
+        }
+        if (gObj.groupSettings.captionTemplate) {
+            resetBlazorTemplate(gObj.element.id + 'captionTemplate', 'CaptionTemplate');
         }
         if (gObj.rowTemplate) {
             resetBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate');
+        }
+        if (gObj.toolbarTemplate) {
+            resetBlazorTemplate(gObj.element.id + 'toolbarTemplate', 'ToolbarTemplate');
         }
         for (let i: number = 0; i < gObj.getColumns().length; i++) {
             if (gObj.getColumns()[i].template) {
@@ -126,6 +135,27 @@ export class Render {
             }
             if (gObj.getColumns()[i].headerTemplate) {
                 resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'headerTemplate', 'HeaderTemplate');
+            }
+            if (gObj.getColumns()[i].filterTemplate) {
+                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'filterTemplate', 'FilterTemplate');
+            }
+        }
+        let guid: string = 'guid';
+        for (let k: number = 0; k < gObj.aggregates.length; k++) {
+
+            for (let j: number = 0; j < gObj.aggregates[k].columns.length; j++) {
+                if (gObj.aggregates[k].columns[j].footerTemplate) {
+                    let tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'footerTemplate';
+                    resetBlazorTemplate(tempID, 'FooterTemplate');
+                }
+                if (gObj.aggregates[k].columns[j].groupFooterTemplate) {
+                    let tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupFooterTemplate';
+                    resetBlazorTemplate(tempID, 'GroupFooterTemplate');
+                }
+                if (gObj.aggregates[k].columns[j].groupCaptionTemplate) {
+                    let tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupCaptionTemplate';
+                    resetBlazorTemplate(tempID, 'GroupCaptionTemplate');
+                }
             }
         }
     }
@@ -313,7 +343,7 @@ export class Render {
         let gObj: IGrid = this.parent;
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
-        (<{actionArgs?: NotifyArgs}>e).actionArgs = args;
+        (<{ actionArgs?: NotifyArgs }>e).actionArgs = args;
         gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
             if ((<{ cancel?: boolean }>dataArgs).cancel) {
                 return;
@@ -334,7 +364,7 @@ export class Render {
                 gObj.dataBind();
                 return;
             }
-            if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj) ) {
+            if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj)) {
                 this.updatesOnInitialRender(dataArgs);
             }
             if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
@@ -344,10 +374,11 @@ export class Render {
                 !this.parent.groupSettings.columns.length) {
                 dataArgs.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
             }
-            this.parent.notify(events.dataReady,
-                               extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates }, args));
+            this.parent.notify(
+                events.dataReady,
+                extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates }, args));
             if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
-            && (args && args.requestType !== 'filtering')) {
+                && (args && args.requestType !== 'filtering')) {
                 this.headerRenderer.refreshUI();
             }
             if (len) {
@@ -415,7 +446,7 @@ export class Render {
                 cols[i].width = !isNullOrUndefined(cols[i].width) ? cols[i].width : 200;
             }
         }
-        this.parent.setProperties({'columns': cols}, true);
+        this.parent.setProperties({ 'columns': cols }, true);
     }
 
     private instantiateRenderer(): void {

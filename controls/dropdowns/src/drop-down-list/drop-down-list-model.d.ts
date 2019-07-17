@@ -135,7 +135,6 @@ export interface DropDownListModel extends DropDownBaseModel{
     /**
      * Gets or sets the value of the selected item in the component.
      * @default null
-     * @isGenericType true
      */
     value?: number | string | boolean;
 

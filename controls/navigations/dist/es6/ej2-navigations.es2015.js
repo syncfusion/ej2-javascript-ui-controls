@@ -2769,8 +2769,8 @@ let Toolbar = class Toolbar extends Component {
                 document.body.appendChild(this.element.querySelector(ele)).style.display = 'none';
             }
         });
-        while (ele.firstChild) {
-            ele.removeChild(ele.firstChild);
+        while (ele.firstElementChild) {
+            ele.removeChild(ele.firstElementChild);
         }
         if (this.trgtEle) {
             ele.appendChild(this.ctrlTem);
@@ -4715,12 +4715,12 @@ let Accordion = class Accordion extends Component {
         this.unwireEvents();
         this.isDestroy = true;
         this.restoreContent(null);
-        while (ele.firstChild) {
-            ele.removeChild(ele.firstChild);
+        while (ele.firstElementChild) {
+            ele.removeChild(ele.firstElementChild);
         }
         if (this.trgtEle) {
-            while (this.ctrlTem.firstChild) {
-                ele.appendChild(this.ctrlTem.firstChild);
+            while (this.ctrlTem.firstElementChild) {
+                ele.appendChild(this.ctrlTem.firstElementChild);
             }
         }
         ele.classList.remove(CLS_ACRDN_ROOT);
@@ -5476,7 +5476,7 @@ let Accordion = class Accordion extends Component {
         let root = this.element;
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
-                let ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.childElementCount - 1];
+                let ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.querySelectorAll('.' + CLS_ITEM$1).length - 1];
                 this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
             }
             else {
@@ -6059,6 +6059,7 @@ const CLS_VTAB = 'e-vertical-tab';
 const CLS_VERTICAL$1 = 'e-vertical';
 const CLS_VLEFT = 'e-vertical-left';
 const CLS_VRIGHT = 'e-vertical-right';
+const CLS_HBOTTOM = 'e-horizontal-bottom';
 class TabActionSettings extends ChildProperty {
 }
 __decorate$7([
@@ -6214,7 +6215,6 @@ let Tab = class Tab extends Component {
     render() {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title } });
         this.renderContainer();
-        this.refreshTabTemplate();
         this.wireEvents();
         this.initRender = false;
     }
@@ -6408,21 +6408,11 @@ let Tab = class Tab extends Component {
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     }
-    refreshTabTemplate() {
-        let blazorContain = Object.keys(window);
-        for (let a = 0, length = this.items.length; a < length; a++) {
-            let item = this.items[a];
-            if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
-                item.content.indexOf('<div>Blazor') === 0) {
-                resetBlazorTemplate(this.element.id + a + '_content', 'Content');
-                updateBlazorTemplate(this.element.id + a + '_content', 'Content', item);
-            }
-        }
-    }
     removeActiveClass(id) {
         let hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element)[0];
+        let selectEle = select('.' + CLS_HEADER$1, this.element);
         if (this.headerPlacement === 'Bottom') {
-            hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element.children[1])[0];
+            hdrActEle = selectAll(':root .' + CLS_HEADER$1 + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, selectEle)[0];
         }
         if (!isNullOrUndefined(hdrActEle)) {
             hdrActEle.classList.remove(CLS_ACTIVE$1);
@@ -6622,6 +6612,14 @@ let Tab = class Tab extends Component {
         this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
+            let blazorContain = Object.keys(window);
+            let item = this.items[index];
+            if (!isNullOrUndefined(item)) {
+                if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
+                    item.content.indexOf('<div>Blazor') === 0) {
+                    updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+                }
+            }
         }
     }
     compileElement(ele, val, prop, index) {
@@ -6636,14 +6634,19 @@ let Tab = class Tab extends Component {
         }
         let templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            let templateProps;
-            if (ele.classList.contains(CLS_TEXT)) {
-                templateProps = this.element.id + 'text';
+            if (blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
+                let templateProps;
+                if (prop === 'headerText') {
+                    templateProps = this.element.id + 'text';
+                }
+                else if (prop === 'content') {
+                    templateProps = this.element.id + index + '_content';
+                }
+                templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate);
             }
-            else if (ele.classList.contains(CLS_CONTENT$1)) {
-                templateProps = this.element.id + index + '_content';
+            else {
+                templateFUN = templateFn({}, this, prop);
             }
-            templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate);
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach((el) => {
@@ -6716,6 +6719,9 @@ let Tab = class Tab extends Component {
             let tbPos = (this.headerPlacement === 'Left') ? CLS_VLEFT : CLS_VRIGHT;
             addClass([this.hdrEle], [CLS_VERTICAL$1, tbPos]);
             this.element.classList.add(CLS_VTAB);
+        }
+        if (this.headerPlacement === 'Bottom') {
+            this.hdrEle.classList.add(CLS_HBOTTOM);
         }
     }
     updatePopAnimationConfig() {
@@ -6825,11 +6831,11 @@ let Tab = class Tab extends Component {
         let scrollCnt;
         let trgHdrEle;
         if (this.headerPlacement === 'Bottom') {
-            trgHdrEle = this.element.children[1];
-            trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element.children[1]);
+            trgHdrEle = select('.' + CLS_HEADER$1, this.element);
+            trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, trgHdrEle);
         }
         else {
-            trgHdrEle = this.element.children[0];
+            trgHdrEle = select('.' + CLS_HEADER$1, this.element);
             trg = select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1, this.element);
         }
         if (trg === null) {

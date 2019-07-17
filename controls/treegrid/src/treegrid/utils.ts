@@ -72,6 +72,7 @@ export function findChildrenRecords(records: ITreeData): Object[] {
   if (isNullOrUndefined(records) || !records.hasChildRecords) {
     return [];
   }
+  if (!isNullOrUndefined(records.childRecords)) {
   let childRecords: ITreeData[] = records.childRecords;
   for (let i: number = 0, len: number = Object.keys(childRecords).length; i < len; i++) {
       datas.push(childRecords[i]);
@@ -79,6 +80,7 @@ export function findChildrenRecords(records: ITreeData): Object[] {
         datas = [...datas, ...findChildrenRecords(childRecords[i])];
       }
   }
+}
   return datas;
 }
 

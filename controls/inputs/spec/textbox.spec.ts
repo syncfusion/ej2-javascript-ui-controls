@@ -167,6 +167,35 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('name')).toBe('sample');
         });
     });
+    describe('Checking previous value - ', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+        })
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Previous value at initial rendering', () => {
+            inputObj = new TextBox({value: "Syncfusion"});
+            inputObj.appendTo('#textbox');
+            inputObj.element.value = "Software";
+            let keyEvent = document.createEvent('KeyboardEvents');
+            inputObj.inputHandler(keyEvent);
+            expect(inputObj.element.value).toBe('Software');
+            expect(inputObj.inputPreviousValue).toBe('Software');
+        });
+        it('Dynamically change previous value ', () => {
+            inputObj = new TextBox({value: "Syncfusion"});
+            inputObj.appendTo('#textbox');
+            inputObj.value = "Software";
+            inputObj.dataBind();
+            let keyEvent = document.createEvent('KeyboardEvents');
+            inputObj.inputHandler(keyEvent);
+            expect(inputObj.element.value).toBe('Software');
+            expect(inputObj.inputPreviousValue).toBe('Software');
+        });
+    });
     describe('Role attribute testing- ', () => {
         let inputObj: any;
         beforeEach((): void => {
@@ -2003,20 +2032,19 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('value')).toBe('70');
         });
         it('Other attribute testing with htmlAttributes API', () => {
-            inputObj = new TextBox({ htmlAttributes:{name:"numeric", maxlength: "50", minlength: "10", class: "test", title:"sample", style: 'background-color:yellow'}});
+            inputObj = new TextBox({ htmlAttributes:{name:"numeric", maxlength: "50", minlength: "10", class: "test", title:"sample"}});
             inputObj.appendTo('#textbox');
             inputObj.updateHTMLAttrToWrapper();
             expect(inputObj.element.getAttribute('name')).toBe('numeric');
             expect(inputObj.element.getAttribute('maxlength')).toBe('50');
             expect(inputObj.element.getAttribute('minlength')).toBe('10');
             expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
-            expect(inputObj.textboxWrapper.container.getAttribute('class')).toBe('test');
-            expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:yellow');
+            expect(inputObj.textboxWrapper.container.classList.contains('test')).toBe(true);
         });
         it('Dynamically change attributes with htmlAttributes API', () => {
             inputObj = new TextBox({});
             inputObj.appendTo('#textbox');
-            inputObj.htmlAttributes = { class: "test", title: 'sample', disabled: 'disabled', readonly: 'readonly', placeholder: "Number of states", style: 'background-color:yellow'};
+            inputObj.htmlAttributes = { class: "test", title: 'sample', disabled: 'disabled', readonly: 'readonly', placeholder: "Number of states"};
             inputObj.dataBind();
             inputObj.updateHTMLAttrToElement();
             inputObj.updateHTMLAttrToWrapper();
@@ -2024,7 +2052,6 @@ describe('TextBox ', () => {
             expect(inputObj.element.hasAttribute('disabled')).toBe(true);
             expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
             expect(inputObj.textboxWrapper.container.classList.contains('test')).toBe(true);
-            expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:yellow');
             expect(inputObj.element.getAttribute('placeholder')).toBe('Number of states');
         });
     });
@@ -2054,7 +2081,7 @@ describe('TextBox ', () => {
             expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
             expect(inputObj.textboxWrapper.container.classList.contains('test')).toBe(true);
             expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:yellow');
-            inputObj.htmlAttributes = { placeholder:"Enter a number", readonly: "false", value: "50", type: "number", maxlength: "60", minlength: "5", class: "multiple", title:"heading", style: 'background-color:red'};
+            inputObj.htmlAttributes = { placeholder:"Enter a number", readonly: "false", value: "50", type: "number", maxlength: "60", minlength: "5", class: "multiple", title:"heading"};
             inputObj.dataBind();
             expect(inputObj.element.getAttribute('placeholder')).toBe('Enter a number');
             expect(inputObj.element.hasAttribute('readonly')).toBe(false);
@@ -2064,7 +2091,6 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('minlength')).toBe('5');
             expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('heading');
             expect(inputObj.textboxWrapper.container.classList.contains('multiple')).toBe(true);
-            expect(inputObj.textboxWrapper.container.getAttribute('style')).toBe('background-color:red');
         });
         it('Placeholder testing in auto case', () => {
             inputObj = new TextBox({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
@@ -2274,4 +2300,43 @@ describe('TextBox ', () => {
             expect(inputObj.element.value).toBe('');
         });
     });
+    describe('Dynamic CssClass testcase', function (){
+        let textbox: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (textbox) {
+                textbox.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('single css class',function() {
+            textbox = new TextBox({
+                cssClass: 'e-custom'
+            });
+            textbox.appendTo('#textbox');
+            expect(textbox.textboxWrapper.container.classList.contains('e-custom')).toBe(true);
+            textbox.cssClass = 'e-test';
+            textbox.dataBind();
+            expect(textbox.textboxWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(textbox.textboxWrapper.container.classList.contains('e-test')).toBe(true);
+        });
+        it('more than one css class',function() {
+            textbox = new TextBox({
+                cssClass: 'e-custom e-secondary'
+            });
+            textbox.appendTo('#textbox');
+            expect(textbox.textboxWrapper.container.classList.contains('e-custom')).toBe(true);
+            expect(textbox.textboxWrapper.container.classList.contains('e-secondary')).toBe(true);
+            textbox.cssClass = 'e-test e-ternary';
+            textbox.dataBind();
+            expect(textbox.textboxWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(textbox.textboxWrapper.container.classList.contains('e-secondary')).toBe(false);
+            expect(textbox.textboxWrapper.container.classList.contains('e-test')).toBe(true);
+            expect(textbox.textboxWrapper.container.classList.contains('e-ternary')).toBe(true);
+        });
+    });
+
 })

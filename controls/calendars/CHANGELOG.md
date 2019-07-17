@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 17.2.35 (2019-07-17)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#F145575` - Now, existing `cssClass` removed when change the `cssClass` dynamically.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#F145575` - Now, existing `cssClass` removed when change the `cssClass` dynamically.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#F145575` - Now, existing `cssClass` removed when change the `cssClass` dynamically.
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#F145575` - Now, existing `cssClass` removed when change the `cssClass` dynamically.
+
 ## 17.2.34 (2019-07-11)
 
 ### DateTimePicker

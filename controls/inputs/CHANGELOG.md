@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## 17.2.35 (2019-07-17)
+
+### Form Validator
+
+#### Bug Fixes
+
+- `#212351` - Now, localized text of form validator was included in ej2-locale package.
+
+### Uploader
+
+#### Bug Fixes
+
+- `#145718` - Issue with `Material spinner appearance in Safari browser` has been resolved.
+
+### MaskedTextBox
+
+#### Bug Fixes
+
+- `#F145575` - Now, existing `cssClass` removed when change the `cssClass` dynamically.
+
+### TextBox
+
+#### Bug Fixes
+
+- `#240368` - Now, you can get the updated previous value in the `input event` argument.
+
+- `#F145575` - Now, existing `cssClass` removed when change the `cssClass` dynamically.
+
 ## 17.2.34 (2019-07-11)
 
 ### NumericTextBox
@@ -21,6 +49,8 @@
 #### Bug Fixes
 
 - Now, changed the bottom padding of input to meet the Material theme standard.
+
+- `#240368` - Now, you can get the updated previous value in the `input event` argument.
 
 ## 17.2.28-beta (2019-06-27)
 

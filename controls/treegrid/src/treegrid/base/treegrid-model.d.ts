@@ -1,4 +1,4 @@
-import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend} from '@syncfusion/ej2-base';import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { Column, ColumnModel } from '../models/column';import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';import { DetailDataBoundEventArgs, Row}  from '@syncfusion/ej2-grids';import { SearchEventArgs, AddEventArgs, EditEventArgs, DeleteEventArgs}  from '@syncfusion/ej2-grids';import { SaveEventArgs, CellSaveArgs, BatchAddArgs, BatchCancelArgs,  BeginEditArgs, CellEditArgs}  from '@syncfusion/ej2-grids';import { FilterSettings } from '../models/filter-settings';import {Filter} from '../actions/filter';import {Aggregate} from '../actions/summary';import { Reorder } from '../actions/reorder';import { Resize } from '../actions/resize';import { Selection as TreeGridSelection } from '../actions/selection';import { ColumnMenu } from '../actions/column-menu';import { DetailRow } from '../actions/detail-row';import { Print } from '../actions/print';import * as events from '../base/constant';import { FilterSettingsModel } from '../models/filter-settings-model';import { SearchSettings} from '../models/search-settings';import { SearchSettingsModel } from '../models/search-settings-model';import {RowInfo, RowDataBoundEventArgs, PageEventArgs, FilterEventArgs, FailureEventArgs, SortEventArgs } from '@syncfusion/ej2-grids';import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, IIndex, ISelectedCell } from '@syncfusion/ej2-grids';import {ColumnModel as GridColumnModel, Column as GridColumn, CellSelectEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';import { SelectionSettings } from '../models/selection-settings';import { SelectionSettingsModel } from '../models/selection-settings-model';import {getActualProperties, SortDirection, getObject, ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { TextWrapSettings, TextWrapSettingsModel, PrintMode, Data, IGrid, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { ColumnMenuItem, ColumnMenuItemModel, CheckBoxChangeEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';import { DataManager, ReturnOption, RemoteSaveAdaptor, Query } from '@syncfusion/ej2-data';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { isRemoteData, isOffline } from '../utils';import { Grid, QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { Render } from '../renderer/render';import { DataManipulation } from './data';import { Sort } from '../actions/sort';import { ITreeData, RowExpandedEventArgs, RowExpandingEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } from './interface';import { CellSaveEventArgs } from './interface';import { iterateArrayOrObject, GridLine } from '@syncfusion/ej2-grids';import { DataSourceChangedEventArgs, DataStateChangeEventArgs, RecordDoubleClickEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';import { ToolbarItems, ToolbarItem, ContextMenuItem, ContextMenuItems, RowPosition } from '../enum';import { ItemModel, ClickEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { PageSettings } from '../models/page-settings';import { PageSettingsModel } from '../models/page-settings-model';import { AggregateRow } from '../models/summary';import { AggregateRowModel } from '../models/summary-model';import { ExcelExport } from '../actions/excel-export';import { PdfExport } from '../actions/pdf-export';import { Toolbar } from '../actions/toolbar';import { Page } from '../actions/page';import { ContextMenu } from '../actions/context-menu';import { EditSettings } from '../models/edit-settings';import { EditSettingsModel } from '../models/edit-settings-model';import { Edit} from '../actions/edit';import { SortSettings } from '../models/sort-settings';import { SortSettingsModel } from '../models/sort-settings-model';
+import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend} from '@syncfusion/ej2-base';import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { Column, ColumnModel } from '../models/column';import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';import { DetailDataBoundEventArgs, Row}  from '@syncfusion/ej2-grids';import { SearchEventArgs, AddEventArgs, EditEventArgs, DeleteEventArgs}  from '@syncfusion/ej2-grids';import { SaveEventArgs, CellSaveArgs, BatchAddArgs, BatchCancelArgs,  BeginEditArgs, CellEditArgs}  from '@syncfusion/ej2-grids';import { FilterSettings } from '../models/filter-settings';import {Filter} from '../actions/filter';import {Aggregate} from '../actions/summary';import { Reorder } from '../actions/reorder';import { Resize } from '../actions/resize';import { Selection as TreeGridSelection } from '../actions/selection';import { ColumnMenu } from '../actions/column-menu';import { DetailRow } from '../actions/detail-row';import { Print } from '../actions/print';import * as events from '../base/constant';import { FilterSettingsModel } from '../models/filter-settings-model';import { SearchSettings} from '../models/search-settings';import { SearchSettingsModel } from '../models/search-settings-model';import {RowInfo, RowDataBoundEventArgs, PageEventArgs, FilterEventArgs, FailureEventArgs, SortEventArgs } from '@syncfusion/ej2-grids';import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, IIndex, ISelectedCell } from '@syncfusion/ej2-grids';import {ColumnModel as GridColumnModel, Column as GridColumn, CellSelectEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';import { SelectionSettings } from '../models/selection-settings';import { SelectionSettingsModel } from '../models/selection-settings-model';import {getActualProperties, SortDirection, getObject, ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { TextWrapSettings, TextWrapSettingsModel, PrintMode, Data, IGrid, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { ColumnMenuItem, ColumnMenuItemModel, CheckBoxChangeEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor } from '@syncfusion/ej2-data';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { isRemoteData, isOffline, extendArray } from '../utils';import { Grid, QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { Render } from '../renderer/render';import { DataManipulation } from './data';import { Sort } from '../actions/sort';import { ITreeData, RowExpandedEventArgs, RowExpandingEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } from './interface';import { CellSaveEventArgs } from './interface';import { iterateArrayOrObject, GridLine } from '@syncfusion/ej2-grids';import { DataSourceChangedEventArgs, DataStateChangeEventArgs, RecordDoubleClickEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';import { ToolbarItems, ToolbarItem, ContextMenuItem, ContextMenuItems, RowPosition } from '../enum';import { ItemModel, ClickEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { PageSettings } from '../models/page-settings';import { PageSettingsModel } from '../models/page-settings-model';import { AggregateRow } from '../models/summary';import { AggregateRowModel } from '../models/summary-model';import { ExcelExport } from '../actions/excel-export';import { PdfExport } from '../actions/pdf-export';import { Toolbar } from '../actions/toolbar';import { Page } from '../actions/page';import { ContextMenu } from '../actions/context-menu';import { EditSettings } from '../models/edit-settings';import { EditSettingsModel } from '../models/edit-settings-model';import { Edit} from '../actions/edit';import { SortSettings } from '../models/sort-settings';import { SortSettingsModel } from '../models/sort-settings-model';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -390,13 +390,15 @@ export interface TreeGridModel extends ComponentModel{
    * Triggers when cell is saved.
    * @event
    * @deprecated
+   * @blazorproperty 'OnCellSave'
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSaveArgs
    */
     cellSave?: EmitType<CellSaveArgs>;
 
     /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc., starts.
    * @event
-   * @deprecated
+   * @blazorproperty 'OnActionBegin'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.ActionEventArgs
    */
     actionBegin?: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
@@ -404,7 +406,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
    * @event
-   * @deprecated
+   * @blazorproperty 'OnActionComplete'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.ActionEventArgs
    */
 
@@ -414,6 +416,7 @@ export interface TreeGridModel extends ComponentModel{
    * Triggers before the record is to be edit.
    * @event
    * @deprecated
+   * @blazorproperty 'OnBeginEdit'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.BeginEditArgs
    */
     beginEdit?: EmitType<BeginEditArgs>;
@@ -422,13 +425,15 @@ export interface TreeGridModel extends ComponentModel{
    * Triggers when the cell is being edited.
    * @event
    * @deprecated
+   * @blazorproperty 'OnCellEdit'
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellEditArgs
    */
     cellEdit?: EmitType<CellEditArgs>;
 
     /**
    * Triggers when any TreeGrid action failed to achieve the desired results.
    * @event
-   * @deprecated
+   * @blazorproperty 'OnActionFailure'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.FailureEventArgs
    */
     actionFailure?: EmitType<FailureEventArgs>;
@@ -462,7 +467,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * Triggers when record is double clicked.
    * @event
-   * @deprecated
+   * @blazorproperty 'OnRecordDoubleClick'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.RecordDoubleClickEventArgs
    */
     recordDoubleClick?: EmitType<RecordDoubleClickEventArgs>;
@@ -471,7 +476,7 @@ export interface TreeGridModel extends ComponentModel{
    * Triggered every time a request is made to access row information, element, or data.
    * This will be triggered before the row element is appended to the TreeGrid element.
    * @event
-   * @deprecated
+   * @blazorproperty 'RowDataBound'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDataBoundEventArgs
    */
     rowDataBound?: EmitType<RowDataBoundEventArgs>;
@@ -481,6 +486,7 @@ export interface TreeGridModel extends ComponentModel{
    * > This event triggers at initial expand.  
    * @event
    * @deprecated
+   * @blazorproperty 'DetailDataBound'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.DetailDataBoundEventArgs
    */
     detailDataBound?: EmitType<DetailDataBoundEventArgs>;
@@ -489,7 +495,7 @@ export interface TreeGridModel extends ComponentModel{
    * Triggered every time a request is made to access cell information, element, or data.
    * This will be triggered before the cell element is appended to the TreeGrid element.
    * @event
-   * @deprecated
+   * @blazorproperty 'QueryCellInfo'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.QueryCellInfoEventArgs
    */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
@@ -503,7 +509,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
      * Triggers before row selection occurs.
      * @event
-     * @deprecated
+     * @blazorproperty 'RowSelecting'
      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectingEventArgs
      */
     rowSelecting?: EmitType<RowSelectingEventArgs>;
@@ -511,7 +517,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
      * Triggers after a row is selected.
      * @event
-     * @deprecated
+     * @blazorproperty 'RowSelected'
      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs
      */
     rowSelected?: EmitType<RowSelectEventArgs>;
@@ -527,7 +533,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
      * Triggers when a selected row is deselected.
      * @event
-     * @deprecated
+     * @blazorproperty 'RowDeselected'
      * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs
      */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
@@ -535,15 +541,16 @@ export interface TreeGridModel extends ComponentModel{
     /**
      * Triggered for stacked header.
      * @event
-     * @deprecated
+     * @blazorproperty 'HeaderCellInfo'
      * @blazorType Syncfusion.EJ2.Blazor.Grids.HeaderCellInfoEventArgs 
      */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
     /**
        * Triggers before any cell selection occurs.
-       * @event 
+       * @event
        * @deprecated
+       * @blazorproperty 'CellSelecting'
        * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs
        */
     cellSelecting?: EmitType<CellSelectingEventArgs>;
@@ -559,7 +566,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
      * Triggers when click on column menu.
      * @event
-     * @deprecated
+     * @blazorproperty 'ColumnMenuClicked'
      * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
      */
     columnMenuClick?: EmitType<MenuEventArgs>;
@@ -568,6 +575,7 @@ export interface TreeGridModel extends ComponentModel{
      * Triggers after a cell is selected.
      * @event 
      * @deprecated
+     * @blazorproperty 'CellSelected'
      * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs
      */
     cellSelected?: EmitType<CellSelectEventArgs>;
@@ -659,7 +667,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * Triggers when toolbar item is clicked.
    * @event
-   * @deprecated
+   * @blazorproperty 'OnToolbarClick'
    * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
    */
     toolbarClick?: EmitType<ClickEventArgs>;
@@ -667,7 +675,8 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * Triggers when a particular selected cell is deselected.
    * @event 
-   * @deprecated
+   * @blazorproperty 'OnDataBound'
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.BeforeDataBoundArgs
    */
     beforeDataBound?: EmitType<BeforeDataBoundArgs>;
 
@@ -682,7 +691,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * Triggers when click on context menu.
    * @event
-   * @deprecated
+   * @blazorproperty 'ContextMenuClicked'
    * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
    */
     contextMenuClick?: EmitType<MenuEventArgs>;
@@ -769,6 +778,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
  * Triggers before TreeGrid data is exported to PDF document.
  * @event
+ * @blazorproperty 'OnPdfExport'
  */
     beforePdfExport?: EmitType<Object>;
 

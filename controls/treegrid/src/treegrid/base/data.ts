@@ -243,10 +243,12 @@ public isRemote(): boolean {
         let inx: number = datas.indexOf(rowDetails.record);
         let haveChild: boolean[] = getObject('actual.nextLevel', e);
         let result: ITreeData[] = <ITreeData[]>e.result;
+        rowDetails.record.childRecords = result;
         for (let r: number = 0; r < result.length; r++) {
           result[r].level = rowDetails.record.level + 1;
           result[r].index = Math.ceil(Math.random() * 1000);
           result[r].parentItem = rowDetails.record;
+          delete result[r].parentItem.childRecords;
           if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
              && !(haveChild && !haveChild[r])) {
             result[r].hasChildRecords = true;

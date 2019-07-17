@@ -1,5 +1,5 @@
 import { KeyboardEventArgs, L10n, EventHandler, TouchEventArgs, closest } from '@syncfusion/ej2-base';
-import { extend, getValue } from '@syncfusion/ej2-base';
+import { extend, getValue, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs, IEdit } from '../base/interface';
@@ -607,6 +607,9 @@ export class Edit implements IAction {
         }
         for (let col of cols) {
             let temp: Function = col.edit.destroy as Function;
+            if (isBlazor() && col.editTemplate) {
+                resetBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate');
+            }
             if (col.edit.destroy) {
                 if (typeof temp === 'string') {
                     temp = getValue(temp, window);

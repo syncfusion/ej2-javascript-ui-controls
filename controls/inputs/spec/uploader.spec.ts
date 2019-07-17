@@ -1808,12 +1808,11 @@ describe('Uploader Control', () => {
             expect(uploadObj.enabled).toBe(true);
         })
         it('Other attribute testing with htmlAttributes API', () => {
-            uploadObj = new Uploader({ htmlAttributes:{ class: "test", title:"sample", style: 'background-color:yellow'}});
+            uploadObj = new Uploader({ htmlAttributes:{ class: "test", title:"sample"}});
             uploadObj.appendTo('#upload');
             uploadObj.updateHTMLAttrToWrapper();
             expect(uploadObj.uploadWrapper.getAttribute('title')).toBe('sample');
-            expect(uploadObj.uploadWrapper.getAttribute('class')).toBe('test');
-            expect(uploadObj.uploadWrapper.getAttribute('style')).toBe('background-color:yellow');
+            expect(uploadObj.uploadWrapper.classList.contains('test')).toBe(true);
         });
     });
     

@@ -4,7 +4,6 @@ import { PdfSection } from './pdf-section';
 import { PdfSectionCollection } from './pdf-section-collection';
 import { PageAddedEventArgs } from './../pages/page-added-event-arguments';
 import { Dictionary } from './../collections/dictionary';
-import { PdfPageOrientation } from './enum';
 /**
  * Represents a virtual collection of all the pages in the document.
  * @private
@@ -20,12 +19,6 @@ export class PdfDocumentPageCollection {
      * @private
      */
     private pdfPageCollectionIndex : Dictionary<PdfPage, number> = new Dictionary<PdfPage, number>();
-    /**
-     * Stores the previous pages's `orientation`.
-     * @default PdfPageOrientation.Portrait
-     * @private
-     */
-    private previousPageOrientation : PdfPageOrientation = PdfPageOrientation.Portrait;
     /**
      * Internal variable for `page added event`.
      * @private
@@ -71,10 +64,6 @@ export class PdfDocumentPageCollection {
             return page;
         } else {
             let section : PdfSection = this.getLastSection();
-            if (section.pageSettings.orientation !== this.previousPageOrientation) {
-                section = this.document.sections.add() as PdfSection;
-                section.pageSettings.orientation = this.document.pageSettings.orientation;
-            }
             section.add(page);
         }
     }

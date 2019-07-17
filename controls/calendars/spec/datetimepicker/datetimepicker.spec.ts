@@ -1661,7 +1661,7 @@ describe('HTML attribute API testing', () => {
         datetimepicker.appendTo('#datetime');
         expect(datetimepicker.element.getAttribute('name')).toBe('picker');
         expect(datetimepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
-        expect(datetimepicker.inputWrapper.container.getAttribute('class')).toBe('test');
+        expect(datetimepicker.inputWrapper.container.classList.contains('test')).toBe(true);
     });
 });
 
@@ -1679,7 +1679,7 @@ describe('HTML attribute API dynamic testing', () => {
         document.body.innerHTML = '';
     });
     it('Dynamically change attributes with htmlAttributes API', () => {
-        datetimepicker = new DateTimePicker({ htmlAttributes:{placeholder:"Enter a date", readonly: "", disabled: "true", value: "2/20/2018", max: "2/25/2018", min: "2/10/2018", title:"sample", style: 'background-color:yellow'}});
+        datetimepicker = new DateTimePicker({ htmlAttributes:{placeholder:"Enter a date", readonly: "", disabled: "true", value: "2/20/2018", max: "2/25/2018", min: "2/10/2018", title:"sample"}});
         datetimepicker.appendTo('#datetime');
         expect(datetimepicker.element.getAttribute('placeholder')).toBe('Enter a date');
         expect(datetimepicker.element.hasAttribute('readonly')).toBe(true);
@@ -1688,8 +1688,7 @@ describe('HTML attribute API dynamic testing', () => {
         expect(datetimepicker.element.min).toBe('2/10/2018');
         expect(datetimepicker.element.max).toBe('2/25/2018');
         expect(datetimepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
-        expect(datetimepicker.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
-        datetimepicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "", value: "4/20/2018", max: "4/25/2018", min: "4/10/2018", title:"heading", style: 'background-color:red'};
+        datetimepicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "", value: "4/20/2018", max: "4/25/2018", min: "4/10/2018", title:"heading"};
         datetimepicker.dataBind();
         expect(datetimepicker.element.getAttribute('placeholder')).toBe('choose a date');
         expect(datetimepicker.element.hasAttribute('readonly')).toBe(false);
@@ -1698,7 +1697,6 @@ describe('HTML attribute API dynamic testing', () => {
         expect(datetimepicker.element.min).toBe('4/10/2018');
         expect(datetimepicker.element.max).toBe('4/25/2018');
         expect(datetimepicker.inputWrapper.container.getAttribute('title')).toBe('heading');
-        expect(datetimepicker.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
     });
     it('Placeholder testing in auto case', () => {
         datetimepicker = new DateTimePicker({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
@@ -2956,6 +2954,44 @@ describe('invalid String', () => {
             e.target = document.getElementsByTagName('body')[0];
             datetimepicker.documentClickHandler(e);
             expect(datetimepicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(false);
+        });
+    });
+    describe('Dynamic CssClass testcase', function (){
+        let datetimepicker: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datetimepicker'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (datetimepicker) {
+                datetimepicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('single css class',function() {
+            datetimepicker = new DateTimePicker({
+                cssClass: 'e-custom'
+            });
+            datetimepicker.appendTo('#datetimepicker');
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-custom')).toBe(true);
+            datetimepicker.cssClass = 'e-test';
+            datetimepicker.dataBind();
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
+        });
+        it('more than one css class',function() {
+            datetimepicker = new DateTimePicker({
+                cssClass: 'e-custom e-secondary'
+            });
+            datetimepicker.appendTo('#datetimepicker');
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-custom')).toBe(true);
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-secondary')).toBe(true);            
+            datetimepicker.cssClass = 'e-test e-ternary';
+            datetimepicker.dataBind();
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-secondary')).toBe(false);
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-ternary')).toBe(true);
         });
     });
 });

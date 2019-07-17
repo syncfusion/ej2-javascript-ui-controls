@@ -546,6 +546,7 @@ export interface IGrid extends Component<HTMLElement> {
     log?(type: string | string[], args?: Object): void;
     isDetail?(): boolean;
     updateMediaColumns?(col: Column): void;
+    hideScroll?(): void;
 }
 
 /** @hidden */
@@ -674,7 +675,7 @@ export interface ICellRenderer<T> {
     format?(column: T, value: Object, data: Object): string;
     evaluate?(node: Element, column: Cell<T>, data: Object, attributes?: Object): boolean;
     setStyleAndAttributes?(node: Element, attributes: { [key: string]: Object }): void;
-    render(cell: Cell<T>, data: Object, attributes?: { [x: string]: string }, isExpand?: boolean): Element;
+    render(cell: Cell<T>, data: Object, attributes?: { [x: string]: string }, isExpand?: boolean, isEdit?: boolean): Element;
     appendHtml?(node: Element, innerHtml: string | Element): Element;
     refresh?(cell: Cell<T>, node: Element): Element;
 }
@@ -1367,9 +1368,6 @@ export interface IPrimaryKey {
     primaryKey?: string[];
 }
 
-/**
- * @hidden
- */
 export interface BeforeBatchAddArgs extends ICancel, IPrimaryKey {
     /** Defines the default data object. */
     defaultData?: Object;
@@ -1396,17 +1394,11 @@ export interface BatchDeleteArgs extends IPrimaryKey {
     rowIndex?: number;
 }
 
-/**
- * @hidden
- */
 export interface BeforeBatchDeleteArgs extends BatchDeleteArgs, ICancel {
     /** Defines the row element. */
     row?: Element;
 }
 
-/**
- * @hidden
- */
 export interface BeforeBatchSaveArgs extends ICancel {
     /** Defines the changed record object. */
     batchChanges?: Object;
@@ -1438,10 +1430,6 @@ export interface BatchAddArgs extends ICancel, IPrimaryKey {
     columnObject?: Column;
 }
 
-
-/**
- * @hidden
- */
 export interface BeginEditArgs extends ICancel, IPrimaryKey {
     /** Defines the edited data. */
     rowData?: Object;
@@ -1549,9 +1537,7 @@ export interface CellEditSameArgs extends ICancel {
     isForeignKey?: boolean;
 
 }
-/**
- * @hidden
- */
+
 export interface CellEditArgs extends CellEditSameArgs, IPrimaryKey {
     /** Defines the current row. */
     row?: Element;
@@ -1582,22 +1568,18 @@ export interface IFilterCreate {
     dialogObj?: Dialog;
 }
 
-/**
- * @hidden
- */
 export interface CellSaveArgs extends CellEditSameArgs {
     /** Defines the previous value of the cell. */
     previousValue?: string;
 }
 
-/**
- * @hidden
- */
 export interface BeforeDataBoundArgs {
     /** Defines the data. */
     result?: Object[];
     /** Defines the data count. */
     count?: number;
+    /** Defines the cancel option value. */
+    cancel?: boolean;
 }
 
 /**

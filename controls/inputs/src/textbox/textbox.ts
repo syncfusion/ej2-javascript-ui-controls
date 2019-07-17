@@ -71,6 +71,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private formElement: HTMLElement;
     private initialValue: string;
     private textboxOptions: TextBoxModel;
+    private inputPreviousValue: string = null;
 
     /**
      * Specifies the behavior of the TextBox such as text, password, email, etc.
@@ -231,6 +232,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     if (this.isHiddenInput) {
                     this.element.value = this.respectiveElement.value;
                     }
+                    this.inputPreviousValue = this.respectiveElement.value;
                     /* istanbul ignore next */
                     if (this.isAngular && this.preventChange === true) {
                         this.previousValue = this.value;
@@ -268,7 +270,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(this.cssClass, [this.textboxWrapper.container]);
+                        Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
                     break;
                 case 'locale':
                     this.globalize = new Internationalization(this.locale);
@@ -434,12 +436,22 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             this.setInitialValue();
         }
         this.previousValue = this.value;
+        this.inputPreviousValue = this.value;
     }
 
     private updateHTMLAttrToWrapper(): void {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (containerAttr.indexOf(key) > -1 ) {
-                this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                } else if (key === 'style') {
+                    let setStyle: string = this.textboxWrapper.container.getAttribute(key);
+                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                    this.htmlAttributes[key];
+                    this.textboxWrapper.container.setAttribute(key, setStyle);
+                } else {
+                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -522,9 +534,10 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         let eventArgs: InputEventArgs = {
             event: args,
             value: this.respectiveElement.value,
-            previousValue: this.value,
+            previousValue: this.inputPreviousValue,
             container: this.textboxWrapper.container
         };
+        this.inputPreviousValue = this.respectiveElement.value;
         /* istanbul ignore next */
         if (this.isAngular) {
             textboxObj.localChange({ value: this.respectiveElement.value });
@@ -572,10 +585,11 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             let eventArgs: InputEventArgs = {
                 event: event,
                 value: this.respectiveElement.value,
-                previousValue: previousValue,
+                previousValue: this.inputPreviousValue,
                 container: this.textboxWrapper.container
             };
             this.trigger('input', eventArgs);
+            this.inputPreviousValue = this.respectiveElement.value;
             this.raiseChangeEvent(event, true);
         }
     }

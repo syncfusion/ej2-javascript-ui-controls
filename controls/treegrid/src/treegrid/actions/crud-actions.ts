@@ -218,9 +218,18 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
             if (!(<Object>record).hasOwnProperty(control.childMapping)) {
                 record[control.childMapping] = [];
             }
-            if (record.childRecords.indexOf(childRecords) === -1) {
+            if (record[control.childMapping].indexOf(childRecords) === -1) {
                 record[control.childMapping].unshift(childRecords);
             }
+        }
+    }
+    let primaryKeys: string = control.grid.getPrimaryKeyFieldNames()[0];
+    let data: ITreeData[] = control.grid.dataSource instanceof DataManager ?
+    control.grid.dataSource.dataSource.json : <Object[]>control.grid.dataSource;
+    for (let i: number = 0; i < data.length; i++) {
+        if (data[i][primaryKeys] === record[primaryKeys]) {
+            data[i] = record;
+            break;
         }
     }
     control.grid.setRowData(key, record);

@@ -328,7 +328,16 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private updateHTMLAttrToWrapper(): void {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (wrapperAttr.indexOf(key) > -1 ) {
-                this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                } else if (key === 'style') {
+                    let maskStyle: string = this.inputObj.container.getAttribute(key);
+                    maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                    this.htmlAttributes[key];
+                    this.inputObj.container.setAttribute(key, maskStyle);
+                } else {
+                    this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -364,12 +373,6 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 setElementValue.call(this, '');
             }
             if (this.floatLabelType === 'Never') { maskInputBlurHandler.call(this); }
-        }
-    }
-
-    private setCssClass(cssClass: string, element: Element[] | NodeList): void {
-        if (cssClass) {
-            addClass(element, cssClass);
         }
     }
 
@@ -446,7 +449,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                     this.setWidth(newProp.width);
                     break;
                 case 'cssClass':
-                    this.setCssClass(newProp.cssClass, [this.inputObj.container]);
+                        Input.setCssClass(newProp.cssClass, [this.inputObj.container], oldProp.cssClass);
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);

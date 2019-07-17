@@ -1453,7 +1453,7 @@ export class StickyNotesAnnotation {
                             this.pdfViewer.annotationModule.textMarkupAnnotationModule.clearAnnotationSelection(pageNumber - 1);
                             // tslint:disable-next-line:max-line-length
                             let canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + (pageNumber - 1));
-                            this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectAnnotation(pageCollections[i], canvas);
+                            this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectAnnotation(pageCollections[i], canvas, (pageNumber - 1));
                             this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAnnotation = pageCollections[i];
                             this.pdfViewer.annotation.textMarkupAnnotationModule.selectTextMarkupCurrentPage = pageNumber - 1;
                             this.pdfViewer.annotation.textMarkupAnnotationModule.enableAnnotationPropertiesTool(true);

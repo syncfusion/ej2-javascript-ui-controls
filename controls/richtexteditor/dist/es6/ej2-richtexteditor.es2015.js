@@ -17172,7 +17172,11 @@ let RichTextEditor = class RichTextEditor extends Component {
         this.triggerEditArea(e.originalEvent);
     }
     contextHandler(e) {
-        e.preventDefault();
+        let closestElem = closest(e.target, 'a, table, img');
+        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && (closestElem.tagName === 'IMG' ||
+            closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
+            e.preventDefault();
+        }
     }
     resetHandler() {
         let defaultValue = this.valueContainer.defaultValue.trim();

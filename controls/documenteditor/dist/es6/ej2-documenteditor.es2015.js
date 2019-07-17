@@ -6209,7 +6209,7 @@ class TableWidget extends BlockWidget {
         }
         else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
-            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth);
+            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
         }
         //Sets the width to cells
         this.setWidthToCells(tableWidth, isAutoWidth);
@@ -7249,6 +7249,14 @@ class TableCellWidget extends BlockWidget {
                 let size = this.getMinimumAndMaximumWordWidth(0, 0);
                 this.sizeInfo.minimumWordWidth = size.minimumWordWidth + this.sizeInfo.minimumWidth;
                 this.sizeInfo.maximumWordWidth = size.maximumWordWidth + this.sizeInfo.minimumWidth;
+                // if minimum and maximum width values are equal, set value as zero.
+                // later, preferred width value is considered for all width values.
+                if (this.sizeInfo.minimumWidth === this.sizeInfo.minimumWordWidth
+                    && this.sizeInfo.minimumWordWidth === this.sizeInfo.maximumWordWidth) {
+                    this.sizeInfo.minimumWordWidth = 0;
+                    this.sizeInfo.maximumWordWidth = 0;
+                    this.sizeInfo.minimumWidth = 0;
+                }
             }
         }
         let sizeInfo = new ColumnSizeInfo();
@@ -10409,6 +10417,12 @@ class WTableHolder {
         let remainingWidthTotal = 0;
         for (let i = 0; i < this.columns.length; i++) {
             let column = this.columns[i];
+            // If preferred width of column is less than column minimum width and also column is empty, considered column preferred width
+            if (column.minimumWordWidth === 0 && column.maximumWordWidth === 0 && column.minWidth === 0) {
+                column.minimumWordWidth = column.preferredWidth;
+                column.maximumWordWidth = column.preferredWidth;
+                column.minWidth = column.preferredWidth;
+            }
             maxTotal += column.preferredWidth > column.maximumWordWidth ? column.preferredWidth : column.maximumWordWidth;
             minTotal += column.preferredWidth > column.minimumWordWidth ? column.preferredWidth : column.minimumWordWidth;
             // tslint:disable-next-line:max-line-length
@@ -10483,6 +10497,9 @@ class WTableHolder {
                         // The factor depends of current column's minimum word width and total minimum word width.
                         let factor = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
                         factor = isNaN(factor) ? 0 : factor;
+                        if (column.preferredWidth <= column.minimumWidth) {
+                            continue;
+                        }
                         column.preferredWidth = column.minimumWidth + factor;
                     }
                 }
@@ -10493,9 +10510,16 @@ class WTableHolder {
     /**
      * @private
      */
-    fitColumns(containerWidth, preferredTableWidth, isAutoWidth) {
+    fitColumns(containerWidth, preferredTableWidth, isAutoWidth, indent) {
+        if (isNullOrUndefined(indent)) {
+            indent = 0;
+        }
         // Gets total preferred width.
         let totalColumnWidth = this.getTotalWidth(0);
+        // Neglected left indent value, because in preferred table width left indent value is neglected
+        if (isAutoWidth) {
+            totalColumnWidth -= indent;
+        }
         // If auto table width, based on total column widths, minimum value will be updated.
         if (isAutoWidth) {
             this.tableWidth = preferredTableWidth > totalColumnWidth ? totalColumnWidth : preferredTableWidth;
@@ -20066,7 +20090,7 @@ class Renderer {
                         // tslint:disable-next-line:max-line-length
                         let backgroundColor = (containerWidget instanceof TableCellWidget) ? containerWidget.cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
                         // tslint:disable-next-line:max-line-length
-                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
             }
@@ -20724,7 +20748,7 @@ class TextHelper {
         textHeight = spanElement.offsetHeight;
         // Calculate the text element's baseline offset.
         let textTopVal = spanElement.offsetTop;
-        let tempDivTopVal = tempDiv.offsetTop;
+        let tempDivTopVal = tempDiv.offsetTop + (parentDiv.offsetWidth - spanElement.offsetWidth);
         baselineOffset = tempDivTopVal - textTopVal;
         document.body.removeChild(parentDiv);
         return { 'Height': textHeight, 'BaselineOffset': baselineOffset };
@@ -58621,6 +58645,7 @@ class WordExport {
     }
     // Serialize the row format
     serializeRowFormat(writer, row) {
+        this.serializeRowMargins(writer, row.rowFormat);
         writer.writeStartElement(undefined, 'trPr', this.wNamespace);
         //Serialize Row Height
         if (row.rowFormat.height > 0) {
@@ -58707,7 +58732,7 @@ class WordExport {
         let owner = this.blockOwner;
         this.blockOwner = cell;
         writer.writeStartElement(undefined, 'tc', this.wNamespace);
-        this.serializeCellFormat(writer, cell.cellFormat);
+        this.serializeCellFormat(writer, cell.cellFormat, true);
         if (cell.blocks.length > 0) {
             let itemIndex = 0;
             let item = undefined;
@@ -58726,11 +58751,27 @@ class WordExport {
             writer.writeEndElement(); //end of pPr
             writer.writeEndElement(); //end of P
         }
-        writer.writeEndElement(); //end of table cell 'tc'        
+        writer.writeEndElement(); //end of table cell 'tc'
+        // tslint:disable-next-line:max-line-length
+        if (this.mVerticalMerge.containsKey(cell.columnIndex + 1) && (this.row.cells.indexOf(cell) === cell.columnIndex) && cell.nextNode === undefined) {
+            let collKey = cell.columnIndex + 1;
+            writer.writeStartElement(undefined, 'tc', this.wNamespace);
+            if (!isNullOrUndefined(this.spanCellFormat)) {
+                this.serializeCellFormat(writer, this.spanCellFormat, false);
+            }
+            this.serializeColumnSpan(collKey, writer);
+            writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
+            writer.writeEndElement();
+            this.checkMergeCell(collKey);
+            writer.writeStartElement('w', 'p', this.wNamespace);
+            writer.writeEndElement(); //end of P
+            writer.writeEndElement(); //end of table cell 'tc'  
+        }
         this.blockOwner = owner;
     }
     // Serialize the cell formatting
-    serializeCellFormat(writer, cellFormat) {
+    serializeCellFormat(writer, cellFormat, ensureMerge) {
         let cell = this.blockOwner;
         //Get the table fomat
         let tf = this.table.tableFormat;
@@ -58741,10 +58782,14 @@ class WordExport {
         // SerializeCnfStyleElement(cell);
         //w:tcW -    Preferred Table Cell Width
         this.serializeCellWidth(writer, cell);
-        //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
-        this.serializeCellMerge(writer, cellFormat);
-        //w:gridSpan -   Grid Columns Spanned by Current Table Cell
-        this.serializeGridSpan(writer, cell);
+        // serialize cell margins
+        this.serializeCellMargins(writer, cellFormat);
+        if (ensureMerge) {
+            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
+            this.serializeCellMerge(writer, cellFormat);
+            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
+            this.serializeGridSpan(writer, cell);
+        }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
         this.serializeBorders(writer, cellFormat.borders, 8);
@@ -58857,6 +58902,7 @@ class WordExport {
         }
         if (cellFormat.rowSpan > 1) {
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
+            this.spanCellFormat = cellFormat;
             this.mVerticalMerge.add(collKey, cellFormat.rowSpan - 1);
             if (cellFormat.columnSpan > 1) {
                 this.mGridSpans.add(collKey, cellFormat.columnSpan);
@@ -58866,20 +58912,6 @@ class WordExport {
         }
         else if (this.mVerticalMerge.containsKey(collKey) && isserialized) {
             this.createMerge(writer, collKey, cell);
-        }
-        else if (this.mVerticalMerge.containsKey(cellIndex + 1) && isserialized && cell.nextNode === undefined) {
-            collKey = cell.columnIndex + 1;
-            writer.writeEndElement();
-            writer.writeStartElement('w', 'p', this.wNamespace);
-            writer.writeEndElement();
-            writer.writeEndElement();
-            writer.writeStartElement(undefined, 'tc', this.wNamespace);
-            writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
-            this.serializeColumnSpan(collKey, writer);
-            writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
-            writer.writeEndElement();
-            this.checkMergeCell(collKey);
         }
     }
     createMerge(writer, collKey, cell) {
@@ -58906,6 +58938,7 @@ class WordExport {
     checkMergeCell(collKey) {
         if ((this.mVerticalMerge.get(collKey) - 1) === 0) {
             this.mVerticalMerge.remove(collKey);
+            this.spanCellFormat = undefined;
             if (this.mGridSpans.keys.length > 0 && this.mGridSpans.containsKey(collKey)) {
                 this.mGridSpans.remove(collKey);
             }
@@ -59005,6 +59038,7 @@ class WordExport {
         this.serializeTableAlignment(writer, table.tableFormat);
         this.serializeCellSpacing(writer, table.tableFormat);
         this.serializeTableIndentation(writer, table.tableFormat);
+        this.serializeTableMargins(writer, table.tableFormat);
         this.serializeTableBorders(writer, table.tableFormat);
         this.serializeShading(writer, table.tableFormat.shading);
         if (table.tableFormat.bidi) {
@@ -59047,6 +59081,53 @@ class WordExport {
         if (!isNullOrUndefined(table)) {
             writer.writeEndElement(); //end of tblPr
         }
+    }
+    // serialize the table margin
+    serializeTableMargins(writer, format) {
+        this.serializeMargins(writer, format, 'tblCellMar');
+    }
+    // serialize the row margin
+    serializeRowMargins(writer, format) {
+        writer.writeStartElement(undefined, 'tblPrEx', this.wNamespace);
+        this.serializeMargins(writer, format, 'tblCellMar');
+        writer.writeEndElement();
+    }
+    // serialize the cell margins
+    serializeCellMargins(writer, format) {
+        this.serializeMargins(writer, format, 'tcMar');
+    }
+    // serialize the table margins, row margins, cell margins
+    serializeMargins(writer, format, tag) {
+        writer.writeStartElement(undefined, tag, this.wNamespace);
+        if (!isNullOrUndefined(format.topMargin)) {
+            let topMargin = Math.round(format.topMargin * 20);
+            writer.writeStartElement(undefined, 'top', this.wNamespace);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, topMargin.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(format.leftMargin)) {
+            let leftMargin = Math.round(format.leftMargin * 20);
+            writer.writeStartElement(undefined, 'left', this.wNamespace);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, leftMargin.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(format.bottomMargin)) {
+            let bottomMargin = Math.round(format.bottomMargin * 20);
+            writer.writeStartElement(undefined, 'bottom', this.wNamespace);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, bottomMargin.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(format.rightMargin)) {
+            let rightMargin = Math.round(format.rightMargin * 20);
+            writer.writeStartElement(undefined, 'right', this.wNamespace);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, rightMargin.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
     }
     // Serialize the table borders
     serializeShading(writer, format) {
@@ -59287,7 +59368,7 @@ class WordExport {
     }
     // Serialize the cell spacing.
     serializeCellSpacing(writer, format) {
-        if (!isNullOrUndefined(format.cellSpacing) && format.cellSpacing >= 0) {
+        if (!isNullOrUndefined(format.cellSpacing) && format.cellSpacing > 0) {
             writer.writeStartElement(undefined, 'tblCellSpacing', this.wNamespace);
             // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(format.cellSpacing * this.twentiethOfPoint).toString());

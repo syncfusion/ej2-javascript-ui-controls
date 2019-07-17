@@ -24,6 +24,12 @@
 
 - `#F145367` - Issue with "filtering is not working with item template" has been resolved.
 
+### ListBox
+
+#### Bug Fixes
+
+- `#240594` - Form submit occurs while click toolbar item issue is fixed.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### ListBox

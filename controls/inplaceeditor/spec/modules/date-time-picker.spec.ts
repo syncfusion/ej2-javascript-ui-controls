@@ -2,7 +2,7 @@
  * DateTimePicker module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { ValidateEventArgs } from '../../src/inplace-editor/base/index';
+import { ValidateEventArgs, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
@@ -639,6 +639,42 @@ describe('DateTimePicker Control', () => {
             expect(selectAll('.e-datetimepicker', document.body).length === 1).toEqual(true);
             expect(editorObj.value).toEqual(null);
             expect((<HTMLInputElement>select('.e-datetimepicker', document.body)).value).toEqual('');
+        });
+    });
+
+    describe('beginEdit event testing', () => {
+        let editorObj: any;
+        let date: Date = new Date('4/9/2018 12:30 AM');
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DateTime',
+                value: date,
+                mode: 'Inline',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DateTime',
+                mode: 'Popup',
+                value: date,
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
         });
     });
 

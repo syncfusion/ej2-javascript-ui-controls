@@ -125,7 +125,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
      * @default []
-     * @isGenericType true
      */
     dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
 

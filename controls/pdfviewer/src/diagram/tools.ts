@@ -242,12 +242,14 @@ export class SelectTool extends ToolBase {
     private mouseEventHelper(args: MouseEventArgs): void {
         // tslint:disable-next-line
         let object: IElement = findActiveElement(args as any, this.pdfViewerBase, this.commandHandler);
-        let selectedObject: SelectorModel = this.commandHandler.selectedItems;
-        if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey) {
-            this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-        }
-        if (object) {
-            this.commandHandler.select([(object as PdfAnnotationBaseModel).id]);
+        if (this.commandHandler) {
+            let selectedObject: SelectorModel = this.commandHandler.selectedItems;
+            if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey) {
+                this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+            }
+            if (object) {
+                this.commandHandler.select([(object as PdfAnnotationBaseModel).id]);
+            }
         }
     }
 

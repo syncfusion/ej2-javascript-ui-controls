@@ -1635,7 +1635,7 @@ export class TableWidget extends BlockWidget {
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
-            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth);
+            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
         }
         //Sets the width to cells
         this.setWidthToCells(tableWidth, isAutoWidth);
@@ -2676,6 +2676,14 @@ export class TableCellWidget extends BlockWidget {
                 let size: WidthInfo = this.getMinimumAndMaximumWordWidth(0, 0);
                 this.sizeInfo.minimumWordWidth = size.minimumWordWidth + this.sizeInfo.minimumWidth;
                 this.sizeInfo.maximumWordWidth = size.maximumWordWidth + this.sizeInfo.minimumWidth;
+                // if minimum and maximum width values are equal, set value as zero.
+                // later, preferred width value is considered for all width values.
+                if (this.sizeInfo.minimumWidth === this.sizeInfo.minimumWordWidth
+                    && this.sizeInfo.minimumWordWidth === this.sizeInfo.maximumWordWidth) {
+                    this.sizeInfo.minimumWordWidth = 0;
+                    this.sizeInfo.maximumWordWidth = 0;
+                    this.sizeInfo.minimumWidth = 0;
+                }
             }
         }
         let sizeInfo: ColumnSizeInfo = new ColumnSizeInfo();
@@ -6151,6 +6159,12 @@ export class WTableHolder {
         let remainingWidthTotal: number = 0;
         for (let i: number = 0; i < this.columns.length; i++) {
             let column: WColumn = this.columns[i];
+            // If preferred width of column is less than column minimum width and also column is empty, considered column preferred width
+            if (column.minimumWordWidth === 0 && column.maximumWordWidth === 0 && column.minWidth === 0) {
+                column.minimumWordWidth = column.preferredWidth;
+                column.maximumWordWidth = column.preferredWidth;
+                column.minWidth = column.preferredWidth;
+            }
             maxTotal += column.preferredWidth > column.maximumWordWidth ? column.preferredWidth : column.maximumWordWidth;
             minTotal += column.preferredWidth > column.minimumWordWidth ? column.preferredWidth : column.minimumWordWidth;
             // tslint:disable-next-line:max-line-length
@@ -6220,6 +6234,9 @@ export class WTableHolder {
                         // The factor depends of current column's minimum word width and total minimum word width.
                         let factor: number = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
                         factor = isNaN(factor) ? 0 : factor;
+                        if (column.preferredWidth <= column.minimumWidth) {
+                            continue;
+                        }
                         column.preferredWidth = column.minimumWidth + factor;
                     }
                 }
@@ -6230,9 +6247,16 @@ export class WTableHolder {
     /**
      * @private
      */
-    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean): void {
+    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, indent?: number): void {
+        if (isNullOrUndefined(indent)) {
+            indent = 0;
+        }
         // Gets total preferred width.
         let totalColumnWidth: number = this.getTotalWidth(0);
+        // Neglected left indent value, because in preferred table width left indent value is neglected
+        if (isAutoWidth) {
+            totalColumnWidth -= indent;
+        }
 
         // If auto table width, based on total column widths, minimum value will be updated.
         if (isAutoWidth) {

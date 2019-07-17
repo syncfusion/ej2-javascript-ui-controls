@@ -49,7 +49,8 @@ export class Highlight {
         let layerIndex: number;
         let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
         if ((targetEle.id.indexOf('LayerIndex') !== -1 || targetEle.id.indexOf('NavigationIndex') > -1) &&
-            targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch) {
+            targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch &&
+            targetEle.getAttribute('class') !== 'MarkerselectionMapStyle') {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             let shapeData: object;
             let data: object;
@@ -83,7 +84,7 @@ export class Highlight {
                 this.highlightSettings = this.maps.layers[layerIndex].navigationLineSettings[index].highlightSettings;
             }
             if (this.highlightSettings.enable) {
-                if (this.maps.legendSettings.visible) {
+                if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
                     this.maps.legendModule.shapeHighLightAndSelection(
                         targetEle, data, this.highlightSettings, 'highlight', layerIndex);
                 }

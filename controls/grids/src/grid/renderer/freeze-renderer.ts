@@ -6,7 +6,7 @@ import { ContentRender } from './content-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { FreezeRowModelGenerator } from '../services/freeze-row-model-generator';
 import * as events from '../base/constant';
-import { renderMovable, getScrollBarWidth } from '../base/util';
+import { renderMovable, getScrollBarWidth, wrap } from '../base/util';
 
 /**
  * Freeze module is used to render grid content with frozen rows and columns
@@ -121,6 +121,9 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
         this.updateColgroup();
         this.widthService.setWidthToTable();
+        if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
+            wrap([].slice.call(this.movableHeader.querySelectorAll('tr.e-columnheader')), true);
+        }
         this.parent.updateDefaultCursor();
         renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
         this.initializeHeaderDrag();

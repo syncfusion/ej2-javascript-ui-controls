@@ -1,5 +1,5 @@
 import { L10n } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, isBlazor } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { ICellRenderer, IValueFormatter, ICellFormatter, IGrid, ICell } from '../base/interface';
@@ -49,15 +49,22 @@ export class CellRenderer implements ICellRenderer<Column> {
         return isNullOrUndefined(value) ? '' : value.toString();
     }
 
-    public evaluate(node: Element, cell: Cell<Column>, data: Object, attributes?: Object, fData?: Object): boolean {
+    public evaluate(node: Element, cell: Cell<Column>, data: Object, attributes?: Object, fData?: Object, isEdit?: boolean): boolean {
         let result: Element[];
         if (cell.column.template) {
             let literals: string[] = ['index'];
             let dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData });
             let templateID: string = this.parent.element.id + cell.column.uid;
             let str: string = 'isStringTemplate';
-            result = cell.column.getColumnTemplate()(
-                extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+            let index: string = 'index';
+            if (isBlazor() && isEdit) {
+                result = cell.column.getColumnTemplate()(
+                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str],
+                    parseInt(attributes[index], 10));
+            } else {
+                result = cell.column.getColumnTemplate()(
+                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID);
+            }
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });
             result = null;
@@ -96,8 +103,8 @@ export class CellRenderer implements ICellRenderer<Column> {
      * @param  {{[x:string]:Object}} attributes?
      * @param  {Element}
      */
-    public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
-        return this.refreshCell(cell, data, attributes);
+    public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }, isEdit?: boolean): Element {
+        return this.refreshCell(cell, data, attributes, isEdit);
     }
 
     /**
@@ -117,7 +124,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         }
     }
 
-    private refreshCell(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
+    private refreshCell(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }, isEdit?: boolean): Element {
         let node: Element = this.element.cloneNode() as Element;
         let column: Column = cell.column;
         let fData: Object;
@@ -151,7 +158,7 @@ export class CellRenderer implements ICellRenderer<Column> {
             node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
         }
 
-        if (this.evaluate(node, cell, data, attributes, fData) && column.type !== 'checkbox') {
+        if (this.evaluate(node, cell, data, attributes, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         } else if (column.type === 'checkbox') {
             node.classList.add('e-gridchkbox');

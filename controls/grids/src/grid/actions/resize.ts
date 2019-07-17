@@ -70,6 +70,7 @@ export class Resize implements IAction {
             this.parent.getColumns().map((x: Column) => x.field) : (typeof fName === 'string') ? [fName] : fName;
         this.findColumn(columnName);
     }
+    /* tslint:disable-next-line:max-func-body-length */
     private resizeColumn(fName: string, index: number, id?: string): void {
         let gObj: IGrid = this.parent;
         let tWidth: number = 0;
@@ -78,11 +79,13 @@ export class Resize implements IAction {
         let footerTable: Element;
         let headerDivTag: string = 'e-gridheader';
         let contentDivTag: string = 'e-gridcontent';
+        let footerDivTag: string = 'e-gridfooter';
         let indentWidth: number = 0;
         let uid: string = id ? id : this.parent.getUidByColumnField(fName);
         let columnIndex: number = this.parent.getNormalizedColumnIndex(uid);
         let headerTextClone: Element;
         let contentTextClone: NodeListOf<Element>;
+        let footerTextClone: NodeListOf<Element>;
         let frzCols: number = gObj.getFrozenColumns();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
             footerTable = gObj.getFooterContentTable();
@@ -93,17 +96,27 @@ export class Resize implements IAction {
                 contentTable = gObj.getContentTable();
                 headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
                 contentTextClone = contentTable.querySelectorAll(`td:nth-child(${columnIndex + 1})`);
+                if (footerTable) {
+                    footerTextClone = footerTable.querySelectorAll(`td:nth-child(${columnIndex + 1})`);
+                }
             } else {
                 headerTable = gObj.getHeaderContent().querySelector('.e-movableheader').children[0];
                 contentTable = gObj.getContent().querySelector('.e-movablecontent').children[0];
                 headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
                 contentTextClone = contentTable.querySelectorAll(`td:nth-child(${(columnIndex - frzCols) + 1})`);
+                if (footerTable) {
+                    footerTable = gObj.getFooterContent().querySelector('.e-movablefootercontent').children[0];
+                    footerTextClone = footerTable.querySelectorAll(`td:nth-child(${(columnIndex - frzCols) + 1})`);
+                }
             }
         } else {
             headerTable = gObj.getHeaderTable();
             contentTable = gObj.getContentTable();
             headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
             contentTextClone = contentTable.querySelectorAll(`td:nth-child(${columnIndex + 1}):not(.e-groupcaption)`);
+            if (footerTable) {
+                footerTextClone = footerTable.querySelectorAll(`td:nth-child(${columnIndex + 1}):not(.e-groupcaption)`);
+            }
         }
         let indentWidthClone: NodeListOf<Element> = headerTable.querySelector('tr').querySelectorAll('.e-grouptopleftcell');
         if (indentWidthClone.length > 0) {
@@ -118,14 +131,24 @@ export class Resize implements IAction {
         }
         let headerText: Element[] = [headerTextClone];
         let contentText: Element[] = [];
+        let footerText: Element[] = [];
+        if (footerTable) {
+            for (let i: number = 0; i < footerTextClone.length; i++) {
+                footerText[i] = footerTextClone[i].cloneNode(true) as Element;
+            }
+        }
         for (let i: number = 0; i < contentTextClone.length; i++) {
             contentText[i] = contentTextClone[i].cloneNode(true) as Element;
         }
         let wHeader: number = this.createTable(headerTable, headerText, headerDivTag);
         let wContent: number = this.createTable(contentTable, contentText, contentDivTag);
+        let wFooter: number = null;
+        if (footerText.length) {
+            wFooter = this.createTable(footerTable, footerText, footerDivTag);
+        }
         let columnbyindex: Column = gObj.getColumns()[index];
         let result: Boolean;
-        let width: string = (wHeader > wContent) ? columnbyindex.width = formatUnit(wHeader) : columnbyindex.width = formatUnit(wContent);
+        let width: string = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
         this.widthService.setColumnWidth(gObj.getColumns()[index] as Column);
         result = gObj.getColumns().some((x: Column) => x.width === null || x.width === undefined || (x.width as string).length <= 0);
         if (result === false) {

@@ -82,6 +82,7 @@ export class Agenda extends ViewBase implements IRenderer {
         this.agendaBase.wireEventActions();
         let contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         contentArea.scrollTop = 1;
+        this.parent.notify('events-loaded', {});
     }
 
     private refreshEvent(refreshDate: Date): void {

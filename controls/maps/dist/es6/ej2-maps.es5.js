@@ -6984,7 +6984,8 @@ var Legend = /** @__PURE__ @class */ (function () {
         }
         if (interactProcess) {
             for (var i = 0; i < collection.length; i++) {
-                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0) {
+                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0 &&
+                    parseFloat(targetElement.id.split('_Legend_Index_')[1]) === i) {
                     var layer = this.maps.layers[collection[i]['data'][0]['layerIndex']];
                     var enable = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
                     var module = void 0;
@@ -7035,7 +7036,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         element.setAttribute('fill', fill);
         element.setAttribute('opacity', opacity);
         element.setAttribute('stroke', borderColor);
-        element.setAttribute('stroke-width', borderWidth);
+        element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
     };
     Legend.prototype.pushCollection = function (targetElement, collection, oldElement, shapeOpacity) {
         collection.push({
@@ -7816,7 +7817,8 @@ var Highlight = /** @__PURE__ @class */ (function () {
         var layerIndex;
         var isTouch = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
         if ((targetEle.id.indexOf('LayerIndex') !== -1 || targetEle.id.indexOf('NavigationIndex') > -1) &&
-            targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch) {
+            targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch &&
+            targetEle.getAttribute('class') !== 'MarkerselectionMapStyle') {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             var shapeData = void 0;
             var data = void 0;
@@ -7853,7 +7855,7 @@ var Highlight = /** @__PURE__ @class */ (function () {
                 this.highlightSettings = this.maps.layers[layerIndex].navigationLineSettings[index].highlightSettings;
             }
             if (this.highlightSettings.enable) {
-                if (this.maps.legendSettings.visible) {
+                if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
                     this.maps.legendModule.shapeHighLightAndSelection(targetEle, data, this.highlightSettings, 'highlight', layerIndex);
                 }
                 this.mapHighlight(targetEle, shapeData, data);
@@ -8029,7 +8031,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.selectionType = 'navigationline';
             }
             if (this.selectionsettings.enable) {
-                if (this.maps.legendSettings.visible) {
+                if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
                     this.maps.legendModule.shapeHighLightAndSelection(targetEle, data, this.selectionsettings, 'selection', layerIndex);
                 }
                 if (this.maps.legendSettings.visible ? this.maps.legendModule.legendSelection : true) {

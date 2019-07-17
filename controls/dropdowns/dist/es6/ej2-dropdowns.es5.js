@@ -1090,7 +1090,6 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
      * Gets the data Object that matches the given value.
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
-     * @isGenericType true
      */
     DropDownBase.prototype.getDataByValue = function (value) {
         if (!isNullOrUndefined(this.listData)) {
@@ -1312,7 +1311,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         this.preventAltUp = false;
         this.isCustomFilter = false;
         this.isSecondClick = false;
-        this.filterVal = false;
         this.keyConfigure = {
             tab: 'tab',
             enter: '13',
@@ -1510,22 +1508,11 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         return 'EJS-DROPDOWNLIST';
     };
     DropDownList.prototype.getElementByText = function (text) {
-        var formElement = closest(this.inputElement, 'form');
-        if (formElement && this.filterVal) {
-            this.listData = this.actionCompleteData.list;
-        }
         return this.getElementByValue(this.getValueByText(text));
     };
     DropDownList.prototype.getElementByValue = function (value) {
         var item;
-        var listItems;
-        var formElement = closest(this.inputElement, 'form');
-        if (formElement && this.filterVal) {
-            listItems = this.actionCompleteData.ulElement.childNodes;
-        }
-        else {
-            listItems = this.getItems();
-        }
+        var listItems = this.getItems();
         for (var _i = 0, listItems_1 = listItems; _i < listItems_1.length; _i++) {
             var liItem = listItems_1[_i];
             if (this.getFormattedValue(liItem.getAttribute('data-value')) === value) {
@@ -2380,9 +2367,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.filteringAction = function (dataSource, query, fields) {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
-            if (this.filterInput.value.trim() !== '') {
-                this.filterVal = true;
-            }
             if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
@@ -2716,6 +2700,11 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 _this.isNotSearchList = false;
                 _this.isDocumentClick = false;
                 _this.destroyPopup();
+                var formElement = closest(_this.inputElement, 'form');
+                if (_this.isFiltering() && formElement && _this.actionCompleteData.list && _this.actionCompleteData.list[0]) {
+                    _this.isActive = true;
+                    _this.onActionComplete(_this.actionCompleteData.ulElement, _this.actionCompleteData.list, null, true);
+                }
             },
             open: function () {
                 EventHandler.add(document, 'mousedown', _this.onDocumentClick, _this);
@@ -3160,11 +3149,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                         this.renderList();
                     }
                     if (!this.initRemoteRender) {
-                        var formElement = closest(this.inputElement, 'form');
                         var li = this.getElementByText(newProp.text);
-                        if (formElement && this.filterVal) {
-                            li.classList.remove('e-active');
-                        }
                         if (!this.checkValidLi(li)) {
                             if (this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
@@ -3316,7 +3301,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     DropDownList.prototype.showPopup = function () {
-        this.filterVal = false;
         if (!this.enabled) {
             return;
         }

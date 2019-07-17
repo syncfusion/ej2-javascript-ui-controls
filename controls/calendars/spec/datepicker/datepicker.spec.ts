@@ -2176,7 +2176,7 @@ describe('Datepicker', () => {
             datePicker.appendTo('#date');
             expect(datePicker.element.getAttribute('name')).toBe('picker');
             expect(datePicker.inputWrapper.container.getAttribute('title')).toBe('sample');
-            expect(datePicker.inputWrapper.container.getAttribute('class')).toBe('test');
+            expect(datePicker.inputWrapper.container.classList.contains('test')).toBe(true);
         });
     });
 
@@ -2203,9 +2203,9 @@ describe('Datepicker', () => {
             expect(datePicker.element.min).toBe('2/10/2018');
             expect(datePicker.element.max).toBe('2/25/2018');
             expect(datePicker.inputWrapper.container.getAttribute('title')).toBe('sample');
-            expect(datePicker.inputWrapper.container.getAttribute('class')).toBe('test');
-            expect(datePicker.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
-            datePicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "4/20/18", max: "4/25/18", min: "4/10/18", class: "multiple", title:"heading", style: 'background-color:red'};
+            expect(datePicker.inputWrapper.container.classList.contains('test')).toBe(true);
+            expect(datePicker.inputWrapper.container.getAttribute('style')).toBe('width: 100%;background-color:yellow');
+            datePicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "4/20/18", max: "4/25/18", min: "4/10/18", class: "multiple", title:"heading"};
             datePicker.dataBind();
             expect(datePicker.element.getAttribute('placeholder')).toBe('choose a date');
             expect(datePicker.element.hasAttribute('readonly')).toBe(false);
@@ -2214,8 +2214,7 @@ describe('Datepicker', () => {
             expect(datePicker.element.min).toBe('4/10/18');
             expect(datePicker.element.max).toBe('4/25/18');
             expect(datePicker.inputWrapper.container.getAttribute('title')).toBe('heading');
-            expect(datePicker.inputWrapper.container.getAttribute('class')).toBe('multiple');
-            expect(datePicker.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
+            expect(datePicker.inputWrapper.container.classList.contains('multiple')).toBe(true);
         });
         it('Placeholder testing in auto case', () => {
             datePicker = new DatePicker({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
@@ -3540,6 +3539,44 @@ describe('Datepicker', () => {
             e.target = document.getElementsByTagName('body')[0];
             datePicker.documentHandler(e);
             expect(datePicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(false);
+        });
+    });
+    describe('Dynamic CssClass testcase', function (){
+        let datePicker: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (datePicker) {
+                datePicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('single css class',function() {
+            datePicker = new DatePicker({
+                cssClass: 'e-custom'
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('e-custom')).toBe(true);
+            datePicker.cssClass = 'e-test';
+            datePicker.dataBind();
+            expect(datePicker.inputWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(datePicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
+        });
+        it('more than one css class',function() {
+            datePicker = new DatePicker({
+                cssClass: 'e-custom e-secondary'
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('e-custom')).toBe(true);
+            expect(datePicker.inputWrapper.container.classList.contains('e-secondary')).toBe(true);
+            datePicker.cssClass = 'e-test e-ternary';
+            datePicker.dataBind();
+            expect(datePicker.inputWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(datePicker.inputWrapper.container.classList.contains('e-secondary')).toBe(false);
+            expect(datePicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
+            expect(datePicker.inputWrapper.container.classList.contains('e-ternary')).toBe(true);
         });
     });
 });

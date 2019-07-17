@@ -90,7 +90,7 @@ export class NumericContainer implements IRender {
      * @hidden
      */
     public unwireEvents(): void {
-        EventHandler.remove(this.pagerElement, 'click', this.clickHandler);
+        EventHandler.remove(this.pagerModule.element, 'click', this.clickHandler);
     }
 
     /**

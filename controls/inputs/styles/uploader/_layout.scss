@@ -231,6 +231,12 @@
       margin: $select-file-margin;
       padding: $select-file-padding;
 
+      .e-icons:focus {
+        @if ($skin-name == 'material') {
+          outline: none;
+      }
+    }
+
       .e-upload-file-list {
         font-family: $upload-font-family;
         font-size: $list-items-font-size-smaller;

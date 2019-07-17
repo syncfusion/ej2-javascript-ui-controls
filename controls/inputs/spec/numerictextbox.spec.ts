@@ -4631,18 +4631,17 @@ describe('Change Event testing', () => {
             expect(numerictextbox.step).toBe(5);
         });
         it('Other attribute testing with htmlAttributes API', () => {
-            numerictextbox = new NumericTextBox({ htmlAttributes:{ class:"test", name:"numeric", title:"sample", style: 'background-color:yellow'}});
+            numerictextbox = new NumericTextBox({ htmlAttributes:{ class:"test", name:"numeric", title:"sample"}});
             numerictextbox.appendTo('#tsNumeric');
             numerictextbox.updateHTMLAttrToWrapper();
             expect(numerictextbox.hiddenInput.getAttribute('name')).toBe('numeric');
             expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('sample');
             expect(numerictextbox.inputWrapper.container.classList.contains('test')).toBe(true);
-            expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
         });
         it('Dynamically change attributes with htmlAttributes API', () => {
             numerictextbox = new NumericTextBox({});
             numerictextbox.appendTo('#tsNumeric');
-            numerictextbox.htmlAttributes = {  class:"test", title: 'sample', disabled: 'disabled', readonly: 'readonly', placeholder: "Number of states", style: 'background-color:yellow'};
+            numerictextbox.htmlAttributes = {  class:"test", title: 'sample', disabled: 'disabled', readonly: 'readonly', placeholder: "Number of states"};
             numerictextbox.dataBind();
             numerictextbox.updateHTMLAttrToElement();
             numerictextbox.updateHTMLAttrToWrapper();
@@ -4651,7 +4650,6 @@ describe('Change Event testing', () => {
             expect(numerictextbox.element.hasAttribute('disabled')).toBe(true);
             expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('sample');
             expect(numerictextbox.inputWrapper.container.classList.contains('test')).toBe(true);
-            expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
         });
     });
 
@@ -4669,7 +4667,7 @@ describe('Change Event testing', () => {
             document.body.innerHTML = '';
         });
         it('Dynamically change attributes with htmlAttributes API', () => {
-            numerictextbox = new NumericTextBox({ htmlAttributes:{placeholder:"Enter a name", readonly: "true", disabled: "true", value: "100", max: "50", min: "10", class: "test", title:"sample", style: 'background-color:yellow'}});
+            numerictextbox = new NumericTextBox({ htmlAttributes:{placeholder:"Enter a name", readonly: "true", disabled: "true", value: "100", max: "50", min: "10", class: "test", title:"sample"}});
             numerictextbox.appendTo('#tsNumeric');
             expect(numerictextbox.element.getAttribute('placeholder')).toBe('Enter a name');
             expect(numerictextbox.element.hasAttribute('readonly')).toBe(true);
@@ -4678,8 +4676,7 @@ describe('Change Event testing', () => {
             expect(numerictextbox.element.min).toBe('10');
             expect(numerictextbox.element.max).toBe('50');
             expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('sample');
-            expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
-            numerictextbox.htmlAttributes = { placeholder:"Enter a number", readonly: "false", disabled: "false", value: "50", type: "number", max: "60", min: "5", class: "multiple", title:"heading", style: 'background-color:red'};
+            numerictextbox.htmlAttributes = { placeholder:"Enter a number", readonly: "false", disabled: "false", value: "50", type: "number", max: "60", min: "5", class: "multiple", title:"heading"};
             numerictextbox.dataBind();
             expect(numerictextbox.element.getAttribute('placeholder')).toBe('Enter a number');
             expect(numerictextbox.element.hasAttribute('readonly')).toBe(false);
@@ -4689,7 +4686,6 @@ describe('Change Event testing', () => {
             expect(numerictextbox.element.max).toBe('60');
             expect(numerictextbox.inputWrapper.container.getAttribute('title')).toBe('heading');
             expect(numerictextbox.inputWrapper.container.classList.contains('multiple')).toBe(true);
-            expect(numerictextbox.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
         });
         it('Placeholder testing in auto case', () => {
             numerictextbox = new NumericTextBox({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
@@ -5487,5 +5483,43 @@ describe('Change Event testing', () => {
             clearBtn.dispatchEvent(clickEvent);
             expect(input.value === '').toEqual(true);
        });
+    });
+    describe('Dynamic CssClass testcase', function (){
+        let numeric: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'numeric'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (numeric) {
+                numeric.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('single css class',function() {
+            numeric = new NumericTextBox({
+                cssClass: 'e-custom'
+            });
+            numeric.appendTo('#numeric');
+            expect(numeric.inputWrapper.container.classList.contains('e-custom')).toBe(true);
+            numeric.cssClass = 'e-test';
+            numeric.dataBind();
+            expect(numeric.inputWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(numeric.inputWrapper.container.classList.contains('e-test')).toBe(true);
+        });
+        it('more than one css class',function() {
+            numeric = new NumericTextBox({
+                cssClass: 'e-custom e-secondary'
+            });
+            numeric.appendTo('#numeric');
+            expect(numeric.inputWrapper.container.classList.contains('e-custom')).toBe(true);
+            expect(numeric.inputWrapper.container.classList.contains('e-secondary')).toBe(true);
+            numeric.cssClass = 'e-test e-ternary';
+            numeric.dataBind();
+            expect(numeric.inputWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(numeric.inputWrapper.container.classList.contains('e-secondary')).toBe(false);
+            expect(numeric.inputWrapper.container.classList.contains('e-test')).toBe(true);
+            expect(numeric.inputWrapper.container.classList.contains('e-ternary')).toBe(true);
+        });
     });
 });

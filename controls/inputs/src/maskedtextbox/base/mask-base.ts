@@ -2,6 +2,7 @@
  * MaskedTextBox base module
  */
 import { EventHandler, isNullOrUndefined, merge, attributes, addClass, removeClass, Browser, extend } from '@syncfusion/ej2-base';
+import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { Input } from '../../input/input';
 
 const ERROR: string = 'e-error';
@@ -27,6 +28,20 @@ export let regularExpressions: { [key: string]: string } = {
     'a': '[A-Za-z0-9 ]',
 };
 
+interface MaskFocusEventArgs extends BaseEventArgs {
+    /** Returns selectionStart value as zero by default */
+    selectionStart?: number;
+    /** Returns selectionEnd value depends on mask length */
+    selectionEnd?: number;
+    /** Returns the original event arguments. */
+    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
+    /** Returns the value of MaskedTextBox. */
+    value?: string;
+    /** Returns the maskedValue of MaskedTextBox. */
+    maskedValue?: string;
+    /** Returns the MaskedTextBox container element */
+    container?: HTMLElement;
+}
 /**
  * @hidden
  * Generate required masking elements to the MaskedTextBox from user mask input.
@@ -84,7 +99,7 @@ export function createMask(): void {
         if (this.hiddenMask.match(new RegExp(/\\/))) {
             for (let i: number = 0; i < this.hiddenMask.length; i++) {
                 let j: number = 0;
-                if (i >= 2) {
+                if (i >= 1) {
                     j = i;
                 }
                 escapeNumber = this.hiddenMask.length - this.promptMask.length;
@@ -250,7 +265,7 @@ function pushIntoRegExpCollec(value: string): void {
 }
 
 export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
-    this.focusEventArgs = {
+    let eventArgs: MaskFocusEventArgs = {
         selectionStart: 0,
         event: event,
         value: this.value,
@@ -258,25 +273,26 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
         container: this.inputObj.container,
         selectionEnd: (this.promptMask.length > 0) ? this.promptMask.length : this.element.value.length,
     };
-    this.trigger('focus', this.focusEventArgs);
-    if (this.mask) {
-        this.isFocus = true;
-        if (this.element.value === '') {
-            setElementValue.call(this, this.promptMask);
-        } else {
-            setElementValue.call(this, this.element.value);
+    this.trigger('focus', eventArgs, (eventArgs: MaskFocusEventArgs) => {
+        if (this.mask) {
+            this.isFocus = true;
+            if (this.element.value === '') {
+                setElementValue.call(this, this.promptMask);
+            } else {
+                setElementValue.call(this, this.element.value);
+            }
+            if (!Browser.isDevice && Browser.info.version === '11.0') {
+                this.element.setSelectionRange(eventArgs.selectionStart, eventArgs.selectionEnd);
+            } else {
+                let delay: number = (Browser.isDevice && Browser.isIos) ? 450 : 0;
+                setTimeout(
+                    () => {
+                        this.element.setSelectionRange(eventArgs.selectionStart, eventArgs.selectionEnd);
+                    },
+                    delay);
+            }
         }
-        if (!Browser.isDevice && Browser.info.version === '11.0') {
-            this.element.setSelectionRange(this.focusEventArgs.selectionStart, this.focusEventArgs.selectionEnd);
-        } else {
-            let delay: number = (Browser.isDevice && Browser.isIos) ? 450 : 0;
-            setTimeout(
-                () => {
-                    this.element.setSelectionRange(this.focusEventArgs.selectionStart, this.focusEventArgs.selectionEnd);
-                },
-                delay);
-        }
-    }
+    });
 }
 
 export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {

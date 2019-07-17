@@ -26389,7 +26389,7 @@ var AccumulationLegend = /** @__PURE__ @class */ (function (_super) {
             var id = legendItemsId_1[_i];
             if (targetId.indexOf(id) > -1) {
                 var pointIndex = parseInt(targetId.split(id)[1], 10);
-                if (this.chart.legendSettings.toggleVisibility) {
+                if (this.chart.legendSettings.toggleVisibility && !isNaN(pointIndex)) {
                     var currentSeries = this.chart.visibleSeries[0];
                     var point = pointByIndex(pointIndex, currentSeries.points);
                     var legendOption = this.legendByIndex(pointIndex, this.legendCollections);
@@ -29525,6 +29525,8 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         }
         if (!refreshBounds && renderer) {
             this.removeSvg();
+            this.chartSeries.xMin = Infinity;
+            this.chartSeries.xMax = -Infinity;
             this.chartSeries.renderChart(this);
         }
         if (refreshBounds) {
@@ -32094,6 +32096,15 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     // tslint:disable-next-line:max-func-body-length
     StockChart.prototype.onPropertyChanged = function (newProp, oldProp) {
         // on property changes
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var property = _a[_i];
+            switch (property) {
+                case 'series':
+                    this.tempDataSource = this.blazorDataSource = [];
+                    this.render();
+                    break;
+            }
+        }
     };
     /**
      * To change the range for chart
@@ -32191,7 +32202,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         this.renderTitle();
         this.chartModuleInjection();
         this.chartRender();
-        if (!(this.dataSource instanceof DataManager) && !(this.series[0].dataSource instanceof DataManager)) {
+        if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
             this.stockChartDataManagerSuccess();
             this.initialRender = false;
         }

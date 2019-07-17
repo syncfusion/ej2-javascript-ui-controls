@@ -29,7 +29,7 @@ import { PopupSettings, modulesList, localeConstant } from './models';
 import { InPlaceEditorModel } from './inplace-editor-model';
 import { PopupSettingsModel } from './models-model';
 /* Interface */
-import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton } from './interface';
+import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton, BeginEditEventArgs } from './interface';
 /* Interface */
 import { parseValue, getCompValue } from './util';
 
@@ -331,6 +331,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     @Event()
     public validating: EmitType<ValidateEventArgs>;
+    /**
+     * The event will be fired before changing the mode from default to edit mode.
+     * @event
+     */
+    @Event()
+    public beginEdit: EmitType<BeginEditEventArgs>;
     /**
      * The event will be fired when the component gets destroyed.
      * @event
@@ -972,7 +978,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.sliderModule.refresh();
             this.setAttribute(<HTMLElement>select('.e-slider-input', this.containerEle), ['name']);
         }
-        this.setFocus();
+        let eventArgs: BeginEditEventArgs = { mode: this.mode, cancelFocus: false };
+        this.trigger('beginEdit', eventArgs);
+        if (!eventArgs.cancelFocus) {
+            this.setFocus();
+        }
         if (this.afterOpenEvent) {
             this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
             this.tipObj.trigger('afterOpen', e);

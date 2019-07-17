@@ -240,7 +240,9 @@ export class VerticalEvent extends EventBase {
         let templateElement: HTMLElement[];
         let eventData: { [key: string]: Object } = <{ [key: string]: Object }>data;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId: string = this.parent.currentView + '_eventTemplate';
+            let elementId: string = this.parent.element.id + '_';
+            let viewName: string = this.parent.activeViewOptions.eventTemplateName;
+            let templateId: string = elementId + viewName + 'eventTemplate';
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         } else {
             let appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: recordSubject });

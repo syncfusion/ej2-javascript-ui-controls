@@ -2,7 +2,7 @@
  * DateRangePicker module spec document
  */
 import { select, selectAll, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import { InPlaceEditor, ValidateEventArgs } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, ValidateEventArgs, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
 import { DateRangePicker } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
@@ -761,6 +761,42 @@ describe('DateRangePicker module', () => {
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-daterangepicker', document.body).length === 1).toEqual(true);
             expect(editorObj.value).toEqual(null);
+        });
+    });
+
+    describe('beginEdit event testing', () => {
+        let editorObj: any;
+        let date: Date[] = [new Date('01/01/2019'), new Date('01/10/2019')];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DateRange',
+                value: date,
+                mode: 'Inline',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DateRange',
+                mode: 'Popup',
+                value: date,
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
         });
     });
 

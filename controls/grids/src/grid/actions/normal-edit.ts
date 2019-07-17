@@ -1,5 +1,5 @@
 import { extend } from '@syncfusion/ej2-base';
-import { remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { remove, isNullOrUndefined, updateBlazorTemplate, getElement } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs } from '../base/interface';
 import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
 import * as events from '../base/constant';
@@ -107,7 +107,7 @@ export class NormalEdit {
             begineditargs.type = 'actionBegin';
             gObj.trigger(events.actionBegin, begineditargs, (editargs: EditEventArgs) => {
                 if (!editargs.cancel) {
-                gObj.isEdit = true;
+                gObj.isEdit = true; editargs.row = getElement(editargs.row);
                 if (gObj.editSettings.mode !== 'Dialog') {
                     gObj.clearSelection();
                 }
@@ -243,6 +243,7 @@ export class NormalEdit {
         this.parent.isEdit = false;
         this.refreshRow(args.data);
         this.updateCurrentViewData(args.data);
+        this.blazorTemplate();
         this.parent.trigger(events.actionComplete, args);
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection)) {
@@ -251,6 +252,19 @@ export class NormalEdit {
             }
         }
         this.parent.hideSpinner();
+    }
+
+    private blazorTemplate(): void {
+        let cols: Column[] = this.parent.getColumns();
+        for (let i: number = 0; i < cols.length; i++) {
+            let col: Column = cols[i];
+            if (col.template) {
+                updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
+            }
+            if (col.editTemplate) {
+                updateBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate', col);
+            }
+        }
     }
 
     private editFailure(e: ReturnType): void {
@@ -288,26 +302,28 @@ export class NormalEdit {
         let args: { data: Object, requestType: string, selectedRow: Number, type: string } = extend(this.args, {
             requestType: 'cancel', type: events.actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
         }) as { data: Object, requestType: string, selectedRow: Number, type: string };
-        gObj.trigger(events.actionBegin, args,
-                     (closeEditArgs: { data: Object, requestType: string, selectedRow: Number, type: string }) => {
-            if (this.parent.editSettings.mode === 'Dialog') {
-                this.parent.notify(events.dialogDestroy, {});
-            }
-            gObj.isEdit = false;
-            this.stopEditStatus();
-            closeEditArgs.type = events.actionComplete;
-            if (gObj.editSettings.mode !== 'Dialog') {
-                this.refreshRow(closeEditArgs.data);
-            }
-            if (gObj.getContentTable().querySelector('tr.e-emptyrow') &&
-                !gObj.getContentTable().querySelector('tr.e-row')) {
-                gObj.getContentTable().querySelector('tr.e-emptyrow').classList.remove('e-hide');
-            }
-            if (gObj.editSettings.mode !== 'Dialog') {
-                gObj.selectRow(this.rowIndex);
-            }
-            gObj.trigger(events.actionComplete, closeEditArgs);
-        });
+        this.blazorTemplate();
+        gObj.trigger(
+            events.actionBegin, args,
+            (closeEditArgs: { data: Object, requestType: string, selectedRow: Number, type: string }) => {
+                if (this.parent.editSettings.mode === 'Dialog') {
+                    this.parent.notify(events.dialogDestroy, {});
+                }
+                gObj.isEdit = false;
+                this.stopEditStatus();
+                closeEditArgs.type = events.actionComplete;
+                if (gObj.editSettings.mode !== 'Dialog') {
+                    this.refreshRow(closeEditArgs.data);
+                }
+                if (gObj.getContentTable().querySelector('tr.e-emptyrow') &&
+                    !gObj.getContentTable().querySelector('tr.e-row')) {
+                    gObj.getContentTable().querySelector('tr.e-emptyrow').classList.remove('e-hide');
+                }
+                if (gObj.editSettings.mode !== 'Dialog') {
+                    gObj.selectRow(this.rowIndex);
+                }
+                gObj.trigger(events.actionComplete, closeEditArgs);
+            });
     }
 
     protected addRecord(data?: Object, index?: number): void {

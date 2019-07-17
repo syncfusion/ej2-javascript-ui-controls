@@ -1,10 +1,10 @@
 import { IGrid } from '../base/interface';
-import { isNullOrUndefined, closest, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { InlineEditRender } from './inline-edit-renderer';
 import { BatchEditRender } from './batch-edit-renderer';
 import { DialogEditRender } from './dialog-edit-renderer';
-import { attributes, classList } from '@syncfusion/ej2-base';
+import { attributes, classList, isBlazor } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -164,7 +164,11 @@ export class EditRender {
             let input: Element;
             if (col.editTemplate) {
                 input = this.parent.createElement('span', {attrs: {'e-mappinguid': col.uid}});
-                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate'));
+                let tempID: string = this.parent.element.id + col.uid + 'editTemplate';
+                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate', tempID));
+                if (isBlazor()) {
+                    updateBlazorTemplate(tempID, 'EditTemplate', col);
+                }
             } else {
                 if (typeof temp === 'string') {
                     temp = getObject(temp, window);

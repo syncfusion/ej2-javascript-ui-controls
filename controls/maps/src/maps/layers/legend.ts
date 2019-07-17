@@ -481,7 +481,8 @@ export class Legend {
         }
         if (interactProcess) {
             for (let i: number = 0; i < collection.length; i++) {
-                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0) {
+                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0 &&
+                   parseFloat(targetElement.id.split('_Legend_Index_')[1]) === i) {
                     let layer: LayerSettingsModel = this.maps.layers[collection[i]['data'][0]['layerIndex']];
                     let enable: boolean = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
                     let module: HighlightSettingsModel | SelectionSettingsModel;
@@ -542,7 +543,7 @@ export class Legend {
         element.setAttribute('fill', fill);
         element.setAttribute('opacity', opacity);
         element.setAttribute('stroke', borderColor);
-        element.setAttribute('stroke-width', borderWidth);
+        element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
     }
 
     private pushCollection(targetElement: Element, collection: object[], oldElement: object, shapeOpacity?: string): void {

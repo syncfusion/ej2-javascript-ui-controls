@@ -2,7 +2,7 @@
  * ColorPicker module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { InPlaceEditor } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
 import { ColorPicker } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
@@ -364,6 +364,41 @@ describe('ColorPicker module', () => {
             editorObj.save();
             expect(editorObj.value).toEqual('#a2e2c2ff');
             expect(valueEle.innerHTML).toEqual('#a2e2c2');
+        });
+    });
+
+    describe('beginEdit event testing', () => {
+        let editorObj: any;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'Color',
+                value: '#035a',
+                mode: 'Inline',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'Color',
+                mode: 'Popup',
+                value: '#035a',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
         });
     });
 

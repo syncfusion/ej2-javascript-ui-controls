@@ -2562,18 +2562,23 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
             var tooltip = _this.tooltipModule;
             if (!args.cancel) {
                 if (_this.enablePointerDrag && _this.activePointer) {
+                    var dragPointInd = parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10);
+                    var dragAxisInd = parseInt(_this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                     dragArgs = {
                         axis: _this.activeAxis,
                         pointer: _this.activePointer,
                         previousValue: _this.activePointer.currentValue,
                         name: dragMove,
-                        currentValue: null
+                        currentValue: null,
+                        axisIndex: dragAxisInd,
+                        pointerIndex: dragPointInd
                     };
                     dragBlazorArgs = {
                         previousValue: _this.activePointer.currentValue,
                         name: dragMove,
                         currentValue: null,
-                        pointerIndex: parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10)
+                        pointerIndex: dragPointInd,
+                        axisIndex: dragAxisInd
                     };
                     _this.pointerDrag(new GaugeLocation(args.x, args.y));
                     dragArgs.currentValue = dragBlazorArgs.currentValue = _this.activePointer.currentValue;
@@ -2641,15 +2646,20 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                 if (isNullOrUndefined(_this.activePointer.pathElement)) {
                     _this.activePointer.pathElement = [e.target];
                 }
+                var pointInd = parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10);
+                var axisInd = parseInt(_this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                 _this.trigger(dragStart, _this.isBlazor ? {
                     name: dragStart,
                     currentValue: _this.activePointer.currentValue,
-                    pointerIndex: parseInt(_this.activePointer.pathElement[0].id.slice(-1), 10)
+                    pointerIndex: pointInd,
+                    axisIndex: axisInd
                 } : {
                     axis: _this.activeAxis,
                     name: dragStart,
                     pointer: _this.activePointer,
-                    currentValue: _this.activePointer.currentValue
+                    currentValue: _this.activePointer.currentValue,
+                    pointerIndex: pointInd,
+                    axisIndex: axisInd
                 });
                 _this.svgObject.setAttribute('cursor', 'pointer');
             }
@@ -2670,15 +2680,20 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         var tooltip = this.tooltipModule;
         this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (this.activeAxis && this.activePointer) {
+            var pointerInd = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+            var axisInd = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
             this.trigger(dragEnd, this.isBlazor ? {
                 name: dragEnd,
                 currentValue: this.activePointer.currentValue,
-                pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+                pointerIndex: pointerInd,
+                axisIndex: axisInd
             } : {
                 name: dragEnd,
                 axis: this.activeAxis,
                 pointer: this.activePointer,
-                currentValue: this.activePointer.currentValue
+                currentValue: this.activePointer.currentValue,
+                axisIndex: axisInd,
+                pointerIndex: pointerInd
             });
             this.activeAxis = null;
             this.activePointer = null;

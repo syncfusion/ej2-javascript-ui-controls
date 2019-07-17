@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.35 (2019-07-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#241388` - The issue, "browser context menu is not shown on right click when enabling the showOnRightClick property" has been resolved.
+
 ## 17.2.34 (2019-07-11)
 
 ### RichTextEditor

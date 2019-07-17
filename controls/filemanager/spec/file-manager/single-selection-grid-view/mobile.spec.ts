@@ -154,7 +154,7 @@ describe('FileManager control single selection Grid view', () => {
             setTimeout(function () {
                 let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
                 expect(gridLi.length).toEqual(3);
-                let args = { rowData: { "name": "docs", "size": 0, "dateModified": "2019-03-14T09:27:45.346Z", "dateCreated": "2019-03-13T07:28:06.117Z", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\docs", "_fm_iconClass": "e-fe-folder" }, rowIndex: 0 };
+                let args = { rowData: { "name": "docs", "size": 0, "dateModified": "2019-03-14T09:27:45.346Z", "dateCreated": "2019-03-13T07:28:06.117Z", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\", "_fm_iconClass": "e-fe-folder" }, rowIndex: 0 };
                 feObj.detailsviewModule.gridObj.recordDoubleClick(args);
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({

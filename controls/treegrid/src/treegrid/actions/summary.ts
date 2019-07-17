@@ -81,6 +81,7 @@ export class Aggregate {
                     setValue('level', level + 1, item);
                     let index: number = getObject('index', summaryParent);
                     setValue('isSummaryRow', true, item);
+                    setValue('parentUniqueID', summaryParent.uniqueID, item);
                     if (isSort) {
                         let childRecords: Object[] = getObject('childRecords', parentRecord);
                         childRecords.push(item);

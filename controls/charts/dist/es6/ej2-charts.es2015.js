@@ -24725,7 +24725,7 @@ class AccumulationLegend extends BaseLegend {
         for (let id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 let pointIndex = parseInt(targetId.split(id)[1], 10);
-                if (this.chart.legendSettings.toggleVisibility) {
+                if (this.chart.legendSettings.toggleVisibility && !isNaN(pointIndex)) {
                     let currentSeries = this.chart.visibleSeries[0];
                     let point = pointByIndex(pointIndex, currentSeries.points);
                     let legendOption = this.legendByIndex(pointIndex, this.legendCollections);
@@ -27694,6 +27694,8 @@ let RangeNavigator = class RangeNavigator extends Component {
         }
         if (!refreshBounds && renderer) {
             this.removeSvg();
+            this.chartSeries.xMin = Infinity;
+            this.chartSeries.xMax = -Infinity;
             this.chartSeries.renderChart(this);
         }
         if (refreshBounds) {
@@ -30113,6 +30115,14 @@ class StockChart extends Component {
     // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
         // on property changes
+        for (let property of Object.keys(newProp)) {
+            switch (property) {
+                case 'series':
+                    this.tempDataSource = this.blazorDataSource = [];
+                    this.render();
+                    break;
+            }
+        }
     }
     /**
      * To change the range for chart
@@ -30208,7 +30218,7 @@ class StockChart extends Component {
         this.renderTitle();
         this.chartModuleInjection();
         this.chartRender();
-        if (!(this.dataSource instanceof DataManager) && !(this.series[0].dataSource instanceof DataManager)) {
+        if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
             this.stockChartDataManagerSuccess();
             this.initialRender = false;
         }

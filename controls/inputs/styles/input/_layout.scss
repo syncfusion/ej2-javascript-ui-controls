@@ -4638,8 +4638,7 @@
   .e-outline.e-float-input:not(.e-float-icon-left) input:focus {
     @if $skin-name == 'material' {
       box-sizing: border-box;
-      padding-left: $outline-input-padding-left;
-      padding-right: $outline-input-padding-left;
+      padding: $outline-input-padding-top $outline-input-padding-left $outline-input-padding-bottom;
     }
   }
 
@@ -4813,7 +4812,6 @@
   .e-outline.e-float-input.e-control-wrapper.e-small input,
   .e-small .e-outline.e-float-input.e-control-wrapper input,
   .e-outline.e-float-input.e-control-wrapper.e-input-group.e-small input,
-  .e-small .e-outline.e-float-input.e-control-wrapper.e-input-group input,
   .e-outline.e-float-input.e-control-wrapper.e-input-group.e-small input,
   .e-small .e-outline.e-float-input.e-control-wrapper.e-input-group input {
     @if $skin-name == 'material' {
@@ -5096,8 +5094,7 @@
   .e-input-group.e-small.e-outline textarea.e-input,
   .e-outline.e-input-group.e-control-wrapper.e-small textarea.e-input {
     @if $skin-name == 'material' {
-      padding-left: $outline-small-input-padding-left;
-      padding-right: $outline-small-input-padding-left;
+      padding: $outline-small-input-padding-top $outline-small-input-padding-left;
     }
   }
 
@@ -5249,8 +5246,7 @@
   .e-bigger .e-outline.e-float-input.e-control-wrapper.e-float-input:not(.e-float-icon-left) input:focus,
   .e-bigger .e-outline.e-float-input:not(.e-float-icon-left) input:focus {
     @if $skin-name == 'material' {
-      padding-left: $outline-bigger-input-padding-left;
-      padding-right: $outline-bigger-input-padding-left;
+      padding: $outline-bigger-input-padding-top $outline-bigger-input-padding-left;
     }
   }
 
@@ -5336,8 +5332,7 @@
   .e-outline.e-float-input.e-control-wrapper.e-bigger.e-small:not(.e-float-icon-left) input:focus,
   .e-outline.e-float-input.e-bigger.e-small:not(.e-float-icon-left) input:focus {
     @if $skin-name == 'material' {
-      padding-left: $outline-small-bigger-input-margin-left;
-      padding-right: $outline-small-bigger-input-margin-left;
+      padding: $outline-small-bigger-input-margin-top $outline-small-bigger-input-margin-left $outline-small-bigger-input-margin-bottom;
     }
   }
 
@@ -6595,9 +6590,9 @@
   }
 
   .e-filled.e-float-input.e-bigger,
-  .e-filled.e-bigger .e-float-input,
+  .e-bigger .e-filled.e-float-input,
   .e-filled.e-float-input.e-control-wrapper.e-bigger,
-  .e-filled.e-bigger .e-float-input.e-control-wrapper {
+  .e-bigger .e-filled.e-float-input.e-control-wrapper {
     @if $input-skin-name == 'material' {
       font-size: $bigger-filled-input-font-size;
     }

@@ -63,6 +63,7 @@ let CalendarBase = class CalendarBase extends Component {
         super(options, element);
         this.effect = '';
         this.isPopupClicked = false;
+        this.isDateSelected = true;
         this.keyConfigs = {
             controlUp: 'ctrl+38',
             controlDown: 'ctrl+40',
@@ -1474,6 +1475,7 @@ let CalendarBase = class CalendarBase extends Component {
     }
     selectDate(e, date, node, multiSelection, values) {
         let element = node || e.currentTarget;
+        this.isDateSelected = false;
         if (this.currentView() === 'Decade') {
             this.setDateDecade(this.currentDate, date.getFullYear());
         }
@@ -1543,6 +1545,7 @@ let CalendarBase = class CalendarBase extends Component {
         else {
             addClass([element], SELECTED);
         }
+        this.isDateSelected = true;
     }
     checkPresentDate(dates, values) {
         let previousValue = false;
@@ -2036,40 +2039,46 @@ let Calendar = class Calendar extends CalendarBase {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
-                    if (typeof newProp.value === 'string') {
-                        this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
+                    if (this.isDateSelected) {
+                        if (typeof newProp.value === 'string') {
+                            this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
+                        }
+                        else {
+                            newProp.value = new Date(this.checkValue(newProp.value));
+                        }
+                        if (isNaN(+this.value)) {
+                            this.setProperties({ value: oldProp.value }, true);
+                        }
+                        this.update();
                     }
-                    else {
-                        newProp.value = new Date(this.checkValue(newProp.value));
-                    }
-                    if (isNaN(+this.value)) {
-                        this.setProperties({ value: oldProp.value }, true);
-                    }
-                    this.update();
                     break;
                 case 'values':
-                    if (typeof newProp.values === 'string' || typeof newProp.values === 'number') {
-                        this.setProperties({ values: null }, true);
-                    }
-                    else {
-                        let copyValues = this.copyValues(this.values);
-                        for (let index = 0; index < copyValues.length; index++) {
-                            let tempDate = copyValues[index];
-                            if (this.checkDateValue(tempDate) && !super.checkPresentDate(tempDate, copyValues)) {
-                                copyValues.push(tempDate);
+                    if (this.isDateSelected) {
+                        if (typeof newProp.values === 'string' || typeof newProp.values === 'number') {
+                            this.setProperties({ values: null }, true);
+                        }
+                        else {
+                            let copyValues = this.copyValues(this.values);
+                            for (let index = 0; index < copyValues.length; index++) {
+                                let tempDate = copyValues[index];
+                                if (this.checkDateValue(tempDate) && !super.checkPresentDate(tempDate, copyValues)) {
+                                    copyValues.push(tempDate);
+                                }
+                            }
+                            this.setProperties({ values: copyValues }, true);
+                            if (this.values.length > 0) {
+                                this.setProperties({ value: newProp.values[newProp.values.length - 1] }, true);
                             }
                         }
-                        this.setProperties({ values: copyValues }, true);
-                        if (this.values.length > 0) {
-                            this.setProperties({ value: newProp.values[newProp.values.length - 1] }, true);
-                        }
+                        this.validateValues(this.isMultiSelection, this.values);
+                        this.update();
                     }
-                    this.validateValues(this.isMultiSelection, this.values);
-                    this.update();
                     break;
                 case 'isMultiSelection':
-                    this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
-                    this.update();
+                    if (this.isDateSelected) {
+                        this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
+                        this.update();
+                    }
                     break;
                 default:
                     super.onPropertyChanged(newProp, oldProp, this.isMultiSelection, this.values);
@@ -3175,7 +3184,18 @@ let DatePicker = class DatePicker extends Calendar {
     updateHtmlAttributeToWrapper() {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (containerAttr.indexOf(key) > -1) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    let setStyle = this.inputWrapper.container.getAttribute(key);
+                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, setStyle);
+                }
+                else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -4177,9 +4197,9 @@ let DatePicker = class DatePicker extends Calendar {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.popupWrapper) {
-                        this.popupWrapper.className += ' ' + newProp.cssClass;
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
                     }
                     break;
                 case 'showClearButton':
@@ -4643,7 +4663,18 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     updateHtmlAttributeToWrapper() {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (wrapperAttr.indexOf(key) > -1) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    let dateRangeStyle = this.inputWrapper.container.getAttribute(key);
+                    dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, dateRangeStyle);
+                }
+                else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -8178,11 +8209,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                     this.setRangeAllowEdit();
                     break;
                 case 'cssClass':
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.popupWrapper) {
-                        this.popupWrapper.className += ' ' + newProp.cssClass;
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
                     }
-                    this.inputWrapper.container.className += ' ' + newProp.cssClass;
-                    this.setProperties({ cssClass: newProp.cssClass }, true);
                     break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
@@ -8953,7 +8983,18 @@ let TimePicker = class TimePicker extends Component {
     updateHtmlAttributeToWrapper() {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (wrapperAttributes.indexOf(key) > -1) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    let timeStyle = this.inputWrapper.container.getAttribute(key);
+                    timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, timeStyle);
+                }
+                else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -10365,13 +10406,6 @@ let TimePicker = class TimePicker extends Component {
                     }
                     this.setTimeAllowEdit();
                     break;
-                case 'cssClass':
-                    this.inputWrapper.container.className += ' ' + newProp.cssClass;
-                    if (this.popupWrapper) {
-                        this.popupWrapper.className += ' ' + newProp.cssClass;
-                    }
-                    this.setProperties({ cssClass: newProp.cssClass }, true);
-                    break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
                     this.setEnable();
@@ -10382,6 +10416,12 @@ let TimePicker = class TimePicker extends Component {
                 case 'enableRtl':
                     this.setProperties({ enableRtl: newProp.enableRtl }, true);
                     this.setEnableRtl();
+                    break;
+                case 'cssClass':
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
+                    if (this.popupWrapper) {
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
+                    }
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);
@@ -11812,9 +11852,9 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.dateTimeWrapper) {
-                        this.dateTimeWrapper.className += ' ' + newProp.cssClass;
+                        Input.setCssClass(newProp.cssClass, [this.dateTimeWrapper], oldProp.cssClass);
                     }
                     break;
                 case 'locale':

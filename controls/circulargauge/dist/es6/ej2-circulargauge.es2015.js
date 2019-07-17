@@ -2392,18 +2392,23 @@ let CircularGauge = class CircularGauge extends Component {
             let tooltip = this.tooltipModule;
             if (!args.cancel) {
                 if (this.enablePointerDrag && this.activePointer) {
+                    let dragPointInd = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+                    let dragAxisInd = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                     dragArgs = {
                         axis: this.activeAxis,
                         pointer: this.activePointer,
                         previousValue: this.activePointer.currentValue,
                         name: dragMove,
-                        currentValue: null
+                        currentValue: null,
+                        axisIndex: dragAxisInd,
+                        pointerIndex: dragPointInd
                     };
                     dragBlazorArgs = {
                         previousValue: this.activePointer.currentValue,
                         name: dragMove,
                         currentValue: null,
-                        pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+                        pointerIndex: dragPointInd,
+                        axisIndex: dragAxisInd
                     };
                     this.pointerDrag(new GaugeLocation(args.x, args.y));
                     dragArgs.currentValue = dragBlazorArgs.currentValue = this.activePointer.currentValue;
@@ -2470,15 +2475,20 @@ let CircularGauge = class CircularGauge extends Component {
                 if (isNullOrUndefined(this.activePointer.pathElement)) {
                     this.activePointer.pathElement = [e.target];
                 }
+                let pointInd = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+                let axisInd = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                 this.trigger(dragStart, this.isBlazor ? {
                     name: dragStart,
                     currentValue: this.activePointer.currentValue,
-                    pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+                    pointerIndex: pointInd,
+                    axisIndex: axisInd
                 } : {
                     axis: this.activeAxis,
                     name: dragStart,
                     pointer: this.activePointer,
-                    currentValue: this.activePointer.currentValue
+                    currentValue: this.activePointer.currentValue,
+                    pointerIndex: pointInd,
+                    axisIndex: axisInd
                 });
                 this.svgObject.setAttribute('cursor', 'pointer');
             }
@@ -2499,15 +2509,20 @@ let CircularGauge = class CircularGauge extends Component {
         let tooltip = this.tooltipModule;
         this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (this.activeAxis && this.activePointer) {
+            let pointerInd = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+            let axisInd = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
             this.trigger(dragEnd, this.isBlazor ? {
                 name: dragEnd,
                 currentValue: this.activePointer.currentValue,
-                pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+                pointerIndex: pointerInd,
+                axisIndex: axisInd
             } : {
                 name: dragEnd,
                 axis: this.activeAxis,
                 pointer: this.activePointer,
-                currentValue: this.activePointer.currentValue
+                currentValue: this.activePointer.currentValue,
+                axisIndex: axisInd,
+                pointerIndex: pointerInd
             });
             this.activeAxis = null;
             this.activePointer = null;

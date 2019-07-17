@@ -569,7 +569,7 @@ export class Group implements IAction {
             i++;
         }
         if (this.parent.sortSettings.columns.length === i) {
-            this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending' });
+            this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending', isFromGroup: true });
         } else if (!this.parent.allowSorting) {
             this.parent.sortSettings.columns[i].direction = 'Ascending';
         }

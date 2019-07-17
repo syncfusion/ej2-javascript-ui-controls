@@ -1163,18 +1163,17 @@ describe('MaskedTextBox Component', () => {
             expect(maskBox.element.getAttribute('value')).toBe('70');
         });
         it('Other attribute testing with htmlAttributes API', () => {
-            maskBox = new MaskedTextBox({ htmlAttributes:{class: "test", name:"numeric", title:"sample", style: 'background-color:yellow'}});
+            maskBox = new MaskedTextBox({ htmlAttributes:{class: "test", name:"numeric", title:"sample"}});
             maskBox.appendTo('#mask');
             maskBox.updateHTMLAttrToWrapper();
             expect(maskBox.element.getAttribute('name')).toBe('numeric');
             expect(maskBox.inputObj.container.getAttribute('title')).toBe('sample');
-            expect(maskBox.inputObj.container.getAttribute('class')).toBe('test');
-            expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:yellow');
+            expect(maskBox.inputObj.container.classList.contains('test')).toBe(true);
         });
         it('Dynamically change attributes with htmlAttributes API', () => {
             maskBox = new MaskedTextBox({});
             maskBox.appendTo('#mask');
-            maskBox.htmlAttributes = { class: "test", title: 'sample', disabled: 'disabled', placeholder: "Number of states", style: 'background-color:yellow'};
+            maskBox.htmlAttributes = { class: "test", title: 'sample', disabled: 'disabled', placeholder: "Number of states"};
             maskBox.dataBind();
             maskBox.updateHTMLAttrToWrapper();
             maskBox.updateHTMLAttrToElement();
@@ -1182,7 +1181,6 @@ describe('MaskedTextBox Component', () => {
             expect(maskBox.element.getAttribute('placeholder')).toBe('Number of states');
             expect(maskBox.inputObj.container.getAttribute('title')).toBe('sample');
             expect(maskBox.inputObj.container.classList.contains('test')).toBe(true);
-            expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:yellow');
         });
     });
 
@@ -1208,14 +1206,13 @@ describe('MaskedTextBox Component', () => {
             expect(maskBox.inputObj.container.getAttribute('title')).toBe('sample');
             expect(maskBox.inputObj.container.classList.contains('test')).toBe(true);
             expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:yellow');
-            maskBox.htmlAttributes = { placeholder:"Enter a number", readonly: "false", disabled: "false", value: "50", class: "multiple", title:"heading", style: 'background-color:red'};
+            maskBox.htmlAttributes = { placeholder:"Enter a number", readonly: "false", disabled: "false", value: "50", class: "multiple", title:"heading"};
             maskBox.dataBind();
             expect(maskBox.element.getAttribute('placeholder')).toBe('Enter a number');
             expect(maskBox.element.hasAttribute('disabled')).toBe(false);
             expect(maskBox.element.getAttribute('value')).toBe('50');
             expect(maskBox.inputObj.container.getAttribute('title')).toBe('heading');
             expect(maskBox.inputObj.container.classList.contains('multiple')).toBe(true);
-            expect(maskBox.inputObj.container.getAttribute('style')).toBe('background-color:red');
         });
         it('Placeholder testing in auto case', () => {
             maskBox = new MaskedTextBox({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
@@ -1294,6 +1291,21 @@ describe('MaskedTextBox Component', () => {
             }
             expect(input.value.length === 5).toEqual(true);
             expect(input.value === '>sssS').toEqual(true);
+        });
+        it('Edit values with escape inbetween the mask ', () => {
+            maskBox = new MaskedTextBox({
+                mask: "L\\>LLL>L",
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            input.selectionStart = input.selectionEnd = 0;
+            for (let i: number = 0; i < 5; i++) {
+                let event: any = eventObject('KeyboardEvent', 'keypress');
+                event.key = "s";
+                EventHandler.trigger(input, 'keypress', event);
+            }
+            expect(input.value.length === 6).toEqual(true);
+            expect(input.value === 's>sssS').toEqual(true);
         });
     });
     describe('Edit values in MaskedTextBox-- Disable Upper and Lower Case', () => {
@@ -2634,5 +2646,43 @@ describe('Masked Textbox without mask', function () {
         }
         expect(input.value).toBe('10123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899');
         expect(maskBox.getMaskedValue()).toBe('10123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899');
+    });
+});
+describe('Dynamic CssClass testcase', function (){
+    let maskBox: any;
+    beforeEach(function() {
+        let inputElement: HTMLElement = createElement('input', { id: 'maskBox'});
+        document.body.appendChild(inputElement);
+    });
+    afterEach(function() {
+        if (maskBox) {
+            maskBox.destroy();
+            document.body.innerHTML = '';
+        }
+    });
+    it('single css class',function() {
+        maskBox = new MaskedTextBox({
+            cssClass: 'e-custom'
+        });
+        maskBox.appendTo('#maskBox');
+        expect(maskBox.inputObj.container.classList.contains('e-custom')).toBe(true);
+        maskBox.cssClass = 'e-test';
+        maskBox.dataBind();
+        expect(maskBox.inputObj.container.classList.contains('e-custom')).toBe(false);
+        expect(maskBox.inputObj.container.classList.contains('e-test')).toBe(true);
+    });
+    it('more than one css class',function() {
+        maskBox = new MaskedTextBox({
+            cssClass: 'e-custom e-secondary'
+        });
+        maskBox.appendTo('#maskBox');
+        expect(maskBox.inputObj.container.classList.contains('e-custom')).toBe(true);
+        expect(maskBox.inputObj.container.classList.contains('e-secondary')).toBe(true);
+        maskBox.cssClass = 'e-test e-ternary';
+        maskBox.dataBind();
+        expect(maskBox.inputObj.container.classList.contains('e-custom')).toBe(false);
+        expect(maskBox.inputObj.container.classList.contains('e-secondary')).toBe(false);
+        expect(maskBox.inputObj.container.classList.contains('e-test')).toBe(true);
+        expect(maskBox.inputObj.container.classList.contains('e-ternary')).toBe(true);
     });
 });

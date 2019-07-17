@@ -457,7 +457,7 @@ describe('Selection Settings', () => {
             selection.loaded = (args: ILoadedEventArgs) => {
             spec = getElement('container_Legend_Shape_Index_2');
             trigger.clickEvent(spec);
-            expect(spec.getAttribute('fill')).toBe('green');
+            expect(spec.getAttribute('fill')).toBe('pink');
             done();
         };
             selection.refresh();

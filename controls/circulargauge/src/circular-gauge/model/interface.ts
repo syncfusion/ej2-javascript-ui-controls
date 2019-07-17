@@ -177,7 +177,11 @@ export interface IPointerDragEventArgs {
     /**
      * index of the current pointer argument 
      */
-    pointerIndex?: number;
+    pointerIndex: number;
+    /**
+     * index of the current pointer`s axis argument 
+     */
+    axisIndex: number;
 }
 
 /**

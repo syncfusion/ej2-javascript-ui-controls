@@ -16752,7 +16752,6 @@ class PdfSection {
      * @private
      * @param document The parent document.
      * @param page The parent page.
-     * @param headers If true - return headers/footers, if false - return simple templates.
      * @param foreground If true - return foreground templates, if false - return background templates.
      * @returns Returns array of the document templates.
      */
@@ -17275,12 +17274,6 @@ class PdfDocumentPageCollection {
          * @private
          */
         this.pdfPageCollectionIndex = new Dictionary();
-        /**
-         * Stores the previous pages's `orientation`.
-         * @default PdfPageOrientation.Portrait
-         * @private
-         */
-        this.previousPageOrientation = PdfPageOrientation.Portrait;
         this.document = document;
     }
     //Property
@@ -17306,10 +17299,6 @@ class PdfDocumentPageCollection {
         }
         else {
             let section = this.getLastSection();
-            if (section.pageSettings.orientation !== this.previousPageOrientation) {
-                section = this.document.sections.add();
-                section.pageSettings.orientation = this.document.pageSettings.orientation;
-            }
             section.add(page);
         }
     }
@@ -17546,7 +17535,7 @@ class PdfDocument extends PdfDocumentBase {
          * @private
          */
         this.streamWriter = null;
-        super(this);
+        this.document = this;
         if (isMerging === true || isMerging === false || typeof isMerging !== 'undefined') {
             let objects = new PdfMainObjectCollection();
             this.setMainObjectCollection(objects);

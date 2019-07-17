@@ -449,7 +449,8 @@ export class Data implements IDataProcessor {
 
     /** @hidden */
     public isRemote(): boolean {
-        return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined;
+        return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined &&
+        this.dataManager.dataSource.url !== '';
     }
 
     private addRows(e: { toIndex: number, records: Object[] }): void {

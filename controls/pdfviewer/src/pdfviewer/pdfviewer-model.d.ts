@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs  } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -1109,6 +1109,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'AnnotationResized'
      */
     annotationResize?: EmitType<AnnotationResizeEventArgs>;
+
+    /**
+     * Triggers when an annotation is selected over the page of the PDF document.
+     * @event
+     * @blazorProperty 'AnnotationSelected'
+     */
+    annotationSelect?: EmitType<AnnotationSelectEventArgs>;
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.

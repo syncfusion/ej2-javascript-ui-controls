@@ -1,7 +1,7 @@
 import { Component, ModuleDeclaration, Property, Event, Animation, Collection } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
-import { removeClass, addClass, classList, remove } from '@syncfusion/ej2-base';
+import { removeClass, addClass, classList, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ScheduleModel } from './schedule-model';
 import { HeaderRenderer } from '../renderer/header-renderer';
@@ -41,6 +41,7 @@ import { ICalendarImport } from '../exports/calendar-import';
 import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
+import { ViewsData } from '../base/interface';
 import { ResourceBase } from '../base/resource';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -111,10 +112,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public dragAndDropModule: DragAndDrop;
     public excelExportModule: ExcelExport;
     public printModule: Print;
-    public viewOptions: { [key: string]: ViewsModel[] };
-    public viewCollections: ViewsModel[];
+    public viewOptions: { [key: string]: ViewsData[] };
+    public viewCollections: ViewsData[];
     public viewIndex: number;
-    public activeViewOptions: ViewsModel;
+    public activeViewOptions: ViewsData;
     public eventFields: EventFieldsMapping;
     public editorTitles: EventFieldsMapping;
     public eventsData: Object[];
@@ -639,10 +640,102 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
+        this.on('data-ready', this.resetEventTemplates, this);
+        this.on('events-loaded', this.updateEventTemplates, this);
         this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
     }
+
+    public updateLayoutTemplates(): void {
+        let view: ViewsModel = this.views[this.viewIndex] as ViewsModel;
+        if (this.dateHeaderTemplate) {
+            updateBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate', this);
+        }
+        if (this.activeViewOptions.dateHeaderTemplateName !== '') {
+            let templateName: string = 'dateHeaderTemplate';
+            let tempID: string = this.element.id + '_' + this.activeViewOptions.dateHeaderTemplateName + templateName;
+            updateBlazorTemplate(tempID, 'DateHeaderTemplate', view);
+        }
+        if (this.cellTemplate) {
+            updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
+        }
+        if (this.activeViewOptions.cellTemplateName !== '') {
+            let tempID: string = this.element.id + '_' + this.activeViewOptions.cellTemplateName + 'cellTemplate';
+            updateBlazorTemplate(tempID, 'CellTemplate', view);
+        }
+        if (this.resourceHeaderTemplate) {
+            updateBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this);
+        }
+        if (this.activeViewOptions.resourceHeaderTemplateName !== '') {
+            let templateName: string = 'resourceHeaderTemplate';
+            let tempID: string = this.element.id + '_' + this.activeViewOptions.resourceHeaderTemplateName + templateName;
+            updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
+        }
+        if (this.timeScale.minorSlotTemplate) {
+            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this);
+        }
+        if (this.timeScale.majorSlotTemplate) {
+            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this);
+        }
+    }
+
+    public resetLayoutTemplates(): void {
+        let view: ViewsData = this.viewCollections[this.uiStateValues.viewIndex];
+        if (this.dateHeaderTemplate) {
+            resetBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate');
+        }
+        if (view.dateHeaderTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.dateHeaderTemplateName + 'dateHeaderTemplate', 'DateHeaderTemplate');
+        }
+        if (this.cellTemplate) {
+            resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+        }
+        if (view.cellTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.cellTemplateName + 'cellTemplate', 'CellTemplate');
+        }
+        if (this.resourceHeaderTemplate) {
+            resetBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
+        }
+        if (view.resourceHeaderTemplateName !== '') {
+            let templateName: string = 'ResourceHeaderTemplate';
+            resetBlazorTemplate(this.element.id + '_' + view.resourceHeaderTemplateName + 'resourceHeaderTemplate', templateName);
+        }
+        if (this.timeScale.minorSlotTemplate) {
+            resetBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate');
+        }
+        if (this.timeScale.majorSlotTemplate) {
+            resetBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate');
+        }
+    }
+
+    private updateEventTemplates(): void {
+        let view: ViewsModel = this.views[this.viewIndex] as ViewsModel;
+        if (this.eventSettings.template) {
+            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings);
+        }
+        if (this.activeViewOptions.eventTemplateName !== '') {
+            let tempID: string = this.element.id + '_' + this.activeViewOptions.eventTemplateName + 'eventTemplate';
+            updateBlazorTemplate(tempID, 'EventTemplate', view);
+        }
+        if (this.viewCollections[this.viewIndex].option === 'Agenda' || this.viewCollections[this.viewIndex].option === 'MonthAgenda') {
+            this.updateLayoutTemplates();
+        }
+    }
+
+    public resetEventTemplates(): void {
+        let view: ViewsData = this.viewCollections[this.uiStateValues.viewIndex];
+        if (this.eventSettings.template) {
+            resetBlazorTemplate(this.element.id + '_eventTemplate', 'Template');
+        }
+        if (view.eventTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.eventTemplateName + 'eventTemplate', 'EventTemplate');
+        }
+        if (view.option === 'Agenda' || view.option === 'MonthAgenda') {
+            this.resetLayoutTemplates();
+        }
+    }
+
     private initializeResources(isSetModel: boolean = false): void {
         if (this.resources.length > 0) {
             this.resourceBase = new ResourceBase(this);
@@ -711,8 +804,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     this.viewIndex = count;
                 }
             }
-            let obj: ViewsModel = extend({ option: viewName }, isOptions ? view : {});
+            let obj: ViewsData = extend({ option: viewName }, isOptions ? view : {});
             let fieldViewName: string = viewName.charAt(0).toLowerCase() + viewName.slice(1);
+            obj.dateHeaderTemplateName = obj.dateHeaderTemplate ? obj.option : '';
+            obj.cellTemplateName = obj.cellTemplate ? obj.option : '';
+            obj.resourceHeaderTemplateName = obj.resourceHeaderTemplate ? obj.option : '';
+            obj.eventTemplateName = obj.eventTemplate ? obj.option : '';
             this.viewCollections.push(obj);
             if (isNullOrUndefined(this.viewOptions[fieldViewName])) {
                 this.viewOptions[fieldViewName] = [obj];
@@ -730,7 +827,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.uiStateValues.viewIndex = this.viewIndex;
     }
-    private getActiveViewOptions(): ViewsModel {
+    private getActiveViewOptions(): ViewsData {
         let timeScale: TimeScaleModel = {
             enable: this.timeScale.enable,
             interval: this.timeScale.interval,

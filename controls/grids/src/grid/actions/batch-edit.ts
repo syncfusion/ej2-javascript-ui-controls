@@ -708,29 +708,30 @@ export class BatchEdit {
                 foreignKeyData: rowObj && rowObj.foreignKeyData
             };
             if (!args.cell) { return; }
-            gObj.trigger(events.cellEdit, args);
-            if (args.cancel) {
-                return;
-            }
-            this.cellDetails = {
-                rowData: rowData, column: col, value: args.value, isForeignKey: args.isForeignKey, rowIndex: index,
-                cellIndex: parseInt((args.cell as HTMLTableCellElement).getAttribute('aria-colindex'), 10),
-                foreignKeyData: args.foreignKeyData
-            };
-            if (args.cell.classList.contains('e-updatedtd')) {
-                this.isColored = true;
-                args.cell.classList.remove('e-updatedtd');
-            }
-            gObj.isEdit = true;
-            gObj.clearSelection();
-            if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
-                gObj.selectRow(this.cellDetails.rowIndex, true);
-            }
-            this.renderer.update(args);
-            this.parent.notify(events.batchEditFormRendered, args);
-            this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
-            gObj.editModule.applyFormValidation([col]);
-            (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
+            gObj.trigger(events.cellEdit, args, (cellEditArgs: CellEditArgs) => {
+                if (cellEditArgs.cancel) {
+                    return;
+                }
+                this.cellDetails = {
+                    rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
+                    cellIndex: parseInt((cellEditArgs.cell as HTMLTableCellElement).getAttribute('aria-colindex'), 10),
+                    foreignKeyData: cellEditArgs.foreignKeyData
+                };
+                if (cellEditArgs.cell.classList.contains('e-updatedtd')) {
+                    this.isColored = true;
+                    cellEditArgs.cell.classList.remove('e-updatedtd');
+                }
+                gObj.isEdit = true;
+                gObj.clearSelection();
+                if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
+                    gObj.selectRow(this.cellDetails.rowIndex, true);
+                }
+                this.renderer.update(cellEditArgs);
+                this.parent.notify(events.batchEditFormRendered, cellEditArgs);
+                this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
+                gObj.editModule.applyFormValidation([col]);
+                (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
+            });
         }
     }
 
@@ -864,26 +865,33 @@ export class BatchEdit {
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
         if (!isForceSave) {
-            gObj.trigger(events.cellSave, args);
+            gObj.trigger(events.cellSave, args, this.successCallBack(args, tr, column));
             gObj.notify(events.batchForm, {formObj: this.form});
+        } else {
+            this.successCallBack(args, tr, column)(args);
         }
-        if (args.cancel) {
+    }
+
+    private successCallBack(cellSaveArgs: CellSaveArgs, tr: Element, column: Column): Function {
+        return (cellSaveArgs: CellSaveArgs) => {
+        let gObj: IGrid = this.parent;
+        if (cellSaveArgs.cancel) {
             return;
         }
         gObj.editModule.destroyForm();
         gObj.isEdit = false;
         gObj.editModule.destroyWidgets([column]);
         this.parent.notify(events.tooltipDestroy, {});
-        this.refreshTD(args.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), args.value);
+        this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
         removeClass([tr], ['e-editedrow', 'e-batchrow']);
-        removeClass([args.cell], ['e-editedbatchcell', 'e-boolcell']);
-        if (!isNullOrUndefined(args.value) && args.value.toString() ===
+        removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
+        if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
             (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString() && !this.isColored
-            || (isNullOrUndefined(args.value) && isNullOrUndefined(this.cellDetails.value) &&
-                !args.cell.parentElement.classList.contains('e-insertedrow'))) {
-            args.cell.classList.remove('e-updatedtd');
+            || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(this.cellDetails.value) &&
+                !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
+                    cellSaveArgs.cell.classList.remove('e-updatedtd');
         }
-        gObj.trigger(events.cellSaved, args);
+        gObj.trigger(events.cellSaved, cellSaveArgs);
         gObj.notify(events.toolbarRefresh, {});
         this.isColored = false;
         if (this.parent.aggregates.length > 0) {
@@ -892,7 +900,8 @@ export class BatchEdit {
                 this.parent.notify(events.groupAggregates, {});
             }
         }
-    }
+    };
+}
 
     protected getDataByIndex(index: number): Object {
         let row: Row<Column> = this.parent.getRowObjectFromUID(this.parent.getDataRows()[index].getAttribute('data-uid'));

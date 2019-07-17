@@ -1,4 +1,4 @@
-import { isNullOrUndefined, getValue, L10n, remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getValue, L10n, remove, isBlazor } from '@syncfusion/ej2-base';
 import { Browser } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
 import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance } from '../base/interface';
@@ -155,7 +155,8 @@ export class FilterMenuRenderer {
             }
             let col: string = 'column';
             fltrData[col] = column;
-            let compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate');
+            let tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
+            let compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, compElement);
         } else {
             if (!isNullOrUndefined(column.filter) && !isNullOrUndefined(column.filter.ui)
@@ -214,7 +215,10 @@ export class FilterMenuRenderer {
             if ((<HTMLInputElement>element.children[0]).value) {
                 fltrValue = (<HTMLInputElement>element.children[0]).value;
             } else {
-                fltrValue = ((<EJ2Intance>(element.children[0] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
+                fltrValue = !isBlazor() && !isNullOrUndefined(((<EJ2Intance>(element.children[0] as Element)).ej2_instances) ?
+                    ((<EJ2Intance>(element.children[0] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value
+                    : ((<EJ2Intance>(element.querySelector('.e-control') as Element)).ej2_instances[0] as
+                    { value?: string | boolean | Date }).value);
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
         } else {

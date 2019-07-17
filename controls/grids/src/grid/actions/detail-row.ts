@@ -1,4 +1,4 @@
-import { KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';
 import { closest, classList, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
@@ -82,8 +82,10 @@ export class DetailRow {
                 if (gObj.detailTemplate) {
                     let detailTemplateID: string = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
-                    resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
-                    updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj);
+                    if (isBlazor()) {
+                        resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
+                        updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
+                    }
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
                     if (childGrid.query) {

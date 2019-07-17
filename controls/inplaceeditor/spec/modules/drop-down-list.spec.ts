@@ -5,6 +5,7 @@ import { select, selectAll } from '@syncfusion/ej2-base';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
+import { BeginEditEventArgs } from '../../src/inplace-editor/base/index';
 
 describe('DropDownList Control', () => {
     beforeAll(() => {
@@ -710,6 +711,48 @@ describe('DropDownList Control', () => {
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
             expect(editorObj.value).toEqual(null);
             expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('');
+        });
+    });
+
+    describe('beginEdit event testing', () => {
+        let editorObj: any;
+        let dataSource: string[] = ['Badminton', 'Cricket'];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 'Badminton',
+                model: {
+                    dataSource: dataSource
+                },
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Popup',
+                value: 'Badminton',
+                model: {
+                    dataSource: dataSource
+                },
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
         });
     });
 

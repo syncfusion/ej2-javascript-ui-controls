@@ -298,6 +298,7 @@ export class WordExport {
     private saltValue: string;
     private protectionType: ProtectionType;
     private fileName: string;
+    private spanCellFormat: any;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -2708,6 +2709,7 @@ export class WordExport {
     }
     // Serialize the row format
     private serializeRowFormat(writer: XmlWriter, row: any): void {
+        this.serializeRowMargins(writer, row.rowFormat);
         writer.writeStartElement(undefined, 'trPr', this.wNamespace);
 
         //Serialize Row Height
@@ -2794,7 +2796,7 @@ export class WordExport {
         let owner: any = this.blockOwner;
         this.blockOwner = cell;
         writer.writeStartElement(undefined, 'tc', this.wNamespace);
-        this.serializeCellFormat(writer, cell.cellFormat);
+        this.serializeCellFormat(writer, cell.cellFormat, true);
         if (cell.blocks.length > 0) {
             let itemIndex: number = 0;
             let item: any = undefined;
@@ -2813,12 +2815,28 @@ export class WordExport {
             writer.writeEndElement(); //end of pPr
             writer.writeEndElement(); //end of P
         }
-        writer.writeEndElement(); //end of table cell 'tc'        
+        writer.writeEndElement(); //end of table cell 'tc'
+        // tslint:disable-next-line:max-line-length
+        if (this.mVerticalMerge.containsKey(cell.columnIndex + 1) && (this.row.cells.indexOf(cell) === cell.columnIndex) && cell.nextNode === undefined) {
+            let collKey: number = cell.columnIndex + 1;
+            writer.writeStartElement(undefined, 'tc', this.wNamespace);
+            if (!isNullOrUndefined(this.spanCellFormat)) {
+                this.serializeCellFormat(writer, this.spanCellFormat, false);
+            }
+            this.serializeColumnSpan(collKey, writer);
+            writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
+            writer.writeEndElement();
+            this.checkMergeCell(collKey);
+            writer.writeStartElement('w', 'p', this.wNamespace);
+            writer.writeEndElement(); //end of P
+            writer.writeEndElement(); //end of table cell 'tc'  
+        }
 
         this.blockOwner = owner;
     }
     // Serialize the cell formatting
-    private serializeCellFormat(writer: XmlWriter, cellFormat: any): void {
+    private serializeCellFormat(writer: XmlWriter, cellFormat: any, ensureMerge: boolean): void {
 
         let cell: any = this.blockOwner;
         //Get the table fomat
@@ -2830,10 +2848,14 @@ export class WordExport {
         // SerializeCnfStyleElement(cell);
         //w:tcW -    Preferred Table Cell Width
         this.serializeCellWidth(writer, cell);
-        //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
-        this.serializeCellMerge(writer, cellFormat);
-        //w:gridSpan -   Grid Columns Spanned by Current Table Cell
-        this.serializeGridSpan(writer, cell);
+        // serialize cell margins
+        this.serializeCellMargins(writer, cellFormat);
+        if (ensureMerge) {
+            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
+            this.serializeCellMerge(writer, cellFormat);
+            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
+            this.serializeGridSpan(writer, cell);
+        }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
         this.serializeBorders(writer, cellFormat.borders, 8);
@@ -2945,6 +2967,7 @@ export class WordExport {
         }
         if (cellFormat.rowSpan > 1) {
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
+            this.spanCellFormat = cellFormat;
             this.mVerticalMerge.add(collKey, cellFormat.rowSpan - 1);
             if (cellFormat.columnSpan > 1) {
                 this.mGridSpans.add(collKey, cellFormat.columnSpan);
@@ -2953,19 +2976,6 @@ export class WordExport {
             writer.writeEndElement();
         } else if (this.mVerticalMerge.containsKey(collKey) && isserialized) {
             this.createMerge(writer, collKey, cell);
-        } else if (this.mVerticalMerge.containsKey(cellIndex + 1) && isserialized && cell.nextNode === undefined) {
-            collKey = cell.columnIndex + 1;
-            writer.writeEndElement();
-            writer.writeStartElement('w', 'p', this.wNamespace);
-            writer.writeEndElement();
-            writer.writeEndElement();
-            writer.writeStartElement(undefined, 'tc', this.wNamespace);
-            writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
-            this.serializeColumnSpan(collKey, writer);
-            writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
-            writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
-            writer.writeEndElement();
-            this.checkMergeCell(collKey);
         }
     }
     private createMerge(writer: XmlWriter, collKey: number, cell: any): void {
@@ -2992,6 +3002,7 @@ export class WordExport {
     private checkMergeCell(collKey: number): void {
         if ((this.mVerticalMerge.get(collKey) - 1) === 0) {
             this.mVerticalMerge.remove(collKey);
+            this.spanCellFormat = undefined;
             if (this.mGridSpans.keys.length > 0 && this.mGridSpans.containsKey(collKey)) {
                 this.mGridSpans.remove(collKey);
             }
@@ -3092,6 +3103,7 @@ export class WordExport {
         this.serializeTableAlignment(writer, table.tableFormat);
         this.serializeCellSpacing(writer, table.tableFormat);
         this.serializeTableIndentation(writer, table.tableFormat);
+        this.serializeTableMargins(writer, table.tableFormat);
         this.serializeTableBorders(writer, table.tableFormat);
         this.serializeShading(writer, table.tableFormat.shading);
         if (table.tableFormat.bidi) {
@@ -3137,6 +3149,53 @@ export class WordExport {
         if (!isNullOrUndefined(table)) {
             writer.writeEndElement(); //end of tblPr
         }
+    }
+    // serialize the table margin
+    private serializeTableMargins(writer: XmlWriter, format: any): void {
+        this.serializeMargins(writer, format, 'tblCellMar');
+    }
+    // serialize the row margin
+    private serializeRowMargins(writer: XmlWriter, format: any): void {
+        writer.writeStartElement(undefined, 'tblPrEx', this.wNamespace);
+        this.serializeMargins(writer, format, 'tblCellMar');
+        writer.writeEndElement();
+    }
+    // serialize the cell margins
+    private serializeCellMargins(writer: XmlWriter, format: any): void {
+        this.serializeMargins(writer, format, 'tcMar');
+    }
+    // serialize the table margins, row margins, cell margins
+    private serializeMargins(writer: XmlWriter, format: any, tag: string): void {
+        writer.writeStartElement(undefined, tag, this.wNamespace);
+        if (!isNullOrUndefined(format.topMargin)) {
+            let topMargin: number = Math.round(format.topMargin * 20);
+            writer.writeStartElement(undefined, 'top', this.wNamespace);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, topMargin.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(format.leftMargin)) {
+            let leftMargin: number = Math.round(format.leftMargin * 20);
+            writer.writeStartElement(undefined, 'left', this.wNamespace);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, leftMargin.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(format.bottomMargin)) {
+            let bottomMargin: number = Math.round(format.bottomMargin * 20);
+            writer.writeStartElement(undefined, 'bottom', this.wNamespace);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, bottomMargin.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
+        if (!isNullOrUndefined(format.rightMargin)) {
+            let rightMargin: number = Math.round(format.rightMargin * 20);
+            writer.writeStartElement(undefined, 'right', this.wNamespace);
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, rightMargin.toString());
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
     }
     // Serialize the table borders
     private serializeShading(writer: XmlWriter, format: any): void {
@@ -3380,7 +3439,7 @@ export class WordExport {
     }
     // Serialize the cell spacing.
     private serializeCellSpacing(writer: XmlWriter, format: any): void {
-        if (!isNullOrUndefined(format.cellSpacing) && format.cellSpacing >= 0) {
+        if (!isNullOrUndefined(format.cellSpacing) && format.cellSpacing > 0) {
             writer.writeStartElement(undefined, 'tblCellSpacing', this.wNamespace);
             // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(format.cellSpacing * this.twentiethOfPoint).toString());

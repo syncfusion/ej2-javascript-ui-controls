@@ -258,3 +258,22 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
      */
     annotationType: AnnotationType;
 }
+
+/**
+ * This event arguments provides the necessary information about annotation select event.
+ */
+export interface AnnotationSelectEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the annotation selected in the page of the PDF document.
+     */
+    annotationId: string;
+    /**
+     * Defines the page number in which the annotation is selected.
+     */
+    pageIndex: number;
+    /**
+     * Defines the annotation selected in the PDF document.
+     */
+    // tslint:disable-next-line
+    annotation: any;
+}

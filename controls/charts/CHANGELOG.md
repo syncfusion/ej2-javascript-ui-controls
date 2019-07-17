@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.35 (2019-07-17)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- #241559 - Console error on doughnut chart when trying to hide a point via legend icon issue fixed.
+
 ## 17.2.34 (2019-07-11)
 
 ### Accumulation chart

@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { ICellRenderer } from '../base/interface';
@@ -30,12 +30,17 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
         let fKeyValue: string;
         data.headerText = cell.column.headerText;
         if (cell.isForeignKey) {
-            fKeyValue = this.format(cell.column,  (cell.column.valueAccessor as Function)('foreignKey', data, cell.column));
-          }
+            fKeyValue = this.format(cell.column, (cell.column.valueAccessor as Function)('foreignKey', data, cell.column));
+        }
         let value: string = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
-        this.format(cell.column, (cell.column.valueAccessor as Function)('key', data, cell.column));
+            this.format(cell.column, (cell.column.valueAccessor as Function)('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
-            result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+            if (isBlazor()) {
+                let tempID: string = gObj.element.id + 'captionTemplate';
+                result = templateCompiler(gObj.groupSettings.captionTemplate)(data, null, null, tempID);
+            } else {
+                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+            }
             appendChildren(node, result);
         } else {
             node.innerHTML = cell.column.headerText + ': ' + value + ' - ' + data.count + ' ' +

@@ -1282,7 +1282,16 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private updateHTMLAttrToWrapper(): void {
         for (let pro of Object.keys(this.htmlAttributes)) {
             if (wrapperAttr.indexOf(pro) > -1 ) {
-                this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                if (pro === 'class') {
+                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                } else if (pro === 'style') {
+                    let uploadStyle: string = this.uploadWrapper.getAttribute(pro);
+                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                    this.htmlAttributes[pro];
+                    this.uploadWrapper.setAttribute(pro, uploadStyle);
+                } else {
+                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }

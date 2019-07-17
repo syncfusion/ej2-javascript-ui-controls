@@ -273,7 +273,7 @@ export class AccumulationLegend extends BaseLegend {
         for (let id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 let pointIndex: number = parseInt(targetId.split(id)[1], 10);
-                if (this.chart.legendSettings.toggleVisibility) {
+                if (this.chart.legendSettings.toggleVisibility && !isNaN(pointIndex)) {
                     let currentSeries: AccumulationSeries = (<AccumulationChart>this.chart).visibleSeries[0];
                     let point: AccPoints = pointByIndex(pointIndex, currentSeries.points);
                     let legendOption: LegendOptions = this.legendByIndex(pointIndex, this.legendCollections);

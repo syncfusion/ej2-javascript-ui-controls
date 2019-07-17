@@ -5,6 +5,7 @@ import { select, selectAll } from '@syncfusion/ej2-base';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
+import { BeginEditEventArgs } from '../../src/inplace-editor/base/index';
 
 describe('NumericTextBox Control', () => {
     beforeAll(() => {
@@ -406,6 +407,41 @@ describe('NumericTextBox Control', () => {
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
             expect(editorObj.value).toEqual(null);
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
+        });
+    });
+
+    describe('beginEdit event testing', () => {
+        let editorObj: any;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'Numeric',
+                mode: 'Inline',
+                value: 5,
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'Numeric',
+                mode: 'Popup',
+                value: 5,
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
         });
     });
 

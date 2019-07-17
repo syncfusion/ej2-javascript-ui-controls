@@ -75,7 +75,7 @@ export class Selection {
                 this.selectionType = 'navigationline';
             }
             if (this.selectionsettings.enable) {
-                if (this.maps.legendSettings.visible) {
+                if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
                     this.maps.legendModule.shapeHighLightAndSelection(
                         targetEle, data, this.selectionsettings, 'selection', layerIndex);
                 }

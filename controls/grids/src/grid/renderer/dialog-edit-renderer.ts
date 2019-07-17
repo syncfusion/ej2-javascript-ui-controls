@@ -1,7 +1,7 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
-import { remove, extend, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { remove, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
@@ -95,7 +95,7 @@ export class DialogEditRender {
 
     private destroy(args?: { requestType: string }): void {
         let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
-        resetBlazorTemplate(editTemplateID, 'Template');
+        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
         this.parent.notify(events.destroyForm, {});
         this.parent.isEdit = false;
         this.parent.notify(events.toolbarRefresh, {});

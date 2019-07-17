@@ -912,7 +912,18 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
             var pro = _a[_i];
             if (wrapperAttributes.indexOf(pro) > -1) {
-                this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                if (pro === 'class') {
+                    addClass([this.container], this.htmlAttributes[pro].split(' '));
+                }
+                else if (pro === 'style') {
+                    var numericStyle = this.container.getAttribute(pro);
+                    numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                    this.container.setAttribute(pro, numericStyle);
+                }
+                else {
+                    this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     };
@@ -1894,7 +1905,7 @@ function createMask() {
         if (this.hiddenMask.match(new RegExp(/\\/))) {
             for (var i = 0; i < this.hiddenMask.length; i++) {
                 var j = 0;
-                if (i >= 2) {
+                if (i >= 1) {
                     j = i;
                 }
                 escapeNumber = this.hiddenMask.length - this.promptMask.length;
@@ -2055,7 +2066,7 @@ function pushIntoRegExpCollec(value) {
 }
 function maskInputFocusHandler(event) {
     var _this = this;
-    this.focusEventArgs = {
+    var eventArgs = {
         selectionStart: 0,
         event: event,
         value: this.value,
@@ -2063,25 +2074,26 @@ function maskInputFocusHandler(event) {
         container: this.inputObj.container,
         selectionEnd: (this.promptMask.length > 0) ? this.promptMask.length : this.element.value.length,
     };
-    this.trigger('focus', this.focusEventArgs);
-    if (this.mask) {
-        this.isFocus = true;
-        if (this.element.value === '') {
-            setElementValue.call(this, this.promptMask);
+    this.trigger('focus', eventArgs, function (eventArgs) {
+        if (_this.mask) {
+            _this.isFocus = true;
+            if (_this.element.value === '') {
+                setElementValue.call(_this, _this.promptMask);
+            }
+            else {
+                setElementValue.call(_this, _this.element.value);
+            }
+            if (!Browser.isDevice && Browser.info.version === '11.0') {
+                _this.element.setSelectionRange(eventArgs.selectionStart, eventArgs.selectionEnd);
+            }
+            else {
+                var delay = (Browser.isDevice && Browser.isIos) ? 450 : 0;
+                setTimeout(function () {
+                    _this.element.setSelectionRange(eventArgs.selectionStart, eventArgs.selectionEnd);
+                }, delay);
+            }
         }
-        else {
-            setElementValue.call(this, this.element.value);
-        }
-        if (!Browser.isDevice && Browser.info.version === '11.0') {
-            this.element.setSelectionRange(this.focusEventArgs.selectionStart, this.focusEventArgs.selectionEnd);
-        }
-        else {
-            var delay = (Browser.isDevice && Browser.isIos) ? 450 : 0;
-            setTimeout(function () {
-                _this.element.setSelectionRange(_this.focusEventArgs.selectionStart, _this.focusEventArgs.selectionEnd);
-            }, delay);
-        }
-    }
+    });
 }
 function maskInputBlurHandler(event) {
     this.blurEventArgs = {
@@ -2994,7 +3006,18 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
             var key = _a[_i];
             if (wrapperAttr.indexOf(key) > -1) {
-                this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    var maskStyle = this.inputObj.container.getAttribute(key);
+                    maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputObj.container.setAttribute(key, maskStyle);
+                }
+                else {
+                    this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     };
@@ -3030,11 +3053,6 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
             if (this.floatLabelType === 'Never') {
                 maskInputBlurHandler.call(this);
             }
-        }
-    };
-    MaskedTextBox.prototype.setCssClass = function (cssClass, element) {
-        if (cssClass) {
-            addClass(element, cssClass);
         }
     };
     MaskedTextBox.prototype.setWidth = function (width) {
@@ -3108,7 +3126,7 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
                     this.setWidth(newProp.width);
                     break;
                 case 'cssClass':
-                    this.setCssClass(newProp.cssClass, [this.inputObj.container]);
+                    Input.setCssClass(newProp.cssClass, [this.inputObj.container], oldProp.cssClass);
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);
@@ -7342,7 +7360,18 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
             var pro = _a[_i];
             if (wrapperAttr$1.indexOf(pro) > -1) {
-                this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                if (pro === 'class') {
+                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                }
+                else if (pro === 'style') {
+                    var uploadStyle = this.uploadWrapper.getAttribute(pro);
+                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                    this.uploadWrapper.setAttribute(pro, uploadStyle);
+                }
+                else {
+                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     };
@@ -11375,6 +11404,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         _this.isAngular = false;
         _this.isHiddenInput = false;
         _this.isForm = false;
+        _this.inputPreviousValue = null;
         _this.textboxOptions = options;
         return _this;
     }
@@ -11404,6 +11434,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     if (this.isHiddenInput) {
                         this.element.value = this.respectiveElement.value;
                     }
+                    this.inputPreviousValue = this.respectiveElement.value;
                     /* istanbul ignore next */
                     if (this.isAngular && this.preventChange === true) {
                         this.previousValue = this.value;
@@ -11442,7 +11473,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(this.cssClass, [this.textboxWrapper.container]);
+                    Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
                     break;
                 case 'locale':
                     this.globalize = new Internationalization(this.locale);
@@ -11603,12 +11634,24 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             this.setInitialValue();
         }
         this.previousValue = this.value;
+        this.inputPreviousValue = this.value;
     };
     TextBox.prototype.updateHTMLAttrToWrapper = function () {
         for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
             var key = _a[_i];
             if (containerAttr.indexOf(key) > -1) {
-                this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    var setStyle = this.textboxWrapper.container.getAttribute(key);
+                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.textboxWrapper.container.setAttribute(key, setStyle);
+                }
+                else {
+                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     };
@@ -11688,9 +11731,10 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         var eventArgs = {
             event: args,
             value: this.respectiveElement.value,
-            previousValue: this.value,
+            previousValue: this.inputPreviousValue,
             container: this.textboxWrapper.container
         };
+        this.inputPreviousValue = this.respectiveElement.value;
         /* istanbul ignore next */
         if (this.isAngular) {
             textboxObj.localChange({ value: this.respectiveElement.value });
@@ -11734,10 +11778,11 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             var eventArgs = {
                 event: event,
                 value: this.respectiveElement.value,
-                previousValue: previousValue,
+                previousValue: this.inputPreviousValue,
                 container: this.textboxWrapper.container
             };
             this.trigger('input', eventArgs);
+            this.inputPreviousValue = this.respectiveElement.value;
             this.raiseChangeEvent(event, true);
         }
     };

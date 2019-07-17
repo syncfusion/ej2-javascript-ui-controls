@@ -1,5 +1,5 @@
 import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, getValue, isBlazor } from '@syncfusion/ej2-base';
 import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
 import { EventHandler, KeyboardEvents, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
@@ -93,6 +93,14 @@ export class SortDescriptor extends ChildProperty<SortDescriptor> {
      */
     @Property()
     public direction: SortDirection;
+
+    /** 
+     * @hidden
+     * Defines the sorted column whether or from grouping operation. 
+     * @default false
+     */
+    @Property(false)
+    public isFromGroup: boolean;
 
 }
 
@@ -1492,7 +1500,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers before any cell selection occurs.
      * @event 
-     * @deprecated  
+     * @blazorProperty 'CellSelecting'
      */
     @Event()
     public cellSelecting: EmitType<CellSelectingEventArgs>;
@@ -1500,7 +1508,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers after a cell is selected.
      * @event 
-     * @deprecated  
+     * @blazorProperty 'CellSelected'
      */
     @Event()
     public cellSelected: EmitType<CellSelectEventArgs>;
@@ -1622,7 +1630,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before Grid data is exported to PDF document.
      * @event
-     * @deprecated
+     * @blazorProperty 'OnPdfExport'
      */
     @Event()
     public beforePdfExport: EmitType<Object>;
@@ -1647,7 +1655,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers after detail row expands.
      * > This event triggers at initial expand.  
      * @event 
-     * @deprecated  
+     * @blazorProperty 'DetailDataBound'
      */
     @Event()
     public detailDataBound: EmitType<DetailDataBoundEventArgs>;
@@ -1760,7 +1768,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when the cell is being edited.
      * @event
-     * @deprecated  
+     * @blazorProperty 'OnCellEdit'
      */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
@@ -1768,7 +1776,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when cell is saved.
      * @event
-     * @deprecated  
+     * @blazorProperty 'OnCellSave'
      */
     @Event()
     public cellSave: EmitType<CellSaveArgs>;
@@ -1776,7 +1784,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when cell is saved.
      * @event
-     * @deprecated  
+     * @blazorProperty 'CellSaved'
      */
     @Event()
     public cellSaved: EmitType<CellSaveArgs>;
@@ -1824,7 +1832,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when click on context menu.
      * @event
-     * @deprecated  
+     * @blazorProperty 'ContextMenuItemClicked'
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1840,7 +1849,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Triggers when click on column menu.
      * @event
-     * @deprecated
+     * @blazorProperty 'ColumnMenuItemClicked'
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
      */
     @Event()
     public columnMenuClick: EmitType<MenuEventArgs>;
@@ -4282,16 +4292,38 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
 
     private blazorTemplate(): void {
+        if (isBlazor()) {
+            for (let i: number = 0; i < this.columnModel.length; i++) {
 
-        for (let i: number = 0; i < this.columnModel.length; i++) {
+                if (this.columnModel[i].template) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
+                }
+                if (this.columnModel[i].headerTemplate) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+                }
+                if (this.columnModel[i].filterTemplate) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i]);
+                }
 
-            if (this.columnModel[i].template) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
             }
-            if (this.columnModel[i].headerTemplate) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+            if (this.groupSettings.captionTemplate) {
+                updateBlazorTemplate(this.element.id + 'captionTemplate', 'CaptionTemplate', this.groupSettings);
             }
+            let guid: string = 'guid';
+            for (let k: number = 0; k < this.aggregates.length; k++) {
 
+                for (let j: number = 0; j < this.aggregates[k].columns.length; j++) {
+                    if (this.aggregates[k].columns[j].footerTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'footerTemplate', 'FooterTemplate', this.aggregates[k].columns[j]);
+                    }
+                    if (this.aggregates[k].columns[j].groupFooterTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'groupFooterTemplate', 'GroupFooterTemplate', this.aggregates[k].columns[j]);
+                    }
+                    if (this.aggregates[k].columns[j].groupCaptionTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'groupCaptionTemplate', 'GroupCaptionTemplate', this.aggregates[k].columns[j]);
+                    }
+                }
+            }
         }
     }
     /** 
@@ -4337,9 +4369,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(<Node>e.target, '.e-unboundcelldiv')) {
             return;
         }
+        let dataRow: boolean = !isNullOrUndefined(closest(<Node>e.target, 'tr').getAttribute('data-uid')) &&
+                               this.getRowObjectFromUID(closest(<Node>e.target, 'tr').getAttribute('data-uid')).isDataRow;
         let args: RecordDoubleClickEventArgs = this.getRowInfo(e.target as Element) as RecordDoubleClickEventArgs;
         args.target = e.target as Element;
-        this.trigger(events.recordDoubleClick, args);
+        if (dataRow) {
+            this.trigger(events.recordDoubleClick, args);
+        }
         this.notify(events.dblclick, e);
     }
 
@@ -4615,6 +4651,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return previousRowData;
     }
 
+    /** 
+     * Hides the scrollbar placeholder of Grid content when grid content is not overflown.  
+     * @return {void} 
+     */
     public hideScroll(): void {
         let content: HTMLElement = this.getContent().querySelector('.e-content');
         let cTable: HTMLElement = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;

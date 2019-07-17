@@ -937,7 +937,11 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.sliderModule.refresh();
             this.setAttribute(select('.e-slider-input', this.containerEle), ['name']);
         }
-        this.setFocus();
+        var eventArgs = { mode: this.mode, cancelFocus: false };
+        this.trigger('beginEdit', eventArgs);
+        if (!eventArgs.cancelFocus) {
+            this.setFocus();
+        }
         if (this.afterOpenEvent) {
             this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
             this.tipObj.trigger('afterOpen', e);
@@ -1248,6 +1252,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], InPlaceEditor.prototype, "validating", void 0);
+    __decorate$1([
+        Event()
+    ], InPlaceEditor.prototype, "beginEdit", void 0);
     __decorate$1([
         Event()
     ], InPlaceEditor.prototype, "destroyed", void 0);

@@ -104,6 +104,7 @@ export interface TimePickerModel extends ComponentModel{
      * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format)documentation.
      * @default 30
+     * @blazorType int
      * 
      */
     step?: number;

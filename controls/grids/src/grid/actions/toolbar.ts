@@ -1,5 +1,5 @@
 import { L10n, EventHandler, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { remove } from '@syncfusion/ej2-base';
+import { remove, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Toolbar as tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, NotifyArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -120,11 +120,22 @@ export class Toolbar {
         }
         this.element = this.parent.createElement('div', { id: this.gridID + '_toolbarItems' });
         if (this.parent.toolbarTemplate) {
-            if (typeof (this.parent.toolbarTemplate) === 'string') {
+            if (!isBlazor() && typeof (this.parent.toolbarTemplate) === 'string') {
                 this.toolbar.appendTo(this.parent.toolbarTemplate);
                 this.element = this.toolbar.element;
             } else {
-                appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                if (isBlazor()) {
+                    let tempID: string = this.parent.element.id + 'toolbarTemplate';
+                    let item: ItemModel = appendChildren(
+                        this.element,
+                        templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', tempID));
+                    let items: ItemModel = this.getItem(item);
+                    this.toolbar.items.push(items);
+                    this.toolbar.appendTo(this.element);
+                    updateBlazorTemplate(this.parent.element.id + 'toolbarTemplate', 'ToolbarTemplate', this.parent);
+                } else {
+                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                }
             }
         } else {
             this.toolbar.appendTo(this.element);
@@ -214,41 +225,41 @@ export class Toolbar {
         let gID: string = this.gridID;
         extend(args, { cancel: false });
         gObj.trigger(events.toolbarClick, args, (toolbarargs: ClickEventArgs) => {
-        if (!toolbarargs.cancel) {
-            switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
-                case gID + '_print':
-                    gObj.print();
-                    break;
-                case gID + '_edit':
-                    gObj.startEdit();
-                    break;
-                case gID + '_update':
-                    gObj.endEdit();
-                    break;
-                case gID + '_cancel':
-                    gObj.closeEdit();
-                    break;
-                case gID + '_add':
-                    gObj.addRecord();
-                    break;
-                case gID + '_delete':
-                    gObj.deleteRecord();
-                    break;
-                case gID + '_search':
-                    if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton') {
-                        this.search();
-                    }
-                    break;
-                case gID + '_columnchooser':
-                    let tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
-                    let y: number = tarElement.getBoundingClientRect().top;
-                    let x: number = tarElement.getBoundingClientRect().left;
-                    let targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
-                    y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
-                    gObj.createColumnchooser(x, y, targetEle);
-                    break;
+            if (!toolbarargs.cancel) {
+                switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
+                    case gID + '_print':
+                        gObj.print();
+                        break;
+                    case gID + '_edit':
+                        gObj.startEdit();
+                        break;
+                    case gID + '_update':
+                        gObj.endEdit();
+                        break;
+                    case gID + '_cancel':
+                        gObj.closeEdit();
+                        break;
+                    case gID + '_add':
+                        gObj.addRecord();
+                        break;
+                    case gID + '_delete':
+                        gObj.deleteRecord();
+                        break;
+                    case gID + '_search':
+                        if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton') {
+                            this.search();
+                        }
+                        break;
+                    case gID + '_columnchooser':
+                        let tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
+                        let y: number = tarElement.getBoundingClientRect().top;
+                        let x: number = tarElement.getBoundingClientRect().left;
+                        let targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
+                        y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
+                        gObj.createColumnchooser(x, y, targetEle);
+                        break;
+                }
             }
-        }
         });
     }
 

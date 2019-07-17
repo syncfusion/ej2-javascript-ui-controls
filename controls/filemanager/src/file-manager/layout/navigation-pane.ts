@@ -429,6 +429,7 @@ export class NavigationPane {
         }
         this.treeObj.removeNodes(moveNames);
     }
+    /* istanbul ignore next */
     private selectResultNode(resultObj: object): void {
         if (!this.parent.hasId) {
             let path: string = getValue('filterPath', resultObj);
@@ -478,7 +479,7 @@ export class NavigationPane {
         this.onPathChanged(args);
         if (this.parent.isDragDrop) { this.checkDropPath(args); }
     }
-
+    /* istanbul ignore next */
     private checkDropPath(args: ReadArgs): void {
         if (this.parent.hasId) {
             this.parent.isDropEnd = !this.parent.isPasteError;

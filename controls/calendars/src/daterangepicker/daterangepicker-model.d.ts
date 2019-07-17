@@ -215,6 +215,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * @default null
      * @aspType int
      * @blazorType int
+     * @isBlazorNullableType true
      */
     maxDays?: number;
 
@@ -232,7 +233,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
      * @aspType string
      * @default null
-     * @blazorType int
+     * @blazorType string
      */
     format?: string | RangeFormatObject;
 

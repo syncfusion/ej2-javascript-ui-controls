@@ -2409,8 +2409,8 @@ describe('TimePicker', () => {
             expect(timeObj.getValue(timeObj.initMin)).toBe('2:00 AM');
             expect(timeObj.getValue(timeObj.initMax)).toBe('9:00 AM');
             expect(timeObj.inputWrapper.container.getAttribute('title')).toBe('sample');
-            expect(timeObj.inputWrapper.container.getAttribute('style')).toBe('background-color:yellow');
-            timeObj.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "2/2/2018 7:00 AM", max: "2/2/2018 10:00 AM", min: "2/2/2018 3:00 AM", title:"heading", style: 'background-color:red'};
+            expect(timeObj.inputWrapper.container.getAttribute('style')).toBe('width: 100%;background-color:yellow');
+            timeObj.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "2/2/2018 7:00 AM", max: "2/2/2018 10:00 AM", min: "2/2/2018 3:00 AM", title:"heading"};
             timeObj.dataBind();
             expect(timeObj.element.getAttribute('placeholder')).toBe('choose a date');
             expect(timeObj.element.hasAttribute('readonly')).toBe(false);
@@ -2418,7 +2418,6 @@ describe('TimePicker', () => {
             expect(timeObj.getValue(timeObj.initMin)).toBe('3:00 AM');
             expect(timeObj.getValue(timeObj.initMax)).toBe('10:00 AM');
             expect(timeObj.inputWrapper.container.getAttribute('title')).toBe('heading');
-            expect(timeObj.inputWrapper.container.getAttribute('style')).toBe('background-color:red');
         });
         it('Placeholder testing in auto case', () => {
             timeObj = new TimePicker({ floatLabelType: "Auto", htmlAttributes:{placeholder:"Enter a name" }});
@@ -3556,6 +3555,43 @@ describe('TimePicker', () => {
             e.target = document.getElementsByTagName('body')[0];
             timePicker.documentClickHandler(e);
             expect(timePicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(false);
+        });
+    });
+    describe('Dynamic CssClass testcase', function (){
+        let timepicker: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'timepicker'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            if (timepicker) {
+                timepicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('single css class',function() {
+            timepicker = new TimePicker({
+                cssClass: 'e-custom'
+            });
+            timepicker.appendTo('#timepicker');
+            expect(timepicker.inputWrapper.container.classList.contains('e-custom')).toBe(true);
+            timepicker.cssClass = 'e-test';
+            timepicker.dataBind();
+            expect(timepicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
+        });
+        it('more than one css class',function() {
+            timepicker = new TimePicker({
+                cssClass: 'e-custom e-secondary'
+            });
+            timepicker.appendTo('#timepicker');
+            expect(timepicker.inputWrapper.container.classList.contains('e-custom')).toBe(true);
+            expect(timepicker.inputWrapper.container.classList.contains('e-secondary')).toBe(true);
+            timepicker.cssClass = 'e-test e-ternary';
+            timepicker.dataBind();
+            expect(timepicker.inputWrapper.container.classList.contains('e-custom')).toBe(false);
+            expect(timepicker.inputWrapper.container.classList.contains('e-secondary')).toBe(false);
+            expect(timepicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
+            expect(timepicker.inputWrapper.container.classList.contains('e-test')).toBe(true);
         });
     });
 });

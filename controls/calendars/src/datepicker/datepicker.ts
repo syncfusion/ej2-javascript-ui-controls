@@ -619,7 +619,16 @@ export class DatePicker extends Calendar implements IInput {
     protected updateHtmlAttributeToWrapper(): void {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (containerAttr.indexOf(key) > -1 ) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                } else if (key === 'style') {
+                    let setStyle: string = this.inputWrapper.container.getAttribute(key);
+                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                    this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, setStyle);
+                } else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -1579,9 +1588,9 @@ export class DatePicker extends Calendar implements IInput {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.popupWrapper) {
-                        this.popupWrapper.className += ' ' + newProp.cssClass;
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
                     }
                     break;
                 case 'showClearButton':
@@ -1615,8 +1624,10 @@ export class DatePicker extends Calendar implements IInput {
 export interface PopupObjectArgs {
     /** Prevents the default action */
     preventDefault?: Function;
-
-    /** Defines the DatePicker popup element. */
+    /** 
+     * Defines the DatePicker popup element. 
+     * @deprecated
+     */
     popup?: Popup;
     /**
      * Illustrates whether the current action needs to be prevented or not.

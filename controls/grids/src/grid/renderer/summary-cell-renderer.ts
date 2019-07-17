@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { AggregateColumnModel } from '../models/models';
 import { Cell } from '../models/cell';
 import { AggregateColumn } from '../models/aggregate';
@@ -31,7 +31,12 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
             return true;
         }
         let tempObj: { fn: Function, property: string } = column.getTemplate(cell.cellType);
-        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property));
+        let tempID: string = '';
+        if (isBlazor()) {
+            let guid: string = 'guid';
+            tempID = this.parent.element.id + column[guid] + tempObj.property;
+        }
+        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
         return false;
     }
     public refreshWithAggregate(node: Element, cell: Cell<AggregateColumnModel>): Function {

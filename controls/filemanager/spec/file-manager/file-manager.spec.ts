@@ -5,8 +5,8 @@ import { FileManager } from '../../src/file-manager/base/file-manager';
 import { NavigationPane } from '../../src/file-manager/layout/navigation-pane';
 import { DetailsView } from '../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../src/file-manager/actions/toolbar';
-import { createElement, Browser, Instance, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, data3, data10, data11, stringData, accessData1 } from './data';
+import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { data1, data10, data11, stringData, accessData1, idData1 } from './data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -333,7 +333,8 @@ describe('FileManager control', () => {
             expect(isNullOrUndefined(feObj.element.querySelector('.e-splitter .e-pane .e-address li'))).toEqual(false);
             let litext: string = feObj.element.querySelector('.e-splitter .e-pane .e-address li').innerText;
             let liId: string = feObj.element.querySelector('.e-splitter .e-pane .e-address li').getAttribute("data-utext");
-            expect(litext === liId.split("/")[0]).toEqual(true);
+            expect(litext === "FileContent").toEqual(true);
+            expect(liId === "/").toEqual(true);
             var treeObj: any = (feObj.element.querySelector('.e-treeview') as any).ej2_instances[0];
             let li: Element[] = treeObj.element.querySelectorAll('li');
             mouseEventArgs.target = li[1].querySelector('.e-fullrow');
@@ -347,7 +348,7 @@ describe('FileManager control', () => {
             setTimeout(function () {
                 let treeNodeId: string = li[1].getAttribute("data-uid");
                 let addressBarLi: any = feObj.element.querySelectorAll('.e-splitter .e-pane .e-address li');
-                expect('FileContent/Documents/' === addressBarLi[1].getAttribute("data-utext")).toEqual(true);
+                expect('/Documents/' === addressBarLi[1].getAttribute("data-utext")).toEqual(true);
                 done();
             }, 500);
         });
@@ -566,6 +567,106 @@ describe('FileManager control', () => {
                 expect(aGridLi1.length).toEqual(6);
                 expect(treeLi[2].classList.contains('e-fe-locked')).toBe(true);
                 expect(gridLi[1].classList.contains('e-fe-locked')).toBe(true);
+                done();
+            }, 500);
+        });
+    });
+    describe('Id based support for Large icons view', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('initial testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                let addressLi: any = document.getElementById('file_breadcrumbbar').querySelectorAll('.e-address-list-item');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(6);
+                expect(largeLi.length).toEqual(5);
+                expect(addressLi.length).toEqual(1);
+                expect(feObj.path).toBe('1/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(addressLi[0].innerText).toBe('Files');
+                expect((document.getElementById('file_search') as any).placeholder).toBe('Search Files');
+                done();
+            }, 500);
+        });
+    });
+    describe('Id based support for details view', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('initial testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                let addressLi: any = document.getElementById('file_breadcrumbbar').querySelectorAll('.e-address-list-item');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(6);
+                expect(gridLi.length).toEqual(5);
+                expect(addressLi.length).toEqual(1);
+                expect(feObj.path).toBe('1/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(addressLi[0].innerText).toBe('Files');
+                expect((document.getElementById('file_search') as any).placeholder).toBe('Search Files');
                 done();
             }, 500);
         });

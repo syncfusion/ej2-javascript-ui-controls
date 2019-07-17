@@ -917,6 +917,7 @@ function fileType(file) {
     }
     return iconType;
 }
+/* istanbul ignore next */
 function getImageUrl(parent, item) {
     var baseUrl = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     var imgUrl;
@@ -6454,6 +6455,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         }
         this.treeObj.removeNodes(moveNames);
     };
+    /* istanbul ignore next */
     NavigationPane.prototype.selectResultNode = function (resultObj) {
         if (!this.parent.hasId) {
             var path = getValue('filterPath', resultObj);
@@ -6506,6 +6508,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             this.checkDropPath(args);
         }
     };
+    /* istanbul ignore next */
     NavigationPane.prototype.checkDropPath = function (args) {
         if (this.parent.hasId) {
             this.parent.isDropEnd = !this.parent.isPasteError;

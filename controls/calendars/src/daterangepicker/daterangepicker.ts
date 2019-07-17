@@ -99,7 +99,9 @@ export interface DateRange {
     end?: Date;
 }
 export interface RangeEventArgs extends BaseEventArgs {
-    /** Defines the value */
+    /** 
+     * Defines the value
+     */
     value?: Date[] | DateRange;
     /** Defines the value string in the input element */
     text?: string;
@@ -133,7 +135,10 @@ export interface RangePopupEventArgs {
      */
     cancel?: boolean;
 
-    /** Defines the DatePicker popup object. */
+    /** 
+     * Defines the DateRangePicker popup object. 
+     * @deprecated
+     */
     popup?: Popup;
 
     /**
@@ -436,6 +441,7 @@ export class DateRangePicker extends CalendarBase {
      * @default null
      * @aspType int
      * @blazorType int
+     * @isBlazorNullableType true
      */
     @Property(null)
     public maxDays: number;
@@ -453,7 +459,7 @@ export class DateRangePicker extends CalendarBase {
      * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
      * @aspType string
      * @default null
-     * @blazorType int
+     * @blazorType string
      */
     @Property(null)
     public format: string | RangeFormatObject;
@@ -777,7 +783,16 @@ export class DateRangePicker extends CalendarBase {
     private updateHtmlAttributeToWrapper(): void {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (wrapperAttr.indexOf(key) > -1 ) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                } else if (key === 'style') {
+                    let dateRangeStyle: string = this.inputWrapper.container.getAttribute(key);
+                    dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[key]) :
+                    this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, dateRangeStyle);
+                } else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -4191,9 +4206,10 @@ export class DateRangePicker extends CalendarBase {
                     this.setRangeAllowEdit();
                     break;
                 case 'cssClass':
-                    if (this.popupWrapper) { this.popupWrapper.className += ' ' + newProp.cssClass; }
-                    this.inputWrapper.container.className += ' ' + newProp.cssClass;
-                    this.setProperties({ cssClass: newProp.cssClass }, true);
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
+                    if (this.popupWrapper) {
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
+                    }
                     break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);

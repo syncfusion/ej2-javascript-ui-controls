@@ -77,6 +77,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.effect = '';
         _this.isPopupClicked = false;
+        _this.isDateSelected = true;
         _this.keyConfigs = {
             controlUp: 'ctrl+38',
             controlDown: 'ctrl+40',
@@ -1492,6 +1493,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     };
     CalendarBase.prototype.selectDate = function (e, date, node, multiSelection, values) {
         var element = node || e.currentTarget;
+        this.isDateSelected = false;
         if (this.currentView() === 'Decade') {
             this.setDateDecade(this.currentDate, date.getFullYear());
         }
@@ -1561,6 +1563,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         else {
             addClass([element], SELECTED);
         }
+        this.isDateSelected = true;
     };
     CalendarBase.prototype.checkPresentDate = function (dates, values) {
         var previousValue = false;
@@ -2058,40 +2061,46 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'value':
-                    if (typeof newProp.value === 'string') {
-                        this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
+                    if (this.isDateSelected) {
+                        if (typeof newProp.value === 'string') {
+                            this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
+                        }
+                        else {
+                            newProp.value = new Date(this.checkValue(newProp.value));
+                        }
+                        if (isNaN(+this.value)) {
+                            this.setProperties({ value: oldProp.value }, true);
+                        }
+                        this.update();
                     }
-                    else {
-                        newProp.value = new Date(this.checkValue(newProp.value));
-                    }
-                    if (isNaN(+this.value)) {
-                        this.setProperties({ value: oldProp.value }, true);
-                    }
-                    this.update();
                     break;
                 case 'values':
-                    if (typeof newProp.values === 'string' || typeof newProp.values === 'number') {
-                        this.setProperties({ values: null }, true);
-                    }
-                    else {
-                        var copyValues = this.copyValues(this.values);
-                        for (var index = 0; index < copyValues.length; index++) {
-                            var tempDate = copyValues[index];
-                            if (this.checkDateValue(tempDate) && !_super.prototype.checkPresentDate.call(this, tempDate, copyValues)) {
-                                copyValues.push(tempDate);
+                    if (this.isDateSelected) {
+                        if (typeof newProp.values === 'string' || typeof newProp.values === 'number') {
+                            this.setProperties({ values: null }, true);
+                        }
+                        else {
+                            var copyValues = this.copyValues(this.values);
+                            for (var index = 0; index < copyValues.length; index++) {
+                                var tempDate = copyValues[index];
+                                if (this.checkDateValue(tempDate) && !_super.prototype.checkPresentDate.call(this, tempDate, copyValues)) {
+                                    copyValues.push(tempDate);
+                                }
+                            }
+                            this.setProperties({ values: copyValues }, true);
+                            if (this.values.length > 0) {
+                                this.setProperties({ value: newProp.values[newProp.values.length - 1] }, true);
                             }
                         }
-                        this.setProperties({ values: copyValues }, true);
-                        if (this.values.length > 0) {
-                            this.setProperties({ value: newProp.values[newProp.values.length - 1] }, true);
-                        }
+                        this.validateValues(this.isMultiSelection, this.values);
+                        this.update();
                     }
-                    this.validateValues(this.isMultiSelection, this.values);
-                    this.update();
                     break;
                 case 'isMultiSelection':
-                    this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
-                    this.update();
+                    if (this.isDateSelected) {
+                        this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
+                        this.update();
+                    }
                     break;
                 default:
                     _super.prototype.onPropertyChanged.call(this, newProp, oldProp, this.isMultiSelection, this.values);
@@ -3215,7 +3224,18 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
             var key = _a[_i];
             if (containerAttr.indexOf(key) > -1) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    var setStyle = this.inputWrapper.container.getAttribute(key);
+                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, setStyle);
+                }
+                else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     };
@@ -4223,9 +4243,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.popupWrapper) {
-                        this.popupWrapper.className += ' ' + newProp.cssClass;
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
                     }
                     break;
                 case 'showClearButton':
@@ -4711,7 +4731,18 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
             var key = _a[_i];
             if (wrapperAttr.indexOf(key) > -1) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    var dateRangeStyle = this.inputWrapper.container.getAttribute(key);
+                    dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, dateRangeStyle);
+                }
+                else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     };
@@ -8267,11 +8298,10 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setRangeAllowEdit();
                     break;
                 case 'cssClass':
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.popupWrapper) {
-                        this.popupWrapper.className += ' ' + newProp.cssClass;
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
                     }
-                    this.inputWrapper.container.className += ' ' + newProp.cssClass;
-                    this.setProperties({ cssClass: newProp.cssClass }, true);
                     break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
@@ -9060,7 +9090,18 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
             var key = _a[_i];
             if (wrapperAttributes.indexOf(key) > -1) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    var timeStyle = this.inputWrapper.container.getAttribute(key);
+                    timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, timeStyle);
+                }
+                else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     };
@@ -10478,13 +10519,6 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     }
                     this.setTimeAllowEdit();
                     break;
-                case 'cssClass':
-                    this.inputWrapper.container.className += ' ' + newProp.cssClass;
-                    if (this.popupWrapper) {
-                        this.popupWrapper.className += ' ' + newProp.cssClass;
-                    }
-                    this.setProperties({ cssClass: newProp.cssClass }, true);
-                    break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
                     this.setEnable();
@@ -10495,6 +10529,12 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'enableRtl':
                     this.setProperties({ enableRtl: newProp.enableRtl }, true);
                     this.setEnableRtl();
+                    break;
+                case 'cssClass':
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
+                    if (this.popupWrapper) {
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
+                    }
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);
@@ -11946,9 +11986,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.dateTimeWrapper) {
-                        this.dateTimeWrapper.className += ' ' + newProp.cssClass;
+                        Input.setCssClass(newProp.cssClass, [this.dateTimeWrapper], oldProp.cssClass);
                     }
                     break;
                 case 'locale':

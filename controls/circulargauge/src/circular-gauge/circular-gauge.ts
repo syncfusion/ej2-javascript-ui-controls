@@ -441,18 +441,23 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             let tooltip: GaugeTooltip = this.tooltipModule;
             if (!args.cancel) {
                 if (this.enablePointerDrag && this.activePointer) {
+                    let dragPointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+                    let dragAxisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                     dragArgs = {
                         axis: this.activeAxis,
                         pointer: this.activePointer,
                         previousValue: this.activePointer.currentValue,
                         name: dragMove,
-                        currentValue: null
+                        currentValue: null,
+                        axisIndex: dragAxisInd,
+                        pointerIndex: dragPointInd
                     };
                     dragBlazorArgs = {
                         previousValue: this.activePointer.currentValue,
                         name: dragMove,
                         currentValue: null,
-                        pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+                        pointerIndex: dragPointInd,
+                        axisIndex: dragAxisInd
                     };
                     this.pointerDrag(new GaugeLocation(args.x, args.y));
                     dragArgs.currentValue = dragBlazorArgs.currentValue = this.activePointer.currentValue;
@@ -527,15 +532,20 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             if (isNullOrUndefined(this.activePointer.pathElement)) {
                 this.activePointer.pathElement = [e.target as Element];
             }
+            let pointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+            let axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
             this.trigger(dragStart, this.isBlazor ? {
                 name: dragStart,
                 currentValue: this.activePointer.currentValue,
-                pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+                pointerIndex: pointInd,
+                axisIndex: axisInd
             } as IPointerDragEventArgs : {
                 axis: this.activeAxis,
                 name: dragStart,
                 pointer: this.activePointer,
-                currentValue: this.activePointer.currentValue
+                currentValue: this.activePointer.currentValue,
+                pointerIndex: pointInd,
+                axisIndex: axisInd
             } as IPointerDragEventArgs);
             this.svgObject.setAttribute('cursor', 'pointer');
         }
@@ -558,15 +568,20 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let tooltip: GaugeTooltip = this.tooltipModule;
         this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (this.activeAxis && this.activePointer) {
+            let pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
+            let axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
             this.trigger(dragEnd, this.isBlazor ? {
                 name: dragEnd,
                 currentValue: this.activePointer.currentValue,
-                pointerIndex: parseInt(this.activePointer.pathElement[0].id.slice(-1), 10)
+                pointerIndex: pointerInd,
+                axisIndex: axisInd
             } as IPointerDragEventArgs : {
                 name: dragEnd,
                 axis: this.activeAxis,
                 pointer: this.activePointer,
-                currentValue: this.activePointer.currentValue
+                currentValue: this.activePointer.currentValue,
+                axisIndex: axisInd,
+                pointerIndex: pointerInd
             } as IPointerDragEventArgs);
             this.activeAxis = null;
             this.activePointer = null;

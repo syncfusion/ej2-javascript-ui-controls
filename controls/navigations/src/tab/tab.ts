@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Animation
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
@@ -59,6 +59,7 @@ const CLS_VTAB: string = 'e-vertical-tab';
 const CLS_VERTICAL: string = 'e-vertical';
 const CLS_VLEFT: string = 'e-vertical-left';
 const CLS_VRIGHT: string = 'e-vertical-right';
+const CLS_HBOTTOM: string = 'e-horizontal-bottom';
 
 
 export interface SelectEventArgs extends BaseEventArgs {
@@ -486,7 +487,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     protected render(): void {
         this.btnCls = this.createElement('span', { className: CLS_ICONS + ' ' + CLS_ICON_CLOSE, attrs: { title: this.title} });
         this.renderContainer();
-        this.refreshTabTemplate();
         this.wireEvents();
         this.initRender = false;
     }
@@ -668,23 +668,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         (this.isIconAlone) ? this.element.classList.add(CLS_ICON_TAB) : this.element.classList.remove(CLS_ICON_TAB);
         return tItems;
     }
-
-    private refreshTabTemplate(): void {
-        let blazorContain: string[] = Object.keys(window) as string[];
-        for (let a: number = 0, length: number = this.items.length; a < length; a++) {
-            let item: TabItemModel = this.items[a];
-            if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
-                (<string>item.content).indexOf('<div>Blazor') === 0) {
-                resetBlazorTemplate(this.element.id + a + '_content', 'Content');
-                updateBlazorTemplate(this.element.id + a + '_content', 'Content', item);
-            }
-        }
-    }
-
     private removeActiveClass(id: string): void {
         let hdrActEle: HTEle = <HTEle> selectAll(':root .' + CLS_HEADER + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE, this.element)[0];
+        let selectEle: HTEle = <HTEle>select('.' + CLS_HEADER, this.element);
         if (this.headerPlacement === 'Bottom') {
-            hdrActEle = <HTEle> selectAll(':root .' + CLS_HEADER + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE, this.element.children[1])[0];
+            hdrActEle = <HTEle>selectAll(':root .' + CLS_HEADER + ' .' + CLS_TB_ITEM + '.' + CLS_ACTIVE, selectEle)[0];
         }
         if (!isNOU(hdrActEle)) {
             hdrActEle.classList.remove(CLS_ACTIVE);
@@ -864,7 +852,15 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let tempEle: HTEle = this.createElement('div');
         this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
-          ele.appendChild(tempEle);
+            ele.appendChild(tempEle);
+            let blazorContain: string[] = Object.keys(window) as string[];
+            let item: TabItemModel = this.items[index];
+            if (!isNOU(item)) {
+                if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
+                    (<string>item.content).indexOf('<div>Blazor') === 0) {
+                    updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+                }
+            }
         }
     }
     private compileElement(ele: HTEle, val: string, prop: string, index: number): void {
@@ -878,13 +874,18 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
       }
       let templateFUN: HTMLElement[];
       if (!isNOU(templateFn)) {
-        let templateProps: string;
-        if (ele.classList.contains(CLS_TEXT)) {
-          templateProps = this.element.id + 'text';
-        } else if (ele.classList.contains(CLS_CONTENT)) {
-          templateProps = this.element.id + index + '_content';
+        if (blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
+            let templateProps: string;
+            if (prop === 'headerText') {
+                templateProps = this.element.id + 'text';
+            } else if (prop === 'content') {
+                templateProps = this.element.id + index + '_content';
+            }
+            templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate);
+        } else {
+            templateFUN = templateFn({}, this, prop);
         }
-        templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate); }
+      }
       if (!isNOU(templateFn) && templateFUN.length > 0) {
         [].slice.call(templateFUN).forEach((el: HTEle): void => {
           ele.appendChild(el);
@@ -946,6 +947,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             let tbPos: string = (this.headerPlacement === 'Left') ? CLS_VLEFT : CLS_VRIGHT;
             addClass([this.hdrEle], [CLS_VERTICAL, tbPos]);
             this.element.classList.add(CLS_VTAB);
+        }
+        if (this.headerPlacement === 'Bottom') {
+            this.hdrEle.classList.add(CLS_HBOTTOM);
         }
     }
     private updatePopAnimationConfig(): void {
@@ -1042,10 +1046,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let scrollCnt: HTEle;
         let trgHdrEle: Element;
         if (this.headerPlacement === 'Bottom') {
-            trgHdrEle = this.element.children[1];
-            trg = <HTEle> select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, this.element.children[1]);
+            trgHdrEle = select('.' + CLS_HEADER, this.element);
+            trg = <HTEle> select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, trgHdrEle);
         } else {
-            trgHdrEle = this.element.children[0];
+            trgHdrEle = select('.' + CLS_HEADER, this.element);
             trg = <HTEle> select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, this.element);
         }
         if (trg === null) { return; }

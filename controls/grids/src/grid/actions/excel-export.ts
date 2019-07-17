@@ -267,7 +267,7 @@ export class ExcelExport {
 
             if (!isMultipleExport) {
                 if (this.isCsvExport) {
-                    let book: Workbook = new Workbook(this.book, 'csv', gObj.locale);
+                    let book: Workbook = new Workbook(this.book, 'csv', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode);
                     if (!this.isBlob) {
                         if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
@@ -278,7 +278,7 @@ export class ExcelExport {
                         this.blobPromise = book.saveAsBlob('text/csv');
                     }
                 } else {
-                    let book: Workbook = new Workbook(this.book, 'xlsx', gObj.locale);
+                    let book: Workbook = new Workbook(this.book, 'xlsx', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode);
                     if (!this.isBlob) {
                         if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
                             book.save(exportProperties.fileName);

@@ -1,5 +1,5 @@
-import { L10n, closest, EventHandler, isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';
-import { addClass, removeClass, createElement, remove, extend, AnimationModel } from '@syncfusion/ej2-base';
+import { L10n, closest, EventHandler, isNullOrUndefined, formatUnit, append, AnimationModel } from '@syncfusion/ej2-base';
+import { addClass, removeClass, createElement, remove, extend, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Popup, isCollide, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Input, FormValidator } from '@syncfusion/ej2-inputs';
@@ -431,10 +431,10 @@ export class QuickPopups {
         let cellDetails: { [key: string]: Object } = this.getFormattedString(temp);
         let quickCellPopup: HTMLElement = createElement('div', { className: cls.CELL_POPUP_CLASS });
         let tArgs: Object = extend({}, temp, { elementType: 'cell' }, true);
-        let templateId: string = this.parent.currentView;
+        let templateId: string = this.parent.element.id + '_';
         if (this.parent.quickInfoTemplates.header) {
             let headerTemp: NodeList =
-                this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
+                this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
             append(headerTemp, quickCellPopup);
         } else {
             let headerTemplate: HTMLElement = createElement('div', {
@@ -446,7 +446,7 @@ export class QuickPopups {
         }
         if (this.parent.quickInfoTemplates.content) {
             let contentTemp: NodeList =
-                this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
+                this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
             append(contentTemp, quickCellPopup);
         } else {
             let tempStr: string = `<table class="${cls.POPUP_TABLE_CLASS}"><tbody><tr><td>` +
@@ -462,7 +462,7 @@ export class QuickPopups {
         }
         if (this.parent.quickInfoTemplates.footer) {
             let footerTemp: NodeList =
-                this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
+                this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
             append(footerTemp, quickCellPopup);
         } else {
             let footerTemplate: HTMLElement = createElement('div', {
@@ -532,10 +532,10 @@ export class QuickPopups {
             let args: { [key: string]: Object } = this.getFormattedString(eventData);
             let quickEventPopup: HTMLElement = createElement('div', { className: cls.EVENT_POPUP_CLASS });
             let tArgs: Object = extend({}, eventData, { elementType: 'event' }, true);
-            let templateId: string = this.parent.currentView;
+            let templateId: string = this.parent.element.id + '_';
             if (this.parent.quickInfoTemplates.header) {
                 let headerTemp: NodeList =
-                    this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
+                    this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
                 append(headerTemp, quickEventPopup);
             } else {
                 let headerTemplate: HTMLElement = createElement('div', {
@@ -551,7 +551,7 @@ export class QuickPopups {
             }
             if (this.parent.quickInfoTemplates.content) {
                 let content: NodeList =
-                    this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
+                    this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
                 append(content, quickEventPopup);
             } else {
                 let tempStr: string = `<div class="${cls.DATE_TIME_CLASS}">` +
@@ -579,7 +579,7 @@ export class QuickPopups {
             }
             if (this.parent.quickInfoTemplates.footer) {
                 let footerTemp: NodeList =
-                    this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
+                    this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
                 append(footerTemp, quickEventPopup);
             } else {
                 let footerTemplate: HTMLElement = createElement('div', {
@@ -934,6 +934,7 @@ export class QuickPopups {
     }
 
     private beforeQuickPopupOpen(target: Element): void {
+        this.updateQuickPopupTemplates();
         let isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
         let popupType: PopupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp: PopupOpenEventArgs = {
@@ -946,6 +947,7 @@ export class QuickPopups {
                 if (popupArgs.element.classList.contains(cls.POPUP_OPEN)) {
                     this.quickPopupClose();
                 }
+                this.resetQuickPopupTemplates();
                 this.quickPopup.element.innerHTML = '';
             } else {
                 let display: string = this.quickPopup.element.style.display;
@@ -1032,9 +1034,23 @@ export class QuickPopups {
                 (<HTMLInputElement>editIcon).focus();
             }
         }
+        this.updateQuickPopupTemplates();
+    }
+
+    private updateQuickPopupTemplates(): void {
+        updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+        updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+        updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+    }
+
+    private resetQuickPopupTemplates(): void {
+        resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+        resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+        resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
     }
 
     private quickPopupClose(): void {
+        this.resetQuickPopupTemplates();
         this.parent.eventBase.focusElement();
         this.quickPopup.relateTo = cls.WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();

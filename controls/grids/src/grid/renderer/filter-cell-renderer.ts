@@ -42,7 +42,8 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
             let col: string = 'column';
             fltrData[col] = column;
             if (column.visible) {
-                let element: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate');
+                let tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
+                let element: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
                 appendChildren(node, element);
             } else { node.classList.add('e-hide'); }
         } else {

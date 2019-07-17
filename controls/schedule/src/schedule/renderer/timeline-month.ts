@@ -30,6 +30,7 @@ export class TimelineMonth extends Month {
     public onDataReady(args: NotifyEventArgs): void {
         let appointment: TimelineEvent = new TimelineEvent(this.parent, 'day');
         appointment.renderAppointments();
+        this.parent.notify('events-loaded', {});
     }
 
     public getLeftPanelElement(): HTMLElement {

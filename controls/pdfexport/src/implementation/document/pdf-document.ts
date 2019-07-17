@@ -101,7 +101,7 @@ export class PdfDocument extends PdfDocumentBase {
     public constructor(isMerging : boolean)
     public constructor(isMerging? : boolean) {
         super();
-        super(this);
+        this.document = this;
         if (isMerging === true || isMerging === false || typeof isMerging !== 'undefined') {
             let objects : PdfMainObjectCollection = new PdfMainObjectCollection();
             this.setMainObjectCollection(objects);

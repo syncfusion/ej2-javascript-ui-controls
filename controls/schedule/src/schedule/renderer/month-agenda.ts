@@ -76,12 +76,15 @@ export class MonthAgenda extends Month {
             }
             count++;
         }
+        this.parent.notify('events-loaded', {});
     }
 
     public onCellClick(event: CellClickEventArgs): void {
         this.parent.quickPopup.quickPopupHide();
         let filterData: Object[] = this.appointmentFiltering(event.startTime);
+        this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
+        this.parent.notify('events-loaded', {});
         this.parent.setProperties({ selectedDate: new Date('' + event.startTime) }, true);
     }
 

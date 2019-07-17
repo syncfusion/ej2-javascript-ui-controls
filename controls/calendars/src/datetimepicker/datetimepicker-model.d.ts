@@ -15,6 +15,7 @@ export interface DateTimePickerModel extends DatePickerModel{
     /**
      * Specifies the time interval between the two adjacent time values in the time popup list . 
      * @default 30
+     * @blazorType int
      */
     step?: number;
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.35 (2019-07-17)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- #229426 - Provided the API to select, edit, and delete the annotations.
+
 ## 17.2.34 (2019-07-11)
 
 ### PDF Viewer

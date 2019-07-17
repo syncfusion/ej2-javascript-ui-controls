@@ -43,7 +43,7 @@ export class PdfDocumentBase {
      * Instance of parent `document`.
      * @private
      */
-    private document : PdfDocument;
+    public document : PdfDocument;
     //constructor
     /**
      * Initializes a new instance of the `PdfDocumentBase` class.

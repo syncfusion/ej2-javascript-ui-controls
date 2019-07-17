@@ -3,6 +3,7 @@
  */
 import { compile as render } from './template';
 import { createElement } from './dom';
+import { isNullOrUndefined } from './util';
 
 const HAS_ROW: RegExp = /^[\n\r.]+\<tr|^\<tr/;
 const HAS_SVG: RegExp = /^[\n\r.]+\<svg|^\<path|^\<g/;
@@ -31,20 +32,33 @@ export interface ITemplateEngine {
 export function compile(templateString: string, helper?: Object): (data: Object | JSON, component?: any, propName?: any) => NodeList {
     let compiler: Function = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean ): NodeList => {
+    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number): NodeList => {
         let result: object = compiler(data, component, propName);
         let blazor: string = 'Blazor'; let blazorTemplateId: string = 'BlazorTemplateId';
         if (window && window[blazor] && !isStringTemplate) {
             let randomId: string = getRandomId();
+            let blazorId: string = templateId + randomId;
             if (!blazorTemplates[templateId]) {
                 blazorTemplates[templateId] = [];
             }
-            data[blazorTemplateId] = templateId + randomId;
-            blazorTemplates[templateId].push(data);
+            if (!isNullOrUndefined(index)) {
+                let keys: string[] = Object.keys(blazorTemplates[templateId][index]);
+                for (let key of keys) {
+                    if (data[key]) {
+                        blazorTemplates[templateId][index][key] = data[key];
+                    }
+                    if (key === blazorTemplateId) {
+                        blazorId = blazorTemplates[templateId][index][key];
+                    }
+                }
+            } else {
+                data[blazorTemplateId] = blazorId;
+                blazorTemplates[templateId].push(data);
+            }
             // tslint:disable-next-line:no-any
-            return propName === 'rowTemplate' ? [createElement('tr', { id: templateId + randomId })] as any :
+            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId })] as any :
                 // tslint:disable-next-line:no-any
-                [createElement('div', { id: templateId + randomId })] as any;
+                [createElement('div', { id: blazorId })] as any;
         }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {
@@ -60,16 +74,18 @@ export function compile(templateString: string, helper?: Object): (data: Object 
     };
 }
 
-export function updateBlazorTemplate(templateId?: string, templateName?: string, comp?: object): void {
+export function updateBlazorTemplate(templateId?: string, templateName?: string, comp?: object, isEmpty?: boolean): void {
     let blazor: string = 'Blazor';
     if (window && window[blazor]) {
         let ejsIntrop: string = 'ejsInterop';
         window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp);
-        blazorTemplates[templateId] = [];
+        if (isEmpty !== false) {
+            blazorTemplates[templateId] = [];
+        }
     }
 }
 
-export function resetBlazorTemplate(templateId?: string, templateName?: string): void {
+export function resetBlazorTemplate(templateId?: string, templateName?: string, index?: number): void {
     let templateDiv: HTMLElement = document.getElementById(templateId);
     if (templateDiv) {
         // tslint:disable-next-line:no-any
@@ -80,11 +96,15 @@ export function resetBlazorTemplate(templateId?: string, templateName?: string):
             if (tempElement) {
                 let length: number = tempElement.children.length;
                 for (let j: number = 0; j < length; j++) {
-                innerTemplates[i].appendChild(tempElement.children[0]);
-                tempElement.appendChild(innerTemplates[i].children[j].cloneNode(true));
+                    if (!isNullOrUndefined(index)) {
+                        innerTemplates[index].appendChild(tempElement.children[0]);
+                        return;
+                    } else {
+                        innerTemplates[i].appendChild(tempElement.children[0]);
+                    }
                 }
-            }
 
+            }
         }
     }
 }

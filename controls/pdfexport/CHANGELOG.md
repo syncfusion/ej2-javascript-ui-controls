@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 17.1.48 (2019-05-21)
+## 17.2.35 (2019-07-17)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Super constructor may only be called once exception has been resolved.
+
+- Preservation issue in page orientation is fixed.
+
+## 17.2.28-beta (2019-06-27)
 
 ### Pdf Export
 

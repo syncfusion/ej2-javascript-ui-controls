@@ -5,6 +5,7 @@ import { select, selectAll } from '@syncfusion/ej2-base';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
+import { BeginEditEventArgs } from '../../src/inplace-editor/base/index';
 
 describe('MaskedTextBox Control', () => {
     beforeAll(() => {
@@ -417,6 +418,41 @@ describe('MaskedTextBox Control', () => {
             expect(selectAll('.e-maskedtextbox', document.body).length === 1).toEqual(true);
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-maskedtextbox', document.body)).value).toEqual('___');
+        });
+    });
+
+    describe('beginEdit event testing', () => {
+        let editorObj: any;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'Mask',
+                mode: 'Inline',
+                value: '000',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'Mask',
+                mode: 'Popup',
+                value: '000',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
         });
     });
 

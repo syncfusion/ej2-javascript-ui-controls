@@ -33,6 +33,7 @@ export class Edit {
     // private batchChanges: Object;
     private selectedIndex: number;
     private doubleClickTarget: Element;
+    private internalProperties: ITreeData;
     private previousNewRowPosition : RowPosition;
     /**
      * Constructor for Edit module
@@ -45,6 +46,7 @@ export class Edit {
         // this.batchRecords = [];
         // this.isAdd = false;
         this.previousNewRowPosition = null;
+        this.internalProperties = {};
         this.addEventListener();
     }
     /**
@@ -278,9 +280,17 @@ export class Edit {
     private crudAction(details: { value: ITreeData, action: string }, columnName?: string): void {
       editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName, this.addRowRecord);
       this.parent.parentData = [];
-      let data: Object = this.parent.grid.dataSource;
-      for (let i: number = 0; i < (<Object[]>this.parent.grid.dataSource).length; i++) {
+      let data: Object = this.parent.grid.dataSource instanceof DataManager ?
+      this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource;
+      for (let i: number = 0; i < (<Object[]>data).length; i++) {
         data[i].index = i;
+        let key: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
+        if (details.value[key] === data[i][key]) {
+          if (details.action === 'add') {
+            data[i].level = this.internalProperties.level;
+            data[i].parentItem = this.internalProperties.parentItem;
+          }
+        }
         setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
         if (!data[i].level) {
           this.parent.parentData.push(data[i]);
@@ -340,7 +350,7 @@ export class Edit {
       let rows: Element[] = this.parent.grid.getDataRows();
       if (this.parent.editSettings.mode !== 'Dialog') {
         if (this.parent.editSettings.newRowPosition === 'Child' && !((<ITreeData>records[index]).expanded) &&
-          (<ITreeData>records[index]).hasChildRecords) {
+          (<ITreeData>records[index][this.parent.childMapping]) && (<ITreeData>records[index][this.parent.childMapping].length)) {
           this.parent.expandRow(<HTMLTableRowElement>rows[index + 1], records[index]);
         }
         if (this.parent.editSettings.newRowPosition === 'Above') {
@@ -511,6 +521,9 @@ export class Edit {
           value.hasChildRecords = false;
           value.childRecords = [];
           value.index = 0;
+      }
+      if (args.action === 'add') {
+        this.internalProperties = {level: value.level, parentItem: value.parentItem};
       }
       return args;
     }

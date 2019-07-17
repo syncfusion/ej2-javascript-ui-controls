@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.35 (2019-07-17)
+
+### In-place Editor
+
+#### New Features
+
+- #240715 - Provided new event `beginEdit` that triggers when change to editing mode and it helps to skip the focus from `In-place Editor` component.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### In-place Editor

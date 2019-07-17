@@ -1,7 +1,7 @@
 import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, resetBlazorTemplate, setValue } from '@syncfusion/ej2-base';
 import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Grid, InterSectionObserver, Page, PdfExport, Predicate, Print, RenderType, Reorder, Resize, Sort, TextWrapSettings, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
-import { CacheAdaptor, DataManager, DataUtil, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
+import { CacheAdaptor, DataManager, DataUtil, JsonAdaptor, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 /**
@@ -275,11 +275,13 @@ function findChildrenRecords(records) {
     if (isNullOrUndefined(records) || !records.hasChildRecords) {
         return [];
     }
-    let childRecords = records.childRecords;
-    for (let i = 0, len = Object.keys(childRecords).length; i < len; i++) {
-        datas.push(childRecords[i]);
-        if (childRecords[i].hasChildRecords) {
-            datas = [...datas, ...findChildrenRecords(childRecords[i])];
+    if (!isNullOrUndefined(records.childRecords)) {
+        let childRecords = records.childRecords;
+        for (let i = 0, len = Object.keys(childRecords).length; i < len; i++) {
+            datas.push(childRecords[i]);
+            if (childRecords[i].hasChildRecords) {
+                datas = [...datas, ...findChildrenRecords(childRecords[i])];
+            }
         }
     }
     return datas;
@@ -1337,10 +1339,12 @@ class DataManipulation {
                 let inx = datas.indexOf(rowDetails.record);
                 let haveChild = getObject('actual.nextLevel', e);
                 let result = e.result;
+                rowDetails.record.childRecords = result;
                 for (let r = 0; r < result.length; r++) {
                     result[r].level = rowDetails.record.level + 1;
                     result[r].index = Math.ceil(Math.random() * 1000);
                     result[r].parentItem = rowDetails.record;
+                    delete result[r].parentItem.childRecords;
                     if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
                         && !(haveChild && !haveChild[r])) {
                         result[r].hasChildRecords = true;
@@ -2230,7 +2234,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     //   return this.flatData;
     // }
     bindGridProperties() {
-        this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData : this.dataSource;
+        this.bindedDataSource();
         this.grid.enableRtl = this.enableRtl;
         this.grid.allowKeyboard = this.allowKeyboard;
         this.grid.enablePersistence = this.enablePersistence;
@@ -2351,6 +2355,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.initialRender = false;
         };
         this.grid.beforeDataBound = function (args) {
+            let dataSource = 'dataSource';
             let requestType = getObject('action', args);
             if (isRemoteData(treeGrid) && !isOffline(treeGrid) && requestType !== 'edit') {
                 treeGrid.notify('updateRemoteLevel', args);
@@ -2359,7 +2364,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             else if (treeGrid.flatData.length === 0 && isOffline(treeGrid) && treeGrid.dataSource instanceof DataManager) {
                 let dm = treeGrid.dataSource;
                 treeGrid.dataModule.convertToFlatData(dm.dataSource.json);
-                args.result = dm.dataSource.json = treeGrid.flatData;
+                args.result = treeGrid.grid.dataSource[dataSource].json = treeGrid.flatData;
             }
             if (!isRemoteData(treeGrid)) {
                 treeGrid.notify('dataProcessor', args);
@@ -2426,6 +2431,27 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
         else {
             this.treeColumnRowTemplate(args);
+        }
+    }
+    bindedDataSource() {
+        let dataSource = 'dataSource';
+        let isDataAvailable = 'isDataAvailable';
+        let adaptor = 'adaptor';
+        let ready = 'ready';
+        this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
+            this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
+        if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
+            this.grid.dataSource[dataSource].json = extendArray(this.dataSource[dataSource].json);
+            this.grid.dataSource[ready] = this.dataSource.ready;
+            let dm = this.grid.dataSource;
+            if (!isNullOrUndefined(this.grid.dataSource[ready])) {
+                this.grid.dataSource[ready].then((e) => {
+                    dm[dataSource].offline = true;
+                    dm[isDataAvailable] = true;
+                    dm[dataSource].json = e.result;
+                    dm[adaptor] = new JsonAdaptor();
+                });
+            }
         }
     }
     extendedGridEvents() {
@@ -2716,7 +2742,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                         this.grid.dataSource = this.flatData;
                     }
                     else {
-                        this.grid.dataSource = this.dataSource;
+                        this.bindedDataSource();
                     }
                     break;
                 case 'query':
@@ -3471,7 +3497,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
         let rowIndex;
         if (isNullOrUndefined(row)) {
-            rowIndex = record.index;
+            rowIndex = this.getCurrentViewRecords().indexOf(record);
             row = gridRows[rowIndex];
         }
         else {
@@ -3523,7 +3549,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
             else {
                 let childRecords = this.getCurrentViewRecords().filter((e) => {
-                    return (e.parentUniqueID === record.uniqueID) || e.isSummaryRow;
+                    return e.parentUniqueID === record.uniqueID;
                 });
                 let index = childRecords[0].parentItem.index;
                 let rows = gridRows.filter((r) => r.classList.contains('e-gridrowindex' + record.index + 'level' + (record.level + 1)));
@@ -3574,8 +3600,14 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
     }
     collapseRemoteChild(rows) {
+        let rData;
         for (let i = 0; i < rows.length; i++) {
-            let rData = getObject('data', this.grid.contentModule.getRows()[i]);
+            if (this.rowTemplate) {
+                rData = this.grid.getCurrentViewRecords()[rows[i].rowIndex];
+            }
+            else {
+                rData = this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
+            }
             rData.expanded = false;
             rows[i].style.display = 'none';
             let collapsingTd = rows[i].querySelector('.e-detailrowexpand');
@@ -4895,6 +4927,7 @@ class Aggregate$1 {
                     setValue('level', level + 1, item);
                     let index = getObject('index', summaryParent);
                     setValue('isSummaryRow', true, item);
+                    setValue('parentUniqueID', summaryParent.uniqueID, item);
                     if (isSort) {
                         let childRecords = getObject('childRecords', parentRecord);
                         childRecords.push(item);
@@ -5313,9 +5346,18 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
             if (!record.hasOwnProperty(control.childMapping)) {
                 record[control.childMapping] = [];
             }
-            if (record.childRecords.indexOf(childRecords) === -1) {
+            if (record[control.childMapping].indexOf(childRecords) === -1) {
                 record[control.childMapping].unshift(childRecords);
             }
+        }
+    }
+    let primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
+    let data = control.grid.dataSource instanceof DataManager ?
+        control.grid.dataSource.dataSource.json : control.grid.dataSource;
+    for (let i = 0; i < data.length; i++) {
+        if (data[i][primaryKeys] === record[primaryKeys]) {
+            data[i] = record;
+            break;
         }
     }
     control.grid.setRowData(key, record);
@@ -5342,6 +5384,7 @@ class Edit$1 {
         // this.batchRecords = [];
         // this.isAdd = false;
         this.previousNewRowPosition = null;
+        this.internalProperties = {};
         this.addEventListener();
     }
     /**
@@ -5577,9 +5620,17 @@ class Edit$1 {
     crudAction(details, columnName) {
         editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName, this.addRowRecord);
         this.parent.parentData = [];
-        let data = this.parent.grid.dataSource;
-        for (let i = 0; i < this.parent.grid.dataSource.length; i++) {
+        let data = this.parent.grid.dataSource instanceof DataManager ?
+            this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource;
+        for (let i = 0; i < data.length; i++) {
             data[i].index = i;
+            let key = this.parent.grid.getPrimaryKeyFieldNames()[0];
+            if (details.value[key] === data[i][key]) {
+                if (details.action === 'add') {
+                    data[i].level = this.internalProperties.level;
+                    data[i].parentItem = this.internalProperties.parentItem;
+                }
+            }
             setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
             if (!data[i].level) {
                 this.parent.parentData.push(data[i]);
@@ -5640,7 +5691,7 @@ class Edit$1 {
         let rows = this.parent.grid.getDataRows();
         if (this.parent.editSettings.mode !== 'Dialog') {
             if (this.parent.editSettings.newRowPosition === 'Child' && !(records[index].expanded) &&
-                records[index].hasChildRecords) {
+                records[index][this.parent.childMapping] && records[index][this.parent.childMapping].length) {
                 this.parent.expandRow(rows[index + 1], records[index]);
             }
             if (this.parent.editSettings.newRowPosition === 'Above') {
@@ -5822,6 +5873,9 @@ class Edit$1 {
             value.hasChildRecords = false;
             value.childRecords = [];
             value.index = 0;
+        }
+        if (args.action === 'add') {
+            this.internalProperties = { level: value.level, parentItem: value.parentItem };
         }
         return args;
     }

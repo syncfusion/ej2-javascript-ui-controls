@@ -763,7 +763,6 @@ export interface CustomValueSpecifierEventArgs {
     text: string;
     /**
      * Sets the text custom format data for set a `value` and `text`.
-     * @isGenericType true
      */
     item: { [key: string]: string | Object };
 }

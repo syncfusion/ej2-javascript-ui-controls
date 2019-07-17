@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.35 (2019-07-17)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `crudaction` works fine while performing crud actions with server-side.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### TreeGrid

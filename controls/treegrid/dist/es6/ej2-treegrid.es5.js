@@ -1,7 +1,7 @@
 import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, resetBlazorTemplate, setValue } from '@syncfusion/ej2-base';
 import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Grid, InterSectionObserver, Page, PdfExport, Predicate, Print, RenderType, Reorder, Resize, Sort, TextWrapSettings, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
-import { CacheAdaptor, DataManager, DataUtil, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
+import { CacheAdaptor, DataManager, DataUtil, JsonAdaptor, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 /**
@@ -294,11 +294,13 @@ function findChildrenRecords(records) {
     if (isNullOrUndefined(records) || !records.hasChildRecords) {
         return [];
     }
-    var childRecords = records.childRecords;
-    for (var i = 0, len = Object.keys(childRecords).length; i < len; i++) {
-        datas.push(childRecords[i]);
-        if (childRecords[i].hasChildRecords) {
-            datas = datas.concat(findChildrenRecords(childRecords[i]));
+    if (!isNullOrUndefined(records.childRecords)) {
+        var childRecords = records.childRecords;
+        for (var i = 0, len = Object.keys(childRecords).length; i < len; i++) {
+            datas.push(childRecords[i]);
+            if (childRecords[i].hasChildRecords) {
+                datas = datas.concat(findChildrenRecords(childRecords[i]));
+            }
         }
     }
     return datas;
@@ -1402,10 +1404,12 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 var inx = datas.indexOf(rowDetails.record);
                 var haveChild = getObject('actual.nextLevel', e);
                 var result = e.result;
+                rowDetails.record.childRecords = result;
                 for (var r = 0; r < result.length; r++) {
                     result[r].level = rowDetails.record.level + 1;
                     result[r].index = Math.ceil(Math.random() * 1000);
                     result[r].parentItem = rowDetails.record;
+                    delete result[r].parentItem.childRecords;
                     if ((result[r][_this.parent.hasChildMapping] || _this.parentItems.indexOf(result[r][_this.parent.idMapping]) !== -1)
                         && !(haveChild && !haveChild[r])) {
                         result[r].hasChildRecords = true;
@@ -2394,7 +2398,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     //   return this.flatData;
     // }
     TreeGrid.prototype.bindGridProperties = function () {
-        this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData : this.dataSource;
+        this.bindedDataSource();
         this.grid.enableRtl = this.enableRtl;
         this.grid.allowKeyboard = this.allowKeyboard;
         this.grid.enablePersistence = this.enablePersistence;
@@ -2516,6 +2520,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.initialRender = false;
         };
         this.grid.beforeDataBound = function (args) {
+            var dataSource = 'dataSource';
             var requestType = getObject('action', args);
             if (isRemoteData(treeGrid) && !isOffline(treeGrid) && requestType !== 'edit') {
                 treeGrid.notify('updateRemoteLevel', args);
@@ -2524,7 +2529,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             else if (treeGrid.flatData.length === 0 && isOffline(treeGrid) && treeGrid.dataSource instanceof DataManager) {
                 var dm = treeGrid.dataSource;
                 treeGrid.dataModule.convertToFlatData(dm.dataSource.json);
-                args.result = dm.dataSource.json = treeGrid.flatData;
+                args.result = treeGrid.grid.dataSource[dataSource].json = treeGrid.flatData;
             }
             if (!isRemoteData(treeGrid)) {
                 treeGrid.notify('dataProcessor', args);
@@ -2593,6 +2598,27 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.treeColumnRowTemplate(args);
+        }
+    };
+    TreeGrid.prototype.bindedDataSource = function () {
+        var dataSource = 'dataSource';
+        var isDataAvailable = 'isDataAvailable';
+        var adaptor = 'adaptor';
+        var ready = 'ready';
+        this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
+            this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
+        if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
+            this.grid.dataSource[dataSource].json = extendArray(this.dataSource[dataSource].json);
+            this.grid.dataSource[ready] = this.dataSource.ready;
+            var dm_1 = this.grid.dataSource;
+            if (!isNullOrUndefined(this.grid.dataSource[ready])) {
+                this.grid.dataSource[ready].then(function (e) {
+                    dm_1[dataSource].offline = true;
+                    dm_1[isDataAvailable] = true;
+                    dm_1[dataSource].json = e.result;
+                    dm_1[adaptor] = new JsonAdaptor();
+                });
+            }
         }
     };
     TreeGrid.prototype.extendedGridEvents = function () {
@@ -2886,7 +2912,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                         this.grid.dataSource = this.flatData;
                     }
                     else {
-                        this.grid.dataSource = this.dataSource;
+                        this.bindedDataSource();
                     }
                     break;
                 case 'query':
@@ -3648,7 +3674,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
         var rowIndex;
         if (isNullOrUndefined(row)) {
-            rowIndex = record.index;
+            rowIndex = this.getCurrentViewRecords().indexOf(record);
             row = gridRows[rowIndex];
         }
         else {
@@ -3704,7 +3730,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 var childRecords = this.getCurrentViewRecords().filter(function (e) {
-                    return (e.parentUniqueID === record.uniqueID) || e.isSummaryRow;
+                    return e.parentUniqueID === record.uniqueID;
                 });
                 var index = childRecords[0].parentItem.index;
                 var rows = gridRows.filter(function (r) {
@@ -3759,8 +3785,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeGrid.prototype.collapseRemoteChild = function (rows) {
+        var rData;
         for (var i = 0; i < rows.length; i++) {
-            var rData = getObject('data', this.grid.contentModule.getRows()[i]);
+            if (this.rowTemplate) {
+                rData = this.grid.getCurrentViewRecords()[rows[i].rowIndex];
+            }
+            else {
+                rData = this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
+            }
             rData.expanded = false;
             rows[i].style.display = 'none';
             var collapsingTd = rows[i].querySelector('.e-detailrowexpand');
@@ -5112,6 +5144,7 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
                     setValue('level', level + 1, item);
                     var index = getObject('index', summaryParent);
                     setValue('isSummaryRow', true, item);
+                    setValue('parentUniqueID', summaryParent.uniqueID, item);
                     if (isSort) {
                         var childRecords = getObject('childRecords', parentRecord);
                         childRecords.push(item);
@@ -5545,9 +5578,18 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
             if (!record.hasOwnProperty(control.childMapping)) {
                 record[control.childMapping] = [];
             }
-            if (record.childRecords.indexOf(childRecords) === -1) {
+            if (record[control.childMapping].indexOf(childRecords) === -1) {
                 record[control.childMapping].unshift(childRecords);
             }
+        }
+    }
+    var primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
+    var data = control.grid.dataSource instanceof DataManager ?
+        control.grid.dataSource.dataSource.json : control.grid.dataSource;
+    for (var i = 0; i < data.length; i++) {
+        if (data[i][primaryKeys] === record[primaryKeys]) {
+            data[i] = record;
+            break;
         }
     }
     control.grid.setRowData(key, record);
@@ -5574,6 +5616,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         // this.batchRecords = [];
         // this.isAdd = false;
         this.previousNewRowPosition = null;
+        this.internalProperties = {};
         this.addEventListener();
     }
     /**
@@ -5809,9 +5852,17 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.crudAction = function (details, columnName) {
         editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName, this.addRowRecord);
         this.parent.parentData = [];
-        var data = this.parent.grid.dataSource;
-        for (var i = 0; i < this.parent.grid.dataSource.length; i++) {
+        var data = this.parent.grid.dataSource instanceof DataManager ?
+            this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource;
+        for (var i = 0; i < data.length; i++) {
             data[i].index = i;
+            var key = this.parent.grid.getPrimaryKeyFieldNames()[0];
+            if (details.value[key] === data[i][key]) {
+                if (details.action === 'add') {
+                    data[i].level = this.internalProperties.level;
+                    data[i].parentItem = this.internalProperties.parentItem;
+                }
+            }
             setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
             if (!data[i].level) {
                 this.parent.parentData.push(data[i]);
@@ -5872,7 +5923,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         var rows = this.parent.grid.getDataRows();
         if (this.parent.editSettings.mode !== 'Dialog') {
             if (this.parent.editSettings.newRowPosition === 'Child' && !(records[index].expanded) &&
-                records[index].hasChildRecords) {
+                records[index][this.parent.childMapping] && records[index][this.parent.childMapping].length) {
                 this.parent.expandRow(rows[index + 1], records[index]);
             }
             if (this.parent.editSettings.newRowPosition === 'Above') {
@@ -6054,6 +6105,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             value.hasChildRecords = false;
             value.childRecords = [];
             value.index = 0;
+        }
+        if (args.action === 'add') {
+            this.internalProperties = { level: value.level, parentItem: value.parentItem };
         }
         return args;
     };

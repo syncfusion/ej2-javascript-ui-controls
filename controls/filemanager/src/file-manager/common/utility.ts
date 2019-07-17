@@ -281,7 +281,7 @@ export function fileType(file: Object): string {
     }
     return iconType;
 }
-
+/* istanbul ignore next */
 export function getImageUrl(parent: IFileManager, item: Object): string {
     let baseUrl: string = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     let imgUrl: string;

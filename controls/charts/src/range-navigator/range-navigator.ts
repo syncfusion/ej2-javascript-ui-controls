@@ -913,6 +913,8 @@ export class RangeNavigator extends Component<HTMLElement> {
         }
         if (!refreshBounds && renderer) {
             this.removeSvg();
+            this.chartSeries.xMin = Infinity;
+            this.chartSeries.xMax = -Infinity;
             this.chartSeries.renderChart(this);
         }
         if (refreshBounds) {

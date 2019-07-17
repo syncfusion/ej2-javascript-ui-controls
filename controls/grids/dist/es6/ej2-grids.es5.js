@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getValue, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, calculatePosition, calculateRelativeBasedPosition, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton, Switch, createCheckBox } from '@syncfusion/ej2-buttons';
@@ -216,6 +216,9 @@ var Column = /** @__PURE__ @class */ (function () {
                     var z = x;
                     x = y;
                     y = z;
+                    var obj = xObj;
+                    xObj = yObj;
+                    yObj = obj;
                 }
                 return a_1(x, y, xObj, yObj);
             };
@@ -3016,7 +3019,8 @@ var Data = /** @__PURE__ @class */ (function () {
     };
     /** @hidden */
     Data.prototype.isRemote = function () {
-        return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined;
+        return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined &&
+            this.dataManager.dataSource.url !== '';
     };
     Data.prototype.addRows = function (e) {
         for (var i = e.records.length; i > 0; i--) {
@@ -3303,7 +3307,7 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
             this.refreshMergeCells(row);
         }
         var node = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
-        var tr = this.refreshRow(row, columns, attributes$$1, rowTemplate);
+        var tr = this.refreshRow(row, columns, attributes$$1, rowTemplate, null, isChanged);
         var cells = [].slice.call(tr.cells);
         node.innerHTML = '';
         for (var _i = 0, cells_1 = cells; _i < cells_1.length; _i++) {
@@ -3311,7 +3315,7 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
             node.appendChild(cell);
         }
     };
-    RowRenderer.prototype.refreshRow = function (row, columns, attributes$$1, rowTemplate, cloneNode) {
+    RowRenderer.prototype.refreshRow = function (row, columns, attributes$$1, rowTemplate, cloneNode, isEdit) {
         var tr = !isNullOrUndefined(cloneNode) ? cloneNode : this.element.cloneNode();
         var rowArgs = { data: row.data };
         var cellArgs = { data: row.data };
@@ -3343,7 +3347,7 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
                 attrs['class'] = this_1.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
-            var td = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand);
+            var td = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand, isEdit);
             if (row.cells[i].cellType !== CellType.Filter) {
                 if (row.cells[i].cellType === CellType.Data || row.cells[i].cellType === CellType.CommandColumn) {
                     this_1.parent.trigger(queryCellInfo, extend(cellArgs, {
@@ -5118,7 +5122,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         }
         return isNullOrUndefined(value) ? '' : value.toString();
     };
-    CellRenderer.prototype.evaluate = function (node, cell, data, attributes$$1, fData) {
+    CellRenderer.prototype.evaluate = function (node, cell, data, attributes$$1, fData, isEdit) {
         var _a;
         var result;
         if (cell.column.template) {
@@ -5126,7 +5130,13 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             var dummyData = extendObjWithFn({}, data, (_a = {}, _a[foreignKeyData] = fData, _a));
             var templateID = this.parent.element.id + cell.column.uid;
             var str = 'isStringTemplate';
-            result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+            var index = 'index';
+            if (isBlazor() && isEdit) {
+                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], parseInt(attributes$$1[index], 10));
+            }
+            else {
+                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID);
+            }
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });
             result = null;
@@ -5164,8 +5174,8 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
      * @param  {{[x:string]:Object}} attributes?
      * @param  {Element}
      */
-    CellRenderer.prototype.render = function (cell, data, attributes$$1) {
-        return this.refreshCell(cell, data, attributes$$1);
+    CellRenderer.prototype.render = function (cell, data, attributes$$1, isEdit) {
+        return this.refreshCell(cell, data, attributes$$1, isEdit);
     };
     /**
      * Function to refresh the cell content based on Column object.
@@ -5184,7 +5194,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             td.appendChild(elem);
         }
     };
-    CellRenderer.prototype.refreshCell = function (cell, data, attributes$$1) {
+    CellRenderer.prototype.refreshCell = function (cell, data, attributes$$1, isEdit) {
         var _a;
         var node = this.element.cloneNode();
         var column = cell.column;
@@ -5211,7 +5221,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(cell.column.headerText)) {
             node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
         }
-        if (this.evaluate(node, cell, data, attributes$$1, fData) && column.type !== 'checkbox') {
+        if (this.evaluate(node, cell, data, attributes$$1, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         }
         else if (column.type === 'checkbox') {
@@ -5706,7 +5716,13 @@ var GroupCaptionCellRenderer = /** @__PURE__ @class */ (function (_super) {
         var value = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, cell.column.valueAccessor('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
-            result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+            if (isBlazor()) {
+                var tempID = gObj.element.id + 'captionTemplate';
+                result = templateCompiler(gObj.groupSettings.captionTemplate)(data, null, null, tempID);
+            }
+            else {
+                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+            }
             appendChildren(node, result);
         }
         else {
@@ -6029,7 +6045,9 @@ var Render = /** @__PURE__ @class */ (function () {
         if (e === void 0) { e = { requestType: 'refresh' }; }
         var gObj = this.parent;
         gObj.notify(e.requestType + "-begin", e);
-        this.resetTemplates();
+        if (isBlazor()) {
+            this.resetTemplates();
+        }
         gObj.trigger(actionBegin, e, function (args) {
             if (args === void 0) { args = { requestType: 'refresh' }; }
             if (args.cancel) {
@@ -6056,10 +6074,17 @@ var Render = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         if (gObj.detailTemplate) {
             var detailTemplateID = gObj.element.id + 'detailTemplate';
+            blazorTemplates[detailTemplateID] = [];
             resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
+        }
+        if (gObj.groupSettings.captionTemplate) {
+            resetBlazorTemplate(gObj.element.id + 'captionTemplate', 'CaptionTemplate');
         }
         if (gObj.rowTemplate) {
             resetBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate');
+        }
+        if (gObj.toolbarTemplate) {
+            resetBlazorTemplate(gObj.element.id + 'toolbarTemplate', 'ToolbarTemplate');
         }
         for (var i = 0; i < gObj.getColumns().length; i++) {
             if (gObj.getColumns()[i].template) {
@@ -6067,6 +6092,26 @@ var Render = /** @__PURE__ @class */ (function () {
             }
             if (gObj.getColumns()[i].headerTemplate) {
                 resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'headerTemplate', 'HeaderTemplate');
+            }
+            if (gObj.getColumns()[i].filterTemplate) {
+                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'filterTemplate', 'FilterTemplate');
+            }
+        }
+        var guid = 'guid';
+        for (var k = 0; k < gObj.aggregates.length; k++) {
+            for (var j = 0; j < gObj.aggregates[k].columns.length; j++) {
+                if (gObj.aggregates[k].columns[j].footerTemplate) {
+                    var tempID = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'footerTemplate';
+                    resetBlazorTemplate(tempID, 'FooterTemplate');
+                }
+                if (gObj.aggregates[k].columns[j].groupFooterTemplate) {
+                    var tempID = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupFooterTemplate';
+                    resetBlazorTemplate(tempID, 'GroupFooterTemplate');
+                }
+                if (gObj.aggregates[k].columns[j].groupCaptionTemplate) {
+                    var tempID = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupCaptionTemplate';
+                    resetBlazorTemplate(tempID, 'GroupCaptionTemplate');
+                }
             }
         }
     };
@@ -8336,7 +8381,6 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var selectedCell = this.getSelectedMovableCell(cellIndex);
         var args;
-        var cncl = 'cancel';
         if (!selectedCell) {
             selectedCell = gObj.getCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
         }
@@ -8357,24 +8401,33 @@ var Selection = /** @__PURE__ @class */ (function () {
                     this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
                 cancel: false
             };
-            this.onActionBegin(args, cellSelecting);
+            this.parent.trigger(cellSelecting, this.fDataUpdate(args), this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
         }
-        if (!isNullOrUndefined(args) && args[cncl] === true) {
-            return;
+        else {
+            this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData)(args);
         }
-        this.clearCell();
-        if (!isToggle) {
-            this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
-        }
-        this.updateCellProps(cellIndex, cellIndex);
-        if (!isToggle) {
-            this.onActionComplete({
-                data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
-                previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
-                previousRowCell: this.prevECIdxs ?
-                    this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-            }, cellSelected);
-        }
+    };
+    Selection.prototype.successCallBack = function (cellSelectingArgs, isToggle, cellIndex, selectedCell, selectedData) {
+        var _this = this;
+        return function (cellSelectingArgs) {
+            var cncl = 'cancel';
+            if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
+                return;
+            }
+            _this.clearCell();
+            if (!isToggle) {
+                _this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
+            }
+            _this.updateCellProps(cellIndex, cellIndex);
+            if (!isToggle) {
+                _this.onActionComplete({
+                    data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
+                    previousRowCellIndex: _this.prevECIdxs, selectedRowCellIndex: _this.selectedRowCellIndexes,
+                    previousRowCell: _this.prevECIdxs ?
+                        _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
+                }, cellSelected);
+            }
+        };
     };
     Selection.prototype.getCellIndex = function (rIdx, cIdx) {
         return (this.parent.getFrozenColumns() ? (cIdx >= this.parent.getFrozenColumns() ? this.parent.getMovableCellFromIndex(rIdx, cIdx)
@@ -8387,6 +8440,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @return {void}
      */
     Selection.prototype.selectCellsByRange = function (startIndex, endIndex) {
+        var _this = this;
         if (!this.isCellType()) {
             return;
         }
@@ -8412,53 +8466,54 @@ var Selection = /** @__PURE__ @class */ (function () {
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
         };
-        this.onActionBegin(args, cellSelecting);
-        if (!isNullOrUndefined(args) && args[cncl] === true) {
-            return;
-        }
-        this.clearCell();
-        if (startIndex.rowIndex > endIndex.rowIndex) {
-            var temp = startIndex;
-            startIndex = endIndex;
-            endIndex = temp;
-        }
-        for (var i = startIndex.rowIndex; i <= endIndex.rowIndex; i++) {
-            if (this.selectionSettings.cellSelectionMode.indexOf('Box') < 0) {
-                min = i === startIndex.rowIndex ? (startIndex.cellIndex) : 0;
-                max = i === endIndex.rowIndex ? (endIndex.cellIndex) : this.getLastColIndex(i);
+        this.parent.trigger(cellSelecting, this.fDataUpdate(args), function (cellSelectingArgs) {
+            if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
+                return;
             }
-            else {
-                min = startIndex.cellIndex;
-                max = endIndex.cellIndex;
+            _this.clearCell();
+            if (startIndex.rowIndex > endIndex.rowIndex) {
+                var temp = startIndex;
+                startIndex = endIndex;
+                endIndex = temp;
             }
-            cellIndexes = [];
-            for (var j = min < max ? min : max, len = min > max ? min : max; j <= len; j++) {
-                if (frzCols) {
-                    if (j < frzCols) {
-                        selectedCell = gObj.getCellFromIndex(i, j);
-                    }
-                    else {
-                        selectedCell = gObj.getMovableCellFromIndex(i, j);
-                    }
+            for (var i = startIndex.rowIndex; i <= endIndex.rowIndex; i++) {
+                if (_this.selectionSettings.cellSelectionMode.indexOf('Box') < 0) {
+                    min = i === startIndex.rowIndex ? (startIndex.cellIndex) : 0;
+                    max = i === endIndex.rowIndex ? (endIndex.cellIndex) : _this.getLastColIndex(i);
                 }
                 else {
-                    selectedCell = gObj.getCellFromIndex(i, j);
+                    min = startIndex.cellIndex;
+                    max = endIndex.cellIndex;
                 }
-                if (!selectedCell) {
-                    continue;
+                cellIndexes = [];
+                for (var j = min < max ? min : max, len = min > max ? min : max; j <= len; j++) {
+                    if (frzCols) {
+                        if (j < frzCols) {
+                            selectedCell = gObj.getCellFromIndex(i, j);
+                        }
+                        else {
+                            selectedCell = gObj.getMovableCellFromIndex(i, j);
+                        }
+                    }
+                    else {
+                        selectedCell = gObj.getCellFromIndex(i, j);
+                    }
+                    if (!selectedCell) {
+                        continue;
+                    }
+                    cellIndexes.push(j);
+                    _this.updateCellSelection(selectedCell);
+                    _this.addAttribute(selectedCell);
                 }
-                cellIndexes.push(j);
-                this.updateCellSelection(selectedCell);
-                this.addAttribute(selectedCell);
+                _this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
-            this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
-        }
-        this.updateCellProps(stIndex, edIndex);
-        this.onActionComplete({
-            data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-            previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
-            previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        }, cellSelected);
+            _this.updateCellProps(stIndex, edIndex);
+            _this.onActionComplete({
+                data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
+                previousRowCellIndex: _this.prevECIdxs, selectedRowCellIndex: _this.selectedRowCellIndexes,
+                previousRowCell: _this.prevECIdxs ? _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
+            }, cellSelected);
+        });
     };
     /**
      * Selects a collection of cells by row and column indexes.
@@ -11148,6 +11203,9 @@ var SortDescriptor = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property()
     ], SortDescriptor.prototype, "direction", void 0);
+    __decorate([
+        Property(false)
+    ], SortDescriptor.prototype, "isFromGroup", void 0);
     return SortDescriptor;
 }(ChildProperty));
 /**
@@ -13744,12 +13802,34 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.off(keyPressed, this.keyPressed);
     };
     Grid.prototype.blazorTemplate = function () {
-        for (var i = 0; i < this.columnModel.length; i++) {
-            if (this.columnModel[i].template) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
+        if (isBlazor()) {
+            for (var i = 0; i < this.columnModel.length; i++) {
+                if (this.columnModel[i].template) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
+                }
+                if (this.columnModel[i].headerTemplate) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+                }
+                if (this.columnModel[i].filterTemplate) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i]);
+                }
             }
-            if (this.columnModel[i].headerTemplate) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+            if (this.groupSettings.captionTemplate) {
+                updateBlazorTemplate(this.element.id + 'captionTemplate', 'CaptionTemplate', this.groupSettings);
+            }
+            var guid = 'guid';
+            for (var k = 0; k < this.aggregates.length; k++) {
+                for (var j = 0; j < this.aggregates[k].columns.length; j++) {
+                    if (this.aggregates[k].columns[j].footerTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'footerTemplate', 'FooterTemplate', this.aggregates[k].columns[j]);
+                    }
+                    if (this.aggregates[k].columns[j].groupFooterTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'groupFooterTemplate', 'GroupFooterTemplate', this.aggregates[k].columns[j]);
+                    }
+                    if (this.aggregates[k].columns[j].groupCaptionTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'groupCaptionTemplate', 'GroupCaptionTemplate', this.aggregates[k].columns[j]);
+                    }
+                }
             }
         }
     };
@@ -13793,9 +13873,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(e.target, '.e-unboundcelldiv')) {
             return;
         }
+        var dataRow = !isNullOrUndefined(closest(e.target, 'tr').getAttribute('data-uid')) &&
+            this.getRowObjectFromUID(closest(e.target, 'tr').getAttribute('data-uid')).isDataRow;
         var args = this.getRowInfo(e.target);
         args.target = e.target;
-        this.trigger(recordDoubleClick, args);
+        if (dataRow) {
+            this.trigger(recordDoubleClick, args);
+        }
         this.notify(dblclick, e);
     };
     Grid.prototype.focusOutHandler = function (e) {
@@ -14054,6 +14138,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         var previousRowData = this.getRowsObject()[this.getRows().length - 1].data;
         return previousRowData;
     };
+    /**
+     * Hides the scrollbar placeholder of Grid content when grid content is not overflown.
+     * @return {void}
+     */
     Grid.prototype.hideScroll = function () {
         var content = this.getContent().querySelector('.e-content');
         var cTable = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
@@ -14490,7 +14578,7 @@ var Sort = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         var sCol = this.getSortColumnFromField(gCols[i]);
-                        sortedCols.push({ field: sCol.field, direction: sCol.direction });
+                        sortedCols.push({ field: sCol.field, direction: sCol.direction, isFromGroup: sCol.isFromGroup });
                     }
                 }
                 if (!flag) {
@@ -14608,9 +14696,11 @@ var Sort = /** @__PURE__ @class */ (function () {
     };
     Sort.prototype.refreshSortSettings = function () {
         var _this = this;
-        this.sortedColumns = [];
+        this.sortedColumns.length = 0;
         this.sortSettings.columns.forEach(function (e) {
-            _this.sortedColumns.push(e.field);
+            if (!e.isFromGroup) {
+                _this.sortedColumns.push(e.field);
+            }
         });
     };
     /**
@@ -14979,7 +15069,7 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     NumericContainer.prototype.unwireEvents = function () {
-        EventHandler.remove(this.pagerElement, 'click', this.clickHandler);
+        EventHandler.remove(this.pagerModule.element, 'click', this.clickHandler);
     };
     /**
      * To destroy the PagerMessage
@@ -16165,7 +16255,8 @@ var FilterCellRenderer = /** @__PURE__ @class */ (function (_super) {
             var col = 'column';
             fltrData[col] = column;
             if (column.visible) {
-                var element = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate');
+                var tempID = this.parent.element.id + column.uid + 'filterTemplate';
+                var element = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
                 appendChildren(node, element);
             }
             else {
@@ -16646,7 +16737,8 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
             }
             var col = 'column';
             fltrData[col] = column;
-            var compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate');
+            var tempID = this.parent.element.id + column.uid + 'filterTemplate';
+            var compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, compElement);
         }
         else {
@@ -16705,7 +16797,9 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
                 fltrValue = element.children[0].value;
             }
             else {
-                fltrValue = element.children[0].ej2_instances[0].value;
+                fltrValue = !isBlazor() && !isNullOrUndefined((element.children[0].ej2_instances) ?
+                    element.children[0].ej2_instances[0].value
+                    : element.querySelector('.e-control').ej2_instances[0].value);
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
         }
@@ -17008,7 +17102,12 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
             open: function () {
                 var row = _this.dlgObj.element.querySelector('table.e-xlfl-table>tr');
                 if (_this.options.column.filterTemplate) {
-                    row.querySelector('#' + _this.options.column.field + '-xlfl-frstvalue').focus();
+                    if (isBlazor()) {
+                        row.querySelector('.e-xlfl-valuediv').children[0].focus();
+                    }
+                    else {
+                        row.querySelector('#' + _this.options.column.field + '-xlfl-frstvalue').focus();
+                    }
                 }
                 else {
                     row.cells[1].querySelector('input:not([type=hidden])').focus();
@@ -17062,9 +17161,13 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         var isComplex = !isNullOrUndefined(col) && isComplexField(col);
         var complexFieldName = !isNullOrUndefined(col) && getComplexFieldID(col);
         var colValue = isComplex ? complexFieldName : col;
-        var fValue = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
+        var fValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control').ej2_instances[0]
+            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
         var fOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr').ej2_instances[0];
-        var sValue = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
+        var sValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control').ej2_instances[0]
+            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
         var sOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr').ej2_instances[0];
         var checkBoxValue;
         if (this.options.type === 'string') {
@@ -17291,7 +17394,8 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
                     data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
                 }
             }
-            var element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate');
+            var tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
+            var element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, element);
             valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
             value.appendChild(valueDiv);
@@ -18412,6 +18516,7 @@ var Resize = /** @__PURE__ @class */ (function () {
             this.parent.getColumns().map(function (x) { return x.field; }) : (typeof fName === 'string') ? [fName] : fName;
         this.findColumn(columnName);
     };
+    /* tslint:disable-next-line:max-func-body-length */
     Resize.prototype.resizeColumn = function (fName, index, id) {
         var gObj = this.parent;
         var tWidth = 0;
@@ -18420,11 +18525,13 @@ var Resize = /** @__PURE__ @class */ (function () {
         var footerTable;
         var headerDivTag = 'e-gridheader';
         var contentDivTag = 'e-gridcontent';
+        var footerDivTag = 'e-gridfooter';
         var indentWidth = 0;
         var uid = id ? id : this.parent.getUidByColumnField(fName);
         var columnIndex = this.parent.getNormalizedColumnIndex(uid);
         var headerTextClone;
         var contentTextClone;
+        var footerTextClone;
         var frzCols = gObj.getFrozenColumns();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
             footerTable = gObj.getFooterContentTable();
@@ -18435,12 +18542,19 @@ var Resize = /** @__PURE__ @class */ (function () {
                 contentTable = gObj.getContentTable();
                 headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
                 contentTextClone = contentTable.querySelectorAll("td:nth-child(" + (columnIndex + 1) + ")");
+                if (footerTable) {
+                    footerTextClone = footerTable.querySelectorAll("td:nth-child(" + (columnIndex + 1) + ")");
+                }
             }
             else {
                 headerTable = gObj.getHeaderContent().querySelector('.e-movableheader').children[0];
                 contentTable = gObj.getContent().querySelector('.e-movablecontent').children[0];
                 headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
                 contentTextClone = contentTable.querySelectorAll("td:nth-child(" + ((columnIndex - frzCols) + 1) + ")");
+                if (footerTable) {
+                    footerTable = gObj.getFooterContent().querySelector('.e-movablefootercontent').children[0];
+                    footerTextClone = footerTable.querySelectorAll("td:nth-child(" + ((columnIndex - frzCols) + 1) + ")");
+                }
             }
         }
         else {
@@ -18448,6 +18562,9 @@ var Resize = /** @__PURE__ @class */ (function () {
             contentTable = gObj.getContentTable();
             headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
             contentTextClone = contentTable.querySelectorAll("td:nth-child(" + (columnIndex + 1) + "):not(.e-groupcaption)");
+            if (footerTable) {
+                footerTextClone = footerTable.querySelectorAll("td:nth-child(" + (columnIndex + 1) + "):not(.e-groupcaption)");
+            }
         }
         var indentWidthClone = headerTable.querySelector('tr').querySelectorAll('.e-grouptopleftcell');
         if (indentWidthClone.length > 0) {
@@ -18462,14 +18579,24 @@ var Resize = /** @__PURE__ @class */ (function () {
         }
         var headerText = [headerTextClone];
         var contentText = [];
+        var footerText = [];
+        if (footerTable) {
+            for (var i = 0; i < footerTextClone.length; i++) {
+                footerText[i] = footerTextClone[i].cloneNode(true);
+            }
+        }
         for (var i = 0; i < contentTextClone.length; i++) {
             contentText[i] = contentTextClone[i].cloneNode(true);
         }
         var wHeader = this.createTable(headerTable, headerText, headerDivTag);
         var wContent = this.createTable(contentTable, contentText, contentDivTag);
+        var wFooter = null;
+        if (footerText.length) {
+            wFooter = this.createTable(footerTable, footerText, footerDivTag);
+        }
         var columnbyindex = gObj.getColumns()[index];
         var result;
-        var width = (wHeader > wContent) ? columnbyindex.width = formatUnit(wHeader) : columnbyindex.width = formatUnit(wContent);
+        var width = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
         this.widthService.setColumnWidth(gObj.getColumns()[index]);
         result = gObj.getColumns().some(function (x) { return x.width === null || x.width === undefined || x.width.length <= 0; });
         if (result === false) {
@@ -20537,7 +20664,7 @@ var Group = /** @__PURE__ @class */ (function () {
             i++;
         }
         if (this.parent.sortSettings.columns.length === i) {
-            this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending' });
+            this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending', isFromGroup: true });
         }
         else if (!this.parent.allowSorting) {
             this.parent.sortSettings.columns[i].direction = 'Ascending';
@@ -20908,8 +21035,10 @@ var DetailRow = /** @__PURE__ @class */ (function () {
                 if (gObj.detailTemplate) {
                     var detailTemplateID = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
-                    resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
-                    updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj);
+                    if (isBlazor()) {
+                        resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
+                        updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
+                    }
                 }
                 else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
@@ -21215,12 +21344,22 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
         this.element = this.parent.createElement('div', { id: this.gridID + '_toolbarItems' });
         if (this.parent.toolbarTemplate) {
-            if (typeof (this.parent.toolbarTemplate) === 'string') {
+            if (!isBlazor() && typeof (this.parent.toolbarTemplate) === 'string') {
                 this.toolbar.appendTo(this.parent.toolbarTemplate);
                 this.element = this.toolbar.element;
             }
             else {
-                appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                if (isBlazor()) {
+                    var tempID = this.parent.element.id + 'toolbarTemplate';
+                    var item = appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', tempID));
+                    var items_1 = this.getItem(item);
+                    this.toolbar.items.push(items_1);
+                    this.toolbar.appendTo(this.element);
+                    updateBlazorTemplate(this.parent.element.id + 'toolbarTemplate', 'ToolbarTemplate', this.parent);
+                }
+                else {
+                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                }
             }
         }
         else {
@@ -21297,8 +21436,8 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Toolbar$$1.prototype.enableItems = function (items, isEnable) {
-        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
-            var item = items_1[_i];
+        for (var _i = 0, items_2 = items; _i < items_2.length; _i++) {
+            var item = items_2[_i];
             var element = this.element.querySelector('#' + item);
             if (element) {
                 this.toolbar.enableItems(element.parentElement, isEnable);
@@ -21709,7 +21848,12 @@ var SummaryCellRenderer = /** @__PURE__ @class */ (function (_super) {
             return true;
         }
         var tempObj = column.getTemplate(cell.cellType);
-        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property));
+        var tempID = '';
+        if (isBlazor()) {
+            var guid = 'guid';
+            tempID = this.parent.element.id + column[guid] + tempObj.property;
+        }
+        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
         return false;
     };
     SummaryCellRenderer.prototype.refreshWithAggregate = function (node, cell) {
@@ -23049,7 +23193,7 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
     };
     DialogEditRender.prototype.destroy = function (args) {
         var editTemplateID = this.parent.element.id + 'editSettingsTemplate';
-        resetBlazorTemplate(editTemplateID, 'Template');
+        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
         this.parent.notify(destroyForm, {});
         this.parent.isEdit = false;
         this.parent.notify(toolbarRefresh, {});
@@ -23246,7 +23390,11 @@ var EditRender = /** @__PURE__ @class */ (function () {
             var input = void 0;
             if (col.editTemplate) {
                 input = this.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
-                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate'));
+                var tempID = this.parent.element.id + col.uid + 'editTemplate';
+                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate', tempID));
+                if (isBlazor()) {
+                    updateBlazorTemplate(tempID, 'EditTemplate', col);
+                }
             }
             else {
                 if (typeof temp === 'string') {
@@ -23591,6 +23739,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             gObj.trigger(actionBegin, begineditargs, function (editargs) {
                 if (!editargs.cancel) {
                     gObj.isEdit = true;
+                    editargs.row = getElement(editargs.row);
                     if (gObj.editSettings.mode !== 'Dialog') {
                         gObj.clearSelection();
                     }
@@ -23721,6 +23870,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         this.parent.isEdit = false;
         this.refreshRow(args.data);
         this.updateCurrentViewData(args.data);
+        this.blazorTemplate();
         this.parent.trigger(actionComplete, args);
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection)) {
@@ -23729,6 +23879,18 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             }
         }
         this.parent.hideSpinner();
+    };
+    NormalEdit.prototype.blazorTemplate = function () {
+        var cols = this.parent.getColumns();
+        for (var i = 0; i < cols.length; i++) {
+            var col = cols[i];
+            if (col.template) {
+                updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
+            }
+            if (col.editTemplate) {
+                updateBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate', col);
+            }
+        }
     };
     NormalEdit.prototype.editFailure = function (e) {
         this.parent.trigger(actionFailure, e);
@@ -23767,6 +23929,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         var args = extend(this.args, {
             requestType: 'cancel', type: actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
         });
+        this.blazorTemplate();
         gObj.trigger(actionBegin, args, function (closeEditArgs) {
             if (_this.parent.editSettings.mode === 'Dialog') {
                 _this.parent.notify(dialogDestroy, {});
@@ -24575,6 +24738,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.cellDetails.rowIndex = parseInt(target.getAttribute('index'), 10);
     };
     BatchEdit.prototype.editCell = function (index, field, isAdd) {
+        var _this = this;
         var gObj = this.parent;
         var col = gObj.getColumnByField(field);
         var keys = gObj.getPrimaryKeyFieldNames();
@@ -24590,18 +24754,18 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 return;
             }
             var row = void 0;
-            var rowData = void 0;
+            var rowData_1;
             var mRowData = void 0;
             var colIdx = gObj.getColumnIndexByField(field);
             var frzCols = gObj.getFrozenColumns();
             if (frzCols && colIdx >= frzCols) {
                 row = gObj.getMovableDataRows()[index];
                 mRowData = this.parent.getRowObjectFromUID(this.parent.getMovableDataRows()[index].getAttribute('data-uid'));
-                rowData = mRowData.changes ? extend({}, {}, mRowData.changes, true) : extend({}, {}, this.getDataByIndex(index), true);
+                rowData_1 = mRowData.changes ? extend({}, {}, mRowData.changes, true) : extend({}, {}, this.getDataByIndex(index), true);
             }
             else {
                 row = gObj.getDataRows()[index];
-                rowData = extend({}, {}, this.getDataByIndex(index), true);
+                rowData_1 = extend({}, {}, this.getDataByIndex(index), true);
             }
             if ((keys[0] === col.field && !row.classList.contains('e-insertedrow')) || col.columns ||
                 (col.isPrimaryKey && col.isIdentity)) {
@@ -24614,38 +24778,39 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             var args = {
                 cell: cells[this.getColIndex(cells, this.getCellIdx(col.uid))], row: row,
                 columnName: col.field, columnObject: col, isForeignKey: !isNullOrUndefined(col.foreignKeyValue),
-                primaryKey: keys, rowData: rowData,
+                primaryKey: keys, rowData: rowData_1,
                 validationRules: extend({}, col.validationRules ? col.validationRules : {}),
-                value: getObject(col.field, rowData),
+                value: getObject(col.field, rowData_1),
                 type: !isAdd ? 'edit' : 'add', cancel: false,
                 foreignKeyData: rowObj && rowObj.foreignKeyData
             };
             if (!args.cell) {
                 return;
             }
-            gObj.trigger(cellEdit, args);
-            if (args.cancel) {
-                return;
-            }
-            this.cellDetails = {
-                rowData: rowData, column: col, value: args.value, isForeignKey: args.isForeignKey, rowIndex: index,
-                cellIndex: parseInt(args.cell.getAttribute('aria-colindex'), 10),
-                foreignKeyData: args.foreignKeyData
-            };
-            if (args.cell.classList.contains('e-updatedtd')) {
-                this.isColored = true;
-                args.cell.classList.remove('e-updatedtd');
-            }
-            gObj.isEdit = true;
-            gObj.clearSelection();
-            if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
-                gObj.selectRow(this.cellDetails.rowIndex, true);
-            }
-            this.renderer.update(args);
-            this.parent.notify(batchEditFormRendered, args);
-            this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
-            gObj.editModule.applyFormValidation([col]);
-            this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
+            gObj.trigger(cellEdit, args, function (cellEditArgs) {
+                if (cellEditArgs.cancel) {
+                    return;
+                }
+                _this.cellDetails = {
+                    rowData: rowData_1, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
+                    cellIndex: parseInt(cellEditArgs.cell.getAttribute('aria-colindex'), 10),
+                    foreignKeyData: cellEditArgs.foreignKeyData
+                };
+                if (cellEditArgs.cell.classList.contains('e-updatedtd')) {
+                    _this.isColored = true;
+                    cellEditArgs.cell.classList.remove('e-updatedtd');
+                }
+                gObj.isEdit = true;
+                gObj.clearSelection();
+                if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
+                    gObj.selectRow(_this.cellDetails.rowIndex, true);
+                }
+                _this.renderer.update(cellEditArgs);
+                _this.parent.notify(batchEditFormRendered, cellEditArgs);
+                _this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
+                gObj.editModule.applyFormValidation([col]);
+                _this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
+            });
         }
     };
     BatchEdit.prototype.updateCell = function (rowIndex, field, value) {
@@ -24772,34 +24937,43 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
         if (!isForceSave) {
-            gObj.trigger(cellSave, args);
+            gObj.trigger(cellSave, args, this.successCallBack(args, tr, column));
             gObj.notify(batchForm, { formObj: this.form });
         }
-        if (args.cancel) {
-            return;
+        else {
+            this.successCallBack(args, tr, column)(args);
         }
-        gObj.editModule.destroyForm();
-        gObj.isEdit = false;
-        gObj.editModule.destroyWidgets([column]);
-        this.parent.notify(tooltipDestroy, {});
-        this.refreshTD(args.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), args.value);
-        removeClass([tr], ['e-editedrow', 'e-batchrow']);
-        removeClass([args.cell], ['e-editedbatchcell', 'e-boolcell']);
-        if (!isNullOrUndefined(args.value) && args.value.toString() ===
-            (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString() && !this.isColored
-            || (isNullOrUndefined(args.value) && isNullOrUndefined(this.cellDetails.value) &&
-                !args.cell.parentElement.classList.contains('e-insertedrow'))) {
-            args.cell.classList.remove('e-updatedtd');
-        }
-        gObj.trigger(cellSaved, args);
-        gObj.notify(toolbarRefresh, {});
-        this.isColored = false;
-        if (this.parent.aggregates.length > 0) {
-            this.parent.notify(refreshFooterRenderer, {});
-            if (this.parent.groupSettings.columns.length > 0 && !this.isAddRow(this.cellDetails.rowIndex)) {
-                this.parent.notify(groupAggregates, {});
+    };
+    BatchEdit.prototype.successCallBack = function (cellSaveArgs, tr, column) {
+        var _this = this;
+        return function (cellSaveArgs) {
+            var gObj = _this.parent;
+            if (cellSaveArgs.cancel) {
+                return;
             }
-        }
+            gObj.editModule.destroyForm();
+            gObj.isEdit = false;
+            gObj.editModule.destroyWidgets([column]);
+            _this.parent.notify(tooltipDestroy, {});
+            _this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+            removeClass([tr], ['e-editedrow', 'e-batchrow']);
+            removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
+            if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
+                (!isNullOrUndefined(_this.cellDetails.value) ? _this.cellDetails.value : '').toString() && !_this.isColored
+                || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(_this.cellDetails.value) &&
+                    !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
+                cellSaveArgs.cell.classList.remove('e-updatedtd');
+            }
+            gObj.trigger(cellSaved, cellSaveArgs);
+            gObj.notify(toolbarRefresh, {});
+            _this.isColored = false;
+            if (_this.parent.aggregates.length > 0) {
+                _this.parent.notify(refreshFooterRenderer, {});
+                if (_this.parent.groupSettings.columns.length > 0 && !_this.isAddRow(_this.cellDetails.rowIndex)) {
+                    _this.parent.notify(groupAggregates, {});
+                }
+            }
+        };
     };
     BatchEdit.prototype.getDataByIndex = function (index) {
         var row = this.parent.getRowObjectFromUID(this.parent.getDataRows()[index].getAttribute('data-uid'));
@@ -25489,6 +25663,9 @@ var Edit = /** @__PURE__ @class */ (function () {
         for (var _i = 0, cols_1 = cols; _i < cols_1.length; _i++) {
             var col = cols_1[_i];
             var temp = col.edit.destroy;
+            if (isBlazor() && col.editTemplate) {
+                resetBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate');
+            }
             if (col.edit.destroy) {
                 if (typeof temp === 'string') {
                     temp = getValue(temp, window);
@@ -26932,7 +27109,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             _this.book.styles = _this.styles;
             if (!isMultipleExport) {
                 if (_this.isCsvExport) {
-                    var book = new Workbook(_this.book, 'csv', gObj.locale);
+                    var book = new Workbook(_this.book, 'csv', gObj.locale, gObj.currencyCode);
                     if (!_this.isBlob) {
                         if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
@@ -26946,7 +27123,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                     }
                 }
                 else {
-                    var book = new Workbook(_this.book, 'xlsx', gObj.locale);
+                    var book = new Workbook(_this.book, 'xlsx', gObj.locale, gObj.currencyCode);
                     if (!_this.isBlob) {
                         if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
@@ -29723,6 +29900,9 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
         this.updateColgroup();
         this.widthService.setWidthToTable();
+        if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
+            wrap([].slice.call(this.movableHeader.querySelectorAll('tr.e-columnheader')), true);
+        }
         this.parent.updateDefaultCursor();
         renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
         this.initializeHeaderDrag();
@@ -30116,6 +30296,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
             items: this.getItems(),
             select: this.columnMenuItemClick.bind(this),
             beforeOpen: this.columnMenuBeforeOpen.bind(this),
+            onOpen: this.columnMenuOnOpen.bind(this),
             onClose: this.columnMenuOnClose.bind(this),
             beforeItemRender: this.beforeMenuItemRender.bind(this),
             beforeClose: this.columnMenuBeforeClose.bind(this)
@@ -30189,6 +30370,18 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
         }
         this.columnMenu.enableItems(this.disableItems, false);
         this.columnMenu.hideItems(this.hiddenItems);
+    };
+    ColumnMenu.prototype.columnMenuOnOpen = function (args) {
+        if (args.element.className === 'e-menu-parent e-ul ') {
+            if (args.element.offsetHeight > window.innerHeight) {
+                args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
+                args.element.style.overflowY = 'auto';
+            }
+            else if (this.parent.element.offsetHeight > window.innerHeight) {
+                args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
+                args.element.style.overflowY = 'auto';
+            }
+        }
     };
     ColumnMenu.prototype.ensureDisabledStatus = function (item) {
         var _this = this;

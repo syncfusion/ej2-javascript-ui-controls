@@ -1,7 +1,7 @@
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { PopupType, ExcelFormat } from './type';
-import { ResourcesModel } from '../models/models';
+import { ResourcesModel, ViewsModel } from '../models/models';
 
 /**
  * Interface
@@ -445,4 +445,11 @@ export interface PredicateData {
     field: string;
     operator: Function;
     value: string;
+}
+
+export interface ViewsData extends ViewsModel {
+    dateHeaderTemplateName?: string;
+    cellTemplateName?: string;
+    resourceHeaderTemplateName?: string;
+    eventTemplateName?: string;
 }

@@ -10,12 +10,19 @@ RangeNavigator.Inject(AreaSeries, DateTime);
 let value: number = 0;
 let point: object;
 let data: object[] = [];
+let newdata: object[] = [];
 let dateTime: object[] = [];
 
 for (let j: number = 0; j < 100; j++) {
     value += (Math.random() * 10 - 5);
     point = { x: j, y: value, y1: value + 10 };
     dateTime.push({ date: new Date(2018, 0, j), yValue: value });
+    data.push(point);
+}
+for (let k: number = 50; k < 100; k++) {
+    value += (Math.random() * 10 - 5);
+    point = { x: k, y: value, y1: value + 10 };
+    dateTime.push({ date: new Date(2018, 0, k), yValue: value });
     data.push(point);
 }
 describe('Range navigator', () => {
@@ -135,6 +142,13 @@ describe('Range navigator', () => {
             range.changed = (args: IChangedEventArgs ) => {
                 expect(args.start).not.toEqual(null);
             };
+        });
+        it('check with datasource change', function () {
+            range.series[0].dataSource = newdata;
+            range.changed = (args: IChangedEventArgs ) => {
+                expect(args.start).not.toEqual(null);
+            };
+            range.dataBind();
         });
     });
     it('memory leak', () => {

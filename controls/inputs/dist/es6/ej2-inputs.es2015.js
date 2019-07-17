@@ -891,7 +891,18 @@ let NumericTextBox = class NumericTextBox extends Component {
     updateHTMLAttrToWrapper() {
         for (let pro of Object.keys(this.htmlAttributes)) {
             if (wrapperAttributes.indexOf(pro) > -1) {
-                this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                if (pro === 'class') {
+                    addClass([this.container], this.htmlAttributes[pro].split(' '));
+                }
+                else if (pro === 'style') {
+                    let numericStyle = this.container.getAttribute(pro);
+                    numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                    this.container.setAttribute(pro, numericStyle);
+                }
+                else {
+                    this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
@@ -1863,7 +1874,7 @@ function createMask() {
         if (this.hiddenMask.match(new RegExp(/\\/))) {
             for (let i = 0; i < this.hiddenMask.length; i++) {
                 let j = 0;
-                if (i >= 2) {
+                if (i >= 1) {
                     j = i;
                 }
                 escapeNumber = this.hiddenMask.length - this.promptMask.length;
@@ -2023,7 +2034,7 @@ function pushIntoRegExpCollec(value) {
     }
 }
 function maskInputFocusHandler(event) {
-    this.focusEventArgs = {
+    let eventArgs = {
         selectionStart: 0,
         event: event,
         value: this.value,
@@ -2031,25 +2042,26 @@ function maskInputFocusHandler(event) {
         container: this.inputObj.container,
         selectionEnd: (this.promptMask.length > 0) ? this.promptMask.length : this.element.value.length,
     };
-    this.trigger('focus', this.focusEventArgs);
-    if (this.mask) {
-        this.isFocus = true;
-        if (this.element.value === '') {
-            setElementValue.call(this, this.promptMask);
+    this.trigger('focus', eventArgs, (eventArgs) => {
+        if (this.mask) {
+            this.isFocus = true;
+            if (this.element.value === '') {
+                setElementValue.call(this, this.promptMask);
+            }
+            else {
+                setElementValue.call(this, this.element.value);
+            }
+            if (!Browser.isDevice && Browser.info.version === '11.0') {
+                this.element.setSelectionRange(eventArgs.selectionStart, eventArgs.selectionEnd);
+            }
+            else {
+                let delay = (Browser.isDevice && Browser.isIos) ? 450 : 0;
+                setTimeout(() => {
+                    this.element.setSelectionRange(eventArgs.selectionStart, eventArgs.selectionEnd);
+                }, delay);
+            }
         }
-        else {
-            setElementValue.call(this, this.element.value);
-        }
-        if (!Browser.isDevice && Browser.info.version === '11.0') {
-            this.element.setSelectionRange(this.focusEventArgs.selectionStart, this.focusEventArgs.selectionEnd);
-        }
-        else {
-            let delay = (Browser.isDevice && Browser.isIos) ? 450 : 0;
-            setTimeout(() => {
-                this.element.setSelectionRange(this.focusEventArgs.selectionStart, this.focusEventArgs.selectionEnd);
-            }, delay);
-        }
-    }
+    });
 }
 function maskInputBlurHandler(event) {
     this.blurEventArgs = {
@@ -2939,7 +2951,18 @@ let MaskedTextBox = class MaskedTextBox extends Component {
     updateHTMLAttrToWrapper() {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (wrapperAttr.indexOf(key) > -1) {
-                this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    let maskStyle = this.inputObj.container.getAttribute(key);
+                    maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputObj.container.setAttribute(key, maskStyle);
+                }
+                else {
+                    this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -2975,11 +2998,6 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             if (this.floatLabelType === 'Never') {
                 maskInputBlurHandler.call(this);
             }
-        }
-    }
-    setCssClass(cssClass, element) {
-        if (cssClass) {
-            addClass(element, cssClass);
         }
     }
     setWidth(width) {
@@ -3051,7 +3069,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                     this.setWidth(newProp.width);
                     break;
                 case 'cssClass':
-                    this.setCssClass(newProp.cssClass, [this.inputObj.container]);
+                    Input.setCssClass(newProp.cssClass, [this.inputObj.container], oldProp.cssClass);
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);
@@ -7179,7 +7197,18 @@ let Uploader = class Uploader extends Component {
     updateHTMLAttrToWrapper() {
         for (let pro of Object.keys(this.htmlAttributes)) {
             if (wrapperAttr$1.indexOf(pro) > -1) {
-                this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                if (pro === 'class') {
+                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                }
+                else if (pro === 'style') {
+                    let uploadStyle = this.uploadWrapper.getAttribute(pro);
+                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                    this.uploadWrapper.setAttribute(pro, uploadStyle);
+                }
+                else {
+                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
@@ -11120,6 +11149,7 @@ let TextBox = class TextBox extends Component {
         this.isAngular = false;
         this.isHiddenInput = false;
         this.isForm = false;
+        this.inputPreviousValue = null;
         this.textboxOptions = options;
     }
     /**
@@ -11147,6 +11177,7 @@ let TextBox = class TextBox extends Component {
                     if (this.isHiddenInput) {
                         this.element.value = this.respectiveElement.value;
                     }
+                    this.inputPreviousValue = this.respectiveElement.value;
                     /* istanbul ignore next */
                     if (this.isAngular && this.preventChange === true) {
                         this.previousValue = this.value;
@@ -11185,7 +11216,7 @@ let TextBox = class TextBox extends Component {
                     Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(this.cssClass, [this.textboxWrapper.container]);
+                    Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
                     break;
                 case 'locale':
                     this.globalize = new Internationalization(this.locale);
@@ -11346,11 +11377,23 @@ let TextBox = class TextBox extends Component {
             this.setInitialValue();
         }
         this.previousValue = this.value;
+        this.inputPreviousValue = this.value;
     }
     updateHTMLAttrToWrapper() {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (containerAttr.indexOf(key) > -1) {
-                this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    let setStyle = this.textboxWrapper.container.getAttribute(key);
+                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.textboxWrapper.container.setAttribute(key, setStyle);
+                }
+                else {
+                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -11429,9 +11472,10 @@ let TextBox = class TextBox extends Component {
         let eventArgs = {
             event: args,
             value: this.respectiveElement.value,
-            previousValue: this.value,
+            previousValue: this.inputPreviousValue,
             container: this.textboxWrapper.container
         };
+        this.inputPreviousValue = this.respectiveElement.value;
         /* istanbul ignore next */
         if (this.isAngular) {
             textboxObj.localChange({ value: this.respectiveElement.value });
@@ -11475,10 +11519,11 @@ let TextBox = class TextBox extends Component {
             let eventArgs = {
                 event: event,
                 value: this.respectiveElement.value,
-                previousValue: previousValue,
+                previousValue: this.inputPreviousValue,
                 container: this.textboxWrapper.container
             };
             this.trigger('input', eventArgs);
+            this.inputPreviousValue = this.respectiveElement.value;
             this.raiseChangeEvent(event, true);
         }
     }

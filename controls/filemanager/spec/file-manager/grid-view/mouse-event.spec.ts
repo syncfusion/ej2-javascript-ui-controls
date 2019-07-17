@@ -84,17 +84,17 @@ describe('FileManager control Grid view', () => {
         //Spec added to check the script error which occured when clicked in empty folder of grid view
         it('mouse click on empty folder', (done) => {
             feObj.detailsviewModule.gridObj.selectRows([2]);
-            feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[2].firstElementChild.dispatchEvent(dblclickevent);
+            let args = { rowData: { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "_fm_id": "fe_tree_2" }, rowIndex: 2 };
+            feObj.detailsviewModule.gridObj.recordDoubleClick(args);
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
                 responseText: JSON.stringify(doubleClickEmpty)
             });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(feObj.activeModule).toBe('detailsview');
                 (<HTMLElement>(<any>feObj.detailsviewModule.gridObj.contentModule).contentPanel.firstElementChild).click();
-                (<any>feObj.detailsviewModule.gridObj).focusModule.onFocus();
                 done();
             }, 500)
         });

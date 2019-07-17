@@ -2,7 +2,7 @@
  * AutoComplete module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { InPlaceEditor, ValidateEventArgs } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, ValidateEventArgs, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
 import { AutoComplete } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
@@ -887,6 +887,48 @@ describe('AutoComplete module', () => {
             expect(selectAll('.e-autocomplete', document.body).length === 1).toEqual(true);
             expect(editorObj.value).toEqual(null);
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
+        });
+    });
+
+    describe('beginEdit event testing', () => {
+        let editorObj: any;
+        let dataSource: string[] = ['Badminton', 'Cricket'];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'AutoComplete',
+                mode: 'Inline',
+                value: 'Badminton',
+                model: {
+                    dataSource: dataSource
+                },
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'AutoComplete',
+                mode: 'Popup',
+                value: 'Badminton',
+                model: {
+                    dataSource: dataSource
+                },
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
         });
     });
 

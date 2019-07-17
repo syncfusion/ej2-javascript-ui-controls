@@ -92,7 +92,10 @@ export interface PopupEventArgs {
      * Illustrates whether the current action needs to be prevented or not.
      */
     cancel?: boolean;
-    /** Defines the TimePicker popup object. */
+    /** 
+     * Defines the TimePicker popup object. 
+     * @deprecated
+     */
     popup?: Popup;
     /**
      * Specifies the original event arguments.
@@ -280,6 +283,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format)documentation.
      * @default 30
+     * @blazorType int
      * 
      */
     @Property(30)
@@ -780,7 +784,16 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private updateHtmlAttributeToWrapper(): void {
         for (let key of Object.keys(this.htmlAttributes)) {
             if (wrapperAttributes.indexOf(key) > -1 ) {
-                this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (key === 'class') {
+                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                } else if (key === 'style') {
+                    let timeStyle: string = this.inputWrapper.container.getAttribute(key);
+                    timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
+                    this.htmlAttributes[key];
+                    this.inputWrapper.container.setAttribute(key, timeStyle);
+                } else {
+                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -2123,13 +2136,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     if (this.readonly) { this.hide(); }
                     this.setTimeAllowEdit();
                     break;
-                case 'cssClass':
-                    this.inputWrapper.container.className += ' ' + newProp.cssClass;
-                    if (this.popupWrapper) {
-                        this.popupWrapper.className += ' ' + newProp.cssClass;
-                    }
-                    this.setProperties({ cssClass: newProp.cssClass }, true);
-                    break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
                     this.setEnable();
@@ -2140,6 +2146,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 case 'enableRtl':
                     this.setProperties({ enableRtl: newProp.enableRtl }, true);
                     this.setEnableRtl();
+                    break;
+                case 'cssClass':
+                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
+                    if (this.popupWrapper) {
+                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
+                    }
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);

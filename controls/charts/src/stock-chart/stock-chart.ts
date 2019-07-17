@@ -576,6 +576,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: StockChartModel, oldProp: StockChartModel): void {
         // on property changes
+        for (let property of Object.keys(newProp)) {
+            switch (property) {
+                case 'series':
+                    this.tempDataSource = this.blazorDataSource = [];
+                    this.render();
+                    break;
+            }
+        }
     }
     /**
      * To change the range for chart
@@ -692,7 +700,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.renderTitle();
         this.chartModuleInjection();
         this.chartRender();
-        if (!(this.dataSource instanceof DataManager) && !(this.series[0].dataSource instanceof DataManager)) {
+        if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
             this.stockChartDataManagerSuccess();
             this.initialRender = false;
         }

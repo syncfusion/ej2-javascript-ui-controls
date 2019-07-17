@@ -644,6 +644,9 @@ export class Drawing {
                                     }
                                 }
                             }
+                            if (node.annotName !== '') {
+                                this.pdfViewer.annotationModule.selectAnnotation(node.annotName, node.pageIndex, node);
+                            }
                         }
                     }
                 }

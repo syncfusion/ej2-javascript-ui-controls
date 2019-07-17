@@ -18241,7 +18241,6 @@ var PdfSection = /** @__PURE__ @class */ (function () {
      * @private
      * @param document The parent document.
      * @param page The parent page.
-     * @param headers If true - return headers/footers, if false - return simple templates.
      * @param foreground If true - return foreground templates, if false - return background templates.
      * @returns Returns array of the document templates.
      */
@@ -18799,12 +18798,6 @@ var PdfDocumentPageCollection = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.pdfPageCollectionIndex = new Dictionary();
-        /**
-         * Stores the previous pages's `orientation`.
-         * @default PdfPageOrientation.Portrait
-         * @private
-         */
-        this.previousPageOrientation = PdfPageOrientation.Portrait;
         this.document = document;
     }
     Object.defineProperty(PdfDocumentPageCollection.prototype, "count", {
@@ -18838,10 +18831,6 @@ var PdfDocumentPageCollection = /** @__PURE__ @class */ (function () {
         }
         else {
             var section = this.getLastSection();
-            if (section.pageSettings.orientation !== this.previousPageOrientation) {
-                section = this.document.sections.add();
-                section.pageSettings.orientation = this.document.pageSettings.orientation;
-            }
             section.add(page);
         }
     };
@@ -19094,7 +19083,7 @@ var PdfDocument = /** @__PURE__ @class */ (function (_super) {
          * @private
          */
         _this.streamWriter = null;
-        _this = _super.call(this, _this) || this;
+        _this.document = _this;
         if (isMerging === true || isMerging === false || typeof isMerging !== 'undefined') {
             var objects = new PdfMainObjectCollection();
             _this.setMainObjectCollection(objects);

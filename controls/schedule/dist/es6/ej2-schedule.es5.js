@@ -5767,9 +5767,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var cellDetails = this.getFormattedString(temp);
         var quickCellPopup = createElement('div', { className: CELL_POPUP_CLASS });
         var tArgs = extend({}, temp, { elementType: 'cell' }, true);
-        var templateId = this.parent.currentView;
+        var templateId = this.parent.element.id + '_';
         if (this.parent.quickInfoTemplates.header) {
-            var headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
+            var headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
             append(headerTemp, quickCellPopup);
         }
         else {
@@ -5781,7 +5781,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             quickCellPopup.appendChild(headerTemplate);
         }
         if (this.parent.quickInfoTemplates.content) {
-            var contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
+            var contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
             append(contentTemp, quickCellPopup);
         }
         else {
@@ -5797,7 +5797,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             quickCellPopup.appendChild(contentTemplate);
         }
         if (this.parent.quickInfoTemplates.footer) {
-            var footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
+            var footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
             append(footerTemp, quickCellPopup);
         }
         else {
@@ -5871,9 +5871,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             var args = this.getFormattedString(eventData);
             var quickEventPopup = createElement('div', { className: EVENT_POPUP_CLASS });
             var tArgs = extend({}, eventData, { elementType: 'event' }, true);
-            var templateId = this.parent.currentView;
+            var templateId = this.parent.element.id + '_';
             if (this.parent.quickInfoTemplates.header) {
-                var headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
+                var headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
                 append(headerTemp, quickEventPopup);
             }
             else {
@@ -5889,7 +5889,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 quickEventPopup.appendChild(headerTemplate);
             }
             if (this.parent.quickInfoTemplates.content) {
-                var content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
+                var content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
                 append(content, quickEventPopup);
             }
             else {
@@ -5917,7 +5917,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 quickEventPopup.appendChild(contentTemplate);
             }
             if (this.parent.quickInfoTemplates.footer) {
-                var footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
+                var footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
                 append(footerTemp, quickEventPopup);
             }
             else {
@@ -6277,6 +6277,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
     };
     QuickPopups.prototype.beforeQuickPopupOpen = function (target) {
         var _this = this;
+        this.updateQuickPopupTemplates();
         var isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         var popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         var eventProp = {
@@ -6289,6 +6290,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 if (popupArgs.element.classList.contains(POPUP_OPEN)) {
                     _this.quickPopupClose();
                 }
+                _this.resetQuickPopupTemplates();
                 _this.quickPopup.element.innerHTML = '';
             }
             else {
@@ -6379,8 +6381,20 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 editIcon.focus();
             }
         }
+        this.updateQuickPopupTemplates();
+    };
+    QuickPopups.prototype.updateQuickPopupTemplates = function () {
+        updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+        updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+        updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+    };
+    QuickPopups.prototype.resetQuickPopupTemplates = function () {
+        resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+        resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+        resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
     };
     QuickPopups.prototype.quickPopupClose = function () {
+        this.resetQuickPopupTemplates();
         this.parent.eventBase.focusElement();
         this.quickPopup.relateTo = WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();
@@ -7693,8 +7707,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             visible: false,
             width: '500px',
             beforeOpen: this.onBeforeOpen.bind(this),
-            beforeClose: this.onBeforeClose.bind(this),
-            close: this.onDialogClose.bind(this)
+            beforeClose: this.onBeforeClose.bind(this)
         };
         if (this.parent.isAdaptive) {
             dialogModel.cssClass = EVENT_WINDOW_DIALOG_CLASS + ' ' + DEVICE_CLASS;
@@ -7719,6 +7732,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
+        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         addClass([this.element.parentElement], EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -7742,6 +7756,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.parent.quickPopup.quickPopupHide(true);
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
+            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
@@ -7765,8 +7780,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.setDialogContent = function () {
+        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
+        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
     };
     EventWindow.prototype.onBeforeOpen = function (args) {
         var _this = this;
@@ -7799,11 +7816,6 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.resetForm();
         this.parent.eventBase.focusElement();
     };
-    EventWindow.prototype.onDialogClose = function () {
-        if (this.parent.editorTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'editorTemplate', 'EditorTemplate');
-        }
-    };
     EventWindow.prototype.getEventWindowContent = function () {
         var container = createElement('div', { className: FORM_CONTAINER_CLASS });
         var form = createElement('form', {
@@ -7818,13 +7830,13 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.renderFormElements = function (form, args) {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
+                resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach(function (node) { return remove(node); });
             }
-            var templateId = this.parent.currentView + '_editorTemplate';
-            var editorTemplate = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId, false);
+            var templateId = this.parent.element.id + '_editorTemplate';
+            var editorTemplate = this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false);
             append(editorTemplate, form);
-            updateBlazorTemplate(templateId, 'EditorTemplate');
         }
         else {
             form.appendChild(this.getDefaultEventWindowContent());
@@ -9160,6 +9172,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
      * @private
      */
     EventWindow.prototype.destroy = function () {
+        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
         }
@@ -9376,8 +9389,9 @@ var Render = /** @__PURE__ @class */ (function () {
         }
     };
     Render.prototype.initializeLayout = function (viewName) {
-        this.resetTemplates();
         if (this.parent.activeView) {
+            this.parent.resetLayoutTemplates();
+            this.parent.resetEventTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }
@@ -9467,77 +9481,6 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent.element.setAttribute('role', 'main');
         this.parent.element.setAttribute('aria-label', content);
     };
-    Render.prototype.refreshTemplates = function () {
-        if (this.parent.dateHeaderTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_dateHeaderTemplate', 'DateHeaderTemplate', this.parent);
-        }
-        if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_majorSlotTemplate', 'MajorSlotTemplate', this.parent);
-        }
-        if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_minorSlotTemplate', 'MinorSlotTemplate', this.parent);
-        }
-        if (this.parent.cellTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_cellTemplate', 'CellTemplate', this.parent);
-        }
-        if (this.parent.activeViewOptions.eventTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_eventTemplate', 'EventTemplate', this.parent);
-        }
-        if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_headerTooltipTemplate', 'HeaderTooltipTemplate', this.parent);
-        }
-        if (this.parent.eventSettings.tooltipTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_tooltipTemplate', 'TooltipTemplate', this.parent);
-        }
-        if (this.parent.quickInfoTemplates.header) {
-            updateBlazorTemplate(this.parent.currentView + '_header', 'Header', this.parent);
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            updateBlazorTemplate(this.parent.currentView + '_content', 'Content', this.parent);
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            updateBlazorTemplate(this.parent.currentView + '_footer', 'Footer', this.parent);
-        }
-        if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this.parent);
-        }
-    };
-    Render.prototype.resetTemplates = function () {
-        var viewName = this.parent.viewCollections[this.parent.uiStateValues.viewIndex].option;
-        if (this.parent.dateHeaderTemplate) {
-            resetBlazorTemplate(viewName + '_dateHeaderTemplate', 'DateHeaderTemplate');
-        }
-        if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            resetBlazorTemplate(viewName + '_majorSlotTemplate', 'MajorSlotTemplate');
-        }
-        if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            resetBlazorTemplate(viewName + '_minorSlotTemplate', 'MinorSlotTemplate');
-        }
-        if (this.parent.cellTemplate) {
-            resetBlazorTemplate(viewName + '_cellTemplate', 'CellTemplate');
-        }
-        if (this.parent.activeViewOptions.eventTemplate) {
-            resetBlazorTemplate(viewName + '_eventTemplate', 'EventTemplate');
-        }
-        if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            resetBlazorTemplate(viewName + '_headerTooltipTemplate', 'HeaderTooltipTemplate');
-        }
-        if (this.parent.eventSettings.tooltipTemplate) {
-            resetBlazorTemplate(viewName + '_tooltipTemplate', 'TooltipTemplate');
-        }
-        if (this.parent.quickInfoTemplates.header) {
-            resetBlazorTemplate(viewName + '_header', 'Header');
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            resetBlazorTemplate(viewName + '_content', 'Content');
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            resetBlazorTemplate(viewName + '_footer', 'Footer');
-        }
-        if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            resetBlazorTemplate(viewName + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
-        }
-    };
     Render.prototype.refreshDataManager = function () {
         var _this = this;
         var start = this.parent.activeView.startDate();
@@ -9559,7 +9502,6 @@ var Render = /** @__PURE__ @class */ (function () {
             if (_this.parent.dragAndDropModule && _this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 _this.parent.dragAndDropModule.navigationWrapper();
             }
-            _this.refreshTemplates();
             _this.parent.trigger(dataBound, null, function () { return _this.parent.hideSpinner(); });
         });
     };
@@ -10929,9 +10871,96 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
+        this.on('data-ready', this.resetEventTemplates, this);
+        this.on('events-loaded', this.updateEventTemplates, this);
         this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
+    };
+    Schedule.prototype.updateLayoutTemplates = function () {
+        var view = this.views[this.viewIndex];
+        if (this.dateHeaderTemplate) {
+            updateBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate', this);
+        }
+        if (this.activeViewOptions.dateHeaderTemplateName !== '') {
+            var templateName = 'dateHeaderTemplate';
+            var tempID = this.element.id + '_' + this.activeViewOptions.dateHeaderTemplateName + templateName;
+            updateBlazorTemplate(tempID, 'DateHeaderTemplate', view);
+        }
+        if (this.cellTemplate) {
+            updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
+        }
+        if (this.activeViewOptions.cellTemplateName !== '') {
+            var tempID = this.element.id + '_' + this.activeViewOptions.cellTemplateName + 'cellTemplate';
+            updateBlazorTemplate(tempID, 'CellTemplate', view);
+        }
+        if (this.resourceHeaderTemplate) {
+            updateBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this);
+        }
+        if (this.activeViewOptions.resourceHeaderTemplateName !== '') {
+            var templateName = 'resourceHeaderTemplate';
+            var tempID = this.element.id + '_' + this.activeViewOptions.resourceHeaderTemplateName + templateName;
+            updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
+        }
+        if (this.timeScale.minorSlotTemplate) {
+            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this);
+        }
+        if (this.timeScale.majorSlotTemplate) {
+            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this);
+        }
+    };
+    Schedule.prototype.resetLayoutTemplates = function () {
+        var view = this.viewCollections[this.uiStateValues.viewIndex];
+        if (this.dateHeaderTemplate) {
+            resetBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate');
+        }
+        if (view.dateHeaderTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.dateHeaderTemplateName + 'dateHeaderTemplate', 'DateHeaderTemplate');
+        }
+        if (this.cellTemplate) {
+            resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+        }
+        if (view.cellTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.cellTemplateName + 'cellTemplate', 'CellTemplate');
+        }
+        if (this.resourceHeaderTemplate) {
+            resetBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
+        }
+        if (view.resourceHeaderTemplateName !== '') {
+            var templateName = 'ResourceHeaderTemplate';
+            resetBlazorTemplate(this.element.id + '_' + view.resourceHeaderTemplateName + 'resourceHeaderTemplate', templateName);
+        }
+        if (this.timeScale.minorSlotTemplate) {
+            resetBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate');
+        }
+        if (this.timeScale.majorSlotTemplate) {
+            resetBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate');
+        }
+    };
+    Schedule.prototype.updateEventTemplates = function () {
+        var view = this.views[this.viewIndex];
+        if (this.eventSettings.template) {
+            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings);
+        }
+        if (this.activeViewOptions.eventTemplateName !== '') {
+            var tempID = this.element.id + '_' + this.activeViewOptions.eventTemplateName + 'eventTemplate';
+            updateBlazorTemplate(tempID, 'EventTemplate', view);
+        }
+        if (this.viewCollections[this.viewIndex].option === 'Agenda' || this.viewCollections[this.viewIndex].option === 'MonthAgenda') {
+            this.updateLayoutTemplates();
+        }
+    };
+    Schedule.prototype.resetEventTemplates = function () {
+        var view = this.viewCollections[this.uiStateValues.viewIndex];
+        if (this.eventSettings.template) {
+            resetBlazorTemplate(this.element.id + '_eventTemplate', 'Template');
+        }
+        if (view.eventTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.eventTemplateName + 'eventTemplate', 'EventTemplate');
+        }
+        if (view.option === 'Agenda' || view.option === 'MonthAgenda') {
+            this.resetLayoutTemplates();
+        }
     };
     Schedule.prototype.initializeResources = function (isSetModel) {
         if (isSetModel === void 0) { isSetModel = false; }
@@ -11008,6 +11037,10 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             }
             var obj = extend({ option: viewName }, isOptions ? view : {});
             var fieldViewName = viewName.charAt(0).toLowerCase() + viewName.slice(1);
+            obj.dateHeaderTemplateName = obj.dateHeaderTemplate ? obj.option : '';
+            obj.cellTemplateName = obj.cellTemplate ? obj.option : '';
+            obj.resourceHeaderTemplateName = obj.resourceHeaderTemplate ? obj.option : '';
+            obj.eventTemplateName = obj.eventTemplate ? obj.option : '';
             this.viewCollections.push(obj);
             if (isNullOrUndefined(this.viewOptions[fieldViewName])) {
                 this.viewOptions[fieldViewName] = [obj];
@@ -12841,6 +12874,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
     function MonthEvent(parent) {
         var _this = _super.call(this, parent) || this;
         _this.renderedEvents = [];
+        _this.monthHeaderHeight = 0;
         _this.moreIndicatorHeight = 19;
         _this.renderType = 'day';
         _this.element = _this.parent.activeView.getPanel();
@@ -12859,12 +12893,6 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
-        if (this.parent.currentView === 'Month') {
-            this.monthHeaderHeight = getOuterHeight(this.element.querySelector('.' + DATE_HEADER_CLASS));
-        }
-        else {
-            this.monthHeaderHeight = 0;
-        }
         var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         var scrollTop = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
@@ -12995,11 +13023,13 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth;
             var appLeft = (this.parent.enableRtl) ? 0 : position;
             var appRight = (this.parent.enableRtl) ? position : 0;
+            this.renderWrapperElement(cellTd);
             var appHeight = this.cellHeight - this.monthHeaderHeight;
             var appTop = this.getRowTop(resIndex);
             var blockElement = this.createBlockAppointmentElement(event, resIndex);
             setStyleAttribute(blockElement, {
-                'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
+                'width': appWidth + 'px', 'height': appHeight + 1 + 'px', 'left': appLeft + 'px',
+                'right': appRight + 'px', 'top': appTop + 'px'
             });
             this.renderEventElement(event, blockElement, cellTd);
         }
@@ -13089,7 +13119,9 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         var eventData = record.data;
         var eventObj = this.getEventData(record);
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            var templateId = this.parent.currentView + '_eventTemplate';
+            var scheduleId = this.parent.element.id + '_';
+            var viewName = this.parent.activeViewOptions.eventTemplateName;
+            var templateId = scheduleId + viewName + 'eventTemplate';
             templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
         }
         else {
@@ -13191,6 +13223,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             var appWidth = (diffInDays * this.cellWidth) - 5;
             var cellTd = this.workCells[day];
             var appTop = (overlapCount * (appHeight + EVENT_GAP));
+            this.renderWrapperElement(cellTd);
             var height = this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
             if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
                 var appointmentElement = this.createAppointmentElement(event, resIndex);
@@ -13237,6 +13270,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, blockElement_1 = blockElement; _i < blockElement_1.length; _i++) {
             var element = blockElement_1[_i];
             var target = closest(element, 'tr');
+            this.monthHeaderHeight = element.offsetParent.offsetTop - target.offsetTop;
             element.style.height = ((target.offsetHeight - 1) - this.monthHeaderHeight) + 'px';
             var firstChild = target.firstChild;
             var width = Math.round(element.offsetWidth / firstChild.offsetWidth);
@@ -13318,6 +13352,17 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             var wrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
             wrapper.appendChild(element);
             cellTd.appendChild(wrapper);
+        }
+    };
+    MonthEvent.prototype.renderWrapperElement = function (cellTd) {
+        var element = cellTd.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
+        if (!isNullOrUndefined(element)) {
+            this.monthHeaderHeight = element.offsetTop - cellTd.offsetTop;
+        }
+        else {
+            var wrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+            cellTd.appendChild(wrapper);
+            this.monthHeaderHeight = wrapper.offsetTop - cellTd.offsetTop;
         }
     };
     MonthEvent.prototype.getMoreIndicatorElement = function (count, startDate, endDate) {
@@ -15371,7 +15416,9 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         if (className === void 0) { className = 'e-text-ellipsis'; }
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
             var data = { resource: tdData.resource, resourceData: tdData.resourceData };
-            var templateId = this.parent.currentView + '_resourceHeaderTemplate';
+            var scheduleId = this.parent.element.id + '_';
+            var viewName = this.parent.activeViewOptions.resourceHeaderTemplateName;
+            var templateId = scheduleId + viewName + 'resourceHeaderTemplate';
             var quickTemplate = this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false);
             append(quickTemplate, tdElement);
         }
@@ -15761,7 +15808,9 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
         var templateElement;
         var eventData = data;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            var templateId = this.parent.currentView + '_eventTemplate';
+            var elementId = this.parent.element.id + '_';
+            var viewName = this.parent.activeViewOptions.eventTemplateName;
+            var templateId = elementId + viewName + 'eventTemplate';
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         }
         else {
@@ -16223,6 +16272,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             var appointment = new MonthEvent(this.parent);
             appointment.renderAppointments();
         }
+        this.parent.notify('events-loaded', {});
     };
     VerticalView.prototype.onContentScroll = function (e) {
         this.parent.removeNewEventElement();
@@ -16463,14 +16513,15 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         var cntEle;
         var wrapper = createElement('div');
         var templateName = '';
-        var templateId = this.parent.currentView + '_';
+        var templateId = this.parent.element.id + '_';
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
                     templateName = 'dateHeaderTemplate';
                     var args = { date: date, type: type };
+                    var viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
                     cntEle =
-                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + templateName, false);
+                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
                 else {
                     wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
@@ -16506,10 +16557,11 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'alldayCells':
                 if (this.parent.activeViewOptions.cellTemplate) {
+                    var viewName = this.parent.activeViewOptions.cellTemplateName;
                     templateName = 'cellTemplate';
                     var args = { date: date, type: type, groupIndex: groupIndex };
                     cntEle =
-                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + templateName, false);
+                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
                 break;
         }
@@ -16538,6 +16590,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
+        this.parent.updateLayoutTemplates();
     };
     VerticalView.prototype.renderHeader = function () {
         var tr = createElement('tr');
@@ -16754,7 +16807,9 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
             var args_1 = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
-            var templateId = this.parent.currentView + '_cellTemplate';
+            var scheduleId = this.parent.element.id + '_';
+            var viewName = this.parent.activeViewOptions.cellTemplateName;
+            var templateId = scheduleId + viewName + 'cellTemplate';
             var tooltipTemplate = this.parent.getCellTemplate()(args_1, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(tooltipTemplate), ntd);
         }
@@ -17038,6 +17093,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
     Month.prototype.onDataReady = function (args) {
         var monthEvent = new MonthEvent(this.parent);
         monthEvent.renderAppointments();
+        this.parent.notify('events-loaded', {});
     };
     Month.prototype.onCellClick = function (event) {
         // Here cell click
@@ -17150,6 +17206,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
+        this.parent.updateLayoutTemplates();
     };
     Month.prototype.wireCellEvents = function (element) {
         EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
@@ -17246,7 +17303,9 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
                 var cellArgs = { date: td.date, type: td.type };
-                var templateId = this.parent.currentView + '_dateHeaderTemplate';
+                var elementId = this.parent.element.id + '_';
+                var viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
+                var templateId = elementId + viewName + 'dateHeaderTemplate';
                 var dateTemplate = this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false);
                 if (dateTemplate && dateTemplate.length) {
                     append([].slice.call(dateTemplate), tdEle);
@@ -17395,7 +17454,9 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
             var args_1 = { date: data.date, type: type, groupIndex: data.groupIndex };
-            var templateId = this.parent.currentView + '_cellTemplate';
+            var scheduleId = this.parent.element.id + '_';
+            var viewName = this.parent.activeViewOptions.cellTemplateName;
+            var templateId = scheduleId + viewName + 'cellTemplate';
             var cellTemplate = this.parent.getCellTemplate()(args_1, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(cellTemplate), ntd);
         }
@@ -17575,7 +17636,9 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                 var templateEle = void 0;
                 if (!isNullOrUndefined(this_1.parent.activeViewOptions.eventTemplate)) {
                     addClass([appWrapper], EVENT_TEMPLATE);
-                    var templateId = this_1.parent.currentView + '_eventTemplate';
+                    var scheduleId = this_1.parent.element.id + '_';
+                    var viewName = this_1.parent.activeViewOptions.eventTemplateName;
+                    var templateId = scheduleId + viewName + 'eventTemplate';
                     templateEle = this_1.parent.getAppointmentTemplate()(listData[li], this_1.parent, 'eventTemplate', templateId, false);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         var iconClass = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
@@ -17836,7 +17899,9 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: AGENDA_HEADER_CLASS });
             var args = { date: date, type: 'dateHeader' };
-            var templateId = this.parent.currentView + '_dateHeaderTemplate';
+            var scheduleId = this.parent.element.id + '_';
+            var viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
+            var templateId = scheduleId + viewName + 'dateHeaderTemplate';
             var dateTemplate = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false);
             append([].slice.call(dateTemplate), dateHeader);
         }
@@ -17962,6 +18027,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         this.agendaBase.wireEventActions();
         var contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
         contentArea.scrollTop = 1;
+        this.parent.notify('events-loaded', {});
     };
     Agenda.prototype.refreshEvent = function (refreshDate) {
         var processedData = [];
@@ -18411,11 +18477,14 @@ var MonthAgenda = /** @__PURE__ @class */ (function (_super) {
             }
             count++;
         }
+        this.parent.notify('events-loaded', {});
     };
     MonthAgenda.prototype.onCellClick = function (event) {
         this.parent.quickPopup.quickPopupHide();
         var filterData = this.appointmentFiltering(event.startTime);
+        this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
+        this.parent.notify('events-loaded', {});
         this.parent.setProperties({ selectedDate: new Date('' + event.startTime) }, true);
     };
     MonthAgenda.prototype.onEventRender = function (events, date) {
@@ -18819,6 +18888,7 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
             var appointment = new TimelineEvent(this.parent, 'day');
             appointment.renderAppointments();
         }
+        this.parent.notify('events-loaded', {});
     };
     TimelineViews.prototype.getModuleName = function () {
         return 'timelineViews';
@@ -18862,6 +18932,7 @@ var TimelineMonth = /** @__PURE__ @class */ (function (_super) {
     TimelineMonth.prototype.onDataReady = function (args) {
         var appointment = new TimelineEvent(this.parent, 'day');
         appointment.renderAppointments();
+        this.parent.notify('events-loaded', {});
     };
     TimelineMonth.prototype.getLeftPanelElement = function () {
         return this.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);

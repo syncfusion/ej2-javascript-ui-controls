@@ -7051,21 +7051,36 @@ function getRandomId() {
 function compile$$1(templateString, helper) {
     var compiler = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return function (data, component, propName, templateId, isStringTemplate) {
+    return function (data, component, propName, templateId, isStringTemplate, index) {
         var result = compiler(data, component, propName);
         var blazor = 'Blazor';
         var blazorTemplateId = 'BlazorTemplateId';
         if (window && window[blazor] && !isStringTemplate) {
             var randomId = getRandomId();
+            var blazorId = templateId + randomId;
             if (!blazorTemplates[templateId]) {
                 blazorTemplates[templateId] = [];
             }
-            data[blazorTemplateId] = templateId + randomId;
-            blazorTemplates[templateId].push(data);
+            if (!isNullOrUndefined(index)) {
+                var keys = Object.keys(blazorTemplates[templateId][index]);
+                for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+                    var key = keys_1[_i];
+                    if (data[key]) {
+                        blazorTemplates[templateId][index][key] = data[key];
+                    }
+                    if (key === blazorTemplateId) {
+                        blazorId = blazorTemplates[templateId][index][key];
+                    }
+                }
+            }
+            else {
+                data[blazorTemplateId] = blazorId;
+                blazorTemplates[templateId].push(data);
+            }
             // tslint:disable-next-line:no-any
-            return propName === 'rowTemplate' ? [createElement('tr', { id: templateId + randomId })] :
+            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId })] :
                 // tslint:disable-next-line:no-any
-                [createElement('div', { id: templateId + randomId })];
+                [createElement('div', { id: blazorId })];
         }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {
@@ -7082,15 +7097,17 @@ function compile$$1(templateString, helper) {
         }
     };
 }
-function updateBlazorTemplate(templateId, templateName, comp) {
+function updateBlazorTemplate(templateId, templateName, comp, isEmpty) {
     var blazor = 'Blazor';
     if (window && window[blazor]) {
         var ejsIntrop = 'ejsInterop';
         window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp);
-        blazorTemplates[templateId] = [];
+        if (isEmpty !== false) {
+            blazorTemplates[templateId] = [];
+        }
     }
 }
-function resetBlazorTemplate(templateId, templateName) {
+function resetBlazorTemplate(templateId, templateName, index) {
     var templateDiv = document.getElementById(templateId);
     if (templateDiv) {
         // tslint:disable-next-line:no-any
@@ -7101,8 +7118,13 @@ function resetBlazorTemplate(templateId, templateName) {
             if (tempElement) {
                 var length_1 = tempElement.children.length;
                 for (var j = 0; j < length_1; j++) {
-                    innerTemplates[i].appendChild(tempElement.children[0]);
-                    tempElement.appendChild(innerTemplates[i].children[j].cloneNode(true));
+                    if (!isNullOrUndefined(index)) {
+                        innerTemplates[index].appendChild(tempElement.children[0]);
+                        return;
+                    }
+                    else {
+                        innerTemplates[i].appendChild(tempElement.children[0]);
+                    }
                 }
             }
         }

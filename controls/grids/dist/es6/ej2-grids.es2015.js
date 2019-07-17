@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getValue, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, calculatePosition, calculateRelativeBasedPosition, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton, Switch, createCheckBox } from '@syncfusion/ej2-buttons';
@@ -214,6 +214,9 @@ class Column {
                     let z = x;
                     x = y;
                     y = z;
+                    let obj = xObj;
+                    xObj = yObj;
+                    yObj = obj;
                 }
                 return a(x, y, xObj, yObj);
             };
@@ -2977,7 +2980,8 @@ class Data {
     }
     /** @hidden */
     isRemote() {
-        return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined;
+        return this.dataManager.dataSource.offline !== true && this.dataManager.dataSource.url !== undefined &&
+            this.dataManager.dataSource.url !== '';
     }
     addRows(e) {
         for (let i = e.records.length; i > 0; i--) {
@@ -3256,14 +3260,14 @@ class RowRenderer {
             this.refreshMergeCells(row);
         }
         let node = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
-        let tr = this.refreshRow(row, columns, attributes$$1, rowTemplate);
+        let tr = this.refreshRow(row, columns, attributes$$1, rowTemplate, null, isChanged);
         let cells = [].slice.call(tr.cells);
         node.innerHTML = '';
         for (let cell of cells) {
             node.appendChild(cell);
         }
     }
-    refreshRow(row, columns, attributes$$1, rowTemplate, cloneNode) {
+    refreshRow(row, columns, attributes$$1, rowTemplate, cloneNode, isEdit) {
         let tr = !isNullOrUndefined(cloneNode) ? cloneNode : this.element.cloneNode();
         let rowArgs = { data: row.data };
         let cellArgs = { data: row.data };
@@ -3295,7 +3299,7 @@ class RowRenderer {
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
                 attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
-            let td = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand);
+            let td = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand, isEdit);
             if (row.cells[i].cellType !== CellType.Filter) {
                 if (row.cells[i].cellType === CellType.Data || row.cells[i].cellType === CellType.CommandColumn) {
                     this.parent.trigger(queryCellInfo, extend(cellArgs, {
@@ -5001,14 +5005,20 @@ class CellRenderer {
         }
         return isNullOrUndefined(value) ? '' : value.toString();
     }
-    evaluate(node, cell, data, attributes$$1, fData) {
+    evaluate(node, cell, data, attributes$$1, fData, isEdit) {
         let result;
         if (cell.column.template) {
             let literals = ['index'];
             let dummyData = extendObjWithFn({}, data, { [foreignKeyData]: fData });
             let templateID = this.parent.element.id + cell.column.uid;
             let str = 'isStringTemplate';
-            result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+            let index = 'index';
+            if (isBlazor() && isEdit) {
+                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], parseInt(attributes$$1[index], 10));
+            }
+            else {
+                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID);
+            }
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });
             result = null;
@@ -5046,8 +5056,8 @@ class CellRenderer {
      * @param  {{[x:string]:Object}} attributes?
      * @param  {Element}
      */
-    render(cell, data, attributes$$1) {
-        return this.refreshCell(cell, data, attributes$$1);
+    render(cell, data, attributes$$1, isEdit) {
+        return this.refreshCell(cell, data, attributes$$1, isEdit);
     }
     /**
      * Function to refresh the cell content based on Column object.
@@ -5065,7 +5075,7 @@ class CellRenderer {
             td.appendChild(elem);
         }
     }
-    refreshCell(cell, data, attributes$$1) {
+    refreshCell(cell, data, attributes$$1, isEdit) {
         let node = this.element.cloneNode();
         let column = cell.column;
         let fData;
@@ -5091,7 +5101,7 @@ class CellRenderer {
         if (!isNullOrUndefined(cell.column.headerText)) {
             node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
         }
-        if (this.evaluate(node, cell, data, attributes$$1, fData) && column.type !== 'checkbox') {
+        if (this.evaluate(node, cell, data, attributes$$1, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         }
         else if (column.type === 'checkbox') {
@@ -5518,7 +5528,13 @@ class GroupCaptionCellRenderer extends CellRenderer {
         let value = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, cell.column.valueAccessor('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
-            result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+            if (isBlazor()) {
+                let tempID = gObj.element.id + 'captionTemplate';
+                result = templateCompiler(gObj.groupSettings.captionTemplate)(data, null, null, tempID);
+            }
+            else {
+                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
+            }
             appendChildren(node, result);
         }
         else {
@@ -5737,7 +5753,9 @@ class Render {
     refresh(e = { requestType: 'refresh' }) {
         let gObj = this.parent;
         gObj.notify(`${e.requestType}-begin`, e);
-        this.resetTemplates();
+        if (isBlazor()) {
+            this.resetTemplates();
+        }
         gObj.trigger(actionBegin, e, (args = { requestType: 'refresh' }) => {
             if (args.cancel) {
                 gObj.notify(cancelBegin, args);
@@ -5763,10 +5781,17 @@ class Render {
         let gObj = this.parent;
         if (gObj.detailTemplate) {
             let detailTemplateID = gObj.element.id + 'detailTemplate';
+            blazorTemplates[detailTemplateID] = [];
             resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
+        }
+        if (gObj.groupSettings.captionTemplate) {
+            resetBlazorTemplate(gObj.element.id + 'captionTemplate', 'CaptionTemplate');
         }
         if (gObj.rowTemplate) {
             resetBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate');
+        }
+        if (gObj.toolbarTemplate) {
+            resetBlazorTemplate(gObj.element.id + 'toolbarTemplate', 'ToolbarTemplate');
         }
         for (let i = 0; i < gObj.getColumns().length; i++) {
             if (gObj.getColumns()[i].template) {
@@ -5774,6 +5799,26 @@ class Render {
             }
             if (gObj.getColumns()[i].headerTemplate) {
                 resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'headerTemplate', 'HeaderTemplate');
+            }
+            if (gObj.getColumns()[i].filterTemplate) {
+                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'filterTemplate', 'FilterTemplate');
+            }
+        }
+        let guid = 'guid';
+        for (let k = 0; k < gObj.aggregates.length; k++) {
+            for (let j = 0; j < gObj.aggregates[k].columns.length; j++) {
+                if (gObj.aggregates[k].columns[j].footerTemplate) {
+                    let tempID = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'footerTemplate';
+                    resetBlazorTemplate(tempID, 'FooterTemplate');
+                }
+                if (gObj.aggregates[k].columns[j].groupFooterTemplate) {
+                    let tempID = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupFooterTemplate';
+                    resetBlazorTemplate(tempID, 'GroupFooterTemplate');
+                }
+                if (gObj.aggregates[k].columns[j].groupCaptionTemplate) {
+                    let tempID = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupCaptionTemplate';
+                    resetBlazorTemplate(tempID, 'GroupCaptionTemplate');
+                }
             }
         }
     }
@@ -7941,7 +7986,6 @@ class Selection {
         let gObj = this.parent;
         let selectedCell = this.getSelectedMovableCell(cellIndex);
         let args;
-        let cncl = 'cancel';
         if (!selectedCell) {
             selectedCell = gObj.getCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
         }
@@ -7962,24 +8006,32 @@ class Selection {
                     this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
                 cancel: false
             };
-            this.onActionBegin(args, cellSelecting);
+            this.parent.trigger(cellSelecting, this.fDataUpdate(args), this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
         }
-        if (!isNullOrUndefined(args) && args[cncl] === true) {
-            return;
+        else {
+            this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData)(args);
         }
-        this.clearCell();
-        if (!isToggle) {
-            this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
-        }
-        this.updateCellProps(cellIndex, cellIndex);
-        if (!isToggle) {
-            this.onActionComplete({
-                data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
-                previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
-                previousRowCell: this.prevECIdxs ?
-                    this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-            }, cellSelected);
-        }
+    }
+    successCallBack(cellSelectingArgs, isToggle, cellIndex, selectedCell, selectedData) {
+        return (cellSelectingArgs) => {
+            let cncl = 'cancel';
+            if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
+                return;
+            }
+            this.clearCell();
+            if (!isToggle) {
+                this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
+            }
+            this.updateCellProps(cellIndex, cellIndex);
+            if (!isToggle) {
+                this.onActionComplete({
+                    data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
+                    previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
+                    previousRowCell: this.prevECIdxs ?
+                        this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+                }, cellSelected);
+            }
+        };
     }
     getCellIndex(rIdx, cIdx) {
         return (this.parent.getFrozenColumns() ? (cIdx >= this.parent.getFrozenColumns() ? this.parent.getMovableCellFromIndex(rIdx, cIdx)
@@ -8017,53 +8069,54 @@ class Selection {
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
         };
-        this.onActionBegin(args, cellSelecting);
-        if (!isNullOrUndefined(args) && args[cncl] === true) {
-            return;
-        }
-        this.clearCell();
-        if (startIndex.rowIndex > endIndex.rowIndex) {
-            let temp = startIndex;
-            startIndex = endIndex;
-            endIndex = temp;
-        }
-        for (let i = startIndex.rowIndex; i <= endIndex.rowIndex; i++) {
-            if (this.selectionSettings.cellSelectionMode.indexOf('Box') < 0) {
-                min = i === startIndex.rowIndex ? (startIndex.cellIndex) : 0;
-                max = i === endIndex.rowIndex ? (endIndex.cellIndex) : this.getLastColIndex(i);
+        this.parent.trigger(cellSelecting, this.fDataUpdate(args), (cellSelectingArgs) => {
+            if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
+                return;
             }
-            else {
-                min = startIndex.cellIndex;
-                max = endIndex.cellIndex;
+            this.clearCell();
+            if (startIndex.rowIndex > endIndex.rowIndex) {
+                let temp = startIndex;
+                startIndex = endIndex;
+                endIndex = temp;
             }
-            cellIndexes = [];
-            for (let j = min < max ? min : max, len = min > max ? min : max; j <= len; j++) {
-                if (frzCols) {
-                    if (j < frzCols) {
-                        selectedCell = gObj.getCellFromIndex(i, j);
-                    }
-                    else {
-                        selectedCell = gObj.getMovableCellFromIndex(i, j);
-                    }
+            for (let i = startIndex.rowIndex; i <= endIndex.rowIndex; i++) {
+                if (this.selectionSettings.cellSelectionMode.indexOf('Box') < 0) {
+                    min = i === startIndex.rowIndex ? (startIndex.cellIndex) : 0;
+                    max = i === endIndex.rowIndex ? (endIndex.cellIndex) : this.getLastColIndex(i);
                 }
                 else {
-                    selectedCell = gObj.getCellFromIndex(i, j);
+                    min = startIndex.cellIndex;
+                    max = endIndex.cellIndex;
                 }
-                if (!selectedCell) {
-                    continue;
+                cellIndexes = [];
+                for (let j = min < max ? min : max, len = min > max ? min : max; j <= len; j++) {
+                    if (frzCols) {
+                        if (j < frzCols) {
+                            selectedCell = gObj.getCellFromIndex(i, j);
+                        }
+                        else {
+                            selectedCell = gObj.getMovableCellFromIndex(i, j);
+                        }
+                    }
+                    else {
+                        selectedCell = gObj.getCellFromIndex(i, j);
+                    }
+                    if (!selectedCell) {
+                        continue;
+                    }
+                    cellIndexes.push(j);
+                    this.updateCellSelection(selectedCell);
+                    this.addAttribute(selectedCell);
                 }
-                cellIndexes.push(j);
-                this.updateCellSelection(selectedCell);
-                this.addAttribute(selectedCell);
+                this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
-            this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
-        }
-        this.updateCellProps(stIndex, edIndex);
-        this.onActionComplete({
-            data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-            previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
-            previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        }, cellSelected);
+            this.updateCellProps(stIndex, edIndex);
+            this.onActionComplete({
+                data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
+                previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
+                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+            }, cellSelected);
+        });
     }
     /**
      * Selects a collection of cells by row and column indexes.
@@ -10692,6 +10745,9 @@ __decorate([
 __decorate([
     Property()
 ], SortDescriptor.prototype, "direction", void 0);
+__decorate([
+    Property(false)
+], SortDescriptor.prototype, "isFromGroup", void 0);
 /**
  * Configures the sorting behavior of Grid.
  */
@@ -13217,12 +13273,34 @@ let Grid = Grid_1 = class Grid extends Component {
         this.off(keyPressed, this.keyPressed);
     }
     blazorTemplate() {
-        for (let i = 0; i < this.columnModel.length; i++) {
-            if (this.columnModel[i].template) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
+        if (isBlazor()) {
+            for (let i = 0; i < this.columnModel.length; i++) {
+                if (this.columnModel[i].template) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
+                }
+                if (this.columnModel[i].headerTemplate) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+                }
+                if (this.columnModel[i].filterTemplate) {
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i]);
+                }
             }
-            if (this.columnModel[i].headerTemplate) {
-                updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+            if (this.groupSettings.captionTemplate) {
+                updateBlazorTemplate(this.element.id + 'captionTemplate', 'CaptionTemplate', this.groupSettings);
+            }
+            let guid = 'guid';
+            for (let k = 0; k < this.aggregates.length; k++) {
+                for (let j = 0; j < this.aggregates[k].columns.length; j++) {
+                    if (this.aggregates[k].columns[j].footerTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'footerTemplate', 'FooterTemplate', this.aggregates[k].columns[j]);
+                    }
+                    if (this.aggregates[k].columns[j].groupFooterTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'groupFooterTemplate', 'GroupFooterTemplate', this.aggregates[k].columns[j]);
+                    }
+                    if (this.aggregates[k].columns[j].groupCaptionTemplate) {
+                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'groupCaptionTemplate', 'GroupCaptionTemplate', this.aggregates[k].columns[j]);
+                    }
+                }
             }
         }
     }
@@ -13266,9 +13344,13 @@ let Grid = Grid_1 = class Grid extends Component {
         if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(e.target, '.e-unboundcelldiv')) {
             return;
         }
+        let dataRow = !isNullOrUndefined(closest(e.target, 'tr').getAttribute('data-uid')) &&
+            this.getRowObjectFromUID(closest(e.target, 'tr').getAttribute('data-uid')).isDataRow;
         let args = this.getRowInfo(e.target);
         args.target = e.target;
-        this.trigger(recordDoubleClick, args);
+        if (dataRow) {
+            this.trigger(recordDoubleClick, args);
+        }
         this.notify(dblclick, e);
     }
     focusOutHandler(e) {
@@ -13523,6 +13605,10 @@ let Grid = Grid_1 = class Grid extends Component {
         let previousRowData = this.getRowsObject()[this.getRows().length - 1].data;
         return previousRowData;
     }
+    /**
+     * Hides the scrollbar placeholder of Grid content when grid content is not overflown.
+     * @return {void}
+     */
     hideScroll() {
         let content = this.getContent().querySelector('.e-content');
         let cTable = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
@@ -13957,7 +14043,7 @@ class Sort {
                     }
                     else {
                         let sCol = this.getSortColumnFromField(gCols[i]);
-                        sortedCols.push({ field: sCol.field, direction: sCol.direction });
+                        sortedCols.push({ field: sCol.field, direction: sCol.direction, isFromGroup: sCol.isFromGroup });
                     }
                 }
                 if (!flag) {
@@ -14074,9 +14160,11 @@ class Sort {
         this.addSortIcons();
     }
     refreshSortSettings() {
-        this.sortedColumns = [];
+        this.sortedColumns.length = 0;
         this.sortSettings.columns.forEach((e) => {
-            this.sortedColumns.push(e.field);
+            if (!e.isFromGroup) {
+                this.sortedColumns.push(e.field);
+            }
         });
     }
     /**
@@ -14441,7 +14529,7 @@ class NumericContainer {
      * @hidden
      */
     unwireEvents() {
-        EventHandler.remove(this.pagerElement, 'click', this.clickHandler);
+        EventHandler.remove(this.pagerModule.element, 'click', this.clickHandler);
     }
     /**
      * To destroy the PagerMessage
@@ -15588,7 +15676,8 @@ class FilterCellRenderer extends CellRenderer {
             let col = 'column';
             fltrData[col] = column;
             if (column.visible) {
-                let element = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate');
+                let tempID = this.parent.element.id + column.uid + 'filterTemplate';
+                let element = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
                 appendChildren(node, element);
             }
             else {
@@ -16061,7 +16150,8 @@ class FilterMenuRenderer {
             }
             let col = 'column';
             fltrData[col] = column;
-            let compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate');
+            let tempID = this.parent.element.id + column.uid + 'filterTemplate';
+            let compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, compElement);
         }
         else {
@@ -16119,7 +16209,9 @@ class FilterMenuRenderer {
                 fltrValue = element.children[0].value;
             }
             else {
-                fltrValue = element.children[0].ej2_instances[0].value;
+                fltrValue = !isBlazor() && !isNullOrUndefined((element.children[0].ej2_instances) ?
+                    element.children[0].ej2_instances[0].value
+                    : element.querySelector('.e-control').ej2_instances[0].value);
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
         }
@@ -16404,7 +16496,12 @@ class ExcelFilter extends CheckBoxFilter {
             open: () => {
                 let row = this.dlgObj.element.querySelector('table.e-xlfl-table>tr');
                 if (this.options.column.filterTemplate) {
-                    row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue').focus();
+                    if (isBlazor()) {
+                        row.querySelector('.e-xlfl-valuediv').children[0].focus();
+                    }
+                    else {
+                        row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue').focus();
+                    }
                 }
                 else {
                     row.cells[1].querySelector('input:not([type=hidden])').focus();
@@ -16458,9 +16555,13 @@ class ExcelFilter extends CheckBoxFilter {
         let isComplex = !isNullOrUndefined(col) && isComplexField(col);
         let complexFieldName = !isNullOrUndefined(col) && getComplexFieldID(col);
         let colValue = isComplex ? complexFieldName : col;
-        let fValue = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
+        let fValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control').ej2_instances[0]
+            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue').ej2_instances[0];
         let fOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr').ej2_instances[0];
-        let sValue = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
+        let sValue = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control').ej2_instances[0]
+            : this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue').ej2_instances[0];
         let sOperator = this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr').ej2_instances[0];
         let checkBoxValue;
         if (this.options.type === 'string') {
@@ -16686,7 +16787,8 @@ class ExcelFilter extends CheckBoxFilter {
                     data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
                 }
             }
-            let element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate');
+            let tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
+            let element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, element);
             valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
             value.appendChild(valueDiv);
@@ -17797,6 +17899,7 @@ class Resize {
             this.parent.getColumns().map((x) => x.field) : (typeof fName === 'string') ? [fName] : fName;
         this.findColumn(columnName);
     }
+    /* tslint:disable-next-line:max-func-body-length */
     resizeColumn(fName, index, id) {
         let gObj = this.parent;
         let tWidth = 0;
@@ -17805,11 +17908,13 @@ class Resize {
         let footerTable;
         let headerDivTag = 'e-gridheader';
         let contentDivTag = 'e-gridcontent';
+        let footerDivTag = 'e-gridfooter';
         let indentWidth = 0;
         let uid = id ? id : this.parent.getUidByColumnField(fName);
         let columnIndex = this.parent.getNormalizedColumnIndex(uid);
         let headerTextClone;
         let contentTextClone;
+        let footerTextClone;
         let frzCols = gObj.getFrozenColumns();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
             footerTable = gObj.getFooterContentTable();
@@ -17820,12 +17925,19 @@ class Resize {
                 contentTable = gObj.getContentTable();
                 headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
                 contentTextClone = contentTable.querySelectorAll(`td:nth-child(${columnIndex + 1})`);
+                if (footerTable) {
+                    footerTextClone = footerTable.querySelectorAll(`td:nth-child(${columnIndex + 1})`);
+                }
             }
             else {
                 headerTable = gObj.getHeaderContent().querySelector('.e-movableheader').children[0];
                 contentTable = gObj.getContent().querySelector('.e-movablecontent').children[0];
                 headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
                 contentTextClone = contentTable.querySelectorAll(`td:nth-child(${(columnIndex - frzCols) + 1})`);
+                if (footerTable) {
+                    footerTable = gObj.getFooterContent().querySelector('.e-movablefootercontent').children[0];
+                    footerTextClone = footerTable.querySelectorAll(`td:nth-child(${(columnIndex - frzCols) + 1})`);
+                }
             }
         }
         else {
@@ -17833,6 +17945,9 @@ class Resize {
             contentTable = gObj.getContentTable();
             headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
             contentTextClone = contentTable.querySelectorAll(`td:nth-child(${columnIndex + 1}):not(.e-groupcaption)`);
+            if (footerTable) {
+                footerTextClone = footerTable.querySelectorAll(`td:nth-child(${columnIndex + 1}):not(.e-groupcaption)`);
+            }
         }
         let indentWidthClone = headerTable.querySelector('tr').querySelectorAll('.e-grouptopleftcell');
         if (indentWidthClone.length > 0) {
@@ -17847,14 +17962,24 @@ class Resize {
         }
         let headerText = [headerTextClone];
         let contentText = [];
+        let footerText = [];
+        if (footerTable) {
+            for (let i = 0; i < footerTextClone.length; i++) {
+                footerText[i] = footerTextClone[i].cloneNode(true);
+            }
+        }
         for (let i = 0; i < contentTextClone.length; i++) {
             contentText[i] = contentTextClone[i].cloneNode(true);
         }
         let wHeader = this.createTable(headerTable, headerText, headerDivTag);
         let wContent = this.createTable(contentTable, contentText, contentDivTag);
+        let wFooter = null;
+        if (footerText.length) {
+            wFooter = this.createTable(footerTable, footerText, footerDivTag);
+        }
         let columnbyindex = gObj.getColumns()[index];
         let result;
-        let width = (wHeader > wContent) ? columnbyindex.width = formatUnit(wHeader) : columnbyindex.width = formatUnit(wContent);
+        let width = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
         this.widthService.setColumnWidth(gObj.getColumns()[index]);
         result = gObj.getColumns().some((x) => x.width === null || x.width === undefined || x.width.length <= 0);
         if (result === false) {
@@ -19898,7 +20023,7 @@ class Group {
             i++;
         }
         if (this.parent.sortSettings.columns.length === i) {
-            this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending' });
+            this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending', isFromGroup: true });
         }
         else if (!this.parent.allowSorting) {
             this.parent.sortSettings.columns[i].direction = 'Ascending';
@@ -20261,8 +20386,10 @@ class DetailRow {
                 if (gObj.detailTemplate) {
                     let detailTemplateID = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
-                    resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
-                    updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj);
+                    if (isBlazor()) {
+                        resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
+                        updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
+                    }
                 }
                 else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
@@ -20565,12 +20692,22 @@ class Toolbar$1 {
         }
         this.element = this.parent.createElement('div', { id: this.gridID + '_toolbarItems' });
         if (this.parent.toolbarTemplate) {
-            if (typeof (this.parent.toolbarTemplate) === 'string') {
+            if (!isBlazor() && typeof (this.parent.toolbarTemplate) === 'string') {
                 this.toolbar.appendTo(this.parent.toolbarTemplate);
                 this.element = this.toolbar.element;
             }
             else {
-                appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                if (isBlazor()) {
+                    let tempID = this.parent.element.id + 'toolbarTemplate';
+                    let item = appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', tempID));
+                    let items = this.getItem(item);
+                    this.toolbar.items.push(items);
+                    this.toolbar.appendTo(this.element);
+                    updateBlazorTemplate(this.parent.element.id + 'toolbarTemplate', 'ToolbarTemplate', this.parent);
+                }
+                else {
+                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                }
             }
         }
         else {
@@ -21022,7 +21159,12 @@ class SummaryCellRenderer extends CellRenderer {
             return true;
         }
         let tempObj = column.getTemplate(cell.cellType);
-        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property));
+        let tempID = '';
+        if (isBlazor()) {
+            let guid = 'guid';
+            tempID = this.parent.element.id + column[guid] + tempObj.property;
+        }
+        appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
         return false;
     }
     refreshWithAggregate(node, cell) {
@@ -22309,7 +22451,7 @@ class DialogEditRender {
     }
     destroy(args) {
         let editTemplateID = this.parent.element.id + 'editSettingsTemplate';
-        resetBlazorTemplate(editTemplateID, 'Template');
+        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
         this.parent.notify(destroyForm, {});
         this.parent.isEdit = false;
         this.parent.notify(toolbarRefresh, {});
@@ -22504,7 +22646,11 @@ class EditRender {
             let input;
             if (col.editTemplate) {
                 input = this.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
-                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate'));
+                let tempID = this.parent.element.id + col.uid + 'editTemplate';
+                appendChildren(input, col.getEditTemplate()(args.rowData, this.parent, 'editTemplate', tempID));
+                if (isBlazor()) {
+                    updateBlazorTemplate(tempID, 'EditTemplate', col);
+                }
             }
             else {
                 if (typeof temp === 'string') {
@@ -22843,6 +22989,7 @@ class NormalEdit {
             gObj.trigger(actionBegin, begineditargs, (editargs) => {
                 if (!editargs.cancel) {
                     gObj.isEdit = true;
+                    editargs.row = getElement(editargs.row);
                     if (gObj.editSettings.mode !== 'Dialog') {
                         gObj.clearSelection();
                     }
@@ -22971,6 +23118,7 @@ class NormalEdit {
         this.parent.isEdit = false;
         this.refreshRow(args.data);
         this.updateCurrentViewData(args.data);
+        this.blazorTemplate();
         this.parent.trigger(actionComplete, args);
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection)) {
@@ -22979,6 +23127,18 @@ class NormalEdit {
             }
         }
         this.parent.hideSpinner();
+    }
+    blazorTemplate() {
+        let cols = this.parent.getColumns();
+        for (let i = 0; i < cols.length; i++) {
+            let col = cols[i];
+            if (col.template) {
+                updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
+            }
+            if (col.editTemplate) {
+                updateBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate', col);
+            }
+        }
     }
     editFailure(e) {
         this.parent.trigger(actionFailure, e);
@@ -23016,6 +23176,7 @@ class NormalEdit {
         let args = extend(this.args, {
             requestType: 'cancel', type: actionBegin, data: this.previousData, selectedRow: gObj.selectedRowIndex
         });
+        this.blazorTemplate();
         gObj.trigger(actionBegin, args, (closeEditArgs) => {
             if (this.parent.editSettings.mode === 'Dialog') {
                 this.parent.notify(dialogDestroy, {});
@@ -23846,29 +24007,30 @@ class BatchEdit {
             if (!args.cell) {
                 return;
             }
-            gObj.trigger(cellEdit, args);
-            if (args.cancel) {
-                return;
-            }
-            this.cellDetails = {
-                rowData: rowData, column: col, value: args.value, isForeignKey: args.isForeignKey, rowIndex: index,
-                cellIndex: parseInt(args.cell.getAttribute('aria-colindex'), 10),
-                foreignKeyData: args.foreignKeyData
-            };
-            if (args.cell.classList.contains('e-updatedtd')) {
-                this.isColored = true;
-                args.cell.classList.remove('e-updatedtd');
-            }
-            gObj.isEdit = true;
-            gObj.clearSelection();
-            if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
-                gObj.selectRow(this.cellDetails.rowIndex, true);
-            }
-            this.renderer.update(args);
-            this.parent.notify(batchEditFormRendered, args);
-            this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
-            gObj.editModule.applyFormValidation([col]);
-            this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
+            gObj.trigger(cellEdit, args, (cellEditArgs) => {
+                if (cellEditArgs.cancel) {
+                    return;
+                }
+                this.cellDetails = {
+                    rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
+                    cellIndex: parseInt(cellEditArgs.cell.getAttribute('aria-colindex'), 10),
+                    foreignKeyData: cellEditArgs.foreignKeyData
+                };
+                if (cellEditArgs.cell.classList.contains('e-updatedtd')) {
+                    this.isColored = true;
+                    cellEditArgs.cell.classList.remove('e-updatedtd');
+                }
+                gObj.isEdit = true;
+                gObj.clearSelection();
+                if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
+                    gObj.selectRow(this.cellDetails.rowIndex, true);
+                }
+                this.renderer.update(cellEditArgs);
+                this.parent.notify(batchEditFormRendered, cellEditArgs);
+                this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
+                gObj.editModule.applyFormValidation([col]);
+                this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
+            });
         }
     }
     updateCell(rowIndex, field, value) {
@@ -23994,34 +24156,42 @@ class BatchEdit {
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
         if (!isForceSave) {
-            gObj.trigger(cellSave, args);
+            gObj.trigger(cellSave, args, this.successCallBack(args, tr, column));
             gObj.notify(batchForm, { formObj: this.form });
         }
-        if (args.cancel) {
-            return;
+        else {
+            this.successCallBack(args, tr, column)(args);
         }
-        gObj.editModule.destroyForm();
-        gObj.isEdit = false;
-        gObj.editModule.destroyWidgets([column]);
-        this.parent.notify(tooltipDestroy, {});
-        this.refreshTD(args.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), args.value);
-        removeClass([tr], ['e-editedrow', 'e-batchrow']);
-        removeClass([args.cell], ['e-editedbatchcell', 'e-boolcell']);
-        if (!isNullOrUndefined(args.value) && args.value.toString() ===
-            (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString() && !this.isColored
-            || (isNullOrUndefined(args.value) && isNullOrUndefined(this.cellDetails.value) &&
-                !args.cell.parentElement.classList.contains('e-insertedrow'))) {
-            args.cell.classList.remove('e-updatedtd');
-        }
-        gObj.trigger(cellSaved, args);
-        gObj.notify(toolbarRefresh, {});
-        this.isColored = false;
-        if (this.parent.aggregates.length > 0) {
-            this.parent.notify(refreshFooterRenderer, {});
-            if (this.parent.groupSettings.columns.length > 0 && !this.isAddRow(this.cellDetails.rowIndex)) {
-                this.parent.notify(groupAggregates, {});
+    }
+    successCallBack(cellSaveArgs, tr, column) {
+        return (cellSaveArgs) => {
+            let gObj = this.parent;
+            if (cellSaveArgs.cancel) {
+                return;
             }
-        }
+            gObj.editModule.destroyForm();
+            gObj.isEdit = false;
+            gObj.editModule.destroyWidgets([column]);
+            this.parent.notify(tooltipDestroy, {});
+            this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+            removeClass([tr], ['e-editedrow', 'e-batchrow']);
+            removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
+            if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
+                (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString() && !this.isColored
+                || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(this.cellDetails.value) &&
+                    !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
+                cellSaveArgs.cell.classList.remove('e-updatedtd');
+            }
+            gObj.trigger(cellSaved, cellSaveArgs);
+            gObj.notify(toolbarRefresh, {});
+            this.isColored = false;
+            if (this.parent.aggregates.length > 0) {
+                this.parent.notify(refreshFooterRenderer, {});
+                if (this.parent.groupSettings.columns.length > 0 && !this.isAddRow(this.cellDetails.rowIndex)) {
+                    this.parent.notify(groupAggregates, {});
+                }
+            }
+        };
     }
     getDataByIndex(index) {
         let row = this.parent.getRowObjectFromUID(this.parent.getDataRows()[index].getAttribute('data-uid'));
@@ -24686,6 +24856,9 @@ class Edit {
         }
         for (let col of cols) {
             let temp = col.edit.destroy;
+            if (isBlazor() && col.editTemplate) {
+                resetBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate');
+            }
             if (col.edit.destroy) {
                 if (typeof temp === 'string') {
                     temp = getValue(temp, window);
@@ -26112,7 +26285,7 @@ class ExcelExport {
             this.book.styles = this.styles;
             if (!isMultipleExport) {
                 if (this.isCsvExport) {
-                    let book = new Workbook(this.book, 'csv', gObj.locale);
+                    let book = new Workbook(this.book, 'csv', gObj.locale, gObj.currencyCode);
                     if (!this.isBlob) {
                         if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
@@ -26126,7 +26299,7 @@ class ExcelExport {
                     }
                 }
                 else {
-                    let book = new Workbook(this.book, 'xlsx', gObj.locale);
+                    let book = new Workbook(this.book, 'xlsx', gObj.locale, gObj.currencyCode);
                     if (!this.isBlob) {
                         if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
@@ -28843,6 +29016,9 @@ class FreezeRender extends HeaderRender {
         this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
         this.updateColgroup();
         this.widthService.setWidthToTable();
+        if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
+            wrap([].slice.call(this.movableHeader.querySelectorAll('tr.e-columnheader')), true);
+        }
         this.parent.updateDefaultCursor();
         renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
         this.initializeHeaderDrag();
@@ -29231,6 +29407,7 @@ class ColumnMenu {
             items: this.getItems(),
             select: this.columnMenuItemClick.bind(this),
             beforeOpen: this.columnMenuBeforeOpen.bind(this),
+            onOpen: this.columnMenuOnOpen.bind(this),
             onClose: this.columnMenuOnClose.bind(this),
             beforeItemRender: this.beforeMenuItemRender.bind(this),
             beforeClose: this.columnMenuBeforeClose.bind(this)
@@ -29303,6 +29480,18 @@ class ColumnMenu {
         }
         this.columnMenu.enableItems(this.disableItems, false);
         this.columnMenu.hideItems(this.hiddenItems);
+    }
+    columnMenuOnOpen(args) {
+        if (args.element.className === 'e-menu-parent e-ul ') {
+            if (args.element.offsetHeight > window.innerHeight) {
+                args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
+                args.element.style.overflowY = 'auto';
+            }
+            else if (this.parent.element.offsetHeight > window.innerHeight) {
+                args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
+                args.element.style.overflowY = 'auto';
+            }
+        }
     }
     ensureDisabledStatus(item) {
         let status = false;

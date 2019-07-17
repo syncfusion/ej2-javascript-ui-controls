@@ -94,6 +94,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     //this.element clone
     protected calendarElement: HTMLElement;
     protected isPopupClicked: boolean = false;
+    protected isDateSelected: boolean = true;
     protected keyConfigs: { [key: string]: string } = {
         controlUp: 'ctrl+38',
         controlDown: 'ctrl+40',
@@ -1626,6 +1627,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected selectDate(e: MouseEvent | KeyboardEventArgs, date: Date, node: Element, multiSelection?: boolean, values?: Date[]): void {
         let element: Element = node || <Element>e.currentTarget;
+        this.isDateSelected = false;
         if (this.currentView() === 'Decade') {
             this.setDateDecade(this.currentDate, date.getFullYear());
         } else if (this.currentView() === 'Year') {
@@ -1689,6 +1691,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             addClass([element], SELECTED);
         }
+        this.isDateSelected = true;
     }
 
     protected checkPresentDate(dates: Date, values: Date[]): boolean {
@@ -2161,38 +2164,44 @@ export class Calendar extends CalendarBase {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
-                    if (typeof newProp.value === 'string') {
-                        this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
-                    } else {
-                        newProp.value = new Date(this.checkValue(newProp.value));
+                    if (this.isDateSelected) {
+                        if (typeof newProp.value === 'string') {
+                            this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
+                        } else {
+                            newProp.value = new Date(this.checkValue(newProp.value));
+                        }
+                        if (isNaN(+this.value)) {
+                            this.setProperties({ value: oldProp.value }, true);
+                        }
+                        this.update();
                     }
-                    if (isNaN(+this.value)) {
-                        this.setProperties({ value: oldProp.value }, true);
-                    }
-                    this.update();
                     break;
                 case 'values':
-                    if (typeof newProp.values === 'string' || typeof newProp.values === 'number') {
-                        this.setProperties({ values: null }, true);
-                    } else {
-                        let copyValues: Date[] = this.copyValues(this.values);
-                        for (let index: number = 0; index < copyValues.length; index++) {
-                            let tempDate: Date = copyValues[index];
-                            if (this.checkDateValue(tempDate) && !super.checkPresentDate(tempDate, copyValues)) {
-                                copyValues.push(tempDate);
+                    if (this.isDateSelected) {
+                        if (typeof newProp.values === 'string' || typeof newProp.values === 'number') {
+                            this.setProperties({ values: null }, true);
+                        } else {
+                            let copyValues: Date[] = this.copyValues(this.values);
+                            for (let index: number = 0; index < copyValues.length; index++) {
+                                let tempDate: Date = copyValues[index];
+                                if (this.checkDateValue(tempDate) && !super.checkPresentDate(tempDate, copyValues)) {
+                                    copyValues.push(tempDate);
+                                }
+                            }
+                            this.setProperties({ values: copyValues }, true);
+                            if (this.values.length > 0) {
+                                this.setProperties({ value: newProp.values[newProp.values.length - 1] }, true);
                             }
                         }
-                        this.setProperties({ values: copyValues }, true);
-                        if (this.values.length > 0) {
-                            this.setProperties({ value: newProp.values[newProp.values.length - 1] }, true);
-                        }
+                        this.validateValues(this.isMultiSelection, this.values);
+                        this.update();
                     }
-                    this.validateValues(this.isMultiSelection, this.values);
-                    this.update();
                     break;
                 case 'isMultiSelection':
-                    this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
-                    this.update();
+                    if (this.isDateSelected) {
+                        this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
+                        this.update();
+                    }
                     break;
                 default:
                     super.onPropertyChanged(newProp, oldProp, this.isMultiSelection, this.values);

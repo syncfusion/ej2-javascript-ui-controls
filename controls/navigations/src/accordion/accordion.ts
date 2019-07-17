@@ -316,11 +316,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       this.unwireEvents();
       this.isDestroy = true;
       this.restoreContent(null);
-      while (ele.firstChild) {
-        ele.removeChild(ele.firstChild); }
+      while (ele.firstElementChild) {
+        ele.removeChild(ele.firstElementChild); }
       if (this.trgtEle) {
-        while (this.ctrlTem.firstChild) {
-          ele.appendChild(this.ctrlTem.firstChild); } }
+        while (this.ctrlTem.firstElementChild) {
+          ele.appendChild(this.ctrlTem.firstElementChild); } }
       ele.classList.remove(CLS_ACRDN_ROOT);
       ele.removeAttribute('style');
       ['aria-disabled', 'aria-multiselectable', 'role', 'data-ripple'].forEach((attrb: string): void => {
@@ -1015,7 +1015,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       let root: HTEle = this.element;
       if (isNOU(index)) {
        if (this.expandMode === 'Single' && isExpand) {
-        let ele: HTEle = <HTEle>root.querySelectorAll('.' + CLS_ITEM)[root.childElementCount - 1];
+        let ele: HTEle = <HTEle>root.querySelectorAll('.' + CLS_ITEM)[root.querySelectorAll('.' + CLS_ITEM).length - 1];
         this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
        } else {
         let item: HTMLElement = <HTMLElement>select('#' + this.lastActiveItemId, this.element);

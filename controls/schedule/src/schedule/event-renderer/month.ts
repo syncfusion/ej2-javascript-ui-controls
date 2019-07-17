@@ -17,7 +17,7 @@ export class MonthEvent extends EventBase {
     public dateRender: Date[];
     public renderedEvents: Object[] = [];
     public eventHeight: number;
-    private monthHeaderHeight: number;
+    private monthHeaderHeight: number = 0;
     public workCells: HTMLElement[];
     public cellWidth: number;
     public cellHeight: number;
@@ -44,11 +44,6 @@ export class MonthEvent extends EventBase {
             return;
         }
         this.eventHeight = util.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
-        if (this.parent.currentView === 'Month') {
-            this.monthHeaderHeight = util.getOuterHeight(this.element.querySelector('.' + cls.DATE_HEADER_CLASS) as HTMLElement);
-        } else {
-            this.monthHeaderHeight = 0;
-        }
         let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let scrollTop: number = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
@@ -175,11 +170,13 @@ export class MonthEvent extends EventBase {
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth;
             let appLeft: number = (this.parent.enableRtl) ? 0 : position;
             let appRight: number = (this.parent.enableRtl) ? position : 0;
+            this.renderWrapperElement(cellTd as HTMLElement);
             let appHeight: number = this.cellHeight - this.monthHeaderHeight;
             let appTop: number = this.getRowTop(resIndex);
             let blockElement: HTMLElement = this.createBlockAppointmentElement(event, resIndex);
             setStyleAttribute(blockElement, {
-                'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
+                'width': appWidth + 'px', 'height': appHeight + 1 + 'px', 'left': appLeft + 'px',
+                'right': appRight + 'px', 'top': appTop + 'px'
             });
             this.renderEventElement(event, blockElement, cellTd);
         } else {
@@ -279,7 +276,9 @@ export class MonthEvent extends EventBase {
         let eventData: { [key: string]: Object } = record.data as { [key: string]: Object };
         let eventObj: { [key: string]: Object } = this.getEventData(record);
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId: string = this.parent.currentView + '_eventTemplate';
+            let scheduleId: string = this.parent.element.id + '_';
+            let viewName: string = this.parent.activeViewOptions.eventTemplateName;
+            let templateId: string = scheduleId + viewName + 'eventTemplate';
             templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
         } else {
             let eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
@@ -378,6 +377,7 @@ export class MonthEvent extends EventBase {
             let appWidth: number = (diffInDays * this.cellWidth) - 5;
             let cellTd: Element = this.workCells[day];
             let appTop: number = (overlapCount * (appHeight + EVENT_GAP));
+            this.renderWrapperElement(cellTd as HTMLElement);
             let height: number =
                 this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
             if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
@@ -425,6 +425,7 @@ export class MonthEvent extends EventBase {
         let blockElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS));
         for (let element of blockElement) {
             let target: HTMLElement = closest(element, 'tr') as HTMLElement;
+            this.monthHeaderHeight = (<HTMLElement>element.offsetParent).offsetTop - target.offsetTop;
             element.style.height = ((target.offsetHeight - 1) - this.monthHeaderHeight) + 'px';
             let firstChild: HTMLElement = target.firstChild as HTMLElement;
             let width: number = Math.round(element.offsetWidth / firstChild.offsetWidth);
@@ -507,6 +508,17 @@ export class MonthEvent extends EventBase {
             let wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
             wrapper.appendChild(element);
             cellTd.appendChild(wrapper);
+        }
+    }
+
+    private renderWrapperElement(cellTd: HTMLElement): void {
+        let element : HTMLElement = cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
+        if (!isNullOrUndefined(element)) {
+            this.monthHeaderHeight = element.offsetTop - (<HTMLElement>cellTd).offsetTop;
+        } else {
+            let wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
+            cellTd.appendChild(wrapper);
+            this.monthHeaderHeight = wrapper.offsetTop - (<HTMLElement>cellTd).offsetTop;
         }
     }
 

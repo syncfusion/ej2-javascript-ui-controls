@@ -791,6 +791,7 @@ function fileType(file) {
     }
     return iconType;
 }
+/* istanbul ignore next */
 function getImageUrl(parent, item) {
     let baseUrl = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     let imgUrl;
@@ -6290,6 +6291,7 @@ class NavigationPane {
         }
         this.treeObj.removeNodes(moveNames);
     }
+    /* istanbul ignore next */
     selectResultNode(resultObj) {
         if (!this.parent.hasId) {
             let path = getValue('filterPath', resultObj);
@@ -6342,6 +6344,7 @@ class NavigationPane {
             this.checkDropPath(args);
         }
     }
+    /* istanbul ignore next */
     checkDropPath(args) {
         if (this.parent.hasId) {
             this.parent.isDropEnd = !this.parent.isPasteError;

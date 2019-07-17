@@ -39,6 +39,7 @@ export class Month extends ViewBase implements IRenderer {
     public onDataReady(args: NotifyEventArgs): void {
         let monthEvent: MonthEvent = new MonthEvent(this.parent);
         monthEvent.renderAppointments();
+        this.parent.notify('events-loaded', {});
     }
     public onCellClick(event: CellClickEventArgs): void {
         // Here cell click
@@ -149,6 +150,7 @@ export class Month extends ViewBase implements IRenderer {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(event.contentReady, {});
+        this.parent.updateLayoutTemplates();
     }
     private wireCellEvents(element: Element): void {
         EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
@@ -242,7 +244,9 @@ export class Month extends ViewBase implements IRenderer {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
                 let cellArgs: CellTemplateArgs = { date: td.date, type: td.type };
-                let templateId: string = this.parent.currentView + '_dateHeaderTemplate';
+                let elementId: string = this.parent.element.id + '_';
+                let viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
+                let templateId: string = elementId + viewName + 'dateHeaderTemplate';
                 let dateTemplate: NodeList =
                     this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false);
                 if (dateTemplate && dateTemplate.length) {
@@ -385,7 +389,9 @@ export class Month extends ViewBase implements IRenderer {
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args: CellTemplateArgs = { date: data.date, type: type, groupIndex: data.groupIndex };
-            let templateId: string = this.parent.currentView + '_cellTemplate';
+            let scheduleId: string = this.parent.element.id + '_';
+            let viewName: string = this.parent.activeViewOptions.cellTemplateName;
+            let templateId: string = scheduleId + viewName + 'cellTemplate';
             let cellTemplate: NodeList = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(cellTemplate), ntd);
         }

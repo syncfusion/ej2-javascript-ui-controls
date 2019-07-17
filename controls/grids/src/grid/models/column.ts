@@ -479,6 +479,9 @@ export class Column {
                     let z: number | string = x;
                     x = y;
                     y = z;
+                    let obj: Object = xObj;
+                    xObj = yObj;
+                    yObj = obj;
                 }
                 return a(x, y, xObj, yObj);
             };
@@ -646,6 +649,7 @@ export interface ColumnModel {
     /**   
      * Define the alignment of column header which is used to align the text of column header.
      * @aspdefaultvalueignore
+     * @blazorDefaultValueIgnore
      * @default null
      */
     headerTextAlign?: TextAlign;

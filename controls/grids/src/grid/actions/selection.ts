@@ -691,7 +691,6 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         let selectedCell: Element = this.getSelectedMovableCell(cellIndex);
         let args: Object;
-        let cncl: string = 'cancel';
         if (!selectedCell) {
             selectedCell = gObj.getCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
         }
@@ -715,9 +714,18 @@ export class Selection implements IAction {
                     this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
                 cancel: false
             };
-            this.onActionBegin(args, events.cellSelecting);
+            this.parent.trigger(events.cellSelecting, this.fDataUpdate(args),
+                                this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
+        } else {
+            this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData)(args);
         }
-        if (!isNullOrUndefined(args) && args[cncl] === true) {
+    }
+
+    private successCallBack(cellSelectingArgs: Object, isToggle: boolean, cellIndex: IIndex,
+                            selectedCell: Element, selectedData: Object): Function {
+        return (cellSelectingArgs: Object) => {
+        let cncl: string = 'cancel';
+        if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
             return;
         }
         this.clearCell();
@@ -735,7 +743,8 @@ export class Selection implements IAction {
                 },
                 events.cellSelected);
         }
-    }
+    };
+}
 
     private getCellIndex(rIdx: number, cIdx: number): Element {
         return (this.parent.getFrozenColumns() ? (cIdx >= this.parent.getFrozenColumns() ? this.parent.getMovableCellFromIndex(rIdx, cIdx)
@@ -772,52 +781,53 @@ export class Selection implements IAction {
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
         };
-        this.onActionBegin(args, events.cellSelecting);
-        if (!isNullOrUndefined(args) && args[cncl] === true) {
-            return;
-        }
-        this.clearCell();
-        if (startIndex.rowIndex > endIndex.rowIndex) {
-            let temp: IIndex = startIndex;
-            startIndex = endIndex;
-            endIndex = temp;
-        }
-        for (let i: number = startIndex.rowIndex; i <= endIndex.rowIndex; i++) {
-            if (this.selectionSettings.cellSelectionMode.indexOf('Box') < 0) {
-                min = i === startIndex.rowIndex ? (startIndex.cellIndex) : 0;
-                max = i === endIndex.rowIndex ? (endIndex.cellIndex) : this.getLastColIndex(i);
-            } else {
-                min = startIndex.cellIndex;
-                max = endIndex.cellIndex;
+        this.parent.trigger(events.cellSelecting, this.fDataUpdate(args), (cellSelectingArgs: Object) => {
+            if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
+                return;
             }
-            cellIndexes = [];
-            for (let j: number = min < max ? min : max, len: number = min > max ? min : max; j <= len; j++) {
-                if (frzCols) {
-                    if (j < frzCols) {
-                        selectedCell = gObj.getCellFromIndex(i, j);
-                    } else {
-                        selectedCell = gObj.getMovableCellFromIndex(i, j);
-                    }
+            this.clearCell();
+            if (startIndex.rowIndex > endIndex.rowIndex) {
+                let temp: IIndex = startIndex;
+                startIndex = endIndex;
+                endIndex = temp;
+            }
+            for (let i: number = startIndex.rowIndex; i <= endIndex.rowIndex; i++) {
+                if (this.selectionSettings.cellSelectionMode.indexOf('Box') < 0) {
+                    min = i === startIndex.rowIndex ? (startIndex.cellIndex) : 0;
+                    max = i === endIndex.rowIndex ? (endIndex.cellIndex) : this.getLastColIndex(i);
                 } else {
-                    selectedCell = gObj.getCellFromIndex(i, j);
+                    min = startIndex.cellIndex;
+                    max = endIndex.cellIndex;
                 }
-                if (!selectedCell) {
-                    continue;
+                cellIndexes = [];
+                for (let j: number = min < max ? min : max, len: number = min > max ? min : max; j <= len; j++) {
+                    if (frzCols) {
+                        if (j < frzCols) {
+                            selectedCell = gObj.getCellFromIndex(i, j);
+                        } else {
+                            selectedCell = gObj.getMovableCellFromIndex(i, j);
+                        }
+                    } else {
+                        selectedCell = gObj.getCellFromIndex(i, j);
+                    }
+                    if (!selectedCell) {
+                        continue;
+                    }
+                    cellIndexes.push(j);
+                    this.updateCellSelection(selectedCell);
+                    this.addAttribute(selectedCell);
                 }
-                cellIndexes.push(j);
-                this.updateCellSelection(selectedCell);
-                this.addAttribute(selectedCell);
+                this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
-            this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
-        }
-        this.updateCellProps(stIndex, edIndex);
-        this.onActionComplete(
-            {
-                data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-                previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
-                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-            },
-            events.cellSelected);
+            this.updateCellProps(stIndex, edIndex);
+            this.onActionComplete(
+                {
+                    data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
+                    previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
+                    previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+                },
+                events.cellSelected);
+        });
     }
 
     /**

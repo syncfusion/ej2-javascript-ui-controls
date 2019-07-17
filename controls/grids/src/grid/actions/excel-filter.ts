@@ -1,4 +1,4 @@
-import { EventHandler, remove, Browser } from '@syncfusion/ej2-base';
+import { EventHandler, remove, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
 import { parentsUntil, isActionPrevent, appendChildren, extend } from '../base/util';
 import { IGrid, IFilterArgs, EJ2Intance } from '../base/interface';
@@ -291,7 +291,11 @@ export class ExcelFilter extends CheckBoxFilter {
             open: () => {
                 let row: HTMLTableRowElement = this.dlgObj.element.querySelector('table.e-xlfl-table>tr') as HTMLTableRowElement;
                 if (this.options.column.filterTemplate) {
-                    (row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue') as HTMLElement).focus();
+                    if (isBlazor()) {
+                        (row.querySelector('.e-xlfl-valuediv').children[0] as HTMLElement).focus();
+                    } else {
+                        (row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue') as HTMLElement).focus();
+                    }
                 } else { (row.cells[1].querySelector('input:not([type=hidden])') as HTMLElement).focus(); }
             },
             close: this.removeDialog.bind(this),
@@ -346,9 +350,13 @@ export class ExcelFilter extends CheckBoxFilter {
         let isComplex: boolean = !isNullOrUndefined(col) && isComplexField(col);
         let complexFieldName: string = !isNullOrUndefined(col) && getComplexFieldID(col);
         let colValue: string = isComplex ? complexFieldName : col;
-        let fValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
+        let fValue: NumericTextBox = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            (<EJ2Intance>this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control')).ej2_instances[0]
+            : (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
         let fOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr')).ej2_instances[0];
-        let sValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
+        let sValue: NumericTextBox = this.parent.getColumnByField(col).filterTemplate && isBlazor() ?
+            (<EJ2Intance>this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control')).ej2_instances[0]
+            : (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
         let sOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr')).ej2_instances[0];
         let checkBoxValue: boolean;
         if (this.options.type === 'string') {
@@ -607,7 +615,8 @@ export class ExcelFilter extends CheckBoxFilter {
                     data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
                 }
             }
-            let element: Element[] = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate');
+            let tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
+            let element: Element[] = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, element);
             valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
             value.appendChild(valueDiv);

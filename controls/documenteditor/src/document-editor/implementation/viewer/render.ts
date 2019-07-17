@@ -646,7 +646,7 @@ export class Renderer {
                         // tslint:disable-next-line:max-line-length
                         let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.viewer.backgroundColor;
                         // tslint:disable-next-line:max-line-length
-                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                        this.renderWavyline(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                     }
                 }
             } else if (elementBox.ischangeDetected || this.viewer.triggerElementsOnLoading) {

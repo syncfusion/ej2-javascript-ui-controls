@@ -2,7 +2,7 @@
  * Rte module spec document
  */
 import { select, selectAll } from '@syncfusion/ej2-base';
-import { InPlaceEditor } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, BeginEditEventArgs } from '../../src/inplace-editor/base/index';
 import { Rte } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, triggerKeyBoardEvent, destroy } from './../render.spec';
@@ -496,6 +496,41 @@ describe('Rte module', () => {
             expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
             expect(editorObj.rteModule.compObj.value).toEqual('');
             expect((<HTMLTextAreaElement>select('.e-content', document.body)).value.trim()).toEqual('');
+        });
+    });
+
+    describe('beginEdit event testing', () => {
+        let editorObj: any;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Inline - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'RTE',
+                mode: 'Inline',
+                value: '<p>Syncfusion</p>',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'DIV').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'RTE',
+                mode: 'Popup',
+                value: '<p>Syncfusion</p>',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = true
+                }
+            });
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'DIV').not.toEqual(true);
+                done();
+            }, 400);
         });
     });
 

@@ -1690,12 +1690,30 @@
   .e-outline.e-input-group.e-error,
   .e-outline.e-input-group.e-control-wrapper.e-error,
   .e-outline.e-input-group.e-error:not(.e-float-icon-left),
-  .e-outline.e-input-group.e-control-wrapper.e-error:not(.e-float-icon-left) {
+  .e-outline.e-input-group.e-control-wrapper.e-error:not(.e-float-icon-left),
+  .e-outline.e-float-input.e-error,
+  .e-outline.e-float-input.e-input-group.e-error,
+  .e-outline.e-float-input.e-control-wrapper.e-error,
+  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-error {
     @if $skin-name == 'material' {
       border-color: $input-error-color;
     }
   }
 
+  .e-outline.e-float-input.e-success.e-input-focus,
+  .e-outline.e-float-input.e-control-wrapper.e-success.e-input-focus,
+  .e-outline.e-float-input.e-input-group.e-success.e-input-focus,
+  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-success.e-input-focus,
+  .e-outline.e-float-input.e-input-group.e-success.e-input-focus:not(.e-float-icon-left),
+  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-success.e-input-focus:not(.e-float-icon-left),
+  .e-outline.e-float-input.e-warning.e-input-focus,
+  .e-outline.e-float-input.e-control-wrapper.e-warning.e-input-focus,
+  .e-outline.e-float-input.e-input-group.e-warning.e-input-focus,
+  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-warning.e-input-focus,
+  .e-outline.e-float-input.e-input-group.e-warning.e-input-focus:not(.e-float-icon-left),
+  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-warning.e-input-focus:not(.e-float-icon-left),
+  .e-outline.e-float-input.e-error.e-input-focus,
+  .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus,
   .e-outline.e-float-input.e-input-group.e-error.e-input-focus,
   .e-outline.e-float-input.e-input-group.e-control-wrapper.e-error.e-input-focus,
   .e-outline.e-float-input.e-input-group.e-error.e-input-focus:not(.e-float-icon-left),
@@ -1708,36 +1726,26 @@
   .e-outline.e-input-group.e-success,
   .e-outline.e-input-group.e-control-wrapper.e-success,
   .e-outline.e-input-group.e-success:not(.e-float-icon-left),
-  .e-outline.e-input-group.e-control-wrapper.e-success:not(.e-float-icon-left) {
+  .e-outline.e-input-group.e-control-wrapper.e-success:not(.e-float-icon-left),
+  .e-outline.e-float-input.e-success,
+  .e-outline.e-float-input.e-input-group.e-success,
+  .e-outline.e-float-input.e-control-wrapper.e-success,
+  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-success {
     @if $skin-name == 'material' {
       border-color: $input-success-color;
-    }
-  }
-
-  .e-outline.e-float-input.e-input-group.e-success.e-input-focus,
-  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-success.e-input-focus,
-  .e-outline.e-float-input.e-input-group.e-success.e-input-focus:not(.e-float-icon-left),
-  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-success.e-input-focus:not(.e-float-icon-left) {
-    @if $skin-name == 'material' {
-      border-top-color: transparent;
     }
   }
 
   .e-outline.e-input-group.e-warning,
   .e-outline.e-input-group.e-control-wrapper.e-warning,
   .e-outline.e-input-group.e-warning:not(.e-float-icon-left),
-  .e-outline.e-input-group.e-control-wrapper.e-warning:not(.e-float-icon-left) {
+  .e-outline.e-input-group.e-control-wrapper.e-warning:not(.e-float-icon-left),
+  .e-outline.e-float-input.e-warning,
+  .e-outline.e-float-input.e-input-group.e-warning,
+  .e-outline.e-float-input.e-control-wrapper.e-warning,
+  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-warning {
     @if $skin-name == 'material' {
       border-color: $input-warning-color;
-    }
-  }
-
-  .e-outline.e-float-input.e-input-group.e-warning.e-input-focus,
-  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-warning.e-input-focus,
-  .e-outline.e-float-input.e-input-group.e-warning.e-input-focus:not(.e-float-icon-left),
-  .e-outline.e-float-input.e-input-group.e-control-wrapper.e-warning.e-input-focus:not(.e-float-icon-left) {
-    @if $skin-name == 'material' {
-      border-top-color: transparent;
     }
   }
 
@@ -1762,6 +1770,8 @@
     }
   }
 
+  .e-outline.e-float-input.e-input-focus.e-error:not(.e-success):not(.e-warning),
+  .e-outline.e-float-input.e-control-wrapper.e-input-focus.e-error:not(.e-success):not(.e-warning),
   .e-outline.e-float-input.e-input-group.e-input-focus.e-error:not(.e-success):not(.e-warning),
   .e-outline.e-float-input.e-input-group.e-control-wrapper.e-input-focus.e-error:not(.e-success):not(.e-warning) {
     @if $skin-name == 'material' {
@@ -1769,6 +1779,8 @@
     }
   }
 
+  .e-outline.e-float-input.e-input-focus.e-success:not(.e-error):not(.e-warning),
+  .e-outline.e-float-input.e-control-wrapper.e-input-focus.e-success:not(.e-error):not(.e-warning),
   .e-outline.e-float-input.e-input-group.e-input-focus.e-success:not(.e-error):not(.e-warning),
   .e-outline.e-float-input.e-input-group.e-control-wrapper.e-input-focus.e-success:not(.e-error):not(.e-warning) {
     @if $skin-name == 'material' {
@@ -1776,6 +1788,8 @@
     }
   }
 
+  .e-outline.e-float-input.e-input-focus.e-warning:not(.e-error):not(.e-success),
+  .e-outline.e-float-input.e-control-wrapper.e-input-focus.e-warning:not(.e-error):not(.e-success),
   .e-outline.e-float-input.e-input-group.e-input-focus.e-warning:not(.e-error):not(.e-success),
   .e-outline.e-float-input.e-input-group.e-control-wrapper.e-input-focus.e-warning:not(.e-error):not(.e-success) {
     @if $skin-name == 'material' {
@@ -1821,7 +1835,14 @@
   .e-outline.e-float-input.e-control-wrapper.e-small.e-success textarea:focus ~ label.e-float-text,
   .e-small .e-outline.e-float-input.e-control-wrapper.e-success textarea:focus ~ label.e-float-text,
   .e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-success textarea:focus ~ label.e-float-text,
-  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-success textarea:focus ~ label.e-float-text {
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-success textarea:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-success label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-input-group.e-success label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-success label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-valid-input.e-success:not(.e-input-focus) input:valid ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-success:not(.e-input-focus) input:focus ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-valid-input.e-success:not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-success:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top {
     @if $skin-name == 'material' {
       color: $input-success-color;
     }
@@ -1831,7 +1852,7 @@
   .e-outline.e-float-input.e-input-group.e-error.e-valid-input  label.e-label-top.e-float-text,
   .e-outline.e-float-input.e-bigger.e-error.e-input-focus input:focus ~ label.e-float-text,
   .e-bigger .e-outline.e-float-input.e-error.e-input-focus input:focus ~ label.e-float-text,
-  .e-outline.e-float-input.e-small.e-success.e-input-focus input:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-error.e-input-focus input:focus ~ label.e-float-text,
   .e-small .e-outline.e-float-input.e-error input:focus ~ label.e-float-text,
   .e-outline.e-float-input.e-small.e-bigger.e-error input:focus ~ label.e-float-text,
   .e-bigger .e-outline.e-float-input.e-small:not(.e-error) input:focus ~ label.e-float-text,
@@ -1855,7 +1876,14 @@
   .e-outline.e-float-input.e-control-wrapper.e-small.e-error textarea:focus ~ label.e-float-text,
   .e-small .e-outline.e-float-input.e-control-wrapper.e-error textarea:focus ~ label.e-float-text,
   .e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-error textarea:focus ~ label.e-float-text,
-  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-error textarea:focus ~ label.e-float-text {
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-error textarea:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-error label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-input-group.e-error label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-error label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-valid-input.e-error:not(.e-input-focus) input:valid ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-error:not(.e-input-focus) input:focus ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-valid-input.e-error:not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-error:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top {
     @if $skin-name == 'material' {
       color: $input-error-color;
     }
@@ -1865,7 +1893,7 @@
   .e-outline.e-float-input.e-input-group.e-warning.e-valid-input label.e-label-top.e-float-text,
   .e-outline.e-float-input.e-bigger.e-warning.e-input-focus input:focus ~ label.e-float-text,
   .e-bigger .e-outline.e-float-input.e-warning.e-input-focus input:focus ~ label.e-float-text,
-  .e-outline.e-float-input.e-small.e-success.e-input-focus input:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-small.e-warning.e-input-focus input:focus ~ label.e-float-text,
   .e-small .e-outline.e-float-input.e-warning input:focus ~ label.e-float-text,
   .e-outline.e-float-input.e-small.e-bigger.e-warning input:focus ~ label.e-float-text,
   .e-bigger .e-outline.e-float-input.e-small:not(.e-warning) input:focus ~ label.e-float-text,
@@ -1889,7 +1917,14 @@
   .e-outline.e-float-input.e-control-wrapper.e-small.e-warning textarea:focus ~ label.e-float-text,
   .e-small .e-outline.e-float-input.e-control-wrapper.e-warning textarea:focus ~ label.e-float-text,
   .e-outline.e-float-input.e-control-wrapper.e-small.e-bigger.e-warning textarea:focus ~ label.e-float-text,
-  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-warning textarea:focus ~ label.e-float-text {
+  .e-bigger .e-outline.e-float-input.e-control-wrapper.e-small.e-warning textarea:focus ~ label.e-float-text,
+  .e-outline.e-float-input.e-warning label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-input-group.e-warning label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-warning label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-valid-input.e-warning:not(.e-input-focus) input:valid ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-warning:not(.e-input-focus) input:focus ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-valid-input.e-warning:not(.e-input-focus) textarea:valid ~ label.e-float-text.e-label-top,
+  .e-outline.e-float-input.e-control-wrapper.e-valid-input.e-warning:not(.e-input-focus) textarea:focus ~ label.e-float-text.e-label-top {
     @if $skin-name == 'material' {
       color: $input-warning-color;
     }

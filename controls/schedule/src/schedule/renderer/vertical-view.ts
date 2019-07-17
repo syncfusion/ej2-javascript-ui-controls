@@ -42,6 +42,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             let appointment: MonthEvent = new MonthEvent(this.parent);
             appointment.renderAppointments();
         }
+        this.parent.notify('events-loaded', {});
     }
     private onContentScroll(e: Event): void {
         this.parent.removeNewEventElement();
@@ -266,14 +267,15 @@ export class VerticalView extends ViewBase implements IRenderer {
         let cntEle: NodeList;
         let wrapper: HTMLElement = createElement('div');
         let templateName: string = '';
-        let templateId: string = this.parent.currentView + '_';
+        let templateId: string = this.parent.element.id + '_';
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
                     templateName = 'dateHeaderTemplate';
                     let args: CellTemplateArgs = { date: date, type: type };
+                    let viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
                     cntEle =
-                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + templateName, false);
+                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 } else {
                     wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
                         `<span class="e-header-date e-navigate">${ViewHelper.getTimelineDate(this.parent, date)}</span>` :
@@ -306,10 +308,11 @@ export class VerticalView extends ViewBase implements IRenderer {
                 break;
             case 'alldayCells':
                 if (this.parent.activeViewOptions.cellTemplate) {
+                    let viewName: string = this.parent.activeViewOptions.cellTemplateName;
                     templateName = 'cellTemplate';
                     let args: CellTemplateArgs = { date: date, type: type, groupIndex: groupIndex };
                     cntEle =
-                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + templateName, false);
+                    this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
                 break;
         }
@@ -338,6 +341,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(event.contentReady, {});
+        this.parent.updateLayoutTemplates();
     }
     public renderHeader(): void {
         let tr: Element = createElement('tr');
@@ -547,7 +551,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args: CellTemplateArgs = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
-            let templateId: string = this.parent.currentView + '_cellTemplate';
+            let scheduleId: string = this.parent.element.id + '_';
+            let viewName: string = this.parent.activeViewOptions.cellTemplateName;
+            let templateId: string = scheduleId + viewName + 'cellTemplate';
             let tooltipTemplate: NodeList = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(tooltipTemplate), ntd);
         }

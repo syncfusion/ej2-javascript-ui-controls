@@ -5687,9 +5687,9 @@ class QuickPopups {
         let cellDetails = this.getFormattedString(temp);
         let quickCellPopup = createElement('div', { className: CELL_POPUP_CLASS });
         let tArgs = extend({}, temp, { elementType: 'cell' }, true);
-        let templateId = this.parent.currentView;
+        let templateId = this.parent.element.id + '_';
         if (this.parent.quickInfoTemplates.header) {
-            let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
+            let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
             append(headerTemp, quickCellPopup);
         }
         else {
@@ -5701,7 +5701,7 @@ class QuickPopups {
             quickCellPopup.appendChild(headerTemplate);
         }
         if (this.parent.quickInfoTemplates.content) {
-            let contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
+            let contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
             append(contentTemp, quickCellPopup);
         }
         else {
@@ -5717,7 +5717,7 @@ class QuickPopups {
             quickCellPopup.appendChild(contentTemplate);
         }
         if (this.parent.quickInfoTemplates.footer) {
-            let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
+            let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
             append(footerTemp, quickCellPopup);
         }
         else {
@@ -5791,9 +5791,9 @@ class QuickPopups {
             let args = this.getFormattedString(eventData);
             let quickEventPopup = createElement('div', { className: EVENT_POPUP_CLASS });
             let tArgs = extend({}, eventData, { elementType: 'event' }, true);
-            let templateId = this.parent.currentView;
+            let templateId = this.parent.element.id + '_';
             if (this.parent.quickInfoTemplates.header) {
-                let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + '_header', false);
+                let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
                 append(headerTemp, quickEventPopup);
             }
             else {
@@ -5809,7 +5809,7 @@ class QuickPopups {
                 quickEventPopup.appendChild(headerTemplate);
             }
             if (this.parent.quickInfoTemplates.content) {
-                let content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + '_content', false);
+                let content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
                 append(content, quickEventPopup);
             }
             else {
@@ -5837,7 +5837,7 @@ class QuickPopups {
                 quickEventPopup.appendChild(contentTemplate);
             }
             if (this.parent.quickInfoTemplates.footer) {
-                let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + '_footer', false);
+                let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
                 append(footerTemp, quickEventPopup);
             }
             else {
@@ -6195,6 +6195,7 @@ class QuickPopups {
         this.parent.eventBase.focusElement();
     }
     beforeQuickPopupOpen(target) {
+        this.updateQuickPopupTemplates();
         let isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         let popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp = {
@@ -6207,6 +6208,7 @@ class QuickPopups {
                 if (popupArgs.element.classList.contains(POPUP_OPEN)) {
                     this.quickPopupClose();
                 }
+                this.resetQuickPopupTemplates();
                 this.quickPopup.element.innerHTML = '';
             }
             else {
@@ -6297,8 +6299,20 @@ class QuickPopups {
                 editIcon.focus();
             }
         }
+        this.updateQuickPopupTemplates();
+    }
+    updateQuickPopupTemplates() {
+        updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+        updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+        updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+    }
+    resetQuickPopupTemplates() {
+        resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+        resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+        resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
     }
     quickPopupClose() {
+        this.resetQuickPopupTemplates();
         this.parent.eventBase.focusElement();
         this.quickPopup.relateTo = WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();
@@ -7576,8 +7590,7 @@ class EventWindow {
             visible: false,
             width: '500px',
             beforeOpen: this.onBeforeOpen.bind(this),
-            beforeClose: this.onBeforeClose.bind(this),
-            close: this.onDialogClose.bind(this)
+            beforeClose: this.onBeforeClose.bind(this)
         };
         if (this.parent.isAdaptive) {
             dialogModel.cssClass = EVENT_WINDOW_DIALOG_CLASS + ' ' + DEVICE_CLASS;
@@ -7602,6 +7615,7 @@ class EventWindow {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
+        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         addClass([this.element.parentElement], EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -7625,6 +7639,7 @@ class EventWindow {
         this.parent.quickPopup.quickPopupHide(true);
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
+            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
         }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
@@ -7648,8 +7663,10 @@ class EventWindow {
         }
     }
     setDialogContent() {
+        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
+        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
     }
     onBeforeOpen(args) {
         let eventProp = {
@@ -7681,11 +7698,6 @@ class EventWindow {
         this.resetForm();
         this.parent.eventBase.focusElement();
     }
-    onDialogClose() {
-        if (this.parent.editorTemplate) {
-            resetBlazorTemplate(this.parent.element.id + 'editorTemplate', 'EditorTemplate');
-        }
-    }
     getEventWindowContent() {
         let container = createElement('div', { className: FORM_CONTAINER_CLASS });
         let form = createElement('form', {
@@ -7700,13 +7712,13 @@ class EventWindow {
     renderFormElements(form, args) {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
+                resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node) => remove(node));
             }
-            let templateId = this.parent.currentView + '_editorTemplate';
-            let editorTemplate = this.parent.getEditorTemplate()(args, this.parent, 'editorTemplate', templateId, false);
+            let templateId = this.parent.element.id + '_editorTemplate';
+            let editorTemplate = this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false);
             append(editorTemplate, form);
-            updateBlazorTemplate(templateId, 'EditorTemplate');
         }
         else {
             form.appendChild(this.getDefaultEventWindowContent());
@@ -9026,6 +9038,7 @@ class EventWindow {
      * @private
      */
     destroy() {
+        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
         }
@@ -9239,8 +9252,9 @@ class Render {
         }
     }
     initializeLayout(viewName) {
-        this.resetTemplates();
         if (this.parent.activeView) {
+            this.parent.resetLayoutTemplates();
+            this.parent.resetEventTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }
@@ -9330,77 +9344,6 @@ class Render {
         this.parent.element.setAttribute('role', 'main');
         this.parent.element.setAttribute('aria-label', content);
     }
-    refreshTemplates() {
-        if (this.parent.dateHeaderTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_dateHeaderTemplate', 'DateHeaderTemplate', this.parent);
-        }
-        if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_majorSlotTemplate', 'MajorSlotTemplate', this.parent);
-        }
-        if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_minorSlotTemplate', 'MinorSlotTemplate', this.parent);
-        }
-        if (this.parent.cellTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_cellTemplate', 'CellTemplate', this.parent);
-        }
-        if (this.parent.activeViewOptions.eventTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_eventTemplate', 'EventTemplate', this.parent);
-        }
-        if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_headerTooltipTemplate', 'HeaderTooltipTemplate', this.parent);
-        }
-        if (this.parent.eventSettings.tooltipTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_tooltipTemplate', 'TooltipTemplate', this.parent);
-        }
-        if (this.parent.quickInfoTemplates.header) {
-            updateBlazorTemplate(this.parent.currentView + '_header', 'Header', this.parent);
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            updateBlazorTemplate(this.parent.currentView + '_content', 'Content', this.parent);
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            updateBlazorTemplate(this.parent.currentView + '_footer', 'Footer', this.parent);
-        }
-        if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            updateBlazorTemplate(this.parent.currentView + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this.parent);
-        }
-    }
-    resetTemplates() {
-        let viewName = this.parent.viewCollections[this.parent.uiStateValues.viewIndex].option;
-        if (this.parent.dateHeaderTemplate) {
-            resetBlazorTemplate(viewName + '_dateHeaderTemplate', 'DateHeaderTemplate');
-        }
-        if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
-            resetBlazorTemplate(viewName + '_majorSlotTemplate', 'MajorSlotTemplate');
-        }
-        if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
-            resetBlazorTemplate(viewName + '_minorSlotTemplate', 'MinorSlotTemplate');
-        }
-        if (this.parent.cellTemplate) {
-            resetBlazorTemplate(viewName + '_cellTemplate', 'CellTemplate');
-        }
-        if (this.parent.activeViewOptions.eventTemplate) {
-            resetBlazorTemplate(viewName + '_eventTemplate', 'EventTemplate');
-        }
-        if (this.parent.activeViewOptions.group.headerTooltipTemplate) {
-            resetBlazorTemplate(viewName + '_headerTooltipTemplate', 'HeaderTooltipTemplate');
-        }
-        if (this.parent.eventSettings.tooltipTemplate) {
-            resetBlazorTemplate(viewName + '_tooltipTemplate', 'TooltipTemplate');
-        }
-        if (this.parent.quickInfoTemplates.header) {
-            resetBlazorTemplate(viewName + '_header', 'Header');
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            resetBlazorTemplate(viewName + '_content', 'Content');
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            resetBlazorTemplate(viewName + '_footer', 'Footer');
-        }
-        if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            resetBlazorTemplate(viewName + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
-        }
-    }
     refreshDataManager() {
         let start = this.parent.activeView.startDate();
         let end = this.parent.activeView.endDate();
@@ -9420,7 +9363,6 @@ class Render {
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
-            this.refreshTemplates();
             this.parent.trigger(dataBound, null, () => this.parent.hideSpinner());
         });
     }
@@ -10574,9 +10516,96 @@ let Schedule = class Schedule extends Component {
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
         this.initializeDataModule();
+        this.on('data-ready', this.resetEventTemplates, this);
+        this.on('events-loaded', this.updateEventTemplates, this);
         this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
+    }
+    updateLayoutTemplates() {
+        let view = this.views[this.viewIndex];
+        if (this.dateHeaderTemplate) {
+            updateBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate', this);
+        }
+        if (this.activeViewOptions.dateHeaderTemplateName !== '') {
+            let templateName = 'dateHeaderTemplate';
+            let tempID = this.element.id + '_' + this.activeViewOptions.dateHeaderTemplateName + templateName;
+            updateBlazorTemplate(tempID, 'DateHeaderTemplate', view);
+        }
+        if (this.cellTemplate) {
+            updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
+        }
+        if (this.activeViewOptions.cellTemplateName !== '') {
+            let tempID = this.element.id + '_' + this.activeViewOptions.cellTemplateName + 'cellTemplate';
+            updateBlazorTemplate(tempID, 'CellTemplate', view);
+        }
+        if (this.resourceHeaderTemplate) {
+            updateBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this);
+        }
+        if (this.activeViewOptions.resourceHeaderTemplateName !== '') {
+            let templateName = 'resourceHeaderTemplate';
+            let tempID = this.element.id + '_' + this.activeViewOptions.resourceHeaderTemplateName + templateName;
+            updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
+        }
+        if (this.timeScale.minorSlotTemplate) {
+            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this);
+        }
+        if (this.timeScale.majorSlotTemplate) {
+            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this);
+        }
+    }
+    resetLayoutTemplates() {
+        let view = this.viewCollections[this.uiStateValues.viewIndex];
+        if (this.dateHeaderTemplate) {
+            resetBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate');
+        }
+        if (view.dateHeaderTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.dateHeaderTemplateName + 'dateHeaderTemplate', 'DateHeaderTemplate');
+        }
+        if (this.cellTemplate) {
+            resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
+        }
+        if (view.cellTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.cellTemplateName + 'cellTemplate', 'CellTemplate');
+        }
+        if (this.resourceHeaderTemplate) {
+            resetBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
+        }
+        if (view.resourceHeaderTemplateName !== '') {
+            let templateName = 'ResourceHeaderTemplate';
+            resetBlazorTemplate(this.element.id + '_' + view.resourceHeaderTemplateName + 'resourceHeaderTemplate', templateName);
+        }
+        if (this.timeScale.minorSlotTemplate) {
+            resetBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate');
+        }
+        if (this.timeScale.majorSlotTemplate) {
+            resetBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate');
+        }
+    }
+    updateEventTemplates() {
+        let view = this.views[this.viewIndex];
+        if (this.eventSettings.template) {
+            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings);
+        }
+        if (this.activeViewOptions.eventTemplateName !== '') {
+            let tempID = this.element.id + '_' + this.activeViewOptions.eventTemplateName + 'eventTemplate';
+            updateBlazorTemplate(tempID, 'EventTemplate', view);
+        }
+        if (this.viewCollections[this.viewIndex].option === 'Agenda' || this.viewCollections[this.viewIndex].option === 'MonthAgenda') {
+            this.updateLayoutTemplates();
+        }
+    }
+    resetEventTemplates() {
+        let view = this.viewCollections[this.uiStateValues.viewIndex];
+        if (this.eventSettings.template) {
+            resetBlazorTemplate(this.element.id + '_eventTemplate', 'Template');
+        }
+        if (view.eventTemplateName !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.eventTemplateName + 'eventTemplate', 'EventTemplate');
+        }
+        if (view.option === 'Agenda' || view.option === 'MonthAgenda') {
+            this.resetLayoutTemplates();
+        }
     }
     initializeResources(isSetModel = false) {
         if (this.resources.length > 0) {
@@ -10650,6 +10679,10 @@ let Schedule = class Schedule extends Component {
             }
             let obj = extend({ option: viewName }, isOptions ? view : {});
             let fieldViewName = viewName.charAt(0).toLowerCase() + viewName.slice(1);
+            obj.dateHeaderTemplateName = obj.dateHeaderTemplate ? obj.option : '';
+            obj.cellTemplateName = obj.cellTemplate ? obj.option : '';
+            obj.resourceHeaderTemplateName = obj.resourceHeaderTemplate ? obj.option : '';
+            obj.eventTemplateName = obj.eventTemplate ? obj.option : '';
             this.viewCollections.push(obj);
             if (isNullOrUndefined(this.viewOptions[fieldViewName])) {
                 this.viewOptions[fieldViewName] = [obj];
@@ -12446,6 +12479,7 @@ class MonthEvent extends EventBase {
     constructor(parent) {
         super(parent);
         this.renderedEvents = [];
+        this.monthHeaderHeight = 0;
         this.moreIndicatorHeight = 19;
         this.renderType = 'day';
         this.element = this.parent.activeView.getPanel();
@@ -12462,12 +12496,6 @@ class MonthEvent extends EventBase {
             return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
-        if (this.parent.currentView === 'Month') {
-            this.monthHeaderHeight = getOuterHeight(this.element.querySelector('.' + DATE_HEADER_CLASS));
-        }
-        else {
-            this.monthHeaderHeight = 0;
-        }
         let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         let scrollTop = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
@@ -12593,11 +12621,13 @@ class MonthEvent extends EventBase {
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth;
             let appLeft = (this.parent.enableRtl) ? 0 : position;
             let appRight = (this.parent.enableRtl) ? position : 0;
+            this.renderWrapperElement(cellTd);
             let appHeight = this.cellHeight - this.monthHeaderHeight;
             let appTop = this.getRowTop(resIndex);
             let blockElement = this.createBlockAppointmentElement(event, resIndex);
             setStyleAttribute(blockElement, {
-                'width': appWidth + 'px', 'height': appHeight + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
+                'width': appWidth + 'px', 'height': appHeight + 1 + 'px', 'left': appLeft + 'px',
+                'right': appRight + 'px', 'top': appTop + 'px'
             });
             this.renderEventElement(event, blockElement, cellTd);
         }
@@ -12685,7 +12715,9 @@ class MonthEvent extends EventBase {
         let eventData = record.data;
         let eventObj = this.getEventData(record);
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId = this.parent.currentView + '_eventTemplate';
+            let scheduleId = this.parent.element.id + '_';
+            let viewName = this.parent.activeViewOptions.eventTemplateName;
+            let templateId = scheduleId + viewName + 'eventTemplate';
             templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
         }
         else {
@@ -12787,6 +12819,7 @@ class MonthEvent extends EventBase {
             let appWidth = (diffInDays * this.cellWidth) - 5;
             let cellTd = this.workCells[day];
             let appTop = (overlapCount * (appHeight + EVENT_GAP));
+            this.renderWrapperElement(cellTd);
             let height = this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
             if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
                 let appointmentElement = this.createAppointmentElement(event, resIndex);
@@ -12832,6 +12865,7 @@ class MonthEvent extends EventBase {
         let blockElement = [].slice.call(this.element.querySelectorAll('.' + BLOCK_APPOINTMENT_CLASS));
         for (let element of blockElement) {
             let target = closest(element, 'tr');
+            this.monthHeaderHeight = element.offsetParent.offsetTop - target.offsetTop;
             element.style.height = ((target.offsetHeight - 1) - this.monthHeaderHeight) + 'px';
             let firstChild = target.firstChild;
             let width = Math.round(element.offsetWidth / firstChild.offsetWidth);
@@ -12911,6 +12945,17 @@ class MonthEvent extends EventBase {
             let wrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
             wrapper.appendChild(element);
             cellTd.appendChild(wrapper);
+        }
+    }
+    renderWrapperElement(cellTd) {
+        let element = cellTd.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
+        if (!isNullOrUndefined(element)) {
+            this.monthHeaderHeight = element.offsetTop - cellTd.offsetTop;
+        }
+        else {
+            let wrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+            cellTd.appendChild(wrapper);
+            this.monthHeaderHeight = wrapper.offsetTop - cellTd.offsetTop;
         }
     }
     getMoreIndicatorElement(count, startDate, endDate) {
@@ -14894,7 +14939,9 @@ class ViewBase {
     setResourceHeaderContent(tdElement, tdData, className = 'e-text-ellipsis') {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
             let data = { resource: tdData.resource, resourceData: tdData.resourceData };
-            let templateId = this.parent.currentView + '_resourceHeaderTemplate';
+            let scheduleId = this.parent.element.id + '_';
+            let viewName = this.parent.activeViewOptions.resourceHeaderTemplateName;
+            let templateId = scheduleId + viewName + 'resourceHeaderTemplate';
             let quickTemplate = this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false);
             append(quickTemplate, tdElement);
         }
@@ -15260,7 +15307,9 @@ class VerticalEvent extends EventBase {
         let templateElement;
         let eventData = data;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId = this.parent.currentView + '_eventTemplate';
+            let elementId = this.parent.element.id + '_';
+            let viewName = this.parent.activeViewOptions.eventTemplateName;
+            let templateId = elementId + viewName + 'eventTemplate';
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         }
         else {
@@ -15695,6 +15744,7 @@ class VerticalView extends ViewBase {
             let appointment = new MonthEvent(this.parent);
             appointment.renderAppointments();
         }
+        this.parent.notify('events-loaded', {});
     }
     onContentScroll(e) {
         this.parent.removeNewEventElement();
@@ -15929,14 +15979,15 @@ class VerticalView extends ViewBase {
         let cntEle;
         let wrapper = createElement('div');
         let templateName = '';
-        let templateId = this.parent.currentView + '_';
+        let templateId = this.parent.element.id + '_';
         switch (type) {
             case 'dateHeader':
                 if (this.parent.activeViewOptions.dateHeaderTemplate) {
                     templateName = 'dateHeaderTemplate';
                     let args = { date: date, type: type };
+                    let viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
                     cntEle =
-                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + templateName, false);
+                        this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
                 else {
                     wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
@@ -15972,10 +16023,11 @@ class VerticalView extends ViewBase {
                 break;
             case 'alldayCells':
                 if (this.parent.activeViewOptions.cellTemplate) {
+                    let viewName = this.parent.activeViewOptions.cellTemplateName;
                     templateName = 'cellTemplate';
                     let args = { date: date, type: type, groupIndex: groupIndex };
                     cntEle =
-                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + templateName, false);
+                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
                 break;
         }
@@ -16004,6 +16056,7 @@ class VerticalView extends ViewBase {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
+        this.parent.updateLayoutTemplates();
     }
     renderHeader() {
         let tr = createElement('tr');
@@ -16217,7 +16270,9 @@ class VerticalView extends ViewBase {
         addClass([ntd], clsName);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args = { date: cellDate, type: type, groupIndex: tdData.groupIndex };
-            let templateId = this.parent.currentView + '_cellTemplate';
+            let scheduleId = this.parent.element.id + '_';
+            let viewName = this.parent.activeViewOptions.cellTemplateName;
+            let templateId = scheduleId + viewName + 'cellTemplate';
             let tooltipTemplate = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(tooltipTemplate), ntd);
         }
@@ -16436,6 +16491,7 @@ class Month extends ViewBase {
     onDataReady(args) {
         let monthEvent = new MonthEvent(this.parent);
         monthEvent.renderAppointments();
+        this.parent.notify('events-loaded', {});
     }
     onCellClick(event) {
         // Here cell click
@@ -16548,6 +16604,7 @@ class Month extends ViewBase {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
+        this.parent.updateLayoutTemplates();
     }
     wireCellEvents(element) {
         EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
@@ -16644,7 +16701,9 @@ class Month extends ViewBase {
             tdEle.setAttribute('data-date', td.date.getTime().toString());
             if (this.parent.activeViewOptions.dateHeaderTemplate) {
                 let cellArgs = { date: td.date, type: td.type };
-                let templateId = this.parent.currentView + '_dateHeaderTemplate';
+                let elementId = this.parent.element.id + '_';
+                let viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
+                let templateId = elementId + viewName + 'dateHeaderTemplate';
                 let dateTemplate = this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false);
                 if (dateTemplate && dateTemplate.length) {
                     append([].slice.call(dateTemplate), tdEle);
@@ -16790,7 +16849,9 @@ class Month extends ViewBase {
         this.renderDateHeaderElement(data, ntd);
         if (this.parent.activeViewOptions.cellTemplate) {
             let args = { date: data.date, type: type, groupIndex: data.groupIndex };
-            let templateId = this.parent.currentView + '_cellTemplate';
+            let scheduleId = this.parent.element.id + '_';
+            let viewName = this.parent.activeViewOptions.cellTemplateName;
+            let templateId = scheduleId + viewName + 'cellTemplate';
             let cellTemplate = this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false);
             append([].slice.call(cellTemplate), ntd);
         }
@@ -16969,7 +17030,9 @@ class AgendaBase {
                 let templateEle;
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
                     addClass([appWrapper], EVENT_TEMPLATE);
-                    let templateId = this.parent.currentView + '_eventTemplate';
+                    let scheduleId = this.parent.element.id + '_';
+                    let viewName = this.parent.activeViewOptions.eventTemplateName;
+                    let templateId = scheduleId + viewName + 'eventTemplate';
                     templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId, false);
                     if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
                         let iconClass = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
@@ -17223,7 +17286,9 @@ class AgendaBase {
         if (this.parent.activeViewOptions.dateHeaderTemplate) {
             dateHeader = createElement('div', { className: AGENDA_HEADER_CLASS });
             let args = { date: date, type: 'dateHeader' };
-            let templateId = this.parent.currentView + '_dateHeaderTemplate';
+            let scheduleId = this.parent.element.id + '_';
+            let viewName = this.parent.activeViewOptions.dateHeaderTemplateName;
+            let templateId = scheduleId + viewName + 'dateHeaderTemplate';
             let dateTemplate = this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false);
             append([].slice.call(dateTemplate), dateHeader);
         }
@@ -17332,6 +17397,7 @@ class Agenda extends ViewBase {
         this.agendaBase.wireEventActions();
         let contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
         contentArea.scrollTop = 1;
+        this.parent.notify('events-loaded', {});
     }
     refreshEvent(refreshDate) {
         let processedData = [];
@@ -17762,11 +17828,14 @@ class MonthAgenda extends Month {
             }
             count++;
         }
+        this.parent.notify('events-loaded', {});
     }
     onCellClick(event) {
         this.parent.quickPopup.quickPopupHide();
         let filterData = this.appointmentFiltering(event.startTime);
+        this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
+        this.parent.notify('events-loaded', {});
         this.parent.setProperties({ selectedDate: new Date('' + event.startTime) }, true);
     }
     onEventRender(events, date) {
@@ -18143,6 +18212,7 @@ class TimelineViews extends VerticalView {
             let appointment = new TimelineEvent(this.parent, 'day');
             appointment.renderAppointments();
         }
+        this.parent.notify('events-loaded', {});
     }
     getModuleName() {
         return 'timelineViews';
@@ -18170,6 +18240,7 @@ class TimelineMonth extends Month {
     onDataReady(args) {
         let appointment = new TimelineEvent(this.parent, 'day');
         appointment.renderAppointments();
+        this.parent.notify('events-loaded', {});
     }
     getLeftPanelElement() {
         return this.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);

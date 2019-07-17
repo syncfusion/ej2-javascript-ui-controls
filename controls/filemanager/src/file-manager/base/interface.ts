@@ -195,6 +195,7 @@ export interface FileSelectEventArgs {
 export interface ToolbarCreateEventArgs {
     /**
      * Return an array of items that is used to configure toolbar content.
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel[]
      */
     items: ItemModel[];
 }
@@ -210,6 +211,7 @@ export interface ToolbarClickEventArgs {
     fileDetails: Object[];
     /**
      * Return the currently clicked toolbar item as JSON object.
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
      */
     item: ItemModel;
 }
@@ -229,6 +231,7 @@ export interface MenuClickEventArgs {
     fileDetails?: Object[];
     /**
      * Return the currently clicked context menu item as JSON object.
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel
      */
     item?: MenuItemModel;
 }
@@ -248,10 +251,12 @@ export interface MenuOpenEventArgs {
     fileDetails?: Object[];
     /**
      * Returns the current context menu items as JSON object.
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel[]
      */
     items?: MenuItemModel[];
     /**
      * Returns the instance of context menu component.
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ContextMenuModel
      */
     menuModule?: ContextMenu;
     /**

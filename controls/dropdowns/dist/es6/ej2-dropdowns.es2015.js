@@ -1064,7 +1064,6 @@ let DropDownBase = class DropDownBase extends Component {
      * Gets the data Object that matches the given value.
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
-     * @isGenericType true
      */
     getDataByValue(value) {
         if (!isNullOrUndefined(this.listData)) {
@@ -1268,7 +1267,6 @@ let DropDownList = class DropDownList extends DropDownBase {
         this.preventAltUp = false;
         this.isCustomFilter = false;
         this.isSecondClick = false;
-        this.filterVal = false;
         this.keyConfigure = {
             tab: 'tab',
             enter: '13',
@@ -1465,22 +1463,11 @@ let DropDownList = class DropDownList extends DropDownBase {
         return 'EJS-DROPDOWNLIST';
     }
     getElementByText(text) {
-        let formElement = closest(this.inputElement, 'form');
-        if (formElement && this.filterVal) {
-            this.listData = this.actionCompleteData.list;
-        }
         return this.getElementByValue(this.getValueByText(text));
     }
     getElementByValue(value) {
         let item;
-        let listItems;
-        let formElement = closest(this.inputElement, 'form');
-        if (formElement && this.filterVal) {
-            listItems = this.actionCompleteData.ulElement.childNodes;
-        }
-        else {
-            listItems = this.getItems();
-        }
+        let listItems = this.getItems();
         for (let liItem of listItems) {
             if (this.getFormattedValue(liItem.getAttribute('data-value')) === value) {
                 item = liItem;
@@ -2331,9 +2318,6 @@ let DropDownList = class DropDownList extends DropDownBase {
     filteringAction(dataSource, query, fields) {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
-            if (this.filterInput.value.trim() !== '') {
-                this.filterVal = true;
-            }
             if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
@@ -2662,6 +2646,11 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
+                let formElement = closest(this.inputElement, 'form');
+                if (this.isFiltering() && formElement && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
+                    this.isActive = true;
+                    this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
+                }
             },
             open: () => {
                 EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
@@ -3101,11 +3090,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                         this.renderList();
                     }
                     if (!this.initRemoteRender) {
-                        let formElement = closest(this.inputElement, 'form');
                         let li = this.getElementByText(newProp.text);
-                        if (formElement && this.filterVal) {
-                            li.classList.remove('e-active');
-                        }
                         if (!this.checkValidLi(li)) {
                             if (this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
@@ -3256,7 +3241,6 @@ let DropDownList = class DropDownList extends DropDownBase {
      * @returns void.
      */
     showPopup() {
-        this.filterVal = false;
         if (!this.enabled) {
             return;
         }

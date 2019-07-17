@@ -172,6 +172,7 @@ export class ColumnMenu implements IAction {
             items: this.getItems(),
             select: this.columnMenuItemClick.bind(this),
             beforeOpen: this.columnMenuBeforeOpen.bind(this),
+            onOpen: this.columnMenuOnOpen.bind(this),
             onClose: this.columnMenuOnClose.bind(this),
             beforeItemRender: this.beforeMenuItemRender.bind(this),
             beforeClose: this.columnMenuBeforeClose.bind(this)
@@ -248,6 +249,18 @@ export class ColumnMenu implements IAction {
         }
         this.columnMenu.enableItems(this.disableItems, false);
         this.columnMenu.hideItems(this.hiddenItems);
+    }
+
+    private columnMenuOnOpen(args: OpenCloseMenuEventArgs): void {
+        if (args.element.className === 'e-menu-parent e-ul ') {
+            if (args.element.offsetHeight > window.innerHeight) {
+                args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
+                args.element.style.overflowY = 'auto';
+            }  else if (this.parent.element.offsetHeight > window.innerHeight) {
+                args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
+                args.element.style.overflowY = 'auto';
+            }
+        }
     }
 
     private ensureDisabledStatus(item: string): Boolean {

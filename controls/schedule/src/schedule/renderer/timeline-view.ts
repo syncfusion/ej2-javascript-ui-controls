@@ -212,6 +212,7 @@ export class TimelineViews extends VerticalView {
             let appointment: TimelineEvent = new TimelineEvent(this.parent, 'day');
             appointment.renderAppointments();
         }
+        this.parent.notify('events-loaded', {});
     }
 
     protected getModuleName(): string {

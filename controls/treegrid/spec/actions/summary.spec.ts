@@ -318,7 +318,191 @@ describe('Summary with Sorting', () => {
       destroy(TreegridObj);
     });
   });
-  
+
+  describe('ExpandCollapse testing with Child Summary and without paging', () => {
+    let TreegridObj: TreeGrid;
+    TreeGrid.Inject(Filter);
+    beforeAll((done: Function) => {
+      TreegridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          aggregates: [{
+            columns: [
+              {
+                type: 'Max',
+                field: 'progress',
+                columnName: 'progress',
+                footerTemplate: 'Maximum: ${Max}'
+              },
+              {
+                type: 'Min',
+                field: 'duration',
+                columnName: 'Duration',
+                footerTemplate: 'Minimum: ${Min}'
+              }]
+          }],
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name', width: 150 },
+            { field: 'startDate', headerText: 'start Date', type: "datetime", format: 'yMd', width: 150 }
+          ]
+        },done);
+    });
+    it('Collapsing using collapseRow method', () => {
+      TreegridObj.collapseRow(null, TreegridObj.flatData[11]);
+      let rows: Element[];
+      rows = TreegridObj.getRows();
+      expect((rows[14] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[15] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[16] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[44] as HTMLTableRowElement).style.display).toBe('none');               
+    });
+    it('Expanding using expandRow method', () => {
+      TreegridObj.expandRow(null, TreegridObj.flatData[11]);
+      let rows: Element[];
+      rows = TreegridObj.getRows();
+      expect((rows[14] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[15] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[16] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[44] as HTMLTableRowElement).style.display).toBe('table-row');              
+    });
+    it('Collapsing using collapseAll method', () => {
+      TreegridObj.collapseAll();
+      let rows: Element[];
+      rows = TreegridObj.getRows();
+      expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[5] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[7] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[12] as HTMLTableRowElement).style.display).toBe('none');      
+      expect((rows[14] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[15] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[16] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[22] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[23] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[42] as HTMLTableRowElement).style.display).toBe('none');
+      expect((rows[43] as HTMLTableRowElement).style.display).toBe('none');
+    });
+    it('Expanding using expandAll method', () => {
+      TreegridObj.expandAll();
+      let rows: Element[];
+      rows = TreegridObj.getRows();
+      expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[5] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[7] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[12] as HTMLTableRowElement).style.display).toBe('table-row');      
+      expect((rows[14] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[15] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[16] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[22] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[23] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[32] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[33] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[42] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[43] as HTMLTableRowElement).style.display).toBe('table-row');
+      expect((rows[44] as HTMLTableRowElement).style.display).toBe('table-row');
+    });
+    it('collapseAtLevel and expandAtLevel testing', function () {
+      TreegridObj.collapseAtLevel(1);
+      expect(TreegridObj.getRows()[13].querySelectorAll('.e-treegridcollapse').length).toBe(0);
+      expect(TreegridObj.getRows()[14].querySelectorAll('.e-treegridcollapse').length).toBe(1);
+      expect(TreegridObj.getRows()[24].querySelectorAll('.e-treegridcollapse').length).toBe(1);
+      expect(TreegridObj.getRows()[34].querySelectorAll('.e-treegridcollapse').length).toBe(1);
+      TreegridObj.expandAtLevel(1);
+      expect(TreegridObj.getRows()[14].querySelectorAll('.e-treegridexpand').length).toBe(1);
+      expect(TreegridObj.getRows()[24].querySelectorAll('.e-treegridexpand').length).toBe(1);
+      expect(TreegridObj.getRows()[34].querySelectorAll('.e-treegridexpand').length).toBe(1);
+      expect(TreegridObj.getDataModule()).toBeDefined();
+  });
+    afterAll(() => {
+      destroy(TreegridObj);
+    });
+  });
+
+
+
+
+  describe('ExpandCollapse testing with Child Summary and with paging', () => {
+    let TreegridObj: TreeGrid;
+    TreeGrid.Inject(Filter);
+    beforeAll((done: Function) => {
+      TreegridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          aggregates: [{
+            columns: [
+              {
+                type: 'Max',
+                field: 'progress',
+                columnName: 'progress',
+                footerTemplate: 'Maximum: ${Max}'
+              },
+              {
+                type: 'Min',
+                field: 'duration',
+                columnName: 'Duration',
+                footerTemplate: 'Minimum: ${Min}'
+              }]
+          }],
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name', width: 150 },
+            { field: 'startDate', headerText: 'start Date', type: "datetime", format: 'yMd', width: 150 }
+          ]
+        },done);
+    });
+    it('Collapsing using collapseRow method', () => {
+      TreegridObj.collapseRow(null, TreegridObj.flatData[5]);
+      let rows: Element[];
+      rows = TreegridObj.getRows();
+      expect((rows[6] as HTMLTableRowElement).querySelectorAll('.e-treegridexpand').length).toBe(0);
+    });
+    it('Expanding using expandRow method', () => {
+      TreegridObj.expandRow(null, TreegridObj.flatData[5]);
+      let rows: Element[];
+      rows = TreegridObj.getRows();
+      expect((rows[6] as HTMLTableRowElement).querySelectorAll('.e-treegridexpand').length).toBe(1);      
+    });
+    it('Collapsing using collapseAll method', () => {
+      TreegridObj.collapseAll();
+      let rows: Element[];
+      rows = TreegridObj.getRows();
+      expect((rows[0] as HTMLTableRowElement).querySelectorAll('.e-treegridexpand').length).toBe(0);
+      expect((rows[1] as HTMLTableRowElement).querySelectorAll('.e-treegridexpand').length).toBe(0)
+      expect((rows[2] as HTMLTableRowElement).querySelectorAll('.e-treegridexpand').length).toBe(0)
+    });
+    it('Expanding using expandAll method', () => {
+      TreegridObj.expandAll();
+      let rows: Element[];
+      rows = TreegridObj.getRows();
+      expect((rows[0] as HTMLTableRowElement).querySelectorAll('.e-treegridexpand').length).toBe(1);    
+      expect((rows[6] as HTMLTableRowElement).querySelectorAll('.e-treegridexpand').length).toBe(1);      
+    });
+    it('collapseAtLevel and expandAtLevel testing', function () {
+      TreegridObj.goToPage(2);
+      TreegridObj.collapseAtLevel(1);
+      expect(TreegridObj.getRows()[1].querySelectorAll('.e-treegridcollapse').length).toBe(0);
+      expect(TreegridObj.getRows()[2].querySelectorAll('.e-treegridcollapse').length).toBe(1);
+      expect(TreegridObj.getRows()[3].querySelectorAll('.e-treegridcollapse').length).toBe(1);
+      expect(TreegridObj.getRows()[4].querySelectorAll('.e-treegridcollapse').length).toBe(1);
+      TreegridObj.expandAtLevel(1);
+      expect(TreegridObj.getRows()[2].querySelectorAll('.e-treegridexpand').length).toBe(1);
+      expect(TreegridObj.getRows()[3].querySelectorAll('.e-treegridexpand').length).toBe(1);
+      expect(TreegridObj.getDataModule()).toBeDefined();
+  });
+    afterAll(() => {
+      destroy(TreegridObj);
+    });
+  });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

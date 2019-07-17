@@ -514,7 +514,7 @@
         }
       }
 
-      &:nth-child(even) {
+      &.e-horizontal-bottom {
 
         @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
 
@@ -931,7 +931,7 @@
           }
         }
 
-        &:nth-child(even) {
+        &.e-horizontal-bottom {
           border-bottom: 0;
           border-top: $tab-fill-hdr-border;
 
@@ -967,7 +967,7 @@
             }
           }
 
-          &:nth-child(even) {
+          &.e-horizontal-bottom {
 
             .e-toolbar-item.e-active .e-tab-wrap {
               border-radius: $tab-fill-even-active-wrap-corner;
@@ -1004,7 +1004,7 @@
             }
           }
 
-          &:nth-child(even) {
+          &.e-horizontal-bottom {
             border-bottom: 0;
             border-top: $tab-fill-disable-hdr-border;
           }

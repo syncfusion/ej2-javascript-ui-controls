@@ -3,6 +3,7 @@ import { ColorPicker, Slider } from '@syncfusion/ej2-inputs';
 import { RichTextEditor } from '@syncfusion/ej2-richtexteditor';
 import { DateRangePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { AutoComplete, ComboBox, MultiSelect } from '@syncfusion/ej2-dropdowns';
+import { RenderMode } from './inplace-editor';
 
 /**
  * InPlace-Editor interface defined here.
@@ -59,4 +60,11 @@ export interface FormEventArgs {
 export interface ValidateEventArgs extends ActionBeginEventArgs {
     /** Defines form validation error message. */
     errorMessage: string;
+}
+
+export interface BeginEditEventArgs {
+    /** Specifies whether to cancel the focus action, before open a editor. */
+    cancelFocus?: boolean;
+    /** Defines the current editor mode. */
+    mode?: RenderMode;
 }

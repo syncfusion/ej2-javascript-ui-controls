@@ -17422,7 +17422,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         this.triggerEditArea(e.originalEvent);
     };
     RichTextEditor.prototype.contextHandler = function (e) {
-        e.preventDefault();
+        var closestElem = closest(e.target, 'a, table, img');
+        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && (closestElem.tagName === 'IMG' ||
+            closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
+            e.preventDefault();
+        }
     };
     RichTextEditor.prototype.resetHandler = function () {
         var defaultValue = this.valueContainer.defaultValue.trim();

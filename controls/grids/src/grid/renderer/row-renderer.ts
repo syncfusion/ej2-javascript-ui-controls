@@ -60,7 +60,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             this.refreshMergeCells(row);
         }
         let node: Element = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
-        let tr: Element = this.refreshRow(row, columns, attributes, rowTemplate);
+        let tr: Element = this.refreshRow(row, columns, attributes, rowTemplate, null, isChanged);
         let cells: HTMLTableDataCellElement[] = [].slice.call((tr as HTMLTableRowElement).cells);
         node.innerHTML = '';
         for (let cell of cells) {
@@ -68,7 +68,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
     }
 
-    private refreshRow(row: Row<T>, columns: Column[], attributes?: { [x: string]: Object }, rowTemplate?: string, cloneNode?: Element):
+    private refreshRow(
+        row: Row<T>, columns: Column[], attributes?: { [x: string]: Object }, rowTemplate?: string, cloneNode?: Element, isEdit?: boolean):
         Element {
         let tr: Element = !isNullOrUndefined(cloneNode) ? cloneNode : this.element.cloneNode() as Element;
         let rowArgs: RowDataBoundEventArgs = { data: row.data };
@@ -103,7 +104,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
                 attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
-            let td: Element = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand);
+            let td: Element = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand, isEdit);
             if (row.cells[i].cellType !== CellType.Filter) {
                 if (row.cells[i].cellType === CellType.Data || row.cells[i].cellType === CellType.CommandColumn) {
                     this.parent.trigger(queryCellInfo, extend(
@@ -136,12 +137,12 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         let args: RowDataBoundEventArgs = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
             this.parent.trigger(rowDataBound, extend(rowArgs, args));
-            if (this.parent.childGrid || this.parent.isRowDragable() || this.parent.detailTemplate ) {
-            let td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
-            if (td) {
-                td.classList.add('e-detailrowvisible');
+            if (this.parent.childGrid || this.parent.isRowDragable() || this.parent.detailTemplate) {
+                let td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
+                if (td) {
+                    td.classList.add('e-detailrowvisible');
+                }
             }
-        }
         }
         if (this.parent.enableVirtualization) {
             rowArgs.rowHeight = this.parent.rowHeight;
