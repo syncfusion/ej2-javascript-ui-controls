@@ -7446,7 +7446,7 @@ let Uploader = class Uploader extends Component {
             }
         }
         else {
-            this.remove(fileData, false, false, args);
+            this.remove(fileData, false, false, true, args);
         }
         this.element.value = '';
         this.checkActionButtonStatus();
@@ -7489,7 +7489,10 @@ let Uploader = class Uploader extends Component {
             eventArgs.currentRequest = ajax.httpRequest;
             if (!removeDirectly) {
                 this.trigger('removing', eventArgs, (eventArgs) => {
-                    if (!eventArgs.cancel) {
+                    if (eventArgs.cancel) {
+                        e.cancel = true;
+                    }
+                    else {
                         this.removingEventCallback(eventArgs, formData, selectedFiles, file);
                     }
                 });
@@ -9023,15 +9026,19 @@ let Uploader = class Uploader extends Component {
      * @param { FileInfo | FileInfo[] } fileData - specifies the files data to remove from file list/server.
      * @param { boolean } customTemplate - Set true if the component rendering with customize template.
      * @param { boolean } removeDirectly - Set true if files remove without removing event.
+     * @param { boolean } postRawFile - Set false, to post file name only to the remove action.
      * @returns void
      */
-    remove(fileData, customTemplate, removeDirectly, args) {
+    remove(fileData, customTemplate, removeDirectly, postRawFile, args) {
+        if (isNullOrUndefined(postRawFile)) {
+            postRawFile = true;
+        }
         let eventArgs = {
             event: args,
             cancel: false,
             filesData: [],
             customFormData: [],
-            postRawFile: true
+            postRawFile: postRawFile
         };
         let index;
         if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {

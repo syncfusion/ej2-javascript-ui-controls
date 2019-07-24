@@ -28,10 +28,12 @@ export class NavigationPane {
     public removeNodes: string[] = [];
     public moveNames: string[] = [];
     public touchClickObj: Touch;
-    public expandTree: boolean = false;
+    private expandTree: boolean = false;
     private isDrag: boolean = false;
     private dragObj: Draggable;
     private isPathDragged: boolean = false;
+    private isRenameParent: boolean = false;
+    private renameParent: string = null;
     /**
      * Constructor for the TreeView module
      * @hidden
@@ -170,11 +172,11 @@ export class NavigationPane {
     }
 
     private onNodeSelected(args: NodeSelectEventArgs): void {
-        if (this.parent.breadcrumbbarModule && this.parent.breadcrumbbarModule.searchObj) {
+        if (this.parent.breadcrumbbarModule && this.parent.breadcrumbbarModule.searchObj && !this.renameParent) {
             this.parent.breadcrumbbarModule.searchObj.element.value = '';
         }
         this.parent.searchedItems = [];
-        if (!args.isInteracted && !this.isPathDragged) { return; }
+        if (!args.isInteracted && !this.isPathDragged && !this.isRenameParent) { return; }
         this.activeNode = args.node;
         this.parent.activeModule = 'navigationpane';
         this.parent.selectedItems = [];
@@ -186,7 +188,7 @@ export class NavigationPane {
         }
         read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
         this.parent.visitedItem = args.node;
-        this.isPathDragged = false;
+        this.isPathDragged = this.isRenameParent = false;
     }
     /* istanbul ignore next */
     private onPathDrag(args: object[]): void {
@@ -234,10 +236,11 @@ export class NavigationPane {
             let sNode: Element = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
             let ul: Element = select('.' + CLS.LIST_PARENT, sNode);
             if (isNOU(ul)) {
-                this.addChild(args.files, this.treeObj.selectedNodes[0], true);
+                this.addChild(args.files, this.treeObj.selectedNodes[0], !this.expandTree);
             }
             this.expandNodeTarget = '';
         }
+        this.expandTree = false;
         if (isNOU(currFiles)) {
             setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
         }
@@ -246,11 +249,14 @@ export class NavigationPane {
     private updateTree(args: ReadArgs): void {
         if (this.treeObj) {
             let id: string = this.treeObj.selectedNodes[0];
-            let toExpand: boolean = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
-            this.removeChildNodes(id);
-            setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
-            this.addChild(args.files, id, !toExpand);
+            this.updateTreeNode(args, id);
         }
+    }
+
+    private updateTreeNode(args: ReadArgs, id: string): void {
+        let toExpand: boolean = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
+        this.removeChildNodes(id);
+        this.addChild(args.files, id, !toExpand);
     }
 
     private removeChildNodes(id: string): void {
@@ -328,12 +334,14 @@ export class NavigationPane {
             this.updateRenameData();
         }
     }
-
     /* istanbul ignore next */
-    private onRenameEnd(): void {
-        if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
-            this.treeObj.updateNode(this.parent.renamedNodeId, this.parent.renameText);
-            this.parent.renamedNodeId = null;
+    private onRenameEndParent(args: ReadArgs): void {
+        let id: string = this.renameParent ? this.renameParent : this.parent.pathId[this.parent.pathId.length - 1];
+        this.expandTree = this.treeObj.expandedNodes.indexOf(this.treeObj.selectedNodes[0]) !== -1;
+        this.updateTreeNode(args, id);
+        this.parent.expandedId = null;
+        if (this.renameParent) {
+            this.renameParent = null;
         } else {
             let resultData: Object[] = [];
             if (this.parent.hasId) {
@@ -341,6 +349,33 @@ export class NavigationPane {
                     executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
             } else {
                 let nData: Object[] = new DataManager(this.treeObj.getTreeData()).
+                    executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.renameText, false));
+                if (nData.length > 0) {
+                    resultData = new DataManager(nData).
+                        executeLocal(new Query().where('_fm_pId', 'equal', id, false));
+                }
+            }
+            if (resultData.length > 0) {
+                this.isRenameParent = true;
+                let id: string = getValue(this.treeObj.fields.id, resultData[0]);
+                this.treeObj.selectedNodes = [id];
+                this.treeObj.dataBind();
+            }
+        }
+    }
+
+    /* istanbul ignore next */
+    private onRenameEnd(args: ReadArgs): void {
+        if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+            this.updateTree(args);
+        } else {
+            let data: { [key: string]: Object; }[] = this.treeObj.getTreeData();
+            let resultData: Object[] = [];
+            if (this.parent.hasId) {
+                resultData = new DataManager(data).
+                    executeLocal(new Query().where('id', 'equal', this.parent.renamedId, false));
+            } else {
+                let nData: Object[] = new DataManager(data).
                     executeLocal(new Query().where(this.treeObj.fields.text, 'equal', this.parent.currentItemText, false));
                 if (nData.length > 0) {
                     resultData = new DataManager(nData).
@@ -348,7 +383,10 @@ export class NavigationPane {
                 }
             }
             if (resultData.length > 0) {
-                this.treeObj.updateNode(getValue(this.treeObj.fields.id, resultData[0]), this.parent.renameText);
+                this.renameParent = getValue(this.treeObj.fields.parentID, resultData[0]);
+                this.parent.expandedId = this.renameParent;
+                this.parent.itemData = this.getTreeData(this.renameParent);
+                read(this.parent, events.renameEndParent, this.parent.filterPath);
             }
         }
     }
@@ -533,6 +571,7 @@ export class NavigationPane {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.renameInit, this.onRenameInit, this);
         this.parent.on(events.renameEnd, this.onRenameEnd, this);
+        this.parent.on(events.renameEndParent, this.onRenameEndParent, this);
         this.parent.on(events.clearPathInit, this.onClearPathInit, this);
         this.parent.on(events.cutCopyInit, this.oncutCopyInit, this);
         this.parent.on(events.dropInit, this.onDropInit, this);
@@ -563,6 +602,7 @@ export class NavigationPane {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.renameInit, this.onRenameInit);
         this.parent.off(events.renameEnd, this.onRenameEnd);
+        this.parent.off(events.renameEndParent, this.onRenameEndParent);
         this.parent.off(events.clearPathInit, this.onClearPathInit);
         this.parent.off(events.deleteInit, this.onDeleteInit);
         this.parent.off(events.deleteEnd, this.onDeleteEnd);

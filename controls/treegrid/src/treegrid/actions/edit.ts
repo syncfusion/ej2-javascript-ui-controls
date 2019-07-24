@@ -5,7 +5,7 @@ import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
-import { DataManager } from '@syncfusion/ej2-data';
+import { DataManager, Deferred } from '@syncfusion/ej2-data';
 import { findChildrenRecords } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
 import { RowPosition } from '../enum';
@@ -164,12 +164,22 @@ export class Edit {
     delete this.parent[id][value];
   }
 
-  private cellEdit(args: CellEditArgs): void {
+  private cellEdit(args: CellEditArgs): Deferred | void {
+    let promise: string = 'promise';
+    let prom: Deferred = args[promise];
+    delete args[promise];
     if (this.keyPress !== 'enter') {
-      this.parent.trigger(events.cellEdit, args);
+      this.parent.trigger(events.cellEdit, args, (celleditArgs: CellEditArgs) => {
+        if (!celleditArgs.cancel && this.parent.editSettings.mode === 'Cell') {
+          this.enableToolbarItems('edit');
+        }
+        if (!isNullOrUndefined(prom)) {
+          prom.resolve(celleditArgs);
+        }
+      });
     }
     if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
-               this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
+      this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
       args.cancel = true; this.doubleClickTarget = null;
       return;
     }
@@ -180,10 +190,7 @@ export class Edit {
         args.cancel = true;
         this.keyPress = null;
       }
-      if (!args.cancel) {
-        this.enableToolbarItems('edit');
-      }
-    }
+  }
     // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {
     //   this.isAdd = false;
     // }

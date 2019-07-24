@@ -339,7 +339,7 @@ export class Filter implements IAction {
             return;
         }
         this.value = filterValue;
-        this.matchCase = matchCase || false;
+        this.matchCase = this.filterSettings.enableCaseSensitivity;
         this.ignoreAccent = this.ignoreAccent = !isNullOrUndefined(ignoreAccent) ? ignoreAccent : this.parent.filterSettings.ignoreAccent;
         this.fieldName = fieldName;
         this.predicate = predicate || 'and';
@@ -761,7 +761,7 @@ export class Filter implements IAction {
         let gObj: IGrid = this.parent;
         let skipInput: string[];
         let index: number;
-        this.matchCase = true;
+        this.matchCase = this.filterSettings.enableCaseSensitivity;
         switch (this.column.type) {
             case 'number':
                 this.operator = this.filterOperators.equal;

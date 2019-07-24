@@ -95,7 +95,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected calendarElement: HTMLElement;
     protected isPopupClicked: boolean = false;
     protected isDateSelected: boolean = true;
-    protected keyConfigs: { [key: string]: string } = {
+    protected defaultKeyConfigs: { [key: string]: string } = {
         controlUp: 'ctrl+38',
         controlDown: 'ctrl+40',
         moveDown: 'downarrow',
@@ -237,6 +237,97 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(false)
     public enablePersistence: boolean;
+    /**     
+     * Customizes the key actions in Calendar.
+     * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * @default null
+     * @blazorType object
+     * 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Key action<br/></td><td colSpan=1 rowSpan=1> 
+     * Key<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlUp<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+38<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlDown<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+40<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * select<br/></td><td colSpan=1 rowSpan=1> 
+     * enter<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * home<br/></td><td colSpan=1 rowSpan=1> 
+     * home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * end<br/></td><td colSpan=1 rowSpan=1> 
+     * end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * pageUp<br/></td><td colSpan=1 rowSpan=1> 
+     * pageup<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * pageDown<br/></td><td colSpan=1 rowSpan=1> 
+     * pagedown<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1> 
+     * shift+pageup<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1> 
+     * shift+pagedown<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlHome<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlEnd<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * spacebar<br/></td><td colSpan=1 rowSpan=1> 
+     * space<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altRightArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+rightarrow<br/></td></tr>  
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+leftarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveDown<br/></td><td colSpan=1 rowSpan=1> 
+     * downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveUp<br/></td><td colSpan=1 rowSpan=1> 
+     * uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveLeft<br/></td><td colSpan=1 rowSpan=1> 
+     * leftarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveRight<br/></td><td colSpan=1 rowSpan=1> 
+     * rightarrow<br/></td></tr> 
+     * </table>
+     */
+    @Property(null)
+    public keyConfigs: { [key: string]: string };
     /** 
      * Triggers when Calendar is created.
      * @event
@@ -540,13 +631,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected wireEvents(): void {
         EventHandler.add(this.headerTitleElement, 'click', this.navigateTitle, this);
+        this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
         if (this.getModuleName() === 'calendar') {
             this.keyboardModule = new KeyboardEvents(
                 <HTMLElement>this.element,
                 {
                     eventName: 'keydown',
                     keyAction: this.keyActionHandle.bind(this),
-                    keyConfigs: this.keyConfigs
+                    keyConfigs: this.defaultKeyConfigs
                 });
         } else {
             this.keyboardModule = new KeyboardEvents(
@@ -554,7 +646,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 {
                     eventName: 'keydown',
                     keyAction: this.keyActionHandle.bind(this),
-                    keyConfigs: this.keyConfigs
+                    keyConfigs: this.defaultKeyConfigs
                 });
         }
     }
@@ -1385,10 +1477,24 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let focusedEle: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
         let selectedEle: Element = this.tableBodyElement.querySelector('tr td.e-selected');
         let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        let title: string = this.globalize.formatDate(this.currentDate, { type: 'dateTime', skeleton: 'full', calendar: type });
+        let title: string;
+        let view: String = this.currentView();
+        if (view === 'Month') {
+            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'full', calendar: type });
+        } else if (view === 'Year') {
+            if (type !== 'islamic') {
+                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'yMMMM', calendar: type });
+            } else {
+                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'GyMMM', calendar: type });
+            }
+        } else {
+            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'y', calendar: type });
+        }
         if (selectedEle || focusedEle) {
-            (focusedEle || selectedEle).setAttribute('aria-selected', 'true');
-            (focusedEle || selectedEle).setAttribute('aria-label', 'The current focused date is ' + '' + title);
+            if (!isNullOrUndefined(selectedEle)) {
+                selectedEle.setAttribute('aria-selected', 'true');
+            }
+            (focusedEle || selectedEle).setAttribute('aria-label', title);
             id = (focusedEle || selectedEle).getAttribute('id');
 
         }

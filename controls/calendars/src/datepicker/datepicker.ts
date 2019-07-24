@@ -1,6 +1,6 @@
 /// <reference path='../calendar/calendar-model.d.ts'/>
 import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';
-import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';
+import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';
 import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -81,7 +81,7 @@ export class DatePicker extends Calendar implements IInput {
     protected formatString: string;
     protected tabIndex: string;
     private datepickerOptions: DatePickerModel;
-    protected keyConfigs: { [key: string]: string } = {
+    protected defaultKeyConfigs: { [key: string]: string } = {
         altUpArrow: 'alt+uparrow',
         altDownArrow: 'alt+downarrow',
         escape: 'escape',
@@ -104,11 +104,6 @@ export class DatePicker extends Calendar implements IInput {
         tab: 'tab'
     };
     protected mobilePopupWrapper: HTMLElement;
-    protected calendarKeyConfigs: { [key: string]: string } = {
-        escape: 'escape',
-        enter: 'enter',
-        tab: 'tab'
-    };
     /**
      * Specifies the width of the DatePicker component.
      * @default null
@@ -183,6 +178,118 @@ export class DatePicker extends Calendar implements IInput {
      */
     @Property(true)
     public allowEdit: boolean;
+    /**     
+     * Customizes the key actions in DatePicker.
+     * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * @default null
+     * @blazorType object 
+     * 
+     * Input Navigation
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Key action<br/></td><td colSpan=1 rowSpan=1> 
+     * Key<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altDownArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * escape<br/></td><td colSpan=1 rowSpan=1> 
+     * escape<br/></td></tr> 
+     * </table> 
+     * 
+     * Calendar Navigation
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Key action<br/></td><td colSpan=1 rowSpan=1> 
+     * Key<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlUp<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+38<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlDown<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+40<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveDown<br/></td><td colSpan=1 rowSpan=1> 
+     * downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveUp<br/></td><td colSpan=1 rowSpan=1> 
+     * uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveLeft<br/></td><td colSpan=1 rowSpan=1> 
+     * leftarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveRight<br/></td><td colSpan=1 rowSpan=1> 
+     * rightarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1> 
+     * shift+pageup<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1> 
+     * shift+pagedown<br/></td></tr> 
+     * <tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * select<br/></td><td colSpan=1 rowSpan=1> 
+     * enter<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * home<br/></td><td colSpan=1 rowSpan=1> 
+     * home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * end<br/></td><td colSpan=1 rowSpan=1> 
+     * end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * pageUp<br/></td><td colSpan=1 rowSpan=1> 
+     * pageup<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * pageDown<br/></td><td colSpan=1 rowSpan=1> 
+     * pagedown<br/></td></tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlHome<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlEnd<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * spacebar<br/></td><td colSpan=1 rowSpan=1> 
+     * space<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altRightArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+rightarrow<br/></td></tr>  
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+leftarrow<br/></td></tr> 
+     * </table>
+     */
+    @Property(null)
+    public keyConfigs: { [key: string]: string };
     /** 
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
@@ -544,12 +651,13 @@ export class DatePicker extends Calendar implements IInput {
                 EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
             }
         }
+        this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
         this.keyboardModules = new KeyboardEvents(
             <HTMLElement>this.inputElement,
             {
                 eventName: 'keydown',
                 keyAction: this.inputKeyActionHandle.bind(this),
-                keyConfigs: this.keyConfigs
+                keyConfigs: this.defaultKeyConfigs
             });
     }
     protected resetFormHandler(): void {
@@ -696,10 +804,11 @@ export class DatePicker extends Calendar implements IInput {
             this.trigger('blur', blurArguments);
         }
         if (this.isCalendar()) {
+            this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
             this.calendarKeyboardModules = new KeyboardEvents(<HTMLElement>this.calendarElement.children[1].firstElementChild, {
                 eventName: 'keydown',
                 keyAction: this.CalendarKeyActionHandle.bind(this),
-                keyConfigs: this.calendarKeyConfigs
+                keyConfigs: this.defaultKeyConfigs
             });
         }
         this.isPopupClicked = false;
@@ -765,6 +874,9 @@ export class DatePicker extends Calendar implements IInput {
         this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
         if (this.isCalendar()) {
             super.keyActionHandle(e);
+            attributes(this.inputElement, {
+                'aria-activedescendant': '' + this.setActiveDescendant()
+            });
         }
     }
     protected popupUpdate(): void {
@@ -886,20 +998,21 @@ export class DatePicker extends Calendar implements IInput {
             open: () => {
                 if (this.getModuleName() !== 'datetimepicker') {
                     if (document.activeElement !== this.inputElement) {
+                        this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
                         (<HTMLElement>this.calendarElement.children[1].firstElementChild).focus();
                         this.calendarKeyboardModules = new KeyboardEvents(
                             <HTMLElement>this.calendarElement.children[1].firstElementChild,
                             {
                                 eventName: 'keydown',
                                 keyAction: this.CalendarKeyActionHandle.bind(this),
-                                keyConfigs: this.calendarKeyConfigs
+                                keyConfigs: this.defaultKeyConfigs
                             });
                         this.calendarKeyboardModules = new KeyboardEvents(
                             <HTMLElement>this.inputWrapper.container.children[this.index],
                             {
                                 eventName: 'keydown',
                                 keyAction: this.CalendarKeyActionHandle.bind(this),
-                                keyConfigs: this.calendarKeyConfigs
+                                keyConfigs: this.defaultKeyConfigs
                             });
                     }
                 }

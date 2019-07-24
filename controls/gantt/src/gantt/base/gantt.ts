@@ -10,9 +10,9 @@ import { Timeline } from '../renderer/timeline';
 import { GanttTreeGrid } from './tree-grid';
 import { Toolbar } from '../actions/toolbar';
 import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
-import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs } from './interface';
+import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs } from './interface';
 import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, ZoomEventArgs } from './interface';
-import { ITimeSpanEventArgs, ZoomTimelineSettings } from './interface';
+import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
 import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';
@@ -31,7 +31,7 @@ import { Sort } from '../actions/sort';
 import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';
 import { RowDataBoundEventArgs, HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
-import { QueryCellInfoEventArgs, ColumnMenuItemModel } from '@syncfusion/ej2-grids';
+import { ColumnMenuItemModel } from '@syncfusion/ej2-grids';
 import { Filter } from '../actions/filter';
 import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';
 import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';
@@ -671,35 +671,31 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered before the row getting collapsed.
-     * @deprecated
-     * @event 
-     */
+     * @event
+     */
     @Event()
-    public collapsing: EmitType<object>;
+    public collapsing: EmitType<ICollapsingEventArgs>;
 
     /** 
      * This will be triggered after the row getting collapsed.
-     * @deprecated
-     * @event 
-     */
+     * @event
+     */
     @Event()
-    public collapsed: EmitType<object>;
+    public collapsed: EmitType<ICollapsingEventArgs>;
 
     /** 
      * This will be triggered before the row getting expanded.
-     * @deprecated
-     * @event 
-     */
+     * @event 
+     */
     @Event()
-    public expanding: EmitType<object>;
+    public expanding: EmitType<ICollapsingEventArgs>;
 
     /** 
      * This will be triggered after the row getting expanded.
-     * @deprecated
-     * @event 
-     */
+     * @event
+     */
     @Event()
-    public expanded: EmitType<object>;
+    public expanded: EmitType<ICollapsingEventArgs>;
 
     /**
      * Triggers when Gantt actions such as sorting, filtering, searching etc., starts.
@@ -735,8 +731,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered when a task get saved by cell edit.
-     * @deprecated
-     * @event 
+     * @event 
      */
     @Event()
     public endEdit: EmitType<ITaskbarEditedEventArgs>;
@@ -768,8 +763,7 @@ export class Gantt extends Component<HTMLElement>
     /** 
      * Triggers when data source is populated in the Grid.
      * @event
-     * @blazorProperty 'DataBound'
-     */
+     */
     @Event()
     public dataBound: EmitType<Object>;
 
@@ -847,24 +841,23 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * Triggers before tooltip get rendered.
-     * @deprecated
-     * @event 
+     * @event 
      */
     @Event()
     public beforeTooltipRender: EmitType<BeforeTooltipRenderEventArgs>;
 
     /**
      * Triggers before row selection occurs.
-     * @deprecated
      * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectingEventArgs
      */
     @Event()
     public rowSelecting: EmitType<RowSelectingEventArgs>;
 
     /**
      * Triggers after a row is selected.
-     * @deprecated
-     * @event
+     * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs
      */
     @Event()
     public rowSelected: EmitType<RowSelectEventArgs>;
@@ -920,24 +913,23 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered before the header cell element is appended to the Grid element.
-     * @deprecated
-     * @event 
-     */
+     * @event 
+     */
     @Event()
     public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
 
     /** 
      * This will be triggered before the header cell element is appended to the Grid element.
-     * @deprecated
-     * @event 
+     * @event 
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.HeaderCellInfoEventArgs 
      */
     @Event()
     public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
 
     /** 
      * This will be triggered before the row element is appended to the Grid element.
-     * @deprecated
-     * @event 
+     * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDataBoundEventArgs
      */
     @Event()
     public rowDataBound: EmitType<RowDataBoundEventArgs>;
@@ -952,15 +944,17 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when toolbar item was clicked.
-     * @deprecated
      * @event
+     * @blazorproperty 'OnToolbarClick'
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
     /** 
      * Triggers when click on column menu.
-     * @deprecated
-     * @event 
+     * @event
+     * @blazorproperty 'ColumnMenuClicked'
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnMenuClickEventArgs
      */
     @Event()
     public columnMenuClick: EmitType<ColumnMenuClickEventArgs>;

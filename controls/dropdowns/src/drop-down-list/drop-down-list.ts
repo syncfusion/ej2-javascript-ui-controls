@@ -17,6 +17,7 @@ import { SortOrder } from '@syncfusion/ej2-lists';
 export interface ChangeEventArgs extends SelectEventArgs {
     /**
      * Returns the selected value
+     * @isGenericType true
      */
     value: number | string | boolean;
     /**
@@ -25,7 +26,7 @@ export interface ChangeEventArgs extends SelectEventArgs {
     previousItem: HTMLLIElement;
     /**
      * Returns the previous selected item as JSON Object from the data source.
-     * @blazorType object
+     * @isGenericType true
      */
     previousItemData: FieldSettingsModel;
     /**
@@ -262,6 +263,7 @@ export class DropDownList extends DropDownBase implements IInput {
     /**
      * Gets or sets the value of the selected item in the component.
      * @default null
+     * @isGenericType true
      */
     @Property(null)
     public value: number | string | boolean;
@@ -2235,7 +2237,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (!this.initRemoteRender) {
                         let li: Element = this.getElementByText(newProp.text);
                         if (!this.checkValidLi(li)) {
-                            if (this.liCollections.length === 100 &&
+                            if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.text, oldProp.text, 'text');
                             } else { this.setOldText(oldProp.text); }
@@ -2252,7 +2254,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (!this.initRemoteRender) {
                         let item: Element = this.getElementByValue(newProp.value);
                         if (!this.checkValidLi(item)) {
-                            if (this.liCollections.length === 100 &&
+                            if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.value, oldProp.value, 'value');
                             } else { this.setOldValue(oldProp.value); }
@@ -2268,7 +2270,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (!this.initRemoteRender) {
                         let element: Element = this.liCollections[newProp.index] as Element;
                         if (!this.checkValidLi(element)) {
-                            if (this.liCollections.length === 100 &&
+                            if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.index, oldProp.index, 'index');
                             } else { this.index = oldProp.index; }

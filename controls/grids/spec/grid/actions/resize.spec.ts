@@ -863,6 +863,38 @@ describe('Resize module', () => {
         });
     });
 
+    describe('autofit the column by using autoFit property', () => {
+        let gridObj: Grid;
+        let headers: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [{ field: 'OrderID', headerText: 'OrderID', width: 150, autoFit: true }, { field: 'CustomerID', headerText: 'CustomerID', width: 180 },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150, autoFit: true }, { field: 'Freight', headerText: 'Freight', width: 200, autoFit: true },
+                    { field: 'ShipCity', headerText: 'ShipCity', width: 180 }],
+                }, done);
+        });
+
+        it('autofit the columns', () => {
+            headers = gridObj.getColumns()[0] as Column;
+            expect(headers.width).not.toEqual('150px')
+            headers = gridObj.getColumns()[2] as Column;
+            expect(headers.width).not.toEqual('150px')
+            headers = gridObj.getColumns()[3] as Column;
+            expect(headers.width).not.toEqual('200px')
+            headers = (<HTMLElement>gridObj.getHeaderTable()).style.width
+            expect(headers).toBeTruthy();
+
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
+    
     describe('Resize functionalities for stacked columns', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

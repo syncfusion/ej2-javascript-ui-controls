@@ -182,9 +182,11 @@ export class Edit implements IAction {
             return;
         }
         this.editModule.startEdit(tr);
-        this.refreshToolbar();
-        (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
-        this.parent.notify('start-edit', {});
+        if (!isBlazor()) {
+            this.refreshToolbar();
+            (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
+            this.parent.notify('start-edit', {});
+        }
     }
 
     /**
@@ -197,8 +199,10 @@ export class Edit implements IAction {
             return;
         }
         this.editModule.closeEdit();
-        this.refreshToolbar();
-        this.parent.notify('close-edit', {});
+        if (!isBlazor()) {
+            this.refreshToolbar();
+            this.parent.notify('close-edit', {});
+        }
     }
 
     protected refreshToolbar(): void {
@@ -216,8 +220,10 @@ export class Edit implements IAction {
             return;
         }
         this.editModule.addRecord(data, index);
-        this.refreshToolbar();
-        this.parent.notify('start-add', {});
+        if (!isBlazor()) {
+            this.refreshToolbar();
+            this.parent.notify('start-add', {});
+        }
     }
 
     /**

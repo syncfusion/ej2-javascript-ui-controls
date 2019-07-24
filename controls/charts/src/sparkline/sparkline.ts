@@ -63,7 +63,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      * @default null
      */
     @Property(null)
-    public dataSource: DataManager | Object[];
+    public dataSource: Object[] | DataManager;
     /**
      * Specifies the query for filter the data.
      * @default null

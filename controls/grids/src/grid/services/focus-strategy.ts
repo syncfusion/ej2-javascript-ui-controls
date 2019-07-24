@@ -612,7 +612,12 @@ export class ContentFocus implements IFocus {
     public validator(): Function {
         let table: HTMLTableElement = this.getTable();
         return (rowIndex: number, cellIndex: number, action?: string) => {
-            let cell: HTMLElement = table.rows[rowIndex].cells[cellIndex];
+            let cell: HTMLElement;
+            if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
+                cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
+            } else {
+                cell = table.rows[rowIndex].cells[cellIndex];
+            }
             let isCellWidth: boolean = cell.getBoundingClientRect().width !== 0;
             if (action === 'enter' || action === 'shiftEnter') {
                 return isCellWidth && cell.classList.contains('e-rowcell');

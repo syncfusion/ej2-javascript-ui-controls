@@ -2392,8 +2392,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 }
             } else if (ruleColl[i].operator.length) {
-                let oper: string = ruleColl[i].operator.toLowerCase();
-                let dateOperColl: string[] = ['equal', 'notequal'];
+                let oper: string = ruleColl[i].operator.toLowerCase(); let isDateFilter: boolean = false;
+                let dateOperColl: string[] = ['equal', 'notequal', 'greaterthan', 'lessthanorequal'];
                 if (ruleColl[i].type === 'string') {
                     ignoreCase = this.matchCase ? false : true;
                 }
@@ -2404,12 +2404,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (ruleColl[i].type === 'date') {
                     let format: DateFormatOptions = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' } as DateFormatOptions;
                     ruleValue = this.intl.parseDate(ruleColl[i].value as string, format) as Date;
+                    if (dateOperColl.indexOf(oper) > -1) {
+                        isDateFilter = true;
+                    }
                 } else {
                     ruleValue = ruleColl[i].value as string | number;
                 }
                 if (i === 0) {
-                    if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
-                        pred = this.arrayPredicate(ruleColl[i]);
+                    if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
+                        pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue as Date) : this.arrayPredicate(ruleColl[i]);
                     } else {
                         let value: string | number | Date = ruleValue as string | number | Date;
                         if (value !== '') {
@@ -2417,31 +2420,29 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         }
                     }
                 } else {
-                    if (rule.condition === 'and') {
-                        if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
-                            pred = this.arrayPredicate(ruleColl[i], pred, rule.condition);
+                        if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
+                            pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue as Date, pred, rule.condition) :
+                            this.arrayPredicate(ruleColl[i], pred, rule.condition);
                         } else {
-                            let value: string | number | Date = ruleValue as string | number | Date;
-                            if (pred && value !== '') {
-                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
-                            } else if (value !== '') {
-                                pred = new Predicate(
-                                    ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
+                            if (rule.condition === 'and') {
+                                let value: string | number | Date = ruleValue as string | number | Date;
+                                if (pred && value !== '') {
+                                    pred
+                                    = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
+                                } else if (value !== '') {
+                                    pred = new Predicate(
+                                        ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
+                                }
+                            } else {
+                                let value: string | number = ruleValue as string | number;
+                                if (pred && value !== '') {
+                                    pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number, ignoreCase);
+                                } else if (value !== '') {
+                                    pred = new Predicate(
+                                        ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
+                                }
                             }
                         }
-                    } else {
-                        if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
-                            pred = this.arrayPredicate(ruleColl[i], pred, rule.condition);
-                        } else {
-                            let value: string | number = ruleValue as string | number;
-                            if (pred && value !== '') {
-                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number, ignoreCase);
-                            } else if (value !== '') {
-                                pred = new Predicate(
-                                    ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -2455,6 +2456,38 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         return column;
+    }
+    private datePredicate(ruleColl: RuleModel, value: Date, predicate?: Predicate, condition?: string): Predicate {
+        let pred: Predicate; let dummyDate: Date = new Date(value.getTime());
+        let nextDate: Date = new Date(dummyDate.setDate(dummyDate.getDate() + 1));
+        switch (ruleColl.operator) {
+            case 'equal':
+                pred = new Predicate(ruleColl.field, 'greaterthanorequal', value);
+                pred = pred.and(ruleColl.field, 'lessthan', nextDate);
+                break;
+            case 'notequal':
+                pred = new Predicate(ruleColl.field, 'lessthan', value);
+                pred = pred.or(ruleColl.field, 'greaterthanorequal', nextDate);
+                break;
+            case 'greaterthan':
+                pred = new Predicate(ruleColl.field, 'greaterthanorequal', nextDate);
+                break;
+            case 'lessthanorequal':
+                pred = new Predicate(ruleColl.field, 'lessthan', nextDate);
+                break;
+        }
+        if (pred) {
+            if (predicate) {
+                if (condition === 'and') {
+                    predicate = predicate.and(pred);
+                } else if (condition === 'or') {
+                    predicate = predicate.or(pred);
+                }
+            } else {
+                predicate = pred;
+            }
+        }
+        return predicate;
     }
     private arrayPredicate(ruleColl: RuleModel, predicate?: Predicate, condition?: string): Predicate {
         let value: number[] | string[] = ruleColl.value as number[] | string[];
@@ -2791,8 +2824,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 rules.rules.push(rule);
             } else if (parser[i][0] === 'Left') {
-                subRules = { condition: '', rules: [] };
                 this.parser = parser.splice(i + 1, iLen - (i + 1));
+                subRules = { condition: '', rules: [] };
                 grpCount = 0;
                 //To get the group position
                 kLen = rules.rules.length;

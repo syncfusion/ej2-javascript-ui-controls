@@ -673,10 +673,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
         }
         if (this.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this);
+            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this.timeScale);
         }
         if (this.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this);
+            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this.timeScale);
         }
     }
 

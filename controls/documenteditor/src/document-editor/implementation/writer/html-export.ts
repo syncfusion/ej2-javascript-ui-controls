@@ -60,7 +60,7 @@ export class HtmlExport {
         blockStyle += this.createAttributesTag('p', tagAttributes);
         if (paragraph.inlines.length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
-            blockStyle += '&nbsp;';
+            blockStyle += ' ';
         } else {
             blockStyle = this.serializeInlines(paragraph, blockStyle);
         }
@@ -656,7 +656,7 @@ export class HtmlExport {
         if (splittedText.length > 0) {
             htmlText = splittedText[0];
             for (let i: number = 0; i < splittedText.length - 1; i++) {
-                htmlText += '&nbsp;' + splittedText[i + 1];
+                htmlText += ' ' + splittedText[i + 1];
             }
         }
         return htmlText;

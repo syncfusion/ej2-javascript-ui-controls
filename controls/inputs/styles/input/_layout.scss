@@ -5156,6 +5156,7 @@
   .e-outline.e-input-group.e-control-wrapper .e-clear-icon.e-small,
   .e-small .e-outline.e-input-group.e-control-wrapper .e-clear-icon {
     @if $skin-name == 'material' {
+      font-size: $outline-small-clear-icon-font-size;
       padding: 7px $outline-small-input-icon-margin-left 7px $zero-value;
     }
   }
@@ -5376,6 +5377,7 @@
   .e-outline.e-input-group.e-control-wrapper.e-small .e-clear-icon.e-bigger,
   .e-bigger .e-outline.e-input-group.e-control-wrapper.e-small .e-clear-icon {
     @if $skin-name == 'material' {
+      font-size: $outline-small-bigger-clear-icon-font-size;
       padding: 9px $outline-small-bigger-icon-margin-left 9px $zero-value;
     }
   }
@@ -6423,6 +6425,62 @@
   .e-small .e-rtl.e-outline.e-float-input.e-control-wrapper textarea ~ label.e-float-text {
     @if $skin-name == 'material' {
       top: $outline-float-label-top;
+    }
+  }
+
+  .e-outline.e-float-input.e-small .e-clear-icon::before,
+  .e-outline.e-float-input.e-control-wrapper.e-small .e-clear-icon::before,
+  .e-outline.e-input-group.e-small .e-clear-icon::before,
+  .e-outline.e-input-group.e-control-wrapper.e-small .e-clear-icon::before,
+  .e-outline.e-float-input.e-control-wrapper input.e-small:first-child ~ .e-clear-icon::before,
+  .e-outline.e-small .e-float-input.e-control-wrapper .e-clear-icon::before,
+  .e-outline.e-float-input input.e-small:first-child ~ .e-clear-icon::before,
+  .e-outline.e-small .e-float-input .e-clear-icon::before,
+  .e-outline.e-small .e-input-group .e-clear-icon::before,
+  .e-outline.e-small .e-input-group.e-control-wrapper .e-clear-icon::before {
+    @if $skin-name == 'material' {
+      font-size: $outline-input-small-clear-icon;
+    }
+  }
+
+  .e-outline.e-float-input .e-clear-icon::before,
+  .e-outline.e-float-input.e-control-wrapper .e-clear-icon::before,
+  .e-outline.e-input-group .e-clear-icon::before,
+  .e-outline.e-input-group.e-control-wrapper .e-clear-icon::before {
+    @if $skin-name == 'material' {
+      font-size: $outline-input-clear-icon;
+    }
+  }
+
+  .e-outline.e-float-input.e-bigger .e-clear-icon::before,
+  .e-outline.e-float-input.e-control-wrapper.e-bigger .e-clear-icon::before,
+  .e-outline.e-input-group.e-bigger .e-clear-icon::before,
+  .e-outline.e-input-group.e-control-wrapper.e-bigger .e-clear-icon::before,
+  .e-outline.e-float-input.e-control-wrapper input.e-bigger:first-child ~ .e-clear-icon::before,
+  .e-outline.e-bigger .e-float-input.e-control-wrapper .e-clear-icon::before,
+  .e-outline.e-float-input input.e-bigger:first-child ~ .e-clear-icon::before,
+  .e-outline.e-bigger .e-float-input .e-clear-icon::before,
+  .e-outline.e-bigger .e-input-group .e-clear-icon::before,
+  .e-outline.e-bigger .e-input-group.e-control-wrapper .e-clear-icon::before {
+    @if $skin-name == 'material' {
+      font-size: $outline-input-bigger-clear-icon;
+    }
+  }
+
+  .e-outline.e-float-input.e-small.e-bigger .e-clear-icon::before,
+  .e-outline.e-float-input.e-control-wrapper.e-small.e-bigger .e-clear-icon::before,
+  .e-outline.e-input-group.e-small.e-bigger .e-clear-icon::before,
+  .e-outline.e-input-group.e-control-wrapper.e-small.e-bigger .e-clear-icon::before,
+  .e-outline.e-small .e-input-group.e-bigger input:first-child ~ .e-clear-icon::before,
+  .e-outline.e-small .e-input-group.e-control-wrapper.e-bigger input:first-child ~ .e-clear-icon::before,
+  .e-outline.e-bigger .e-input-group.e-small input:first-child ~ .e-clear-icon::before,
+  .e-outline.e-bigger .e-input-group.e-control-wrapper.e-small input:first-child ~ .e-clear-icon::before,
+  .e-outline.e-small .e-float-input.e-control-wrapper.e-bigger input:first-child ~ .e-clear-icon::before,
+  .e-outline.e-small .e-float-input.e-bigger input:first-child ~ .e-clear-icon::before,
+  .e-outline.e-bigger .e-float-input.e-control-wrapper.e-small input:first-child ~ .e-clear-icon::before,
+  .e-outline.e-bigger .e-float-input.e-small input:first-child ~ .e-clear-icon::before {
+    @if $skin-name == 'material' {
+      font-size: $outline-input-bigger-small-clear-icon;
     }
   }
 
@@ -8411,6 +8469,122 @@
   .e-rtl.e-small.e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
       right: $zero-value;
+    }
+  }
+
+  .e-filled.e-input-group .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-bigger .e-input-group-icon:last-child,
+  .e-bigger .e-filled.e-input-group .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-small .e-input-group-icon:last-child,
+  .e-small .e-filled.e-input-group .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-small.e-bigger .e-input-group-icon:last-child,
+  .e-small.e-bigger .e-filled.e-input-group .e-input-group-icon:last-child,
+  .e-bigger .e-filled.e-input-group.e-small .e-input-group-icon:last-child,
+  .e-small .e-filled.e-input-group.e-bigger .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-control-wrapper .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-bigger.e-control-wrapper .e-input-group-icon:last-child,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-small.e-control-wrapper .e-input-group-icon:last-child,
+  .e-small .e-filled.e-input-group.e-control-wrapper .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-small.e-bigger.e-control-wrapper .e-input-group-icon:last-child,
+  .e-small.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon:last-child,
+  .e-bigger .e-filled.e-input-group.e-small.e-control-wrapper .e-input-group-icon:last-child,
+  .e-small .e-filled.e-input-group.e-bigger.e-control-wrapper .e-input-group-icon:last-child {
+    @if $input-skin-name == 'material' {
+      margin-right: $zero-value;
+    }
+  }
+
+  .e-filled.e-input-group.e-rtl .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-bigger.e-rtl .e-input-group-icon:last-child,
+  .e-bigger .e-filled.e-input-group.e-rtl .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-small.e-rtl .e-input-group-icon:last-child,
+  .e-small .e-filled.e-input-group.e-rtl .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-small.e-bigger.e-rtl .e-input-group-icon:last-child,
+  .e-small.e-bigger .e-filled.e-input-group.e-rtl .e-input-group-icon:last-child,
+  .e-bigger .e-filled.e-input-group.e-small.e-rtl .e-input-group-icon:last-child,
+  .e-small .e-filled.e-input-group.e-bigger.e-rtl .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-bigger.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-small.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-small .e-filled.e-input-group.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-filled.e-input-group.e-small.e-bigger.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-small.e-bigger .e-filled.e-input-group.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-bigger .e-filled.e-input-group.e-small.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-small .e-filled.e-input-group.e-bigger.e-control-wrapper.e-rtl .e-input-group-icon:last-child,
+  .e-rtl .e-filled.e-input-group .e-input-group-icon:last-child,
+  .e-rtl .e-filled.e-input-group.e-bigger .e-input-group-icon:last-child,
+  .e-rtl.e-bigger .e-filled.e-input-group .e-input-group-icon:last-child,
+  .e-rtl .e-filled.e-input-group.e-small .e-input-group-icon:last-child,
+  .e-rtl.e-small .e-filled.e-input-group .e-input-group-icon:last-child,
+  .e-rtl .e-filled.e-input-group.e-small.e-bigger .e-input-group-icon:last-child,
+  .e-rtl.e-small.e-bigger .e-filled.e-input-group .e-input-group-icon:last-child,
+  .e-rtl.e-bigger .e-filled.e-input-group.e-small .e-input-group-icon:last-child,
+  .e-rtl.e-small .e-filled.e-input-group.e-bigger .e-input-group-icon:last-child,
+  .e-rtl .e-filled.e-input-group.e-control-wrapper .e-input-group-icon:last-child,
+  .e-rtl .e-filled.e-input-group.e-bigger.e-control-wrapper .e-input-group-icon:last-child,
+  .e-rtl.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon:last-child,
+  .e-rtl .e-filled.e-input-group.e-small.e-control-wrapper .e-input-group-icon:last-child,
+  .e-rtl.e-small .e-filled.e-input-group.e-control-wrapper .e-input-group-icon:last-child,
+  .e-rtl .e-filled.e-input-group.e-small.e-bigger.e-control-wrapper .e-input-group-icon:last-child,
+  .e-rtl.e-small.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon:last-child,
+  .e-rtl.e-bigger .e-filled.e-input-group.e-small.e-control-wrapper .e-input-group-icon:last-child,
+  .e-rtl.e-small .e-filled.e-input-group.e-bigger.e-control-wrapper .e-input-group-icon:last-child {
+    @if $input-skin-name == 'material' {
+      margin-left: $zero-value;
+    }
+  }
+
+  .e-filled.e-input-group .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
+  .e-filled.e-input-group.e-small.e-bigger .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-input-group-icon,
+  .e-small.e-bigger .e-filled.e-input-group .e-input-group-icon,
+  .e-small.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
+    @if $input-skin-name == 'material' {
+      margin-right: 8px;
+    }
+  }
+
+  .e-filled.e-rtl.e-input-group .e-input-group-icon,
+  .e-filled.e-rtl.e-input-group.e-control-wrapper .e-input-group-icon,
+  .e-filled.e-rtl.e-input-group.e-small.e-bigger .e-input-group-icon,
+  .e-filled.e-rtl.e-input-group.e-control-wrapper.e-small.e-bigger .e-input-group-icon,
+  .e-small.e-bigger .e-rtl.e-filled.e-input-group .e-input-group-icon,
+  .e-small.e-bigger .e-rtl.e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
+  .e-rtl .e-filled.e-input-group .e-input-group-icon,
+  .e-rtl .e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
+  .e-rtl .e-filled.e-input-group.e-small.e-bigger .e-input-group-icon,
+  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-input-group-icon,
+  .e-rtl.e-small.e-bigger .e-filled.e-input-group .e-input-group-icon,
+  .e-rtl.e-small.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
+    @if $input-skin-name == 'material' {
+      margin-left: 8px;
+      margin-right: $zero-value;
+    }
+  }
+
+  .e-filled.e-input-group.e-small .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
+  .e-small .e-filled.e-input-group .e-input-group-icon,
+  .e-small .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
+    @if $input-skin-name == 'material' {
+      margin-right: $input-child-small-margin-right;
+    }
+  }
+
+  .e-filled.e-input-group.e-small.e-rtl .e-input-group-icon,
+  .e-filled.e-input-group.e-control-wrapper.e-small.e-rtl .e-input-group-icon,
+  .e-small .e-filled.e-input-group.e-rtl .e-input-group-icon,
+  .e-small .e-filled.e-input-group.e-control-wrapper.e-rtl .e-input-group-icon,
+  .e-rtl .e-filled.e-input-group.e-small .e-input-group-icon,
+  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
+  .e-rtl.e-small .e-filled.e-input-group .e-input-group-icon,
+  .e-rtl.e-small .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
+    @if $input-skin-name == 'material' {
+      margin-left: $input-child-small-margin-right;
+      margin-right: $zero-value;
     }
   }
 

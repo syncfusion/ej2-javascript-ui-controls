@@ -1782,6 +1782,9 @@ let ListView = class ListView extends Component {
     }
     reRender() {
         this.resetBlazorTemplates();
+        this.removeElement(this.headerEle);
+        this.removeElement(this.ulElement);
+        this.removeElement(this.contentContainer);
         if (Object.keys(window).indexOf('ejsInterop') === -1) {
             this.element.innerHTML = '';
         }

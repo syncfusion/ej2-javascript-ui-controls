@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#I241842` - The issue with providing the content "a" in the string template when having anchor tag in an application has been fixed.
+
 ## 17.2.34 (2019-07-11)
 
 ### CircularGauge

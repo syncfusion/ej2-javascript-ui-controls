@@ -285,7 +285,7 @@ export class AccumulationLegend extends BaseLegend {
                     chart.removeSvg();
                     (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
                     (<AccumulationChart>this.chart).renderElements();
-                } else if ((<AccumulationChart>this.chart).accumulationSelectionModule) {
+                } else if ((<AccumulationChart>this.chart).accumulationSelectionModule && !isNaN(pointIndex)) {
                     (<AccumulationChart>this.chart).accumulationSelectionModule.legendSelection(
                         <AccumulationChart>this.chart, 0, pointIndex);
                 }

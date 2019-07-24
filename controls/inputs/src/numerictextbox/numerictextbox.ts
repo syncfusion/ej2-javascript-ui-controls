@@ -82,7 +82,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * Sets the value of the NumericTextBox.
      * @default null
      * @aspType object
-     * @blazorType object
+     * @isGenericType true
      */
     @Property(null)
     public value: number;
@@ -93,7 +93,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * [min](../../numerictextbox/getting-started/#range-validation).
      * @default null
      * @aspType object
-     * @blazorType object
+     * @isGenericType true
      */
     @Property(-(Number.MAX_VALUE))
     public min: number;
@@ -104,7 +104,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * [max](../../numerictextbox/getting-started/#range-validation).
      * @default null
      * @aspType object
-     * @blazorType object
+     * @isGenericType true
      */
     @Property(Number.MAX_VALUE)
     public max: number;
@@ -114,6 +114,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      * For more information on step, refer to
      * [step](../../numerictextbox/getting-started/#range-validation).
      * @default 1
+     * @isGenericType true
      */
     @Property(1)
     public step: number;

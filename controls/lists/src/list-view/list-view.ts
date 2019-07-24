@@ -1375,6 +1375,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private reRender(): void {
         this.resetBlazorTemplates();
+        this.removeElement(this.headerEle);
+        this.removeElement(this.ulElement);
+        this.removeElement(this.contentContainer);
         if (Object.keys(window).indexOf('ejsInterop') === -1) {
             this.element.innerHTML = '';
         }

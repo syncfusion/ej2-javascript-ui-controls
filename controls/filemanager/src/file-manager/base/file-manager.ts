@@ -100,7 +100,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public createdItem: { [key: string]: Object; };
     public layoutSelectedItems: string[] = [];
     public renamedItem: { [key: string]: Object; };
-    public renamedNodeId: string = null;
     public renamedId: string = null;
     public uploadItem: string[] = [];
     public fileLength: number;

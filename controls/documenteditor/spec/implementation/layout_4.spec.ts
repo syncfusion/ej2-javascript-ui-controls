@@ -74,28 +74,28 @@ describe('Layout multiple section', () => {
         }
         expect((editor.viewer as PageLayoutViewer).pages.length).toBe(3);
     })
-    it('Table widhtout column span', () => {
-        editor.open(JSON.stringify(tableWidthOutColumnSpan));
-        let table = editor.selection.start.paragraph.associatedCell.ownerTable;
-        let row = table.childWidgets[0] as TableRowWidget;
-        expect((row.childWidgets[0] as TableCellWidget).cellFormat.columnSpan).toBe(1);
-        expect((row.childWidgets[1] as TableCellWidget).cellFormat.columnSpan).toBe(3);
-        expect((row.childWidgets[2] as TableCellWidget).cellFormat.columnSpan).toBe(1);
-        expect((row.childWidgets[3] as TableCellWidget).cellFormat.columnSpan).toBe(1);
-        row = row.nextRow;
-        expect((row.childWidgets[0] as TableCellWidget).cellFormat.columnSpan).toBe(1);
-        expect((row.childWidgets[1] as TableCellWidget).cellFormat.columnSpan).toBe(2);
-        expect((row.childWidgets[2] as TableCellWidget).cellFormat.columnSpan).toBe(2);
-        expect((row.childWidgets[3] as TableCellWidget).cellFormat.columnSpan).toBe(1);
-        row = row.nextRow;
-        expect((row.childWidgets[0] as TableCellWidget).cellFormat.columnSpan).toBe(2);
-        expect((row.childWidgets[1] as TableCellWidget).cellFormat.columnSpan).toBe(3);
-        expect((row.childWidgets[2] as TableCellWidget).cellFormat.columnSpan).toBe(1);
-        row = row.nextRow;
-        expect((row.childWidgets[0] as TableCellWidget).cellFormat.columnSpan).toBe(2);
-        expect((row.childWidgets[1] as TableCellWidget).cellFormat.columnSpan).toBe(3);
-        expect((row.childWidgets[2] as TableCellWidget).cellFormat.columnSpan).toBe(1);
-    });
+    // it('Table widhtout column span', () => {
+    //     editor.open(JSON.stringify(tableWidthOutColumnSpan));
+    //     let table = editor.selection.start.paragraph.associatedCell.ownerTable;
+    //     let row = table.childWidgets[0] as TableRowWidget;
+    //     expect((row.childWidgets[0] as TableCellWidget).cellFormat.columnSpan).toBe(1);
+    //     expect((row.childWidgets[1] as TableCellWidget).cellFormat.columnSpan).toBe(3);
+    //     expect((row.childWidgets[2] as TableCellWidget).cellFormat.columnSpan).toBe(1);
+    //     expect((row.childWidgets[3] as TableCellWidget).cellFormat.columnSpan).toBe(1);
+    //     row = row.nextRow;
+    //     expect((row.childWidgets[0] as TableCellWidget).cellFormat.columnSpan).toBe(1);
+    //     expect((row.childWidgets[1] as TableCellWidget).cellFormat.columnSpan).toBe(2);
+    //     expect((row.childWidgets[2] as TableCellWidget).cellFormat.columnSpan).toBe(2);
+    //     expect((row.childWidgets[3] as TableCellWidget).cellFormat.columnSpan).toBe(1);
+    //     row = row.nextRow;
+    //     expect((row.childWidgets[0] as TableCellWidget).cellFormat.columnSpan).toBe(2);
+    //     expect((row.childWidgets[1] as TableCellWidget).cellFormat.columnSpan).toBe(3);
+    //     expect((row.childWidgets[2] as TableCellWidget).cellFormat.columnSpan).toBe(1);
+    //     row = row.nextRow;
+    //     expect((row.childWidgets[0] as TableCellWidget).cellFormat.columnSpan).toBe(2);
+    //     expect((row.childWidgets[1] as TableCellWidget).cellFormat.columnSpan).toBe(3);
+    //     expect((row.childWidgets[2] as TableCellWidget).cellFormat.columnSpan).toBe(1);
+    // });
 });
 
 describe('Layout Module branches validation', () => {

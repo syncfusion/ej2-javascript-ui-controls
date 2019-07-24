@@ -78,7 +78,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         _this.effect = '';
         _this.isPopupClicked = false;
         _this.isDateSelected = true;
-        _this.keyConfigs = {
+        _this.defaultKeyConfigs = {
             controlUp: 'ctrl+38',
             controlDown: 'ctrl+40',
             moveDown: 'downarrow',
@@ -370,18 +370,19 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     };
     CalendarBase.prototype.wireEvents = function () {
         EventHandler.add(this.headerTitleElement, 'click', this.navigateTitle, this);
+        this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
         if (this.getModuleName() === 'calendar') {
             this.keyboardModule = new KeyboardEvents(this.element, {
                 eventName: 'keydown',
                 keyAction: this.keyActionHandle.bind(this),
-                keyConfigs: this.keyConfigs
+                keyConfigs: this.defaultKeyConfigs
             });
         }
         else {
             this.keyboardModule = new KeyboardEvents(this.calendarElement, {
                 eventName: 'keydown',
                 keyAction: this.keyActionHandle.bind(this),
-                keyConfigs: this.keyConfigs
+                keyConfigs: this.defaultKeyConfigs
             });
         }
     };
@@ -1242,10 +1243,27 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var focusedEle = this.tableBodyElement.querySelector('tr td.e-focused-date');
         var selectedEle = this.tableBodyElement.querySelector('tr td.e-selected');
         var type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        var title = this.globalize.formatDate(this.currentDate, { type: 'dateTime', skeleton: 'full', calendar: type });
+        var title;
+        var view = this.currentView();
+        if (view === 'Month') {
+            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'full', calendar: type });
+        }
+        else if (view === 'Year') {
+            if (type !== 'islamic') {
+                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'yMMMM', calendar: type });
+            }
+            else {
+                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'GyMMM', calendar: type });
+            }
+        }
+        else {
+            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'y', calendar: type });
+        }
         if (selectedEle || focusedEle) {
-            (focusedEle || selectedEle).setAttribute('aria-selected', 'true');
-            (focusedEle || selectedEle).setAttribute('aria-label', 'The current focused date is ' + '' + title);
+            if (!isNullOrUndefined(selectedEle)) {
+                selectedEle.setAttribute('aria-selected', 'true');
+            }
+            (focusedEle || selectedEle).setAttribute('aria-label', title);
             id = (focusedEle || selectedEle).getAttribute('id');
         }
         return id;
@@ -1801,6 +1819,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], CalendarBase.prototype, "enablePersistence", void 0);
+    __decorate([
+        Property(null)
+    ], CalendarBase.prototype, "keyConfigs", void 0);
     __decorate([
         Event()
     ], CalendarBase.prototype, "created", void 0);
@@ -2827,7 +2848,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         _this.isInteracted = true;
         _this.invalidValueString = null;
         _this.checkPreviousValue = null;
-        _this.keyConfigs = {
+        _this.defaultKeyConfigs = {
             altUpArrow: 'alt+uparrow',
             altDownArrow: 'alt+downarrow',
             escape: 'escape',
@@ -2847,11 +2868,6 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             shiftPageDown: 'shift+pagedown',
             controlHome: 'ctrl+home',
             controlEnd: 'ctrl+end',
-            tab: 'tab'
-        };
-        _this.calendarKeyConfigs = {
-            escape: 'escape',
-            enter: 'enter',
             tab: 'tab'
         };
         _this.datepickerOptions = options;
@@ -3150,10 +3166,11 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
             }
         }
+        this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
         this.keyboardModules = new KeyboardEvents(this.inputElement, {
             eventName: 'keydown',
             keyAction: this.inputKeyActionHandle.bind(this),
-            keyConfigs: this.keyConfigs
+            keyConfigs: this.defaultKeyConfigs
         });
     };
     DatePicker.prototype.resetFormHandler = function () {
@@ -3305,10 +3322,11 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             this.trigger('blur', blurArguments);
         }
         if (this.isCalendar()) {
+            this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
             this.calendarKeyboardModules = new KeyboardEvents(this.calendarElement.children[1].firstElementChild, {
                 eventName: 'keydown',
                 keyAction: this.CalendarKeyActionHandle.bind(this),
-                keyConfigs: this.calendarKeyConfigs
+                keyConfigs: this.defaultKeyConfigs
             });
         }
         this.isPopupClicked = false;
@@ -3374,6 +3392,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
         if (this.isCalendar()) {
             _super.prototype.keyActionHandle.call(this, e);
+            attributes(this.inputElement, {
+                'aria-activedescendant': '' + this.setActiveDescendant()
+            });
         }
     };
     DatePicker.prototype.popupUpdate = function () {
@@ -3507,16 +3528,17 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             open: function () {
                 if (_this.getModuleName() !== 'datetimepicker') {
                     if (document.activeElement !== _this.inputElement) {
+                        _this.defaultKeyConfigs = extend(_this.defaultKeyConfigs, _this.keyConfigs);
                         _this.calendarElement.children[1].firstElementChild.focus();
                         _this.calendarKeyboardModules = new KeyboardEvents(_this.calendarElement.children[1].firstElementChild, {
                             eventName: 'keydown',
                             keyAction: _this.CalendarKeyActionHandle.bind(_this),
-                            keyConfigs: _this.calendarKeyConfigs
+                            keyConfigs: _this.defaultKeyConfigs
                         });
                         _this.calendarKeyboardModules = new KeyboardEvents(_this.inputWrapper.container.children[_this.index], {
                             eventName: 'keydown',
                             keyAction: _this.CalendarKeyActionHandle.bind(_this),
-                            keyConfigs: _this.calendarKeyConfigs
+                            keyConfigs: _this.defaultKeyConfigs
                         });
                     }
                 }
@@ -4304,6 +4326,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], DatePicker.prototype, "allowEdit", void 0);
     __decorate$1([
+        Property(null)
+    ], DatePicker.prototype, "keyConfigs", void 0);
+    __decorate$1([
         Property(false)
     ], DatePicker.prototype, "enablePersistence", void 0);
     __decorate$1([
@@ -4497,20 +4522,16 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     DateRangePicker.prototype.preRender = function () {
-        this.presetKeyConfig = {
-            moveUp: 'uparrow',
-            moveDown: 'downarrow',
-            enter: 'enter',
-            tab: 'tab',
-            spacebar: 'space'
-        };
         this.keyInputConfigs = {
             altDownArrow: 'alt+downarrow',
             escape: 'escape',
             enter: 'enter',
             tab: 'tab',
             altRightArrow: 'alt+rightarrow',
-            altLeftArrow: 'alt+leftarrow'
+            altLeftArrow: 'alt+leftarrow',
+            moveUp: 'uparrow',
+            moveDown: 'downarrow',
+            spacebar: 'space'
         };
         this.defaultConstant = {
             placeholder: '',
@@ -4673,7 +4694,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.validationAttribute(this.element, this.inputElement);
         }
         this.checkHtmlAttributes(true);
-        merge(this.keyConfigs, { shiftTab: 'shift+tab' });
+        merge(this.defaultKeyConfigs, { shiftTab: 'shift+tab' });
         var start = this.checkDateValue(new Date(this.checkValue(this.startValue)));
         this.setProperties({ startDate: start }, true); // persist the value propeerty.
         this.setProperties({ endValue: this.checkDateValue(new Date(this.checkValue(this.endValue))) }, true);
@@ -4789,8 +4810,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
             }
             if (!this.isMobile) {
+                this.keyInputConfigs = extend(this.keyInputConfigs, this.keyConfigs);
                 this.inputKeyboardModule = new KeyboardEvents(this.inputElement, {
-                    eventName: 'keydown', keyAction: this.inputHandler.bind(this), keyConfigs: this.keyInputConfigs
+                    eventName: 'keydown',
+                    keyAction: this.inputHandler.bind(this),
+                    keyConfigs: this.keyInputConfigs
                 });
             }
             if (this.formElement) {
@@ -5115,15 +5139,16 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.calendarIconRipple();
             this.headerTitleElement = this.popupObj.element.querySelector('.' + RIGHTCALENDER + ' .' + HEADER$1 + ' .' + TITLE$1);
             this.headerTitleElement = this.popupObj.element.querySelector('.' + LEFTCALENDER + ' .' + HEADER$1 + ' .' + TITLE$1);
+            this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
             this.leftKeyboardModule = new KeyboardEvents(this.leftCalendar, {
                 eventName: 'keydown',
                 keyAction: this.keyInputHandler.bind(this),
-                keyConfigs: this.keyConfigs
+                keyConfigs: this.defaultKeyConfigs
             });
             this.rightKeyboardModule = new KeyboardEvents(this.rightCalendar, {
                 eventName: 'keydown',
                 keyAction: this.keyInputHandler.bind(this),
-                keyConfigs: this.keyConfigs
+                keyConfigs: this.defaultKeyConfigs
             });
         }
         else {
@@ -7007,10 +7032,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.isKeyPopup = false;
             if (this.isRangeIconClicked) {
                 this.inputWrapper.container.children[1].focus();
+                this.keyInputConfigs = extend(this.keyInputConfigs, this.keyConfigs);
                 this.popupKeyboardModule = new KeyboardEvents(this.inputWrapper.container.children[1], {
                     eventName: 'keydown',
-                    keyAction: this.popupKeyActionHandle.bind(this),
-                    keyConfigs: this.keyInputConfigs
+                    keyConfigs: this.keyInputConfigs,
+                    keyAction: this.popupKeyActionHandle.bind(this)
                 });
             }
         }
@@ -7219,10 +7245,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                     if (!isNullOrUndefined(_this.presetElement)) {
+                        _this.keyInputConfigs = extend(_this.keyInputConfigs, _this.keyConfigs);
                         _this.presetKeyboardModule = new KeyboardEvents(_this.presetElement, {
                             eventName: 'keydown',
                             keyAction: _this.presetKeyActionHandler.bind(_this),
-                            keyConfigs: _this.presetKeyConfig
+                            keyConfigs: _this.keyInputConfigs
                         });
                         _this.presetKeyboardModule = new KeyboardEvents(_this.presetElement, {
                             eventName: 'keydown',
@@ -7253,7 +7280,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     _this.unWireListEvents();
                 }
                 if (!isNullOrUndefined(_this.popupObj)) {
-                    detach(_this.popupObj.element);
+                    if (!isNullOrUndefined(_this.popupObj.element.parentElement)) {
+                        detach(_this.popupObj.element);
+                    }
                     _this.popupObj.destroy();
                     _this.popupObj = null;
                 }
@@ -7410,6 +7439,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             keyAction: this.popupKeyActionHandle.bind(this),
             keyConfigs: { escape: 'escape' }
         });
+        this.keyInputConfigs = extend(this.keyInputConfigs, this.keyConfigs);
         this.popupKeyboardModule = new KeyboardEvents(this.inputWrapper.container.children[1], {
             eventName: 'keydown',
             keyAction: this.popupKeyActionHandle.bind(this),
@@ -8539,6 +8569,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     ], DateRangePicker.prototype, "strictMode", void 0);
     __decorate$2([
         Property(null)
+    ], DateRangePicker.prototype, "keyConfigs", void 0);
+    __decorate$2([
+        Property(null)
     ], DateRangePicker.prototype, "format", void 0);
     __decorate$2([
         Property(true)
@@ -9649,8 +9682,11 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
         if (!Browser.isDevice) {
+            this.keyConfigure = extend(this.keyConfigure, this.keyConfigs);
             this.inputEvent = new KeyboardEvents(this.inputWrapper.container, {
-                keyAction: this.inputHandler.bind(this), keyConfigs: this.keyConfigure, eventName: 'keydown'
+                keyAction: this.inputHandler.bind(this),
+                keyConfigs: this.keyConfigure,
+                eventName: 'keydown'
             });
             if (this.showClearButton && this.inputElement) {
                 EventHandler.add(this.inputElement, 'mousedown', this.mouseDownHandler, this);
@@ -10639,6 +10675,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     ], TimePicker.prototype, "strictMode", void 0);
     __decorate$3([
         Property(null)
+    ], TimePicker.prototype, "keyConfigs", void 0);
+    __decorate$3([
+        Property(null)
     ], TimePicker.prototype, "format", void 0);
     __decorate$3([
         Property(true)
@@ -11013,10 +11052,11 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.dateHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.blurHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.focusHandler, this);
+        this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
         this.keyboardHandler = new KeyboardEvents(this.inputElement, {
             eventName: 'keydown',
             keyAction: this.inputKeyAction.bind(this),
-            keyConfigs: this.keyConfigs
+            keyConfigs: this.defaultKeyConfigs
         });
     };
     DateTimePicker.prototype.unBindInputEvents = function () {
@@ -11289,8 +11329,11 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                 _this.dateTimeWrapper.style.visibility = 'visible';
                 addClass([_this.timeIcon], ACTIVE$2);
                 if (!Browser.isDevice) {
+                    _this.timekeyConfigure = extend(_this.timekeyConfigure, _this.keyConfigs);
                     _this.inputEvent = new KeyboardEvents(_this.inputWrapper.container, {
-                        keyAction: _this.TimeKeyActionHandle.bind(_this), keyConfigs: _this.timekeyConfigure, eventName: 'keydown'
+                        keyAction: _this.TimeKeyActionHandle.bind(_this),
+                        keyConfigs: _this.timekeyConfigure,
+                        eventName: 'keydown'
                     });
                 }
             }, close: function () {
@@ -12081,6 +12124,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(1000)
     ], DateTimePicker.prototype, "zIndex", void 0);
+    __decorate$4([
+        Property(null)
+    ], DateTimePicker.prototype, "keyConfigs", void 0);
     __decorate$4([
         Property({})
     ], DateTimePicker.prototype, "htmlAttributes", void 0);

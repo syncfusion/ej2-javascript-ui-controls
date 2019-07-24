@@ -175,6 +175,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected rows: number = 1;
     protected dragobj: Draggable;
     protected dragStartArgs: DragStartArgs;
+    protected isDynamicallyUpdated: boolean;
     protected dragStopEventArgs: DragStopArgs;
     protected draggedEventArgs: DraggedEventArgs;
     protected updatedRows: number;
@@ -458,6 +459,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.dimensions = [];
         this.allItems = [];
         this.oldRowCol = {};
+        this.isDynamicallyUpdated = false;
         this.availableClasses = [];
         this.setOldRowCol();
         this.calculateCellSize();
@@ -2728,6 +2730,28 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
     }
 
+    private updatePanelsDynamically(panels: PanelModel[]): void {
+        this.removeAll();
+        this.setProperties({ panels: panels }, true);
+        this.setOldRowCol();
+        this.initialize();
+        if (this.showGridLines) {
+            this.initGridLines();
+        }
+    }
+
+    private checkForIDValues(panels: PanelModel[]): void {
+        if (!isNullOrUndefined(panels)) {
+            this.panelID = 0;
+            panels.forEach((panel: PanelModel) => {
+                if (!panel.id) {
+                    this.panelPropertyChange(panel, { id: 'layout_' + this.panelID.toString() });
+                    this.panelID = this.panelID + 1;
+                }
+            });
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      * returns void
@@ -2735,6 +2759,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      */
 
     public onPropertyChanged(newProp: DashboardLayoutModel, oldProp: DashboardLayoutModel): void {
+        if (newProp.panels) { this.checkForIDValues(newProp.panels); }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'enableRtl':
@@ -2743,9 +2768,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     break;
                 case 'mediaQuery':
                     this.setProperties({ mediaQuery: newProp.mediaQuery }, true);
-                    if (this.checkMediaQuery()) {
-                        this.checkMediaQuerySizing();
-                    }
+                    if (this.checkMediaQuery()) { this.checkMediaQuerySizing(); }
                     break;
                 case 'allowDragging':
                     this.setProperties({ allowDragging: newProp.allowDragging }, true);
@@ -2797,18 +2820,19 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     this.setProperties({ allowPushing: newProp.allowPushing }, true);
                     break;
                 case 'panels':
-                    this.isRenderComplete = false;
-                    this.removeAll();
-                    this.setProperties({ panels: newProp.panels }, true);
-                    this.setOldRowCol();
-                    this.initialize();
-                    if (this.showGridLines) {
-                        this.initGridLines();
-                    }
-                    this.isRenderComplete = true;
+                    if (!this.isDynamicallyUpdated) {
+                        this.isRenderComplete = false;
+                        this.updatePanelsDynamically(newProp.panels);
+                        this.isRenderComplete = true;
+                        this.isDynamicallyUpdated = true;
+                    } else { this.isDynamicallyUpdated = false; }
                     break;
                 case 'columns':
                     this.isRenderComplete = false;
+                    if (newProp.panels && !this.isDynamicallyUpdated) {
+                        this.updatePanelsDynamically(newProp.panels);
+                        this.isDynamicallyUpdated = true;
+                    } else { this.isDynamicallyUpdated = false; }
                     this.setProperties({ columns: newProp.columns }, true);
                     this.panelCollection = [];
                     this.maxColumnValue = this.columns;

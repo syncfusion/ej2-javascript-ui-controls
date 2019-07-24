@@ -5643,7 +5643,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
     };
     SeriesBase.prototype.dataManagerSuccess = function (e, chart, isRemoteData) {
         if (isRemoteData === void 0) { isRemoteData = true; }
-        this.currentViewData = e.result !== '' ? e.result : [];
+        this.currentViewData = e.count ? e.result : [];
         if (this instanceof Series) {
             var argsData = {
                 name: seriesRender, series: this, data: this.currentViewData, fill: this.interior
@@ -7381,13 +7381,18 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
         var controlValue = this.getControlsValue(controls, isVertical);
         width = width ? width : controlValue.width;
         height = height ? height : controlValue.height;
-        var element = createElement('canvas', {
-            id: 'ej2-canvas',
-            attrs: {
-                'width': width.toString(),
-                'height': height.toString()
-            }
-        });
+        var element = this.control.svgObject;
+        var isCanvas = this.control.enableCanvas;
+        var image;
+        if (!isCanvas) {
+            element = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': width.toString(),
+                    'height': height.toString()
+                }
+            });
+        }
         var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
         orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
         var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
@@ -7404,6 +7409,22 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
                 this.triggerDownload(fileName, type, url, isDownload);
             }
         }
+        else if (Browser.info.name === 'msie') {
+            var canvas = void 0;
+            if (!isCanvas) {
+                canvas = this.createCanvas();
+                image = canvas.toDataURL();
+            }
+            else {
+                image = element.toDataURL();
+            }
+            if (type === 'PDF') {
+                this.exportPdf(canvas, orientation, width, height, isDownload, fileName);
+            }
+            else {
+                this.doexport(type, image, fileName);
+            }
+        }
         else {
             var image_1 = new Image();
             var ctx_1 = element.getContext('2d');
@@ -7411,23 +7432,7 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
                 ctx_1.drawImage(image_1, 0, 0);
                 window.URL.revokeObjectURL(url);
                 if (type === 'PDF') {
-                    var document_1 = new PdfDocument();
-                    var margin = document_1.pageSettings.margins;
-                    var pdfDefaultWidth = document_1.pageSettings.width;
-                    var pdfDefaultHeight = document_1.pageSettings.height;
-                    var exactWidth = void 0;
-                    var exactHeight = void 0;
-                    var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                    document_1.pageSettings.orientation = orientation;
-                    exactWidth = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
-                    exactHeight = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
-                    document_1.pageSettings.size = new SizeF(exactWidth, exactHeight);
-                    imageString = imageString.slice(imageString.indexOf(',') + 1);
-                    document_1.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, width, height);
-                    if (isDownload) {
-                        document_1.save(fileName + '.pdf');
-                        document_1.destroy();
-                    }
+                    _this.exportPdf(element, orientation, width, height, isDownload, fileName);
                 }
                 else {
                     if (window.navigator.msSaveOrOpenBlob) {
@@ -7439,6 +7444,9 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
                 }
             });
             image_1.src = url;
+        }
+        if (!isCanvas) {
+            removeElement$1(document.getElementById(this.control.element.id + '_canvas'));
         }
     };
     /**
@@ -7468,6 +7476,7 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
         var width = 0;
         var height = 0;
         var content = '';
+        var isCanvas = this.control.enableCanvas;
         var svgObject = new SvgRenderer('').createSvg({
             id: 'Svg_Export_Element',
             width: 200, height: 200
@@ -7478,21 +7487,91 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
                 style: (isNullOrUndefined(isVertical) || isVertical) ? 'transform: translateY(' + height + 'px)' :
                     'transform: translateX(' + width + 'px)'
             });
-            groupEle.appendChild(svg);
+            if (!isCanvas) {
+                groupEle.appendChild(svg);
+            }
             width = (isNullOrUndefined(isVertical) || isVertical) ? Math.max(control.availableSize.width, width) :
                 width + control.availableSize.width;
             height = (isNullOrUndefined(isVertical) || isVertical) ? height + control.availableSize.height :
                 Math.max(control.availableSize.height, height);
             content += control.svgObject.outerHTML;
-            svgObject.appendChild(groupEle);
+            if (!isCanvas) {
+                svgObject.appendChild(groupEle);
+            }
         });
-        svgObject.setAttribute('width', width + '');
-        svgObject.setAttribute('height', height + '');
+        if (!isCanvas) {
+            svgObject.setAttribute('width', width + '');
+            svgObject.setAttribute('height', height + '');
+        }
         return {
             'width': width,
             'height': height,
             'svg': svgObject
         };
+    };
+    ExportUtils.prototype.createCanvas = function () {
+        var chart = this.control;
+        this.canvasRender(true, chart);
+        var canvas = chart.svgObject;
+        this.canvasRender(false, chart);
+        return canvas;
+    };
+    /**
+     * To convert svg chart into canvas chart to fix export issue in IE
+     * We cant export svg to other formats in IE
+     */
+    // tslint:disable:no-string-literal
+    ExportUtils.prototype.canvasRender = function (enableCanvas, chart) {
+        chart.enableCanvas = enableCanvas;
+        chart['preRender']();
+        chart['render']();
+    };
+    ExportUtils.prototype.exportPdf = function (element, orientation, width, height, isDownload, fileName) {
+        var document = new PdfDocument();
+        var margin = document.pageSettings.margins;
+        var pdfDefaultWidth = document.pageSettings.width;
+        var pdfDefaultHeight = document.pageSettings.height;
+        var exactWidth;
+        var exactHeight;
+        var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+        document.pageSettings.orientation = orientation;
+        exactWidth = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
+        exactHeight = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
+        document.pageSettings.size = new SizeF(exactWidth, exactHeight);
+        imageString = imageString.slice(imageString.indexOf(',') + 1);
+        document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, width, height);
+        if (isDownload) {
+            document.save(fileName + '.pdf');
+            document.destroy();
+        }
+    };
+    ExportUtils.prototype.doexport = function (type, image, fileName) {
+        var images = [];
+        var fileType = type || 'JPG';
+        images = [image];
+        this.exportImage(images, fileName, fileType, image);
+    };
+    ExportUtils.prototype.exportImage = function (images, fileName, fileType, image) {
+        var buffers = [];
+        var length = (!(images instanceof HTMLElement)) ? images.length : 0;
+        for (var g = 0; g < length; g++) {
+            image = images[g];
+            image = image.replace(/^data:[a-z]*;,/, '');
+            var image1 = image.split(',');
+            var byteString = atob(image1[1]);
+            var buffer = new ArrayBuffer(byteString.length);
+            var intArray = new Uint8Array(buffer);
+            for (var i = 0; i < byteString.length; i++) {
+                intArray[i] = byteString.charCodeAt(i);
+            }
+            buffers.push(buffer);
+        }
+        for (var j = 0; j < buffers.length; j++) {
+            var b = new Blob([buffers[j]], { type: 'application/octet-stream' });
+            if (Browser.info.name === 'msie') {
+                window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType.toLocaleLowerCase());
+            }
+        }
     };
     return ExportUtils;
 }());
@@ -22754,6 +22833,17 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        /**
+         * Customer issue
+         * Task ID - EJ2-28898
+         * Issue: While element's height is smaller than chart'height, html scroll bar presents. On that case while moving chart scrollbar,
+         * html scrollbar goes up due to chart's svg removed from the dom when zoomFactor and zoomPosition chnaged
+         * Fix: Only for scrolling purpose, height for element is set to chart's available height
+         */
+        if (this.component.element.style.height === '') {
+            this.isCustomHeight = true;
+            this.component.element.style.height = this.component.availableSize.height + 'px';
+        }
     };
     /**
      * To check the matched string
@@ -22943,6 +23033,14 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         if (this.scrollStarted && !this.isLazyLoad) {
             this.component.trigger(scrollEnd, this.getArgs(scrollChanged, this.startRange, this.startZoomPosition, this.startZoomFactor));
             this.scrollStarted = false;
+        }
+        /**
+         * Customer issue
+         * Task ID - EJ2-28898
+         * Chart's height setted is removed here.
+         */
+        if (this.isCustomHeight) {
+            this.component.element.style.height = null;
         }
     };
     ScrollBar.prototype.calculateMouseWheelRange = function (scrollThumbX, scrollThumbWidth) {
@@ -26402,7 +26500,7 @@ var AccumulationLegend = /** @__PURE__ @class */ (function (_super) {
                     this.chart.refreshPoints(currentSeries.points);
                     this.chart.renderElements();
                 }
-                else if (this.chart.accumulationSelectionModule) {
+                else if (this.chart.accumulationSelectionModule && !isNaN(pointIndex)) {
                     this.chart.accumulationSelectionModule.legendSelection(this.chart, 0, pointIndex);
                 }
             }
@@ -27793,7 +27891,7 @@ var RangeSeries = /** @__PURE__ @class */ (function (_super) {
      * @param e
      */
     RangeSeries.prototype.dataManagerSuccess = function (e, control, series) {
-        var viewData = e.result !== '' ? e.result : [];
+        var viewData = e.count ? e.result : [];
         this.processJsonData(viewData, control, Object.keys(viewData).length, series);
         this.seriesLength += series ? 1 : this.seriesLength;
         if (!series || this.seriesLength === control.series.length) {

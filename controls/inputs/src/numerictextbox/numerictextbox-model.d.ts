@@ -18,7 +18,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * Sets the value of the NumericTextBox.
      * @default null
      * @aspType object
-     * @blazorType object
+     * @isGenericType true
      */
     value?: number;
 
@@ -28,7 +28,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * [min](../../numerictextbox/getting-started/#range-validation).
      * @default null
      * @aspType object
-     * @blazorType object
+     * @isGenericType true
      */
     min?: number;
 
@@ -38,7 +38,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * [max](../../numerictextbox/getting-started/#range-validation).
      * @default null
      * @aspType object
-     * @blazorType object
+     * @isGenericType true
      */
     max?: number;
 
@@ -47,6 +47,7 @@ export interface NumericTextBoxModel extends ComponentModel{
      * For more information on step, refer to
      * [step](../../numerictextbox/getting-started/#range-validation).
      * @default 1
+     * @isGenericType true
      */
     step?: number;
 

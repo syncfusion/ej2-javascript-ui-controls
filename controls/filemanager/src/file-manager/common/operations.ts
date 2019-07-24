@@ -230,19 +230,16 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
         if (parent.activeModule === 'navigationpane') {
-            if (!parent.hasId) {
-                let newPath: string = getParentPath(parent.path) + parent.renameText + '/';
-                parent.setProperties({ path: newPath }, true);
-            }
-            parent.pathNames[parent.pathNames.length - 1] = parent.renameText;
-            parent.itemData = result.files;
+            parent.pathId.pop();
+            parent.itemData = [getValue(parent.pathId[parent.pathId.length - 1], parent.feParent)];
+            read(parent, events.renameEndParent, getParentPath(parent.path));
         } else {
             parent.itemData = [getPathObject(parent)];
-        }
-        if (parent.breadcrumbbarModule.searchObj.value !== '') {
-            Search(parent, events.renameEnd, parent.path, parent.searchWord, parent.showHiddenItems, !parent.searchSettings.ignoreCase);
-        } else {
-            read(parent, events.renameEnd, parent.path);
+            if (parent.breadcrumbbarModule.searchObj.value !== '') {
+                Search(parent, events.renameEnd, parent.path, parent.searchWord, parent.showHiddenItems, !parent.searchSettings.ignoreCase);
+            } else {
+                read(parent, events.renameEnd, parent.path);
+            }
         }
     } else {
         if (result.error.code === '400') {

@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getValue, isBlazor, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, calculatePosition, calculateRelativeBasedPosition, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton, Switch, createCheckBox } from '@syncfusion/ej2-buttons';
@@ -140,6 +140,13 @@ class Column {
          * @default true
          */
         this.allowSearching = true;
+        /**
+         * If `autoFit` set to true, then the particular column content width will be
+         * adjusted based on its content in the initial rendering itself.
+         * Setting this property as true is equivalent to calling `autoFitColumns` method in the `dataBound` event.
+         * @default false
+         */
+        this.autoFit = false;
         this.sortDirection = 'Descending';
         /** @hidden */
         this.getEditTemplate = () => this.editTemplateFn;
@@ -897,7 +904,7 @@ function updatecloneRow(grid) {
         }
         else if (!actualRows[i].isDataRow) {
             nRows.push(actualRows[i]);
-            if (!actualRows[i].isExpand) {
+            if (!actualRows[i].isExpand && actualRows[i].isCaptionRow) {
                 i += getCollapsedRowsCount(actualRows[i], grid);
             }
         }
@@ -916,12 +923,25 @@ function getCollapsedRowsCount(val, grid) {
     let records = 'records';
     let items = 'items';
     let value = val[gSummary];
+    let dataRowCnt = 0;
+    let agrCnt = 'aggregatesCount';
     if (value === val.data[total]) {
-        if (grid.groupSettings.columns.length !== 1) {
-            count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
+        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt])) {
+            if (grid.groupSettings.columns.length !== 1 && val[agrCnt]) {
+                count += (val.indent !== 0 && (value) < 2) ? (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent) * val[agrCnt])) :
+                    (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[agrCnt])) + val[agrCnt];
+            }
+            else if (val[agrCnt] && grid.groupSettings.columns.length === 1) {
+                count += (val[gSummary] * (gLen - val.indent)) + val[agrCnt];
+            }
         }
-        else {
-            count += val[gSummary];
+        else if (grid.groupSettings.columns.length) {
+            if (grid.groupSettings.columns.length !== 1) {
+                count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
+            }
+            else {
+                count += val[gSummary];
+            }
         }
         return count;
     }
@@ -930,11 +950,18 @@ function getCollapsedRowsCount(val, grid) {
             let gLevel = val.data[items][i];
             count += gLevel[items].length + ((gLen !== grid.columns.length) &&
                 !isNullOrUndefined(gLevel[items][records]) ? gLevel[items][records].length : 0);
+            dataRowCnt += (!isNullOrUndefined(gLevel[items][records]) && !isNullOrUndefined(val[agrCnt])) ? gLevel[items][records].length :
+                gLevel[items].length;
             if (gLevel[items].GroupGuid && gLevel[items].childLevels !== 0) {
                 recursive(gLevel);
             }
         }
         count += val.data[items].length;
+        if (!isNullOrUndefined(val[agrCnt])) {
+            if (val[agrCnt] && count && dataRowCnt !== 0) {
+                count += ((count - dataRowCnt) * val[agrCnt]) + val[agrCnt];
+            }
+        }
     }
     return count;
 }
@@ -2042,8 +2069,7 @@ class CheckBoxFilter {
         let checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         let optr = 'equal';
         let searchInput = this.searchBox.querySelector('.e-searchinput');
-        let caseSen = this.options.type === 'string' ?
-            this.options.allowCaseSensitive : true;
+        let caseSen = this.filterSettings.enableCaseSensitivity;
         let defaults = {
             field: this.options.field, predicate: 'or', uid: this.options.uid,
             operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
@@ -3706,7 +3732,16 @@ class GroupModelGenerator extends RowModelGenerator {
                 this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length);
             }
             if (this.parent.aggregates.length) {
+                let rowCnt = this.rows.length;
                 this.rows.push(...this.summaryModelGen.generateRows(data, { level: level }));
+                for (let i = rowCnt - 1; i >= 0; i--) {
+                    if (this.rows[i].isCaptionRow) {
+                        this.rows[i].aggregatesCount = this.rows.length - rowCnt;
+                    }
+                    else if (!this.rows[i].isCaptionRow && !this.rows[i].isDataRow) {
+                        break;
+                    }
+                }
             }
         }
     }
@@ -3775,6 +3810,7 @@ class GroupModelGenerator extends RowModelGenerator {
         options.parentGid = parentID;
         options.childGid = childID;
         options.tIndex = tIndex;
+        options.isCaptionRow = true;
         options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : data.items.length;
         options.uid = getUid('grid-row');
         let row = new Row(options);
@@ -4019,6 +4055,7 @@ class ContentRender {
             this.tbody = this.getTable().querySelector('tbody');
         }
         let startIndex = 0;
+        let blockLoad = true;
         if (isGroupAdaptive(gObj) && gObj.vcRows.length) {
             let top = 'top';
             let scrollTop = !isNullOrUndefined(args.virtualInfo.offsets) ? args.virtualInfo.offsets.top :
@@ -4041,11 +4078,15 @@ class ContentRender {
                         }
                     }
                 }
+                if (scrollTop + this.contentPanel.firstElementChild.offsetHeight ===
+                    this.contentPanel.firstElementChild.scrollHeight && !args.rowObject) {
+                    blockLoad = false;
+                }
             }
         }
         for (let i = startIndex, len = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
-            if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize)) {
+            if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
             }
             if (!gObj.rowTemplate) {
@@ -4108,7 +4149,9 @@ class ContentRender {
         if (frzCols && idx === 0) {
             this.getPanel().firstChild.style.overflowY = 'hidden';
         }
-        args.rows = this.rows.slice(0);
+        if (!isBlazor()) {
+            args.rows = this.rows.slice(0);
+        }
         args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
         this.index = idx;
         getUpdateUsingRaf(() => {
@@ -4283,7 +4326,13 @@ class ContentRender {
                     }
                 }
                 else {
+                    if (gObj.isRowDragable()) {
+                        idx++;
+                    }
                     setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+                    if (gObj.isRowDragable()) {
+                        idx--;
+                    }
                 }
             }
             idx = gObj.isDetail() ? idx - 1 : idx;
@@ -4871,6 +4920,9 @@ class HeaderRender {
                 }
             }
             else {
+                if (gObj.isRowDragable()) {
+                    idx++;
+                }
                 setStyleAttribute(this.getColGroup().children[idx], { 'display': displayVal });
             }
             this.refreshUI();
@@ -5056,7 +5108,7 @@ class CellRenderer {
      * @param  {{[x:string]:Object}} attributes?
      * @param  {Element}
      */
-    render(cell, data, attributes$$1, isEdit) {
+    render(cell, data, attributes$$1, isExpand, isEdit) {
         return this.refreshCell(cell, data, attributes$$1, isEdit);
     }
     /**
@@ -5225,7 +5277,7 @@ class AriaService {
  * @hidden
  */
 function setStateAndProperties(target, attribute, value, remove$$1) {
-    if (remove$$1) {
+    if (remove$$1 && target) {
         target.removeAttribute(attribute);
         return;
     }
@@ -5779,6 +5831,7 @@ class Render {
     }
     resetTemplates() {
         let gObj = this.parent;
+        let gridColumns = gObj.getColumns();
         if (gObj.detailTemplate) {
             let detailTemplateID = gObj.element.id + 'detailTemplate';
             blazorTemplates[detailTemplateID] = [];
@@ -5793,15 +5846,16 @@ class Render {
         if (gObj.toolbarTemplate) {
             resetBlazorTemplate(gObj.element.id + 'toolbarTemplate', 'ToolbarTemplate');
         }
-        for (let i = 0; i < gObj.getColumns().length; i++) {
-            if (gObj.getColumns()[i].template) {
-                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid, 'Template');
+        for (let i = 0; i < gridColumns.length; i++) {
+            if (gridColumns[i].template) {
+                blazorTemplates[gObj.element.id + gridColumns[i].uid] = [];
+                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid, 'Template');
             }
-            if (gObj.getColumns()[i].headerTemplate) {
-                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'headerTemplate', 'HeaderTemplate');
+            if (gridColumns[i].headerTemplate) {
+                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid + 'headerTemplate', 'HeaderTemplate');
             }
-            if (gObj.getColumns()[i].filterTemplate) {
-                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'filterTemplate', 'FilterTemplate');
+            if (gridColumns[i].filterTemplate) {
+                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid + 'filterTemplate', 'FilterTemplate');
             }
         }
         let guid = 'guid';
@@ -7147,7 +7201,13 @@ class ContentFocus {
     validator() {
         let table = this.getTable();
         return (rowIndex, cellIndex, action) => {
-            let cell = table.rows[rowIndex].cells[cellIndex];
+            let cell;
+            if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
+                cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
+            }
+            else {
+                cell = table.rows[rowIndex].cells[cellIndex];
+            }
             let isCellWidth = cell.getBoundingClientRect().width !== 0;
             if (action === 'enter' || action === 'shiftEnter') {
                 return isCellWidth && cell.classList.contains('e-rowcell');
@@ -8000,12 +8060,16 @@ class Selection {
             isCellSelected);
         if (!isToggle) {
             args = {
-                data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
+                data: selectedData, cellIndex: cellIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
                 previousRowCell: this.prevECIdxs ?
                     this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
                 cancel: false
             };
+            if (!isBlazor()) {
+                let currentCell = 'currentCell';
+                args[currentCell] = selectedCell;
+            }
             this.parent.trigger(cellSelecting, this.fDataUpdate(args), this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
         }
         else {
@@ -8015,8 +8079,12 @@ class Selection {
     successCallBack(cellSelectingArgs, isToggle, cellIndex, selectedCell, selectedData) {
         return (cellSelectingArgs) => {
             let cncl = 'cancel';
+            let currentCell = 'currentCell';
             if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
                 return;
+            }
+            if (!isToggle) {
+                cellSelectingArgs[currentCell] = cellSelectingArgs[currentCell] ? cellSelectingArgs[currentCell] : selectedCell;
             }
             this.clearCell();
             if (!isToggle) {
@@ -10823,6 +10891,9 @@ __decorate([
 __decorate([
     Property(false)
 ], FilterSettings.prototype, "ignoreAccent", void 0);
+__decorate([
+    Property(false)
+], FilterSettings.prototype, "enableCaseSensitivity", void 0);
 /**
  * Configures the selection behavior of the Grid.
  */
@@ -13276,12 +13347,23 @@ let Grid = Grid_1 = class Grid extends Component {
         if (isBlazor()) {
             for (let i = 0; i < this.columnModel.length; i++) {
                 if (this.columnModel[i].template) {
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i], false);
                 }
                 if (this.columnModel[i].headerTemplate) {
                     updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
                 }
-                if (this.columnModel[i].filterTemplate) {
+                if (this.filterSettings.type == 'FilterBar' && this.columnModel[i].filterTemplate) {
+                    let fieldName = this.columnModel[i].field;
+                    let tempID = this.element.id + this.columnModel[i].uid + 'filterTemplate';
+                    let filteredColumns = this.filterSettings.columns;
+                    for (let k = 0; k < filteredColumns.length; k++) {
+                        if (fieldName == filteredColumns[k].field) {
+                            blazorTemplates[tempID][0][fieldName] = filteredColumns[k].value;
+                        }
+                    }
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i], false);
+                }
+                if (this.filterSettings.type != 'FilterBar' && this.columnModel[i].filterTemplate) {
                     updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i]);
                 }
             }
@@ -16064,6 +16146,15 @@ class FilterMenuRenderer {
         if (!this.dlgObj) {
             return;
         }
+        if (isBlazor()) {
+            let columns = this.parent.getColumns();
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].filterTemplate) {
+                    let tempID = this.parent.element.id + columns[i].uid + 'filterTemplate';
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
+                }
+            }
+        }
         let elem = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
             this.parent.notify(filterMenuClose, { field: this.col.field });
@@ -16152,6 +16243,7 @@ class FilterMenuRenderer {
             fltrData[col] = column;
             let tempID = this.parent.element.id + column.uid + 'filterTemplate';
             let compElement = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+            updateBlazorTemplate(tempID, 'FilterTemplate', column);
             appendChildren(valueDiv, compElement);
         }
         else {
@@ -16209,9 +16301,9 @@ class FilterMenuRenderer {
                 fltrValue = element.children[0].value;
             }
             else {
-                fltrValue = !isBlazor() && !isNullOrUndefined((element.children[0].ej2_instances) ?
+                fltrValue = !isBlazor() && !isNullOrUndefined((element.children[0].ej2_instances)) ?
                     element.children[0].ej2_instances[0].value
-                    : element.querySelector('.e-control').ej2_instances[0].value);
+                    : element.querySelector('.e-control').ej2_instances[0].value;
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
         }
@@ -16528,6 +16620,15 @@ class ExcelFilter extends CheckBoxFilter {
         this.dlgObj.appendTo(this.dlgDiv);
     }
     removeDialog() {
+        if (isBlazor()) {
+            let columns = this.parent.getColumns();
+            for (let i = 0; i < columns.length; i++) {
+                if (columns[i].filterTemplate) {
+                    let tempID = this.parent.element.id + columns[i].uid + 'filterTemplate';
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
+                }
+            }
+        }
         this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
         remove(this.dlgDiv);
     }
@@ -16790,7 +16891,15 @@ class ExcelFilter extends CheckBoxFilter {
             let tempID = this.parent.element.id + columnObj.uid + 'filterTemplate';
             let element = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, element);
-            valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
+            if (isBlazor()) {
+                valueDiv.children[0].classList.add(elementId);
+                if (this.parent.element.querySelectorAll('.e-xlfl-value').length > 1) {
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
+                }
+            }
+            else {
+                valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
+            }
             value.appendChild(valueDiv);
         }
         else {
@@ -17222,7 +17331,7 @@ class Filter {
             return;
         }
         this.value = filterValue;
-        this.matchCase = matchCase || false;
+        this.matchCase = this.filterSettings.enableCaseSensitivity;
         this.ignoreAccent = this.ignoreAccent = !isNullOrUndefined(ignoreAccent) ? ignoreAccent : this.parent.filterSettings.ignoreAccent;
         this.fieldName = fieldName;
         this.predicate = predicate || 'and';
@@ -17622,7 +17731,7 @@ class Filter {
         let gObj = this.parent;
         let skipInput;
         let index;
-        this.matchCase = true;
+        this.matchCase = this.filterSettings.enableCaseSensitivity;
         switch (this.column.type) {
             case 'number':
                 this.operator = this.filterOperators.equal;
@@ -17899,6 +18008,13 @@ class Resize {
             this.parent.getColumns().map((x) => x.field) : (typeof fName === 'string') ? [fName] : fName;
         this.findColumn(columnName);
     }
+    autoFit() {
+        let newarray = this.parent.getColumns().filter((c) => c.autoFit === true)
+            .map((c) => c.field || c.headerText);
+        if (newarray.length > 0) {
+            this.autoFitColumns(newarray);
+        }
+    }
     /* tslint:disable-next-line:max-func-body-length */
     resizeColumn(fName, index, id) {
         let gObj = this.parent;
@@ -18081,6 +18197,7 @@ class Resize {
         }
         this.parent.on(headerRefreshed, this.refreshHeight, this);
         this.parent.on(initialEnd, this.wireEvents, this);
+        this.parent.on(contentReady, this.autoFit, this);
     }
     /**
      * @hidden
@@ -19263,8 +19380,7 @@ class RowDD {
     }
     initializeDrag() {
         let gObj = this.parent;
-        let drag;
-        drag = new Draggable(gObj.getContent(), {
+        this.draggable = new Draggable(gObj.getContent(), {
             dragTarget: '.e-rowcelldrag, .e-rowdragdrop, .e-rowcell',
             distance: 5,
             helper: this.helper,
@@ -19464,6 +19580,7 @@ class RowDD {
             !gridElement.querySelector('.e-gridcontent'))) {
             return;
         }
+        this.draggable.destroy();
         this.parent.off(initialEnd, this.initializeDrag);
         this.parent.off(columnDrop, this.columnDrop);
         this.parent.removeEventListener(dataBound, this.onDataBoundFn);
@@ -22146,7 +22263,7 @@ class InlineEditRender {
         }
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
-            tbody.querySelector('.e-emptyrow').classList.add('e-hide');
+            tbody.querySelector('.e-emptyrow').remove();
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
@@ -22416,7 +22533,7 @@ class DialogEditRender {
         this.setLocaleObj();
         // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
         //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
-        this.dialogObj = args.dialog = new Dialog(extend({
+        this.dialogObj = new Dialog(extend({
             header: this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
                 this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
             content: this.getEditElement(elements, args),
@@ -22432,6 +22549,9 @@ class DialogEditRender {
                 },
                 { click: this.btnClick.bind(this), buttonModel: { cssClass: 'e-flat', content: this.l10n.getConstant('CancelButton') } }]
         }, gObj.editSettings.dialog.params));
+        if (!isBlazor()) {
+            args.dialog = this.dialogObj;
+        }
         let isStringTemplate = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dialog);
@@ -22980,16 +23100,19 @@ class NormalEdit {
         this.uid = tr.getAttribute('data-uid');
         let rowObj = gObj.getRowObjectFromUID(this.uid);
         let args = {
-            row: tr, primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
+            primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
             rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
             foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
         };
+        if (!isBlazor()) {
+            args.row = tr;
+        }
         gObj.trigger(beginEdit, args, (begineditargs) => {
             begineditargs.type = 'actionBegin';
             gObj.trigger(actionBegin, begineditargs, (editargs) => {
                 if (!editargs.cancel) {
                     gObj.isEdit = true;
-                    editargs.row = getElement(editargs.row);
+                    editargs.row = editargs.row ? editargs.row : tr;
                     if (gObj.editSettings.mode !== 'Dialog') {
                         gObj.clearSelection();
                     }
@@ -23005,6 +23128,11 @@ class NormalEdit {
                     this.args = editargs;
                     if (this.parent.allowTextWrap) {
                         this.parent.notify(freezeRender, { case: 'textwrap' });
+                    }
+                    if (isBlazor()) {
+                        this.parent.notify(toolbarRefresh, {});
+                        gObj.element.querySelector('.e-gridpopup').style.display = 'none';
+                        this.parent.notify('start-edit', {});
                     }
                 }
             });
@@ -23120,6 +23248,9 @@ class NormalEdit {
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         this.parent.trigger(actionComplete, args);
+        if (isBlazor()) {
+            this.parent.notify(toolbarRefresh, {});
+        }
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection)) {
             if (this.parent.editSettings.mode !== 'Dialog') {
@@ -23187,14 +23318,18 @@ class NormalEdit {
             if (gObj.editSettings.mode !== 'Dialog') {
                 this.refreshRow(closeEditArgs.data);
             }
-            if (gObj.getContentTable().querySelector('tr.e-emptyrow') &&
+            if (!gObj.getContentTable().querySelector('tr.e-emptyrow') &&
                 !gObj.getContentTable().querySelector('tr.e-row')) {
-                gObj.getContentTable().querySelector('tr.e-emptyrow').classList.remove('e-hide');
+                gObj.renderModule.emptyRow();
             }
             if (gObj.editSettings.mode !== 'Dialog') {
                 gObj.selectRow(this.rowIndex);
             }
             gObj.trigger(actionComplete, closeEditArgs);
+            if (isBlazor()) {
+                this.parent.notify(toolbarRefresh, {});
+                this.parent.notify('close-edit', {});
+            }
         });
     }
     addRecord(data, index) {
@@ -23234,6 +23369,10 @@ class NormalEdit {
             addArgs.type = actionComplete;
             addArgs.row = gObj.element.querySelector('.e-addedrow');
             gObj.trigger(actionComplete, addArgs);
+            if (isBlazor()) {
+                this.parent.notify(toolbarRefresh, {});
+                this.parent.notify('start-add', {});
+            }
             this.args = addArgs;
         });
     }
@@ -23719,15 +23858,20 @@ class BatchEdit {
             primaryKey: this.parent.getPrimaryKeyFieldNames(),
             rowIndex: index,
             rowData: data ? data : gObj.getSelectedRecords()[0],
-            row: data ? gObj.getRows()[index] : selectedRows[0], cancel: false
+            cancel: false
         };
-        if (!args.row) {
-            return;
+        if (!isBlazor()) {
+            args.row = data ? gObj.getRows()[index] : selectedRows[0];
+            if (!args.row) {
+                return;
+            }
         }
         gObj.trigger(beforeBatchDelete, args, (beforeBatchDeleteArgs) => {
             if (beforeBatchDeleteArgs.cancel) {
                 return;
             }
+            beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row ?
+                beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
             if (this.parent.frozenColumns || selectedRows.length === 1) {
                 let uid = beforeBatchDeleteArgs.row.getAttribute('data-uid');
                 if (beforeBatchDeleteArgs.row.classList.contains('e-insertedrow')) {
@@ -23908,6 +24052,10 @@ class BatchEdit {
                 columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: tr.cells[index]
             };
             gObj.trigger(batchAdd, args1);
+            if (isBlazor()) {
+                this.parent.notify(toolbarRefresh, {});
+                this.parent.notify('start-add', {});
+            }
         });
     }
     renderMovable(ele) {
@@ -23996,7 +24144,6 @@ class BatchEdit {
             let rowObj = gObj.getRowObjectFromUID(row.getAttribute('data-uid'));
             let cells = [].slice.apply(row.cells);
             let args = {
-                cell: cells[this.getColIndex(cells, this.getCellIdx(col.uid))], row: row,
                 columnName: col.field, columnObject: col, isForeignKey: !isNullOrUndefined(col.foreignKeyValue),
                 primaryKey: keys, rowData: rowData,
                 validationRules: extend({}, col.validationRules ? col.validationRules : {}),
@@ -24004,13 +24151,19 @@ class BatchEdit {
                 type: !isAdd ? 'edit' : 'add', cancel: false,
                 foreignKeyData: rowObj && rowObj.foreignKeyData
             };
-            if (!args.cell) {
-                return;
+            if (!isBlazor()) {
+                args.cell = cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
+                args.row = row;
+                if (!args.cell) {
+                    return;
+                }
             }
             gObj.trigger(cellEdit, args, (cellEditArgs) => {
                 if (cellEditArgs.cancel) {
                     return;
                 }
+                cellEditArgs.cell = cellEditArgs.cell ? cellEditArgs.cell : cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
+                cellEditArgs.row = cellEditArgs.row ? cellEditArgs.row : row;
                 this.cellDetails = {
                     rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
                     cellIndex: parseInt(cellEditArgs.cell.getAttribute('aria-colindex'), 10),
@@ -24152,9 +24305,11 @@ class BatchEdit {
             rowData: this.cellDetails.rowData,
             previousValue: this.cellDetails.value,
             columnObject: column,
-            cell: this.form.parentElement,
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
+        if (!isBlazor()) {
+            args.cell = this.form.parentElement;
+        }
         if (!isForceSave) {
             gObj.trigger(cellSave, args, this.successCallBack(args, tr, column));
             gObj.notify(batchForm, { formObj: this.form });
@@ -24166,6 +24321,7 @@ class BatchEdit {
     successCallBack(cellSaveArgs, tr, column) {
         return (cellSaveArgs) => {
             let gObj = this.parent;
+            cellSaveArgs.cell = cellSaveArgs.cell ? cellSaveArgs.cell : this.form.parentElement;
             if (cellSaveArgs.cancel) {
                 return;
             }
@@ -24463,9 +24619,11 @@ class Edit {
             return;
         }
         this.editModule.startEdit(tr);
-        this.refreshToolbar();
-        gObj.element.querySelector('.e-gridpopup').style.display = 'none';
-        this.parent.notify('start-edit', {});
+        if (!isBlazor()) {
+            this.refreshToolbar();
+            gObj.element.querySelector('.e-gridpopup').style.display = 'none';
+            this.parent.notify('start-edit', {});
+        }
     }
     /**
      * Cancels edited state.
@@ -24477,8 +24635,10 @@ class Edit {
             return;
         }
         this.editModule.closeEdit();
-        this.refreshToolbar();
-        this.parent.notify('close-edit', {});
+        if (!isBlazor()) {
+            this.refreshToolbar();
+            this.parent.notify('close-edit', {});
+        }
     }
     refreshToolbar() {
         this.parent.notify(toolbarRefresh, {});
@@ -24494,8 +24654,10 @@ class Edit {
             return;
         }
         this.editModule.addRecord(data, index);
-        this.refreshToolbar();
-        this.parent.notify('start-add', {});
+        if (!isBlazor()) {
+            this.refreshToolbar();
+            this.parent.notify('start-add', {});
+        }
     }
     /**
      * Deletes a record with the given options. If fieldname and data are not given, the Grid will delete the selected record.
@@ -27007,8 +27169,12 @@ class PdfExport {
             parent.expandedRows = getPrintGridModel(parent).expandedRows;
         }
         let args = {
-            requestType: 'beforePdfExport', gridObject: parent, cancel: false
+            requestType: 'beforePdfExport', cancel: false
         };
+        if (!isBlazor()) {
+            let gridObject = 'gridObject';
+            args[gridObject] = parent;
+        }
         let can = 'cancel';
         parent.trigger(beforePdfExport, args);
         if (args[can] === true) {
@@ -29891,7 +30057,7 @@ class ForeignKey extends Data {
     }
     isFiltered(column) {
         let filterColumn = this.parent.filterSettings.columns.filter((fColumn) => {
-            return (fColumn.uid === column.uid);
+            return (fColumn.field === column.foreignKeyValue && fColumn.uid === column.uid);
         });
         return {
             column: filterColumn, isTrue: !!filterColumn.length

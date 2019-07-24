@@ -75,9 +75,11 @@ export class ExcelExport {
               return null;
           }
           dm.executeQuery(query).then((e: Object) => {
-          excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, <Ajax>e);
-          return this.parent.grid.excelExportModule.Map(
-          this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
+            excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, <Ajax>e);
+            return this.parent.grid.excelExportModule.Map(
+              this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then((book: Object) => {
+                resolve(book);
+              });
           });
         });
     }

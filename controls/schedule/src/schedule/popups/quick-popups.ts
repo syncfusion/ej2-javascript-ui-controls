@@ -391,6 +391,7 @@ export class QuickPopups {
 
     // tslint:disable-next-line:max-func-body-length
     private cellClick(args: CellClickEventArgs): void {
+        this.resetQuickPopupTemplates();
         if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
             this.quickPopupHide();
             return;
@@ -517,6 +518,7 @@ export class QuickPopups {
 
     // tslint:disable-next-line:max-func-body-length
     private eventClick(events: EventClickArgs): void {
+        this.resetQuickPopupTemplates();
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.close();
         }
@@ -1034,19 +1036,30 @@ export class QuickPopups {
                 (<HTMLInputElement>editIcon).focus();
             }
         }
-        this.updateQuickPopupTemplates();
     }
 
     private updateQuickPopupTemplates(): void {
-        updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
-        updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
-        updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+        if (this.parent.quickInfoTemplates.header) {
+            updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+        }
+        if (this.parent.quickInfoTemplates.content) {
+            updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+        }
+        if (this.parent.quickInfoTemplates.footer) {
+            updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+        }
     }
 
     private resetQuickPopupTemplates(): void {
-        resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
-        resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
-        resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        if (this.parent.quickInfoTemplates.header) {
+            resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+        }
+        if (this.parent.quickInfoTemplates.content) {
+            resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+        }
+        if (this.parent.quickInfoTemplates.footer) {
+            resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        }
     }
 
     private quickPopupClose(): void {

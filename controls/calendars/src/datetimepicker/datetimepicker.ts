@@ -3,7 +3,7 @@ import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Br
 import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';
-import { ModuleDeclaration } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { BlurEventArgs } from '../calendar/calendar';
@@ -116,6 +116,142 @@ export class DateTimePicker extends DatePicker {
      */
     @Property(1000)
     public zIndex: number;
+    /**     
+     * Customizes the key actions in DateTimePicker.
+     * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * @default null
+     * @blazorType object 
+     * 
+     * Input Navigation
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Key action<br/></td><td colSpan=1 rowSpan=1> 
+     * Key<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altDownArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * escape<br/></td><td colSpan=1 rowSpan=1> 
+     * escape<br/></td></tr> 
+     * </table> 
+     * 
+     * Calendar Navigation (Use the following list of keys to navigate the currently focused Calendar after the popup has opened). 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Key action<br/></td><td colSpan=1 rowSpan=1> 
+     * Key<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlUp<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+38<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlDown<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+40<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveDown<br/></td><td colSpan=1 rowSpan=1> 
+     * downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveUp<br/></td><td colSpan=1 rowSpan=1> 
+     * uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveLeft<br/></td><td colSpan=1 rowSpan=1> 
+     * leftarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveRight<br/></td><td colSpan=1 rowSpan=1> 
+     * rightarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * select<br/></td><td colSpan=1 rowSpan=1> 
+     * enter<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * home<br/></td><td colSpan=1 rowSpan=1> 
+     * home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * end<br/></td><td colSpan=1 rowSpan=1> 
+     * end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * pageUp<br/></td><td colSpan=1 rowSpan=1> 
+     * pageup<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * pageDown<br/></td><td colSpan=1 rowSpan=1> 
+     * pagedown<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1> 
+     * shift+pageup<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1> 
+     * shift+pagedown<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlHome<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlEnd<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * spacebar<br/></td><td colSpan=1 rowSpan=1> 
+     * space<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altRightArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+rightarrow<br/></td></tr>  
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+leftarrow<br/></td></tr> 
+     * </table> 
+     * 
+     * TimePicker Navigation (Use the below list of shortcut keys to interact with the TimePicker after the TimePicker Popup has opened).
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Key action<br/></td><td colSpan=1 rowSpan=1> 
+     * Key<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * down<br/></td><td colSpan=1 rowSpan=1> 
+     * downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * up<br/></td><td colSpan=1 rowSpan=1> 
+     * uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * left<br/></td><td colSpan=1 rowSpan=1> 
+     * leftarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * right<br/></td><td colSpan=1 rowSpan=1> 
+     * rightarrow<br/></td></tr> 
+     * </table>
+     */
+    @Property(null)
+    public keyConfigs: { [key: string]: string };
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
@@ -444,12 +580,13 @@ export class DateTimePicker extends DatePicker {
         EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.dateHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.blurHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.focusHandler, this);
+        this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
         this.keyboardHandler = new KeyboardEvents(
             <HTMLElement>this.inputElement,
             {
                 eventName: 'keydown',
                 keyAction: this.inputKeyAction.bind(this),
-                keyConfigs: this.keyConfigs
+                keyConfigs: this.defaultKeyConfigs
             });
     }
     private unBindInputEvents(): void {
@@ -707,9 +844,12 @@ export class DateTimePicker extends DatePicker {
                 this.dateTimeWrapper.style.visibility = 'visible';
                 addClass([this.timeIcon], ACTIVE);
                 if (!Browser.isDevice) {
+                    this.timekeyConfigure = (extend(this.timekeyConfigure, this.keyConfigs) as { [key: string]: string });
                     this.inputEvent = new KeyboardEvents(
                         this.inputWrapper.container, {
-                            keyAction: this.TimeKeyActionHandle.bind(this), keyConfigs: this.timekeyConfigure, eventName: 'keydown'
+                            keyAction: this.TimeKeyActionHandle.bind(this),
+                            keyConfigs: this.timekeyConfigure,
+                            eventName: 'keydown'
                         });
                 }
             }, close: () => {

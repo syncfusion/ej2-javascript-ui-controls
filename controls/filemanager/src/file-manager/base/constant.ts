@@ -70,6 +70,8 @@ export const menuItemData: string = 'menu-item-data';
 /** @hidden */
 export const renameInit: string = 'rename-init';
 /** @hidden */
+export const renameEndParent: string = 'rename-end-parent';
+/** @hidden */
 export const renameEnd: string = 'rename-end';
 /** @hidden */
 export const showPaste: string = 'show-paste';

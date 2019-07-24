@@ -1647,7 +1647,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    this.setCssClass(this.element, newProp.cssClass, true);
+                    if (oldProp.cssClass !== '') {
+                        this.setCssClass(this.element, oldProp.cssClass, false);
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    } else {
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);

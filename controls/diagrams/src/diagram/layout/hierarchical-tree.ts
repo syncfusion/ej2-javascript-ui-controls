@@ -1098,7 +1098,7 @@ export class HierarchicalTree {
             for (j = 0; j < node.outEdges.length; j++) {
                 let edge: INode;
                 edge = layout.nameTable[layout.nameTable[node.outEdges[j]].targetID];
-                if (!edge.excludeFromLayout) {
+                if (edge && !edge.excludeFromLayout) {
                     if (layoutInfo.tree.children.indexOf(edge.id) === -1) {
                         layoutInfo.tree.children.push(edge.id);
                     }

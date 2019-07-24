@@ -1,4 +1,4 @@
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { PdfViewer, TextLayer, ContextMenu } from '../index';
 import { NavigationPane } from './navigation-pane';
@@ -2375,8 +2375,9 @@ export class PdfViewerBase {
                 if (imageData) {
                     let image: HTMLImageElement = new Image();
                     image.onload = (): void => {
+                        let scaleFactor: number = (!isNullOrUndefined(data.scaleFactor)) ? data.scaleFactor : 1.5;
                         // tslint:disable-next-line
-                        if (parseInt((pageWidth * 1.5).toString()) === image.width) {
+                        if (parseInt((pageWidth * scaleFactor).toString()) === image.width) {
                             if (!isNaN(parseFloat(canvas.style.width))) {
                                 canvas.style.width = pageWidth + 'px';
                                 canvas.style.height = pageHeight + 'px';
@@ -2859,7 +2860,7 @@ export class PdfViewerBase {
                             }
                             if (data) {
                                 if (data.image) {
-                                    let pageNumber: number = data.pageNumber ? data.pageNumber : pageIndex;
+                                    let pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
                                     proxy.storeWinData(data, pageNumber);
                                     proxy.renderPage(data, pageNumber);
                                 }
@@ -2912,7 +2913,7 @@ export class PdfViewerBase {
             // tslint:disable-next-line
             image: blobUrl, transformationMatrix: data['transformationMatrix'], hyperlinks: data['hyperlinks'], hyperlinkBounds: data['hyperlinkBounds'], linkAnnotation: data['linkAnnotation'], linkPage: data['linkPage'], annotationLocation: data['annotationLocation'],
             // tslint:disable-next-line
-            textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation']
+            textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor']
         };
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.magnificationModule ? this.pdfViewer.magnificationModule.checkZoomFactor() : true) {

@@ -5,7 +5,6 @@ import { Gantt, Edit, Selection, IGanttData, IActionBeginEventArgs } from '../..
 import { cellEditData, resourcesData } from '../base/data-source.spec';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
-import { EditType } from './../../src/gantt/base/enum';
 
 Gantt.Inject(Edit, Selection);
 describe('Gantt Edit support', () => {
@@ -53,17 +52,17 @@ describe('Gantt Edit support', () => {
                     allowUnscheduledTasks: true,
                     columns: [
                         { field: 'TaskID', width: 60 },
-                        { field: 'TaskName', editType: EditType.String, width: 100 },
-                        { field: 'StartDate', editType: EditType.DatePicker, width: 100 },
-                        { field: 'EndDate', editType: EditType.DatePicker, width: 100 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
                         { field: 'Duration', width: 100 },
                         { field: 'Predecessor', width: 100 },
                         { field: 'Progress', width: 100 },
-                        { field: 'BaselineStartDate', editType: EditType.DatePicker, width: 100 },
-                        { field: 'BaselineEndDate', editType: EditType.DatePicker, width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
                         { field: 'Resource', width: 100 },
                         { field: 'Notes', width: 100 },
-                        { field: 'Customcol', headerText: 'Custom Column', editType: EditType.DatePicker, width: 100 }
+                        { field: 'Customcol', headerText: 'Custom Column', editType: 'datepickeredit', width: 100 }
                     ],
                 }, done);
         });

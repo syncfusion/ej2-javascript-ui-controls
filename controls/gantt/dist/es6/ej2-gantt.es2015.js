@@ -1,7 +1,7 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, closest, compile, createElement, deleteObject, extend, formatUnit, getValue, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Edit, Filter, ForeignKey, Grid, Page, Predicate, Selection, Toolbar, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
-import { CacheAdaptor, DataManager, DataUtil, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
+import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { ContextMenu, Edit as Edit$1, Filter as Filter$1, Reorder, Resize, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
 import { MaskedTextBox, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBoxSelection, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
@@ -83,46 +83,6 @@ function getIndex(value, key1, collection, key2) {
     }
     return index;
 }
-
-/**
- * @hidden
- */
-var DurationUnits;
-(function (DurationUnits) {
-    DurationUnits["Minute"] = "minute";
-    DurationUnits["Hour"] = "hour";
-    DurationUnits["Day"] = "day";
-})(DurationUnits || (DurationUnits = {}));
-/**
- * To define edit type value for columns
- * @hidden
- */
-var EditType;
-(function (EditType) {
-    EditType["Boolean"] = "booleanedit";
-    EditType["DropDown"] = "dropdownedit";
-    EditType["DatePicker"] = "datepickeredit";
-    EditType["DateTimePicker"] = "datetimepickeredit";
-    EditType["Masked"] = "maskededit";
-    EditType["Numeric"] = "numericedit";
-    EditType["String"] = "stringedit";
-})(EditType || (EditType = {}));
-/**
- * @hidden
- */
-var TemplateName;
-(function (TemplateName) {
-    TemplateName["Parent"] = "ParentTaskbarTemplate";
-    TemplateName["Child"] = "TaskbarTemplate";
-    TemplateName["Milestone"] = "MilestoneTemplate";
-    TemplateName["LeftLabel"] = "LeftLabelTemplate";
-    TemplateName["RightLabel"] = "RightLabelTemplate";
-    TemplateName["TaskLabel"] = "TaskLabelTemplate";
-    TemplateName["TaskbarTooltip"] = "TooltipTaskbarTemplate";
-    TemplateName["BaselineTooltip"] = "TooltipBaselineTemplate";
-    TemplateName["ConnectorLineTooltip"] = "TooltipConnectorLineTemplate";
-    TemplateName["EditingTooltip"] = "TooltipEditingTemplate";
-})(TemplateName || (TemplateName = {}));
 
 /**
  *  Date processor is used to handle date of task data.
@@ -425,10 +385,10 @@ class DateProcessor {
         let timeDiff = this.getTimeDifference(startDate, endDate, isCheckTimeZone) / 1000;
         let nonWorkHours = this.getNonworkingTime(startDate, endDate, isAutoSchedule, isCheckTimeZone);
         let durationHours = timeDiff - nonWorkHours;
-        if (!durationUnit || durationUnit === DurationUnits.Day) {
+        if (!durationUnit || durationUnit === 'day') {
             durationValue = durationHours / this.parent.secondsPerDay;
         }
-        else if (durationUnit === DurationUnits.Minute) {
+        else if (durationUnit === 'minute') {
             durationValue = durationHours / 60;
         }
         else {
@@ -443,10 +403,10 @@ class DateProcessor {
      */
     getDurationAsSeconds(duration, durationUnit) {
         let value = 0;
-        if (!durationUnit || durationUnit === DurationUnits.Day.toString()) {
+        if (!durationUnit || durationUnit === 'day') {
             value = this.parent.secondsPerDay * duration;
         }
-        else if (durationUnit === DurationUnits.Hour.toString()) {
+        else if (durationUnit === 'hour') {
             value = duration * 3600;
         }
         else {
@@ -664,13 +624,13 @@ class DateProcessor {
                 duration = parseFloat(values[0].toString().trim());
                 let unit = values[1] ? values[1].toString().trim().toLowerCase() : null;
                 if (getValue('minute', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Minute.toString();
+                    durationUnit = 'minute';
                 }
                 else if (getValue('hour', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Hour.toString();
+                    durationUnit = 'hour';
                 }
                 else if (getValue('day', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Day.toString();
+                    durationUnit = 'day';
                 }
             }
         }
@@ -1052,15 +1012,15 @@ class DateProcessor {
             value += parseFloat(duration.toFixed(2)) + ' ';
             if (!isNullOrUndefined(durationUnit)) {
                 let plural = duration !== 1;
-                if (durationUnit === DurationUnits.Day) {
-                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant(DurationUnits.Day);
+                if (durationUnit === 'day') {
+                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
                 }
-                else if (durationUnit === DurationUnits.Hour) {
-                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant(DurationUnits.Hour);
+                else if (durationUnit === 'hour') {
+                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
                 }
-                else if (durationUnit === DurationUnits.Minute) {
+                else if (durationUnit === 'minute') {
                     value += plural ? this.parent.localeObj.getConstant('minutes') :
-                        this.parent.localeObj.getConstant(DurationUnits.Minute);
+                        this.parent.localeObj.getConstant('minute');
                 }
             }
         }
@@ -1923,13 +1883,13 @@ class TaskProcessor extends DateProcessor {
     validateDurationUnitMapping(durationUnit) {
         let unit = durationUnit;
         if (unit === 'minute') {
-            unit = DurationUnits.Minute;
+            unit = 'minute';
         }
         else if (unit === 'hour') {
-            unit = DurationUnits.Hour;
+            unit = 'hour';
         }
         else if (unit === 'day') {
-            unit = DurationUnits.Day;
+            unit = 'day';
         }
         else {
             unit = this.parent.durationUnit.toLocaleLowerCase();
@@ -3624,7 +3584,7 @@ class Timeline {
                 lastDay.setHours(24, 0, 0, 0);
                 dayIntervel = startDate.getDay() < dayIndex ? dayIntervel > 0 ?
                     dayIntervel - 1 : dayIntervel : dayIntervel;
-                lastDay.setDate(lastDay.getDate() + (dayIntervel + (6 * count)));
+                lastDay.setDate(lastDay.getDate() + (dayIntervel + (7 * count)));
                 increment = ((lastDay.getTime() - firstDay.getTime()));
                 break;
             case 'Day':
@@ -5228,12 +5188,12 @@ class ChartRows {
         let childTaskbarNode = null;
         let data = this.templateData;
         if (this.childTaskbarTemplateFunction) {
-            childTaskbarNode = this.childTaskbarTemplateFunction(extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.Child, this.getTemplateID(TemplateName.Child), false);
+            childTaskbarNode = this.childTaskbarTemplateFunction(extend({ index: i }, data), this.parent, 'TaskbarTemplate', this.getTemplateID('TaskbarTemplate'), false);
         }
         else {
             let labelString = '';
             if (this.taskLabelTemplateFunction) {
-                let taskLabelTemplateNode = this.taskLabelTemplateFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.TaskLabel, this.getTemplateID(TemplateName.TaskLabel), false);
+                let taskLabelTemplateNode = this.taskLabelTemplateFunction(extend({ index: i }, data), this.parent, 'TaskLabelTemplate', this.getTemplateID('TaskLabelTemplate'), false);
                 let tempDiv = createElement('div');
                 tempDiv.appendChild(taskLabelTemplateNode[0]);
                 labelString = tempDiv.innerHTML;
@@ -5279,7 +5239,7 @@ class ChartRows {
         let milestoneNode = null;
         let data = this.templateData;
         if (this.milestoneTemplateFunction) {
-            milestoneNode = this.milestoneTemplateFunction(extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.Milestone, this.getTemplateID(TemplateName.Milestone), false);
+            milestoneNode = this.milestoneTemplateFunction(extend({ index: i }, data), this.parent, 'MilestoneTemplate', this.getTemplateID('MilestoneTemplate'), false);
         }
         else {
             let template = '<div class="' + traceMilestone + '" style="position:absolute;">' +
@@ -5345,7 +5305,7 @@ class ChartRows {
         let leftLabelNode = this.leftLabelContainer();
         let leftLabelTemplateNode = null;
         if (this.leftTaskLabelTemplateFunction) {
-            leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.LeftLabel, this.getTemplateID(TemplateName.LeftLabel), false);
+            leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(extend({ index: i }, this.templateData), this.parent, 'LeftLabelTemplate', this.getTemplateID('LeftLabelTemplate'), false);
         }
         else {
             let field = this.parent.labelSettings.leftLabel;
@@ -5373,7 +5333,7 @@ class ChartRows {
         let rightLabelNode = this.rightLabelContainer();
         let rightLabelTemplateNode = null;
         if (this.rightTaskLabelTemplateFunction) {
-            rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.RightLabel, this.getTemplateID(TemplateName.RightLabel), false);
+            rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(extend({ index: i }, this.templateData), this.parent, 'RightLabelTemplate', this.getTemplateID('RightLabelTemplate'), false);
         }
         else {
             let field = this.parent.labelSettings.rightLabel;
@@ -5398,14 +5358,14 @@ class ChartRows {
      */
     getParentTaskbarNode(i) {
         let parentTaskbarNode = null;
+        let data = this.templateData;
         if (this.parentTaskbarTemplateFunction) {
-            parentTaskbarNode = this.parentTaskbarTemplateFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.Parent, this.getTemplateID(TemplateName.Parent), false);
+            parentTaskbarNode = this.parentTaskbarTemplateFunction(extend({ index: i }, data), this.parent, 'ParentTaskbarTemplate', this.getTemplateID('ParentTaskbarTemplate'), false);
         }
         else {
-            let data = this.templateData;
             let labelString = '';
             if (this.taskLabelTemplateFunction) {
-                let parentTaskLabelNode = this.taskLabelTemplateFunction(extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.TaskLabel, this.getTemplateID(TemplateName.TaskLabel), false);
+                let parentTaskLabelNode = this.taskLabelTemplateFunction(extend({ index: i }, data), this.parent, 'TaskLabelTemplate', this.getTemplateID('TaskLabelTemplate'), false);
                 let div = createElement('div');
                 div.appendChild(parentTaskLabelNode[0]);
                 labelString = div.innerHTML;
@@ -5494,28 +5454,6 @@ class ChartRows {
         let ganttID = this.parent.element.id;
         return ganttID + templateName;
     }
-    /** @private */
-    getTemplateData(data) {
-        let templateData = extend({}, {}, data.taskData, true);
-        let predecessorName = data.ganttProperties.predecessorsName;
-        templateData.hasChildRecords = data.hasChildRecords;
-        templateData.expanded = data.expanded;
-        templateData.index = data.index;
-        templateData.level = data.level;
-        templateData.taskStartDate = data.ganttProperties.startDate;
-        templateData.taskEndDate = data.ganttProperties.endDate;
-        templateData.taskDuration = data.ganttProperties.duration;
-        templateData.taskDurationUnit = data.ganttProperties.durationUnit;
-        templateData.taskResourceNames = data.ganttProperties.resourceNames;
-        templateData.isMilestone = data.ganttProperties.isMilestone;
-        templateData.isAutoSchedule = data.ganttProperties.isAutoSchedule;
-        templateData.left = data.ganttProperties.left;
-        templateData.width = data.ganttProperties.width;
-        templateData.baselineWidth = data.ganttProperties.baselineWidth;
-        templateData.progressWidth = data.ganttProperties.progressWidth;
-        templateData.taskPredecessorsName = !isNullOrUndefined(predecessorName) ? predecessorName : '';
-        return templateData;
-    }
     updateTaskbarBlazorTemplate(isUpdate, ganttData) {
         let isMilestone = true;
         let isParent = true;
@@ -5533,50 +5471,50 @@ class ChartRows {
         }
         if (this.parentTaskbarTemplateFunction && isParent) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Parent), TemplateName.Parent, this.parent);
+                updateBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate', this.parent);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.Parent), TemplateName.Parent);
+                resetBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate');
             }
         }
         if (this.childTaskbarTemplateFunction && isChild) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Child), TemplateName.Child, this.parent);
+                updateBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate', this.parent);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.Child), TemplateName.Child);
+                resetBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate');
             }
         }
         if (this.milestoneTemplateFunction && isMilestone) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Milestone), TemplateName.Milestone, this.parent);
+                updateBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate', this.parent);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.Milestone), TemplateName.Milestone);
+                resetBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate');
             }
         }
         if (this.leftTaskLabelTemplateFunction) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.LeftLabel), TemplateName.LeftLabel, this.parent.labelSettings);
+                updateBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate', this.parent.labelSettings);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.LeftLabel), TemplateName.LeftLabel);
+                resetBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate');
             }
         }
         if (this.rightTaskLabelTemplateFunction) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.RightLabel), TemplateName.RightLabel, this.parent.labelSettings);
+                updateBlazorTemplate(this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate', this.parent.labelSettings);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.RightLabel), TemplateName.RightLabel);
+                resetBlazorTemplate(this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate');
             }
         }
         if (this.taskLabelTemplateFunction && (isParent || isChild)) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.TaskLabel), TemplateName.TaskLabel, this.parent.labelSettings);
+                updateBlazorTemplate(this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate', this.parent.labelSettings);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.TaskLabel), TemplateName.TaskLabel);
+                resetBlazorTemplate(this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate');
             }
         }
     }
@@ -5903,7 +5841,7 @@ class ChartRows {
                 taskIndicatorNode = this.getIndicatorNode(indicators[indicatorIndex]);
                 if (indicators[indicatorIndex].name.indexOf('$') > -1 || indicators[indicatorIndex].name.indexOf('#') > -1) {
                     taskIndicatorTextFunction = this.templateCompiler(indicators[indicatorIndex].name);
-                    taskIndicatorTextNode = taskIndicatorTextFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, 'indicatorLabelText');
+                    taskIndicatorTextNode = taskIndicatorTextFunction(extend({ index: i }, this.templateData), this.parent, 'indicatorLabelText');
                 }
                 else {
                     let text = createElement('Text');
@@ -6363,13 +6301,13 @@ class Dependency {
                 duration = parseFloat(values[0]);
                 durationUnit = values[1] ? (values[1].toLowerCase()).trim() : '';
                 if (getValue('minute', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Minute;
+                    durationUnit = 'minute';
                 }
                 else if (getValue('hour', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Hour;
+                    durationUnit = 'hour';
                 }
                 else if (getValue('day', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Day;
+                    durationUnit = 'day';
                 }
                 else {
                     durationUnit = this.parent.durationUnit.toLocaleLowerCase();
@@ -8545,6 +8483,7 @@ class Tooltip$1 {
         let argsData = {
             data: {},
             args: args,
+            cancel: false,
             content: ''
         };
         if (args.target.classList.contains('e-header-cell-label')) {
@@ -8569,7 +8508,7 @@ class Tooltip$1 {
                     args.target.classList.contains('e-taskbar-right-resizer')) {
                     let taskbarTemplateNode;
                     if (parent.tooltipSettings.taskbar) {
-                        taskbarTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.taskbar, parent, data, TemplateName.TaskbarTooltip);
+                        taskbarTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.taskbar, parent, data, 'TooltipTaskbarTemplate');
                     }
                     argsData.content = this.toolTipObj.content = taskbarTemplateNode ? taskbarTemplateNode[0] :
                         parent.tooltipModule.getTooltipContent((data.ganttProperties.isMilestone ? 'milestone' : 'taskbar'), data, parent, args);
@@ -8577,7 +8516,7 @@ class Tooltip$1 {
                 else if (args.target.classList.contains('e-baseline-bar')) {
                     let baseLineTemplateNode;
                     if ((parent.tooltipSettings.baseline)) {
-                        baseLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.baseline, parent, data, TemplateName.BaselineTooltip);
+                        baseLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.baseline, parent, data, 'TooltipBaselineTemplate');
                     }
                     argsData.content = this.toolTipObj.content = baseLineTemplateNode ? baseLineTemplateNode[0] :
                         parent.tooltipModule.getTooltipContent('baseline', data, parent, args);
@@ -8590,7 +8529,7 @@ class Tooltip$1 {
                     parent.tooltipModule.predecessorTooltipData = parent.tooltipModule.getPredecessorTooltipData(args);
                     argsData.data = this.predecessorTooltipData;
                     if ((parent.tooltipSettings.connectorLine)) {
-                        dependencyLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.connectorLine, parent, parent.tooltipModule.predecessorTooltipData, TemplateName.ConnectorLineTooltip);
+                        dependencyLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.connectorLine, parent, parent.tooltipModule.predecessorTooltipData, 'TooltipConnectorLineTemplate');
                     }
                     argsData.content = this.toolTipObj.content = dependencyLineTemplateNode ?
                         dependencyLineTemplateNode[0] :
@@ -8613,11 +8552,18 @@ class Tooltip$1 {
             }
         }
         if (args.cancel === false) {
-            parent.trigger('beforeTooltipRender', argsData);
+            let callBackPromise = new Deferred();
+            parent.trigger('beforeTooltipRender', argsData, (argsData) => {
+                callBackPromise.resolve(argsData);
+                if (argsData.cancel) {
+                    args.cancel = true;
+                }
+            });
             if (!this.parent.isAdaptive && args.event.type === 'mouseover') {
                 this.currentTarget = args.target;
                 EventHandler.add(this.currentTarget, 'mousemove', this.mouseMoveHandler.bind(this));
             }
+            return callBackPromise;
         }
     }
     tooltipCloseHandler(args) {
@@ -8791,16 +8737,8 @@ class Tooltip$1 {
      */
     templateCompiler(template, parent, data, propName) {
         let tooltipFunction = parent.chartRowsModule.templateCompiler(template);
-        let ganttData = data;
-        let templateData = {};
         let templateID = parent.chartRowsModule.getTemplateID(propName);
-        if (!isNullOrUndefined(ganttData.ganttProperties)) {
-            templateData = parent.chartRowsModule.getTemplateData(ganttData);
-        }
-        else {
-            templateData = data;
-        }
-        let templateNode = tooltipFunction(extend({ index: 0 }, templateData), parent, propName, templateID, true);
+        let templateNode = tooltipFunction(extend({ index: 0 }, data), parent, propName, templateID, true);
         return templateNode;
     }
     destroy() {
@@ -11251,7 +11189,8 @@ class CellEdit {
                 this.notedEdited(editedArgs);
             }
             else {
-                this.parent.setRecordValue('taskData.' + column.field, data[this.parent.taskFields.name], data);
+                this.parent.setRecordValue('taskData.' + column.field, editedArgs.data[column.field], editedArgs.data);
+                this.parent.editModule.initiateSaveAction(editedArgs);
             }
         }
         else {
@@ -11572,7 +11511,7 @@ class EditTooltip {
         let instance = this.parent.globalize;
         let editRecord = this.taskbarEdit.taskBarEditRecord.ganttProperties;
         if (this.parent.tooltipSettings.editing) {
-            let templateNode = this.parent.tooltipModule.templateCompiler(this.parent.tooltipSettings.editing, this.parent, editRecord, TemplateName.EditingTooltip);
+            let templateNode = this.parent.tooltipModule.templateCompiler(this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
             tooltipString = templateNode[0];
         }
         else {
@@ -12297,13 +12236,14 @@ class TaskbarEdit {
     updateEditedItem() {
         let item = this.taskBarEditRecord.ganttProperties;
         let left;
+        let projectStartDate;
         switch (this.taskBarEditAction) {
             case 'ProgressResizing':
                 this.parent.setRecordValue('progress', this.getProgressPercent(item.width, item.progressWidth), item, true);
                 break;
             case 'LeftResizing':
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-                let projectStartDate = this.getDateByLeft(left);
+                projectStartDate = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.endDate)) {
                     let endDate = this.parent.dateValidationModule.getValidEndDate(item);
                     this.parent.setRecordValue('endDate', endDate, item, true);
@@ -13434,14 +13374,14 @@ class DialogEdit {
             floatLabelType: 'Auto',
         };
         switch (column.editType) {
-            case EditType.Boolean:
+            case 'booleanedit':
                 let checkboxModel = {
                     label: column.headerText,
                     locale: locale,
                 };
                 fieldsModel[column.field] = checkboxModel;
                 break;
-            case EditType.String:
+            case 'stringedit':
                 let textBox = common;
                 if (column.field === ganttObj.columnMapping.duration) {
                     textBox.change = (args) => {
@@ -13450,11 +13390,11 @@ class DialogEdit {
                 }
                 fieldsModel[column.field] = common;
                 break;
-            case EditType.Numeric:
+            case 'numericedit':
                 let numeric = common;
                 fieldsModel[column.field] = numeric;
                 break;
-            case EditType.DatePicker:
+            case 'datepickeredit':
                 let datePickerObj = common;
                 datePickerObj.format = this.parent.dateFormat;
                 datePickerObj.strictMode = true;
@@ -13468,7 +13408,7 @@ class DialogEdit {
                 }
                 fieldsModel[column.field] = datePickerObj;
                 break;
-            case EditType.DateTimePicker:
+            case 'datetimepickeredit':
                 let dateTimePickerObj = common;
                 dateTimePickerObj.format = this.parent.dateFormat;
                 dateTimePickerObj.strictMode = true;
@@ -13482,10 +13422,10 @@ class DialogEdit {
                 }
                 fieldsModel[column.field] = dateTimePickerObj;
                 break;
-            case EditType.DropDown:
+            case 'dropdownedit':
                 fieldsModel[column.field] = common;
                 break;
-            case EditType.Masked:
+            case 'maskededit':
                 fieldsModel[column.field] = common;
                 break;
         }
@@ -13531,7 +13471,7 @@ class DialogEdit {
         let columnName = getValue(ganttField, ganttObj.columnMapping);
         let col = ganttObj.columnByField[columnName];
         let tempValue;
-        if (col.editType === EditType.String) {
+        if (col.editType === 'stringedit') {
             let textBox = dialog.querySelector('#' + ganttId + columnName).ej2_instances[0];
             tempValue = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             if (textBox.value !== tempValue) {
@@ -13539,8 +13479,8 @@ class DialogEdit {
                 textBox.dataBind();
             }
         }
-        else if (col.editType === EditType.DatePicker || col.editType === EditType.DateTimePicker) {
-            let picker = col.editType === EditType.DatePicker ?
+        else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
+            let picker = col.editType === 'datepickeredit' ?
                 dialog.querySelector('#' + ganttId + columnName).ej2_instances[0] :
                 dialog.querySelector('#' + ganttId + columnName).ej2_instances[0];
             tempValue = ganttProp[ganttField];
@@ -13721,14 +13661,14 @@ class DialogEdit {
             }
             else if (fields[i].toLowerCase() === 'name') {
                 column = {
-                    field: 'name', headerText: this.localeObj.getConstant('name'), editType: EditType.String, width: '250px',
+                    field: 'name', headerText: this.localeObj.getConstant('name'), editType: 'stringedit', width: '250px',
                     validationRules: { required: true }
                 };
                 columns.push(column);
             }
             else if (fields[i].toLowerCase() === 'type') {
                 column = {
-                    field: 'type', headerText: this.localeObj.getConstant('type'), editType: EditType.DropDown,
+                    field: 'type', headerText: this.localeObj.getConstant('type'), editType: 'dropdownedit',
                     dataSource: this.types, foreignKeyField: 'id', foreignKeyValue: 'text',
                     defaultValue: 'FS', validationRules: { required: true }, width: '150px'
                 };
@@ -13736,7 +13676,7 @@ class DialogEdit {
             }
             else if (fields[i].toLowerCase() === 'offset') {
                 column = {
-                    field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: EditType.String,
+                    field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
                     defaultValue: '0 days', validationRules: { required: true }, width: '100px'
                 };
                 columns.push(column);
@@ -14433,7 +14373,7 @@ class Edit$2 {
                 let column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value = data[key];
-                if (column.editType === EditType.DatePicker || column.editType === EditType.DateTimePicker) {
+                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
                 let ganttPropKey = ganttPropByMapping[key];
@@ -14456,7 +14396,7 @@ class Edit$2 {
                 let column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value = data[key];
-                if (column.editType === EditType.DatePicker || column.editType === EditType.DateTimePicker) {
+                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
@@ -14877,6 +14817,10 @@ class Edit$2 {
             }
         }
     }
+    /**
+     *
+     * @private
+     */
     initiateSaveAction(args) {
         this.parent.showSpinner();
         let eventArgs = {};
@@ -16722,83 +16666,87 @@ class Toolbar$3 {
         let gObj = this.parent;
         let gID = this.id;
         extend(args, { cancel: false });
-        gObj.trigger(toolbarClick, args);
-        if (args.cancel) {
-            return;
-        }
-        if (this.parent.isAdaptive === true) {
-            if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
-                || args.item.id === gID + '_searchbutton' || args.item.id === gID + '_expandall' || args.item.id === gID + '_collapseall') {
-                if (this.parent.selectionModule && this.parent.selectionSettings.type === 'Multiple') {
-                    this.parent.selectionModule.hidePopUp();
-                    document.getElementsByClassName('e-gridpopup')[0].style.display = 'none';
+        gObj.trigger(toolbarClick, args, (args) => {
+            if (args.cancel) {
+                return;
+            }
+            else {
+                if (this.parent.isAdaptive === true) {
+                    if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
+                        || args.item.id === gID + '_searchbutton' || args.item.id === gID + '_expandall'
+                        || args.item.id === gID + '_collapseall') {
+                        if (this.parent.selectionModule && this.parent.selectionSettings.type === 'Multiple') {
+                            this.parent.selectionModule.hidePopUp();
+                            document.getElementsByClassName('e-gridpopup')[0].style.display = 'none';
+                        }
+                    }
+                }
+                switch (!isNullOrUndefined(args.item) && args.item.id) {
+                    case gID + '_edit':
+                        if (gObj.editModule && gObj.editSettings.allowEditing) {
+                            gObj.editModule.dialogModule.openToolbarEditDialog();
+                        }
+                        break;
+                    case gID + '_update':
+                        gObj.editModule.cellEditModule.isCellEdit = false;
+                        gObj.treeGrid.endEdit();
+                        break;
+                    case gID + '_cancel':
+                        gObj.cancelEdit();
+                        break;
+                    case gID + '_add':
+                        if (gObj.editModule && gObj.editSettings.allowAdding) {
+                            gObj.editModule.dialogModule.openAddDialog();
+                        }
+                        break;
+                    case gID + '_delete':
+                        if (this.parent.selectionModule && this.parent.editModule) {
+                            if ((this.parent.selectionSettings.mode !== 'Cell' && this.parent.selectionModule.selectedRowIndexes.length)
+                                || (this.parent.selectionSettings.mode === 'Cell' &&
+                                    this.parent.selectionModule.getSelectedRowCellIndexes().length)) {
+                                this.parent.editModule.startDeleteAction();
+                            }
+                        }
+                        break;
+                    case gID + '_search':
+                        let searchButtonId = getValue('originalEvent.target.id', args);
+                        if (searchButtonId === this.parent.element.id + '_searchbutton' && this.parent.filterModule) {
+                            let keyVal = this.element.querySelector('#' + this.parent.element.id + '_searchbar').value;
+                            if (this.parent.searchSettings.key !== keyVal) {
+                                this.parent.searchSettings.key = keyVal;
+                                this.parent.dataBind();
+                            }
+                        }
+                        break;
+                    case gID + '_searchbutton':
+                        let adaptiveSearchbar = this.element.querySelector('.e-adaptive-searchbar');
+                        adaptiveSearchbar.parentElement.childNodes[1].style.display = 'none';
+                        adaptiveSearchbar.style.display = 'block';
+                        break;
+                    case gID + '_expandall':
+                        this.parent.ganttChartModule.expandCollapseAll('expand');
+                        break;
+                    case gID + '_collapseall':
+                        this.parent.ganttChartModule.expandCollapseAll('collapse');
+                        break;
+                    case gID + '_prevtimespan':
+                        this.parent.previousTimeSpan();
+                        break;
+                    case gID + '_nexttimespan':
+                        this.parent.nextTimeSpan();
+                        break;
+                    case gID + '_zoomin':
+                        this.zoomIn();
+                        break;
+                    case gID + '_zoomout':
+                        this.zoomOut();
+                        break;
+                    case gID + '_zoomtofit':
+                        this.zoomToFit();
+                        break;
                 }
             }
-        }
-        switch (!isNullOrUndefined(args.item) && args.item.id) {
-            case gID + '_edit':
-                if (gObj.editModule && gObj.editSettings.allowEditing) {
-                    gObj.editModule.dialogModule.openToolbarEditDialog();
-                }
-                break;
-            case gID + '_update':
-                gObj.editModule.cellEditModule.isCellEdit = false;
-                gObj.treeGrid.endEdit();
-                break;
-            case gID + '_cancel':
-                gObj.cancelEdit();
-                break;
-            case gID + '_add':
-                if (gObj.editModule && gObj.editSettings.allowAdding) {
-                    gObj.editModule.dialogModule.openAddDialog();
-                }
-                break;
-            case gID + '_delete':
-                if (this.parent.selectionModule && this.parent.editModule) {
-                    if ((this.parent.selectionSettings.mode !== 'Cell' && this.parent.selectionModule.selectedRowIndexes.length)
-                        || (this.parent.selectionSettings.mode === 'Cell' &&
-                            this.parent.selectionModule.getSelectedRowCellIndexes().length)) {
-                        this.parent.editModule.startDeleteAction();
-                    }
-                }
-                break;
-            case gID + '_search':
-                let searchButtonId = getValue('originalEvent.target.id', args);
-                if (searchButtonId === this.parent.element.id + '_searchbutton' && this.parent.filterModule) {
-                    let keyVal = this.element.querySelector('#' + this.parent.element.id + '_searchbar').value;
-                    if (this.parent.searchSettings.key !== keyVal) {
-                        this.parent.searchSettings.key = keyVal;
-                        this.parent.dataBind();
-                    }
-                }
-                break;
-            case gID + '_searchbutton':
-                let adaptiveSearchbar = this.element.querySelector('.e-adaptive-searchbar');
-                adaptiveSearchbar.parentElement.childNodes[1].style.display = 'none';
-                adaptiveSearchbar.style.display = 'block';
-                break;
-            case gID + '_expandall':
-                this.parent.ganttChartModule.expandCollapseAll('expand');
-                break;
-            case gID + '_collapseall':
-                this.parent.ganttChartModule.expandCollapseAll('collapse');
-                break;
-            case gID + '_prevtimespan':
-                this.parent.previousTimeSpan();
-                break;
-            case gID + '_nexttimespan':
-                this.parent.nextTimeSpan();
-                break;
-            case gID + '_zoomin':
-                this.zoomIn();
-                break;
-            case gID + '_zoomout':
-                this.zoomOut();
-                break;
-            case gID + '_zoomtofit':
-                this.zoomToFit();
-                break;
-        }
+        });
     }
     /**
      *
@@ -17748,5 +17696,5 @@ class ContextMenu$2 {
  * Gantt index file
  */
 
-export { Gantt, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, DurationUnits, EditType, TemplateName, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$2 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings };
+export { Gantt, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$2 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings };
 //# sourceMappingURL=ej2-gantt.es2015.js.map

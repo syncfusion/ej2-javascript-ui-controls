@@ -2410,6 +2410,17 @@ describe('Calendar', () => {
                 expect(calendar.currentView()).toBe("Decade");
                 expect(document.querySelector('.e-title').textContent).toBe('2010 - 2019');
             });
+            it(' control +up arrow changed to shift+up test case ', () => {
+                calendar = new Calendar({ value: new Date('3/3/2017'), keyConfigs:{controlUp: 'shift+38'} });
+                calendar.appendTo('#calendar');
+                expect(document.querySelector('.e-title').textContent).toBe('March 2017');
+                calendar.keyActionHandle(keyEventArgs);
+                expect(calendar.currentView()).toBe("Year");
+                expect(document.querySelector('.e-title').textContent).toBe('2017');
+                calendar.keyActionHandle(keyEventArgs);
+                expect(calendar.currentView()).toBe("Decade");
+                expect(document.querySelector('.e-title').textContent).toBe('2010 - 2019');
+            });
             it(' home and end button testing on year and decade view ', () => {
                 calendar = new Calendar({ value: new Date('3/3/2017') });
                 calendar.appendTo('#calendar');

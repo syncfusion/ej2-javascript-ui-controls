@@ -4,7 +4,6 @@ import { TaskFieldsModel, EditSettingsModel } from '../models/models';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent, IPredecessor } from '../base/interface';
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs } from '../base/interface';
 import { ColumnModel } from '../models/column';
-import { EditType } from '../base/enum';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
 import { ReturnType, RecordDoubleClickEventArgs, Row, Column } from '@syncfusion/ej2-grids';
 import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex } from '../base/utils';
@@ -209,7 +208,7 @@ export class Edit {
                 let column: ColumnModel = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value: any = data[key];
-                if (column.editType === EditType.DatePicker || column.editType === EditType.DateTimePicker) {
+                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
                 let ganttPropKey: string = ganttPropByMapping[key];
@@ -236,7 +235,7 @@ export class Edit {
                 let column: ColumnModel = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value: any = data[key];
-                if (column.editType === EditType.DatePicker || column.editType === EditType.DateTimePicker) {
+                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
@@ -683,8 +682,11 @@ export class Edit {
         }
     }
 
-
-    private initiateSaveAction(args: ITaskbarEditedEventArgs): void {
+    /**
+     * 
+     * @private
+     */
+    public initiateSaveAction(args: ITaskbarEditedEventArgs): void {
         this.parent.showSpinner();
         let eventArgs: IActionBeginEventArgs = {};
         eventArgs.requestType = 'beforeSave';

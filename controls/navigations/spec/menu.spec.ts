@@ -176,7 +176,7 @@ describe('Menu', () => {
             expect(menu.getPopups().length).toBe(0);
         });
         it('Menu with scroll enabled', () => {
-            appendStyles('#menu { width: 400px; } .e-menu-wrapper { width: 250px; } #cookbooks-menu-popup.e-menu-popup, #book-menu-popup.e-menu-popup{ height: 200px; } #cookbooks-menu-popup.e-menu-popup .e-ul, #book-menu-popup.e-menu-popup .e-ul{ height: 250px; }');
+            appendStyles('#menu { width: 400px; } .e-menu-wrapper { width: 250px; } #cookbooks-ej2menu-menu-popup.e-menu-popup, #book-ej2menu-menu-popup.e-menu-popup{ height: 200px; } #cookbooks-ej2menu-menu-popup.e-menu-popup .e-ul, #book-ej2menu-menu-popup.e-menu-popup .e-ul{ height: 250px; }');
             document.body.appendChild(ul);
             menu = new Menu({ items: items, enableScrolling: true }, '#menu');
             let wrap: HTMLElement = menu.getWrapper();

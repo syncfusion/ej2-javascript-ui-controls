@@ -1,5 +1,5 @@
 import { isNullOrUndefined, getValue, L10n, remove, isBlazor } from '@syncfusion/ej2-base';
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
 import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance } from '../base/interface';
 import { PredicateModel } from '../base/grid-model';
@@ -60,6 +60,15 @@ export class FilterMenuRenderer {
 
     private closeDialog(): void {
         if (!this.dlgObj) { return; }
+        if (isBlazor()) {
+            let columns: Column[] = this.parent.getColumns();
+            for (let i: number = 0; i < columns.length; i++) {
+                if (columns[i].filterTemplate) {
+                    let tempID: string = this.parent.element.id + columns[i].uid + 'filterTemplate';
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
+                }
+            }
+        }
         let elem: Element = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
             this.parent.notify(events.filterMenuClose, { field: this.col.field });
@@ -157,6 +166,7 @@ export class FilterMenuRenderer {
             fltrData[col] = column;
             let tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
             let compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+            updateBlazorTemplate(tempID, 'FilterTemplate', column);
             appendChildren(valueDiv, compElement);
         } else {
             if (!isNullOrUndefined(column.filter) && !isNullOrUndefined(column.filter.ui)
@@ -215,10 +225,10 @@ export class FilterMenuRenderer {
             if ((<HTMLInputElement>element.children[0]).value) {
                 fltrValue = (<HTMLInputElement>element.children[0]).value;
             } else {
-                fltrValue = !isBlazor() && !isNullOrUndefined(((<EJ2Intance>(element.children[0] as Element)).ej2_instances) ?
+                fltrValue = !isBlazor() && !isNullOrUndefined(((<EJ2Intance>(element.children[0] as Element)).ej2_instances)) ?
                     ((<EJ2Intance>(element.children[0] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value
                     : ((<EJ2Intance>(element.querySelector('.e-control') as Element)).ej2_instances[0] as
-                    { value?: string | boolean | Date }).value);
+                        { value?: string | boolean | Date }).value;
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
         } else {

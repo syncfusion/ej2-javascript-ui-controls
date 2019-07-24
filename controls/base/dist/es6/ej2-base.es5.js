@@ -7078,9 +7078,9 @@ function compile$$1(templateString, helper) {
                 blazorTemplates[templateId].push(data);
             }
             // tslint:disable-next-line:no-any
-            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId })] :
+            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] :
                 // tslint:disable-next-line:no-any
-                [createElement('div', { id: blazorId })];
+                [createElement('div', { id: blazorId, className: 'e-blazor-template' })];
         }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {

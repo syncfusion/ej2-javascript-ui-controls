@@ -14,7 +14,7 @@ import {
     Count
 } from '@syncfusion/ej2-richtexteditor';
 import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel } from '../models/models';
-import { EditType, CObject } from '../base/enum';
+import { CObject } from '../base/enum';
 import { ColumnModel as GanttColumnModel } from '../models/column';
 import { TextBox, NumericTextBox, NumericTextBoxModel, MaskedTextBox } from '@syncfusion/ej2-inputs';
 import { IGanttData, ITaskData, IDependencyEditData, IPredecessor, ITaskbarEditedEventArgs } from '../base/interface';
@@ -620,14 +620,14 @@ export class DialogEdit {
             floatLabelType: 'Auto',
         };
         switch (column.editType) {
-            case EditType.Boolean:
+            case 'booleanedit':
                 let checkboxModel: CheckBoxModel = {
                     label: column.headerText,
                     locale: locale,
                 };
                 fieldsModel[column.field] = checkboxModel;
                 break;
-            case EditType.String:
+            case 'stringedit':
                 let textBox: TextBox = common as TextBox;
                 if (column.field === ganttObj.columnMapping.duration) {
                     textBox.change = (args: CObject): void => {
@@ -636,11 +636,11 @@ export class DialogEdit {
                 }
                 fieldsModel[column.field] = common;
                 break;
-            case EditType.Numeric:
+            case 'numericedit':
                 let numeric: NumericTextBoxModel = <NumericTextBoxModel>common;
                 fieldsModel[column.field] = numeric;
                 break;
-            case EditType.DatePicker:
+            case 'datepickeredit':
                 let datePickerObj: DatePickerModel = common as DatePickerModel;
                 datePickerObj.format = this.parent.dateFormat;
                 datePickerObj.strictMode = true;
@@ -654,7 +654,7 @@ export class DialogEdit {
                 }
                 fieldsModel[column.field] = datePickerObj;
                 break;
-            case EditType.DateTimePicker:
+            case 'datetimepickeredit':
                 let dateTimePickerObj: DatePickerModel = common as DatePickerModel;
                 dateTimePickerObj.format = this.parent.dateFormat;
                 dateTimePickerObj.strictMode = true;
@@ -668,10 +668,10 @@ export class DialogEdit {
                 }
                 fieldsModel[column.field] = dateTimePickerObj;
                 break;
-            case EditType.DropDown:
+            case 'dropdownedit':
                 fieldsModel[column.field] = common;
                 break;
-            case EditType.Masked:
+            case 'maskededit':
                 fieldsModel[column.field] = common;
                 break;
         }
@@ -717,15 +717,15 @@ export class DialogEdit {
         let columnName: string = getValue(ganttField, ganttObj.columnMapping);
         let col: GanttColumnModel = ganttObj.columnByField[columnName];
         let tempValue: string | Date;
-        if (col.editType === EditType.String) {
+        if (col.editType === 'stringedit') {
             let textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             if (textBox.value !== tempValue) {
                 textBox.value = tempValue as string;
                 textBox.dataBind();
             }
-        } else if (col.editType === EditType.DatePicker || col.editType === EditType.DateTimePicker) {
-            let picker: DatePicker = col.editType === EditType.DatePicker ?
+        } else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
+            let picker: DatePicker = col.editType === 'datepickeredit' ?
                 <DatePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0] :
                 <DateTimePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = ganttProp[ganttField];
@@ -892,20 +892,20 @@ export class DialogEdit {
                 columns.push(column);
             } else if (fields[i].toLowerCase() === 'name') {
                 column = {
-                    field: 'name', headerText: this.localeObj.getConstant('name'), editType: EditType.String, width: '250px',
+                    field: 'name', headerText: this.localeObj.getConstant('name'), editType: 'stringedit', width: '250px',
                     validationRules: { required: true }
                 };
                 columns.push(column);
             } else if (fields[i].toLowerCase() === 'type') {
                 column = {
-                    field: 'type', headerText: this.localeObj.getConstant('type'), editType: EditType.DropDown,
+                    field: 'type', headerText: this.localeObj.getConstant('type'), editType: 'dropdownedit',
                     dataSource: this.types, foreignKeyField: 'id', foreignKeyValue: 'text',
                     defaultValue: 'FS', validationRules: { required: true }, width: '150px'
                 };
                 columns.push(column);
             } else if (fields[i].toLowerCase() === 'offset') {
                 column = {
-                    field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: EditType.String,
+                    field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
                     defaultValue: '0 days', validationRules: { required: true }, width: '100px'
                 };
                 columns.push(column);

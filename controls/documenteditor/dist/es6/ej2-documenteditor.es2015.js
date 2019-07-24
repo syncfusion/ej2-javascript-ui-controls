@@ -1753,26 +1753,28 @@ class WParagraphFormat {
     getPropertyValue(property) {
         if (!this.hasValue(property)) {
             let ifListFormat = this.getListFormatParagraphFormat(property);
-            if (!isNullOrUndefined(ifListFormat)) {
-                return ifListFormat;
-            }
-            else {
-                if (this.baseStyle instanceof WParagraphStyle) {
-                    /* tslint:disable-next-line:no-any */
-                    let baseStyle = this.baseStyle;
-                    while (!isNullOrUndefined(baseStyle)) {
-                        if (baseStyle.paragraphFormat.hasValue(property)) {
-                            break;
-                        }
-                        else {
-                            baseStyle = baseStyle.basedOn;
-                        }
+            if (this.baseStyle instanceof WParagraphStyle) {
+                /* tslint:disable-next-line:no-any */
+                let baseStyle = this.baseStyle;
+                while (!isNullOrUndefined(baseStyle)) {
+                    if (baseStyle.paragraphFormat.hasValue(property)) {
+                        break;
                     }
-                    if (!isNullOrUndefined(baseStyle)) {
-                        let propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-                        return baseStyle.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+                    else {
+                        baseStyle = baseStyle.basedOn;
                     }
                 }
+                if (!isNullOrUndefined(baseStyle)) {
+                    if (!isNullOrUndefined(ifListFormat) && this.listFormat.listId !== -1
+                        && baseStyle.paragraphFormat.listFormat.listId === -1) {
+                        return ifListFormat;
+                    }
+                    let propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
+                    return baseStyle.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+                }
+            }
+            if (!isNullOrUndefined(ifListFormat)) {
+                return ifListFormat;
             }
         }
         else {
@@ -6044,7 +6046,7 @@ class TableWidget extends BlockWidget {
             }
         }
         tempGrid.sort((a, b) => { return a - b; });
-        if (tempGrid.length - 1 !== this.tableHolder.columns.length) {
+        if (this.tableHolder.columns.length > 0 && tempGrid.length - 1 !== this.tableHolder.columns.length) {
             this.updateColumnSpans(tempGrid, tableWidth);
         }
         this.tableCellInfo.clear();
@@ -16307,7 +16309,16 @@ class Layout {
                             let tabWidth = tabPosition - position;
                             let width = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
                             if (width < tabWidth) {
-                                defaultTabWidth = tabStop.tabJustification === 'Right' ? tabWidth - width : tabWidth - width / 2;
+                                if (tabStop.tabJustification === 'Right') {
+                                    let exceedWidth = 0;
+                                    if (position + tabWidth > this.viewer.clientArea.width) {
+                                        exceedWidth = (position + tabWidth) - this.viewer.clientArea.width;
+                                    }
+                                    defaultTabWidth = tabWidth - width - exceedWidth;
+                                }
+                                else {
+                                    defaultTabWidth = tabWidth - width / 2;
+                                }
                             }
                             else if (tabStop.tabJustification === 'Center' && (width / 2) < tabWidth) {
                                 defaultTabWidth = tabWidth - width / 2;
@@ -27984,7 +27995,7 @@ class HtmlExport {
         blockStyle += this.createAttributesTag('p', tagAttributes);
         if (paragraph.inlines.length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
-            blockStyle += '&nbsp;';
+            blockStyle += ' ';
         }
         else {
             blockStyle = this.serializeInlines(paragraph, blockStyle);
@@ -28557,7 +28568,7 @@ class HtmlExport {
         if (splittedText.length > 0) {
             htmlText = splittedText[0];
             for (let i = 0; i < splittedText.length - 1; i++) {
-                htmlText += '&nbsp;' + splittedText[i + 1];
+                htmlText += ' ' + splittedText[i + 1];
             }
         }
         return htmlText;
@@ -56821,6 +56832,9 @@ class WordExport {
         writer.writeStartElement('w', 'p', this.wNamespace);
         writer.writeStartElement(undefined, 'pPr', this.wNamespace);
         this.serializeParagraphFormat(writer, paragraph.paragraphFormat, paragraph);
+        if (!isNullOrUndefined(paragraph.characterFormat)) {
+            this.serializeCharacterFormat(writer, paragraph.characterFormat);
+        }
         writer.writeEndElement(); //end of pPr
         // Serialize watermark if paragraph is the first item of Header document.
         // EnsureWatermark(paragraph);
@@ -58732,7 +58746,7 @@ class WordExport {
         let owner = this.blockOwner;
         this.blockOwner = cell;
         writer.writeStartElement(undefined, 'tc', this.wNamespace);
-        this.serializeCellFormat(writer, cell.cellFormat, true);
+        this.serializeCellFormat(writer, cell.cellFormat, true, true);
         if (cell.blocks.length > 0) {
             let itemIndex = 0;
             let item = undefined;
@@ -58751,17 +58765,18 @@ class WordExport {
             writer.writeEndElement(); //end of pPr
             writer.writeEndElement(); //end of P
         }
-        writer.writeEndElement(); //end of table cell 'tc'
-        // tslint:disable-next-line:max-line-length
-        if (this.mVerticalMerge.containsKey(cell.columnIndex + 1) && (this.row.cells.indexOf(cell) === cell.columnIndex) && cell.nextNode === undefined) {
-            let collKey = cell.columnIndex + 1;
+        writer.writeEndElement(); //end of table cell 'tc'        
+        if (this.mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1)
+            && (this.row.cells.indexOf(cell) === cell.columnIndex) && cell.nextNode === undefined) {
+            let collKey = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1;
             writer.writeStartElement(undefined, 'tc', this.wNamespace);
             if (!isNullOrUndefined(this.spanCellFormat)) {
-                this.serializeCellFormat(writer, this.spanCellFormat, false);
+                this.serializeCellFormat(writer, this.spanCellFormat, false, false);
             }
             this.serializeColumnSpan(collKey, writer);
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
+            writer.writeEndElement();
             writer.writeEndElement();
             this.checkMergeCell(collKey);
             writer.writeStartElement('w', 'p', this.wNamespace);
@@ -58771,7 +58786,7 @@ class WordExport {
         this.blockOwner = owner;
     }
     // Serialize the cell formatting
-    serializeCellFormat(writer, cellFormat, ensureMerge) {
+    serializeCellFormat(writer, cellFormat, ensureMerge, endProperties) {
         let cell = this.blockOwner;
         //Get the table fomat
         let tf = this.table.tableFormat;
@@ -58784,12 +58799,6 @@ class WordExport {
         this.serializeCellWidth(writer, cell);
         // serialize cell margins
         this.serializeCellMargins(writer, cellFormat);
-        if (ensureMerge) {
-            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
-            this.serializeCellMerge(writer, cellFormat);
-            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
-            this.serializeGridSpan(writer, cell);
-        }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
         this.serializeBorders(writer, cellFormat.borders, 8);
@@ -58850,7 +58859,15 @@ class WordExport {
         //     m_writer.WriteEndElement();
         //     m_isAlternativeCellFormat = false;
         // }
-        writer.writeEndElement();
+        if (ensureMerge) {
+            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
+            this.serializeGridSpan(writer, cell);
+            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
+            this.serializeCellMerge(writer, cellFormat);
+        }
+        if (endProperties) {
+            writer.writeEndElement();
+        }
     }
     // Serialize the cell width
     serializeCellWidth(writer, cell) {
@@ -59260,13 +59277,11 @@ class WordExport {
     }
     // Serialize the table layout element
     serializeTblLayout(writer, format) {
-        //TODO: AUTO size property is not mapped yet
-        // if (!format.IsAutoResized)
-        // {
-        //     writer.writeStartElement(undefined, 'tblLayout', this.wNamespace);
-        //     writer.writeAttributeString(undefined, 'type', this.wNamespace, 'fixed');
-        //     writer.writeEndElement();
-        // }
+        if (!format.allowAutoFit) {
+            writer.writeStartElement(undefined, 'tblLayout', this.wNamespace);
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'fixed');
+            writer.writeEndElement();
+        }
     }
     // Serializes the Border
     serializeBorder(writer, border, tagName, multiplier) {

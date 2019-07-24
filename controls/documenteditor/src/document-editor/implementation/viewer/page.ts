@@ -1472,7 +1472,7 @@ export class TableWidget extends BlockWidget {
             }
         }
         tempGrid.sort((a: number, b: number) => { return a - b; });
-        if (tempGrid.length - 1 !== this.tableHolder.columns.length) {
+        if (this.tableHolder.columns.length > 0 && tempGrid.length - 1 !== this.tableHolder.columns.length) {
             this.updateColumnSpans(tempGrid, tableWidth);
         }
         this.tableCellInfo.clear();

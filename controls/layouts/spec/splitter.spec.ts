@@ -3513,4 +3513,73 @@ describe('Splitter Control', () => {
             expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].getAttribute("aria-orientation")).toBe('horizontal');
         });
     });
+      // mouse over on splitbar
+    describe('mouseover on splitbar', () => {
+        let splitterObj1: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        document.body.appendChild(element);
+        splitterObj1 = new Splitter({ height: '400px', separatorSize: 10, width: '400px'});
+        splitterObj1.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+    
+    it('show icon on splitbar hovering', () => {
+    let mouseEvent = document.createEvent('MouseEvents');
+    mouseEvent.initEvent ('mouseover', true, true);
+    (document.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent(mouseEvent);
+    // hover will executed in a fraction of second.
+        expect(splitterObj1.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
+    });
+    });
+
+    //Blazor Template Support
+    describe('Blazor resizing issue', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%' }, {}]});
+        splitterObj.appendTo(document.getElementById('default'));
+        let child3: HTMLElement = createElement('div');
+        let child4: HTMLElement = createElement('div');
+        splitterObj.element.appendChild(child3);
+        splitterObj.element.appendChild(child4);
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+
+        it('in Template Support', () => {
+            let mouseEvent = document.createEvent ('MouseEvents');
+            mouseEvent.initEvent ('mousedown', true, true);
+            (document.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent (mouseEvent);
+            mouseEvent.initEvent ('mousemove', true, true);
+            document.dispatchEvent (mouseEvent);
+            mouseEvent.initEvent ('mouseup', true, true);
+            document.dispatchEvent(mouseEvent);
+            let eventArgs: any = {
+                target: document,
+                pageX: 350,
+                pageY: 400,
+                type: 'mousemove',
+                which: 1,
+                x: 0,
+                y: 0
+            }
+            splitterObj.onMouseMove(eventArgs);
+            expect(splitterObj.previousPane.classList.contains('e-pane')).toBe(true);
+            expect(splitterObj.nextPane.classList.contains('e-pane')).toBe(true);
+        });
+    });
  });

@@ -3504,8 +3504,12 @@ class LayerPanel {
     renderTileLayer(panel, layer, layerIndex, bing) {
         let center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel <= 1) {
             panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
+            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
+                panel.mapObject.tileTranslatePoint.x = 0;
+                panel.mapObject.tileTranslatePoint.y = 0;
+            }
         }
         panel.mapObject.tileTranslatePoint = panel.panTileMap(panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, center);
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
@@ -4030,7 +4034,7 @@ class LayerPanel {
                 }
             }
         }
-        else if (this.mapObject.isTileMap) {
+        else if (this.mapObject.isTileMap && !isNullOrUndefined(this.mapObject.scale)) {
             for (let j = 0; j < layerElement.childElementCount; j++) {
                 childNode = layerElement.childNodes[j];
                 if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
@@ -4476,6 +4480,8 @@ let Maps = class Maps extends Component {
         this.isDevice = false;
         /** @public */
         this.dataLabelShape = [];
+        this.zoomShapeCollection = [];
+        this.zoomLabelPositions = [];
         this.mouseDownEvent = { x: null, y: null };
         this.mouseClickEvent = { x: null, y: null };
     }
@@ -5881,17 +5887,30 @@ class DataLabel {
         let text = '';
         let datasrcObj;
         let currentLength = 0;
+        let oldIndex;
         let location;
+        let sublayerIndexLabel = false;
         let shapeProperties = shape['properties'];
         let labelId = this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_LabelIndex_' + index;
         let textLocation = new Point(0, 0);
         /* tslint:disable:no-string-literal */
         let shapes = layerData[index];
+        let locationX;
+        let locationY;
         style.fontFamily = this.maps.themeStyle.labelFontFamily;
         shape = shapes['property'];
         let properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]);
         let propertyPath;
+        let animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+        let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
+        let scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
+        let transPoint = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'];
+        let zoomTransPoint = this.maps.zoomTranslatePoint;
+        let shapeWidth;
+        let scaleZoomValue = !isNullOrUndefined(this.maps.scale) ? Math.floor(this.maps.scale) : 1;
+        let zoomLabelsPosition = this.maps.zoomSettings.enable ? !isNullOrUndefined(this.maps.zoomShapeCollection) &&
+            this.maps.zoomShapeCollection.length > 0 : this.maps.zoomSettings.enable;
         for (let j = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
@@ -5925,7 +5944,24 @@ class DataLabel {
         let dataLabelText = text;
         let projectionType = this.maps.projectionType;
         location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        let firstLevelMapLocation = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
+            if (zoomLabelsPosition && scaleZoomValue > 1) {
+                if (layerIndex > 0) {
+                    for (let k = 0; k < this.maps.zoomLabelPositions.length; k++) {
+                        if (this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
+                            oldIndex = index;
+                            index = k;
+                            sublayerIndexLabel = true;
+                            break;
+                        }
+                    }
+                }
+                locationX = location['x'];
+                locationY = location['y'];
+                location['x'] = ((location['x'] + zoomTransPoint['x']) * scale);
+                location['y'] = ((location['y'] + zoomTransPoint['y']) * scale);
+            }
             location['y'] = (this.maps.projectionType === 'Mercator') ? location['y'] : (-location['y']);
             if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
                 if (this.maps.useGroupingSeparator) {
@@ -5941,9 +5977,12 @@ class DataLabel {
             };
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs) => {
                 let position = [];
-                let width = location['rightMax']['x'] - location['leftMax']['x'];
+                let width = zoomLabelsPosition && scaleZoomValue > 1
+                    ? this.maps.zoomShapeCollection[index]['width'] :
+                    location['rightMax']['x'] - location['leftMax']['x'];
                 if (!isNullOrUndefined(this.maps.dataLabelShape)) {
-                    this.maps.dataLabelShape.push(width);
+                    shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
+                    this.maps.dataLabelShape.push(shapeWidth);
                 }
                 let textSize = measureText(text, style);
                 let trimmedLable = textTrim(width, text, style);
@@ -5956,18 +5995,21 @@ class DataLabel {
                 if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     let location1 = findMidPointOfPolygon(position, projectionType);
+                    if (zoomLabelsPosition && scaleZoomValue > 1) {
+                        location1['x'] = ((this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
+                        location1['y'] = ((this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
+                    }
+                    locationX = location1['x'];
                     location['x'] = location1['x'];
-                    width = location1['rightMax']['x'] - location1['leftMax']['x'];
+                    width = zoomLabelsPosition && scaleZoomValue > 1 ?
+                        this.maps.zoomShapeCollection[index]['width'] :
+                        location1['rightMax']['x'] - location1['leftMax']['x'];
                 }
                 let xpositionEnds = location['x'] + textSize['width'] / 2;
                 let xpositionStart = location['x'] - textSize['width'] / 2;
                 trimmedLable = textTrim(width, text, style);
                 elementSize = measureText(trimmedLable, style);
                 this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
-                let animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
-                let scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
-                let transPoint = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'];
                 let labelElement;
                 if (eventargs.template !== '') {
                     let blazor = 'Blazor';
@@ -5991,7 +6033,7 @@ class DataLabel {
                         options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                     }
                     text = options['text'];
-                    if (dataLabelSettings.intersectionAction === 'Hide' && this.maps.scale < 2) {
+                    if (dataLabelSettings.intersectionAction === 'Hide') {
                         for (let i = 0; i < intersect.length; i++) {
                             if (!isNullOrUndefined(intersect[i])) {
                                 if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
@@ -6057,16 +6099,25 @@ class DataLabel {
                         }
                     }
                     element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
-                    element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
-                        + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
+                    if (zoomLabelsPosition && scaleZoomValue > 1) {
+                        element.setAttribute('transform', 'translate( ' + ((location['x'])) + ' '
+                            + (((location['y']))) + ' )');
+                        location['x'] = locationX;
+                        location['y'] = locationY;
+                    }
+                    else {
+                        element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
+                            + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
+                        location['y'] = location['y'] + (elementSize.height / 4);
+                    }
                     group.appendChild(element);
                 }
                 this.dataLabelCollections.push({
-                    location: { x: location['x'], y: (location['y'] + elementSize.height / 4) },
+                    location: { x: location['x'], y: location['y'] },
                     element: isNullOrUndefined(labelElement) ? element : labelElement,
                     layerIndex: layerIndex,
-                    shapeIndex: index,
-                    labelIndex: index,
+                    shapeIndex: sublayerIndexLabel ? oldIndex : index,
+                    labelIndex: sublayerIndexLabel ? oldIndex : index,
                     dataLabelText: dataLabelText
                 });
             });
@@ -8333,6 +8384,7 @@ class Zoom {
         let scale = this.maps.scale;
         let x = this.maps.translatePoint.x;
         let y = this.maps.translatePoint.y;
+        this.maps.zoomShapeCollection = [];
         if (this.layerCollectionEle) {
             for (let i = 0; i < this.layerCollectionEle.childElementCount; i++) {
                 let layerElement = this.layerCollectionEle.childNodes[i];
@@ -8398,16 +8450,21 @@ class Zoom {
                         }
                         else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1) {
                             this.intersect = [];
+                            this.maps.zoomLabelPositions = [];
+                            this.maps.zoomLabelPositions = this.maps.dataLabelModule.dataLabelCollections;
                             for (let k = 0; k < currentEle.childElementCount; k++) {
                                 this.zoomshapewidth = this.shapeZoomLocation[k].getBoundingClientRect();
+                                this.maps.zoomShapeCollection.push(this.zoomshapewidth);
                                 this.dataLabelTranslate(currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate$$1);
                             }
                         }
                     }
                 }
             }
-            if (!animate$$1 || this.currentLayer.animationDuration === 0) {
-                this.processTemplate(x, y, scale, this.maps);
+            if (!isNullOrUndefined(this.currentLayer)) {
+                if (!animate$$1 || this.currentLayer.animationDuration === 0) {
+                    this.processTemplate(x, y, scale, this.maps);
+                }
             }
         }
     }
@@ -8550,7 +8607,7 @@ class Zoom {
                     let end = labelY + zoomtextSize['height'] / 4;
                     let xpositionEnds = labelX + zoomtextSize['width'] / 2;
                     let xpositionStart = labelX - zoomtextSize['width'] / 2;
-                    let textLocations = { right: xpositionEnds, left: xpositionStart, top: start, bottom: end };
+                    let textLocations = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
                     if (!animate$$1 || duration === 0) {
                         element.setAttribute('transform', 'translate( ' + labelX + ' ' + labelY + ' )');
                     }
@@ -8579,10 +8636,10 @@ class Zoom {
                     if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Hide') {
                         for (let m = 0; m < this.intersect.length; m++) {
                             if (!isNullOrUndefined(this.intersect[m])) {
-                                if (textLocations['left'] > this.intersect[m]['right']
-                                    || textLocations['right'] < this.intersect[m]['left']
-                                    || textLocations['top'] > this.intersect[m]['bottom']
-                                    || textLocations['bottom'] < this.intersect[m]['top']) {
+                                if (textLocations['leftWidth'] > this.intersect[m]['rightWidth']
+                                    || textLocations['rightWidth'] < this.intersect[m]['leftWidth']
+                                    || textLocations['heightTop'] > this.intersect[m]['heightBottom']
+                                    || textLocations['heightBottom'] < this.intersect[m]['heightTop']) {
                                     text = !isNullOrUndefined(text) ? text : zoomtext;
                                     element.innerHTML = text;
                                 }
@@ -8598,10 +8655,10 @@ class Zoom {
                     if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Trim') {
                         for (let j = 0; j < this.intersect.length; j++) {
                             if (!isNullOrUndefined(this.intersect[j])) {
-                                if (textLocations['right'] < this.intersect[j]['left']
-                                    || textLocations['left'] > this.intersect[j]['right']
-                                    || textLocations['bottom'] < this.intersect[j]['top']
-                                    || textLocations['top'] > this.intersect[j]['bottom']) {
+                                if (textLocations['rightWidth'] < this.intersect[j]['leftWidth']
+                                    || textLocations['leftWidth'] > this.intersect[j]['rightWidth']
+                                    || textLocations['heightBottom'] < this.intersect[j]['heightTop']
+                                    || textLocations['heightTop'] > this.intersect[j]['heightBottom']) {
                                     trimmedLable = !isNullOrUndefined(text) ? text : zoomtext;
                                     if (scale > 1) {
                                         trimmedLable = textTrim(this.zoomshapewidth['width'], trimmedLable, style);
@@ -8609,18 +8666,17 @@ class Zoom {
                                     element.innerHTML = trimmedLable;
                                 }
                                 else {
-                                    if (textLocations['left'] > this.intersect[j]['left']) {
-                                        let width = this.intersect[j]['right'] - textLocations['left'];
-                                        let difference = width - (textLocations['right'] - textLocations['left']);
+                                    if (textLocations['leftWidth'] > this.intersect[j]['leftWidth']) {
+                                        let width = this.intersect[j]['rightWidth'] - textLocations['leftWidth'];
+                                        let difference = width - (textLocations['rightWidth'] - textLocations['leftWidth']);
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
-                                        // difference > zoomtextSize['width'] ? difference : this.zoomshapewidth;
                                         trimmedLable = textTrim(difference, text, style);
                                         element.innerHTML = trimmedLable;
                                         break;
                                     }
-                                    if (textLocations['left'] < this.intersect[j]['left']) {
-                                        let width = textLocations['right'] - this.intersect[j]['left'];
-                                        let difference = Math.abs(width - (textLocations['right'] - textLocations['left']));
+                                    if (textLocations['leftWidth'] < this.intersect[j]['leftWidth']) {
+                                        let width = textLocations['rightWidth'] - this.intersect[j]['leftWidth'];
+                                        let difference = Math.abs(width - (textLocations['rightWidth'] - textLocations['leftWidth']));
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
                                         trimmedLable = textTrim(difference, text, style);
                                         element.innerHTML = trimmedLable;
@@ -9178,7 +9234,7 @@ class Zoom {
     click(e) {
         let map = this.maps;
         if (map.zoomSettings.zoomOnClick && e.target.id.indexOf('_shapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
-            && (this.zoomColor === this.selectionColor && this.zoomElements)) {
+            && (this.zoomColor !== this.selectionColor)) {
             let bounds = e.target.getBBox();
             let boundwidth = bounds.width;
             let boundHeight = bounds.height;

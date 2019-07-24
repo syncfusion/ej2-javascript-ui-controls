@@ -822,7 +822,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers after chart load.
      * @event
-     * @blazorProperty 'Loaded'	 
+     * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -830,7 +830,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before chart load.
      * @event
-     * @deprecated	 
+     * @deprecated
      */
     @Event()
     public load: EmitType<ILoadedEventArgs>;
@@ -995,8 +995,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers after the zoom selection is completed.
-     * @event	
-     * @deprecated	 
+     * @event
+     * @deprecated
      */
 
     @Event()
@@ -1028,7 +1028,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * Triggers when the point drag start.
-     * @event	 
+     * @event
      */
     @Event()
     public dragStart: EmitType<IDataEditingEventArgs>;

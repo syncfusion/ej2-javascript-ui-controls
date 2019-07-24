@@ -49,7 +49,7 @@ export class Search {
      * @aspType SearchResults
      * @blazorType SearchResults
      */
-    get searchResults(): SearchResults {
+    public get searchResults(): SearchResults {
         return this.searchResultsInternal;
     }
     /**

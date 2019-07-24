@@ -3,7 +3,6 @@ import { getUid, ReturnType } from '@syncfusion/ej2-grids';
 import { IGanttData, ITaskData, IParent } from './interface';
 import { DataManager, Query, Group, ReturnOption } from '@syncfusion/ej2-data';
 import { isScheduledTask } from './utils';
-import * as enums from './enum';
 import { Gantt } from './gantt';
 import { DateProcessor } from './date-processor';
 import { TaskFieldsModel, ColumnModel } from '../models/models';
@@ -725,11 +724,11 @@ export class TaskProcessor extends DateProcessor {
     private validateDurationUnitMapping(durationUnit: string): string {
         let unit: string = durationUnit;
         if (unit === 'minute') {
-            unit = enums.DurationUnits.Minute;
+            unit = 'minute';
         } else if (unit === 'hour') {
-            unit = enums.DurationUnits.Hour;
+            unit = 'hour';
         } else if (unit === 'day') {
-            unit = enums.DurationUnits.Day;
+            unit = 'day';
         } else {
             unit = this.parent.durationUnit.toLocaleLowerCase();
         }

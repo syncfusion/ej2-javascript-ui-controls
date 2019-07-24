@@ -2502,6 +2502,21 @@ describe('Datepicker', () => {
             datePicker.inputKeyActionHandle(keyEventArgs);
             expect(datePicker.currentView()).toBe("Month");
         });
+        it('alt + down arrow key changed shift + down arrow test case ', () => {
+            datePicker = new DatePicker({
+                start: 'Decade',
+                keyConfigs: {altDownArrow: 'shift+downarrow'}
+            });
+            datePicker.appendTo('#date');
+            datePicker.element.focus();
+            keyEventArgs.action = 'altDownArrow';
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            keyEventArgs.action = 'controlDown';
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            expect(datePicker.currentView()).toBe("Year");
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            expect(datePicker.currentView()).toBe("Month");
+        });
         it('keyboard action with mouse click on next icon test case ', () => {
             datePicker = new DatePicker({
                 value: new Date('2/2/2017')

@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, folderRename, dataSortbySize, data4, data5, data6, rename, dataDelete, accessData1, accessDetails1, accessDetails2, accessData5, accessData4, accessData6, accessData7, getMultipleDetails, data5rename } from '../data';
+import { data1, folderRename, dataSortbySize, data4, data5, data6, rename, dataDelete, accessData1, accessDetails1, accessDetails2, accessData5, accessData4, accessData6, accessData7, getMultipleDetails, data5rename, rename1 } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -546,7 +546,7 @@ describe('FileManager control LargeIcons view', () => {
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
-                responseText: JSON.stringify(rename)
+                responseText: JSON.stringify(rename1)
             });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {

@@ -408,6 +408,14 @@ export class Column {
      */
     public allowSearching: boolean = true;
 
+    /**
+     * If `autoFit` set to true, then the particular column content width will be
+     * adjusted based on its content in the initial rendering itself.
+     * Setting this property as true is equivalent to calling `autoFitColumns` method in the `dataBound` event.
+     * @default false
+     */
+    public autoFit: boolean = false;
+
     constructor(options: ColumnModel) {
         merge(this, options);
         this.uid = getUid('grid-column');
@@ -1048,6 +1056,14 @@ export interface ColumnModel {
      * @default true   
      */
     allowSearching?: boolean;
+
+    /**
+     * If `autoFit` set to true, then the particular column content width will be
+     * adjusted based on its content in the initial rendering itself.
+     * Setting this property as true is equivalent to calling `autoFitColumns` method in the `dataBound` event.
+     * @default false  
+     */
+    autoFit?: boolean;
 }
 
 export interface ActionEventArgs {

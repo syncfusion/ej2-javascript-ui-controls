@@ -12889,8 +12889,9 @@ class PdfViewerBase {
                 if (imageData) {
                     let image = new Image();
                     image.onload = () => {
+                        let scaleFactor = (!isNullOrUndefined(data.scaleFactor)) ? data.scaleFactor : 1.5;
                         // tslint:disable-next-line
-                        if (parseInt((pageWidth * 1.5).toString()) === image.width) {
+                        if (parseInt((pageWidth * scaleFactor).toString()) === image.width) {
                             if (!isNaN(parseFloat(canvas.style.width))) {
                                 canvas.style.width = pageWidth + 'px';
                                 canvas.style.height = pageHeight + 'px';
@@ -13273,7 +13274,7 @@ class PdfViewerBase {
                             }
                             if (data) {
                                 if (data.image) {
-                                    let pageNumber = data.pageNumber ? data.pageNumber : pageIndex;
+                                    let pageNumber = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
                                     proxy.storeWinData(data, pageNumber);
                                     proxy.renderPage(data, pageNumber);
                                 }
@@ -13326,7 +13327,7 @@ class PdfViewerBase {
             // tslint:disable-next-line
             image: blobUrl, transformationMatrix: data['transformationMatrix'], hyperlinks: data['hyperlinks'], hyperlinkBounds: data['hyperlinkBounds'], linkAnnotation: data['linkAnnotation'], linkPage: data['linkPage'], annotationLocation: data['annotationLocation'],
             // tslint:disable-next-line
-            textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation']
+            textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor']
         };
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.magnificationModule ? this.pdfViewer.magnificationModule.checkZoomFactor() : true) {
@@ -16745,9 +16746,11 @@ class Toolbar$1 {
     }
     showCommentOption(isEnable) {
         if (!this.pdfViewer.enableStickyNotesAnnotation) {
+            this.isCommentBtnVisible = isEnable;
             this.applyHideToToolbar(this.pdfViewer.enableStickyNotesAnnotation, 18, 19);
         }
         else {
+            this.isCommentBtnVisible = isEnable;
             this.applyHideToToolbar(isEnable, 18, 19);
         }
     }

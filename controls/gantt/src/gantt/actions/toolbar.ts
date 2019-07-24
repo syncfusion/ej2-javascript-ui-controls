@@ -204,83 +204,87 @@ export class Toolbar {
         let gObj: Gantt = this.parent;
         let gID: string = this.id;
         extend(args, { cancel: false });
-        gObj.trigger(events.toolbarClick, args);
-        if (args.cancel) {
-            return;
-        }
-        if (this.parent.isAdaptive === true) {
-            if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
-                || args.item.id === gID + '_searchbutton' || args.item.id === gID + '_expandall' || args.item.id === gID + '_collapseall') {
-                if (this.parent.selectionModule && this.parent.selectionSettings.type === 'Multiple') {
-                    this.parent.selectionModule.hidePopUp();
-                    (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
+        gObj.trigger(events.toolbarClick, args, (args: ClickEventArgs) => {
+            if (args.cancel) {
+              return;
+            } else {
+                if (this.parent.isAdaptive === true) {
+                    if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
+                        || args.item.id === gID + '_searchbutton' || args.item.id === gID + '_expandall'
+                        || args.item.id === gID + '_collapseall') {
+                        if (this.parent.selectionModule && this.parent.selectionSettings.type === 'Multiple') {
+                            this.parent.selectionModule.hidePopUp();
+                            (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
+                        }
+                    }
+                }
+                switch (!isNullOrUndefined(args.item) && args.item.id) {
+                    case gID + '_edit':
+                        if (gObj.editModule && gObj.editSettings.allowEditing) {
+                            gObj.editModule.dialogModule.openToolbarEditDialog();
+                        }
+                        break;
+                    case gID + '_update':
+                        gObj.editModule.cellEditModule.isCellEdit = false;
+                        gObj.treeGrid.endEdit();
+                        break;
+                    case gID + '_cancel':
+                        gObj.cancelEdit();
+                        break;
+                    case gID + '_add':
+                        if (gObj.editModule && gObj.editSettings.allowAdding) {
+                            gObj.editModule.dialogModule.openAddDialog();
+                        }
+                        break;
+                    case gID + '_delete':
+                        if (this.parent.selectionModule && this.parent.editModule) {
+                            if ((this.parent.selectionSettings.mode !== 'Cell' && this.parent.selectionModule.selectedRowIndexes.length)
+                                || (this.parent.selectionSettings.mode === 'Cell' &&
+                                    this.parent.selectionModule.getSelectedRowCellIndexes().length)) {
+                                this.parent.editModule.startDeleteAction();
+                            }
+                        }
+                        break;
+                    case gID + '_search':
+                        let searchButtonId: string = getValue('originalEvent.target.id', args);
+                        if (searchButtonId === this.parent.element.id + '_searchbutton' && this.parent.filterModule) {
+                            let keyVal: string =
+                            (<HTMLInputElement>this.element.querySelector('#' + this.parent.element.id + '_searchbar')).value;
+                            if (this.parent.searchSettings.key !== keyVal) {
+                                this.parent.searchSettings.key = keyVal;
+                                this.parent.dataBind();
+                            }
+                        }
+                        break;
+                    case gID + '_searchbutton':
+                        let adaptiveSearchbar: HTMLElement = this.element.querySelector('.e-adaptive-searchbar');
+                        (adaptiveSearchbar.parentElement.childNodes[1] as HTMLElement).style.display = 'none';
+                        adaptiveSearchbar.style.display = 'block';
+                        break;
+                    case gID + '_expandall':
+                        this.parent.ganttChartModule.expandCollapseAll('expand');
+                        break;
+                    case gID + '_collapseall':
+                        this.parent.ganttChartModule.expandCollapseAll('collapse');
+                        break;
+                    case gID + '_prevtimespan':
+                        this.parent.previousTimeSpan();
+                        break;
+                    case gID + '_nexttimespan':
+                        this.parent.nextTimeSpan();
+                        break;
+                    case gID + '_zoomin':
+                        this.zoomIn();
+                        break;
+                    case gID + '_zoomout':
+                        this.zoomOut();
+                        break;
+                    case gID + '_zoomtofit':
+                        this.zoomToFit();
+                        break;
                 }
             }
-        }
-        switch (!isNullOrUndefined(args.item) && args.item.id) {
-            case gID + '_edit':
-                if (gObj.editModule && gObj.editSettings.allowEditing) {
-                    gObj.editModule.dialogModule.openToolbarEditDialog();
-                }
-                break;
-            case gID + '_update':
-                gObj.editModule.cellEditModule.isCellEdit = false;
-                gObj.treeGrid.endEdit();
-                break;
-            case gID + '_cancel':
-                gObj.cancelEdit();
-                break;
-            case gID + '_add':
-                if (gObj.editModule && gObj.editSettings.allowAdding) {
-                    gObj.editModule.dialogModule.openAddDialog();
-                }
-                break;
-            case gID + '_delete':
-                if (this.parent.selectionModule && this.parent.editModule) {
-                    if ((this.parent.selectionSettings.mode !== 'Cell' && this.parent.selectionModule.selectedRowIndexes.length)
-                        || (this.parent.selectionSettings.mode === 'Cell' &&
-                            this.parent.selectionModule.getSelectedRowCellIndexes().length)) {
-                        this.parent.editModule.startDeleteAction();
-                    }
-                }
-                break;
-            case gID + '_search':
-                let searchButtonId: string = getValue('originalEvent.target.id', args);
-                if (searchButtonId === this.parent.element.id + '_searchbutton' && this.parent.filterModule) {
-                    let keyVal: string = (<HTMLInputElement>this.element.querySelector('#' + this.parent.element.id + '_searchbar')).value;
-                    if (this.parent.searchSettings.key !== keyVal) {
-                        this.parent.searchSettings.key = keyVal;
-                        this.parent.dataBind();
-                    }
-                }
-                break;
-            case gID + '_searchbutton':
-                let adaptiveSearchbar: HTMLElement = this.element.querySelector('.e-adaptive-searchbar');
-                (adaptiveSearchbar.parentElement.childNodes[1] as HTMLElement).style.display = 'none';
-                adaptiveSearchbar.style.display = 'block';
-                break;
-            case gID + '_expandall':
-                this.parent.ganttChartModule.expandCollapseAll('expand');
-                break;
-            case gID + '_collapseall':
-                this.parent.ganttChartModule.expandCollapseAll('collapse');
-                break;
-            case gID + '_prevtimespan':
-                this.parent.previousTimeSpan();
-                break;
-            case gID + '_nexttimespan':
-                this.parent.nextTimeSpan();
-                break;
-            case gID + '_zoomin':
-                this.zoomIn();
-                break;
-            case gID + '_zoomout':
-                this.zoomOut();
-                break;
-            case gID + '_zoomtofit':
-                this.zoomToFit();
-                break;
-        }
+          });
     }
     /**
      *

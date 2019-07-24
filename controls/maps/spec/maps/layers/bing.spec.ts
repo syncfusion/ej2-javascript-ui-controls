@@ -112,7 +112,7 @@ describe('Map layer testing', () => {
         it('Bing Map Zoom level 2 testing spec', (done: Function) => {
             bingmap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
-                expect(spec.childNodes.length).toBe(4);
+                expect(spec.childNodes.length).toBe(16);
                 done();
             };
             bingmap.load = (args: ILoadEventArgs) =>{
@@ -129,7 +129,7 @@ describe('Map layer testing', () => {
         it('Bing Map Zoom level 3 testing spec', (done: Function) => {
             bingmap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
-                expect(spec.childNodes.length).toBe(4);
+                expect(spec.childNodes.length).toBe(16);
                 done();
             };
             bingmap.load = (args: ILoadEventArgs) =>{
@@ -145,7 +145,7 @@ describe('Map layer testing', () => {
         it('Bing Map sublayer testing spec', (done: Function) => {
             bingmap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
-                expect(spec.childNodes.length).toBe(8);
+                expect(spec.childNodes.length).toBe(0);
                 done();
             };
             bingmap.load = (args: ILoadEventArgs) =>{
@@ -207,7 +207,7 @@ describe('Map layer testing', () => {
         it('OSM Map Zoom level 3 testing spec', (done: Function) => {
             osm.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
-                expect(spec.childNodes.length).toBe(4);
+                expect(spec.childNodes.length).toBe(64);
                 done();
             };
             ele.setAttribute('style', 'height: 2048px; width: 2048px;');
@@ -217,7 +217,7 @@ describe('Map layer testing', () => {
         it('OSM Map sublayer testing spec', (done: Function) => {
             osm.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
-                expect(spec.childNodes.length).toBe(8);
+                expect(spec.childNodes.length).toBe(12);
                 done();
             };
             osm.zoomSettings.zoomFactor = 1;

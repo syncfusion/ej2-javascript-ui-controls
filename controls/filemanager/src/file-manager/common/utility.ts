@@ -295,6 +295,7 @@ export function getImageUrl(parent: IFileManager, item: Object): string {
     } else {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
     }
+    imgUrl = imgUrl + '&time=' + (new Date().getTime()).toString();
     return imgUrl;
 }
 
@@ -341,11 +342,11 @@ export function getObject(parent: IFileManager, key: string, value: string): Obj
 
 export function createEmptyElement(parent: IFileManager, element: HTMLElement, args: ReadArgs | SearchArgs): void {
     let top: number;
+    let layoutElement: Element = select('#' + parent.element.id + CLS.LAYOUT_ID, parent.element);
+    let addressBarHeight: number = (<HTMLElement>select('#' + parent.element.id + CLS.BREADCRUMBBAR_ID, layoutElement)).offsetHeight;
+    top = (<HTMLElement>layoutElement).offsetHeight - addressBarHeight;
     if (parent.view === 'Details') {
-        let ele: HTMLElement = <HTMLElement>select('.' + CLS.GRID_VIEW, element);
-        top = ele.offsetHeight;
-    } else {
-        top = element.offsetHeight;
+        top = top - (<HTMLElement>select('.' + CLS.GRID_HEADER, layoutElement)).offsetHeight;
     }
     if (isNOU(element.querySelector('.' + CLS.EMPTY))) {
         let emptyDiv: Element = createElement('div', { className: CLS.EMPTY });
@@ -534,8 +535,8 @@ export function dropHandler(parent: IFileManager): void {
 
 export function getParentPath(oldPath: string): string {
     let path: string[] = oldPath.split('/');
-    let newPath: string = '';
-    for (let i: number = 0; i < path.length - 2; i++) {
+    let newPath: string = path[0] + '/';
+    for (let i: number = 1; i < path.length - 2; i++) {
         newPath += path[i] + '/';
     }
     return newPath;

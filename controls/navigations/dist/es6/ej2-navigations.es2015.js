@@ -1308,14 +1308,15 @@ let MenuBase = class MenuBase extends Component {
     }
     cmenuHandler(e) {
         e.preventDefault();
+        this.isCMenu = true;
+        this.pageX = e.changedTouches ? e.changedTouches[0].pageX + 1 : e.pageX + 1;
+        this.pageY = e.changedTouches ? e.changedTouches[0].pageY + 1 : e.pageY + 1;
         this.closeMenu(null, e);
-        if (this.canOpen(e.target)) {
-            if (e.changedTouches) {
-                this.openMenu(null, null, e.changedTouches[0].pageY + 1, e.changedTouches[0].pageX + 1, e);
+        if (this.isCMenu) {
+            if (this.canOpen(e.target)) {
+                this.openMenu(null, null, this.pageY, this.pageX, e);
             }
-            else {
-                this.openMenu(null, null, e.pageY + 1, e.pageX + 1, e);
-            }
+            this.isCMenu = false;
         }
     }
     closeMenu(ulIndex = 0, e = null) {
@@ -1346,7 +1347,8 @@ let MenuBase = class MenuBase extends Component {
                     let popupEle;
                     let closeArgs;
                     let popupObj;
-                    if (!observedCloseArgs.cancel) {
+                    let isOpen = !observedCloseArgs.cancel;
+                    if (isOpen || this.isCMenu) {
                         if (this.isMenu) {
                             popupEle = closest(ul, '.' + POPUP);
                             if (this.hamburgerMode) {
@@ -1364,21 +1366,30 @@ let MenuBase = class MenuBase extends Component {
                         }
                         closeArgs = { element: ul, parentItem: item, items: items };
                         this.trigger('onClose', closeArgs);
+                        this.navIdx.pop();
                     }
-                    this.navIdx.pop();
-                    if (!ulIndex && this.navIdx.length) {
+                    if (this.isCMenu) {
+                        if (this.canOpen(e.target)) {
+                            this.openMenu(null, null, this.pageY, this.pageX, e);
+                        }
+                        this.isCMenu = false;
+                    }
+                    else if (isOpen && this.hamburgerMode && ulIndex !== null) {
+                        this.afterCloseMenu(e);
+                    }
+                    else if (isOpen && !ulIndex && this.navIdx.length) {
                         this.closeMenu(null, e);
                     }
-                    else if (!this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
+                    else if (isOpen && !this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
                         this.isMenusClosed = true;
                         this.closeMenu(0, e);
                     }
-                    else if (this.isMenu && e && e.target &&
+                    else if (isOpen && this.isMenu && e && e.target &&
                         this.navIdx.length !== 0 && closest(e.target, '.e-menu-parent.e-control')) {
                         this.closeMenu(0, e);
                     }
                     else {
-                        if (this.keyType === 'right' || this.keyType === 'click') {
+                        if (isOpen && (this.keyType === 'right' || this.keyType === 'click')) {
                             this.afterCloseMenu(e);
                         }
                         else {
@@ -1449,7 +1460,7 @@ let MenuBase = class MenuBase extends Component {
             }
             if (this.isMenu) {
                 this.popupWrapper = this.createElement('div', {
-                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-' + elemId + '-popup'
+                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-ej2menu-' + elemId + '-popup'
                 });
                 if (this.hamburgerMode) {
                     top = li.offsetHeight;
@@ -1828,7 +1839,7 @@ let MenuBase = class MenuBase extends Component {
         let cli = this.getLI(trgt);
         let wrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
         let hdrWrapper = this.getWrapper();
-        let regex = new RegExp('-(.*)-popup');
+        let regex = new RegExp('-ej2menu-(.*)-popup');
         let ulId;
         let isDifferentElem = false;
         if (!wrapper) {
@@ -7551,7 +7562,13 @@ let Tab = class Tab extends Component {
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    this.setCssClass(this.element, newProp.cssClass, true);
+                    if (oldProp.cssClass !== '') {
+                        this.setCssClass(this.element, oldProp.cssClass, false);
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
+                    else {
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);
@@ -10255,12 +10272,12 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             this.destroyDrag();
         }
     }
+    // tslint:disable-next-line:max-func-body-length
     initializeDrag() {
         let virtualEle;
         let proxy = this;
         this.dragObj = new Draggable(this.element, {
-            enableTailMode: true,
-            enableAutoScroll: true,
+            enableTailMode: true, enableAutoScroll: true,
             dragTarget: '.' + TEXTWRAP,
             helper: (e) => {
                 this.dragTarget = e.sender.target;
@@ -10302,23 +10319,24 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 }
                 let eventArgs = this.getDragEvent(e.event, this, null, e.target, null, virtualEle, level);
                 if (eventArgs.draggedNode.classList.contains(EDITING)) {
-                    eventArgs.cancel = true;
+                    this.dragCancelAction(virtualEle);
                 }
                 else {
-                    this.trigger('nodeDragStart', eventArgs);
-                }
-                if (eventArgs.cancel) {
-                    detach(virtualEle);
-                    removeClass([this.element], DRAGGING);
-                    this.dragStartAction = false;
-                }
-                else {
-                    this.dragStartAction = true;
+                    this.trigger('nodeDragStart', eventArgs, (observedArgs) => {
+                        if (observedArgs.cancel) {
+                            this.dragCancelAction(virtualEle);
+                        }
+                        else {
+                            this.dragStartAction = true;
+                        }
+                    });
                 }
             },
             drag: (e) => {
-                this.dragObj.setProperties({ cursorAt: { top: (!isNullOrUndefined(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
-                this.dragAction(e, virtualEle);
+                if ((this.isBlazorPlatform && this.dragStartAction) || !this.isBlazorPlatform) {
+                    this.dragObj.setProperties({ cursorAt: { top: (!isNullOrUndefined(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
+                    this.dragAction(e, virtualEle);
+                }
             },
             dragStop: (e) => {
                 removeClass([this.element], DRAGGING);
@@ -10337,16 +10355,19 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 }
                 let eventArgs = this.getDragEvent(e.event, this, dropTarget, dropTarget, null, e.helper, level);
                 eventArgs.preventTargetExpand = preventTargetExpand;
-                this.trigger('nodeDragStop', eventArgs);
-                this.dragParent = eventArgs.draggedParentNode;
-                this.preventExpand = eventArgs.preventTargetExpand;
-                if (eventArgs.cancel) {
-                    if (e.helper.parentNode) {
-                        detach(e.helper);
-                    }
-                    document.body.style.cursor = '';
+                if ((this.isBlazorPlatform && this.dragStartAction) || !this.isBlazorPlatform) {
+                    this.trigger('nodeDragStop', eventArgs, (observedArgs) => {
+                        this.dragParent = observedArgs.draggedParentNode;
+                        this.preventExpand = observedArgs.preventTargetExpand;
+                        if (observedArgs.cancel) {
+                            if (e.helper.parentNode) {
+                                detach(e.helper);
+                            }
+                            document.body.style.cursor = '';
+                        }
+                        this.dragStartAction = false;
+                    });
                 }
-                this.dragStartAction = false;
             }
         });
         this.dropObj = new Droppable(this.element, {
@@ -10362,6 +10383,11 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 this.dropAction(e);
             }
         });
+    }
+    dragCancelAction(virtualEle) {
+        detach(virtualEle);
+        removeClass([this.element], DRAGGING);
+        this.dragStartAction = false;
     }
     dragAction(e, virtualEle) {
         let dropRoot = closest(e.target, '.' + DROPPABLE);

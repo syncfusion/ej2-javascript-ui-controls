@@ -445,7 +445,7 @@ export class UrlAdaptor extends Adaptor {
         this.pvt = {};
         if (this.options.requestType === 'json') {
             return {
-                data: JSON.stringify(req),
+                data: JSON.stringify(req, DataUtil.parse.jsonDateReplacer),
                 url: url,
                 pvtData: p,
                 type: 'POST',
@@ -1716,7 +1716,8 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
         super();
         setValue('beforeSend', UrlAdaptor.prototype.beforeSend, this);
     }
-    public insert(dm: DataManager, data: Object, tableName: string, query: Query): Object {
+    public insert(dm: DataManager, data: Object, tableName: string, query: Query, position?: number): Object {
+        this.pvt.position = position;
         this.updateType = 'add';
         return {
             url: dm.dataSource.insertUrl || dm.dataSource.crudUrl || dm.dataSource.url,
@@ -1761,7 +1762,7 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
         Object {
         let i: number;
         if (this.updateType === 'add') {
-            super.insert(ds as DataManager, data);
+            super.insert(ds as DataManager, data, null, null, this.pvt.position);
         }
         if (this.updateType === 'update') {
             super.update(ds as DataManager, this.updateKey, data);
@@ -2049,6 +2050,7 @@ export interface PvtOptions {
     search?: Object | Predicate;
     changeSet?: number;
     searches?: Object[];
+    position?: number;
 }
 
 /**

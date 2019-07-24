@@ -795,7 +795,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeDragging: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node drag (move) starts.
-     * @deprecated
      * @event
      * @blazorProperty 'OnNodeDragStart'
      */
@@ -803,7 +802,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeDragStart: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node drag (move) is stopped.
-     * @deprecated
      * @event
      * @blazorProperty 'OnNodeDragged'
      */
@@ -811,7 +809,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeDragStop: EmitType<DragAndDropEventArgs>;
     /**
      * Triggers when the TreeView node is dropped on target element successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeDropped'
      */
@@ -3335,13 +3332,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.destroyDrag();
         }
     }
-
+    // tslint:disable-next-line:max-func-body-length
     private initializeDrag(): void {
-        let virtualEle: HTMLElement;
-        let proxy : TreeView = this;
+        let virtualEle: HTMLElement; let proxy : TreeView = this;
         this.dragObj = new Draggable(this.element, {
-            enableTailMode: true,
-            enableAutoScroll: true,
+            enableTailMode: true, enableAutoScroll: true,
             dragTarget: '.' + TEXTWRAP,
             helper: (e: { sender: MouseEvent & TouchEvent, element: HTMLElement }) => {
                 this.dragTarget = <Element>e.sender.target;
@@ -3378,23 +3373,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 addClass([this.element], DRAGGING);
                 let listItem: Element = closest(e.target, '.e-list-item'); let level: number;
                 if (listItem) {
-                    level = parseInt(listItem.getAttribute('aria-level'), 10); }
-                let eventArgs: DragAndDropEventArgs = this.getDragEvent(e.event, this, null, e.target, null, virtualEle, level);
-                if (eventArgs.draggedNode.classList.contains( EDITING )) {
-                    eventArgs.cancel = true;
-                } else {
-                    this.trigger('nodeDragStart', eventArgs);
+                    level = parseInt(listItem.getAttribute('aria-level'), 10);
                 }
-                if (eventArgs.cancel) {
-                    detach(virtualEle);
-                    removeClass([this.element], DRAGGING);
-                    this.dragStartAction = false;
+                let eventArgs: DragAndDropEventArgs = this.getDragEvent(e.event, this, null, e.target, null, virtualEle, level);
+                if (eventArgs.draggedNode.classList.contains(EDITING)) {
+                    this.dragCancelAction(virtualEle);
                 } else {
-                    this.dragStartAction = true; }
+                    this.trigger('nodeDragStart', eventArgs, (observedArgs: DragAndDropEventArgs) => {
+                        if (observedArgs.cancel) {
+                            this.dragCancelAction(virtualEle);
+                        } else {
+                            this.dragStartAction = true;
+                        }
+                    });
+                }
             },
             drag: (e: DragEventArgs) => {
-                this.dragObj.setProperties({ cursorAt: { top: (!isNOU(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
-                this.dragAction(e, virtualEle);
+                if ((this.isBlazorPlatform && this.dragStartAction) || !this.isBlazorPlatform) {
+                    this.dragObj.setProperties({ cursorAt: { top: (!isNOU(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
+                    this.dragAction(e, virtualEle);
+                }
             },
             dragStop: (e: { event: MouseEvent & TouchEvent, element: HTMLElement, target: Element, helper: HTMLElement }) => {
                 removeClass([this.element], DRAGGING);
@@ -3411,23 +3409,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 let eventArgs: DragAndDropEventArgs = this.getDragEvent(e.event, this, dropTarget, <HTMLElement>dropTarget, null,
                                                                         e.helper, level);
                 eventArgs.preventTargetExpand = preventTargetExpand;
-                this.trigger('nodeDragStop', eventArgs);
-                this.dragParent = eventArgs.draggedParentNode;
-                this.preventExpand = eventArgs.preventTargetExpand;
-                if (eventArgs.cancel) {
-                    if (e.helper.parentNode) {
-                       detach(e.helper);
-                    }
-                    document.body.style.cursor = '';
+                if ((this.isBlazorPlatform && this.dragStartAction) || !this.isBlazorPlatform) {
+                    this.trigger('nodeDragStop', eventArgs, (observedArgs: DragAndDropEventArgs) => {
+                        this.dragParent = observedArgs.draggedParentNode;
+                        this.preventExpand = observedArgs.preventTargetExpand;
+                        if (observedArgs.cancel) {
+                            if (e.helper.parentNode) {
+                                detach(e.helper);
+                            }
+                            document.body.style.cursor = '';
+                        }
+                        this.dragStartAction = false;
+                    });
                 }
-                this.dragStartAction = false;
             }
         });
         this.dropObj = new Droppable(this.element, {
             out: (e: { evt: MouseEvent & TouchEvent, target: Element }) => {
-             if (!isNOU(e) && !e.target.classList.contains(SIBLING)) {
-              document.body.style.cursor = 'not-allowed';
-            }
+                if (!isNOU(e) && !e.target.classList.contains(SIBLING)) {
+                    document.body.style.cursor = 'not-allowed';
+                }
             },
             over: (e: { evt: MouseEvent & TouchEvent, target: Element }) => {
                 document.body.style.cursor = '';
@@ -3437,7 +3438,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         });
     }
-
+    private dragCancelAction(virtualEle: HTMLElement): void {
+        detach(virtualEle);
+        removeClass([this.element], DRAGGING);
+        this.dragStartAction = false;
+    }
     private dragAction(e: DropEventArgs, virtualEle: HTMLElement): void {
         let dropRoot: Element = closest(e.target, '.' + DROPPABLE);
         let dropWrap: Element = closest(e.target, '.' + TEXTWRAP);

@@ -24,7 +24,7 @@ describe('Save validation', () => {
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection);
+        DocumentEditor.Inject(Editor, Selection, SfdtExport);
         editor = new DocumentEditor({ enableSfdtExport: true, enableEditor: true, enableSelection: true, isReadOnly: false });
         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;

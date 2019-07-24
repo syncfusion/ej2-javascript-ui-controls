@@ -173,7 +173,7 @@ describe('Circular-Gauge Control', () => {
                 args.textStyle.size = "25px";
             }
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_0_Annotation_0');
+                svg = document.getElementById('container_Axis_0_Annotation_1');
                 expect(svg.childElementCount).toBe(1);
                 expect(svg !== null).toBe(true);
                 done();

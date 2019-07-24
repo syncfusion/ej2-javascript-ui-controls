@@ -766,6 +766,50 @@ export let timezoneData: Object[] = [
     }
 ];
 
+export let testBlockData: Object[] = [
+    {
+        Id: 1,
+        Subject: 'Block Event',
+        StartTime: new Date(2017, 10, 2, 10),
+        IsBlock: true,
+        EndTime: new Date(2017, 10, 2, 12),
+    }, {
+        Id: 2,
+        Subject: 'Spanned - Less than 24 hour',
+        StartTime: new Date(2017, 10, 1, 12, 30),
+        EndTime: new Date(2017, 10, 2, 1, 30),
+    }, {
+        Id: 3,
+        Subject: 'Spanned - Greater than 24 hour',
+        StartTime: new Date(2017, 10, 1, 2),
+        EndTime: new Date(2017, 10, 8, 4),
+    }, {
+        Id: 4,
+        Subject: 'Allday event',
+        StartTime: new Date(2017, 10, 3),
+        EndTime: new Date(2017, 10, 4),
+        IsAllDay: true
+    }, {
+        Id: 5,
+        Subject: 'Allday Spanned event',
+        StartTime: new Date(2017, 10, 3),
+        EndTime: new Date(2017, 10, 10),
+        IsAllDay: true
+    }, {
+        Id: 6,
+        Subject: 'Allday across the month',
+        StartTime: new Date(2017, 10, 16),
+        EndTime: new Date(2018, 0, 1),
+        IsAllDay: true
+    }, {
+        Id: 7,
+        Subject: 'Recurrence every 2 days',
+        StartTime: new Date(2017, 10, 13, 11),
+        EndTime: new Date(2017, 10, 13, 12),
+        RecurrenceRule: 'FREQ=DAILY;INTERVAL=2;COUNT=1'
+    }
+];
+
 export let testData: Object[] = [
     {
         Id: 1,

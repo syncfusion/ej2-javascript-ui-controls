@@ -4,7 +4,6 @@ import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { BeforeTooltipRenderEventArgs, ITaskData } from '../base/interface';
 import { TaskbarEdit } from '../actions/taskbar-edit';
 import * as cls from '../base/css-constants';
-import { TemplateName } from '../base/enum';
 /**
  * File for handling taskbar editing tooltip in Gantt. 
  */
@@ -116,7 +115,7 @@ export class EditTooltip {
         let editRecord: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties;
         if (this.parent.tooltipSettings.editing) {
             let templateNode: NodeList = this.parent.tooltipModule.templateCompiler(
-                this.parent.tooltipSettings.editing, this.parent, editRecord, TemplateName.EditingTooltip);
+                this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
             tooltipString = (templateNode[0] as HTMLElement);
         } else {
             switch (this.taskbarEdit.taskBarEditAction) {

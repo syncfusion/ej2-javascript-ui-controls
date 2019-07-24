@@ -103,7 +103,7 @@ export class CellRenderer implements ICellRenderer<Column> {
      * @param  {{[x:string]:Object}} attributes?
      * @param  {Element}
      */
-    public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }, isEdit?: boolean): Element {
+    public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }, isExpand?: boolean, isEdit?: boolean): Element {
         return this.refreshCell(cell, data, attributes, isEdit);
     }
 

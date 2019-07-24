@@ -13081,8 +13081,9 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 if (imageData) {
                     var image_1 = new Image();
                     image_1.onload = function () {
+                        var scaleFactor = (!isNullOrUndefined(data.scaleFactor)) ? data.scaleFactor : 1.5;
                         // tslint:disable-next-line
-                        if (parseInt((pageWidth_1 * 1.5).toString()) === image_1.width) {
+                        if (parseInt((pageWidth_1 * scaleFactor).toString()) === image_1.width) {
                             if (!isNaN(parseFloat(canvas_1.style.width))) {
                                 canvas_1.style.width = pageWidth_1 + 'px';
                                 canvas_1.style.height = pageHeight_1 + 'px';
@@ -13465,7 +13466,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                             }
                             if (data) {
                                 if (data.image) {
-                                    var pageNumber = data.pageNumber ? data.pageNumber : pageIndex;
+                                    var pageNumber = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
                                     proxy.storeWinData(data, pageNumber);
                                     proxy.renderPage(data, pageNumber);
                                 }
@@ -13518,7 +13519,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line
             image: blobUrl, transformationMatrix: data['transformationMatrix'], hyperlinks: data['hyperlinks'], hyperlinkBounds: data['hyperlinkBounds'], linkAnnotation: data['linkAnnotation'], linkPage: data['linkPage'], annotationLocation: data['annotationLocation'],
             // tslint:disable-next-line
-            textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation']
+            textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor']
         };
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.magnificationModule ? this.pdfViewer.magnificationModule.checkZoomFactor() : true) {
@@ -16953,9 +16954,11 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.showCommentOption = function (isEnable) {
         if (!this.pdfViewer.enableStickyNotesAnnotation) {
+            this.isCommentBtnVisible = isEnable;
             this.applyHideToToolbar(this.pdfViewer.enableStickyNotesAnnotation, 18, 19);
         }
         else {
+            this.isCommentBtnVisible = isEnable;
             this.applyHideToToolbar(isEnable, 18, 19);
         }
     };

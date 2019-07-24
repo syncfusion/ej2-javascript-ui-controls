@@ -23922,6 +23922,14 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         var rulerSize = getRulerSize(this.diagram);
         var movingPosition;
         var autoScrollBorder = this.diagram.scrollSettings.autoScrollBorder;
+        if (Browser.info.name === 'mozilla') {
+            if (this.diagram.scroller.viewPortWidth === 0) {
+                var bounds = document.getElementById(this.diagram.element.id).getBoundingClientRect();
+                if (bounds.width !== this.diagram.scroller.viewPortWidth) {
+                    this.diagram.scroller.setViewPortSize(bounds.width, bounds.height);
+                }
+            }
+        }
         if (this.diagram.scrollSettings.canAutoScroll) {
             if (position.x + this.diagram.scroller.horizontalOffset + autoScrollBorder.right + rulerSize.width >=
                 this.diagram.scroller.viewPortWidth - 18) {
@@ -29997,6 +30005,15 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.initObjects(true);
             this.refreshDiagramLayer();
         }
+        if (!refereshColelction) {
+            for (var _k = 0, _l = this.views; _k < _l.length; _k++) {
+                var temp = _l[_k];
+                var view = this.views[temp];
+                if (!(view instanceof Diagram)) {
+                    this.refreshCanvasDiagramLayer(view);
+                }
+            }
+        }
         this.resetTemplate();
     };
     /* tslint:enable */
@@ -31164,6 +31181,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.resetDiagramActions(DiagramAction.PublicMethod);
         if (newObj && this.layers.length > 1) {
             this.moveNode(newObj);
+        }
+        for (var _b = 0, _c = this.views; _b < _c.length; _b++) {
+            var temp = _c[_b];
+            var view = this.views[temp];
+            if (!(view instanceof Diagram)) {
+                this.refreshCanvasDiagramLayer(view);
+            }
         }
         return newObj;
     };
@@ -37442,6 +37466,7 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
         contextItems.contextMenu.items.forEach(function (item) {
             if (contextItems.hiddenItems.indexOf(item.id) === -1) {
                 hidden = false;
+                contextItems.contextMenu.showItems([item.id], true);
             }
         });
         if (hidden) {
@@ -44072,7 +44097,7 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
             for (j = 0; j < node.outEdges.length; j++) {
                 var edge = void 0;
                 edge = layout.nameTable[layout.nameTable[node.outEdges[j]].targetID];
-                if (!edge.excludeFromLayout) {
+                if (edge && !edge.excludeFromLayout) {
                     if (layoutInfo.tree.children.indexOf(edge.id) === -1) {
                         layoutInfo.tree.children.push(edge.id);
                     }
@@ -48848,15 +48873,21 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
         var screenX = (window.screenX < 0) ? window.screenX * -1 : window.screenX;
         var screenY = (window.screenY < 0) ? window.screenY * -1 : window.screenY;
         if (eWidth === 0) {
-            eWidth = Math.floor(((window.innerWidth - screenX) - Math.floor(bRect.left)));
+            var widthValue = Math.floor(((window.innerWidth - screenX) - Math.floor(bRect.left)));
+            eWidth = widthValue > 0 ? widthValue : Math.floor(window.innerWidth);
         }
         if (eHeight === 0) {
-            eHeight = Math.floor(((window.innerHeight - screenY) - Math.floor(bRect.top)));
+            var heightValue = Math.floor(((window.innerHeight - screenY) - Math.floor(bRect.top)));
+            eHeight = heightValue > 0 ? heightValue : Math.floor(window.innerHeight);
         }
-        svg.setAttribute('width', String(eWidth));
-        svg.setAttribute('height', String(eHeight));
-        this.model.width = eWidth;
-        this.model.height = eHeight;
+        if (eWidth > 0) {
+            svg.setAttribute('width', String(eWidth));
+            this.model.height = eHeight;
+        }
+        if (eHeight > 0) {
+            svg.setAttribute('height', String(eHeight));
+            this.model.width = eWidth;
+        }
         var attributes;
         if (!view.diagramLayerDiv) {
             view.diagramLayerDiv = createHtmlElement('div', {});

@@ -255,6 +255,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Selects the list item which maps the data `value` field in the component.
      * @default null
+     * @isGenericType true
      */
     @Property(null)
     public value: number[] | string[] | boolean[];
@@ -3630,6 +3631,7 @@ export class MultiSelect extends DropDownBase implements IInput {
 export interface CustomValueEventArgs {
     /**
      * Gets the newly added data.
+     * @isGenericType true
      */
     newData: Object;
     /**
@@ -3645,7 +3647,7 @@ export interface TaggingEventArgs {
     isInteracted: boolean;
     /**
      * Returns the selected item as JSON Object from the data source.
-     * @blazorType object
+     * @isGenericType true
      */
     itemData: FieldSettingsModel;
     /**
@@ -3670,10 +3672,12 @@ export interface MultiSelectChangeEventArgs {
     isInteracted: boolean;
     /**
      * Returns the component initial Value.
+     * @isGenericType true
      */
     oldValue: number[] | string[] | boolean[];
     /**
      * Returns the updated component Values.
+     * @isGenericType true
      */
     value: number[] | string[] | boolean[];
     /**
@@ -3698,7 +3702,7 @@ export interface ISelectAllEventArgs {
     items: HTMLLIElement[];
     /**
      * Returns the selected items as JSON Object from the data source.
-     * @blazorType object
+     * @isGenericType true
      */
     itemData: FieldSettingsModel[];
     /**

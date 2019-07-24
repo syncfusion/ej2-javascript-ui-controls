@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, uniqueID, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, uniqueID, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -4596,8 +4596,10 @@ var EventBase = /** @__PURE__ @class */ (function () {
         });
         var templateElement;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            var templateId = this.parent.currentView + '_headerTooltipTemplate';
-            templateElement = this.parent.getHeaderTooltipTemplate()(record, this.parent, 'headerTooltipTemplate', templateId, false);
+            var scheduleId = this.parent.element.id + '_';
+            var viewName = this.parent.activeViewOptions.eventTemplateName;
+            var templateId = scheduleId + viewName + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             var appointmentSubject = createElement('div', {
@@ -5727,6 +5729,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-func-body-length
     QuickPopups.prototype.cellClick = function (args) {
+        this.resetQuickPopupTemplates();
         if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
             this.quickPopupHide();
             return;
@@ -5853,6 +5856,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-func-body-length
     QuickPopups.prototype.eventClick = function (events) {
+        this.resetQuickPopupTemplates();
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.close();
         }
@@ -6381,17 +6385,28 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 editIcon.focus();
             }
         }
-        this.updateQuickPopupTemplates();
     };
     QuickPopups.prototype.updateQuickPopupTemplates = function () {
-        updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
-        updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
-        updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+        if (this.parent.quickInfoTemplates.header) {
+            updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+        }
+        if (this.parent.quickInfoTemplates.content) {
+            updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+        }
+        if (this.parent.quickInfoTemplates.footer) {
+            updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+        }
     };
     QuickPopups.prototype.resetQuickPopupTemplates = function () {
-        resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
-        resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
-        resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        if (this.parent.quickInfoTemplates.header) {
+            resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+        }
+        if (this.parent.quickInfoTemplates.content) {
+            resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+        }
+        if (this.parent.quickInfoTemplates.footer) {
+            resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        }
     };
     QuickPopups.prototype.quickPopupClose = function () {
         this.resetQuickPopupTemplates();
@@ -6511,6 +6526,11 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             beforeRender: this.onBeforeRender.bind(this),
             enableRtl: this.parent.enableRtl
         });
+        if (isBlazor()) {
+            this.tooltipObj.beforeOpen = this.onBeforeOpen.bind(this);
+            this.tooltipObj.beforeClose = this.onBeforeClose.bind(this);
+            this.tooltipObj.animation = { close: { effect: 'None' } };
+        }
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
     }
@@ -6523,6 +6543,26 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             targets.push('.' + APPOINTMENT_CLASS);
         }
         return targets.join(',');
+    };
+    EventTooltip.prototype.onBeforeOpen = function () {
+        if (this.parent.group.headerTooltipTemplate) {
+            var templateId = this.parent.element.id + '_headerTooltipTemplate';
+            updateBlazorTemplate(templateId, 'HeaderTooltipTemplate', this.parent.group);
+        }
+        if (this.parent.eventSettings.tooltipTemplate) {
+            var templateId = this.parent.element.id + '_tooltipTemplate';
+            updateBlazorTemplate(templateId, 'TooltipTemplate', this.parent.eventSettings);
+        }
+    };
+    EventTooltip.prototype.onBeforeClose = function () {
+        if (this.parent.group.headerTooltipTemplate) {
+            var templateId = this.parent.element.id + '_headerTooltipTemplate';
+            resetBlazorTemplate(templateId, 'HeaderTooltipTemplate');
+        }
+        if (this.parent.eventSettings.tooltipTemplate) {
+            var templateId = this.parent.element.id + '_tooltipTemplate';
+            resetBlazorTemplate(templateId, 'TooltipTemplate');
+        }
     };
     EventTooltip.prototype.onBeforeRender = function (args) {
         if (!isNullOrUndefined(args.target.getAttribute('data-tooltip-id'))) {
@@ -6544,7 +6584,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
                 resourceData: resCollection.resourceData
             };
             var contentContainer = createElement('div');
-            var templateId = this.parent.currentView + '_headerTooltipTemplate';
+            var templateId = this.parent.element.id + '_headerTooltipTemplate';
             var tooltipTemplate = this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
@@ -6553,7 +6593,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
         var record = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             var contentContainer = createElement('div');
-            var templateId = this.parent.currentView + '_tooltipTemplate';
+            var templateId = this.parent.element.id + '_tooltipTemplate';
             var tooltipTemplate = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
@@ -7732,13 +7772,23 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
-        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        this.updateEditorTemplate();
         addClass([this.element.parentElement], EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
         }
         this.applyFormValidation();
+    };
+    EventWindow.prototype.updateEditorTemplate = function () {
+        if (this.parent.editorTemplate) {
+            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        }
+    };
+    EventWindow.prototype.resetEditorTemplate = function () {
+        if (this.parent.editorTemplate) {
+            resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        }
     };
     EventWindow.prototype.refresh = function () {
         this.destroy();
@@ -7756,7 +7806,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.parent.quickPopup.quickPopupHide(true);
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
-            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+            this.updateEditorTemplate();
         }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
@@ -7780,10 +7830,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.setDialogContent = function () {
-        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        this.resetEditorTemplate();
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
-        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        this.updateEditorTemplate();
     };
     EventWindow.prototype.onBeforeOpen = function (args) {
         var _this = this;
@@ -7830,7 +7880,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.renderFormElements = function (form, args) {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+                this.resetEditorTemplate();
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach(function (node) { return remove(node); });
             }
@@ -9008,10 +9058,30 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         return this.element.querySelector('.' + FORM_CLASS).getAttribute('data-id');
     };
     EventWindow.prototype.getFormElements = function (className) {
+        var elements = [];
         if (className === EVENT_WINDOW_DIALOG_CLASS) {
-            return [].slice.call(this.element.querySelectorAll('.' + EVENT_FIELD$1));
+            elements = [].slice.call(this.element.querySelectorAll('.' + EVENT_FIELD$1));
         }
-        return [].slice.call(this.parent.element.querySelectorAll('.' + className + ' .' + EVENT_FIELD$1));
+        else {
+            elements = [].slice.call(this.parent.element.querySelectorAll('.' + className + ' .' + EVENT_FIELD$1));
+        }
+        if (!isBlazor()) {
+            return elements;
+        }
+        var validElements = [];
+        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+            var element = elements_1[_i];
+            if (element.classList.contains('e-control')) {
+                validElements.push(element);
+            }
+            else if (element.querySelector('.e-control')) {
+                validElements.push(element.querySelector('.e-control'));
+            }
+            else {
+                validElements.push(element);
+            }
+        }
+        return validElements;
     };
     EventWindow.prototype.getValueFromElement = function (element) {
         var value;
@@ -9144,22 +9214,22 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             var element = formelement_2[_i];
             var instance = void 0;
             if (element.classList.contains('e-datetimepicker')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
             else if (element.classList.contains('e-datepicker')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
             else if (element.classList.contains('e-checkbox')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
             else if (element.classList.contains('e-dropdownlist')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
             else if (element.classList.contains('e-multiselect')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
-            if (instance) {
-                instance.destroy();
+            if (instance && instance[0]) {
+                instance[0].destroy();
             }
         }
         if (this.buttonObj) {
@@ -9172,7 +9242,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
      * @private
      */
     EventWindow.prototype.destroy = function () {
-        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        this.resetEditorTemplate();
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
         }
@@ -10903,10 +10973,10 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
         }
         if (this.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this);
+            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this.timeScale);
         }
         if (this.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this);
+            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this.timeScale);
         }
     };
     Schedule.prototype.resetLayoutTemplates = function () {

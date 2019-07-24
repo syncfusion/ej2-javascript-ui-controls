@@ -410,6 +410,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     getPredicate(rule: RuleModel): Predicate;
     private getColumn;
+    private datePredicate;
     private arrayPredicate;
     private importRules;
     private renderGroup;

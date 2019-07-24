@@ -1384,14 +1384,15 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     };
     MenuBase.prototype.cmenuHandler = function (e) {
         e.preventDefault();
+        this.isCMenu = true;
+        this.pageX = e.changedTouches ? e.changedTouches[0].pageX + 1 : e.pageX + 1;
+        this.pageY = e.changedTouches ? e.changedTouches[0].pageY + 1 : e.pageY + 1;
         this.closeMenu(null, e);
-        if (this.canOpen(e.target)) {
-            if (e.changedTouches) {
-                this.openMenu(null, null, e.changedTouches[0].pageY + 1, e.changedTouches[0].pageX + 1, e);
+        if (this.isCMenu) {
+            if (this.canOpen(e.target)) {
+                this.openMenu(null, null, this.pageY, this.pageX, e);
             }
-            else {
-                this.openMenu(null, null, e.pageY + 1, e.pageX + 1, e);
-            }
+            this.isCMenu = false;
         }
     };
     MenuBase.prototype.closeMenu = function (ulIndex, e) {
@@ -1425,7 +1426,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     var popupEle;
                     var closeArgs;
                     var popupObj;
-                    if (!observedCloseArgs.cancel) {
+                    var isOpen = !observedCloseArgs.cancel;
+                    if (isOpen || _this.isCMenu) {
                         if (_this.isMenu) {
                             popupEle = closest(ul_1, '.' + POPUP);
                             if (_this.hamburgerMode) {
@@ -1443,21 +1445,30 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         }
                         closeArgs = { element: ul_1, parentItem: item_1, items: items_1 };
                         _this.trigger('onClose', closeArgs);
+                        _this.navIdx.pop();
                     }
-                    _this.navIdx.pop();
-                    if (!ulIndex && _this.navIdx.length) {
+                    if (_this.isCMenu) {
+                        if (_this.canOpen(e.target)) {
+                            _this.openMenu(null, null, _this.pageY, _this.pageX, e);
+                        }
+                        _this.isCMenu = false;
+                    }
+                    else if (isOpen && _this.hamburgerMode && ulIndex !== null) {
+                        _this.afterCloseMenu(e);
+                    }
+                    else if (isOpen && !ulIndex && _this.navIdx.length) {
                         _this.closeMenu(null, e);
                     }
-                    else if (!_this.isMenu && !ulIndex && _this.navIdx.length === 0 && !_this.isMenusClosed) {
+                    else if (isOpen && !_this.isMenu && !ulIndex && _this.navIdx.length === 0 && !_this.isMenusClosed) {
                         _this.isMenusClosed = true;
                         _this.closeMenu(0, e);
                     }
-                    else if (_this.isMenu && e && e.target &&
+                    else if (isOpen && _this.isMenu && e && e.target &&
                         _this.navIdx.length !== 0 && closest(e.target, '.e-menu-parent.e-control')) {
                         _this.closeMenu(0, e);
                     }
                     else {
-                        if (_this.keyType === 'right' || _this.keyType === 'click') {
+                        if (isOpen && (_this.keyType === 'right' || _this.keyType === 'click')) {
                             _this.afterCloseMenu(e);
                         }
                         else {
@@ -1533,7 +1544,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
             if (this.isMenu) {
                 this.popupWrapper = this.createElement('div', {
-                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-' + elemId + '-popup'
+                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-ej2menu-' + elemId + '-popup'
                 });
                 if (this.hamburgerMode) {
                     top = li.offsetHeight;
@@ -1917,7 +1928,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         var cli = this.getLI(trgt);
         var wrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
         var hdrWrapper = this.getWrapper();
-        var regex = new RegExp('-(.*)-popup');
+        var regex = new RegExp('-ej2menu-(.*)-popup');
         var ulId;
         var isDifferentElem = false;
         if (!wrapper) {
@@ -7823,7 +7834,13 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    this.setCssClass(this.element, newProp.cssClass, true);
+                    if (oldProp.cssClass !== '') {
+                        this.setCssClass(this.element, oldProp.cssClass, false);
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
+                    else {
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);
@@ -10569,13 +10586,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             this.destroyDrag();
         }
     };
+    // tslint:disable-next-line:max-func-body-length
     TreeView.prototype.initializeDrag = function () {
         var _this = this;
         var virtualEle;
         var proxy = this;
         this.dragObj = new Draggable(this.element, {
-            enableTailMode: true,
-            enableAutoScroll: true,
+            enableTailMode: true, enableAutoScroll: true,
             dragTarget: '.' + TEXTWRAP,
             helper: function (e) {
                 _this.dragTarget = e.sender.target;
@@ -10617,23 +10634,24 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 }
                 var eventArgs = _this.getDragEvent(e.event, _this, null, e.target, null, virtualEle, level);
                 if (eventArgs.draggedNode.classList.contains(EDITING)) {
-                    eventArgs.cancel = true;
+                    _this.dragCancelAction(virtualEle);
                 }
                 else {
-                    _this.trigger('nodeDragStart', eventArgs);
-                }
-                if (eventArgs.cancel) {
-                    detach(virtualEle);
-                    removeClass([_this.element], DRAGGING);
-                    _this.dragStartAction = false;
-                }
-                else {
-                    _this.dragStartAction = true;
+                    _this.trigger('nodeDragStart', eventArgs, function (observedArgs) {
+                        if (observedArgs.cancel) {
+                            _this.dragCancelAction(virtualEle);
+                        }
+                        else {
+                            _this.dragStartAction = true;
+                        }
+                    });
                 }
             },
             drag: function (e) {
-                _this.dragObj.setProperties({ cursorAt: { top: (!isNullOrUndefined(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
-                _this.dragAction(e, virtualEle);
+                if ((_this.isBlazorPlatform && _this.dragStartAction) || !_this.isBlazorPlatform) {
+                    _this.dragObj.setProperties({ cursorAt: { top: (!isNullOrUndefined(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
+                    _this.dragAction(e, virtualEle);
+                }
             },
             dragStop: function (e) {
                 removeClass([_this.element], DRAGGING);
@@ -10652,16 +10670,19 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 }
                 var eventArgs = _this.getDragEvent(e.event, _this, dropTarget, dropTarget, null, e.helper, level);
                 eventArgs.preventTargetExpand = preventTargetExpand;
-                _this.trigger('nodeDragStop', eventArgs);
-                _this.dragParent = eventArgs.draggedParentNode;
-                _this.preventExpand = eventArgs.preventTargetExpand;
-                if (eventArgs.cancel) {
-                    if (e.helper.parentNode) {
-                        detach(e.helper);
-                    }
-                    document.body.style.cursor = '';
+                if ((_this.isBlazorPlatform && _this.dragStartAction) || !_this.isBlazorPlatform) {
+                    _this.trigger('nodeDragStop', eventArgs, function (observedArgs) {
+                        _this.dragParent = observedArgs.draggedParentNode;
+                        _this.preventExpand = observedArgs.preventTargetExpand;
+                        if (observedArgs.cancel) {
+                            if (e.helper.parentNode) {
+                                detach(e.helper);
+                            }
+                            document.body.style.cursor = '';
+                        }
+                        _this.dragStartAction = false;
+                    });
                 }
-                _this.dragStartAction = false;
             }
         });
         this.dropObj = new Droppable(this.element, {
@@ -10677,6 +10698,11 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 _this.dropAction(e);
             }
         });
+    };
+    TreeView.prototype.dragCancelAction = function (virtualEle) {
+        detach(virtualEle);
+        removeClass([this.element], DRAGGING);
+        this.dragStartAction = false;
     };
     TreeView.prototype.dragAction = function (e, virtualEle) {
         var dropRoot = closest(e.target, '.' + DROPPABLE);

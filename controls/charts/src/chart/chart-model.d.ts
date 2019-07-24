@@ -427,14 +427,14 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers after chart load.
      * @event
-     * @blazorProperty 'Loaded'	 
+     * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before chart load.
      * @event
-     * @deprecated	 
+     * @deprecated
      */
     load?: EmitType<ILoadedEventArgs>;
 
@@ -583,8 +583,8 @@ export interface ChartModel extends ComponentModel{
 
     /**
      * Triggers after the zoom selection is completed.
-     * @event	
-     * @deprecated	 
+     * @event
+     * @deprecated
      */
 
     zoomComplete?: EmitType<IZoomCompleteEventArgs>;
@@ -612,7 +612,7 @@ export interface ChartModel extends ComponentModel{
 
     /**
      * Triggers when the point drag start.
-     * @event	 
+     * @event
      */
     dragStart?: EmitType<IDataEditingEventArgs>;
 

@@ -70,6 +70,15 @@ export class Resize implements IAction {
             this.parent.getColumns().map((x: Column) => x.field) : (typeof fName === 'string') ? [fName] : fName;
         this.findColumn(columnName);
     }
+
+    private autoFit(): void {
+        let newarray: string[] = this.parent.getColumns().filter((c: Column) => c.autoFit === true)
+            .map((c: Column) => c.field || c.headerText);
+        if (newarray.length > 0) {
+            this.autoFitColumns(newarray);
+        }
+    }
+
     /* tslint:disable-next-line:max-func-body-length */
     private resizeColumn(fName: string, index: number, id?: string): void {
         let gObj: IGrid = this.parent;
@@ -248,6 +257,7 @@ export class Resize implements IAction {
         }
         this.parent.on(events.headerRefreshed, this.refreshHeight, this);
         this.parent.on(events.initialEnd, this.wireEvents, this);
+        this.parent.on(events.contentReady, this.autoFit, this);
     }
     /**
      * @hidden

@@ -485,7 +485,7 @@ describe('Filtering module => ', () => {
         it('Filter boolean format true column testing', (done: Function) => {
             actionComplete = (args?: Object): void => {
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(35);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'Verified', 'equal', true, 'and', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'Verified', 'equal', true, 'and', false)).toBeTruthy();
                 done();
             };
             gridObj.actionComplete = actionComplete;
@@ -495,7 +495,7 @@ describe('Filtering module => ', () => {
         it('Filter boolean format 0 column testing', (done: Function) => {
             actionComplete = (args?: Object): void => {
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(36);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'Verified', 'equal', false, 'and', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'Verified', 'equal', false, 'and', false)).toBeTruthy();
                 done();
             };
             gridObj.actionComplete = actionComplete;
@@ -505,7 +505,7 @@ describe('Filtering module => ', () => {
         it('Filter boolean format 1 column testing', (done: Function) => {
             actionComplete = (args?: Object): void => {
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(35);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'Verified', 'equal', true, 'and', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'Verified', 'equal', true, 'and', false)).toBeTruthy();
                 done();
             };
             gridObj.actionComplete = actionComplete;
@@ -515,7 +515,7 @@ describe('Filtering module => ', () => {
         it('Filter boolean format false column testing', (done: Function) => {
             actionComplete = (args?: Object): void => {
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(36);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'Verified', 'equal', false, 'and', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'Verified', 'equal', false, 'and', false)).toBeTruthy();
                 done();
             };
             gridObj.actionComplete = actionComplete;
@@ -1571,4 +1571,67 @@ describe('Filtering module => ', () => {
         });
     });
 
+    describe('EJ2-26559 Api support enable case sensitivity menu filter check', ()=>{
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        let menuFilterObj: Function = (obj: PredicateModel, field?: string,
+            operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
+            let isEqual: boolean = true;
+            if (field) {
+                isEqual = isEqual && obj.field === field;
+            }
+            if (operator) {
+                isEqual = isEqual && obj.operator === operator;
+            }
+            if (value) {
+                isEqual = isEqual && obj.value === value;
+            }
+            if (matchCase) {
+                isEqual = isEqual && obj.matchCase === matchCase;
+            }
+            return isEqual;
+        };
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu'},
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID',  headerText: 'Customer ID', width: 120, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry', dataSource: foreigndata },
+                        { field: 'Freight',  headerText: 'Freight', width: 120},
+                        { field: 'ShipCountry',  headerText: 'Ship Country', width: 120 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it(' Filter CustomerID testing for matchcase default value true', (done: Function) => {
+            actionComplete = (args: any) => {
+                    (args.filterModel.dlgDiv.querySelector('.e-flmenu-input') as any).ej2_instances[0].value = 'A';        
+                    (args.filterModel.dlgDiv.querySelector('.e-flmenu-okbtn') as HTMLElement).click();
+                    expect(menuFilterObj(gridObj.filterSettings.columns[0], 'CustomerID', 'notequal', 'ANATR', 'and', true)).toBeFalsy();
+                    gridObj.actionComplete = null;
+                    done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[1] as HTMLElement).click();
+        });
+        it('Filter ShipCountry testing for matchcase default value true', (done: Function) => {
+            actionComplete = (args: any) => {
+                (args.filterModel.dlgDiv.querySelector('.e-flmenu-input') as any).ej2_instances[0].value = 'I';
+                (args.filterModel.dlgDiv.querySelector('.e-flmenu-okbtn') as HTMLElement).click();
+                expect(menuFilterObj(gridObj.filterSettings.columns[0], 'ShipCountry', 'contains', 'India', 'and', true)).toBeFalsy();
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[3] as HTMLElement).click();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
+        });
+    });
 });

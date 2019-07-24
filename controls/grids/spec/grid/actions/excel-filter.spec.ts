@@ -13,6 +13,7 @@ import { Selection } from '../../../src/grid/actions/selection';
 import { filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { PredicateModel } from '../../../src/grid/base/grid-model';
 
 Grid.Inject(Filter, Page, Selection, Group, Freeze);
 
@@ -491,6 +492,135 @@ describe('Excel Filter =>', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = drpdwn = getActualProperties = getString = null;
+        });
+    });
+
+    describe('EJ2-26559 enable case sensitivity check for Excel filter', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let excelFilter: Element;
+        let actionComplete: () => void;
+
+        let excelFilterObj: Function = (obj: PredicateModel, field?: string,
+            operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
+            let isEqual: boolean = true;
+            if (field) {
+                isEqual = isEqual && obj.field === field;
+            }
+            if (operator) {
+                isEqual = isEqual && obj.operator === operator;
+            }
+            if (value) {
+                isEqual = isEqual && obj.value === value;
+            }
+            if (matchCase) {
+                isEqual = isEqual && obj.matchCase === matchCase;
+            }
+            return isEqual;
+        };
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: false,
+                    filterSettings: { type: 'Excel', showFilterBarStatus: true },
+                    columns: [{ field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string', filter: {type: 'Excel'} },
+                    { field: 'Freight', format: 'C2', type: 'number' }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Filter OrderID dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    excelFilter = gridObj.element.querySelector('.e-excelfilter');
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('Filter OrderID testing for matchcase default value true', (done: Function) => {    
+            actionComplete = (args?: any): void => {               
+                expect(gridObj.filterSettings.columns.length).toBe(2);
+                expect(excelFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10248, 'or', true)).toBeFalsy();
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(69);                
+                expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                gridObj.actionComplete =null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (excelFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();
+            (excelFilter.querySelectorAll('.e-checkbox-wrapper')[2] as any).click(); 
+            excelFilter.querySelectorAll('button')[0].click();
+        });
+
+        it('Filter CustomerID dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    excelFilter = gridObj.element.querySelector('.e-excelfilter');
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('Filter CustomerID testing for matchcase default value true', (done: Function) => {
+            actionComplete = (args?: any): void => {               
+                expect(gridObj.filterSettings.columns.length).toBe(4);
+                expect(excelFilterObj(gridObj.filterSettings.columns[2], 'CustomerID', 'notequal', 'ANATR', 'and', true)).toBeFalsy();
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(66);
+                expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                gridObj.actionComplete =null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;                     
+            (excelFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();
+            (excelFilter.querySelectorAll('.e-checkbox-wrapper')[2] as any).click();
+            excelFilter.querySelectorAll('button')[0].click();
+        });
+
+        it('Filter Freight dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    excelFilter = gridObj.element.querySelector('.e-excelfilter');
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('Freight').querySelector('.e-filtermenudiv')));
+        });
+
+        it('Filter Freight testing for matchcase default value true', (done: Function) => {    
+            actionComplete = (args?: any): void => {       
+                expect(gridObj.filterSettings.columns.length).toBe(6);
+                expect(excelFilterObj(gridObj.filterSettings.columns[4], 'Freight', 'notequal', 0.12, 'and', true)).toBeFalsy();        
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(64);
+                expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                expect(gridObj.getColumnHeaderByField('Freight').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                gridObj.actionComplete =null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;                     
+            (excelFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();           
+            (excelFilter.querySelectorAll('.e-checkbox-wrapper')[2] as any).click(); 
+            excelFilter.querySelectorAll('button')[0].click();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = excelFilter = actionBegin = actionComplete = null;
         });
     });
 });

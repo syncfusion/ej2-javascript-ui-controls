@@ -77,8 +77,12 @@ export class LayerPanel {
     protected renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap): void {
         let center: Point = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel <= 1) {
             panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
+            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
+                panel.mapObject.tileTranslatePoint.x = 0;
+                panel.mapObject.tileTranslatePoint.y = 0;
+            }
         }
         panel.mapObject.tileTranslatePoint = panel.panTileMap(
             panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, center
@@ -618,7 +622,7 @@ export class LayerPanel {
                     }
                 }
             }
-        } else if (this.mapObject.isTileMap) {
+        } else if (this.mapObject.isTileMap && !isNullOrUndefined(this.mapObject.scale)) {
             for (let j: number = 0; j < layerElement.childElementCount; j++) {
                 childNode = layerElement.childNodes[j] as HTMLElement;
                 if (!(childNode.id.indexOf('_Markers_Group') > -1) &&

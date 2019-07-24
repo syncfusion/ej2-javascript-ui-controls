@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#236828` - Resolved the `accessibility` related issue in DatePicker.
+
 ## 17.2.35 (2019-07-17)
 
 ### DatePicker

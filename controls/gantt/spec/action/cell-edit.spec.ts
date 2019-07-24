@@ -1,6 +1,5 @@
 import { Inputs } from './../../src/gantt/actions/dialog-edit';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { EditType } from './../../src/gantt/base/enum';
 /**
  * Gantt taskbaredit spec
  */
@@ -58,14 +57,14 @@ describe('Gantt Edit module', () => {
                     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
                     columns: [
                         { field: 'TaskID', width: 60 },
-                        { field: 'TaskName', editType: EditType.String, width: 100 },
-                        { field: 'StartDate', editType: EditType.DatePicker, width: 100 },
-                        { field: 'EndDate', editType: EditType.DatePicker, width: 100 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
                         { field: 'Duration', width: 100 },
                         { field: 'Predecessor', width: 100 },
                         { field: 'Progress', width: 100 },
-                        { field: 'BaselineStartDate', editType: EditType.DatePicker, width: 100 },
-                        { field: 'BaselineEndDate', editType: EditType.DatePicker, width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
                         { field: 'Resource', width: 100 },
                         { field: 'Notes', width: 100 },
                         { field: 'Customcol', headerText: 'Custom Column', width: 100 }
@@ -196,6 +195,7 @@ describe('Gantt Edit module', () => {
             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(12)') as HTMLElement;
             triggerMouseEvent(element, 'click');
             expect(ganttObj.currentViewData[1]['Customcol']).toBe('updated');
+            expect(ganttObj.dataSource[0].subtasks[0]["Customcol"]).toBe('updated');
         });
         it('Editing parent taskbar', () => {
             ganttObj.dataBind();

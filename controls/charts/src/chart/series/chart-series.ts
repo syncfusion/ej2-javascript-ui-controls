@@ -1103,7 +1103,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
 
     private dataManagerSuccess(e: { result: Object, count: number }, chart: Chart, isRemoteData: boolean = true): void {
-        this.currentViewData = e.result !== '' ? e.result : [];
+        this.currentViewData = e.count ? e.result : [];
         if (this instanceof Series) {
             let argsData: ISeriesRenderEventArgs = {
                 name: seriesRender, series: this, data: this.currentViewData, fill: this.interior

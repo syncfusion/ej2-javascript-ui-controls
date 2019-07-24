@@ -709,6 +709,7 @@ export class TaskbarEdit {
     private updateEditedItem(): void {
         let item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let left: number;
+        let projectStartDate: Date;
         switch (this.taskBarEditAction) {
             case 'ProgressResizing':
                 this.parent.setRecordValue(
@@ -719,7 +720,7 @@ export class TaskbarEdit {
                 break;
             case 'LeftResizing':
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-                let projectStartDate: Date = this.getDateByLeft(left);
+                projectStartDate = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.endDate)) {
                     let endDate: Date = this.parent.dateValidationModule.getValidEndDate(item);
                     this.parent.setRecordValue('endDate', endDate, item, true);

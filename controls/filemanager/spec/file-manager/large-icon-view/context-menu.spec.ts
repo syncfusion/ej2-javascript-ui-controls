@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, folderRename, dataSortbySize, singleSelectionDetails, rename, data3, data4, data5, dataDelete, data6, data7, data8, data9, data12, data14, UploadData, data15, data11, accessData1, accessDetails1, accessDetails2, accessData2, data18, accessSearchData } from '../data';
+import { toolbarItems, toolbarItems1, data1, data2, folderRename, dataSortbySize, singleSelectionDetails, rename, data3, data4, data5, dataDelete, data6, data7, data8, data9, data12, data14, UploadData, data15, data11, accessData1, accessDetails1, accessDetails2, accessData2, data18, accessSearchData, data14Rename } from '../data';
 import { FileOpenEventArgs } from '../../../src/file-manager/base/interface';
 import { MenuOpenEventArgs, MenuClickEventArgs } from '../../../src';
 
@@ -439,7 +439,7 @@ describe('FileManager control LargeIcons view', () => {
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
-                responseText: JSON.stringify(rename)
+                responseText: JSON.stringify(data14Rename)
             });
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
@@ -447,7 +447,7 @@ describe('FileManager control LargeIcons view', () => {
                 let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
                 let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
                 expect(nli.length).toEqual(4);
-                expect(ntr.length).toEqual(5);
+                expect(ntr.length).toEqual(3);
                 expect(nar.length).toEqual(1);
                 expect(ntr[2].textContent).toBe("My Folder");
                 expect(nli[1].textContent).toBe("My Folder");

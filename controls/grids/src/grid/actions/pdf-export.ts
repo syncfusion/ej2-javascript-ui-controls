@@ -17,7 +17,7 @@ import { Data } from '../actions/data';
 import { ReturnType } from '../base/type';
 import { SummaryModelGenerator, GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
-import { compile, getEnumValue, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { compile, getEnumValue, isNullOrUndefined, detach, isBlazor } from '@syncfusion/ej2-base';
 import { CellType, PdfPageSize, PdfDashStyle, PdfPageNumberType, ExportType } from '../base/enum';
 import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { getValue } from '@syncfusion/ej2-base';
@@ -102,8 +102,12 @@ export class PdfExport {
             parent.expandedRows = getPrintGridModel(parent).expandedRows;
         }
         let args: Object = {
-            requestType: 'beforePdfExport', gridObject: parent, cancel: false
+            requestType: 'beforePdfExport', cancel: false
         };
+        if (!isBlazor()) {
+            let gridObject: string = 'gridObject';
+            args[gridObject] = parent;
+        }
         let can: string = 'cancel';
         parent.trigger(events.beforePdfExport, args);
         if (args[can] === true) {

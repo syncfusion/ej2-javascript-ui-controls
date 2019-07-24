@@ -387,7 +387,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node drag (move) starts.
-     * @deprecated
      * @event
      * @blazorProperty 'OnNodeDragStart'
      */
@@ -395,7 +394,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node drag (move) is stopped.
-     * @deprecated
      * @event
      * @blazorProperty 'OnNodeDragged'
      */
@@ -403,7 +401,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is dropped on target element successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeDropped'
      */

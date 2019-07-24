@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, uniqueID, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, uniqueID, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -4547,8 +4547,10 @@ class EventBase {
         });
         let templateElement;
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId = this.parent.currentView + '_headerTooltipTemplate';
-            templateElement = this.parent.getHeaderTooltipTemplate()(record, this.parent, 'headerTooltipTemplate', templateId, false);
+            let scheduleId = this.parent.element.id + '_';
+            let viewName = this.parent.activeViewOptions.eventTemplateName;
+            let templateId = scheduleId + viewName + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         }
         else {
             let appointmentSubject = createElement('div', {
@@ -5647,6 +5649,7 @@ class QuickPopups {
     }
     // tslint:disable-next-line:max-func-body-length
     cellClick(args) {
+        this.resetQuickPopupTemplates();
         if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
             this.quickPopupHide();
             return;
@@ -5773,6 +5776,7 @@ class QuickPopups {
     }
     // tslint:disable-next-line:max-func-body-length
     eventClick(events) {
+        this.resetQuickPopupTemplates();
         if (this.parent.eventTooltip) {
             this.parent.eventTooltip.close();
         }
@@ -6299,17 +6303,28 @@ class QuickPopups {
                 editIcon.focus();
             }
         }
-        this.updateQuickPopupTemplates();
     }
     updateQuickPopupTemplates() {
-        updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
-        updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
-        updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+        if (this.parent.quickInfoTemplates.header) {
+            updateBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate', this.parent.quickInfoTemplates);
+        }
+        if (this.parent.quickInfoTemplates.content) {
+            updateBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate', this.parent.quickInfoTemplates);
+        }
+        if (this.parent.quickInfoTemplates.footer) {
+            updateBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate', this.parent.quickInfoTemplates);
+        }
     }
     resetQuickPopupTemplates() {
-        resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
-        resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
-        resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        if (this.parent.quickInfoTemplates.header) {
+            resetBlazorTemplate(this.parent.element.id + '_headerTemplate', 'HeaderTemplate');
+        }
+        if (this.parent.quickInfoTemplates.content) {
+            resetBlazorTemplate(this.parent.element.id + '_contentTemplate', 'ContentTemplate');
+        }
+        if (this.parent.quickInfoTemplates.footer) {
+            resetBlazorTemplate(this.parent.element.id + '_footerTemplate', 'FooterTemplate');
+        }
     }
     quickPopupClose() {
         this.resetQuickPopupTemplates();
@@ -6428,6 +6443,11 @@ class EventTooltip {
             beforeRender: this.onBeforeRender.bind(this),
             enableRtl: this.parent.enableRtl
         });
+        if (isBlazor()) {
+            this.tooltipObj.beforeOpen = this.onBeforeOpen.bind(this);
+            this.tooltipObj.beforeClose = this.onBeforeClose.bind(this);
+            this.tooltipObj.animation = { close: { effect: 'None' } };
+        }
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
     }
@@ -6440,6 +6460,26 @@ class EventTooltip {
             targets.push('.' + APPOINTMENT_CLASS);
         }
         return targets.join(',');
+    }
+    onBeforeOpen() {
+        if (this.parent.group.headerTooltipTemplate) {
+            let templateId = this.parent.element.id + '_headerTooltipTemplate';
+            updateBlazorTemplate(templateId, 'HeaderTooltipTemplate', this.parent.group);
+        }
+        if (this.parent.eventSettings.tooltipTemplate) {
+            let templateId = this.parent.element.id + '_tooltipTemplate';
+            updateBlazorTemplate(templateId, 'TooltipTemplate', this.parent.eventSettings);
+        }
+    }
+    onBeforeClose() {
+        if (this.parent.group.headerTooltipTemplate) {
+            let templateId = this.parent.element.id + '_headerTooltipTemplate';
+            resetBlazorTemplate(templateId, 'HeaderTooltipTemplate');
+        }
+        if (this.parent.eventSettings.tooltipTemplate) {
+            let templateId = this.parent.element.id + '_tooltipTemplate';
+            resetBlazorTemplate(templateId, 'TooltipTemplate');
+        }
     }
     onBeforeRender(args) {
         if (!isNullOrUndefined(args.target.getAttribute('data-tooltip-id'))) {
@@ -6461,7 +6501,7 @@ class EventTooltip {
                 resourceData: resCollection.resourceData
             };
             let contentContainer = createElement('div');
-            let templateId = this.parent.currentView + '_headerTooltipTemplate';
+            let templateId = this.parent.element.id + '_headerTooltipTemplate';
             let tooltipTemplate = this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
@@ -6470,7 +6510,7 @@ class EventTooltip {
         let record = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             let contentContainer = createElement('div');
-            let templateId = this.parent.currentView + '_tooltipTemplate';
+            let templateId = this.parent.element.id + '_tooltipTemplate';
             let tooltipTemplate = this.parent.getEventTooltipTemplate()(record, this.parent, 'tooltipTemplate', templateId, false);
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
@@ -7615,13 +7655,23 @@ class EventWindow {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
-        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        this.updateEditorTemplate();
         addClass([this.element.parentElement], EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
         }
         this.applyFormValidation();
+    }
+    updateEditorTemplate() {
+        if (this.parent.editorTemplate) {
+            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        }
+    }
+    resetEditorTemplate() {
+        if (this.parent.editorTemplate) {
+            resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        }
     }
     refresh() {
         this.destroy();
@@ -7639,7 +7689,7 @@ class EventWindow {
         this.parent.quickPopup.quickPopupHide(true);
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
-            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+            this.updateEditorTemplate();
         }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
@@ -7663,10 +7713,10 @@ class EventWindow {
         }
     }
     setDialogContent() {
-        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        this.resetEditorTemplate();
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
-        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        this.updateEditorTemplate();
     }
     onBeforeOpen(args) {
         let eventProp = {
@@ -7712,7 +7762,7 @@ class EventWindow {
     renderFormElements(form, args) {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+                this.resetEditorTemplate();
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node) => remove(node));
             }
@@ -8875,10 +8925,29 @@ class EventWindow {
         return this.element.querySelector('.' + FORM_CLASS).getAttribute('data-id');
     }
     getFormElements(className) {
+        let elements = [];
         if (className === EVENT_WINDOW_DIALOG_CLASS) {
-            return [].slice.call(this.element.querySelectorAll('.' + EVENT_FIELD$1));
+            elements = [].slice.call(this.element.querySelectorAll('.' + EVENT_FIELD$1));
         }
-        return [].slice.call(this.parent.element.querySelectorAll('.' + className + ' .' + EVENT_FIELD$1));
+        else {
+            elements = [].slice.call(this.parent.element.querySelectorAll('.' + className + ' .' + EVENT_FIELD$1));
+        }
+        if (!isBlazor()) {
+            return elements;
+        }
+        let validElements = [];
+        for (let element of elements) {
+            if (element.classList.contains('e-control')) {
+                validElements.push(element);
+            }
+            else if (element.querySelector('.e-control')) {
+                validElements.push(element.querySelector('.e-control'));
+            }
+            else {
+                validElements.push(element);
+            }
+        }
+        return validElements;
     }
     getValueFromElement(element) {
         let value;
@@ -9010,22 +9079,22 @@ class EventWindow {
         for (let element of formelement) {
             let instance;
             if (element.classList.contains('e-datetimepicker')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
             else if (element.classList.contains('e-datepicker')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
             else if (element.classList.contains('e-checkbox')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
             else if (element.classList.contains('e-dropdownlist')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
             else if (element.classList.contains('e-multiselect')) {
-                instance = element.ej2_instances[0];
+                instance = element.ej2_instances;
             }
-            if (instance) {
-                instance.destroy();
+            if (instance && instance[0]) {
+                instance[0].destroy();
             }
         }
         if (this.buttonObj) {
@@ -9038,7 +9107,7 @@ class EventWindow {
      * @private
      */
     destroy() {
-        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        this.resetEditorTemplate();
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
         }
@@ -10548,10 +10617,10 @@ let Schedule = class Schedule extends Component {
             updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
         }
         if (this.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this);
+            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this.timeScale);
         }
         if (this.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this);
+            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this.timeScale);
         }
     }
     resetLayoutTemplates() {

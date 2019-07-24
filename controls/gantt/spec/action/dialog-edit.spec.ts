@@ -1,7 +1,7 @@
 /**
  * Gantt taskbaredit spec
  */
-import { Gantt, Edit, Toolbar, EditType } from '../../src/index';
+import { Gantt, Edit, Toolbar } from '../../src/index';
 import { dialogEditData, resourcesData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
@@ -42,14 +42,14 @@ let ganttModel: Object = {
     ],
     columns: [
         { field: 'TaskID', width: 60 },
-        { field: 'TaskName', editType: EditType, width: 100 },
-        { field: 'StartDate', editType: EditType.DatePicker, width: 100 },
-        { field: 'EndDate', editType: EditType.DatePicker, width: 100 },
+        { field: 'TaskName', width: 100 },
+        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
         { field: 'Duration', width: 100 },
         { field: 'Predecessor', width: 100 },
         { field: 'Progress', width: 100 },
-        { field: 'BaselineStartDate', editType: EditType.DatePicker, width: 100 },
-        { field: 'BaselineEndDate', editType: EditType.DatePicker, width: 100 },
+        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
         { field: 'Resource', width: 100 },
         { field: 'Notes', width: 100 },
         { field: 'Customcol', headerText: 'Custom Column', width: 100 }

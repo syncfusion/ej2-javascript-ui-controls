@@ -14,9 +14,13 @@ export class Row<T> {
 
     public tIndex: number;
 
+    public isCaptionRow: boolean;
+
     public changes: Object;
 
     public isDirty: boolean;
+
+    public aggregatesCount: number;
 
     public edit: string;
 

@@ -1,5 +1,5 @@
 import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, setValue, getValue, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, getValue, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';
 import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
 import { EventHandler, KeyboardEvents, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
@@ -90,6 +90,7 @@ export class SortDescriptor extends ChildProperty<SortDescriptor> {
     /** 
      * Defines the direction of sort column. 
      * @default ''
+     * @blazorDefaultValue null
      */
     @Property()
     public direction: SortDirection;
@@ -325,7 +326,16 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
     @Property(false)
     public ignoreAccent: boolean;
 
+    /**
+     * If `enableCaseSensitivity` is set to true then searches grid records with exact match based on the filter
+     * operator. It will have no effect on number, boolean and Date fields. 
+     * 
+     * @default false
+     */
+    @Property(false)
+    public enableCaseSensitivity: boolean;
 }
+
 
 /** 
  * Configures the selection behavior of the Grid. 
@@ -1335,7 +1345,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
 
     /**
-     * @hidden
      * It used to render toolbar template
      * @default null
      */
@@ -1343,7 +1352,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public toolbarTemplate: string;
 
     /**
-     * @hidden
      * It used to render pager template
      * @default null
      */
@@ -4296,12 +4304,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (let i: number = 0; i < this.columnModel.length; i++) {
 
                 if (this.columnModel[i].template) {
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i]);
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i], false);
                 }
                 if (this.columnModel[i].headerTemplate) {
                     updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
                 }
-                if (this.columnModel[i].filterTemplate) {
+                if (this.filterSettings.type == 'FilterBar' && this.columnModel[i].filterTemplate) {
+                    let fieldName: string = this.columnModel[i].field;
+                    let tempID: string = this.element.id + this.columnModel[i].uid + 'filterTemplate';
+                    let filteredColumns: PredicateModel[] = this.filterSettings.columns;
+                    for (let k: number = 0; k < filteredColumns.length; k++) {
+                        if (fieldName == filteredColumns[k].field) {
+                            blazorTemplates[tempID][0][fieldName] = filteredColumns[k].value;
+                        }
+                    }
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i], false);
+                }
+                if (this.filterSettings.type != 'FilterBar' && this.columnModel[i].filterTemplate) {
                     updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i]);
                 }
 

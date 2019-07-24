@@ -1064,6 +1064,7 @@ let DropDownBase = class DropDownBase extends Component {
      * Gets the data Object that matches the given value.
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
+     * @isGenericType true
      */
     getDataByValue(value) {
         if (!isNullOrUndefined(this.listData)) {
@@ -3092,7 +3093,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     if (!this.initRemoteRender) {
                         let li = this.getElementByText(newProp.text);
                         if (!this.checkValidLi(li)) {
-                            if (this.liCollections.length === 100 &&
+                            if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.text, oldProp.text, 'text');
                             }
@@ -3118,7 +3119,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     if (!this.initRemoteRender) {
                         let item = this.getElementByValue(newProp.value);
                         if (!this.checkValidLi(item)) {
-                            if (this.liCollections.length === 100 &&
+                            if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.value, oldProp.value, 'value');
                             }
@@ -3143,7 +3144,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     if (!this.initRemoteRender) {
                         let element = this.liCollections[newProp.index];
                         if (!this.checkValidLi(element)) {
-                            if (this.liCollections.length === 100 &&
+                            if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
                                 this.setSelectionData(newProp.index, oldProp.index, 'index');
                             }

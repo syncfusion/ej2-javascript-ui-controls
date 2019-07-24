@@ -33,7 +33,7 @@ export class InlineEditRender {
         }
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
-            tbody.querySelector('.e-emptyrow').classList.add('e-hide');
+            tbody.querySelector('.e-emptyrow').remove();
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
@@ -237,4 +237,3 @@ export class InlineEditRender {
         appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate'));
     }
 }
-

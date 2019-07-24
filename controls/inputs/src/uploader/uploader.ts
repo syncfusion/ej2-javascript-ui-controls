@@ -1524,7 +1524,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.checkActionComplete(true);
             }
         } else {
-            this.remove(fileData, false, false, args);
+            this.remove(fileData, false, false, true, args);
         }
         this.element.value = '';
         this.checkActionButtonStatus();
@@ -1569,7 +1569,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             eventArgs.currentRequest = ajax.httpRequest;
             if (!removeDirectly) {
                 this.trigger('removing', eventArgs, (eventArgs: RemovingEventArgs) => {
-                    if (!eventArgs.cancel) {
+                    if (eventArgs.cancel) {
+                        e.cancel = true;
+                    } else {
                         this.removingEventCallback(eventArgs, formData, selectedFiles, file);
                     }
                 });
@@ -3085,17 +3087,21 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { FileInfo | FileInfo[] } fileData - specifies the files data to remove from file list/server.
      * @param { boolean } customTemplate - Set true if the component rendering with customize template.
      * @param { boolean } removeDirectly - Set true if files remove without removing event.
+     * @param { boolean } postRawFile - Set false, to post file name only to the remove action.
      * @returns void
      */
     public remove(
         fileData?: FileInfo | FileInfo[], customTemplate?: boolean, removeDirectly?: boolean,
-        args?: MouseEvent | TouchEvent | KeyboardEventArgs): void {
+        postRawFile?: boolean, args?: MouseEvent | TouchEvent | KeyboardEventArgs): void {
+        if (isNullOrUndefined(postRawFile)) {
+            postRawFile = true;
+        }
         let eventArgs: RemovingEventArgs = {
             event: args,
             cancel: false,
             filesData: [],
             customFormData: [],
-            postRawFile: true
+            postRawFile: postRawFile
         };
         let index: number;
         if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {

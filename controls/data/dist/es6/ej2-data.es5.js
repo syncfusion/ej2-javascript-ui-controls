@@ -2412,6 +2412,40 @@ var DataUtil = /** @__PURE__ @class */ (function () {
                 }
             }
             return val;
+        },
+        /**
+         * It will replace the Date object with respective to UTC format value.
+         * @param  {string} key
+         * @param  {any} value
+         * @hidden
+         */
+        /* tslint:disable-next-line:no-any */
+        jsonDateReplacer: function (key, value) {
+            if (key === 'value' && value) {
+                if (typeof value === 'string') {
+                    var ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
+                    if (ms) {
+                        value = DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), null, true);
+                    }
+                    else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
+                        var arr = value.split(/[^0-9]/);
+                        value = DataUtil.dateParse
+                            .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), null, true);
+                    }
+                }
+                if (value instanceof Date) {
+                    value = DataUtil.dateParse.addSelfOffset(value);
+                    if (DataUtil.serverTimezoneOffset === null) {
+                        return DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(value), null).toJSON();
+                    }
+                    else {
+                        value = DataUtil.dateParse.toTimeZone(value, (((value.getTimezoneOffset() / 60) * 2)
+                            - DataUtil.serverTimezoneOffset), false);
+                        return value.toJSON();
+                    }
+                }
+            }
+            return value;
         }
     };
     /**
@@ -2899,7 +2933,7 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
         this.pvt = {};
         if (this.options.requestType === 'json') {
             return {
-                data: JSON.stringify(req),
+                data: JSON.stringify(req, DataUtil.parse.jsonDateReplacer),
                 url: url,
                 pvtData: p,
                 type: 'POST',
@@ -4100,7 +4134,8 @@ var RemoteSaveAdaptor = /** @__PURE__ @class */ (function (_super) {
         setValue('beforeSend', UrlAdaptor.prototype.beforeSend, _this);
         return _this;
     }
-    RemoteSaveAdaptor.prototype.insert = function (dm, data, tableName, query) {
+    RemoteSaveAdaptor.prototype.insert = function (dm, data, tableName, query, position) {
+        this.pvt.position = position;
         this.updateType = 'add';
         return {
             url: dm.dataSource.insertUrl || dm.dataSource.crudUrl || dm.dataSource.url,
@@ -4142,7 +4177,7 @@ var RemoteSaveAdaptor = /** @__PURE__ @class */ (function (_super) {
     RemoteSaveAdaptor.prototype.processResponse = function (data, ds, query, xhr, request, changes, e) {
         var i;
         if (this.updateType === 'add') {
-            _super.prototype.insert.call(this, ds, data);
+            _super.prototype.insert.call(this, ds, data, null, null, this.pvt.position);
         }
         if (this.updateType === 'update') {
             _super.prototype.update.call(this, ds, this.updateKey, data);

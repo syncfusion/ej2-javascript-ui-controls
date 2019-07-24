@@ -31,7 +31,7 @@ export interface SparklineModel extends ComponentModel{
      * To configure sparkline data source.
      * @default null
      */
-    dataSource?: DataManager | Object[];
+    dataSource?: Object[] | DataManager;
 
     /**
      * Specifies the query for filter the data.

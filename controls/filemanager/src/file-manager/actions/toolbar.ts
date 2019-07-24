@@ -40,22 +40,18 @@ export class Toolbar {
 
     private render(): void {
         this.items = this.toolbarItemData(this.getItems(this.parent.toolbarSettings.items.map((item: string) => item.trim())));
-        this.triggerToolbarCreate();
-        this.toolbarObj = new BaseToolbar({
-            items: this.items,
-            created: this.toolbarCreateHandler.bind(this),
-            overflowMode: 'Popup',
-            clicked: this.onClicked.bind(this),
-            enableRtl: this.parent.enableRtl
-        });
-        this.toolbarObj.isStringTemplate = true;
-        this.toolbarObj.appendTo('#' + this.parent.element.id + CLS.TOOLBAR_ID);
-    }
-
-    private triggerToolbarCreate(): void {
         let eventArgs: ToolbarCreateEventArgs = { items: this.items };
         this.parent.trigger('toolbarCreate', eventArgs, (toolbarCreateArgs: ToolbarCreateEventArgs) => {
             this.items = toolbarCreateArgs.items;
+            this.toolbarObj = new BaseToolbar({
+                items: this.items,
+                created: this.toolbarCreateHandler.bind(this),
+                overflowMode: 'Popup',
+                clicked: this.onClicked.bind(this),
+                enableRtl: this.parent.enableRtl
+            });
+            this.toolbarObj.isStringTemplate = true;
+            this.toolbarObj.appendTo('#' + this.parent.element.id + CLS.TOOLBAR_ID);
         });
     }
 
@@ -355,10 +351,12 @@ export class Toolbar {
     private reRenderToolbar(e: NotifyArgs): void {
         if (e.newProp.toolbarSettings.items !== undefined) {
             this.items = this.toolbarItemData(this.getItems(e.newProp.toolbarSettings.items.map((item: string) => item.trim())));
-            this.triggerToolbarCreate();
-            this.toolbarObj.items = this.items;
-            this.toolbarObj.dataBind();
-            this.toolbarCreateHandler();
+            let eventArgs: ToolbarCreateEventArgs = { items: this.items };
+            this.parent.trigger('toolbarCreate', eventArgs, (toolbarCreateArgs: ToolbarCreateEventArgs) => {
+                this.items = toolbarCreateArgs.items; this.toolbarObj.items = this.items;
+                this.toolbarObj.dataBind();
+                this.toolbarCreateHandler();
+            });
         }
     }
 

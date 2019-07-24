@@ -1,7 +1,7 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, closest, compile, createElement, deleteObject, extend, formatUnit, getValue, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Edit, Filter, ForeignKey, Grid, Page, Predicate, Selection, Toolbar, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
-import { CacheAdaptor, DataManager, DataUtil, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
+import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { ContextMenu, Edit as Edit$1, Filter as Filter$1, Reorder, Resize, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
 import { MaskedTextBox, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBoxSelection, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
@@ -84,46 +84,6 @@ function getIndex(value, key1, collection, key2) {
     }
     return index;
 }
-
-/**
- * @hidden
- */
-var DurationUnits;
-(function (DurationUnits) {
-    DurationUnits["Minute"] = "minute";
-    DurationUnits["Hour"] = "hour";
-    DurationUnits["Day"] = "day";
-})(DurationUnits || (DurationUnits = {}));
-/**
- * To define edit type value for columns
- * @hidden
- */
-var EditType;
-(function (EditType) {
-    EditType["Boolean"] = "booleanedit";
-    EditType["DropDown"] = "dropdownedit";
-    EditType["DatePicker"] = "datepickeredit";
-    EditType["DateTimePicker"] = "datetimepickeredit";
-    EditType["Masked"] = "maskededit";
-    EditType["Numeric"] = "numericedit";
-    EditType["String"] = "stringedit";
-})(EditType || (EditType = {}));
-/**
- * @hidden
- */
-var TemplateName;
-(function (TemplateName) {
-    TemplateName["Parent"] = "ParentTaskbarTemplate";
-    TemplateName["Child"] = "TaskbarTemplate";
-    TemplateName["Milestone"] = "MilestoneTemplate";
-    TemplateName["LeftLabel"] = "LeftLabelTemplate";
-    TemplateName["RightLabel"] = "RightLabelTemplate";
-    TemplateName["TaskLabel"] = "TaskLabelTemplate";
-    TemplateName["TaskbarTooltip"] = "TooltipTaskbarTemplate";
-    TemplateName["BaselineTooltip"] = "TooltipBaselineTemplate";
-    TemplateName["ConnectorLineTooltip"] = "TooltipConnectorLineTemplate";
-    TemplateName["EditingTooltip"] = "TooltipEditingTemplate";
-})(TemplateName || (TemplateName = {}));
 
 /**
  *  Date processor is used to handle date of task data.
@@ -426,10 +386,10 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
         var timeDiff = this.getTimeDifference(startDate, endDate, isCheckTimeZone) / 1000;
         var nonWorkHours = this.getNonworkingTime(startDate, endDate, isAutoSchedule, isCheckTimeZone);
         var durationHours = timeDiff - nonWorkHours;
-        if (!durationUnit || durationUnit === DurationUnits.Day) {
+        if (!durationUnit || durationUnit === 'day') {
             durationValue = durationHours / this.parent.secondsPerDay;
         }
-        else if (durationUnit === DurationUnits.Minute) {
+        else if (durationUnit === 'minute') {
             durationValue = durationHours / 60;
         }
         else {
@@ -444,10 +404,10 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
      */
     DateProcessor.prototype.getDurationAsSeconds = function (duration, durationUnit) {
         var value = 0;
-        if (!durationUnit || durationUnit === DurationUnits.Day.toString()) {
+        if (!durationUnit || durationUnit === 'day') {
             value = this.parent.secondsPerDay * duration;
         }
-        else if (durationUnit === DurationUnits.Hour.toString()) {
+        else if (durationUnit === 'hour') {
             value = duration * 3600;
         }
         else {
@@ -665,13 +625,13 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
                 duration = parseFloat(values[0].toString().trim());
                 var unit = values[1] ? values[1].toString().trim().toLowerCase() : null;
                 if (getValue('minute', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Minute.toString();
+                    durationUnit = 'minute';
                 }
                 else if (getValue('hour', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Hour.toString();
+                    durationUnit = 'hour';
                 }
                 else if (getValue('day', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Day.toString();
+                    durationUnit = 'day';
                 }
             }
         }
@@ -1053,15 +1013,15 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
             value += parseFloat(duration.toFixed(2)) + ' ';
             if (!isNullOrUndefined(durationUnit)) {
                 var plural = duration !== 1;
-                if (durationUnit === DurationUnits.Day) {
-                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant(DurationUnits.Day);
+                if (durationUnit === 'day') {
+                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
                 }
-                else if (durationUnit === DurationUnits.Hour) {
-                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant(DurationUnits.Hour);
+                else if (durationUnit === 'hour') {
+                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
                 }
-                else if (durationUnit === DurationUnits.Minute) {
+                else if (durationUnit === 'minute') {
                     value += plural ? this.parent.localeObj.getConstant('minutes') :
-                        this.parent.localeObj.getConstant(DurationUnits.Minute);
+                        this.parent.localeObj.getConstant('minute');
                 }
             }
         }
@@ -1945,13 +1905,13 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
     TaskProcessor.prototype.validateDurationUnitMapping = function (durationUnit) {
         var unit = durationUnit;
         if (unit === 'minute') {
-            unit = DurationUnits.Minute;
+            unit = 'minute';
         }
         else if (unit === 'hour') {
-            unit = DurationUnits.Hour;
+            unit = 'hour';
         }
         else if (unit === 'day') {
-            unit = DurationUnits.Day;
+            unit = 'day';
         }
         else {
             unit = this.parent.durationUnit.toLocaleLowerCase();
@@ -3668,7 +3628,7 @@ var Timeline = /** @__PURE__ @class */ (function () {
                 lastDay.setHours(24, 0, 0, 0);
                 dayIntervel = startDate.getDay() < dayIndex ? dayIntervel > 0 ?
                     dayIntervel - 1 : dayIntervel : dayIntervel;
-                lastDay.setDate(lastDay.getDate() + (dayIntervel + (6 * count)));
+                lastDay.setDate(lastDay.getDate() + (dayIntervel + (7 * count)));
                 increment = ((lastDay.getTime() - firstDay.getTime()));
                 break;
             case 'Day':
@@ -5565,12 +5525,12 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         var childTaskbarNode = null;
         var data = this.templateData;
         if (this.childTaskbarTemplateFunction) {
-            childTaskbarNode = this.childTaskbarTemplateFunction(extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.Child, this.getTemplateID(TemplateName.Child), false);
+            childTaskbarNode = this.childTaskbarTemplateFunction(extend({ index: i }, data), this.parent, 'TaskbarTemplate', this.getTemplateID('TaskbarTemplate'), false);
         }
         else {
             var labelString = '';
             if (this.taskLabelTemplateFunction) {
-                var taskLabelTemplateNode = this.taskLabelTemplateFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.TaskLabel, this.getTemplateID(TemplateName.TaskLabel), false);
+                var taskLabelTemplateNode = this.taskLabelTemplateFunction(extend({ index: i }, data), this.parent, 'TaskLabelTemplate', this.getTemplateID('TaskLabelTemplate'), false);
                 var tempDiv = createElement('div');
                 tempDiv.appendChild(taskLabelTemplateNode[0]);
                 labelString = tempDiv.innerHTML;
@@ -5616,7 +5576,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         var milestoneNode = null;
         var data = this.templateData;
         if (this.milestoneTemplateFunction) {
-            milestoneNode = this.milestoneTemplateFunction(extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.Milestone, this.getTemplateID(TemplateName.Milestone), false);
+            milestoneNode = this.milestoneTemplateFunction(extend({ index: i }, data), this.parent, 'MilestoneTemplate', this.getTemplateID('MilestoneTemplate'), false);
         }
         else {
             var template = '<div class="' + traceMilestone + '" style="position:absolute;">' +
@@ -5682,7 +5642,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         var leftLabelNode = this.leftLabelContainer();
         var leftLabelTemplateNode = null;
         if (this.leftTaskLabelTemplateFunction) {
-            leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.LeftLabel, this.getTemplateID(TemplateName.LeftLabel), false);
+            leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(extend({ index: i }, this.templateData), this.parent, 'LeftLabelTemplate', this.getTemplateID('LeftLabelTemplate'), false);
         }
         else {
             var field = this.parent.labelSettings.leftLabel;
@@ -5710,7 +5670,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         var rightLabelNode = this.rightLabelContainer();
         var rightLabelTemplateNode = null;
         if (this.rightTaskLabelTemplateFunction) {
-            rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.RightLabel, this.getTemplateID(TemplateName.RightLabel), false);
+            rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(extend({ index: i }, this.templateData), this.parent, 'RightLabelTemplate', this.getTemplateID('RightLabelTemplate'), false);
         }
         else {
             var field = this.parent.labelSettings.rightLabel;
@@ -5735,14 +5695,14 @@ var ChartRows = /** @__PURE__ @class */ (function () {
      */
     ChartRows.prototype.getParentTaskbarNode = function (i) {
         var parentTaskbarNode = null;
+        var data = this.templateData;
         if (this.parentTaskbarTemplateFunction) {
-            parentTaskbarNode = this.parentTaskbarTemplateFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, TemplateName.Parent, this.getTemplateID(TemplateName.Parent), false);
+            parentTaskbarNode = this.parentTaskbarTemplateFunction(extend({ index: i }, data), this.parent, 'ParentTaskbarTemplate', this.getTemplateID('ParentTaskbarTemplate'), false);
         }
         else {
-            var data = this.templateData;
             var labelString = '';
             if (this.taskLabelTemplateFunction) {
-                var parentTaskLabelNode = this.taskLabelTemplateFunction(extend({ index: i }, this.getTemplateData(data)), this.parent, TemplateName.TaskLabel, this.getTemplateID(TemplateName.TaskLabel), false);
+                var parentTaskLabelNode = this.taskLabelTemplateFunction(extend({ index: i }, data), this.parent, 'TaskLabelTemplate', this.getTemplateID('TaskLabelTemplate'), false);
                 var div = createElement('div');
                 div.appendChild(parentTaskLabelNode[0]);
                 labelString = div.innerHTML;
@@ -5831,28 +5791,6 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         var ganttID = this.parent.element.id;
         return ganttID + templateName;
     };
-    /** @private */
-    ChartRows.prototype.getTemplateData = function (data) {
-        var templateData = extend({}, {}, data.taskData, true);
-        var predecessorName = data.ganttProperties.predecessorsName;
-        templateData.hasChildRecords = data.hasChildRecords;
-        templateData.expanded = data.expanded;
-        templateData.index = data.index;
-        templateData.level = data.level;
-        templateData.taskStartDate = data.ganttProperties.startDate;
-        templateData.taskEndDate = data.ganttProperties.endDate;
-        templateData.taskDuration = data.ganttProperties.duration;
-        templateData.taskDurationUnit = data.ganttProperties.durationUnit;
-        templateData.taskResourceNames = data.ganttProperties.resourceNames;
-        templateData.isMilestone = data.ganttProperties.isMilestone;
-        templateData.isAutoSchedule = data.ganttProperties.isAutoSchedule;
-        templateData.left = data.ganttProperties.left;
-        templateData.width = data.ganttProperties.width;
-        templateData.baselineWidth = data.ganttProperties.baselineWidth;
-        templateData.progressWidth = data.ganttProperties.progressWidth;
-        templateData.taskPredecessorsName = !isNullOrUndefined(predecessorName) ? predecessorName : '';
-        return templateData;
-    };
     ChartRows.prototype.updateTaskbarBlazorTemplate = function (isUpdate, ganttData) {
         var isMilestone = true;
         var isParent = true;
@@ -5870,50 +5808,50 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         }
         if (this.parentTaskbarTemplateFunction && isParent) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Parent), TemplateName.Parent, this.parent);
+                updateBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate', this.parent);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.Parent), TemplateName.Parent);
+                resetBlazorTemplate(this.getTemplateID('ParentTaskbarTemplate'), 'ParentTaskbarTemplate');
             }
         }
         if (this.childTaskbarTemplateFunction && isChild) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Child), TemplateName.Child, this.parent);
+                updateBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate', this.parent);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.Child), TemplateName.Child);
+                resetBlazorTemplate(this.getTemplateID('TaskbarTemplate'), 'TaskbarTemplate');
             }
         }
         if (this.milestoneTemplateFunction && isMilestone) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.Milestone), TemplateName.Milestone, this.parent);
+                updateBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate', this.parent);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.Milestone), TemplateName.Milestone);
+                resetBlazorTemplate(this.getTemplateID('MilestoneTemplate'), 'MilestoneTemplate');
             }
         }
         if (this.leftTaskLabelTemplateFunction) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.LeftLabel), TemplateName.LeftLabel, this.parent.labelSettings);
+                updateBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate', this.parent.labelSettings);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.LeftLabel), TemplateName.LeftLabel);
+                resetBlazorTemplate(this.getTemplateID('LeftLabelTemplate'), 'LeftLabelTemplate');
             }
         }
         if (this.rightTaskLabelTemplateFunction) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.RightLabel), TemplateName.RightLabel, this.parent.labelSettings);
+                updateBlazorTemplate(this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate', this.parent.labelSettings);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.RightLabel), TemplateName.RightLabel);
+                resetBlazorTemplate(this.getTemplateID('RightLabelTemplate'), 'RightLabelTemplate');
             }
         }
         if (this.taskLabelTemplateFunction && (isParent || isChild)) {
             if (isUpdate) {
-                updateBlazorTemplate(this.getTemplateID(TemplateName.TaskLabel), TemplateName.TaskLabel, this.parent.labelSettings);
+                updateBlazorTemplate(this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate', this.parent.labelSettings);
             }
             else {
-                resetBlazorTemplate(this.getTemplateID(TemplateName.TaskLabel), TemplateName.TaskLabel);
+                resetBlazorTemplate(this.getTemplateID('TaskLabelTemplate'), 'TaskLabelTemplate');
             }
         }
     };
@@ -6240,7 +6178,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
                 taskIndicatorNode = this.getIndicatorNode(indicators[indicatorIndex]);
                 if (indicators[indicatorIndex].name.indexOf('$') > -1 || indicators[indicatorIndex].name.indexOf('#') > -1) {
                     taskIndicatorTextFunction = this.templateCompiler(indicators[indicatorIndex].name);
-                    taskIndicatorTextNode = taskIndicatorTextFunction(extend({ index: i }, this.getTemplateData(this.templateData)), this.parent, 'indicatorLabelText');
+                    taskIndicatorTextNode = taskIndicatorTextFunction(extend({ index: i }, this.templateData), this.parent, 'indicatorLabelText');
                 }
                 else {
                     var text = createElement('Text');
@@ -6702,13 +6640,13 @@ var Dependency = /** @__PURE__ @class */ (function () {
                 duration = parseFloat(values[0]);
                 durationUnit = values[1] ? (values[1].toLowerCase()).trim() : '';
                 if (getValue('minute', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Minute;
+                    durationUnit = 'minute';
                 }
                 else if (getValue('hour', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Hour;
+                    durationUnit = 'hour';
                 }
                 else if (getValue('day', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Day;
+                    durationUnit = 'day';
                 }
                 else {
                     durationUnit = this.parent.durationUnit.toLocaleLowerCase();
@@ -8915,6 +8853,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
         var argsData = {
             data: {},
             args: args,
+            cancel: false,
             content: ''
         };
         if (args.target.classList.contains('e-header-cell-label')) {
@@ -8939,7 +8878,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
                     args.target.classList.contains('e-taskbar-right-resizer')) {
                     var taskbarTemplateNode = void 0;
                     if (parent.tooltipSettings.taskbar) {
-                        taskbarTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.taskbar, parent, data, TemplateName.TaskbarTooltip);
+                        taskbarTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.taskbar, parent, data, 'TooltipTaskbarTemplate');
                     }
                     argsData.content = this.toolTipObj.content = taskbarTemplateNode ? taskbarTemplateNode[0] :
                         parent.tooltipModule.getTooltipContent((data.ganttProperties.isMilestone ? 'milestone' : 'taskbar'), data, parent, args);
@@ -8947,7 +8886,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
                 else if (args.target.classList.contains('e-baseline-bar')) {
                     var baseLineTemplateNode = void 0;
                     if ((parent.tooltipSettings.baseline)) {
-                        baseLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.baseline, parent, data, TemplateName.BaselineTooltip);
+                        baseLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.baseline, parent, data, 'TooltipBaselineTemplate');
                     }
                     argsData.content = this.toolTipObj.content = baseLineTemplateNode ? baseLineTemplateNode[0] :
                         parent.tooltipModule.getTooltipContent('baseline', data, parent, args);
@@ -8960,7 +8899,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
                     parent.tooltipModule.predecessorTooltipData = parent.tooltipModule.getPredecessorTooltipData(args);
                     argsData.data = this.predecessorTooltipData;
                     if ((parent.tooltipSettings.connectorLine)) {
-                        dependencyLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.connectorLine, parent, parent.tooltipModule.predecessorTooltipData, TemplateName.ConnectorLineTooltip);
+                        dependencyLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.connectorLine, parent, parent.tooltipModule.predecessorTooltipData, 'TooltipConnectorLineTemplate');
                     }
                     argsData.content = this.toolTipObj.content = dependencyLineTemplateNode ?
                         dependencyLineTemplateNode[0] :
@@ -8983,11 +8922,18 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
             }
         }
         if (args.cancel === false) {
-            parent.trigger('beforeTooltipRender', argsData);
+            var callBackPromise_1 = new Deferred();
+            parent.trigger('beforeTooltipRender', argsData, function (argsData) {
+                callBackPromise_1.resolve(argsData);
+                if (argsData.cancel) {
+                    args.cancel = true;
+                }
+            });
             if (!this.parent.isAdaptive && args.event.type === 'mouseover') {
                 this.currentTarget = args.target;
                 EventHandler.add(this.currentTarget, 'mousemove', this.mouseMoveHandler.bind(this));
             }
+            return callBackPromise_1;
         }
     };
     Tooltip$$1.prototype.tooltipCloseHandler = function (args) {
@@ -9161,16 +9107,8 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
      */
     Tooltip$$1.prototype.templateCompiler = function (template, parent, data, propName) {
         var tooltipFunction = parent.chartRowsModule.templateCompiler(template);
-        var ganttData = data;
-        var templateData = {};
         var templateID = parent.chartRowsModule.getTemplateID(propName);
-        if (!isNullOrUndefined(ganttData.ganttProperties)) {
-            templateData = parent.chartRowsModule.getTemplateData(ganttData);
-        }
-        else {
-            templateData = data;
-        }
-        var templateNode = tooltipFunction(extend({ index: 0 }, templateData), parent, propName, templateID, true);
+        var templateNode = tooltipFunction(extend({ index: 0 }, data), parent, propName, templateID, true);
         return templateNode;
     };
     Tooltip$$1.prototype.destroy = function () {
@@ -11641,7 +11579,8 @@ var CellEdit = /** @__PURE__ @class */ (function () {
                 this.notedEdited(editedArgs);
             }
             else {
-                this.parent.setRecordValue('taskData.' + column.field, data[this.parent.taskFields.name], data);
+                this.parent.setRecordValue('taskData.' + column.field, editedArgs.data[column.field], editedArgs.data);
+                this.parent.editModule.initiateSaveAction(editedArgs);
             }
         }
         else {
@@ -11964,7 +11903,7 @@ var EditTooltip = /** @__PURE__ @class */ (function () {
         var instance = this.parent.globalize;
         var editRecord = this.taskbarEdit.taskBarEditRecord.ganttProperties;
         if (this.parent.tooltipSettings.editing) {
-            var templateNode = this.parent.tooltipModule.templateCompiler(this.parent.tooltipSettings.editing, this.parent, editRecord, TemplateName.EditingTooltip);
+            var templateNode = this.parent.tooltipModule.templateCompiler(this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
             tooltipString = templateNode[0];
         }
         else {
@@ -12691,13 +12630,14 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
     TaskbarEdit.prototype.updateEditedItem = function () {
         var item = this.taskBarEditRecord.ganttProperties;
         var left;
+        var projectStartDate;
         switch (this.taskBarEditAction) {
             case 'ProgressResizing':
                 this.parent.setRecordValue('progress', this.getProgressPercent(item.width, item.progressWidth), item, true);
                 break;
             case 'LeftResizing':
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
-                var projectStartDate = this.getDateByLeft(left);
+                projectStartDate = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.endDate)) {
                     var endDate_1 = this.parent.dateValidationModule.getValidEndDate(item);
                     this.parent.setRecordValue('endDate', endDate_1, item, true);
@@ -13832,14 +13772,14 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             floatLabelType: 'Auto',
         };
         switch (column.editType) {
-            case EditType.Boolean:
+            case 'booleanedit':
                 var checkboxModel = {
                     label: column.headerText,
                     locale: locale,
                 };
                 fieldsModel[column.field] = checkboxModel;
                 break;
-            case EditType.String:
+            case 'stringedit':
                 var textBox = common;
                 if (column.field === ganttObj.columnMapping.duration) {
                     textBox.change = function (args) {
@@ -13848,11 +13788,11 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 }
                 fieldsModel[column.field] = common;
                 break;
-            case EditType.Numeric:
+            case 'numericedit':
                 var numeric = common;
                 fieldsModel[column.field] = numeric;
                 break;
-            case EditType.DatePicker:
+            case 'datepickeredit':
                 var datePickerObj = common;
                 datePickerObj.format = this.parent.dateFormat;
                 datePickerObj.strictMode = true;
@@ -13866,7 +13806,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 }
                 fieldsModel[column.field] = datePickerObj;
                 break;
-            case EditType.DateTimePicker:
+            case 'datetimepickeredit':
                 var dateTimePickerObj = common;
                 dateTimePickerObj.format = this.parent.dateFormat;
                 dateTimePickerObj.strictMode = true;
@@ -13880,10 +13820,10 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 }
                 fieldsModel[column.field] = dateTimePickerObj;
                 break;
-            case EditType.DropDown:
+            case 'dropdownedit':
                 fieldsModel[column.field] = common;
                 break;
-            case EditType.Masked:
+            case 'maskededit':
                 fieldsModel[column.field] = common;
                 break;
         }
@@ -13929,7 +13869,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         var columnName = getValue(ganttField, ganttObj.columnMapping);
         var col = ganttObj.columnByField[columnName];
         var tempValue;
-        if (col.editType === EditType.String) {
+        if (col.editType === 'stringedit') {
             var textBox = dialog.querySelector('#' + ganttId + columnName).ej2_instances[0];
             tempValue = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             if (textBox.value !== tempValue) {
@@ -13937,8 +13877,8 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 textBox.dataBind();
             }
         }
-        else if (col.editType === EditType.DatePicker || col.editType === EditType.DateTimePicker) {
-            var picker = col.editType === EditType.DatePicker ?
+        else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
+            var picker = col.editType === 'datepickeredit' ?
                 dialog.querySelector('#' + ganttId + columnName).ej2_instances[0] :
                 dialog.querySelector('#' + ganttId + columnName).ej2_instances[0];
             tempValue = ganttProp[ganttField];
@@ -14119,14 +14059,14 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             }
             else if (fields[i].toLowerCase() === 'name') {
                 column = {
-                    field: 'name', headerText: this.localeObj.getConstant('name'), editType: EditType.String, width: '250px',
+                    field: 'name', headerText: this.localeObj.getConstant('name'), editType: 'stringedit', width: '250px',
                     validationRules: { required: true }
                 };
                 columns.push(column);
             }
             else if (fields[i].toLowerCase() === 'type') {
                 column = {
-                    field: 'type', headerText: this.localeObj.getConstant('type'), editType: EditType.DropDown,
+                    field: 'type', headerText: this.localeObj.getConstant('type'), editType: 'dropdownedit',
                     dataSource: this.types, foreignKeyField: 'id', foreignKeyValue: 'text',
                     defaultValue: 'FS', validationRules: { required: true }, width: '150px'
                 };
@@ -14134,7 +14074,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             }
             else if (fields[i].toLowerCase() === 'offset') {
                 column = {
-                    field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: EditType.String,
+                    field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
                     defaultValue: '0 days', validationRules: { required: true }, width: '100px'
                 };
                 columns.push(column);
@@ -14837,7 +14777,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 var column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 var value = data[key];
-                if (column.editType === EditType.DatePicker || column.editType === EditType.DateTimePicker) {
+                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
                 var ganttPropKey = ganttPropByMapping[key];
@@ -14860,7 +14800,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 var column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 var value = data[key];
-                if (column.editType === EditType.DatePicker || column.editType === EditType.DateTimePicker) {
+                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
@@ -15281,6 +15221,10 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     *
+     * @private
+     */
     Edit$$1.prototype.initiateSaveAction = function (args) {
         var _this = this;
         this.parent.showSpinner();
@@ -17137,86 +17081,91 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
         return this.predefinedItems[itemName] || { text: itemName, id: this.id + '_' + itemName };
     };
     Toolbar$$1.prototype.toolbarClickHandler = function (args) {
+        var _this = this;
         var gObj = this.parent;
         var gID = this.id;
         extend(args, { cancel: false });
-        gObj.trigger(toolbarClick, args);
-        if (args.cancel) {
-            return;
-        }
-        if (this.parent.isAdaptive === true) {
-            if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
-                || args.item.id === gID + '_searchbutton' || args.item.id === gID + '_expandall' || args.item.id === gID + '_collapseall') {
-                if (this.parent.selectionModule && this.parent.selectionSettings.type === 'Multiple') {
-                    this.parent.selectionModule.hidePopUp();
-                    document.getElementsByClassName('e-gridpopup')[0].style.display = 'none';
+        gObj.trigger(toolbarClick, args, function (args) {
+            if (args.cancel) {
+                return;
+            }
+            else {
+                if (_this.parent.isAdaptive === true) {
+                    if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
+                        || args.item.id === gID + '_searchbutton' || args.item.id === gID + '_expandall'
+                        || args.item.id === gID + '_collapseall') {
+                        if (_this.parent.selectionModule && _this.parent.selectionSettings.type === 'Multiple') {
+                            _this.parent.selectionModule.hidePopUp();
+                            document.getElementsByClassName('e-gridpopup')[0].style.display = 'none';
+                        }
+                    }
+                }
+                switch (!isNullOrUndefined(args.item) && args.item.id) {
+                    case gID + '_edit':
+                        if (gObj.editModule && gObj.editSettings.allowEditing) {
+                            gObj.editModule.dialogModule.openToolbarEditDialog();
+                        }
+                        break;
+                    case gID + '_update':
+                        gObj.editModule.cellEditModule.isCellEdit = false;
+                        gObj.treeGrid.endEdit();
+                        break;
+                    case gID + '_cancel':
+                        gObj.cancelEdit();
+                        break;
+                    case gID + '_add':
+                        if (gObj.editModule && gObj.editSettings.allowAdding) {
+                            gObj.editModule.dialogModule.openAddDialog();
+                        }
+                        break;
+                    case gID + '_delete':
+                        if (_this.parent.selectionModule && _this.parent.editModule) {
+                            if ((_this.parent.selectionSettings.mode !== 'Cell' && _this.parent.selectionModule.selectedRowIndexes.length)
+                                || (_this.parent.selectionSettings.mode === 'Cell' &&
+                                    _this.parent.selectionModule.getSelectedRowCellIndexes().length)) {
+                                _this.parent.editModule.startDeleteAction();
+                            }
+                        }
+                        break;
+                    case gID + '_search':
+                        var searchButtonId = getValue('originalEvent.target.id', args);
+                        if (searchButtonId === _this.parent.element.id + '_searchbutton' && _this.parent.filterModule) {
+                            var keyVal = _this.element.querySelector('#' + _this.parent.element.id + '_searchbar').value;
+                            if (_this.parent.searchSettings.key !== keyVal) {
+                                _this.parent.searchSettings.key = keyVal;
+                                _this.parent.dataBind();
+                            }
+                        }
+                        break;
+                    case gID + '_searchbutton':
+                        var adaptiveSearchbar = _this.element.querySelector('.e-adaptive-searchbar');
+                        adaptiveSearchbar.parentElement.childNodes[1].style.display = 'none';
+                        adaptiveSearchbar.style.display = 'block';
+                        break;
+                    case gID + '_expandall':
+                        _this.parent.ganttChartModule.expandCollapseAll('expand');
+                        break;
+                    case gID + '_collapseall':
+                        _this.parent.ganttChartModule.expandCollapseAll('collapse');
+                        break;
+                    case gID + '_prevtimespan':
+                        _this.parent.previousTimeSpan();
+                        break;
+                    case gID + '_nexttimespan':
+                        _this.parent.nextTimeSpan();
+                        break;
+                    case gID + '_zoomin':
+                        _this.zoomIn();
+                        break;
+                    case gID + '_zoomout':
+                        _this.zoomOut();
+                        break;
+                    case gID + '_zoomtofit':
+                        _this.zoomToFit();
+                        break;
                 }
             }
-        }
-        switch (!isNullOrUndefined(args.item) && args.item.id) {
-            case gID + '_edit':
-                if (gObj.editModule && gObj.editSettings.allowEditing) {
-                    gObj.editModule.dialogModule.openToolbarEditDialog();
-                }
-                break;
-            case gID + '_update':
-                gObj.editModule.cellEditModule.isCellEdit = false;
-                gObj.treeGrid.endEdit();
-                break;
-            case gID + '_cancel':
-                gObj.cancelEdit();
-                break;
-            case gID + '_add':
-                if (gObj.editModule && gObj.editSettings.allowAdding) {
-                    gObj.editModule.dialogModule.openAddDialog();
-                }
-                break;
-            case gID + '_delete':
-                if (this.parent.selectionModule && this.parent.editModule) {
-                    if ((this.parent.selectionSettings.mode !== 'Cell' && this.parent.selectionModule.selectedRowIndexes.length)
-                        || (this.parent.selectionSettings.mode === 'Cell' &&
-                            this.parent.selectionModule.getSelectedRowCellIndexes().length)) {
-                        this.parent.editModule.startDeleteAction();
-                    }
-                }
-                break;
-            case gID + '_search':
-                var searchButtonId = getValue('originalEvent.target.id', args);
-                if (searchButtonId === this.parent.element.id + '_searchbutton' && this.parent.filterModule) {
-                    var keyVal = this.element.querySelector('#' + this.parent.element.id + '_searchbar').value;
-                    if (this.parent.searchSettings.key !== keyVal) {
-                        this.parent.searchSettings.key = keyVal;
-                        this.parent.dataBind();
-                    }
-                }
-                break;
-            case gID + '_searchbutton':
-                var adaptiveSearchbar = this.element.querySelector('.e-adaptive-searchbar');
-                adaptiveSearchbar.parentElement.childNodes[1].style.display = 'none';
-                adaptiveSearchbar.style.display = 'block';
-                break;
-            case gID + '_expandall':
-                this.parent.ganttChartModule.expandCollapseAll('expand');
-                break;
-            case gID + '_collapseall':
-                this.parent.ganttChartModule.expandCollapseAll('collapse');
-                break;
-            case gID + '_prevtimespan':
-                this.parent.previousTimeSpan();
-                break;
-            case gID + '_nexttimespan':
-                this.parent.nextTimeSpan();
-                break;
-            case gID + '_zoomin':
-                this.zoomIn();
-                break;
-            case gID + '_zoomout':
-                this.zoomOut();
-                break;
-            case gID + '_zoomtofit':
-                this.zoomToFit();
-                break;
-        }
+        });
     };
     /**
      *
@@ -18176,5 +18125,5 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
  * Gantt index file
  */
 
-export { Gantt, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, DurationUnits, EditType, TemplateName, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$2 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings };
+export { Gantt, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$2 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings };
 //# sourceMappingURL=ej2-gantt.es5.js.map

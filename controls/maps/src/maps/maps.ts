@@ -544,6 +544,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public previousPoint: Point;
      /** @public */
      public dataLabelShape: number[] = [];
+     public zoomShapeCollection: object[] = [];
+     public zoomLabelPositions: object[] = [];
      public mouseDownEvent: Object = { x: null, y: null };
      public mouseClickEvent: Object = { x: null, y: null };
     /** @private */

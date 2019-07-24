@@ -274,6 +274,17 @@ export let data14: any = {
     "cwd": { "name": "FileContent", "size": "0", "dateModified": "1-23-2019 9:21:31 PM", "dateCreated": "12-24-2018 5:14:59 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
 };
 
+export let data14Rename: any = {
+    "files": [
+        { "name": "My Folder", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": "0", "dateModified": "1-23-2019 9:21:31 PM", "dateCreated": "12-24-2018 5:14:59 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};
+
 export let data15: any = {
     "cwd": { "name": "Food", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\" },
     "files": [
@@ -571,6 +582,19 @@ export let rename: any = {
     "error": null,
     "details": null,
     "cwd": { "name": "FileContent", "size": "0", "dateModified": "1-23-2019 9:21:31 PM", "dateCreated": "12-24-2018 5:14:59 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
+};
+
+export let rename1: any = {
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "\\" },
+        { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "My Folder", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": "0", "dateModified": "1-23-2019 9:21:31 PM", "dateCreated": "12-24-2018 5:14:59 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
 };
 
 export let folderRename: any = {

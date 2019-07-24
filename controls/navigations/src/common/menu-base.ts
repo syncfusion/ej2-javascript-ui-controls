@@ -225,6 +225,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private isClosed: boolean;
     private liTrgt: Element;
     private isMenusClosed: boolean;
+    private isCMenu: boolean;
+    private pageX: number;
+    private pageY: number;
     /**
      * Triggers while rendering each menu item.
      * @event
@@ -687,13 +690,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private cmenuHandler(e: MouseEvent & (TouchEventArgs | MouseEventArgs)): void {
         e.preventDefault();
+        this.isCMenu = true;
+        this.pageX = e.changedTouches ? e.changedTouches[0].pageX + 1 : e.pageX + 1;
+        this.pageY = e.changedTouches ? e.changedTouches[0].pageY + 1 : e.pageY + 1;
         this.closeMenu(null, e);
-        if (this.canOpen(e.target as Element)) {
-            if (e.changedTouches) {
-                this.openMenu(null, null, e.changedTouches[0].pageY + 1, e.changedTouches[0].pageX + 1, e);
-            } else {
-                this.openMenu(null, null, e.pageY + 1, e.pageX + 1, e);
+        if (this.isCMenu) {
+            if (this.canOpen(e.target as Element)) {
+                this.openMenu(null, null, this.pageY, this.pageX, e);
             }
+            this.isCMenu = false;
         }
     }
 
@@ -722,10 +727,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 items = item ? item.items : this.items as objColl;
                 beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
-                    let popupEle: HTMLElement;
-                    let closeArgs: OpenCloseMenuEventArgs;
-                    let popupObj: Popup;
-                    if (!observedCloseArgs.cancel) {
+                    let popupEle: HTMLElement; let closeArgs: OpenCloseMenuEventArgs;
+                    let popupObj: Popup; let isOpen: boolean = !observedCloseArgs.cancel;
+                    if (isOpen || this.isCMenu) {
                         if (this.isMenu) {
                             popupEle = closest(ul, '.' + POPUP) as HTMLElement;
                             if (this.hamburgerMode) {
@@ -743,18 +747,25 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         }
                         closeArgs = { element: ul, parentItem: item, items: items };
                         this.trigger('onClose', closeArgs);
+                        this.navIdx.pop();
                     }
-                    this.navIdx.pop();
-                    if (!ulIndex && this.navIdx.length) {
+                    if (this.isCMenu) {
+                        if (this.canOpen(e.target as Element)) {
+                            this.openMenu(null, null, this.pageY, this.pageX, e);
+                        }
+                        this.isCMenu = false;
+                    } else if (isOpen && this.hamburgerMode && ulIndex !== null) {
+                        this.afterCloseMenu(e as MouseEvent);
+                    } else if (isOpen && !ulIndex && this.navIdx.length) {
                         this.closeMenu(null, e);
-                    } else if (!this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
+                    } else if (isOpen && !this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
                         this.isMenusClosed = true;
                         this.closeMenu(0, e);
-                    } else if (this.isMenu && e && e.target &&
+                    } else if (isOpen && this.isMenu && e && e.target &&
                         this.navIdx.length !== 0 && closest(e.target as Element, '.e-menu-parent.e-control')) {
                         this.closeMenu(0, e);
                     } else {
-                        if (this.keyType === 'right' || this.keyType === 'click') {
+                        if (isOpen && (this.keyType === 'right' || this.keyType === 'click')) {
                             this.afterCloseMenu(e as MouseEvent);
                         } else {
                             let cul: Element = this.getUlByNavIdx();
@@ -829,7 +840,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             if (this.isMenu) {
                 this.popupWrapper = this.createElement('div', {
-                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-' + elemId + '-popup' });
+                    className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-ej2menu-' + elemId + '-popup' });
                 if (this.hamburgerMode) {
                     top = (li as HTMLElement).offsetHeight;
                     li.appendChild(this.popupWrapper);
@@ -1199,7 +1210,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         this.liTrgt = trgt;
         let cli: Element = this.getLI(trgt);
         let wrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
-        let hdrWrapper: Element = this.getWrapper(); let regex: RegExp = new RegExp('-(.*)-popup'); let ulId: string;
+        let hdrWrapper: Element = this.getWrapper(); let regex: RegExp = new RegExp('-ej2menu-(.*)-popup'); let ulId: string;
         let isDifferentElem: boolean = false;
         if (!wrapper) {
             return;

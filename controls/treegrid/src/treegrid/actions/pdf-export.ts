@@ -6,6 +6,7 @@ import { isRemoteData, isOffline } from '../utils';
 import { isNullOrUndefined, setValue, Ajax, extend, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Query, ReturnOption } from '@syncfusion/ej2-data';
 import * as event from '../base/constant';
+import { PdfDocument } from '@syncfusion/ej2-pdf-export';
 /**
  * TreeGrid PDF Export module
  * @hidden
@@ -75,8 +76,11 @@ export class PdfExport {
               return null;
           }
           dm.executeQuery(query).then((e: Object) => {
-           pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, <Ajax>e);
-           return this.parent.grid.pdfExportModule.Map(this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+            pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, <Ajax>e);
+            return this.parent.grid.pdfExportModule.Map(
+              this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob).then((document: PdfDocument) => {
+                resolve(document);
+              });
           });
         });
     }

@@ -803,8 +803,10 @@ export class EventBase {
         });
         let templateElement: HTMLElement[];
         if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-            let templateId: string = this.parent.currentView + '_headerTooltipTemplate';
-            templateElement = this.parent.getHeaderTooltipTemplate()(record, this.parent, 'headerTooltipTemplate', templateId, false);
+            let scheduleId: string = this.parent.element.id + '_';
+            let viewName: string = this.parent.activeViewOptions.eventTemplateName;
+            let templateId: string = scheduleId + viewName + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, 'eventTemplate', templateId, false);
         } else {
             let appointmentSubject: HTMLElement = createElement('div', {
                 className: cls.SUBJECT_CLASS, innerHTML: eventSubject

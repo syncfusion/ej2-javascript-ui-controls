@@ -169,6 +169,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
     /**
      * Selects the list item which maps the data `value` field in the component.
      * @default null
+     * @isGenericType true
      */
     value?: number[] | string[] | boolean[];
 

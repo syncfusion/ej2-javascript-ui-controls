@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#239985` - List paragraph with style is now layout properly.
+- `#236808` - Table is now layout properly if table width type is auto.
+- `#228049` - Paragraph with right tab stop is now layout properly.
+
 ## 17.2.35 (2019-07-17)
 
 ### Document Editor

@@ -195,24 +195,27 @@ export class WParagraphFormat {
     public getPropertyValue(property: string): Object {
         if (!this.hasValue(property)) {
             let ifListFormat: object = this.getListFormatParagraphFormat(property);
-            if (!isNullOrUndefined(ifListFormat)) {
-                return ifListFormat;
-            } else {
-                if (this.baseStyle instanceof WParagraphStyle) {
-                    /* tslint:disable-next-line:no-any */
-                    let baseStyle: any = this.baseStyle;
-                    while (!isNullOrUndefined(baseStyle)) {
-                        if (baseStyle.paragraphFormat.hasValue(property)) {
-                            break;
-                        } else {
-                            baseStyle = baseStyle.basedOn;
-                        }
-                    }
-                    if (!isNullOrUndefined(baseStyle)) {
-                        let propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-                        return baseStyle.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+            if (this.baseStyle instanceof WParagraphStyle) {
+                /* tslint:disable-next-line:no-any */
+                let baseStyle: any = this.baseStyle;
+                while (!isNullOrUndefined(baseStyle)) {
+                    if (baseStyle.paragraphFormat.hasValue(property)) {
+                        break;
+                    } else {
+                        baseStyle = baseStyle.basedOn;
                     }
                 }
+                if (!isNullOrUndefined(baseStyle)) {
+                    if (!isNullOrUndefined(ifListFormat) && this.listFormat.listId !== -1
+                        && baseStyle.paragraphFormat.listFormat.listId === -1) {
+                        return ifListFormat;
+                    }
+                    let propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
+                    return baseStyle.paragraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+                }
+            }
+            if (!isNullOrUndefined(ifListFormat)) {
+                return ifListFormat;
             }
         } else {
             let propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);

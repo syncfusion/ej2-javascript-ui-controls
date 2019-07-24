@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.35 (2019-07-17)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#240271` - An issue with misalignment of +more indicator when the custom elements and appointments are rendered in same cell has been fixed.
+
 ## 17.2.34 (2019-07-11)
 
 ### Schedule
@@ -9,8 +17,8 @@
 #### Bug Fixes
 
 - Start and end time of events in month and timeline views now been correctly acquired in `eventRendered` event and event template.
-- #240585 - Start time, end time and group index of clone element now been tracked in the events `drag` and `resizing`.
-- #240271 - An issue with misalignment of +more indicator when the custom elements and appointments are rendered in same cell has been fixed.
+- `#240585` - Start time, end time and group index of clone element now been tracked in the events `drag` and `resizing`.
+- `#240271` - An issue with misalignment of +more indicator when the custom elements and appointments are rendered in same cell has been fixed.
 
 ## 17.2.28-beta (2019-06-27)
 
@@ -28,7 +36,7 @@
 
 - Localization is not set properly to `datetimepicker` in editor window issue has been fixed.
 - `openEditor` method is not set the given start and end time in month view issue has been fixed.
-- #145352 - An issue with displaying expand icon of parent resource which has no child has been fixed.
+- `#145352` - An issue with displaying expand icon of parent resource which has no child has been fixed.
 
 ## 17.1.51 (2019-06-11)
 
@@ -36,8 +44,8 @@
 
 #### Bug Fixes
 
-- #234343 - An issue with adding resources dynamically when it has empty collection in initially has been fixed.
-- #235165 - An issue with `rowAutoHeight` property enabled the horizontal scroll wrongly in month view has been fixed.
+- `#234343` - An issue with adding resources dynamically when it has empty collection in initially has been fixed.
+- `#235165` - An issue with `rowAutoHeight` property enabled the horizontal scroll wrongly in month view has been fixed.
 
 ## 17.1.50 (2019-06-04)
 
@@ -45,10 +53,10 @@
 
 #### Bug Fixes
 
-- #234667 - An issue with Scheduler is not properly navigating to selected date in timeline views has been fixed.
-- #234974 - An issue with Deleting ready only events is fixed.
-- #143894 - An issue with selecting work cells for multiple rows is fixed.
-- #234587 - An issue with rendering events with huge number of events in same times in week view is fixed.
+- `#234667` - An issue with Scheduler is not properly navigating to selected date in timeline views has been fixed.
+- `#234974` - An issue with Deleting ready only events is fixed.
+- `#143894` - An issue with selecting work cells for multiple rows is fixed.
+- `#234587` - An issue with rendering events with huge number of events in same times in week view is fixed.
 
 ## 17.1.48 (2019-05-21)
 
@@ -56,8 +64,8 @@
 
 #### Bug Fixes
 
-- #143979 - Events not rendered properly with `allowGroupEdit` when the resource id is two digit issue has been fixed.
-- #234916 - Delete key not working properly in IE11 issue has been fixed.
+- `#143979` - Events not rendered properly with `allowGroupEdit` when the resource id is two digit issue has been fixed.
+- `#234916` - Delete key not working properly in IE11 issue has been fixed.
 
 ## 17.1.44 (2019-05-07)
 
@@ -65,9 +73,9 @@
 
 #### Bug Fixes
 
-- #233286 - An issue with event not rendered properly in start and end time date format as string in agenda view is fixed.
-- #234231 - An issue with setting the different work hours in timeline week is fixed.
-- #143531 - An issue with event not loaded properly in agenda virtual scrolling is fixed.
+- `#233286` - An issue with event not rendered properly in start and end time date format as string in agenda view is fixed.
+- `#234231` - An issue with setting the different work hours in timeline week is fixed.
+- `#143531` - An issue with event not loaded properly in agenda virtual scrolling is fixed.
 
 ## 17.1.43 (2019-04-30)
 
@@ -75,7 +83,7 @@
 
 #### Bug Fixes
 
-- #233410 - An issue with date is not retrieved in view navigation in timeline month view is fixed.
+- `#233410` - An issue with date is not retrieved in view navigation in timeline month view is fixed.
 
 ## 17.1.42 (2019-04-23)
 
@@ -83,9 +91,9 @@
 
 #### Bug Fixes
 
-- #143894 - An issue with select event arguments element value returns wrongly has been fixed.
-- #230544 - An issue with `editorTemplate` is not accessing the cell or event details has been fixed.
-- #229980, #229989 - An issue with appointment position misplaced in timeline views has been fixed.
+- `#143894` - An issue with select event arguments element value returns wrongly has been fixed.
+- `#230544` - An issue with `editorTemplate` is not accessing the cell or event details has been fixed.
+- `#229980`, `#229989` - An issue with appointment position misplaced in timeline views has been fixed.
 
 ## 17.1.41 (2019-04-16)
 
@@ -93,10 +101,10 @@
 
 #### Bug Fixes
 
-- #143412 - An issue with event editing using public `saveEvent` method and checking slot availability using `isSlotAvailable` method is fixed.
-- #143720 - An issue with passing multiple resource for adding dynamically using `addResource` public method is fixed.
-- #232246 - An issue with event resizing is not properly update when `startHour` and `endHour` using in timeline views is fixed.
-- #231332 - An issue with block alert validation in recurrence event and data is not received in `popupOpen` event is fixed.
+- `#143412` - An issue with event editing using public `saveEvent` method and checking slot availability using `isSlotAvailable` method is fixed.
+- `#143720` - An issue with passing multiple resource for adding dynamically using `addResource` public method is fixed.
+- `#232246` - An issue with event resizing is not properly update when `startHour` and `endHour` using in timeline views is fixed.
+- `#231332` - An issue with block alert validation in recurrence event and data is not received in `popupOpen` event is fixed.
 
 ## 17.1.38 (2019-03-29)
 

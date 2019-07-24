@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### Gantt
+
+#### Bug Fixes
+
+- #241781 - Gantt task-data property missing in template data issue has been fixed.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Gantt

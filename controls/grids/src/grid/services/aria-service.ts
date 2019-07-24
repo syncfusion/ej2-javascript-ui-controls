@@ -36,7 +36,7 @@ export class AriaService {
  * @hidden
  */
 function setStateAndProperties(target: HTMLElement, attribute?: string, value?: ValueType, remove?: boolean): void {
-    if (remove) {
+    if (remove && target) {
         target.removeAttribute(attribute);
         return;
     }

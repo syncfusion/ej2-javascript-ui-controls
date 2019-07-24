@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#F145967`, `#242158` - Resolved removing event restricted while the `args.cancel` is enabled.
+
+- Now, provided `postRawFile` argument to the `remove` method for post either file/file name to the server.
+
 ## 17.2.35 (2019-07-17)
 
 ### Form Validator

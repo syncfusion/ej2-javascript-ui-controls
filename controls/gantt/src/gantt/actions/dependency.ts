@@ -4,7 +4,6 @@
 import { IGanttData, ITaskData, IPredecessor, IValidateArgs } from '../base/interface';
 import { DateProcessor } from '../base/date-processor';
 import { Gantt } from '../base/gantt';
-import { DurationUnits } from '../base/enum';
 import { isScheduledTask, formatString, getIndex } from '../base/utils';
 import { getValue, isNullOrUndefined, createElement, extend } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
@@ -219,11 +218,11 @@ export class Dependency {
                 duration = parseFloat(values[0]);
                 durationUnit = values[1] ? (values[1].toLowerCase()).trim() : '';
                 if (getValue('minute', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Minute;
+                    durationUnit = 'minute';
                 } else if (getValue('hour', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Hour;
+                    durationUnit = 'hour';
                 } else if (getValue('day', durationUnitLabels).indexOf(durationUnit) !== -1) {
-                    durationUnit = DurationUnits.Day;
+                    durationUnit = 'day';
                 } else {
                     durationUnit = this.parent.durationUnit.toLocaleLowerCase();
                 }

@@ -1986,6 +1986,26 @@
     }
   }
 
+  // Outline input clear icon
+
+  .e-outline.e-float-input:not(.e-disabled) .e-clear-icon:hover,
+  .e-outline.e-float-input.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover,
+  .e-outline.e-input-group:not(.e-disabled) .e-clear-icon:hover,
+  .e-outline.e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover {
+    @if $input-skin-name == 'material' {
+      color: $outline-input-clear-icon-hover-color;
+    }
+  }
+
+  .e-outline.e-float-input:not(.e-disabled) .e-clear-icon:active,
+  .e-outline.e-float-input.e-control-wrapper:not(.e-disabled) .e-clear-icon:active,
+  .e-outline.e-input-group:not(.e-disabled) .e-clear-icon:active,
+  .e-outline.e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:active {
+    @if $input-skin-name == 'material' {
+      color: $outline-input-clear-icon-active-color;
+    }
+  }
+
   // Filled input background color changes
 
   .e-filled.e-input-group,
@@ -2655,6 +2675,26 @@
   .e-input-group.e-filled.e-control-wrapper textarea.e-input::-webkit-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
+    }
+  }
+
+  // Filled input clear icon states
+
+  .e-filled.e-float-input:not(.e-disabled) .e-clear-icon:hover,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover,
+  .e-filled.e-input-group:not(.e-disabled) .e-clear-icon:hover,
+  .e-filled.e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover {
+    @if $input-skin-name == 'material' {
+      color: $filled-input-clear-icon-hover-color;
+    }
+  }
+
+  .e-filled.e-float-input:not(.e-disabled) .e-clear-icon:active,
+  .e-filled.e-float-input.e-control-wrapper:not(.e-disabled) .e-clear-icon:active,
+  .e-filled.e-input-group:not(.e-disabled) .e-clear-icon:active,
+  .e-filled.e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:active {
+    @if $input-skin-name == 'material' {
+      color: $filled-input-clear-icon-active-color;
     }
   }
 

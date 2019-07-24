@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 17.2.35 (2019-07-17)
+## 17.2.36 (2019-07-24)
+
+### Chart
+
+#### Bug Fixes
+
+`#240342` - While scrolling chart's scrollbar Vertical HTML scrollbar goes up issue fixed.
 
 ### Accumulation chart
 

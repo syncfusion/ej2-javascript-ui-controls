@@ -1,7 +1,7 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
-import { remove, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { remove, extend, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
@@ -55,7 +55,7 @@ export class DialogEditRender {
         this.setLocaleObj();
         // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
         //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
-        this.dialogObj = args.dialog = new Dialog(extend(
+        this.dialogObj = new Dialog(extend(
             {
                 header: this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
                     this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
@@ -74,6 +74,9 @@ export class DialogEditRender {
             },
             gObj.editSettings.dialog.params
         ));
+        if (!isBlazor()) {
+            args.dialog = this.dialogObj;
+        }
         let isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.dialogObj.appendTo(this.dialog);

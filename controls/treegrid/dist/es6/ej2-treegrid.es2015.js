@@ -1,7 +1,7 @@
 import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, resetBlazorTemplate, setValue } from '@syncfusion/ej2-base';
 import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Grid, InterSectionObserver, Page, PdfExport, Predicate, Print, RenderType, Reorder, Resize, Sort, TextWrapSettings, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
-import { CacheAdaptor, DataManager, DataUtil, JsonAdaptor, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
+import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 /**
@@ -2293,13 +2293,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.selectedRowIndex = this.grid.selectedRowIndex;
             this.trigger(rowDeselected, args);
         };
-        this.grid.toolbarClick = (args) => {
-            this.trigger(toolbarClick, args);
-            if (args.cancel) {
-                return;
-            }
-            this.notify(toolbarClick, args);
-        };
         this.grid.resizeStop = (args) => {
             this.updateColumnModel();
             this.trigger(resizeStop, args);
@@ -2324,7 +2317,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.recordDoubleClick = this.triggerEvents.bind(this);
         this.grid.rowDeselecting = this.triggerEvents.bind(this);
         this.grid.cellDeselected = this.triggerEvents.bind(this);
-        this.grid.cellSelecting = this.triggerEvents.bind(this);
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
         this.grid.columnMenuOpen = this.triggerEvents.bind(this);
         this.grid.columnMenuClick = this.triggerEvents.bind(this);
@@ -2337,7 +2329,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.columnDrop = this.triggerEvents.bind(this);
         this.grid.beforePrint = this.triggerEvents.bind(this);
         this.grid.printComplete = this.triggerEvents.bind(this);
-        this.grid.beginEdit = this.triggerEvents.bind(this);
         this.grid.cellEdit = this.triggerEvents.bind(this);
         this.grid.actionFailure = this.triggerEvents.bind(this);
         this.grid.dataBound = (args) => {
@@ -2378,6 +2369,33 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.extendedGridEvents();
         this.extendedGridEditEvents();
+        this.bindCallBackEvents();
+    }
+    bindCallBackEvents() {
+        this.grid.toolbarClick = (args) => {
+            let callBackPromise = new Deferred();
+            this.trigger(toolbarClick, args, (toolbarargs) => {
+                if (!toolbarargs.cancel) {
+                    this.notify(toolbarClick, args);
+                }
+                callBackPromise.resolve(toolbarargs);
+            });
+            return callBackPromise;
+        };
+        this.grid.cellSelecting = (args) => {
+            let callBackPromise = new Deferred();
+            this.trigger(getObject('name', args), args, (cellselectingArgs) => {
+                callBackPromise.resolve(cellselectingArgs);
+            });
+            return callBackPromise;
+        };
+        this.grid.beginEdit = (args) => {
+            let callBackPromise = new Deferred();
+            this.trigger(beginEdit, args, (begineditArgs) => {
+                callBackPromise.resolve(begineditArgs);
+            });
+            return callBackPromise;
+        };
     }
     extendedGridEditEvents() {
         this.grid.cellSave = (args) => {
@@ -2388,17 +2406,25 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                     args.cancel = true;
                 }
             }
-            this.trigger(cellSave, args);
-            if (!args.cancel) {
-                this.notify(cellSave, args);
-            }
+            let callBackPromise = new Deferred();
+            this.trigger(cellSave, args, (cellsaveArgs) => {
+                if (!cellsaveArgs.cancel) {
+                    this.notify(cellSave, args);
+                }
+                callBackPromise.resolve(cellsaveArgs);
+            });
+            return callBackPromise;
         };
         // this.grid.cellSaved = (args: CellSaveArgs): void => {
         //   this.trigger(events.cellSaved, args);
         //   this.notify(events.cellSaved, args);
         // };
         this.grid.cellEdit = (args) => {
+            let prom = 'promise';
+            let promise = new Deferred();
+            args[prom] = promise;
             this.notify(cellEdit, args);
+            return promise;
         };
         // this.grid.batchAdd = (args: BatchAddArgs): void => {
         //   this.trigger(events.batchAdd, args);
@@ -2438,8 +2464,16 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let isDataAvailable = 'isDataAvailable';
         let adaptor = 'adaptor';
         let ready = 'ready';
+        let adaptorName = 'adaptorName';
+        let dotnetInstance = 'dotnetInstance';
+        let key = 'key';
         this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
             this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
+        if (isBlazor()) {
+            this.grid.dataSource[adaptorName] = this.dataSource[adaptorName];
+            this.grid.dataSource[dotnetInstance] = this.dataSource[dotnetInstance];
+            this.grid.dataSource[key] = this.dataSource[key];
+        }
         if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
             this.grid.dataSource[dataSource].json = extendArray(this.dataSource[dataSource].json);
             this.grid.dataSource[ready] = this.dataSource.ready;
@@ -2474,8 +2508,14 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 this.notify('clearFilters', { flatData: this.grid.dataSource });
                 this.grid.dataSource = this.dataResults.result;
             }
-            this.trigger(actionBegin, args);
-            this.notify(beginEdit, args);
+            let callBackPromise = new Deferred();
+            this.trigger(actionBegin, args, (actionArgs) => {
+                if (!actionArgs.cancel) {
+                    this.notify(beginEdit, actionArgs);
+                }
+                callBackPromise.resolve(actionArgs);
+            });
+            return callBackPromise;
         };
         this.grid.actionComplete = (args) => {
             this.notify('actioncomplete', args);
@@ -4457,7 +4497,9 @@ class ExcelExport$1 {
             }
             dm.executeQuery(query).then((e) => {
                 excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, e);
-                return this.parent.grid.excelExportModule.Map(this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
+                return this.parent.grid.excelExportModule.Map(this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then((book) => {
+                    resolve(book);
+                });
             });
         });
     }
@@ -4585,7 +4627,9 @@ class PdfExport$1 {
             }
             dm.executeQuery(query).then((e) => {
                 pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, e);
-                return this.parent.grid.pdfExportModule.Map(this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+                return this.parent.grid.pdfExportModule.Map(this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob).then((document) => {
+                    resolve(document);
+                });
             });
         });
     }
@@ -5501,8 +5545,18 @@ class Edit$1 {
         delete this.parent[id][value];
     }
     cellEdit(args) {
+        let promise = 'promise';
+        let prom = args[promise];
+        delete args[promise];
         if (this.keyPress !== 'enter') {
-            this.parent.trigger(cellEdit, args);
+            this.parent.trigger(cellEdit, args, (celleditArgs) => {
+                if (!celleditArgs.cancel && this.parent.editSettings.mode === 'Cell') {
+                    this.enableToolbarItems('edit');
+                }
+                if (!isNullOrUndefined(prom)) {
+                    prom.resolve(celleditArgs);
+                }
+            });
         }
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
             this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
@@ -5517,9 +5571,6 @@ class Edit$1 {
             else if (this.keyPress === 'enter') {
                 args.cancel = true;
                 this.keyPress = null;
-            }
-            if (!args.cancel) {
-                this.enableToolbarItems('edit');
             }
         }
         // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {

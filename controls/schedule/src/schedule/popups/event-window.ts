@@ -1,6 +1,6 @@
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
 import { cldrData, removeClass, getValue, getDefaultDateObject, closest } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { Dialog, BeforeOpenEventArgs, DialogModel } from '@syncfusion/ej2-popups';
@@ -102,13 +102,25 @@ export class EventWindow {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
-        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        this.updateEditorTemplate();
         addClass([this.element.parentElement], cls.EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
         }
         this.applyFormValidation();
+    }
+
+    private updateEditorTemplate(): void {
+        if (this.parent.editorTemplate) {
+            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        }
+    }
+
+    private resetEditorTemplate(): void {
+        if (this.parent.editorTemplate) {
+            resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        }
     }
 
     public refresh(): void {
@@ -129,7 +141,7 @@ export class EventWindow {
         this.parent.quickPopup.quickPopupHide(true);
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
-            updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+            this.updateEditorTemplate();
         }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
@@ -154,10 +166,10 @@ export class EventWindow {
     }
 
     public setDialogContent(): void {
-        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        this.resetEditorTemplate();
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
-        updateBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate', this.parent);
+        this.updateEditorTemplate();
     }
 
     private onBeforeOpen(args: BeforeOpenEventArgs): void {
@@ -207,7 +219,7 @@ export class EventWindow {
     private renderFormElements(form: HTMLFormElement, args?: Object): void {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+                this.resetEditorTemplate();
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
             }
@@ -1379,10 +1391,26 @@ export class EventWindow {
     }
 
     private getFormElements(className: string): HTMLInputElement[] {
+        let elements: HTMLInputElement[] = [];
         if (className === cls.EVENT_WINDOW_DIALOG_CLASS) {
-            return [].slice.call(this.element.querySelectorAll('.' + EVENT_FIELD));
+            elements = [].slice.call(this.element.querySelectorAll('.' + EVENT_FIELD));
+        } else {
+            elements = [].slice.call(this.parent.element.querySelectorAll('.' + className + ' .' + EVENT_FIELD));
         }
-        return [].slice.call(this.parent.element.querySelectorAll('.' + className + ' .' + EVENT_FIELD));
+        if (!isBlazor()) {
+            return elements;
+        }
+        let validElements: HTMLInputElement[] = [];
+        for (let element of elements) {
+            if (element.classList.contains('e-control')) {
+                validElements.push(element);
+            } else if (element.querySelector('.e-control')) {
+                validElements.push(element.querySelector('.e-control') as HTMLInputElement);
+            } else {
+                validElements.push(element);
+            }
+        }
+        return validElements;
     }
 
     private getValueFromElement(element: HTMLElement): number | string | Date | boolean | string[] | number[] {
@@ -1500,20 +1528,20 @@ export class EventWindow {
     private destroyComponents(): void {
         let formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
         for (let element of formelement) {
-            let instance: CheckBox | DatePicker | DateTimePicker | DropDownList | MultiSelect;
+            let instance: Object[];
             if (element.classList.contains('e-datetimepicker')) {
-                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             } else if (element.classList.contains('e-datepicker')) {
-                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances[0] as DatePicker;
+                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             } else if (element.classList.contains('e-checkbox')) {
-                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances[0] as CheckBox;
+                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             } else if (element.classList.contains('e-dropdownlist')) {
-                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances[0] as DropDownList;
+                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             } else if (element.classList.contains('e-multiselect')) {
-                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances[0] as MultiSelect;
+                instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
             }
-            if (instance) {
-                instance.destroy();
+            if (instance && instance[0]) {
+                (instance[0] as Schedule).destroy();
             }
         }
         if (this.buttonObj) {
@@ -1527,7 +1555,7 @@ export class EventWindow {
      * @private
      */
     public destroy(): void {
-        resetBlazorTemplate(this.parent.element.id + '_editorTemplate', 'EditorTemplate');
+        this.resetEditorTemplate();
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
         }

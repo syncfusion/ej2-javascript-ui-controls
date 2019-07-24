@@ -102,6 +102,7 @@ export class Column {
      * and [`date`](../../../common/internationalization/#formatting) formats.  
      * @default null
      * @aspType string
+     * @blazorType object
      */
     public format: string | NumberFormatOptions | DateFormatOptions;
 
@@ -303,7 +304,7 @@ export interface ColumnModel {
      * and [`date`](../../../common/internationalization/#formatting) formats.
      * @default null
      * @aspType string
-     * @blazorType string
+     * @blazorType object
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
 

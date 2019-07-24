@@ -300,8 +300,10 @@ export class Toolbar {
 
     private showCommentOption(isEnable: boolean): void {
         if (!this.pdfViewer.enableStickyNotesAnnotation) {
+            this.isCommentBtnVisible = isEnable;
             this.applyHideToToolbar(this.pdfViewer.enableStickyNotesAnnotation, 18, 19);
         } else {
+            this.isCommentBtnVisible = isEnable;
             this.applyHideToToolbar(isEnable, 18, 19);
         }
     }

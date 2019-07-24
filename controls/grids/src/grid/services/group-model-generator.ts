@@ -56,7 +56,16 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
                 this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length);
             }
             if (this.parent.aggregates.length) {
+                let rowCnt: number = this.rows.length;
                 this.rows.push(...(<Row<Column>[]>this.summaryModelGen.generateRows(<Object>data, { level: level })));
+                for (let i: number = rowCnt - 1; i >= 0; i--) {
+                    if (this.rows[i].isCaptionRow) {
+                        this.rows[i].aggregatesCount = this.rows.length - rowCnt;
+                    } else if (!this.rows[i].isCaptionRow && !this.rows[i].isDataRow) {
+                        break;
+                    }
+                }
+
             }
         }
     }
@@ -124,6 +133,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         options.parentGid = parentID;
         options.childGid = childID;
         options.tIndex = tIndex;
+        options.isCaptionRow = true;
         options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : (<Object[]>data.items).length;
         options.uid = getUid('grid-row');
         let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options);

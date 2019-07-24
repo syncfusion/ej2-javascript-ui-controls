@@ -466,13 +466,15 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             this.allBars[index].classList.add(isVertical ? SPLIT_V_BAR : SPLIT_H_BAR);
         }
     };
+    Splitter.prototype.checkSplitPane = function (currentBar, elementIndex) {
+        var paneEle = currentBar.parentElement.children[elementIndex];
+        return paneEle.classList.contains('e-pane') ? paneEle : null;
+    };
     Splitter.prototype.getPrevPane = function (currentBar, order) {
-        var elementIndex = (order - 1) / (2);
-        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
+        return this.checkSplitPane(currentBar, ((order - 1) / (2)));
     };
     Splitter.prototype.getNextPane = function (currentBar, order) {
-        var elementIndex = ((order - 1) / 2) + 1;
-        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
+        return this.checkSplitPane(currentBar, (((order - 1) / 2) + 1));
     };
     Splitter.prototype.addResizeHandler = function (currentBar) {
         var resizeHanlder = this.createElement('div');
@@ -587,17 +589,22 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.addMouseActions = function (separator) {
         var _this = this;
-        // tslint:disable-next-line
         var sTout;
+        var hoverTimeOut;
         separator.addEventListener('mouseenter', function () {
             /* istanbul ignore next */
             sTout = setTimeout(function () { addClass([separator], [SPLIT_BAR_HOVER]); }, _this.iconsDelay);
         });
         separator.addEventListener('mouseleave', function () {
             clearTimeout(sTout);
+            removeClass([separator], [SPLIT_BAR_HOVER]);
         });
         separator.addEventListener('mouseout', function () {
-            removeClass([separator], [SPLIT_BAR_HOVER]);
+            clearTimeout(hoverTimeOut);
+        });
+        separator.addEventListener('mouseover', function () {
+            /* istanbul ignore next */
+            hoverTimeOut = setTimeout(function () { addClass([separator], [SPLIT_BAR_HOVER]); }, _this.iconsDelay);
         });
     };
     Splitter.prototype.getEventType = function (e) {
@@ -1017,10 +1024,17 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.getPaneDetails = function () {
         this.order = parseInt(this.currentSeparator.style.order, 10);
-        this.previousPane = this.getPrevPane(this.currentSeparator, this.order);
-        this.nextPane = this.getNextPane(this.currentSeparator, this.order);
-        this.prevPaneIndex = this.getPreviousPaneIndex();
-        this.nextPaneIndex = this.getNextPaneIndex();
+        var prevPane = this.getPrevPane(this.currentSeparator, this.order);
+        var nextPane = this.getNextPane(this.currentSeparator, this.order);
+        if (prevPane && nextPane) {
+            this.previousPane = prevPane;
+            this.nextPane = nextPane;
+            this.prevPaneIndex = this.getPreviousPaneIndex();
+            this.nextPaneIndex = this.getNextPaneIndex();
+        }
+        else {
+            return;
+        }
     };
     Splitter.prototype.getPaneHeight = function (pane) {
         return ((this.orientation === 'Horizontal') ? pane.offsetWidth.toString() :
@@ -1699,6 +1713,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.dimensions = [];
         this.allItems = [];
         this.oldRowCol = {};
+        this.isDynamicallyUpdated = false;
         this.availableClasses = [];
         this.setOldRowCol();
         this.calculateCellSize();
@@ -3978,6 +3993,27 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             this.setPanelPosition(ele, panelModel.row, panelModel.col);
         }
     };
+    DashboardLayout.prototype.updatePanelsDynamically = function (panels) {
+        this.removeAll();
+        this.setProperties({ panels: panels }, true);
+        this.setOldRowCol();
+        this.initialize();
+        if (this.showGridLines) {
+            this.initGridLines();
+        }
+    };
+    DashboardLayout.prototype.checkForIDValues = function (panels) {
+        var _this = this;
+        if (!isNullOrUndefined(panels)) {
+            this.panelID = 0;
+            panels.forEach(function (panel) {
+                if (!panel.id) {
+                    _this.panelPropertyChange(panel, { id: 'layout_' + _this.panelID.toString() });
+                    _this.panelID = _this.panelID + 1;
+                }
+            });
+        }
+    };
     /**
      * Called internally if any of the property value changed.
      * returns void
@@ -3985,6 +4021,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      */
     DashboardLayout.prototype.onPropertyChanged = function (newProp, oldProp) {
         var _this = this;
+        if (newProp.panels) {
+            this.checkForIDValues(newProp.panels);
+        }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -4052,18 +4091,25 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ allowPushing: newProp.allowPushing }, true);
                     break;
                 case 'panels':
-                    this.isRenderComplete = false;
-                    this.removeAll();
-                    this.setProperties({ panels: newProp.panels }, true);
-                    this.setOldRowCol();
-                    this.initialize();
-                    if (this.showGridLines) {
-                        this.initGridLines();
+                    if (!this.isDynamicallyUpdated) {
+                        this.isRenderComplete = false;
+                        this.updatePanelsDynamically(newProp.panels);
+                        this.isRenderComplete = true;
+                        this.isDynamicallyUpdated = true;
                     }
-                    this.isRenderComplete = true;
+                    else {
+                        this.isDynamicallyUpdated = false;
+                    }
                     break;
                 case 'columns':
                     this.isRenderComplete = false;
+                    if (newProp.panels && !this.isDynamicallyUpdated) {
+                        this.updatePanelsDynamically(newProp.panels);
+                        this.isDynamicallyUpdated = true;
+                    }
+                    else {
+                        this.isDynamicallyUpdated = false;
+                    }
                     this.setProperties({ columns: newProp.columns }, true);
                     this.panelCollection = [];
                     this.maxColumnValue = this.columns;

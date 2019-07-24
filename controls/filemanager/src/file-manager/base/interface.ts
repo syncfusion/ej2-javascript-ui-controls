@@ -195,7 +195,7 @@ export interface FileSelectEventArgs {
 export interface ToolbarCreateEventArgs {
     /**
      * Return an array of items that is used to configure toolbar content.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel[]
+     * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.ItemModel>
      */
     items: ItemModel[];
 }
@@ -251,7 +251,7 @@ export interface MenuOpenEventArgs {
     fileDetails?: Object[];
     /**
      * Returns the current context menu items as JSON object.
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel[]
+     * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.MenuItemModel>
      */
     items?: MenuItemModel[];
     /**
@@ -375,7 +375,6 @@ export interface IFileManager extends Component<HTMLElement> {
     replaceItems: string[];
     createdItem: { [key: string]: Object; };
     renamedItem: { [key: string]: Object; };
-    renamedNodeId: string;
     renamedId: string;
     uploadItem: string[];
     fileLength: number;

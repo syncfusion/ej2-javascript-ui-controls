@@ -259,7 +259,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter orderID testing', (done: Function) => {    
             actionComplete = (args?: any): void => {               
                 expect(gridObj.filterSettings.columns.length).toBe(2);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'notequal', 10248, 'and', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'notequal', 10248, 'and', false)).toBeTruthy();
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(69);                
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 gridObj.actionComplete =null;
@@ -381,7 +381,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter Freight testing', (done: Function) => {    
             actionComplete = (args?: any): void => {       
                 expect(gridObj.filterSettings.columns.length).toBe(6);
-                expect(checkFilterObj(gridObj.filterSettings.columns[4], 'Freight', 'notequal', 0.12, 'and', true)).toBeTruthy();        
+                expect(checkFilterObj(gridObj.filterSettings.columns[4], 'Freight', 'notequal', 0.12, 'and', false)).toBeTruthy();        
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(64);
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
@@ -557,7 +557,7 @@ describe('Checkbox Filter module => ', () => {
           it('Filter orderID testing', (done: Function) => {    
             actionComplete = (args?: any): void => {               
                 expect(gridObj.filterSettings.columns.length).toBe(2);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'notequal', 10248, 'and', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'notequal', 10248, 'and', false)).toBeTruthy();
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(69);                
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 gridObj.actionComplete =null;
@@ -679,7 +679,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter Freight testing', (done: Function) => {    
             actionComplete = (args?: any): void => {       
                 expect(gridObj.filterSettings.columns.length).toBe(6);
-                expect(checkFilterObj(gridObj.filterSettings.columns[4], 'Freight', 'notequal', 0.12, 'and', true)).toBeTruthy();        
+                expect(checkFilterObj(gridObj.filterSettings.columns[4], 'Freight', 'notequal', 0.12, 'and', false)).toBeTruthy();        
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(64);
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
@@ -902,7 +902,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter orderID testing', (done: Function) => {    
             actionComplete = (args?: any): void => {               
                 expect(gridObj.filterSettings.columns.length).toBe(4);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10248, 'or', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10248, 'or', false)).toBeTruthy();
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(4);                
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 gridObj.actionComplete =null;
@@ -1027,7 +1027,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter Freight testing', (done: Function) => {    
             actionComplete = (args?: any): void => {       
                 expect(gridObj.filterSettings.columns.length).toBe(7);
-                expect(checkFilterObj(gridObj.filterSettings.columns[6], 'Freight', 'equal', 11.61, 'or', true)).toBeTruthy();        
+                expect(checkFilterObj(gridObj.filterSettings.columns[6], 'Freight', 'equal', 11.61, 'or', false)).toBeTruthy();        
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
@@ -1203,7 +1203,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter orderID testing', (done: Function) => {    
             actionComplete = (args?: any): void => {               
                 expect(gridObj.filterSettings.columns.length).toBe(4);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10248, 'or', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10248, 'or', false)).toBeTruthy();
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(4);                
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 gridObj.actionComplete =null;
@@ -1328,7 +1328,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter Freight testing', (done: Function) => {    
             actionComplete = (args?: any): void => {       
                 expect(gridObj.filterSettings.columns.length).toBe(7);
-                expect(checkFilterObj(gridObj.filterSettings.columns[6], 'Freight', 'equal', 11.61, 'or', true)).toBeTruthy();        
+                expect(checkFilterObj(gridObj.filterSettings.columns[6], 'Freight', 'equal', 11.61, 'or', false)).toBeTruthy();        
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
@@ -1550,7 +1550,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter orderID testing', (done: Function) => {    
             actionComplete = (args?: any): void => {               
                 expect(gridObj.filterSettings.columns.length).toBe(3);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'notequal', 10248, 'or', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'notequal', 10248, 'or', false)).toBeTruthy();
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(68);                
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 gridObj.actionComplete =null;
@@ -1581,7 +1581,7 @@ describe('Checkbox Filter module => ', () => {
         it('Filter orderID testing', (done: Function) => {    
             actionComplete = (args?: any): void => {               
                 expect(gridObj.filterSettings.columns.length).toBe(2);
-                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10251, 'or', true)).toBeTruthy();
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10251, 'or', false)).toBeTruthy();
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(2);                
                 expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
                 gridObj.actionComplete =null;
@@ -1883,4 +1883,131 @@ describe('Checkbox Filter module => ', () => {
         });
     });
 
+    describe('EJ2-26559  enable case sensitivity check for Checkbox filter', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let checkBoxFilter: Element;
+        let actionComplete: () => void;
+        let checkFilterObj: Function = (obj: PredicateModel, field?: string,
+            operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
+            let isEqual: boolean = true;
+            if (field) {
+                isEqual = isEqual && obj.field === field;
+            }
+            if (operator) {
+                isEqual = isEqual && obj.operator === operator;
+            }
+            if (value) {
+                isEqual = isEqual && obj.value === value;
+            }
+            if (matchCase) {
+                isEqual = isEqual && obj.matchCase === matchCase;
+            }
+            return isEqual;
+        };
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: false,
+                    filterSettings: { type: 'CheckBox', showFilterBarStatus: true },
+                    columns: [{ field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string', filter: {type: 'CheckBox'} },
+                    { field: 'Freight', format: 'C2', type: 'number' }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Filter OrderID dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('Filter OrderID testing for matchcase default value true', (done: Function) => {    
+            actionComplete = (args?: any): void => {               
+                expect(gridObj.filterSettings.columns.length).toBe(2);
+                expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderID', 'equal', 10248, 'or', true)).toBeFalsy();
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(69);                
+                expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                gridObj.actionComplete =null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();           
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[2] as any).click(); 
+            checkBoxFilter.querySelectorAll('button')[0].click();
+        });
+
+        it('Filter CustomerID dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('Filter CustomerID testing for matchcase default value true', (done: Function) => {
+            actionComplete = (args?: any): void => {               
+                expect(gridObj.filterSettings.columns.length).toBe(4);
+                expect(checkFilterObj(gridObj.filterSettings.columns[2], 'CustomerID', 'notequal', 'ANATR', 'and', true)).toBeFalsy();
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(66);
+                expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                gridObj.actionComplete =null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;                     
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();           
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[2] as any).click(); 
+           checkBoxFilter.querySelectorAll('button')[0].click();
+        });
+
+        it('Filter Freight dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('Freight').querySelector('.e-filtermenudiv')));
+        });
+
+        it('Filter Freight testing for matchcase default value true', (done: Function) => {    
+            actionComplete = (args?: any): void => {       
+                expect(gridObj.filterSettings.columns.length).toBe(6);
+                expect(checkFilterObj(gridObj.filterSettings.columns[4], 'Freight', 'notequal', 0.12, 'and', true)).toBeFalsy();        
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(64);
+                expect(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                expect(gridObj.getColumnHeaderByField('Freight').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+                gridObj.actionComplete =null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;                     
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();           
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[2] as any).click(); 
+           checkBoxFilter.querySelectorAll('button')[0].click();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = checkBoxFilter = actionBegin = actionComplete = null;
+        });
+    });
 });

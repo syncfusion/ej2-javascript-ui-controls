@@ -62,7 +62,7 @@ export function updatecloneRow(grid: IGrid): void {
             nRows.push(actualRows[i]);
         } else if (!actualRows[i].isDataRow) {
             nRows.push(actualRows[i]);
-            if (!actualRows[i].isExpand) {
+            if (!actualRows[i].isExpand && actualRows[i].isCaptionRow) {
                 i += getCollapsedRowsCount(actualRows[i], grid);
             }
         }
@@ -82,11 +82,22 @@ export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
     let records: string = 'records';
     let items: string = 'items';
     let value: number = val[gSummary];
+    let dataRowCnt: number = 0;
+    let agrCnt: string = 'aggregatesCount';
     if (value === val.data[total]) {
-        if (grid.groupSettings.columns.length !== 1) {
-            count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
-        } else {
-            count += val[gSummary];
+        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt])) {
+            if (grid.groupSettings.columns.length !== 1 && val[agrCnt]) {
+                count += (val.indent !== 0 && (value) < 2) ? (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent) * val[agrCnt])) :
+                    (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[agrCnt])) + val[agrCnt];
+            } else if (val[agrCnt] && grid.groupSettings.columns.length === 1) {
+                count += (val[gSummary] * (gLen - val.indent)) + val[agrCnt];
+            }
+        } else if (grid.groupSettings.columns.length) {
+            if (grid.groupSettings.columns.length !== 1) {
+                count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
+            } else {
+                count += val[gSummary];
+            }
         }
         return count;
     } else {
@@ -94,11 +105,18 @@ export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
             let gLevel: Object[] = val.data[items][i];
             count += gLevel[items].length + ((gLen !== grid.columns.length) &&
                 !isNullOrUndefined(gLevel[items][records]) ? gLevel[items][records].length : 0);
+            dataRowCnt += (!isNullOrUndefined(gLevel[items][records]) && !isNullOrUndefined(val[agrCnt])) ? gLevel[items][records].length :
+                gLevel[items].length;
             if (gLevel[items].GroupGuid && gLevel[items].childLevels !== 0) {
                 recursive(gLevel);
             }
         }
         count += val.data[items].length;
+        if (!isNullOrUndefined(val[agrCnt])) {
+            if (val[agrCnt] && count && dataRowCnt !== 0) {
+                count += ((count - dataRowCnt) * val[agrCnt]) + val[agrCnt];
+            }
+        }
     }
     return count;
 }

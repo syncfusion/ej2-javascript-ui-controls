@@ -272,6 +272,7 @@ export class DiagramContextMenu {
         contextItems.contextMenu.items.forEach((item: MenuItemModel) => {
             if (contextItems.hiddenItems.indexOf(item.id) === -1) {
                 hidden = false;
+                contextItems.contextMenu.showItems([item.id], true);
             }
         });
         if (hidden) {

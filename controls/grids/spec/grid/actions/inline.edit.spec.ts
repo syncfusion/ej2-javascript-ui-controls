@@ -1789,8 +1789,8 @@ describe('Inline Editing module', () => {
 
         it('adding record', () => {
             (gridObj.editModule as any).editModule.addRecord();
-            expect(gridObj.getContentTable().querySelector('.e-emptyrow')).not.toBe(null);
-            expect(gridObj.getContentTable().querySelector('.e-hide')).not.toBe(null);
+            expect(gridObj.getContentTable().querySelector('.e-emptyrow')).toBe(null);
+            expect(gridObj.getContentTable().querySelector('.e-hide')).toBe(null);
         });
         it('closing record', () => {
             (gridObj.editModule as any).editModule.closeEdit();

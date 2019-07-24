@@ -127,7 +127,8 @@ export class CellEdit {
             } else if (column.field === this.parent.taskFields.notes) {
                 this.notedEdited(editedArgs);
             } else {
-                this.parent.setRecordValue('taskData.' + column.field, data[this.parent.taskFields.name], data);
+                this.parent.setRecordValue('taskData.' + column.field, editedArgs.data[column.field], editedArgs.data);
+                this.parent.editModule.initiateSaveAction(editedArgs);
             }
         } else {
             this.parent.editModule.endEditAction(args);

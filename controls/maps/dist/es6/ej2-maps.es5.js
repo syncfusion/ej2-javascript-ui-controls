@@ -3703,8 +3703,12 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
     LayerPanel.prototype.renderTileLayer = function (panel, layer, layerIndex, bing) {
         var center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel <= 1) {
             panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
+            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
+                panel.mapObject.tileTranslatePoint.x = 0;
+                panel.mapObject.tileTranslatePoint.y = 0;
+            }
         }
         panel.mapObject.tileTranslatePoint = panel.panTileMap(panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, center);
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
@@ -4243,7 +4247,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        else if (this.mapObject.isTileMap) {
+        else if (this.mapObject.isTileMap && !isNullOrUndefined(this.mapObject.scale)) {
             for (var j = 0; j < layerElement.childElementCount; j++) {
                 childNode = layerElement.childNodes[j];
                 if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
@@ -4716,6 +4720,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         _this.isDevice = false;
         /** @public */
         _this.dataLabelShape = [];
+        _this.zoomShapeCollection = [];
+        _this.zoomLabelPositions = [];
         _this.mouseDownEvent = { x: null, y: null };
         _this.mouseClickEvent = { x: null, y: null };
         return _this;
@@ -6144,17 +6150,30 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         var text = '';
         var datasrcObj;
         var currentLength = 0;
+        var oldIndex;
         var location;
+        var sublayerIndexLabel = false;
         var shapeProperties = shape['properties'];
         var labelId = this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_LabelIndex_' + index;
         var textLocation = new Point(0, 0);
         /* tslint:disable:no-string-literal */
         var shapes = layerData[index];
+        var locationX;
+        var locationY;
         style.fontFamily = this.maps.themeStyle.labelFontFamily;
         shape = shapes['property'];
         var properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]);
         var propertyPath;
+        var animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+        var translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
+        var scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
+        var transPoint = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'];
+        var zoomTransPoint = this.maps.zoomTranslatePoint;
+        var shapeWidth;
+        var scaleZoomValue = !isNullOrUndefined(this.maps.scale) ? Math.floor(this.maps.scale) : 1;
+        var zoomLabelsPosition = this.maps.zoomSettings.enable ? !isNullOrUndefined(this.maps.zoomShapeCollection) &&
+            this.maps.zoomShapeCollection.length > 0 : this.maps.zoomSettings.enable;
         for (var j = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
@@ -6188,7 +6207,24 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         var dataLabelText = text;
         var projectionType = this.maps.projectionType;
         location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        var firstLevelMapLocation = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
+            if (zoomLabelsPosition && scaleZoomValue > 1) {
+                if (layerIndex > 0) {
+                    for (var k = 0; k < this.maps.zoomLabelPositions.length; k++) {
+                        if (this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
+                            oldIndex = index;
+                            index = k;
+                            sublayerIndexLabel = true;
+                            break;
+                        }
+                    }
+                }
+                locationX = location['x'];
+                locationY = location['y'];
+                location['x'] = ((location['x'] + zoomTransPoint['x']) * scale);
+                location['y'] = ((location['y'] + zoomTransPoint['y']) * scale);
+            }
             location['y'] = (this.maps.projectionType === 'Mercator') ? location['y'] : (-location['y']);
             if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
                 if (this.maps.useGroupingSeparator) {
@@ -6204,9 +6240,12 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             };
             this.maps.trigger('dataLabelRendering', eventargs_1, function (labelArgs) {
                 var position = [];
-                var width = location['rightMax']['x'] - location['leftMax']['x'];
+                var width = zoomLabelsPosition && scaleZoomValue > 1
+                    ? _this.maps.zoomShapeCollection[index]['width'] :
+                    location['rightMax']['x'] - location['leftMax']['x'];
                 if (!isNullOrUndefined(_this.maps.dataLabelShape)) {
-                    _this.maps.dataLabelShape.push(width);
+                    shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
+                    _this.maps.dataLabelShape.push(shapeWidth);
                 }
                 var textSize = measureText(text, style);
                 var trimmedLable = textTrim(width, text, style);
@@ -6219,18 +6258,21 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                 if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     var location1 = findMidPointOfPolygon(position, projectionType);
+                    if (zoomLabelsPosition && scaleZoomValue > 1) {
+                        location1['x'] = ((_this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
+                        location1['y'] = ((_this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
+                    }
+                    locationX = location1['x'];
                     location['x'] = location1['x'];
-                    width = location1['rightMax']['x'] - location1['leftMax']['x'];
+                    width = zoomLabelsPosition && scaleZoomValue > 1 ?
+                        _this.maps.zoomShapeCollection[index]['width'] :
+                        location1['rightMax']['x'] - location1['leftMax']['x'];
                 }
                 var xpositionEnds = location['x'] + textSize['width'] / 2;
                 var xpositionStart = location['x'] - textSize['width'] / 2;
                 trimmedLable = textTrim(width, text, style);
                 elementSize = measureText(trimmedLable, style);
                 _this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
-                var animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(_this.maps.zoomModule);
-                var translate = (_this.maps.isTileMap) ? new Object() : getTranslate(_this.maps, layer, animate$$1);
-                var scale = (_this.maps.isTileMap) ? _this.maps.scale : translate['scale'];
-                var transPoint = (_this.maps.isTileMap) ? _this.maps.translatePoint : translate['location'];
                 var labelElement;
                 if (eventargs_1.template !== '') {
                     var blazor = 'Blazor';
@@ -6254,7 +6296,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                         options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                     }
                     text = options['text'];
-                    if (dataLabelSettings.intersectionAction === 'Hide' && _this.maps.scale < 2) {
+                    if (dataLabelSettings.intersectionAction === 'Hide') {
                         for (var i = 0; i < intersect.length; i++) {
                             if (!isNullOrUndefined(intersect[i])) {
                                 if (_this.value[index]['leftWidth'] > intersect[i]['rightWidth']
@@ -6320,16 +6362,25 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                         }
                     }
                     element = renderTextElement(options, style, style.color || _this.maps.themeStyle.dataLabelFontColor, group);
-                    element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
-                        + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
+                    if (zoomLabelsPosition && scaleZoomValue > 1) {
+                        element.setAttribute('transform', 'translate( ' + ((location['x'])) + ' '
+                            + (((location['y']))) + ' )');
+                        location['x'] = locationX;
+                        location['y'] = locationY;
+                    }
+                    else {
+                        element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
+                            + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
+                        location['y'] = location['y'] + (elementSize.height / 4);
+                    }
                     group.appendChild(element);
                 }
                 _this.dataLabelCollections.push({
-                    location: { x: location['x'], y: (location['y'] + elementSize.height / 4) },
+                    location: { x: location['x'], y: location['y'] },
                     element: isNullOrUndefined(labelElement) ? element : labelElement,
                     layerIndex: layerIndex,
-                    shapeIndex: index,
-                    labelIndex: index,
+                    shapeIndex: sublayerIndexLabel ? oldIndex : index,
+                    labelIndex: sublayerIndexLabel ? oldIndex : index,
                     dataLabelText: dataLabelText
                 });
             });
@@ -8622,6 +8673,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var scale = this.maps.scale;
         var x = this.maps.translatePoint.x;
         var y = this.maps.translatePoint.y;
+        this.maps.zoomShapeCollection = [];
         if (this.layerCollectionEle) {
             for (var i_1 = 0; i_1 < this.layerCollectionEle.childElementCount; i_1++) {
                 var layerElement = this.layerCollectionEle.childNodes[i_1];
@@ -8687,16 +8739,21 @@ var Zoom = /** @__PURE__ @class */ (function () {
                         }
                         else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1) {
                             this.intersect = [];
+                            this.maps.zoomLabelPositions = [];
+                            this.maps.zoomLabelPositions = this.maps.dataLabelModule.dataLabelCollections;
                             for (var k = 0; k < currentEle.childElementCount; k++) {
                                 this.zoomshapewidth = this.shapeZoomLocation[k].getBoundingClientRect();
+                                this.maps.zoomShapeCollection.push(this.zoomshapewidth);
                                 this.dataLabelTranslate(currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate$$1);
                             }
                         }
                     }
                 }
             }
-            if (!animate$$1 || this.currentLayer.animationDuration === 0) {
-                this.processTemplate(x, y, scale, this.maps);
+            if (!isNullOrUndefined(this.currentLayer)) {
+                if (!animate$$1 || this.currentLayer.animationDuration === 0) {
+                    this.processTemplate(x, y, scale, this.maps);
+                }
             }
         }
     };
@@ -8842,7 +8899,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     var end = labelY + zoomtextSize['height'] / 4;
                     var xpositionEnds = labelX + zoomtextSize['width'] / 2;
                     var xpositionStart = labelX - zoomtextSize['width'] / 2;
-                    var textLocations = { right: xpositionEnds, left: xpositionStart, top: start, bottom: end };
+                    var textLocations = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
                     if (!animate$$1 || duration === 0) {
                         element.setAttribute('transform', 'translate( ' + labelX + ' ' + labelY + ' )');
                     }
@@ -8871,10 +8928,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Hide') {
                         for (var m = 0; m < this.intersect.length; m++) {
                             if (!isNullOrUndefined(this.intersect[m])) {
-                                if (textLocations['left'] > this.intersect[m]['right']
-                                    || textLocations['right'] < this.intersect[m]['left']
-                                    || textLocations['top'] > this.intersect[m]['bottom']
-                                    || textLocations['bottom'] < this.intersect[m]['top']) {
+                                if (textLocations['leftWidth'] > this.intersect[m]['rightWidth']
+                                    || textLocations['rightWidth'] < this.intersect[m]['leftWidth']
+                                    || textLocations['heightTop'] > this.intersect[m]['heightBottom']
+                                    || textLocations['heightBottom'] < this.intersect[m]['heightTop']) {
                                     text = !isNullOrUndefined(text) ? text : zoomtext;
                                     element.innerHTML = text;
                                 }
@@ -8890,10 +8947,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Trim') {
                         for (var j = 0; j < this.intersect.length; j++) {
                             if (!isNullOrUndefined(this.intersect[j])) {
-                                if (textLocations['right'] < this.intersect[j]['left']
-                                    || textLocations['left'] > this.intersect[j]['right']
-                                    || textLocations['bottom'] < this.intersect[j]['top']
-                                    || textLocations['top'] > this.intersect[j]['bottom']) {
+                                if (textLocations['rightWidth'] < this.intersect[j]['leftWidth']
+                                    || textLocations['leftWidth'] > this.intersect[j]['rightWidth']
+                                    || textLocations['heightBottom'] < this.intersect[j]['heightTop']
+                                    || textLocations['heightTop'] > this.intersect[j]['heightBottom']) {
                                     trimmedLable = !isNullOrUndefined(text) ? text : zoomtext;
                                     if (scale > 1) {
                                         trimmedLable = textTrim(this.zoomshapewidth['width'], trimmedLable, style);
@@ -8901,18 +8958,17 @@ var Zoom = /** @__PURE__ @class */ (function () {
                                     element.innerHTML = trimmedLable;
                                 }
                                 else {
-                                    if (textLocations['left'] > this.intersect[j]['left']) {
-                                        var width = this.intersect[j]['right'] - textLocations['left'];
-                                        var difference = width - (textLocations['right'] - textLocations['left']);
+                                    if (textLocations['leftWidth'] > this.intersect[j]['leftWidth']) {
+                                        var width = this.intersect[j]['rightWidth'] - textLocations['leftWidth'];
+                                        var difference = width - (textLocations['rightWidth'] - textLocations['leftWidth']);
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
-                                        // difference > zoomtextSize['width'] ? difference : this.zoomshapewidth;
                                         trimmedLable = textTrim(difference, text, style);
                                         element.innerHTML = trimmedLable;
                                         break;
                                     }
-                                    if (textLocations['left'] < this.intersect[j]['left']) {
-                                        var width = textLocations['right'] - this.intersect[j]['left'];
-                                        var difference = Math.abs(width - (textLocations['right'] - textLocations['left']));
+                                    if (textLocations['leftWidth'] < this.intersect[j]['leftWidth']) {
+                                        var width = textLocations['rightWidth'] - this.intersect[j]['leftWidth'];
+                                        var difference = Math.abs(width - (textLocations['rightWidth'] - textLocations['leftWidth']));
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
                                         trimmedLable = textTrim(difference, text, style);
                                         element.innerHTML = trimmedLable;
@@ -9471,7 +9527,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
     Zoom.prototype.click = function (e) {
         var map = this.maps;
         if (map.zoomSettings.zoomOnClick && e.target.id.indexOf('_shapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
-            && (this.zoomColor === this.selectionColor && this.zoomElements)) {
+            && (this.zoomColor !== this.selectionColor)) {
             var bounds = e.target.getBBox();
             var boundwidth = bounds.width;
             var boundHeight = bounds.height;

@@ -1,4 +1,4 @@
-import { Droppable, DropEventArgs } from '@syncfusion/ej2-base';
+import { Droppable, DropEventArgs, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
@@ -213,6 +213,7 @@ export class ContentRender implements IRenderer {
             this.tbody = this.getTable().querySelector('tbody');
         }
         let startIndex: number = 0;
+        let blockLoad: boolean = true;
         if (isGroupAdaptive(gObj) && gObj.vcRows.length) {
             let top: string = 'top';
             let scrollTop: number = !isNullOrUndefined(args.virtualInfo.offsets) ? args.virtualInfo.offsets.top :
@@ -234,11 +235,15 @@ export class ContentRender implements IRenderer {
                         }
                     }
                 }
+                if (scrollTop + (this.contentPanel.firstElementChild as HTMLElement).offsetHeight ===
+                    this.contentPanel.firstElementChild.scrollHeight && !args.rowObject) {
+                    blockLoad = false;
+                }
             }
         }
         for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
-            if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize)) {
+            if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
             }
             if (!gObj.rowTemplate) {
@@ -297,7 +302,9 @@ export class ContentRender implements IRenderer {
         if (frzCols && idx === 0) {
             (this.getPanel().firstChild as HTMLElement).style.overflowY = 'hidden';
         }
-        args.rows = this.rows.slice(0);
+        if (!isBlazor()) {
+            args.rows = this.rows.slice(0);
+        }
         args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
         this.index = idx;
         getUpdateUsingRaf<HTMLElement>(
@@ -481,7 +488,9 @@ export class ContentRender implements IRenderer {
                         contentrows = this.movableRows;
                     }
                 } else {
+                    if (gObj.isRowDragable()) { idx++; }
                     setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+                    if (gObj.isRowDragable()) { idx--; }
                 }
             }
             idx = gObj.isDetail() ? idx - 1 : idx;

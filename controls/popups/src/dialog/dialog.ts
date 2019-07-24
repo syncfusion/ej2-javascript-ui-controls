@@ -935,12 +935,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setTargetContent(): void {
         if (isNullOrUndefined(this.content) || this.content === '') {
-            let isContent: boolean = this.element.innerHTML.replace(/\s/g, '') !== '';
+            let isContent: boolean = this.element.innerHTML.replace(/\s|<(\/?|\!?)(!--!--)>/g, '') !== '';
             if (this.element.children.length > 0 || isContent) {
                 this.innerContentElement = document.createDocumentFragment();
-                while ( this.element.childNodes.length !== 0 ) {
-                    this.innerContentElement.appendChild(this.element.childNodes[0]);
-                }
+                [].slice.call(this.element.childNodes).forEach((el: Element) => {
+                    if (el.nodeType !== 8) {
+                        this.innerContentElement.appendChild(el);
+                    }
+                });
             }
         }
     }

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `#F146110` - Now, Resolved the console error thrown when first character is type using `MinLength` property.
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#F146110` - Now, Resolved the console error thrown when first character is type using `MinLength` property.
+
 ## 17.2.34 (2019-07-11)
 
 ### ComboBox

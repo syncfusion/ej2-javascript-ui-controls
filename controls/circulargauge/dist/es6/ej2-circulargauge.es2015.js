@@ -323,8 +323,12 @@ function getElement(id) {
 function getTemplateFunction(template) {
     let templateFn = null;
     try {
-        if (document.querySelectorAll(template).length) {
+        let templateChange = template.charAt(0) === '#' ? template.substr(1) : template;
+        if (document.getElementById(templateChange)) {
             templateFn = compile(document.querySelector(template).innerHTML.trim());
+        }
+        else {
+            templateFn = compile(template);
         }
     }
     catch (e) {

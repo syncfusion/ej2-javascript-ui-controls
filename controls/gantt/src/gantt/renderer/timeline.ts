@@ -813,7 +813,7 @@ export class Timeline {
                 lastDay.setHours(24, 0, 0, 0);
                 dayIntervel = startDate.getDay() < dayIndex ? dayIntervel > 0 ?
                     dayIntervel - 1 : dayIntervel : dayIntervel;
-                lastDay.setDate(lastDay.getDate() + (dayIntervel + (6 * count)));
+                lastDay.setDate(lastDay.getDate() + (dayIntervel + (7 * count)));
                 increment = ((lastDay.getTime() - firstDay.getTime()));
                 break;
             case 'Day':

@@ -1,7 +1,6 @@
 import { isNullOrUndefined, getValue, setValue } from '@syncfusion/ej2-base';
 import { IGanttData, IWorkingTimeRange, ITaskData } from './interface';
 import { HolidayModel, DayWorkingTimeModel, EventMarkerModel } from '../models/models';
-import { DurationUnits } from './enum';
 import { Gantt } from './gantt';
 /**
  *  Date processor is used to handle date of task data.
@@ -293,9 +292,9 @@ export class DateProcessor {
         let timeDiff: number = this.getTimeDifference(startDate, endDate, isCheckTimeZone) / 1000;
         let nonWorkHours: number = this.getNonworkingTime(startDate, endDate, isAutoSchedule, isCheckTimeZone);
         let durationHours: number = timeDiff - nonWorkHours;
-        if (!durationUnit || durationUnit === DurationUnits.Day) {
+        if (!durationUnit || durationUnit === 'day') {
             durationValue = durationHours / this.parent.secondsPerDay;
-        } else if (durationUnit === DurationUnits.Minute) {
+        } else if (durationUnit === 'minute') {
             durationValue = durationHours / 60;
         } else {
             durationValue = durationHours / 3600;
@@ -309,9 +308,9 @@ export class DateProcessor {
      */
     private getDurationAsSeconds(duration: number, durationUnit: string): number {
         let value: number = 0;
-        if (!durationUnit || durationUnit === DurationUnits.Day.toString()) {
+        if (!durationUnit || durationUnit === 'day') {
             value = this.parent.secondsPerDay * duration;
-        } else if (durationUnit === DurationUnits.Hour.toString()) {
+        } else if (durationUnit === 'hour') {
             value = duration * 3600;
         } else {
             value = duration * 60;
@@ -522,11 +521,11 @@ export class DateProcessor {
                 duration = parseFloat(values[0].toString().trim());
                 let unit: string = values[1] ? values[1].toString().trim().toLowerCase() : null;
                 if (getValue('minute', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Minute.toString();
+                    durationUnit = 'minute';
                 } else if (getValue('hour', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Hour.toString();
+                    durationUnit = 'hour';
                 } else if (getValue('day', this.parent.durationUnitEditText).indexOf(unit) !== -1) {
-                    durationUnit = DurationUnits.Day.toString();
+                    durationUnit = 'day';
                 }
             }
         } else {
@@ -883,13 +882,13 @@ export class DateProcessor {
             value += parseFloat(duration.toFixed(2)) + ' ';
             if (!isNullOrUndefined(durationUnit)) {
                 let plural: boolean = duration !== 1;
-                if (durationUnit === DurationUnits.Day) {
-                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant(DurationUnits.Day);
-                } else if (durationUnit === DurationUnits.Hour) {
-                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant(DurationUnits.Hour);
-                } else if (durationUnit === DurationUnits.Minute) {
+                if (durationUnit === 'day') {
+                    value += plural ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
+                } else if (durationUnit === 'hour') {
+                    value += plural ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+                } else if (durationUnit === 'minute') {
                     value += plural ? this.parent.localeObj.getConstant('minutes') :
-                        this.parent.localeObj.getConstant(DurationUnits.Minute);
+                        this.parent.localeObj.getConstant('minute');
                 }
             }
         }

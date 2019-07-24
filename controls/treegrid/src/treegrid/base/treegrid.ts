@@ -3,6 +3,7 @@ import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, resetBla
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
+import { ActionEventArgs } from'@syncfusion/ej2-grids';
 import { DetailDataBoundEventArgs, Row}  from '@syncfusion/ej2-grids';
 import { SearchEventArgs, AddEventArgs, EditEventArgs, DeleteEventArgs}  from '@syncfusion/ej2-grids';
 import { SaveEventArgs, CellSaveArgs, BatchAddArgs, BatchCancelArgs,  BeginEditArgs, CellEditArgs}  from '@syncfusion/ej2-grids';
@@ -33,7 +34,7 @@ import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInf
 import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';
-import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor, Deferred } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { isRemoteData, isOffline, extendArray } from '../utils';
 import { Grid, QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
@@ -542,7 +543,6 @@ public pagerTemplate: string;
   /**
    * Triggers when cell is saved.
    * @event
-   * @deprecated
    * @blazorproperty 'OnCellSave'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSaveArgs
    */
@@ -571,7 +571,6 @@ public pagerTemplate: string;
   /** 
    * Triggers before the record is to be edit.
    * @event
-   * @deprecated
    * @blazorproperty 'OnBeginEdit'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.BeginEditArgs
    */
@@ -580,7 +579,6 @@ public pagerTemplate: string;
   /** 
    * Triggers when the cell is being edited.
    * @event
-   * @deprecated
    * @blazorproperty 'OnCellEdit'
    * @blazorType Syncfusion.EJ2.Blazor.Grids.CellEditArgs
    */
@@ -714,7 +712,6 @@ public pagerTemplate: string;
       /**
        * Triggers before any cell selection occurs.
        * @event
-       * @deprecated
        * @blazorproperty 'CellSelecting'
        * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs
        */
@@ -1489,13 +1486,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.selectedRowIndex = this.grid.selectedRowIndex;
       this.trigger(events.rowDeselected, args);
     };
-    this.grid.toolbarClick = (args: ClickEventArgs): void => {
-      this.trigger(events.toolbarClick, args);
-      if (args.cancel) {
-          return;
-      }
-      this.notify(events.toolbarClick, args);
-    };
     this.grid.resizeStop = (args: ResizeArgs): void => {
       this.updateColumnModel();
       this.trigger(events.resizeStop, args);
@@ -1520,7 +1510,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.recordDoubleClick = this.triggerEvents.bind(this);
     this.grid.rowDeselecting = this.triggerEvents.bind(this);
     this.grid.cellDeselected = this.triggerEvents.bind(this);
-    this.grid.cellSelecting = this.triggerEvents.bind(this);
     this.grid.cellDeselecting = this.triggerEvents.bind(this);
     this.grid.columnMenuOpen = this.triggerEvents.bind(this);
     this.grid.columnMenuClick = this.triggerEvents.bind(this);
@@ -1533,7 +1522,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.columnDrop = this.triggerEvents.bind(this);
     this.grid.beforePrint = this.triggerEvents.bind(this);
     this.grid.printComplete = this.triggerEvents.bind(this);
-    this.grid.beginEdit = this.triggerEvents.bind(this);
     this.grid.cellEdit = this.triggerEvents.bind(this);
     this.grid.actionFailure = this.triggerEvents.bind(this);
     this.grid.dataBound = (args: Object): void => {
@@ -1574,10 +1562,37 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.extendedGridEvents();
     this.extendedGridEditEvents();
+    this.bindCallBackEvents();
   }
+  private bindCallBackEvents(): void {
+    this.grid.toolbarClick = (args: ClickEventArgs): Deferred | void => {
+      let callBackPromise: Deferred = new Deferred();
+      this.trigger(events.toolbarClick, args, (toolbarargs: ClickEventArgs) => {
+        if (!toolbarargs.cancel) {
+          this.notify(events.toolbarClick, args);
+        }
+        callBackPromise.resolve(toolbarargs);
+      });
+      return callBackPromise;
+    };
+    this.grid.cellSelecting = (args: CellSelectingEventArgs): Deferred | void => {
+      let callBackPromise: Deferred = new Deferred();
+      this.trigger(getObject('name', args), args, (cellselectingArgs: CellSelectingEventArgs) => {
+        callBackPromise.resolve(cellselectingArgs);
+      });
+      return callBackPromise;
+    };
+    this.grid.beginEdit = (args: BeginEditArgs): Deferred | void => {
+      let callBackPromise: Deferred = new Deferred();
+      this.trigger(events.beginEdit, args, (begineditArgs: BeginEditArgs) => {
+        callBackPromise.resolve(begineditArgs);
+      });
+      return callBackPromise;
+  };
+}
   private extendedGridEditEvents(): void {
 
-    this.grid.cellSave = (args: CellSaveArgs): void => {
+    this.grid.cellSave = (args: CellSaveArgs): Deferred | void => {
       if (this.grid.isContextMenuOpen()) {
         let contextitems: HTMLElement;
         contextitems = <HTMLElement>this.grid.contextMenuModule.contextMenu.element.getElementsByClassName('e-selected')[0];
@@ -1585,17 +1600,25 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
           args.cancel = true;
         }
       }
-      this.trigger(events.cellSave, args);
-      if (!args.cancel) {
-        this.notify(events.cellSave, args);
-      }
+      let callBackPromise: Deferred = new Deferred();
+      this.trigger(events.cellSave, args, (cellsaveArgs: CellSaveArgs) => {
+        if (!cellsaveArgs.cancel) {
+          this.notify(events.cellSave, args);
+        }
+        callBackPromise.resolve(cellsaveArgs);
+      });
+      return callBackPromise;
     };
     // this.grid.cellSaved = (args: CellSaveArgs): void => {
     //   this.trigger(events.cellSaved, args);
     //   this.notify(events.cellSaved, args);
     // };
-    this.grid.cellEdit = (args: BatchAddArgs): void => {
-      this.notify(events.cellEdit, args);
+    this.grid.cellEdit = (args: BatchAddArgs): Deferred | void => {
+        let prom: string = 'promise';
+        let promise: Deferred = new Deferred();
+        args[prom] = promise;
+        this.notify(events.cellEdit, args);
+        return promise;
     };
     // this.grid.batchAdd = (args: BatchAddArgs): void => {
     //   this.trigger(events.batchAdd, args);
@@ -1639,8 +1662,16 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let isDataAvailable: string = 'isDataAvailable';
     let adaptor: string = 'adaptor';
     let ready: string = 'ready';
+    let adaptorName: string = 'adaptorName';
+    let dotnetInstance: string = 'dotnetInstance';
+    let key: string = 'key';
     this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
       this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
+    if (isBlazor()) {
+      this.grid.dataSource[adaptorName] = this.dataSource[adaptorName];
+      this.grid.dataSource[dotnetInstance] = this.dataSource[dotnetInstance];
+      this.grid.dataSource[key] = this.dataSource[key];
+    }
     if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
       this.grid.dataSource[dataSource].json = extendArray(this.dataSource[dataSource].json);
       this.grid.dataSource[ready] = this.dataSource.ready;
@@ -1666,7 +1697,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.notify('detaildataBound', args);
       this.trigger(events.detailDataBound, args);
     };
-    this.grid.actionBegin = (args: Object): void => {
+    this.grid.actionBegin = (args: Object): Deferred| void => {
       let requestType: string = getObject('requestType', args);
       if (requestType === 'reorder') {
         this.notify('getColumnIndex', {});
@@ -1676,8 +1707,14 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         this.notify('clearFilters', { flatData: this.grid.dataSource });
         this.grid.dataSource = this.dataResults.result;
       }
-      this.trigger(events.actionBegin, args);
-      this.notify(events.beginEdit, args);
+      let callBackPromise: Deferred = new Deferred();
+      this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
+        if (!actionArgs.cancel) {
+          this.notify(events.beginEdit, actionArgs);
+        }
+        callBackPromise.resolve(actionArgs);
+      });
+      return callBackPromise;
     };
     this.grid.actionComplete = (args: CellSaveEventArgs) => {
       this.notify('actioncomplete', args);

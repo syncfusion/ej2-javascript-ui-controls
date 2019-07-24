@@ -9,7 +9,7 @@ export class SearchResults {
      * @aspType int
      * @blazorType int
      */
-    get length(): number {
+    public get length(): number {
         return this.searchModule.textSearchResults.length;
     }
     /**
@@ -17,7 +17,7 @@ export class SearchResults {
      * @aspType int
      * @blazorType int
      */
-    get index(): number {
+    public get index(): number {
         return this.searchModule.textSearchResults.currentIndex;
     }
     /**
@@ -25,7 +25,7 @@ export class SearchResults {
      * @aspType int
      * @blazorType int
      */
-    set index(value: number) {
+    public set index(value: number) {
         if (this.length === 0 || value < 0 || value > this.searchModule.textSearchResults.length - 1) {
             return;
         }

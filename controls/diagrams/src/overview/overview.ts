@@ -303,20 +303,27 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let screenX: number = (window.screenX < 0) ? window.screenX * -1 : window.screenX;
         let screenY: number = (window.screenY < 0) ? window.screenY * -1 : window.screenY;
         if (eWidth === 0) {
-            eWidth = Math.floor(((window.innerWidth - screenX) - Math.floor(bRect.left)));
+            let widthValue: number = Math.floor(((window.innerWidth - screenX) - Math.floor(bRect.left)));
+            eWidth = widthValue > 0 ? widthValue : Math.floor(window.innerWidth);
         }
         if (eHeight === 0) {
-            eHeight = Math.floor(((window.innerHeight - screenY) - Math.floor(bRect.top)));
+            let heightValue: number = Math.floor(((window.innerHeight - screenY) - Math.floor(bRect.top)));
+            eHeight = heightValue > 0 ? heightValue : Math.floor(window.innerHeight);
         }
-        svg.setAttribute('width', String(eWidth));
-        svg.setAttribute('height', String(eHeight));
-        this.model.width = eWidth;
-        this.model.height = eHeight;
+        if (eWidth > 0) {
+            svg.setAttribute('width', String(eWidth));
+            this.model.height = eHeight;
+        }
+        if (eHeight > 0) {
+            svg.setAttribute('height', String(eHeight));
+            this.model.width = eWidth;
+        }
         let attributes: Object;
         if (!view.diagramLayerDiv) {
             view.diagramLayerDiv = createHtmlElement('div', {}) as HTMLDivElement;
             let container: HTMLElement = document.getElementById(this.element.id);
-            view.diagramLayer = CanvasRenderer.createCanvas(this.element.id + '_diagramLayer', this.model.width, this.model.height);
+            view.diagramLayer = CanvasRenderer.createCanvas(
+                this.element.id + '_diagramLayer', this.model.width as number, this.model.height as number);
             view.diagramLayer.setAttribute('style', 'position:absolute; left:0px;  top:0px ');
             view.diagramLayerDiv.appendChild(view.diagramLayer);
             view.canvas.appendChild(view.diagramLayerDiv);

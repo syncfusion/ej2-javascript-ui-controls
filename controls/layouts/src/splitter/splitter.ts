@@ -656,14 +656,17 @@ export class Splitter extends Component<HTMLElement> {
         }
     }
 
+    private checkSplitPane(currentBar: Element, elementIndex: number): HTMLElement {
+        let paneEle: HTMLElement = currentBar.parentElement.children[elementIndex] as HTMLElement;
+        return paneEle.classList.contains('e-pane') ? paneEle : null;
+    }
+
     private getPrevPane(currentBar: Element, order: number): HTMLElement {
-        let elementIndex: number = (order - 1) / (2);
-        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex] as HTMLElement;
+        return this.checkSplitPane(currentBar, ((order - 1) / (2)));
     }
 
     private getNextPane(currentBar: Element, order: number): HTMLElement {
-        let elementIndex: number = ((order - 1) / 2) + 1;
-        return currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex] as HTMLElement;
+        return this.checkSplitPane(currentBar, (((order - 1) / 2) + 1));
     }
 
     private addResizeHandler(currentBar: HTMLElement): void {
@@ -785,17 +788,21 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private addMouseActions(separator: HTMLElement): void {
-        // tslint:disable-next-line
-        let sTout: any;
+        let sTout: ReturnType<typeof setTimeout>; let hoverTimeOut: ReturnType<typeof setTimeout>;
         separator.addEventListener('mouseenter', () => {
             /* istanbul ignore next */
             sTout = setTimeout(() => { addClass([separator], [SPLIT_BAR_HOVER]); }, this.iconsDelay);
         });
         separator.addEventListener('mouseleave', () => {
             clearTimeout(sTout);
+            removeClass([separator], [SPLIT_BAR_HOVER]);
         });
         separator.addEventListener('mouseout', () => {
-            removeClass([separator], [SPLIT_BAR_HOVER]);
+            clearTimeout(hoverTimeOut);
+        });
+        separator.addEventListener('mouseover', () => {
+            /* istanbul ignore next */
+            hoverTimeOut = setTimeout(() => { addClass([separator], [SPLIT_BAR_HOVER]); }, this.iconsDelay);
         });
     }
 
@@ -1226,10 +1233,16 @@ export class Splitter extends Component<HTMLElement> {
 
     private getPaneDetails(): void {
         this.order = parseInt(this.currentSeparator.style.order, 10);
-        this.previousPane = this.getPrevPane(this.currentSeparator, this.order);
-        this.nextPane = this.getNextPane(this.currentSeparator, this.order);
-        this.prevPaneIndex = this.getPreviousPaneIndex();
-        this.nextPaneIndex = this.getNextPaneIndex();
+        let prevPane: HTMLElement = this.getPrevPane(this.currentSeparator, this.order);
+        let nextPane: HTMLElement = this.getNextPane(this.currentSeparator, this.order);
+        if (prevPane && nextPane) {
+            this.previousPane = prevPane;
+            this.nextPane = nextPane;
+            this.prevPaneIndex = this.getPreviousPaneIndex();
+            this.nextPaneIndex = this.getNextPaneIndex();
+        } else {
+            return;
+        }
     }
 
     private getPaneHeight(pane: HTMLElement): string {

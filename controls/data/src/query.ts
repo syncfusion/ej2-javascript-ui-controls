@@ -563,7 +563,7 @@ export class Predicate {
      * filter data with case insensitive.
      */
     public or(
-        field: string | Predicate, operator?: string, value?: string | number | null, ignoreCase?: boolean,
+        field: string | Predicate, operator?: string, value?: string | number | Date | null, ignoreCase?: boolean,
         ignoreAccent?: boolean): Predicate {
             return Predicate.combine(this, field, operator, value, 'or', ignoreCase, ignoreAccent);
         }

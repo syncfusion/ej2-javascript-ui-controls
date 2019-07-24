@@ -3787,6 +3787,47 @@ describe('Uploader Control', () => {
         });
     })
 
+    describe('PostRawFile in remove method argument', () => {
+        let uploadObj: any;
+        let SuccessCallback: EmitType<any> = jasmine.createSpy('success');
+        let RemovingCallback: EmitType<any> = jasmine.createSpy('removing');
+        let originalTimeout: number;
+        beforeEach((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
+            let element: HTMLElement = createElement('input', {id: 'upload'});
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        })
+        afterEach((): void => {
+            if (uploadObj.uploadWrapper) { uploadObj.destroy();}
+            document.body.innerHTML = '';
+        });
+        it('Remove uploaded file', (done) => {
+            uploadObj = new Uploader({
+                multiple: true, success: SuccessCallback, removing: RemovingCallback, autoUpload: false,
+                asyncSettings: {
+                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                }
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.fileList.length).toEqual(1);
+            uploadObj.upload([uploadObj.filesData[0]]);
+            setTimeout(() => {
+                uploadObj.remove([uploadObj.filesData[0]], false, true, null, false);
+                setTimeout(() => {
+                    expect(RemovingCallback).toHaveBeenCalledTimes(0);
+                    expect(SuccessCallback).toHaveBeenCalledTimes(2);
+                    done();
+                }, 1500);
+            }, 1500);
+        });
+    })
+
     describe('EJ2-21915 - uploader HTML 5 validation', () => {
         let uploadObj: any;       
         beforeAll((): void => {

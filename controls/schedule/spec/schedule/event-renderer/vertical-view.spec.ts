@@ -5,7 +5,7 @@ import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, EJ2Instance, ScheduleModel } from '../../../src/schedule/index';
 import * as events from '../../../src/schedule/base/constant';
-import { defaultData, resourceData, resourceGroupData } from '../base/datasource.spec';
+import { defaultData, resourceData, resourceGroupData, testBlockData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
 import * as util from '../util.spec';
@@ -853,6 +853,26 @@ describe('Vertical View Event Render Module', () => {
             };
             schObj.selectedDate = new Date(2025, 11, 10);
             schObj.dataBind();
+        });
+    });
+
+    describe('Schedule week view appointment template checking', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                currentView: 'Week', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 2),
+                eventSettings: { template: '<span>${Subject}</span>' }
+            };
+            schObj = util.createSchedule(model, testBlockData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('elements in DOM', () => {
+            let eventBlockedElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-block-appointment'));
+            expect(eventBlockedElementList.length).toEqual(1);
+            let eventNormalElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventNormalElementList.length).toEqual(5);
         });
     });
 

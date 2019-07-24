@@ -13,7 +13,7 @@ import { TimelineTierSettingsModel } from '../models/timeline-settings-model';
 
 export interface IGanttData {
     /** Defines the child records of task. */
-    childRecords?: Object[];
+    childRecords?: IGanttData[];
     /** Defines the expanded state of task. */
     expanded?: boolean;
     /** Defines the properties which used in internal calculations. */
@@ -330,11 +330,39 @@ export interface PredecessorTooltip {
 
 export interface BeforeTooltipRenderEventArgs {
     /** Defines the data. */
-    data?: IGanttData | PredecessorTooltip;
-    /** Defines the original event arguments of tooltip control. */
+    data?: BeforeTooltipRenderEventArgsData;
+    /** Defines the original event arguments of tooltip control.
+     * @blazorType Syncfusion.EJ2.Blazor.Popups.TooltipEventArgs
+     */
     args?: TooltipEventArgs;
     /** Defines the content. */
     content?: string | Element;
+    /** Cancel the tooltip */
+    cancel?: boolean;
+}
+
+export interface QueryCellInfoEventArgs {
+    /** Defines the row data associated with this cell. */
+    data?: IGanttData;
+    /** Defines the cell element. */
+    cell?: Element;
+    /** Defines the column object associated with this cell. */
+    column?: Column;
+    /** Defines the no. of columns to be spanned */
+    colSpan?: number;
+    /** Defines the no. of rows to be spanned */
+    rowSpan?: number;
+    /** Defines the current action. */
+    requestType?: string;
+    /** Define the foreignKey row data associated with this column */
+    foreignKeyData?: Object;
+}
+
+/**
+ * Extending IGanttData and PredecessorTooltip interfaces for data used in BeforeTooltipRenderEventArgs interface.
+ */
+export interface BeforeTooltipRenderEventArgsData extends IGanttData, PredecessorTooltip {
+
 }
 
 export interface IDependencyEventArgs {
@@ -366,7 +394,19 @@ export interface ITaskAddedEventArgs {
     /** Defines the action. */
     action?: string;
 }
+export interface ICollapsingEventArgs {
+    /** Defines the TreeGrid row element */
+    gridRow: Node;
+    /** Defines the Gantt chart row element */
+    chartRow: Node;
+    /** Defines the name of the action. */
+    name?: string;
+    /** Defines the parent row data. */
+    data?: IGanttData;
+    /** Cancel the row expanding action */
+    cancel?: boolean;
 
+}
 export interface ContextMenuOpenEventArgs extends ContextMenuOpenEventArgs {
     /** Defines the TreeGrid row element */
     gridRow?: Element;

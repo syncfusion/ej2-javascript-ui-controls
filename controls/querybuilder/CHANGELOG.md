@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Date values are not properly filtered using DataManager.
+
 ## 17.2.35 (2019-07-17)
 
 ### QueryBuilder

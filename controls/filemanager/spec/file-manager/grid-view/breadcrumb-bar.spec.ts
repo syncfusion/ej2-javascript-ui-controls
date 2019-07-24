@@ -129,6 +129,45 @@ describe('FileManager control Grid view', () => {
                 }, 500);
             }, 500);
         });
+        it('Search (empty) refresh testing', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(5);
+            expect(gridLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'hello.png';
+            searchObj.value = 'hello.png';
+            let eventArgs: any = { value: 'hello.png', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(searchhellopng)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(gridLi.length).toEqual(0);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-empty').length).toBe(1);
+                let items: any = document.getElementsByClassName('e-fe-refresh');
+                items[0].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(gridLi.length).toEqual(5);
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-empty').length).toBe(0);
+                    done();
+                }, 500);
+            }, 500);
+        });
         it('Search setting setmodel testing', (done: Function) => {
             let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
             let treeLi: any = treeObj.element.querySelectorAll('li');
@@ -207,6 +246,53 @@ describe('FileManager control Grid view', () => {
                             done();
                         }, 500);
                     }, 500);
+                }, 500);
+            }, 500);
+        });
+        it('Search file column refresh testing', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(5);
+            expect(gridLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'doc';
+            searchObj.value = 'doc';
+            let eventArgs: any = { value: 'doc', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(gridLi.length).toEqual(3);
+                expect(feObj.detailsviewModule.gridObj.getColumns().length).toEqual(6);
+                let items: any = document.getElementsByClassName('e-fe-refresh');
+                items[0].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                    let treeLi: any = treeObj.element.querySelectorAll('li');
+                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                    expect(treeLi.length).toEqual(5);
+                    expect(gridLi.length).toEqual(5);
+                    expect(feObj.detailsviewModule.gridObj.getColumns().length).toEqual(5);
+                    done();
                 }, 500);
             }, 500);
         });

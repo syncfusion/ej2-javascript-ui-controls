@@ -7609,7 +7609,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            this.remove(fileData, false, false, args);
+            this.remove(fileData, false, false, true, args);
         }
         this.element.value = '';
         this.checkActionButtonStatus();
@@ -7653,7 +7653,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             eventArgs.currentRequest = ajax.httpRequest;
             if (!removeDirectly) {
                 _this.trigger('removing', eventArgs, function (eventArgs) {
-                    if (!eventArgs.cancel) {
+                    if (eventArgs.cancel) {
+                        e.cancel = true;
+                    }
+                    else {
                         _this.removingEventCallback(eventArgs, formData, selectedFiles, file);
                     }
                 });
@@ -9223,16 +9226,20 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @param { FileInfo | FileInfo[] } fileData - specifies the files data to remove from file list/server.
      * @param { boolean } customTemplate - Set true if the component rendering with customize template.
      * @param { boolean } removeDirectly - Set true if files remove without removing event.
+     * @param { boolean } postRawFile - Set false, to post file name only to the remove action.
      * @returns void
      */
-    Uploader.prototype.remove = function (fileData, customTemplate, removeDirectly, args) {
+    Uploader.prototype.remove = function (fileData, customTemplate, removeDirectly, postRawFile, args) {
         var _this = this;
+        if (isNullOrUndefined(postRawFile)) {
+            postRawFile = true;
+        }
         var eventArgs = {
             event: args,
             cancel: false,
             filesData: [],
             customFormData: [],
-            postRawFile: true
+            postRawFile: postRawFile
         };
         var index;
         if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {

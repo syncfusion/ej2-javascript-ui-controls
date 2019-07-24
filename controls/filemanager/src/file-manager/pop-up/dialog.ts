@@ -528,7 +528,6 @@ function onReSubmit(parent: IFileManager): void {
             rename(parent, newPath, text);
         }
     } else {
-        parent.renamedNodeId = getValue('_fm_id', parent.itemData[0]);
         parent.renamedId = getValue('id', parent.itemData[0]);
         rename(parent, newPath, text);
     }

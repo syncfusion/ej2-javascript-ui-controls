@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### PDF Viewer
+
+#### New Features
+
+- Provided the API to modify the scale ratio to change the quality of the pages rendered in the PDF Viewer.
+
 ## 17.2.35 (2019-07-17)
 
 ### PDF Viewer

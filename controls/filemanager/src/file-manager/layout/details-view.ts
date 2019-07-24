@@ -463,8 +463,7 @@ export class DetailsView {
         if (this.parent.breadcrumbbarModule.searchObj.element.value.trim() === '' && this.gridObj) {
             this.parent.searchedItems = [];
             let len: number = this.gridObj.columns.length;
-            // tslint:disable-next-line
-            let columnData: any = JSON.parse(JSON.stringify(this.gridObj.columns));
+            let columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
             if (columnData[len - 1].field) {
                 if (columnData[len - 1].field === 'filterPath') {
                     this.gridObj.columns.pop();
@@ -573,14 +572,7 @@ export class DetailsView {
         if (this.parent.view === 'Details') {
             this.parent.setProperties({ selectedItems: [] }, true);
             this.parent.notify(events.selectionChanged, {});
-            let len: number = this.gridObj.columns.length;
-            // tslint:disable-next-line
-            let column: any = JSON.parse(JSON.stringify(this.gridObj.columns));
-            if (column[len - 1].field) {
-                if (column[len - 1].field === 'filterPath') {
-                    this.gridObj.columns.pop();
-                }
-            }
+            this.removePathColumn();
             if (!this.islayoutChange) {
                 this.parent.layoutSelectedItems = [];
             }
@@ -596,9 +588,21 @@ export class DetailsView {
         }
     }
 
+    private removePathColumn(): void {
+        let len: number = this.gridObj.columns.length;
+        let column: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
+        if (column[len - 1].field) {
+            if (column[len - 1].field === 'filterPath') {
+                this.gridObj.columns.pop();
+            }
+        }
+    }
+
     private changeData(args: ReadArgs): void {
         this.isInteracted = false;
+        this.removePathColumn();
         this.gridObj.dataSource = getSortedData(this.parent, args.files);
+        this.emptyArgs = args;
     }
 
     private onFinalizeEnd(args: ReadArgs): void {
@@ -801,7 +805,7 @@ export class DetailsView {
 
     /* istanbul ignore next */
     private onDetailsResize(): void {
-        if (this.parent.view === 'Details' && !this.parent.isMobile) {
+        if (this.parent.view === 'Details' && !this.parent.isMobile && !isNOU(this.gridObj)) {
             let gridHeader: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent().querySelector('.e-headercontent');
             let gridHeaderColGroup: HTMLElement = <HTMLElement>gridHeader.firstChild.childNodes[0];
             let gridContentColGroup: HTMLElement =
@@ -973,8 +977,7 @@ export class DetailsView {
         if (this.parent.view === 'Details' && !isNOU(this.gridObj)) {
             let len: number = this.gridObj.columns.length;
             if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
-                // tslint:disable-next-line
-                let column: any = JSON.parse(JSON.stringify(this.gridObj.columns));
+                let column: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
                 if (column[len - 1].field) {
                     if (column[len - 1].field === 'filterPath') {
                         this.gridObj.columns.pop();

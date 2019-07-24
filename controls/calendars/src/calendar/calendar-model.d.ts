@@ -129,6 +129,97 @@ export interface CalendarBaseModel extends ComponentModel{
     enablePersistence?: boolean;
 
     /**
+     * Customizes the key actions in Calendar.
+     * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * @default null
+     * @blazorType object
+     * 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Key action<br/></td><td colSpan=1 rowSpan=1> 
+     * Key<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlUp<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+38<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlDown<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+40<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * select<br/></td><td colSpan=1 rowSpan=1> 
+     * enter<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * home<br/></td><td colSpan=1 rowSpan=1> 
+     * home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * end<br/></td><td colSpan=1 rowSpan=1> 
+     * end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * pageUp<br/></td><td colSpan=1 rowSpan=1> 
+     * pageup<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * pageDown<br/></td><td colSpan=1 rowSpan=1> 
+     * pagedown<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * shiftPageUp<br/></td><td colSpan=1 rowSpan=1> 
+     * shift+pageup<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * shiftPageDown<br/></td><td colSpan=1 rowSpan=1> 
+     * shift+pagedown<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlHome<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * controlEnd<br/></td><td colSpan=1 rowSpan=1> 
+     * ctrl+end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altUpArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * spacebar<br/></td><td colSpan=1 rowSpan=1> 
+     * space<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altRightArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+rightarrow<br/></td></tr>  
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+leftarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveDown<br/></td><td colSpan=1 rowSpan=1> 
+     * downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveUp<br/></td><td colSpan=1 rowSpan=1> 
+     * uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveLeft<br/></td><td colSpan=1 rowSpan=1> 
+     * leftarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * moveRight<br/></td><td colSpan=1 rowSpan=1> 
+     * rightarrow<br/></td></tr> 
+     * </table>
+     */
+    keyConfigs?: { [key: string]: string };
+
+    /**
      * Triggers when Calendar is created.
      * @event
      * @blazorProperty 'Created'

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- #241653 - ContentTemplate issue in Dashboard Layout has been fixed.
+
+### Splitter
+
+#### Bug Fixes
+
+- #241183 - Issue with "show the expand and collapse arrow on hovering middle of split bar" has been resolved.
+
 ## 17.1.51 (2019-06-11)
 
 ### Dashboard Layout

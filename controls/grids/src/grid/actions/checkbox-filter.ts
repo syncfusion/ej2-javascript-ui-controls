@@ -376,8 +376,7 @@ export class CheckBoxFilter {
         let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         let optr: string = 'equal';
         let searchInput: HTMLInputElement = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
-        let caseSen: boolean = this.options.type === 'string' ?
-            this.options.allowCaseSensitive : true;
+        let caseSen: boolean = this.filterSettings.enableCaseSensitivity;
         let defaults: {
             predicate?: string, field?: string, type?: string, uid?: string
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean

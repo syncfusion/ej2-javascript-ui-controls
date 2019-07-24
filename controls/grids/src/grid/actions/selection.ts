@@ -1,4 +1,4 @@
-import { Browser, EventHandler, MouseEventArgs, createElement } from '@syncfusion/ej2-base';
+import { Browser, EventHandler, MouseEventArgs, createElement, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, isUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { remove, closest, classList } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
@@ -708,12 +708,16 @@ export class Selection implements IAction {
 
         if (!isToggle) {
             args = {
-                data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
+                data: selectedData, cellIndex: cellIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
                 previousRowCell: this.prevECIdxs ?
                     this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
                 cancel: false
             };
+            if (!isBlazor()) {
+                let currentCell: string = 'currentCell';
+                args[currentCell] = selectedCell;
+            }
             this.parent.trigger(events.cellSelecting, this.fDataUpdate(args),
                                 this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
         } else {
@@ -725,8 +729,12 @@ export class Selection implements IAction {
                             selectedCell: Element, selectedData: Object): Function {
         return (cellSelectingArgs: Object) => {
         let cncl: string = 'cancel';
+        let currentCell: string = 'currentCell';
         if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
             return;
+        }
+        if (!isToggle) {
+            cellSelectingArgs[currentCell] = cellSelectingArgs[currentCell] ? cellSelectingArgs[currentCell] : selectedCell;
         }
         this.clearCell();
         if (!isToggle) {

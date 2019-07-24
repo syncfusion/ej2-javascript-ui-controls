@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### DataManager
+
+#### Bug Fixes
+
+- `241939` - In Predicate or function , Date type has been added to give support for filtering Date values.
+
 ## 17.2.35 (2019-07-17)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#144418`, `#234444`, `#238765`, `#241262`, `#241163` - Date value is handled based on the server time zone offset.
+
+## 17.2.28-beta (2019-06-27)
 
 ### DataManager
 

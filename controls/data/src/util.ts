@@ -1727,6 +1727,44 @@ export class DataUtil {
             }
 
             return val;
+        },
+        /**
+         * It will replace the Date object with respective to UTC format value.
+         * @param  {string} key
+         * @param  {any} value
+         * @hidden
+         */
+        /* tslint:disable-next-line:no-any */
+        jsonDateReplacer: (key: string, value: any): any => {
+            if (key === 'value' && value) {
+                if (typeof value === 'string') {
+                    let ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
+                    if (ms) {
+                        value = DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), null, true);
+                    } else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(<string>value)) {
+                        let arr: string[] = (<string>value).split(/[^0-9]/);
+                        value = DataUtil.dateParse
+                        .toTimeZone(new Date(
+                                    parseInt(arr[0], 10),
+                                    parseInt(arr[1], 10) - 1,
+                                    parseInt(arr[2], 10),
+                                    parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
+                                    null, true);
+                    }
+                }
+                if (value instanceof Date) {
+                    value = DataUtil.dateParse.addSelfOffset(value);
+                    if (DataUtil.serverTimezoneOffset === null) {
+                        return DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(value), null).toJSON();
+                    } else {
+                        value = DataUtil.dateParse.toTimeZone(value, (((value.getTimezoneOffset() / 60) * 2)
+                                                                     - DataUtil.serverTimezoneOffset ),
+                                                              false);
+                        return value.toJSON();
+                    }
+                }
+            }
+            return value;
         }
     };
 
@@ -1935,6 +1973,8 @@ export interface ParseOption {
     replacer?: Function;
     jsonReplacer?: Function;
     arrayReplacer?: Function;
+    /* tslint:disable-next-line:no-any */
+    jsonDateReplacer?: (key: string, value: any) => any;
 }
 /**
  * @hidden

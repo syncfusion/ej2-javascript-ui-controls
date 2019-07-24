@@ -4,7 +4,6 @@ import { remove, closest as closestElement, classList } from '@syncfusion/ej2-ba
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
 import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses } from '../base/util';
 import * as events from '../base/constant';
-import { Column } from '../models/column';
 import { Scroll } from '../actions/scroll';
 import { RowDropEventArgs } from '../base/interface';
 
@@ -29,6 +28,7 @@ export class RowDD {
     private rows: Element[];
     private rowData: Object;
     private dragStartData: Object;
+    private draggable: Draggable;
 
     /* tslint:disable-next-line:max-line-length */
     // tslint:disable-next-line:max-func-body-length
@@ -318,9 +318,7 @@ export class RowDD {
 
     private initializeDrag(): void {
         let gObj: IGrid = this.parent;
-        let column: Column;
-        let drag: Draggable;
-        drag = new Draggable(gObj.getContent() as HTMLElement, {
+        this.draggable = new Draggable(gObj.getContent() as HTMLElement, {
             dragTarget: '.e-rowcelldrag, .e-rowdragdrop, .e-rowcell',
             distance: 5,
             helper: this.helper,
@@ -535,6 +533,7 @@ export class RowDD {
         let gridElement: Element = this.parent.element;
         if (this.parent.isDestroyed || !gridElement || (!gridElement.querySelector('.e-gridheader') &&
             !gridElement.querySelector('.e-gridcontent'))) { return; }
+        this.draggable.destroy();
         this.parent.off(events.initialEnd, this.initializeDrag);
         this.parent.off(events.columnDrop, this.columnDrop);
         this.parent.removeEventListener(events.dataBound, this.onDataBoundFn);

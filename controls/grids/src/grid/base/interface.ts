@@ -782,11 +782,14 @@ export interface IRow<T> {
     childGid?: number;
     data?: Object;
     gSummary?: number;
+    aggregatesCount?: number;
     tIndex?: number;
     collapseRows?: Object[];
     isSelected?: boolean;
 
     isReadOnly?: boolean;
+
+    isCaptionRow?: boolean;
 
     isAltRow?: boolean;
 
@@ -1655,6 +1658,7 @@ export interface CommandModel {
     title?: string;
     /**
      * Define the command Button type
+     * @blazorDefaultValue null
      */
     type?: CommandButtonType;
     /**

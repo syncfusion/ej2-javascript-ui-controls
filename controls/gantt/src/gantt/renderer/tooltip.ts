@@ -3,9 +3,9 @@ import { Tooltip as TooltipComponent, TooltipEventArgs } from '@syncfusion/ej2-p
 import { parentsUntil } from '../base/utils';
 import * as cls from '../base/css-constants';
 import { extend, isNullOrUndefined, getValue, EventHandler, } from '@syncfusion/ej2-base';
-import { ITaskData, IGanttData, BeforeTooltipRenderEventArgs, PredecessorTooltip, IPredecessor, ITemplateData } from '../base/interface';
+import { ITaskData, IGanttData, BeforeTooltipRenderEventArgs, PredecessorTooltip, IPredecessor } from '../base/interface';
 import { EventMarkerModel } from '../models/models';
-import { TemplateName } from '../base/enum';
+import { Deferred } from '@syncfusion/ej2-data';
 
 /**
  * File for handling tooltip in Gantt. 
@@ -47,7 +47,7 @@ export class Tooltip {
         this.toolTipObj.appendTo(this.parent.element);
     }
 
-    private tooltipBeforeRender(args: TooltipEventArgs): void {
+    private tooltipBeforeRender(args: TooltipEventArgs): void | Deferred {
         let parent: Gantt = this.parent;
         if (parent.isOnEdit) {
             args.cancel = true;
@@ -57,6 +57,7 @@ export class Tooltip {
         let argsData: BeforeTooltipRenderEventArgs = {
             data: {},
             args: args,
+            cancel: false,
             content: ''
         };
 
@@ -81,7 +82,7 @@ export class Tooltip {
                     let taskbarTemplateNode: NodeList;
                     if (parent.tooltipSettings.taskbar) {
                         taskbarTemplateNode = parent.tooltipModule.templateCompiler(
-                            parent.tooltipSettings.taskbar, parent, data, TemplateName.TaskbarTooltip);
+                            parent.tooltipSettings.taskbar, parent, data, 'TooltipTaskbarTemplate');
                     }
                     argsData.content = this.toolTipObj.content = taskbarTemplateNode ? (taskbarTemplateNode[0] as HTMLElement) :
                         parent.tooltipModule.getTooltipContent(
@@ -90,7 +91,7 @@ export class Tooltip {
                     let baseLineTemplateNode: NodeList;
                     if ((parent.tooltipSettings.baseline)) {
                         baseLineTemplateNode = parent.tooltipModule.templateCompiler(
-                            parent.tooltipSettings.baseline, parent, data, TemplateName.BaselineTooltip);
+                            parent.tooltipSettings.baseline, parent, data, 'TooltipBaselineTemplate');
                     }
                     argsData.content = this.toolTipObj.content = baseLineTemplateNode ? (baseLineTemplateNode[0] as HTMLElement) :
                         parent.tooltipModule.getTooltipContent('baseline', data, parent, args);
@@ -103,7 +104,7 @@ export class Tooltip {
                     if ((parent.tooltipSettings.connectorLine)) {
                         dependencyLineTemplateNode = parent.tooltipModule.templateCompiler(
                             parent.tooltipSettings.connectorLine, parent, parent.tooltipModule.predecessorTooltipData,
-                            TemplateName.ConnectorLineTooltip);
+                            'TooltipConnectorLineTemplate');
                     }
                     argsData.content = this.toolTipObj.content = dependencyLineTemplateNode ?
                         (dependencyLineTemplateNode[0] as HTMLElement) :
@@ -123,11 +124,18 @@ export class Tooltip {
             }
         }
         if (args.cancel === false) {
-            parent.trigger('beforeTooltipRender', argsData);
+            let callBackPromise: Deferred = new Deferred();
+            parent.trigger('beforeTooltipRender', argsData, (argsData: BeforeTooltipRenderEventArgs) => {
+                callBackPromise.resolve(argsData);
+                if (argsData.cancel) {
+                  args.cancel = true;
+                }
+            });
             if (!this.parent.isAdaptive && args.event.type === 'mouseover') {
                 this.currentTarget = args.target;
                 EventHandler.add(this.currentTarget, 'mousemove', this.mouseMoveHandler.bind(this));
             }
+            return callBackPromise;
         }
     }
 
@@ -306,15 +314,8 @@ export class Tooltip {
      */
     public templateCompiler(template: string, parent: Gantt, data: IGanttData | PredecessorTooltip, propName: string): NodeList {
         let tooltipFunction: Function = parent.chartRowsModule.templateCompiler(template);
-        let ganttData: IGanttData = data as IGanttData;
-        let templateData: ITemplateData = {};
         let templateID: string = parent.chartRowsModule.getTemplateID(propName);
-        if (!isNullOrUndefined(ganttData.ganttProperties)) {
-            templateData = parent.chartRowsModule.getTemplateData(ganttData);
-        } else {
-            templateData = data as ITemplateData;
-        }
-        let templateNode: NodeList = tooltipFunction(extend({ index: 0 }, templateData), parent, propName, templateID, true);
+        let templateNode: NodeList = tooltipFunction(extend({ index: 0 }, data), parent, propName, templateID, true);
         return templateNode;
     }
     private destroy(): void {

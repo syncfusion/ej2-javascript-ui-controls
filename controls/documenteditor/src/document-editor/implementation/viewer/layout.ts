@@ -1877,7 +1877,15 @@ export class Layout {
                             let tabWidth: number = tabPosition - position;
                             let width: number = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
                             if (width < tabWidth) {
-                                defaultTabWidth = tabStop.tabJustification === 'Right' ? tabWidth - width : tabWidth - width / 2;
+                                if (tabStop.tabJustification === 'Right') {
+                                    let exceedWidth: number = 0;
+                                    if (position + tabWidth > this.viewer.clientArea.width) {
+                                        exceedWidth = (position + tabWidth) - this.viewer.clientArea.width;
+                                    }
+                                    defaultTabWidth = tabWidth - width - exceedWidth;
+                                } else {
+                                    defaultTabWidth = tabWidth - width / 2;
+                                }
                             } else if (tabStop.tabJustification === 'Center' && (width / 2) < tabWidth) {
                                 defaultTabWidth = tabWidth - width / 2;
                             } else {

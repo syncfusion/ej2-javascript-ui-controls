@@ -1,5 +1,5 @@
-import { extend } from '@syncfusion/ej2-base';
-import { remove, isNullOrUndefined, updateBlazorTemplate, getElement } from '@syncfusion/ej2-base';
+import { extend, isBlazor } from '@syncfusion/ej2-base';
+import { remove, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs } from '../base/interface';
 import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
 import * as events from '../base/constant';
@@ -99,15 +99,19 @@ export class NormalEdit {
         this.uid = tr.getAttribute('data-uid');
         let rowObj: Row<Column> = gObj.getRowObjectFromUID(this.uid);
         let args: EditEventArgs = {
-            row: tr, primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
+            primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
             rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
             foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
         };
+        if (!isBlazor()) {
+            args.row = tr;
+        }
         gObj.trigger(events.beginEdit, args, (begineditargs: EditEventArgs) => {
             begineditargs.type = 'actionBegin';
             gObj.trigger(events.actionBegin, begineditargs, (editargs: EditEventArgs) => {
                 if (!editargs.cancel) {
-                gObj.isEdit = true; editargs.row = getElement(editargs.row);
+                gObj.isEdit = true;
+                editargs.row = editargs.row ? editargs.row :  tr;
                 if (gObj.editSettings.mode !== 'Dialog') {
                     gObj.clearSelection();
                 }
@@ -123,6 +127,11 @@ export class NormalEdit {
                 this.args = editargs;
                 if (this.parent.allowTextWrap) {
                     this.parent.notify(events.freezeRender, { case: 'textwrap' });
+                }
+                if (isBlazor()) {
+                    this.parent.notify(events.toolbarRefresh, {});
+                    (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
+                    this.parent.notify('start-edit', {});
                 }
             }
             });
@@ -245,6 +254,9 @@ export class NormalEdit {
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         this.parent.trigger(events.actionComplete, args);
+        if (isBlazor()) {
+            this.parent.notify(events.toolbarRefresh, {});
+        }
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection)) {
             if (this.parent.editSettings.mode !== 'Dialog') {
@@ -315,14 +327,18 @@ export class NormalEdit {
                 if (gObj.editSettings.mode !== 'Dialog') {
                     this.refreshRow(closeEditArgs.data);
                 }
-                if (gObj.getContentTable().querySelector('tr.e-emptyrow') &&
+                if (!gObj.getContentTable().querySelector('tr.e-emptyrow') &&
                     !gObj.getContentTable().querySelector('tr.e-row')) {
-                    gObj.getContentTable().querySelector('tr.e-emptyrow').classList.remove('e-hide');
+                    gObj.renderModule.emptyRow();
                 }
                 if (gObj.editSettings.mode !== 'Dialog') {
                     gObj.selectRow(this.rowIndex);
                 }
                 gObj.trigger(events.actionComplete, closeEditArgs);
+                if (isBlazor()) {
+                    this.parent.notify(events.toolbarRefresh, {});
+                    this.parent.notify('close-edit', {});
+                }
             });
     }
 
@@ -363,6 +379,10 @@ export class NormalEdit {
             addArgs.type = events.actionComplete;
             addArgs.row = gObj.element.querySelector('.e-addedrow');
             gObj.trigger(events.actionComplete, addArgs);
+            if (isBlazor()) {
+                this.parent.notify(events.toolbarRefresh, {});
+                this.parent.notify('start-add', {});
+            }
             this.args = addArgs as EditArgs;
         });
 

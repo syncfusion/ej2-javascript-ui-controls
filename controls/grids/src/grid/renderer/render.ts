@@ -115,6 +115,7 @@ export class Render {
     }
     private resetTemplates(): void {
         let gObj: IGrid = this.parent;
+        let gridColumns: Column[] = gObj.getColumns();
         if (gObj.detailTemplate) {
             let detailTemplateID: string = gObj.element.id + 'detailTemplate';
             blazorTemplates[detailTemplateID] = [];
@@ -129,15 +130,16 @@ export class Render {
         if (gObj.toolbarTemplate) {
             resetBlazorTemplate(gObj.element.id + 'toolbarTemplate', 'ToolbarTemplate');
         }
-        for (let i: number = 0; i < gObj.getColumns().length; i++) {
-            if (gObj.getColumns()[i].template) {
-                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid, 'Template');
+        for (let i: number = 0; i < gridColumns.length; i++) {
+            if (gridColumns[i].template) {
+                blazorTemplates[gObj.element.id + gridColumns[i].uid] = [];
+                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid, 'Template');
             }
-            if (gObj.getColumns()[i].headerTemplate) {
-                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'headerTemplate', 'HeaderTemplate');
+            if (gridColumns[i].headerTemplate) {
+                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid + 'headerTemplate', 'HeaderTemplate');
             }
-            if (gObj.getColumns()[i].filterTemplate) {
-                resetBlazorTemplate(gObj.element.id + gObj.getColumns()[i].uid + 'filterTemplate', 'FilterTemplate');
+            if (gridColumns[i].filterTemplate) {
+                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid + 'filterTemplate', 'FilterTemplate');
             }
         }
         let guid: string = 'guid';
@@ -263,7 +265,7 @@ export class Render {
         this.emptyRow(true);
     }
 
-    private emptyRow(isTrigger?: boolean): void {
+    public emptyRow(isTrigger?: boolean): void {
         let gObj: IGrid = this.parent;
         let tbody: Element = this.contentRenderer.getTable().querySelector('tbody');
         let tr: Element;
@@ -548,4 +550,3 @@ export class Render {
         return current;
     }
 }
-

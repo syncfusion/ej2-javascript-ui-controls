@@ -1,7 +1,7 @@
 import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, resetBlazorTemplate, setValue } from '@syncfusion/ej2-base';
 import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Grid, InterSectionObserver, Page, PdfExport, Predicate, Print, RenderType, Reorder, Resize, Sort, TextWrapSettings, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
-import { CacheAdaptor, DataManager, DataUtil, JsonAdaptor, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
+import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 /**
@@ -2458,13 +2458,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.selectedRowIndex = _this.grid.selectedRowIndex;
             _this.trigger(rowDeselected, args);
         };
-        this.grid.toolbarClick = function (args) {
-            _this.trigger(toolbarClick, args);
-            if (args.cancel) {
-                return;
-            }
-            _this.notify(toolbarClick, args);
-        };
         this.grid.resizeStop = function (args) {
             _this.updateColumnModel();
             _this.trigger(resizeStop, args);
@@ -2489,7 +2482,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.recordDoubleClick = this.triggerEvents.bind(this);
         this.grid.rowDeselecting = this.triggerEvents.bind(this);
         this.grid.cellDeselected = this.triggerEvents.bind(this);
-        this.grid.cellSelecting = this.triggerEvents.bind(this);
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
         this.grid.columnMenuOpen = this.triggerEvents.bind(this);
         this.grid.columnMenuClick = this.triggerEvents.bind(this);
@@ -2502,7 +2494,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.columnDrop = this.triggerEvents.bind(this);
         this.grid.beforePrint = this.triggerEvents.bind(this);
         this.grid.printComplete = this.triggerEvents.bind(this);
-        this.grid.beginEdit = this.triggerEvents.bind(this);
         this.grid.cellEdit = this.triggerEvents.bind(this);
         this.grid.actionFailure = this.triggerEvents.bind(this);
         this.grid.dataBound = function (args) {
@@ -2543,6 +2534,34 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         };
         this.extendedGridEvents();
         this.extendedGridEditEvents();
+        this.bindCallBackEvents();
+    };
+    TreeGrid.prototype.bindCallBackEvents = function () {
+        var _this = this;
+        this.grid.toolbarClick = function (args) {
+            var callBackPromise = new Deferred();
+            _this.trigger(toolbarClick, args, function (toolbarargs) {
+                if (!toolbarargs.cancel) {
+                    _this.notify(toolbarClick, args);
+                }
+                callBackPromise.resolve(toolbarargs);
+            });
+            return callBackPromise;
+        };
+        this.grid.cellSelecting = function (args) {
+            var callBackPromise = new Deferred();
+            _this.trigger(getObject('name', args), args, function (cellselectingArgs) {
+                callBackPromise.resolve(cellselectingArgs);
+            });
+            return callBackPromise;
+        };
+        this.grid.beginEdit = function (args) {
+            var callBackPromise = new Deferred();
+            _this.trigger(beginEdit, args, function (begineditArgs) {
+                callBackPromise.resolve(begineditArgs);
+            });
+            return callBackPromise;
+        };
     };
     TreeGrid.prototype.extendedGridEditEvents = function () {
         var _this = this;
@@ -2554,17 +2573,25 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     args.cancel = true;
                 }
             }
-            _this.trigger(cellSave, args);
-            if (!args.cancel) {
-                _this.notify(cellSave, args);
-            }
+            var callBackPromise = new Deferred();
+            _this.trigger(cellSave, args, function (cellsaveArgs) {
+                if (!cellsaveArgs.cancel) {
+                    _this.notify(cellSave, args);
+                }
+                callBackPromise.resolve(cellsaveArgs);
+            });
+            return callBackPromise;
         };
         // this.grid.cellSaved = (args: CellSaveArgs): void => {
         //   this.trigger(events.cellSaved, args);
         //   this.notify(events.cellSaved, args);
         // };
         this.grid.cellEdit = function (args) {
+            var prom = 'promise';
+            var promise = new Deferred();
+            args[prom] = promise;
             _this.notify(cellEdit, args);
+            return promise;
         };
         // this.grid.batchAdd = (args: BatchAddArgs): void => {
         //   this.trigger(events.batchAdd, args);
@@ -2605,8 +2632,16 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         var isDataAvailable = 'isDataAvailable';
         var adaptor = 'adaptor';
         var ready = 'ready';
+        var adaptorName = 'adaptorName';
+        var dotnetInstance = 'dotnetInstance';
+        var key = 'key';
         this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
             this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
+        if (isBlazor()) {
+            this.grid.dataSource[adaptorName] = this.dataSource[adaptorName];
+            this.grid.dataSource[dotnetInstance] = this.dataSource[dotnetInstance];
+            this.grid.dataSource[key] = this.dataSource[key];
+        }
         if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
             this.grid.dataSource[dataSource].json = extendArray(this.dataSource[dataSource].json);
             this.grid.dataSource[ready] = this.dataSource.ready;
@@ -2642,8 +2677,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 _this.notify('clearFilters', { flatData: _this.grid.dataSource });
                 _this.grid.dataSource = _this.dataResults.result;
             }
-            _this.trigger(actionBegin, args);
-            _this.notify(beginEdit, args);
+            var callBackPromise = new Deferred();
+            _this.trigger(actionBegin, args, function (actionArgs) {
+                if (!actionArgs.cancel) {
+                    _this.notify(beginEdit, actionArgs);
+                }
+                callBackPromise.resolve(actionArgs);
+            });
+            return callBackPromise;
         };
         this.grid.actionComplete = function (args) {
             _this.notify('actioncomplete', args);
@@ -4664,7 +4705,9 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
             }
             dm.executeQuery(query).then(function (e) {
                 excelExportProperties = _this.manipulateExportProperties(excelExportProperties, dataSource, e);
-                return _this.parent.grid.excelExportModule.Map(_this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
+                return _this.parent.grid.excelExportModule.Map(_this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then(function (book) {
+                    resolve(book);
+                });
             });
         });
     };
@@ -4794,7 +4837,9 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
             }
             dm.executeQuery(query).then(function (e) {
                 pdfExportProperties = _this.manipulatePdfProperties(pdfExportProperties, dtSrc, e);
-                return _this.parent.grid.pdfExportModule.Map(_this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+                return _this.parent.grid.pdfExportModule.Map(_this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob).then(function (document) {
+                    resolve(document);
+                });
             });
         });
     };
@@ -5733,8 +5778,19 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         delete this.parent[id][value];
     };
     Edit$$1.prototype.cellEdit = function (args) {
+        var _this = this;
+        var promise = 'promise';
+        var prom = args[promise];
+        delete args[promise];
         if (this.keyPress !== 'enter') {
-            this.parent.trigger(cellEdit, args);
+            this.parent.trigger(cellEdit, args, function (celleditArgs) {
+                if (!celleditArgs.cancel && _this.parent.editSettings.mode === 'Cell') {
+                    _this.enableToolbarItems('edit');
+                }
+                if (!isNullOrUndefined(prom)) {
+                    prom.resolve(celleditArgs);
+                }
+            });
         }
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
             this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
@@ -5749,9 +5805,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             else if (this.keyPress === 'enter') {
                 args.cancel = true;
                 this.keyPress = null;
-            }
-            if (!args.cancel) {
-                this.enableToolbarItems('edit');
             }
         }
         // if (this.isAdd && this.parent.editSettings.mode === 'Batch' && !args.cell.parentElement.classList.contains('e-insertedrow')) {

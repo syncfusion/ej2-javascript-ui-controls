@@ -2,7 +2,7 @@
 import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, getValue, setValue, getUniqueID } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, getValue, setValue, extend, getUniqueID } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { FocusEventArgs, BlurEventArgs } from '../calendar/calendar';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -208,6 +208,64 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      */
     @Property(false)
     public strictMode: boolean;
+    /**     
+     * Customizes the key actions in TimePicker.
+     * For example, when using German keyboard, the key actions can be customized using these shortcuts.
+     * @default null
+     * @blazorType object 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Key action<br/></td><td colSpan=1 rowSpan=1> 
+     * Key<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * enter<br/></td><td colSpan=1 rowSpan=1> 
+     * enter<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * escape<br/></td><td colSpan=1 rowSpan=1> 
+     * escape<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * end<br/></td><td colSpan=1 rowSpan=1> 
+     * end<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * tab<br/></td><td colSpan=1 rowSpan=1> 
+     * tab<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * home<br/></td><td colSpan=1 rowSpan=1> 
+     * home<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * down<br/></td><td colSpan=1 rowSpan=1> 
+     * downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * up<br/></td><td colSpan=1 rowSpan=1> 
+     * uparrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * left<br/></td><td colSpan=1 rowSpan=1> 
+     * leftarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * right<br/></td><td colSpan=1 rowSpan=1> 
+     * rightarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * open<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+downarrow<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * close<br/></td><td colSpan=1 rowSpan=1> 
+     * alt+uparrow<br/></td></tr> 
+     * </table>
+     */
+    @Property(null)
+    public keyConfigs: { [key: string]: string };
     /**
      * Specifies the format of value that is to be displayed in component. By default, the format is
      * based on the culture. 
@@ -1303,9 +1361,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
         if (!Browser.isDevice) {
+            this.keyConfigure = (extend(this.keyConfigure, this.keyConfigs) as { [key: string]: string });
             this.inputEvent = new KeyboardEvents(
                 this.inputWrapper.container, {
-                    keyAction: this.inputHandler.bind(this), keyConfigs: this.keyConfigure, eventName: 'keydown'
+                    keyAction: this.inputHandler.bind(this),
+                    keyConfigs: this.keyConfigure,
+                    eventName: 'keydown'
                 });
             if (this.showClearButton && this.inputElement ) {
                 EventHandler.add(this.inputElement, 'mousedown', this.mouseDownHandler, this);

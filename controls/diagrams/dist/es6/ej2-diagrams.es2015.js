@@ -22926,6 +22926,14 @@ class DiagramEventHandler {
         let rulerSize = getRulerSize(this.diagram);
         let movingPosition;
         let autoScrollBorder = this.diagram.scrollSettings.autoScrollBorder;
+        if (Browser.info.name === 'mozilla') {
+            if (this.diagram.scroller.viewPortWidth === 0) {
+                let bounds = document.getElementById(this.diagram.element.id).getBoundingClientRect();
+                if (bounds.width !== this.diagram.scroller.viewPortWidth) {
+                    this.diagram.scroller.setViewPortSize(bounds.width, bounds.height);
+                }
+            }
+        }
         if (this.diagram.scrollSettings.canAutoScroll) {
             if (position.x + this.diagram.scroller.horizontalOffset + autoScrollBorder.right + rulerSize.width >=
                 this.diagram.scroller.viewPortWidth - 18) {
@@ -28879,6 +28887,14 @@ class Diagram extends Component {
             this.initObjects(true);
             this.refreshDiagramLayer();
         }
+        if (!refereshColelction) {
+            for (let temp of this.views) {
+                let view = this.views[temp];
+                if (!(view instanceof Diagram)) {
+                    this.refreshCanvasDiagramLayer(view);
+                }
+            }
+        }
         this.resetTemplate();
     }
     /* tslint:enable */
@@ -30040,6 +30056,12 @@ class Diagram extends Component {
         this.resetDiagramActions(DiagramAction.PublicMethod);
         if (newObj && this.layers.length > 1) {
             this.moveNode(newObj);
+        }
+        for (let temp of this.views) {
+            let view = this.views[temp];
+            if (!(view instanceof Diagram)) {
+                this.refreshCanvasDiagramLayer(view);
+            }
         }
         return newObj;
     }
@@ -36243,6 +36265,7 @@ class DiagramContextMenu {
         contextItems.contextMenu.items.forEach((item) => {
             if (contextItems.hiddenItems.indexOf(item.id) === -1) {
                 hidden = false;
+                contextItems.contextMenu.showItems([item.id], true);
             }
         });
         if (hidden) {
@@ -42849,7 +42872,7 @@ class HierarchicalTree {
             for (j = 0; j < node.outEdges.length; j++) {
                 let edge;
                 edge = layout.nameTable[layout.nameTable[node.outEdges[j]].targetID];
-                if (!edge.excludeFromLayout) {
+                if (edge && !edge.excludeFromLayout) {
                     if (layoutInfo.tree.children.indexOf(edge.id) === -1) {
                         layoutInfo.tree.children.push(edge.id);
                     }
@@ -47541,15 +47564,21 @@ class Overview extends Component {
         let screenX = (window.screenX < 0) ? window.screenX * -1 : window.screenX;
         let screenY = (window.screenY < 0) ? window.screenY * -1 : window.screenY;
         if (eWidth === 0) {
-            eWidth = Math.floor(((window.innerWidth - screenX) - Math.floor(bRect.left)));
+            let widthValue = Math.floor(((window.innerWidth - screenX) - Math.floor(bRect.left)));
+            eWidth = widthValue > 0 ? widthValue : Math.floor(window.innerWidth);
         }
         if (eHeight === 0) {
-            eHeight = Math.floor(((window.innerHeight - screenY) - Math.floor(bRect.top)));
+            let heightValue = Math.floor(((window.innerHeight - screenY) - Math.floor(bRect.top)));
+            eHeight = heightValue > 0 ? heightValue : Math.floor(window.innerHeight);
         }
-        svg.setAttribute('width', String(eWidth));
-        svg.setAttribute('height', String(eHeight));
-        this.model.width = eWidth;
-        this.model.height = eHeight;
+        if (eWidth > 0) {
+            svg.setAttribute('width', String(eWidth));
+            this.model.height = eHeight;
+        }
+        if (eHeight > 0) {
+            svg.setAttribute('height', String(eHeight));
+            this.model.width = eWidth;
+        }
         let attributes;
         if (!view.diagramLayerDiv) {
             view.diagramLayerDiv = createHtmlElement('div', {});

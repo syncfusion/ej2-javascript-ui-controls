@@ -10,15 +10,6 @@ export type DurationUnit =
     'Day';
 
 /**
- * @hidden
- */
-export enum DurationUnits {
-    Minute = 'minute',
-    Hour = 'hour',
-    Day = 'day'
-}
-
-/**
  * To define grid lines in Gantt
  */
 export type GridLine =
@@ -96,19 +87,6 @@ export type EditMode =
     'Auto' |
     /**  Defines EditMode as Dialog */
     'Dialog';
-/**
- * To define edit type value for columns
- * @hidden
- */
-export enum EditType {
-    Boolean = 'booleanedit',
-    DropDown = 'dropdownedit',
-    DatePicker = 'datepickeredit',
-    DateTimePicker = 'datetimepickeredit',
-    Masked = 'maskededit',
-    Numeric = 'numericedit',
-    String = 'stringedit'
-}
 
 /**
  * Defines the default items of Column menu
@@ -242,22 +220,6 @@ export type ContextMenuType =
     'Header' |
     /** Defines the content type context menu */
     'Content';
-
-/**
- * @hidden
- */
-export enum TemplateName {
-    Parent = 'ParentTaskbarTemplate',
-    Child = 'TaskbarTemplate',
-    Milestone = 'MilestoneTemplate',
-    LeftLabel = 'LeftLabelTemplate',
-    RightLabel = 'RightLabelTemplate',
-    TaskLabel = 'TaskLabelTemplate',
-    TaskbarTooltip = 'TooltipTaskbarTemplate',
-    BaselineTooltip = 'TooltipBaselineTemplate',
-    ConnectorLineTooltip = 'TooltipConnectorLineTemplate',
-    EditingTooltip = 'TooltipEditingTemplate'
-}
 
 /**
  * @hidden

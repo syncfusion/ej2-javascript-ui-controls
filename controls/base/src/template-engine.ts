@@ -56,9 +56,10 @@ export function compile(templateString: string, helper?: Object): (data: Object 
                 blazorTemplates[templateId].push(data);
             }
             // tslint:disable-next-line:no-any
-            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId })] as any :
+            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] as any :
                 // tslint:disable-next-line:no-any
-                [createElement('div', { id: blazorId })] as any;
+                [createElement('div', { id: blazorId, className: 'e-blazor-template' })] as any;
+
         }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {

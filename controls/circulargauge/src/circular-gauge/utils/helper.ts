@@ -402,8 +402,11 @@ export function getTemplateFunction(template: string): Function {
     let templateFn: Function = null;
     let e: Object;
     try {
-        if (document.querySelectorAll(template).length) {
+        let templateChange: string = template.charAt(0) === '#' ? template.substr(1) : template;
+        if (document.getElementById(templateChange)) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+        } else {
+            templateFn = templateComplier(template);
         }
     } catch (e) {
         templateFn = templateComplier(template);

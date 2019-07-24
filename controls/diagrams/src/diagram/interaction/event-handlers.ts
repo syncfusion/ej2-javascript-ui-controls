@@ -1,3 +1,4 @@
+import { Browser } from '@syncfusion/ej2-base';
 import { PointModel } from '../primitives/point-model';
 import { Point } from '../primitives/point';
 import { IElement, IClickEventArgs, IDoubleClickEventArgs, IMouseEventArgs, StackEntryObject } from '../objects/interface/IElement';
@@ -956,6 +957,14 @@ export class DiagramEventHandler {
         let rulerSize: Size = getRulerSize(this.diagram);
         let movingPosition: string;
         let autoScrollBorder: MarginModel = this.diagram.scrollSettings.autoScrollBorder;
+        if (Browser.info.name === 'mozilla') {
+            if (this.diagram.scroller.viewPortWidth === 0) {
+                let bounds: ClientRect | DOMRect = document.getElementById(this.diagram.element.id).getBoundingClientRect();
+                if (bounds.width !== this.diagram.scroller.viewPortWidth) {
+                    this.diagram.scroller.setViewPortSize(bounds.width, bounds.height);
+                }
+            }
+        }
         if (this.diagram.scrollSettings.canAutoScroll) {
             if (position.x + this.diagram.scroller.horizontalOffset + autoScrollBorder.right + rulerSize.width >=
                 this.diagram.scroller.viewPortWidth - 18) {

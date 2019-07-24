@@ -1,4 +1,4 @@
-import { extend, addClass, removeClass, setValue } from '@syncfusion/ej2-base';
+import { extend, addClass, removeClass, setValue, isBlazor } from '@syncfusion/ej2-base';
 import { remove, classList } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -421,15 +421,20 @@ export class BatchEdit {
             primaryKey: this.parent.getPrimaryKeyFieldNames(),
             rowIndex: index,
             rowData: data ? data : gObj.getSelectedRecords()[0],
-            row: data ? gObj.getRows()[index] : selectedRows[0], cancel: false
+            cancel: false
         };
-        if (!args.row) {
-            return;
+        if (!isBlazor()) {
+            args.row = data ? gObj.getRows()[index] : selectedRows[0];
+            if (!args.row) {
+                return;
+            }
         }
         gObj.trigger(events.beforeBatchDelete, args, (beforeBatchDeleteArgs: BeforeBatchDeleteArgs) => {
             if (beforeBatchDeleteArgs.cancel) {
                 return;
             }
+            beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row ?
+                                            beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
             if (this.parent.frozenColumns || selectedRows.length === 1) {
                 let uid: string = beforeBatchDeleteArgs.row.getAttribute('data-uid');
                 if (beforeBatchDeleteArgs.row.classList.contains('e-insertedrow')) {
@@ -607,6 +612,10 @@ export class BatchEdit {
                 columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: tr.cells[index]
             };
             gObj.trigger(events.batchAdd, args1);
+            if (isBlazor()) {
+                this.parent.notify(events.toolbarRefresh, {});
+                this.parent.notify('start-add', {});
+            }
         });
     }
 
@@ -699,7 +708,6 @@ export class BatchEdit {
             let rowObj: Row<Column> = gObj.getRowObjectFromUID(row.getAttribute('data-uid'));
             let cells: Element[] = [].slice.apply((row as HTMLTableRowElement).cells);
             let args: CellEditArgs = {
-                cell: cells[this.getColIndex(cells, this.getCellIdx(col.uid))], row: row,
                 columnName: col.field, columnObject: col, isForeignKey: !isNullOrUndefined(col.foreignKeyValue),
                 primaryKey: keys, rowData: rowData,
                 validationRules: extend({}, col.validationRules ? col.validationRules : {}),
@@ -707,11 +715,17 @@ export class BatchEdit {
                 type: !isAdd ? 'edit' : 'add', cancel: false,
                 foreignKeyData: rowObj && rowObj.foreignKeyData
             };
-            if (!args.cell) { return; }
+            if (!isBlazor()) {
+                args.cell = cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
+                args.row = row;
+                if (!args.cell) { return; }
+            }
             gObj.trigger(events.cellEdit, args, (cellEditArgs: CellEditArgs) => {
                 if (cellEditArgs.cancel) {
                     return;
                 }
+                cellEditArgs.cell = cellEditArgs.cell ? cellEditArgs.cell : cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
+                cellEditArgs.row = cellEditArgs.row ? cellEditArgs.row : row;
                 this.cellDetails = {
                     rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
                     cellIndex: parseInt((cellEditArgs.cell as HTMLTableCellElement).getAttribute('aria-colindex'), 10),
@@ -861,9 +875,11 @@ export class BatchEdit {
             rowData: this.cellDetails.rowData,
             previousValue: this.cellDetails.value,
             columnObject: column,
-            cell: this.form.parentElement,
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
+        if (!isBlazor()) {
+            args.cell = this.form.parentElement;
+        }
         if (!isForceSave) {
             gObj.trigger(events.cellSave, args, this.successCallBack(args, tr, column));
             gObj.notify(events.batchForm, {formObj: this.form});
@@ -875,6 +891,7 @@ export class BatchEdit {
     private successCallBack(cellSaveArgs: CellSaveArgs, tr: Element, column: Column): Function {
         return (cellSaveArgs: CellSaveArgs) => {
         let gObj: IGrid = this.parent;
+        cellSaveArgs.cell = cellSaveArgs.cell ? cellSaveArgs.cell : this.form.parentElement;
         if (cellSaveArgs.cancel) {
             return;
         }

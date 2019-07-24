@@ -2364,7 +2364,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             else if (ruleColl[i].operator.length) {
                 var oper = ruleColl[i].operator.toLowerCase();
-                var dateOperColl = ['equal', 'notequal'];
+                var isDateFilter = false;
+                var dateOperColl = ['equal', 'notequal', 'greaterthan', 'lessthanorequal'];
                 if (ruleColl[i].type === 'string') {
                     ignoreCase = this.matchCase ? false : true;
                 }
@@ -2375,13 +2376,16 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 if (ruleColl[i].type === 'date') {
                     var format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
                     ruleValue = this.intl.parseDate(ruleColl[i].value, format);
+                    if (dateOperColl.indexOf(oper) > -1) {
+                        isDateFilter = true;
+                    }
                 }
                 else {
                     ruleValue = ruleColl[i].value;
                 }
                 if (i === 0) {
-                    if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
-                        pred = this.arrayPredicate(ruleColl[i]);
+                    if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
+                        pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue) : this.arrayPredicate(ruleColl[i]);
                     }
                     else {
                         var value = ruleValue;
@@ -2391,23 +2395,20 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 else {
-                    if (rule.condition === 'and') {
-                        if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
-                            pred = this.arrayPredicate(ruleColl[i], pred, rule.condition);
-                        }
-                        else {
+                    if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
+                        pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue, pred, rule.condition) :
+                            this.arrayPredicate(ruleColl[i], pred, rule.condition);
+                    }
+                    else {
+                        if (rule.condition === 'and') {
                             var value = ruleValue;
                             if (pred && value !== '') {
-                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
+                                pred
+                                    = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                             else if (value !== '') {
                                 pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
-                        }
-                    }
-                    else {
-                        if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
-                            pred = this.arrayPredicate(ruleColl[i], pred, rule.condition);
                         }
                         else {
                             var value = ruleValue;
@@ -2433,6 +2434,41 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return column;
+    };
+    QueryBuilder.prototype.datePredicate = function (ruleColl, value, predicate, condition) {
+        var pred;
+        var dummyDate = new Date(value.getTime());
+        var nextDate = new Date(dummyDate.setDate(dummyDate.getDate() + 1));
+        switch (ruleColl.operator) {
+            case 'equal':
+                pred = new Predicate(ruleColl.field, 'greaterthanorequal', value);
+                pred = pred.and(ruleColl.field, 'lessthan', nextDate);
+                break;
+            case 'notequal':
+                pred = new Predicate(ruleColl.field, 'lessthan', value);
+                pred = pred.or(ruleColl.field, 'greaterthanorequal', nextDate);
+                break;
+            case 'greaterthan':
+                pred = new Predicate(ruleColl.field, 'greaterthanorequal', nextDate);
+                break;
+            case 'lessthanorequal':
+                pred = new Predicate(ruleColl.field, 'lessthan', nextDate);
+                break;
+        }
+        if (pred) {
+            if (predicate) {
+                if (condition === 'and') {
+                    predicate = predicate.and(pred);
+                }
+                else if (condition === 'or') {
+                    predicate = predicate.or(pred);
+                }
+            }
+            else {
+                predicate = pred;
+            }
+        }
+        return predicate;
     };
     QueryBuilder.prototype.arrayPredicate = function (ruleColl, predicate, condition) {
         var value = ruleColl.value;
@@ -2799,8 +2835,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 rules.rules.push(rule);
             }
             else if (parser[i][0] === 'Left') {
-                subRules = { condition: '', rules: [] };
                 this.parser = parser.splice(i + 1, iLen - (i + 1));
+                subRules = { condition: '', rules: [] };
                 grpCount = 0;
                 //To get the group position
                 kLen = rules.rules.length;

@@ -537,6 +537,7 @@ export class HeaderRender implements IRenderer {
                     setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - frzCols], { 'display': displayVal });
                 }
             } else {
+                if (gObj.isRowDragable()) { idx++; }
                 setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
             }
 

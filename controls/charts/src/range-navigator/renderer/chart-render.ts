@@ -71,7 +71,7 @@ export class RangeSeries extends NiceInterval {
      * @param e 
      */
     private dataManagerSuccess(e: { result: Object, count: number }, control: RangeNavigator, series?: RangeNavigatorSeries): void {
-        let viewData: Object = e.result !== '' ? e.result : [];
+        let viewData: Object = e.count ? e.result : [];
         this.processJsonData(viewData as Object[], control, Object.keys(viewData).length, series);
         this.seriesLength += series ? 1 : this.seriesLength;
         if (!series || this.seriesLength === control.series.length) {

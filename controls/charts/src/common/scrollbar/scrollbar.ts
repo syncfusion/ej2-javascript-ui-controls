@@ -87,6 +87,7 @@ export class ScrollBar {
     private startRange: VisibleRangeModel;
     private scrollStarted: boolean;
     private isScrollEnd: boolean;
+    private isCustomHeight: boolean;    //this varible used to check whether the height for component is set or not
 
     /**
      * Constructor for creating scrollbar
@@ -186,6 +187,18 @@ export class ScrollBar {
                     this.component.trigger(scrollEnd, args);
                 }
             }
+        }
+
+        /**
+         * Customer issue 
+         * Task ID - EJ2-28898
+         * Issue: While element's height is smaller than chart'height, html scroll bar presents. On that case while moving chart scrollbar, 
+         * html scrollbar goes up due to chart's svg removed from the dom when zoomFactor and zoomPosition chnaged
+         * Fix: Only for scrolling purpose, height for element is set to chart's available height
+         */
+        if (this.component.element.style.height === '') {
+            this.isCustomHeight = true;
+            this.component.element.style.height =  this.component.availableSize.height + 'px';
         }
     }
 
@@ -376,6 +389,15 @@ export class ScrollBar {
                 scrollEnd, this.getArgs(scrollChanged, this.startRange, this.startZoomPosition, this.startZoomFactor)
             );
             this.scrollStarted = false;
+        }
+
+        /**
+         * Customer issue 
+         * Task ID - EJ2-28898
+         * Chart's height setted is removed here.
+         */
+        if (this.isCustomHeight) {
+            this.component.element.style.height =  null;
         }
     }
 

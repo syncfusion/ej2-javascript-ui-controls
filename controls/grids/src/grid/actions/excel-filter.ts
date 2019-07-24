@@ -1,4 +1,4 @@
-import { EventHandler, remove, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, remove, Browser, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
 import { parentsUntil, isActionPrevent, appendChildren, extend } from '../base/util';
 import { IGrid, IFilterArgs, EJ2Intance } from '../base/interface';
@@ -319,6 +319,15 @@ export class ExcelFilter extends CheckBoxFilter {
         this.dlgObj.appendTo(this.dlgDiv);
     }
     private removeDialog(): void {
+        if (isBlazor()) {
+            let columns: Column[] = this.parent.getColumns();
+            for (let i: number = 0; i < columns.length; i++) {
+                if (columns[i].filterTemplate) {
+                    let tempID: string = this.parent.element.id + columns[i].uid + 'filterTemplate';
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
+                }
+            }
+        }
         this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
         remove(this.dlgDiv);
     }
@@ -618,7 +627,14 @@ export class ExcelFilter extends CheckBoxFilter {
             let tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
             let element: Element[] = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, element);
-            valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
+            if (isBlazor()) {
+                valueDiv.children[0].classList.add(elementId);
+                if (this.parent.element.querySelectorAll('.e-xlfl-value').length > 1) {
+                    updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
+                }
+            } else {
+                valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
+            }
             value.appendChild(valueDiv);
         } else {
             let valueInput: Element = this.parent

@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, data17, data18, data19, data20, data21, data22 } from '../data';
+import { data1, data17, data18, data19, data20, searchhellopng, data21, data22 } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -109,6 +109,47 @@ describe('FileManager control single selection Grid view', () => {
                 }, 500);
             }, 500);
         });
+        
+        it('Search (empty) refresh testing', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(5);
+            expect(gridLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'hello.png';
+            searchObj.value = 'hello.png';
+            let eventArgs: any = { value: 'hello.png', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(searchhellopng)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(gridLi.length).toEqual(0);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-empty').length).toBe(1);
+                let items: any = document.getElementsByClassName('e-fe-refresh');
+                items[0].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(gridLi.length).toEqual(5);
+                    expect(document.getElementById('file_grid').querySelectorAll('.e-empty').length).toBe(0);
+                    done();
+                }, 500);
+            }, 500);
+        });
+        
         it('Search folder navigation', (done: Function) => {
             let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
             let treeLi: any = treeObj.element.querySelectorAll('li');

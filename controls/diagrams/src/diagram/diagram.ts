@@ -1442,6 +1442,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.initObjects(true);
             this.refreshDiagramLayer();
         }
+        if (!refereshColelction) {
+            for (let temp of this.views) {
+                let view: View = this.views[temp];
+                if (!(view instanceof Diagram)) {
+                    this.refreshCanvasDiagramLayer(view);
+                }
+            }
+        }
+
         this.resetTemplate();
     }
     /* tslint:enable */
@@ -2719,6 +2728,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.resetDiagramActions(DiagramAction.PublicMethod);
         if (newObj && this.layers.length > 1) {
             this.moveNode(newObj);
+        }
+        for (let temp of this.views) {
+            let view: View = this.views[temp];
+            if (!(view instanceof Diagram)) {
+                this.refreshCanvasDiagramLayer(view);
+            }
         }
         return newObj;
     }

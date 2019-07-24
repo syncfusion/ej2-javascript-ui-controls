@@ -66,18 +66,26 @@ export class DataLabel {
         let data: object;
         let text: string = '';
         let datasrcObj: object;
-        let currentLength: number = 0;
-        let location: object;
+        let currentLength: number = 0; let oldIndex : number;
+        let location: object; let sublayerIndexLabel : Boolean = false;
         let shapeProperties: object = shape['properties'];
         let labelId: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_LabelIndex_' + index;
         let textLocation: Point = new Point(0, 0);
         /* tslint:disable:no-string-literal */
-        let shapes: object = layerData[index];
+        let shapes: object = layerData[index]; let locationX: object; let locationY: object;
         style.fontFamily = this.maps.themeStyle.labelFontFamily;
         shape = shapes['property'];
         let properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
         let propertyPath: string;
+        let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+        let translate: Object = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate);
+        let scale: number = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
+        let transPoint: Point = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'] as Point;
+        let zoomTransPoint : Point = this.maps.zoomTranslatePoint; let shapeWidth: number;
+        let scaleZoomValue : number = !isNullOrUndefined(this.maps.scale)  ? Math.floor(this.maps.scale) : 1;
+        let zoomLabelsPosition : Boolean = this.maps.zoomSettings.enable ? !isNullOrUndefined(this.maps.zoomShapeCollection) &&
+        this.maps.zoomShapeCollection.length > 0 : this.maps.zoomSettings.enable;
         for (let j: number = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
@@ -111,7 +119,24 @@ export class DataLabel {
         let dataLabelText : string = text;
         let projectionType : string = this.maps.projectionType;
         location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        let firstLevelMapLocation : object = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
+            if(zoomLabelsPosition && scaleZoomValue > 1) {
+                if(layerIndex > 0){
+                    for(let k : number =0;k<this.maps.zoomLabelPositions.length;k++){
+                        if(this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
+                            oldIndex = index;
+                            index = k;
+                            sublayerIndexLabel = true;
+                            break;
+                        }
+                    }
+                }
+                locationX = location['x'];
+                locationY = location['y'];
+                location['x'] = ((location['x'] + zoomTransPoint['x']) * scale);
+                location['y'] = ((location['y'] + zoomTransPoint['y']) * scale);
+            }
             location['y'] = (this.maps.projectionType === 'Mercator') ? location['y'] : (-location['y']);
             data = location;
             if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
@@ -129,9 +154,12 @@ export class DataLabel {
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs: ILabelRenderingEventArgs) => {
                 let border: Object = { color: 'yellow' };
                 let position: MapLocation[] = [];
-                let width: number = location['rightMax']['x'] - location['leftMax']['x'];
+                let width: number = zoomLabelsPosition && scaleZoomValue > 1
+                ?  this.maps.zoomShapeCollection[index]['width'] :
+                location['rightMax']['x'] - location['leftMax']['x'];
                 if(!isNullOrUndefined(this.maps.dataLabelShape)){
-                    this.maps.dataLabelShape.push(width);
+                    shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
+                    this.maps.dataLabelShape.push(shapeWidth);
                 }
                 let textSize: Size = measureText(text, style);
                 let trimmedLable: string = textTrim(width, text, style);
@@ -144,18 +172,21 @@ export class DataLabel {
                 if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     let location1: object = findMidPointOfPolygon(position, projectionType);
+                    if(zoomLabelsPosition && scaleZoomValue > 1) {
+                            location1['x'] = ((this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
+                            location1['y'] = ((this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
+                    }
+                    locationX = location1['x'];
                     location['x'] = location1['x'];
-                    width = location1['rightMax']['x'] - location1['leftMax']['x'];
+                    width = zoomLabelsPosition && scaleZoomValue > 1 ?
+                    this.maps.zoomShapeCollection[index]['width'] :
+                    location1['rightMax']['x'] - location1['leftMax']['x'];
                 }
                 let xpositionEnds: number = location['x'] + textSize['width'] / 2;
                 let xpositionStart: number = location['x'] - textSize['width'] / 2;
                 trimmedLable = textTrim(width, text, style);
                 elementSize = measureText(trimmedLable, style);
                 this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
-                let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                let translate: Object = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate);
-                let scale: number = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
-                let transPoint: Point = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'] as Point;
                 let labelElement: HTMLElement;
                 if (eventargs.template !== '') {
                     let blazor: string = 'Blazor';
@@ -179,7 +210,7 @@ export class DataLabel {
                         options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                     }
                     text = options['text'] as string;
-                    if (dataLabelSettings.intersectionAction === 'Hide' && this.maps.scale < 2) {
+                    if (dataLabelSettings.intersectionAction === 'Hide') {
                         for (let i: number = 0; i < intersect.length; i++) {
                             if (!isNullOrUndefined(intersect[i])) {
                                 if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
@@ -246,16 +277,24 @@ export class DataLabel {
                         }
                     }
                     element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
-                    element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
+                    if(zoomLabelsPosition && scaleZoomValue > 1){
+                      element.setAttribute('transform', 'translate( ' + ((location['x'] ) ) + ' '
+                      + (((location['y'] ) )  ) + ' )');
+                            location['x'] = locationX;
+                            location['y'] = locationY;
+                    } else {
+                        element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
                         + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
+                        location['y'] = location['y'] +  (elementSize.height / 4);
+                    }
                     group.appendChild(element);
                 }
                 this.dataLabelCollections.push({
-                    location: { x: location['x'], y: (location['y'] + elementSize.height / 4) },
+                    location: { x: location['x'], y: location['y'] },
                     element: isNullOrUndefined(labelElement) ? element : labelElement,
                     layerIndex: layerIndex,
-                    shapeIndex: index,
-                    labelIndex: index,
+                    shapeIndex: sublayerIndexLabel ? oldIndex : index,
+                    labelIndex: sublayerIndexLabel ? oldIndex : index,
                     dataLabelText: dataLabelText
                 });
             });

@@ -1816,6 +1816,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     };
     ListView.prototype.reRender = function () {
         this.resetBlazorTemplates();
+        this.removeElement(this.headerEle);
+        this.removeElement(this.ulElement);
+        this.removeElement(this.contentContainer);
         if (Object.keys(window).indexOf('ejsInterop') === -1) {
             this.element.innerHTML = '';
         }

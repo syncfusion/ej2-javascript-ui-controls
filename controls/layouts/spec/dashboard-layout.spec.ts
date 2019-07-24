@@ -256,13 +256,13 @@ describe('GridLayout', () => {
                 cellSpacing: [5, 5],
                 columns: 5,
                 panels: [
-                    { id:"first", sizeX: 1, sizeY: 1, row: 0, col: 0 },
-                    { id:"second", sizeX: 3, sizeY: 2, row: 0, col: 1 },
-                    { id:"third", sizeX: 1, sizeY: 3, row: 0, col: 4 },
-                    { id:"fourth", sizeX: 1, sizeY: 1, row: 1, col: 0 },
-                    { id:"fifth", sizeX: 2, sizeY: 1, row: 2, col: 0 },
-                    { id:"sixth", sizeX: 1, sizeY: 1, row: 2, col: 2 },
-                    { id:"seventh", sizeX: 1, sizeY: 1, row: 2, col: 3 }
+                    { id: "first", sizeX: 1, sizeY: 1, row: 0, col: 0 },
+                    { id: "second", sizeX: 3, sizeY: 2, row: 0, col: 1 },
+                    { id: "third", sizeX: 1, sizeY: 3, row: 0, col: 4 },
+                    { id: "fourth", sizeX: 1, sizeY: 1, row: 1, col: 0 },
+                    { id: "fifth", sizeX: 2, sizeY: 1, row: 2, col: 0 },
+                    { id: "sixth", sizeX: 1, sizeY: 1, row: 2, col: 2 },
+                    { id: "seventh", sizeX: 1, sizeY: 1, row: 2, col: 3 }
                 ]
             });
             gridLayOut.appendTo('#gridlayout');
@@ -309,7 +309,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('four').col == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('five').id == "five").toBe(true);
             expect((<any>gridLayOut).getCellInstance('six').content == "<div>6</div>").toBe(true);
-            let panel1 = {  id: "one" , sizeX: 3, sizeY: 3,  row: 0,  col: 1, header: '<div>Panel 2</div>', content: "<div>Hello World</div>"  }
+            let panel1 = { id: "one", sizeX: 3, sizeY: 3, row: 0, col: 1, header: '<div>Panel 2</div>', content: "<div>Hello World</div>" }
             gridLayOut.updatePanel(panel1);
             expect((<any>gridLayOut).getCellInstance('one').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').col == 1).toBe(true);
@@ -318,28 +318,28 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('one').id == 'one').toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').header == '<div>Panel 2</div>').toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').content == "<div>Hello World</div>").toBe(true);
-            let panel2 = {  sizeX: 2, sizeY: 2,  row: 2,  col: 2, content: "<div>Hello</div>"  };
+            let panel2 = { sizeX: 2, sizeY: 2, row: 2, col: 2, content: "<div>Hello</div>" };
             gridLayOut.updatePanel(panel2);
             expect((<any>gridLayOut).getCellInstance('one').sizeX == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').sizeY == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('two').sizeX == 2).toBe(true);
             expect((<any>gridLayOut).getCellInstance('three').sizeY == 1).toBe(true);
-            let panel3 = {  id: "three" , sizeX: 1, sizeY: 3,  row: 0,  col: 0, content: "<div>333</div>"  };
+            let panel3 = { id: "three", sizeX: 1, sizeY: 3, row: 0, col: 0, content: "<div>333</div>" };
             gridLayOut.updatePanel(panel3);
             expect((<any>gridLayOut).getCellInstance('three').sizeX == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('three').sizeY == 3).toBe(true);
             expect((<any>gridLayOut).getCellInstance('three').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('three').col == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('three').content == "<div>333</div>").toBe(true);
-            let panel4: PanelModel = {  id: "one" , sizeX: 1, sizeY: 1,  row: 0,  col: 10, content: null , header: null };
+            let panel4: PanelModel = { id: "one", sizeX: 1, sizeY: 1, row: 0, col: 10, content: null, header: null };
             gridLayOut.updatePanel(panel4);
-             expect((<any>gridLayOut).getCellInstance('one').sizeX == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('one').sizeX == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').sizeY == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').col == 7).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').content == null).toBe(true);
             expect((<any>gridLayOut).getCellInstance('one').header == null).toBe(true);
-            let panel5: PanelModel = {  };
+            let panel5: PanelModel = {};
             gridLayOut.updatePanel(panel5);
             let panel6: PanelModel = { id: "one" };
             gridLayOut.updatePanel(panel6);
@@ -788,6 +788,92 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('2').col == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('3').col == 0).toBe(true);
+        });
+        it('Columns and panels order updating dynamically', () => {
+            gridLayOut = new DashboardLayout({
+                columns: 6,
+                cellAspectRatio: 1,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                panels: [
+                    { "sizeX": 2, "sizeY": 1, "row": 0, "col": 0 },
+                    { "sizeX": 2, "sizeY": 1, "row": 0, "col": 2 },
+                    { "sizeX": 2, "sizeY": 1, "row": 0, "col": 4 },
+                    { "sizeX": 2, "sizeY": 1, "row": 1, "col": 0 },
+                    { "sizeX": 2, "sizeY": 1, "row": 1, "col": 2 },
+                    { "sizeX": 2, "sizeY": 1, "row": 1, "col": 4 },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.columns = 5;
+            gridLayOut.panels = [{ "sizeX": 1, "sizeY": 1, "row": 0, "col": 0 },
+            { "sizeX": 2, "sizeY": 1, "row": 0, "col": 1 },
+            { "sizeX": 2, "sizeY": 1, "row": 0, "col": 3 },
+            { "sizeX": 1, "sizeY": 1, "row": 1, "col": 0 },
+            { "sizeX": 2, "sizeY": 1, "row": 1, "col": 1 },
+            { "sizeX": 2, "sizeY": 1, "row": 1, "col": 3 }];
+            gridLayOut.dataBind();
+            expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_0').sizeX == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_1').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_1').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_1').sizeX == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_2').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_2').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_2').sizeX == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_3').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_3').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_3').sizeX == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_4').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_4').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_4').sizeX == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_5').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_5').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_5').sizeX == 2).toBe(true);
+        });
+        it('Panels and columns order updating dynamically', () => {
+            gridLayOut = new DashboardLayout({
+                columns: 6,
+                cellAspectRatio: 1,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                panels: [
+                    { "sizeX": 2, "sizeY": 1, "row": 0, "col": 0 },
+                    { "sizeX": 2, "sizeY": 1, "row": 0, "col": 2 },
+                    { "sizeX": 2, "sizeY": 1, "row": 0, "col": 4 },
+                    { "sizeX": 2, "sizeY": 1, "row": 1, "col": 0 },
+                    { "sizeX": 2, "sizeY": 1, "row": 1, "col": 2 },
+                    { "sizeX": 2, "sizeY": 1, "row": 1, "col": 4 },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.panels = [{ "sizeX": 1, "sizeY": 1, "row": 0, "col": 0 },
+            { "sizeX": 2, "sizeY": 1, "row": 0, "col": 1 },
+            { "sizeX": 2, "sizeY": 1, "row": 0, "col": 3 },
+            { "sizeX": 1, "sizeY": 1, "row": 1, "col": 0 },
+            { "sizeX": 2, "sizeY": 1, "row": 1, "col": 1 },
+            { "sizeX": 2, "sizeY": 1, "row": 1, "col": 3 }];
+            gridLayOut.columns = 5;
+            gridLayOut.dataBind();
+            expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_0').sizeX == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_1').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_1').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_1').sizeX == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_2').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_2').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_2').sizeX == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_3').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_3').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_3').sizeX == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_4').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_4').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_4').sizeX == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_5').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_5').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_5').sizeX == 2).toBe(true);
         });
         it('Resizing test case in east direction alone', () => {
             gridLayOut = new DashboardLayout({
