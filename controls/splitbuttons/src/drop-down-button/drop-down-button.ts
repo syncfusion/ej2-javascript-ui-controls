@@ -411,9 +411,12 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     private removeCustomSelection(): void {
-        let selectedLi: Element = this.getULElement().querySelector('.e-selected');
-        if (selectedLi) {
-            selectedLi.classList.remove('e-selected');
+        let ul: Element = this.getULElement();
+        if (ul) {
+            let selectedLi: Element = ul.querySelector('.e-selected');
+            if (selectedLi) {
+                selectedLi.classList.remove('e-selected');
+            }
         }
     }
 
