@@ -265,7 +265,7 @@ export class MDLists {
         let start: number = textArea.selectionStart;
         let end: number = textArea.selectionEnd;
         let parents: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(textArea);
-        let prevLine: string = this.selection.getLine(textArea, (parents[0].line as number) - 1);
+        let prevLine: string = this.selection.getLine(textArea, (parents[0].line as number) - 1) || '';
         let listFormat: number = this.olListType();
         let regex: RegExp = this.getListRegex();
         let prevLineSplit: string[] = prevLine.split('. ');
